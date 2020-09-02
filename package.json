@@ -1,0 +1,73 @@
+{
+  "name": "@bscotch/gms2",
+  "version": "0.0.1",
+  "description": "Various tooling for external management of Gamemaker Studio 2.3+ project files.",
+  "main": "./build/index.js",
+  "files": [
+    "build/**/*"
+  ],
+  "bin": {
+    "gms2": "./build/cli/gms2.js"
+  },
+  "scripts": {
+    "test": "mocha --inspect --require source-map-support/register --bail ./build/test/index.js",
+    "build": "rm -rf build && npx tsc",
+    "preversion": "git checkout develop && npm run build && npm test",
+    "version": "npx bscotch-changelogs -m CHANGELOG.md -t \"GMS2\" && git add -A",
+    "postversion": "git push origin develop && git checkout master && git merge develop && git push origin master --follow-tags && npm publish && git checkout develop",
+    "tsc-live": "npx tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/bscotchRepos/gms2.git"
+  },
+  "keywords": [
+    "gamemaker",
+    "gamemaker studio",
+    "yyp",
+    "gms2",
+    "gms",
+    "yy",
+    "gms2.3",
+    "gml"
+  ],
+  "author": "Adam Coster <adam@bscotch.net> (https://www.bscotch.net)",
+  "license": "UNLICENSED",
+  "homepage": "https://bitbucket.org/bscotchRepos/gms2#readme",
+  "dependencies": {
+    "@types/find": "^0.2.1",
+    "@types/flat": "^5.0.1",
+    "chalk": "^4.1.0",
+    "commander": "^6.0.0",
+    "deep-diff": "^1.0.2",
+    "diff": "^4.0.2",
+    "flat": "^5.0.2",
+    "fs-extra": "^9.0.1",
+    "json-bigint": "^1.0.0",
+    "klaw-sync": "^6.0.0",
+    "lodash": "^4.17.20",
+    "md5-file": "^5.0.0",
+    "uuid": "^8.3.0"
+  },
+  "devDependencies": {
+    "@bscotch/changelogs": "^3.0.1",
+    "@types/chai": "^4.2.12",
+    "@types/deep-diff": "^1.0.0",
+    "@types/diff": "^4.0.2",
+    "@types/fs-extra": "^9.0.1",
+    "@types/klaw-sync": "^6.0.0",
+    "@types/lodash": "^4.14.159",
+    "@types/md5-file": "^4.0.2",
+    "@types/mocha": "^8.0.3",
+    "@types/node": "^14.6.0",
+    "@types/uuid": "^8.3.0",
+    "@typescript-eslint/eslint-plugin": "^3.9.1",
+    "@typescript-eslint/parser": "^3.9.1",
+    "chai": "^4.2.0",
+    "eslint": "^7.7.0",
+    "mocha": "^8.1.1",
+    "source-map-support": "^0.5.19",
+    "ts-node": "^8.10.2",
+    "typescript": "^4.0.2"
+  }
+}
