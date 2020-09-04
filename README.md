@@ -26,7 +26,7 @@ commas (meaning standard JSON parsers cannot read them) and can have Int64 value
 Each resource, of any type, typically includes a `.yy` file and may also include
 files of various resource-specific types.
 
-## Folders
+#### Folders
 
 + "Groups" (folders) in GMS2.3 do not also create folders in the local
   file structure.
@@ -34,6 +34,30 @@ files of various resource-specific types.
 + There is one file folder per resource type.
 + Organization of resource files within each resource folder seems to be unchanged relative
   to GMS2.2. *Mosty* conists of `type/name/name.yy`, sometimes with additional files of various types.
++ Which folder an asset is in is determined by that asset's `.yy` file via the `"parent"` field.
+
+Examples:
+
+```jsonc
+// For assets in the root level (no parent folder)
+// (Just refers to the project itself)
+"parent": {
+  "name": "sample-project",
+  "path": "sample-project.yyp",
+},
+```
+
+```jsonc
+// For assets in folders
+// (The "name" is the folder name)
+// (The "path" is to a non-existent file and the root is always "folders";
+//  dropping ^folders and .yy$ yields the visible path in the tree )
+// (Exactly matches name/path in an entry in the .yyp file)
+"parent": {
+  "name": "level3",
+  "path": "folders/sample_resources/level2/level3.yy",
+},
+```
 
 #### Tags
 
@@ -43,9 +67,8 @@ simple list of strings.
 
 #### Colors
 
-???
-
-
+**Colors are not saved.** You can color-code assets, but these are only stored
+at the IDE level.
 
 ### YYP
 
@@ -88,7 +111,6 @@ The root contents of the GMS2.3 `yyp` file are these:
   + (always type "GMIncludedFile")
   + (always "resourceVersion":"1.0")
   + "CopyToMask":-1 means "deploy to all targets". We use different masks based on config and target platform.
-
 
 
 ## Contributing
