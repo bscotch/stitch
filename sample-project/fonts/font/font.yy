@@ -204,6 +204,8 @@
   },
   "resourceVersion": "1.0",
   "name": "font",
-  "tags": [],
+  "tags": [
+    "tag1",
+  ],
   "resourceType": "GMFont",
 }

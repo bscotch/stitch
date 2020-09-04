@@ -15,7 +15,6 @@
     {"id":{"name":"extension","path":"extensions/extension/extension.yy",},"order":1,},
     {"id":{"name":"note_level3","path":"notes/note_level3/note_level3.yy",},"order":0,},
     {"id":{"name":"the_timeline","path":"timelines/the_timeline/the_timeline.yy",},"order":14,},
-    {"id":{"name":"Object1","path":"objects/Object1/Object1.yy",},"order":0,},
     {"id":{"name":"animation_curve","path":"animcurves/animation_curve/animation_curve.yy",},"order":0,},
   ],
   "Options": [
@@ -74,7 +73,7 @@
     {"isScaled":true,"autocrop":true,"border":2,"mipsToGenerate":0,"targets":461609314234257646,"resourceVersion":"1.0","name":"the_texture_group","resourceType":"GMTextureGroup",},
   ],
   "IncludedFiles": [
-    {"CopyToMask":-1,"filePath":"datafiles","resourceVersion":"1.0","name":"discoverable_datafile.txt","resourceType":"GMIncludedFile",},
+    {"CopyToMask":-1,"filePath":"datafiles/level_1","resourceVersion":"1.0","name":"discoverable_datafile.txt","resourceType":"GMIncludedFile",},
   ],
   "MetaData": {
     "IDEVersion": "2.3.0.529",
