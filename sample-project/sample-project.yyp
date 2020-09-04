@@ -1,7 +1,22 @@
 {
   "resources": [
+    {"id":{"name":"object","path":"objects/object/object.yy",},"order":4,},
+    {"id":{"name":"sprite","path":"sprites/sprite/sprite.yy",},"order":12,},
+    {"id":{"name":"font","path":"fonts/font/font.yy",},"order":2,},
+    {"id":{"name":"sound","path":"sounds/sound/sound.yy",},"order":11,},
+    {"id":{"name":"the_sequence","path":"sequences/the_sequence/the_sequence.yy",},"order":9,},
+    {"id":{"name":"the_script","path":"scripts/the_script/the_script.yy",},"order":8,},
+    {"id":{"name":"note","path":"notes/note/note.yy",},"order":3,},
+    {"id":{"name":"the_tileset","path":"tilesets/the_tileset/the_tileset.yy",},"order":13,},
+    {"id":{"name":"path_straight","path":"paths/path_straight/path_straight.yy",},"order":6,},
+    {"id":{"name":"path_smooth","path":"paths/path_smooth/path_smooth.yy",},"order":5,},
+    {"id":{"name":"the_room","path":"rooms/the_room/the_room.yy",},"order":7,},
+    {"id":{"name":"the_shader","path":"shaders/the_shader/the_shader.yy",},"order":10,},
+    {"id":{"name":"extension","path":"extensions/extension/extension.yy",},"order":1,},
+    {"id":{"name":"note_level3","path":"notes/note_level3/note_level3.yy",},"order":0,},
+    {"id":{"name":"the_timeline","path":"timelines/the_timeline/the_timeline.yy",},"order":14,},
     {"id":{"name":"Object1","path":"objects/Object1/Object1.yy",},"order":0,},
-    {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},"order":0,},
+    {"id":{"name":"animation_curve","path":"animcurves/animation_curve/animation_curve.yy",},"order":0,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
@@ -25,10 +40,11 @@
     "name": "Default",
     "children": [
       {"name":"steam","children":[],},
+      {"name":"ps5","children":[],},
     ],
   },
   "RoomOrder": [
-    {"name":"Room1","path":"rooms/Room1/Room1.yy",},
+    {"name":"the_room","path":"rooms/the_room/the_room.yy",},
   ],
   "Folders": [
     {"folderPath":"folders/Sprites.yy","order":1,"resourceVersion":"1.0","name":"Sprites","tags":[],"resourceType":"GMFolder",},
@@ -45,15 +61,21 @@
     {"folderPath":"folders/Animation Curves.yy","order":12,"resourceVersion":"1.0","name":"Animation Curves","tags":[],"resourceType":"GMFolder",},
     {"folderPath":"folders/Notes.yy","order":13,"resourceVersion":"1.0","name":"Notes","tags":[],"resourceType":"GMFolder",},
     {"folderPath":"folders/Extensions.yy","order":14,"resourceVersion":"1.0","name":"Extensions","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/group1.yy","order":15,"resourceVersion":"1.0","name":"group1","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/sample_resources.yy","order":16,"resourceVersion":"1.0","name":"sample_resources","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/sample_resources/level2.yy","order":15,"resourceVersion":"1.0","name":"level2","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/sample_resources/level2/level3.yy","order":1,"resourceVersion":"1.0","name":"level3","tags":[],"resourceType":"GMFolder",},
   ],
   "AudioGroups": [
     {"targets":461609314234257646,"resourceVersion":"1.0","name":"audiogroup_default","resourceType":"GMAudioGroup",},
+    {"targets":461609314234257646,"resourceVersion":"1.0","name":"the_audiogroup","resourceType":"GMAudioGroup",},
   ],
   "TextureGroups": [
     {"isScaled":true,"autocrop":true,"border":2,"mipsToGenerate":0,"targets":461609314234257646,"resourceVersion":"1.0","name":"Default","resourceType":"GMTextureGroup",},
+    {"isScaled":true,"autocrop":true,"border":2,"mipsToGenerate":0,"targets":461609314234257646,"resourceVersion":"1.0","name":"the_texture_group","resourceType":"GMTextureGroup",},
   ],
-  "IncludedFiles": [],
+  "IncludedFiles": [
+    {"CopyToMask":-1,"filePath":"datafiles","resourceVersion":"1.0","name":"discoverable_datafile.txt","resourceType":"GMIncludedFile",},
+  ],
   "MetaData": {
     "IDEVersion": "2.3.0.529",
   },
