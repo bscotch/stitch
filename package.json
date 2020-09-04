@@ -1,7 +1,8 @@
 {
   "name": "@bscotch/gms2",
   "version": "0.0.1",
-  "description": "Various tooling for external management of Gamemaker Studio 2.3+ project files.",
+  "description": "Gamemaker Studio 2 Pipeline SDK: Tools for creating Gamemaker Studio 2 asset pipelines.",
+  "engines" : { "node" : ">=14.0.0" },
   "main": "./build/index.js",
   "files": [
     "build/**/*"
@@ -13,7 +14,6 @@
     "test": "mocha --inspect --require source-map-support/register --bail ./build/test/index.js",
     "build": "rm -rf build && npx tsc",
     "preversion": "git checkout develop && npm run build && npm test",
-    "version": "npx bscotch-changelogs -m CHANGELOG.md -t \"GMS2\" && git add -A",
     "postversion": "git push origin develop && git checkout master && git merge develop && git push origin master --follow-tags && npm publish && git checkout develop",
     "tsc-live": "npx tsc -w"
   },
@@ -23,16 +23,17 @@
   },
   "keywords": [
     "gamemaker",
-    "gamemaker studio",
     "yyp",
     "gms2",
     "gms",
     "yy",
-    "gms2.3",
     "gml"
   ],
-  "author": "Adam Coster <adam@bscotch.net> (https://www.bscotch.net)",
-  "license": "UNLICENSED",
+  "contributors":[
+    "Adam Coster (https://www.bscotch.net/about)",
+    "Shi Chen (https://www.bscotch.net/about)"
+  ],
+  "license": "MIT",
   "homepage": "https://bitbucket.org/bscotchRepos/gms2#readme",
   "dependencies": {
     "@types/find": "^0.2.1",

@@ -1,16 +1,72 @@
-# GMS2 Project Automater
+# Gamemaker Studio 2 Pipeline SDK
+
+Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not generally have pipeline features for managing assets. This package provides a collection of modules and command-line tools for automating tasks in GMS2 by directly managing its asset files. This tooling is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch")
+
+<b style="color:red">DANGER:</b> This toolkit's purpose is to externally modify your Gamemaker Studio 2 project files. This comes with enormous risk: any external changes made to your project may completely and permanently break your project. **DO NOT USE THIS TOOLKIT** unless you are using version control and have committed any important changes beforehand.
+
+**NOTE:** This toolkit only works for projects from GMS2 versions >= 2.3. GMS2 Versions <2.3 have a completely different file structure and are not at all compatible with this tool.
+
+## Core Features
+
+### Gamemaker Modules
+
+Gamemaker Studio has mechanisms to import assets from one Gamemaker project into another, as well as an "extensions" system, but this can be unwieldy to manage. We use a custom solution for this that we simply call "Modules". A "module" is a collection of assets that have a common folder name in their path. For example, for a module called "TitleScreen" and an asset heirarchy including:
+
++ `sprites/TitleScreen/{module content}
++ `sounds/menus/TitleScreen/{module content}
+
+Everything inside those two groups, starting at the "TitleScreen" level and recursing through any subgroups, is included as a "TitleScreen" asset and can be imported together into another Gamemaker 2 project. In effect, the import first **deletes** all "TitleScreen" assets in the target and then clones all "TitleScreen" assets from the source, guaranteeing that your source and target projects will have exactly matching resources within the "TitleScreen" module.
+
+At Bscotch, we have a separate Gamemaker project for our shared asset library, including our login system, a large script library, common objects, and more. We use the module system to import this shared library into all of our games. This makes it easy to maintain shared assets and to start new projects with a huge head start.
+
+#### Module Import Notes
+
++ Local texture page assignments are *not* overwritten when importing sprites. If the local sprite does not exist, or does exist but is assigned to a non-existent texture page, the source's texture page will be created locally and used by the imported sprite.
+
+### External Asset Importers
+
+Managing art, audio, and file assets can be quite painful. These things should always be part of some sort of pipeline, but GMS2 does not provide built-in pipeline tooling. This SDK provides mechanisms to import external content into GMS2 projects, so that you can build pipelines appropriate to your technology stack.
+
+For example, if your audio team dumps their files into a shared dropbox folder, you can use the CLI to batch-import from that folder. This will update all existing sound assets and add any new ones, using the filenames as Gamemaker assets names. No manual steps required!
+
+Or, if you have a content server storing images, sounds, or files, you can write a script to automatically import all up-to-date versions of those assets into your project.
+
+At Bscotch, we use importers for our sound, art, and localization pipelines, so that our game programmers do not need to manually find, import, or name assets created by other team members.
+
+#### Asset Import Notes
+
++ Local texture page assignments are *not* overwritten when updating sprites. If the local sprite does not exist, or does exist but is assigned to a non-existent texture page, the source's texture page will be created locally and used by the imported sprite.
+
+### Texture Page Management
+
+
+
+Texture page assignment of sprites is a fully manual process.
+
+Solution was to choose folders in the GMS2 heirarchy and assign them to texture pages externally, using. Stores a key-value pair of "texture-page":["list of folders"...]. Local texture page assignments must be maintained when importing modules.
+
+### Audio Group Management
+
+
 
 ## TODOs
 
++ Lay out the feature set that this thing needs to have
++ Figure out what questions remain to understand the complexity of completing that feature set
++ Create the 
+
+
++ How are texture pages and assignments stored?
 + Figure out what the "order" field does for Resources
   + May be important for rooms, if not anything else
 + Figure out what the "order" field does for Folders
 + Does config impact texture/audiogroup target assignment?
 + For texturegroups, what values do we need to be able to specify for:
-  + "isScaled":true
-  + "autocrop":true
+  + "isScaled":true 
+  + "autocrop":true 
   + "border":2
-  + "mipsToGenerate":0
+  + "mipsToGenerate":0 // don't care about this
+  + MANUALLY HANDLED
 
 ## Game Project File Structure & Content
 
