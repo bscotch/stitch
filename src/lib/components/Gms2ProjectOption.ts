@@ -1,11 +1,13 @@
 import { YypOption } from "../../types/YypComponents";
+import { Objectable } from "./Objectable";
 
-export class Gms2ProjectOption {
+export class Gms2ProjectOption extends Objectable {
 
   #name:string;
   #path:string
 
   constructor(option:YypOption){
+    super();
     this.#name = option.name;
     this.#path = option.path;
   }

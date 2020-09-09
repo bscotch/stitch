@@ -7,10 +7,11 @@ import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
 import { Gms2ProjectOption } from "./components/Gms2ProjectOption";
 import { Gms2ProjectConfig } from "./components/Gms2ProjectConfig";
 import { Gms2ProjectFolder } from "./components/Gms2ProjectFolder";
+import { Objectable } from "./components/Objectable";
 
 
 
-export interface Gms2ProjectConfig {
+export interface Gms2ProjectOptions {
   /**
    * Path to a directory in which a .yyp file can be
    * found, or directly to a .yyp file. If not set,
@@ -42,14 +43,14 @@ export class Gms2Project {
    * The content of the YYP file, mirroring the data structure
    * in the file but with components replaced by model instances.
    */
-  #components: Gms2ProjectComponents;
+  #components!: Gms2ProjectComponents;
 
   /**
    * @param {Gms2ProjectConfig|string} options An options object or the path
    * to the .yyp file or a parent folder containing it. If not specified, will
    * look in the current directory and all children.
    */
-  constructor(options?:Gms2ProjectConfig|string){
+  constructor(options?:Gms2ProjectOptions|string){
     // Normalize options
     options = {
       projectPath: typeof options == 'string'
@@ -136,5 +137,21 @@ export class Gms2Project {
     // TODO: Load audio groups and ensure audio files are properly assigned
 
     // TODO: Load Included Files
+  }
+
+  toObject(): YypComponents {
+    const fields = Object.keys(this.#components) as (keyof YypComponents)[];
+    const asObject: Partial<YypComponents> = {};
+    for(const field of fields){
+      const component = this.#components[field];
+      if(component instanceof Objectable){
+        asObject[field] = component.toObject();
+      }
+      else{
+        // @ts-ignore
+        asObject[field] = component;
+      }
+    }
+    return asObject as YypComponents;
   }
 }
