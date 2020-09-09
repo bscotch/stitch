@@ -39,23 +39,20 @@ At Bscotch, we use importers for our sound, art, and localization pipelines, so 
 
 ### Texture Page Management
 
+Texture page assignment of sprites is a fully manual process, and there is no way to do it in batch via the GMS2 IDE.
 
+The Pipeline SDK allows you to create a Texture Page Assignment configuration file that maps project folders to textures. For example, you might map `mainMenu/` to `mainMenuTexturePage`, so that *every* sprite inside that folder will be put into the same texture page.
 
-Texture page assignment of sprites is a fully manual process.
-
-Solution was to choose folders in the GMS2 heirarchy and assign them to texture pages externally, using. Stores a key-value pair of "texture-page":["list of folders"...]. Local texture page assignments must be maintained when importing modules.
+(Note that this won't happen automatically -- you'll need to run a command to cause all texture assignments in the project to be updated according to the config.)
 
 ### Audio Group Management
 
-
+Audio Groups suffer the same manual problems as Texture Pages, and the Pipeline SDK solves this in the same way.
 
 ## TODOs
 
 + Lay out the feature set that this thing needs to have
 + Figure out what questions remain to understand the complexity of completing that feature set
-+ Create the 
-
-
 + How are texture pages and assignments stored?
 + Figure out what the "order" field does for Resources
   + May be important for rooms, if not anything else
@@ -63,7 +60,7 @@ Solution was to choose folders in the GMS2 heirarchy and assign them to texture 
 + Does config impact texture/audiogroup target assignment?
 + For texturegroups, what values do we need to be able to specify for:
   + "isScaled":true 
-  + "autocrop":true 
+  + "autocrop":false 
   + "border":2
   + "mipsToGenerate":0 // don't care about this
   + MANUALLY HANDLED
@@ -167,6 +164,29 @@ The root contents of the GMS2.3 `yyp` file are these:
   + (always type "GMIncludedFile")
   + (always "resourceVersion":"1.0")
   + "CopyToMask":-1 means "deploy to all targets". We use different masks based on config and target platform.
+
+### Assets
+
+Assets are found in `assetType/asset_name` folders, always with a file
+called `assetType/asset_name/asset_name.yy`. These are JSON files whose contents
+vary by asset type, but that have the common fields:
+
+```jsonc
+{
+  // Location in the visible heirarchy (not on disk)
+  "parent": {
+    "name": "sample_resources",
+    "path": "folders/sample_resources.yy",
+  },
+  "resourceVersion": "1.0", // constant
+  "name": "asset_name",
+  "tags": [],
+  "resourceType": "GMShader"
+}
+```
+
+Each asset type may include additional files and folders besides the `.yy` file.
+Naming conventions for these other files varies by resource type.
 
 
 ## Contributing
