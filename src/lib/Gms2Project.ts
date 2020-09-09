@@ -2,7 +2,10 @@ import {Gms2PipelineError,assert} from "./errors";
 import fs from "./files";
 import {oneline} from "./strings";
 import paths from "./paths";
-import { YypContent } from "../types/Yyp";
+import { YypComponents } from "../types/YypComponents";
+import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
+import { Gms2ProjectOption } from "./components/Gms2ProjectOption";
+import { Gms2ProjectConfig } from "./components/Gms2ProjectConfig";
 
 
 
@@ -38,7 +41,7 @@ export class Gms2Project {
    * The content of the YYP file, mirroring the data structure
    * in the file but with components replaced by model instances.
    */
-  // private #content;
+  #components: Gms2ProjectComponents;
 
   /**
    * @param {Gms2ProjectConfig|string} options An options object or the path
@@ -113,12 +116,14 @@ export class Gms2Project {
    */
   reload(){
     // Load the YYP file, store RAW (ensure field resourceType: "GMProject" exists)
-    const yyp = fs.readJsonSync(this.yypAbsolutePath) as YypContent;
+    const yyp = fs.readJsonSync(this.yypAbsolutePath) as YypComponents;
     assert(yyp.resourceType=='GMProject','This is not a GMS2.3+ project.');
 
-    // TODO: Load Options as instances
-
-    // TODO: Load Configs as instances
+    this.#components = {
+      ...yyp,
+      Options: yyp.Options.map(option=>new Gms2ProjectOption(option)),
+      configs: new Gms2ProjectConfig(yyp.configs)
+    };
 
     // TODO: Load Folders as instances
 

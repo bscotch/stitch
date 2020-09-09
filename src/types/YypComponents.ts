@@ -1,3 +1,12 @@
+/**
+ * @file Typings for components of a freshly-parsed YYP file,
+ * when it is stored as a collection of plain objects.
+ * See {@link ./Gms2ProjectComponents.ts} for typings related
+ * to when the vanilla content has been replaced with class
+ * instances.
+ */
+
+/** A 'Resource' is a an asset like a sprite, object, script, and so on. */
 export interface YypResource {
   id: {
     name: string,
@@ -57,7 +66,7 @@ export interface YypInludedFiles {
 }
 
 /** Raw YYP Content as plain objects (read directly from file and JSON parsed) */
-export interface YypContent {
+export interface YypComponents {
   name: string,
   resourceType: "GMProject",
   resources: YypResource[],

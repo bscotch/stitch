@@ -5,10 +5,6 @@ import path from "path";
 
 const Json = JsonBig({useNativeBigInt:true});
 
-function jsonStringifyToObjectReplacer(key:string,value:any){
-  return value?.toObject() || value;
-}
-
 /**
  * Stringify JSON GMS2-style: windows newlines,
  * 4-space tabs, and allowing Int64s. Will attempt
