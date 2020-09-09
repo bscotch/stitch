@@ -59,9 +59,8 @@ export interface ProjectConfig {
 
 export class Project{
 
-  /** Absolute path to the YYP file */
-  readonly absolutePath: string;
-  yyp: RawYYP = {resources: []};
+  readonly yypAbsolutePath: string;
+  rawYypData: RawYYP = {resources: []};
   resources: Array<ResourceSubclass> = [];
   private _textureGroups: TextureGroup[] = [];
   private _config: Config;
@@ -98,9 +97,9 @@ export class Project{
     }
     assert(path.extname(yypPath)=='.yyp',"Constructor requires full path of YYP file");
     assert(existsSync(yypPath),`YYP file does not exist: ${yypPath}`);
-    this.absolutePath = path.resolve(yypPath);
+    this.yypAbsolutePath = path.resolve(yypPath);
     this._config = new Config(this);
-    console.log("Loading project at ",this.absolutePath);
+    console.log("Loading project at ",this.yypAbsolutePath);
     this.load();
   }
 
@@ -115,10 +114,10 @@ export class Project{
 
   /** The directory containing the .yyp file. */
   get dir(){
-    return this.getRelativePath(path.dirname(this.absolutePath));
+    return this.getRelativePath(path.dirname(this.yypAbsolutePath));
   }
   get path(){
-    return this.getRelativePath(this.absolutePath);
+    return this.getRelativePath(this.yypAbsolutePath);
   }
 
   /** Get texture assignments, according to gms2-tools.json config file. */
@@ -140,12 +139,12 @@ export class Project{
 
   /** Path relative to the YYP project root */
   getRelativePath(to:string){
-    return path.relative(path.dirname(this.absolutePath),to);
+    return path.relative(path.dirname(this.yypAbsolutePath),to);
   }
 
   /** Absolute path, given a path relative to the YYP root */
   getAbsolutePath(relativePath:string){
-    return path.join(path.dirname(this.absolutePath),relativePath);
+    return path.join(path.dirname(this.yypAbsolutePath),relativePath);
   }
 
   getTextureByName(texName: string) {
@@ -294,9 +293,9 @@ export class Project{
   /** Load the .yyp file and convert it into Project class representation */
   load(){
     // Load the file
-    const contents = readFileSync(this.absolutePath,'utf8');
+    const contents = readFileSync(this.yypAbsolutePath,'utf8');
     try{
-      this.yyp = json.parse(contents);
+      this.rawYypData = json.parse(contents);
     }
     catch(err){
       throw new Error("YYP file was not JSON");
@@ -304,7 +303,7 @@ export class Project{
     // Convert all of its components into objects
     // (resources are added to the project by the resource itself)
     this.resources = [];
-    for(const resource of this.yyp.resources){
+    for(const resource of this.rawYypData.resources){
       this.createResourceInstance(resource);
     }
     // Convert all view references to their target objects
@@ -403,9 +402,9 @@ export class Project{
   /** Write the current state of this Project as GMS2 */
   commit(){
     if(this.locked){ return; }
-    const yyp = {...this.yyp};
+    const yyp = {...this.rawYypData};
     yyp.resources = this.resources.map(r=>r.rawResource);
-    this.writeJSONSyncAbsolute(this.absolutePath,yyp);
+    this.writeJSONSyncAbsolute(this.yypAbsolutePath,yyp);
   }
 
   /** Given a resourceType, return the javascript class
@@ -497,13 +496,13 @@ export class Project{
     }
     else{
       this.resources.push(resourceObject);
-      this.yyp.resources.push(resourceObject.rawResource);
+      this.rawYypData.resources.push(resourceObject.rawResource);
     }
 
     // Get the resource added
-    const rawResourceExists = this.yyp.resources.find(r=>r.Key==resourceObject.id);
+    const rawResourceExists = this.rawYypData.resources.find(r=>r.Key==resourceObject.id);
     if(!rawResourceExists){
-      this.yyp.resources.push(resourceObject.rawResource);
+      this.rawYypData.resources.push(resourceObject.rawResource);
     }
 
     // Ensure the yy file and all associated files exist. It may from a different absolute path,

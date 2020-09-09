@@ -1,6 +1,6 @@
 import fs from "fs-extra";
-import path from "./path-extra";
-import {writeFileSync as writeJsonSync} from "./json";
+import path from "./paths";
+import {writeFileSync as writeJsonSync,loadFromFileSync as readJsonSync} from "./json";
 
 /** Write file while ensuring the parent directories exist. */
 function writeFileSync(filePath:string,stuff:string|Buffer){
@@ -47,6 +47,7 @@ export default {
   // Override with custom methods, and add new ones
   writeFileSync,
   writeJsonSync,
+  readJsonSync,
   listPathsSync,
   listFoldersSync,
   listFilesSync,

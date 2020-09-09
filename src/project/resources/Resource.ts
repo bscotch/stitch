@@ -144,11 +144,11 @@ export class Resource{
     });
     if(!resourceExists){
       this.project.resources.push(this);
-      this.project.yyp.resources.push(this.rawResource);
+      this.project.rawYypData.resources.push(this.rawResource);
     }
-    const rawResourceExists = this.project.yyp.resources.find(r=>r.Key==this.id);
+    const rawResourceExists = this.project.rawYypData.resources.find(r=>r.Key==this.id);
     if(!rawResourceExists){
-      this.project.yyp.resources.push(this.rawResource);
+      this.project.rawYypData.resources.push(this.rawResource);
     }
   }
 
