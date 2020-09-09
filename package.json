@@ -2,10 +2,14 @@
   "name": "@bscotch/gms2",
   "version": "0.0.1",
   "description": "Gamemaker Studio 2 Pipeline SDK: Tools for creating Gamemaker Studio 2 asset pipelines.",
-  "engines" : { "node" : ">=14.0.0" },
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "main": "./build/index.js",
   "files": [
-    "build/**/*"
+    "build/cli/**/*",
+    "build/lib/**/*",
+    "build/cli/index.js"
   ],
   "bin": {
     "gms2": "./build/cli/gms2.js"
@@ -29,7 +33,7 @@
     "yy",
     "gml"
   ],
-  "contributors":[
+  "contributors": [
     "Adam Coster (https://www.bscotch.net/about)",
     "Shi Chen (https://www.bscotch.net/about)"
   ],

@@ -14,7 +14,7 @@ const deeplog = (obj:any)=>{
   console.log(inspect(obj,false,null));
 };
 
-const sandboxRoot = './sand box/';
+const sandboxRoot = './sand box/'; // Use a space to ensure nothing bad happens.
 const projectRoot = './sample-project/';
 const projectYYP = 'sample-project.yyp';
 const modulesRoot = "./sample-module-source/";
@@ -30,7 +30,7 @@ function resetSandbox(): void{
   copySync(projectRoot,sandboxRoot);
 }
 
-describe("Bscotch GMS2.3 Tools", function(){
+describe("GMS2.3 Pipeline SDK", function(){
 
   beforeEach(function(){
     resetSandbox();
@@ -46,7 +46,7 @@ describe("Bscotch GMS2.3 Tools", function(){
       const writtenFile = json.readFileSync(project.absolutePath);
       expect(json.stringify(originalFile) == json.stringify(writtenFile)).to.be.true;
     });
-    it("can upsert folders",function(){
+    xit("can upsert folders",function(){
       resetSandbox();
       project = new Project(sandboxRoot);
       expect(()=>project.ensureViewExists('bleh/new/secondLevel')).to.throw;
@@ -54,7 +54,7 @@ describe("Bscotch GMS2.3 Tools", function(){
       const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
       expect(changes.length).to.be.greaterThan(0);
     });
-    it("can add sounds",function(){
+    xit("can add sounds",function(){
       resetSandbox();
       project = new Project(sandboxRoot);
       expect(()=>project.upsertAudio(audioSample+'-fake.mp3')).to.throw;
@@ -62,7 +62,7 @@ describe("Bscotch GMS2.3 Tools", function(){
       const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
       expect(changes.length).to.be.greaterThan(0);
     });
-    it("can add included files",function(){
+    xit("can add included files",function(){
       // Can include any type of file, so use the sound file for convenience
       resetSandbox();
       let changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
@@ -75,7 +75,7 @@ describe("Bscotch GMS2.3 Tools", function(){
       changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
       expect(changes.length).to.be.greaterThan(0);
     });
-    it("can accurately report view project heirarchy.", function() {
+    xit("can accurately report view project heirarchy.", function() {
       resetSandbox();
       project = new Project(sandboxProjectYYPPath);
       const testSprite = project.resources.find(function(thisResource){
@@ -84,7 +84,7 @@ describe("Bscotch GMS2.3 Tools", function(){
       expect(testSprite).to.exist;
       expect((testSprite as Resource).projectHeirarchyPath).to.equal("sprites/testGroup/testSubGroup/new_sprite");
     });
-    it("can parse texture groups from the project directory", function(){
+    xit("can parse texture groups from the project directory", function(){
       resetSandbox();
       project = new Project(sandboxProjectYYPPath);
       const theseTextures = project.textureGroups;
@@ -94,7 +94,7 @@ describe("Bscotch GMS2.3 Tools", function(){
     });
   });
 
-  describe("Modules", function(){
+  xdescribe("Modules", function(){
     it("can import modules from one project into another", function(){
       resetSandbox();
       const project = new Project(sandboxProjectYYPPath);
@@ -102,7 +102,7 @@ describe("Bscotch GMS2.3 Tools", function(){
     });
   });
 
-  describe("gms-tools CLIs",function(){
+  xdescribe("gms-tools CLIs",function(){
     it('fails when it should',function(){
       // Arguments are required
       expect(()=>audioImport('','')).to.throw;
