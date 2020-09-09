@@ -6,6 +6,7 @@ import { YypComponents } from "../types/YypComponents";
 import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
 import { Gms2ProjectOption } from "./components/Gms2ProjectOption";
 import { Gms2ProjectConfig } from "./components/Gms2ProjectConfig";
+import { Gms2ProjectFolder } from "./components/Gms2ProjectFolder";
 
 
 
@@ -121,11 +122,10 @@ export class Gms2Project {
 
     this.#components = {
       ...yyp,
-      Options: yyp.Options.map(option=>new Gms2ProjectOption(option)),
-      configs: new Gms2ProjectConfig(yyp.configs)
+      Options: yyp.Options.map(option => new Gms2ProjectOption(option)),
+      configs: new Gms2ProjectConfig(yyp.configs),
+      Folders: yyp.Folders.map(folder => new Gms2ProjectFolder(folder)),
     };
-
-    // TODO: Load Folders as instances
 
     // TODO: Load Room Order as instances
 
