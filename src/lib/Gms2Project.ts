@@ -7,7 +7,6 @@ import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
 import { Gms2ProjectOption } from "./components/Gms2ProjectOption";
 import { Gms2ProjectConfig } from "./components/Gms2ProjectConfig";
 import { Gms2ProjectFolder } from "./components/Gms2ProjectFolder";
-import { Objectable } from "./components/Objectable";
 
 
 
@@ -143,14 +142,8 @@ export class Gms2Project {
     const fields = Object.keys(this.#components) as (keyof YypComponents)[];
     const asObject: Partial<YypComponents> = {};
     for(const field of fields){
-      const component = this.#components[field];
-      if(component instanceof Objectable){
-        asObject[field] = component.toObject();
-      }
-      else{
-        // @ts-ignore
-        asObject[field] = component;
-      }
+      const component = this.#components[field] as any;
+      asObject[field] = component?.toObject?.() ?? component;
     }
     return asObject as YypComponents;
   }

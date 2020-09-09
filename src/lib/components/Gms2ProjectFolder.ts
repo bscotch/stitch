@@ -1,7 +1,6 @@
 import { YypFolder } from "../../types/YypComponents";
-import { Objectable } from "./Objectable";
 
-export class Gms2ProjectFolder extends Objectable {
+export class Gms2ProjectFolder {
 
   #name: string;
   #tags: string;
@@ -9,7 +8,6 @@ export class Gms2ProjectFolder extends Objectable {
   #order: number;
 
   constructor(folder:YypFolder){
-    super();
     this.#name = folder.name;
     this.#tags = folder.tags;
     this.#folderPath = folder.folderPath;

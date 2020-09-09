@@ -1,5 +1,4 @@
 import { YypConfig } from "../../types/YypComponents";
-import { Objectable } from "./Objectable";
 
 export class Gms2ProjectConfig {
 
