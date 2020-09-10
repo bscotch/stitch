@@ -8,7 +8,7 @@ export class Gms2ProjectIncludedFile {
     this.#data = {...option};
   }
 
-  dehydrate(): YypInludedFiles{
+  get dehydrated(): YypInludedFiles{
     return {...this.#data};
   }
 }

@@ -8,7 +8,7 @@ export class Gms2ProjectTextureGroup {
     this.#data = {...option};
   }
 
-  dehydrate(): YypTextureGroup{
+  get dehydrated(): YypTextureGroup{
     return {...this.#data};
   }
 }

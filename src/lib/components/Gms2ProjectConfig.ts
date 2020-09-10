@@ -1,6 +1,5 @@
 import { YypConfig } from "../../types/YypComponents";
-import { hydrateArray, dehydrateArray, dehydrate} from '../hydrate'
-import { Gms2ProjectIncludedFile } from "./Gms2ProjectIncludedFile";
+import { hydrateArray, dehydrateArray,} from '../hydrate';
 
 interface ConfigData extends Omit<YypConfig,'children'> {
   children:Gms2ProjectConfig[]
@@ -17,7 +16,7 @@ export class Gms2ProjectConfig {
     };
   }
 
-  dehydrate(): YypConfig{
+  get dehydrated(): YypConfig{
     return {
       ...this.#data,
       children: dehydrateArray<YypConfig,Gms2ProjectConfig>(this.#data.children)

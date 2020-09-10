@@ -139,12 +139,12 @@ export class Gms2Project {
 
   // TODO: TO TEST, do deep comparison of the loaded content vs. the dehydrate output
 
-  dehydrate(): YypComponents {
+  get dehydrated(): YypComponents {
     const fields = Object.keys(this.#components) as (keyof YypComponents)[];
     const asObject: Partial<YypComponents> = {};
     for(const field of fields){
       const component = this.#components[field] as any;
-      asObject[field] = component?.dehydrate?.() ?? component;
+      asObject[field] = component?.dehydrated ?? component;
     }
     return asObject as YypComponents;
   }
