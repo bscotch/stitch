@@ -1,6 +1,6 @@
 import { YypFolder } from "../../types/YypComponents";
 
-export class Gms2ProjectFolder {
+export class Gms2Folder {
 
   #data:YypFolder;
 

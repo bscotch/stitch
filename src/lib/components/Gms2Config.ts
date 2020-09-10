@@ -2,24 +2,24 @@ import { YypConfig } from "../../types/YypComponents";
 import { hydrateArray, dehydrateArray,} from '../hydrate';
 
 interface ConfigData extends Omit<YypConfig,'children'> {
-  children:Gms2ProjectConfig[]
+  children:Gms2Config[]
 }
 
-export class Gms2ProjectConfig {
+export class Gms2Config {
 
   #data: ConfigData ;
 
   constructor(option:YypConfig){
     this.#data = {
       ...option,
-      children: hydrateArray(option.children, Gms2ProjectConfig)
+      children: hydrateArray(option.children, Gms2Config)
     };
   }
 
   get dehydrated(): YypConfig{
     return {
       ...this.#data,
-      children: dehydrateArray<YypConfig,Gms2ProjectConfig>(this.#data.children)
+      children: dehydrateArray<YypConfig,Gms2Config>(this.#data.children)
     };
   }
 }

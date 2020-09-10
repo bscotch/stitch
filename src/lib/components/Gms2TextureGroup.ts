@@ -1,6 +1,6 @@
 import { YypTextureGroup } from "../../types/YypComponents";
 
-export class Gms2ProjectTextureGroup {
+export class Gms2TextureGroup {
 
   #data: YypTextureGroup;
 

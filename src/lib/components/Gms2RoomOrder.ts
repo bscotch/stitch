@@ -1,6 +1,6 @@
 import { YypRoomOrder } from "../../types/YypComponents";
 
-export class Gms2ProjectRoomOrder {
+export class Gms2RoomOrder {
 
   #data: YypRoomOrder;
 

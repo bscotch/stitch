@@ -4,14 +4,14 @@ import {oneline} from "./strings";
 import paths from "./paths";
 import { YypComponents } from "../types/YypComponents";
 import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
-import { Gms2ProjectOption } from "./components/Gms2ProjectOption";
-import { Gms2ProjectConfig } from "./components/Gms2ProjectConfig";
-import { Gms2ProjectFolder } from "./components/Gms2ProjectFolder";
-import { Gms2ProjectRoomOrder } from "./components/Gms2ProjectRoomOrder";
-import {Gms2ProjectTextureGroup} from './components/Gms2ProjectTextureGroup';
-import {Gms2ProjectAudioGroup} from './components/Gms2ProjectAudioGroup';
+import { Gms2ProjectOption } from "./components/Gms2Option";
+import { Gms2Config } from "./components/Gms2Config";
+import { Gms2Folder } from "./components/Gms2Folder";
+import { Gms2RoomOrder } from "./components/Gms2RoomOrder";
+import {Gms2TextureGroup} from './components/Gms2TextureGroup';
+import {Gms2AudioGroup} from './components/Gms2AudioGroup';
 import {hydrateArray} from "./hydrate";
-import { Gms2ProjectIncludedFile } from "./components/Gms2ProjectIncludedFile";
+import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 
 export interface Gms2ProjectOptions {
   /**
@@ -48,7 +48,7 @@ export class Gms2Project {
   #components!: Gms2ProjectComponents;
 
   /**
-   * @param {Gms2ProjectConfig|string} [options] An options object or the path
+   * @param {Gms2Config|string} [options] An options object or the path
    * to the .yyp file or a parent folder containing it. If not specified, will
    * look in the current directory and all children.
    */
@@ -126,12 +126,12 @@ export class Gms2Project {
     this.#components = {
       ...yyp,
       Options: hydrateArray(yyp.Options,Gms2ProjectOption),
-      configs: new Gms2ProjectConfig(yyp.configs),
-      Folders: hydrateArray(yyp.Folders,Gms2ProjectFolder),
-      RoomOrder: hydrateArray(yyp.RoomOrder,Gms2ProjectRoomOrder),
-      TextureGroups: hydrateArray(yyp.TextureGroups, Gms2ProjectTextureGroup),
-      AudioGroups: hydrateArray(yyp.AudioGroups,Gms2ProjectAudioGroup),
-      IncludedFiles: hydrateArray(yyp.IncludedFiles,Gms2ProjectIncludedFile),
+      configs: new Gms2Config(yyp.configs),
+      Folders: hydrateArray(yyp.Folders,Gms2Folder),
+      RoomOrder: hydrateArray(yyp.RoomOrder,Gms2RoomOrder),
+      TextureGroups: hydrateArray(yyp.TextureGroups, Gms2TextureGroup),
+      AudioGroups: hydrateArray(yyp.AudioGroups,Gms2AudioGroup),
+      IncludedFiles: hydrateArray(yyp.IncludedFiles,Gms2IncludedFile),
     };
 
     // TODO: For each resource in the YYP file, create a Resource instance

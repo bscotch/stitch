@@ -1,6 +1,6 @@
 import { YypInludedFiles } from "../../types/YypComponents";
 
-export class Gms2ProjectIncludedFile {
+export class Gms2IncludedFile {
 
   #data: YypInludedFiles;
 
