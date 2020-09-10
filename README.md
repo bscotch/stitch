@@ -1,6 +1,6 @@
-# Gamemaker Studio 2 Pipeline SDK
+# Gamemaker Studio 2 Pipeline Development Kit (GMS2 PDK)
 
-Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not generally have pipeline features for managing assets. This package provides a collection of modules and command-line tools for automating tasks in GMS2 by directly managing its asset files, and is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
+Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not generally have pipeline features for managing assets. This package provides a collection of modules and command-line tools for automating tasks in GMS2 by directly managing its project files, and is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
 <b style="color:red">DANGER:</b> This toolkit's purpose is to externally modify your Gamemaker Studio 2 project files. This comes with enormous risk: any external changes made to your project may completely and permanently break your project. **DO NOT USE THIS TOOLKIT** unless you are using version control and have committed any important changes beforehand.
 
