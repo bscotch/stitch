@@ -19,7 +19,7 @@ export class Gms2Config {
   get dehydrated(): YypConfig{
     return {
       ...this.#data,
-      children: dehydrateArray<YypConfig,Gms2Config>(this.#data.children)
+      children: dehydrateArray(this.#data.children)
     };
   }
 }

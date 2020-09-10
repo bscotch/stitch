@@ -1,13 +1,14 @@
 import { YypResource } from "../../types/YypComponents";
 import {Inverted} from "../../types/Utility";
 import {invert} from "lodash";
+import {Gms2PipelineError} from "../errors";
 
 export class Gms2Resource {
 
   #data: YypResource;
 
-  constructor(option:YypResource){
-    this.#data = {...option};
+  constructor(data:YypResource){
+    this.#data = {...data};
   }
 
   /**
@@ -16,7 +17,7 @@ export class Gms2Resource {
    * E.g. {path:"sprites/mySprite/mySprite.yy"} yields "sprites"
    */
   get pathType(){
-    return this.#data.id.path.split('/')[0] as keyof Gms2ResourcePathTypeToInternalType;
+    return Gms2Resource.pathTypeFromPath(this.#data);
   }
 
   /**
@@ -54,8 +55,53 @@ export class Gms2Resource {
     } as const;
   }
 
+  static get internalTypeToClasses(){
+    const classMap = {
+      GMAnimCurve: Gms2Resource,
+      GMConfig: Gms2Resource,
+      GMIncludedFile: Gms2Resource,
+      GMExtension: Gms2Resource,
+      GMFont: Gms2Resource,
+      GMNotes: Gms2Resource,
+      GMObject: Gms2Resource,
+      GMOptions: Gms2Resource,
+      GMPath: Gms2Resource,
+      GMRoom: Gms2Resource,
+      GMScript: Gms2Resource,
+      GMSequence: Gms2Resource,
+      GMShader: Gms2Resource,
+      GMSound: Gms2Resource,
+      GMSprite: Gms2Resource,
+      GMTileSet: Gms2Resource,
+      GMTimeline: Gms2Resource,
+      GMFolder: Gms2Resource,
+    } as const;
+    return classMap;
+  }
+
   static get internalTypeToPathType(){
     return invert(Gms2Resource.pathTypeToInternalType) as Inverted<typeof Gms2Resource.pathTypeToInternalType>;
+  }
+
+  /**
+   * Given the {id:{path:'pathType/...'}} data structure from the YYP
+   * file, get the path type.
+   */
+  static pathTypeFromPath(data:YypResource){
+    return data.id.path.split('/')[0] as keyof Gms2ResourcePathTypeToInternalType;
+  }
+
+  static create(data:YypResource){
+    // TODO: Determine type and crate appropriate instance.
+    const pathType = Gms2Resource.pathTypeFromPath(data);
+    const internalType = Gms2Resource.pathTypeToInternalType[pathType];
+    const constructor = this.internalTypeToClasses[internalType];
+    if(!constructor){
+      throw new Gms2PipelineError(
+        `No constructor for resource ${internalType} (${pathType}) exists.`
+      );
+    }
+    return new constructor(data);
   }
 }
 

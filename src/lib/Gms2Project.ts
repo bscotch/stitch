@@ -133,10 +133,12 @@ export class Gms2Project {
       TextureGroups: hydrateArray(yyp.TextureGroups, Gms2TextureGroup),
       AudioGroups: hydrateArray(yyp.AudioGroups,Gms2AudioGroup),
       IncludedFiles: hydrateArray(yyp.IncludedFiles,Gms2IncludedFile),
-      resources: hydrateArray(yyp.resources,Gms2Resource),
+      resources: yyp.resources.map(Gms2Resource.create),
     };
 
     // TODO: For each resource in the YYP file, create a Resource instance
+    //        + Start with Sounds, since that functionality is required for parity with past project
+    //          and they are simpler than Sprites (the other required functionality).
   }
 
   // TODO: TO TEST, do deep comparison of the loaded content vs. the dehydrate output
