@@ -2,6 +2,7 @@ import { YypResource } from "../../types/YypComponents";
 import {Inverted} from "../../types/Utility";
 import {invert} from "lodash";
 import {Gms2PipelineError} from "../errors";
+import {Gms2Sound} from "./resources/Gms2Sound";
 
 export class Gms2Resource {
 
@@ -57,24 +58,24 @@ export class Gms2Resource {
 
   static get internalTypeToClasses(){
     const classMap = {
-      GMAnimCurve: Gms2Resource,
-      GMConfig: Gms2Resource,
-      GMIncludedFile: Gms2Resource,
-      GMExtension: Gms2Resource,
-      GMFont: Gms2Resource,
-      GMNotes: Gms2Resource,
-      GMObject: Gms2Resource,
-      GMOptions: Gms2Resource,
-      GMPath: Gms2Resource,
-      GMRoom: Gms2Resource,
-      GMScript: Gms2Resource,
-      GMSequence: Gms2Resource,
-      GMShader: Gms2Resource,
-      GMSound: Gms2Resource,
-      GMSprite: Gms2Resource,
-      GMTileSet: Gms2Resource,
-      GMTimeline: Gms2Resource,
-      GMFolder: Gms2Resource,
+      GMAnimCurve: Gms2Resource,    // ❌
+      GMConfig: Gms2Resource,       // ❌
+      GMIncludedFile: Gms2Resource, // ❌
+      GMExtension: Gms2Resource,    // ❌
+      GMFont: Gms2Resource,         // ❌
+      GMNotes: Gms2Resource,        // ❌
+      GMObject: Gms2Resource,       // ❌
+      GMOptions: Gms2Resource,      // ❌
+      GMPath: Gms2Resource,         // ❌
+      GMRoom: Gms2Resource,         // ❌
+      GMScript: Gms2Resource,       // ❌
+      GMSequence: Gms2Resource,     // ❌
+      GMShader: Gms2Resource,       // ❌
+      GMSound: Gms2Sound,           // ✅
+      GMSprite: Gms2Resource,       // ❌
+      GMTileSet: Gms2Resource,      // ❌
+      GMTimeline: Gms2Resource,     // ❌
+      GMFolder: Gms2Resource,       // ❌
     } as const;
     return classMap;
   }
@@ -95,16 +96,18 @@ export class Gms2Resource {
     // TODO: Determine type and crate appropriate instance.
     const pathType = Gms2Resource.pathTypeFromPath(data);
     const internalType = Gms2Resource.pathTypeToInternalType[pathType];
-    const constructor = this.internalTypeToClasses[internalType];
-    if(!constructor){
+    const subclass = this.internalTypeToClasses[internalType];
+    if(!subclass){
       throw new Gms2PipelineError(
         `No constructor for resource ${internalType} (${pathType}) exists.`
       );
     }
-    return new constructor(data);
+    const resource = new subclass(data) as InstanceType<Gms2ResourceSubclass>;
+    return resource;
   }
 }
 
 
 export type Gms2ResourcePathTypeToInternalType = typeof Gms2Resource.pathTypeToInternalType;
 export type Gms2ResourceInternalTypeToPathType = Inverted<Gms2ResourcePathTypeToInternalType>;
+export type Gms2ResourceSubclass = InstanceType<typeof Gms2Resource.internalTypeToClasses[keyof typeof Gms2Resource.internalTypeToClasses]>

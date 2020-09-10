@@ -6,7 +6,7 @@ import { Gms2RoomOrder } from "../lib/components/Gms2RoomOrder";
 import { Gms2TextureGroup } from "../lib/components/Gms2TextureGroup";
 import { Gms2AudioGroup } from "../lib/components/Gms2AudioGroup";
 import { Gms2IncludedFile } from "../lib/components/Gms2IncludedFile";
-import { Gms2Resource } from "../lib/components/Gms2Resource";
+import { Gms2ResourceSubclass } from "../lib/components/Gms2Resource";
 
 // Convert over to new interface by extending
 // YypComponents, omitting each field as we
@@ -22,5 +22,5 @@ export interface Gms2ProjectComponents extends Omit<YypComponents,ReplacedFields
   TextureGroups: Gms2TextureGroup[],
   AudioGroups: Gms2AudioGroup[],
   IncludedFiles: Gms2IncludedFile[],
-  resources: Gms2Resource[],
+  resources: Gms2ResourceSubclass[],
 }
