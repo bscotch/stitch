@@ -8,8 +8,8 @@ import { Gms2ProjectOption } from "./components/Gms2ProjectOption";
 import { Gms2ProjectConfig } from "./components/Gms2ProjectConfig";
 import { Gms2ProjectFolder } from "./components/Gms2ProjectFolder";
 import { Gms2ProjectRoomOrder } from "./components/Gms2ProjectRoomOrder";
-
-
+import {Gms2ProjectTextureGroup} from './componets/Gms2ProjectTextureGroup';
+import {Gms2ProjectAudioGroup} from './components/Gms2ProjectAudioGroup';
 
 export interface Gms2ProjectOptions {
   /**
@@ -43,8 +43,7 @@ export class Gms2Project {
    * The content of the YYP file, mirroring the data structure
    * in the file but with components replaced by model instances.
    */
-  #components!: 
-  ;
+  #components!: Gms2ProjectComponents;
 
   /**
    * @param {Gms2ProjectConfig|string} [options] An options object or the path
@@ -127,16 +126,18 @@ export class Gms2Project {
       Options: yyp.Options.map(option => new Gms2ProjectOption(option)),
       configs: new Gms2ProjectConfig(yyp.configs),
       Folders: yyp.Folders.map(folder => new Gms2ProjectFolder(folder)),
-      RoomOrder: yyp.RoomOrder.map(roomOrder => new Gms2ProjectRoomOrder(roomOrder))
+      RoomOrder: yyp.RoomOrder.map(roomOrder => new Gms2ProjectRoomOrder(roomOrder)),
+      TextureGroups: yyp.TextureGroups.map(textureGroup => new Gms2ProjectTextureGroup(textureGroup)),
+      AudioGroups: yyp.AudioGroups.map(audioGroup => new Gms2ProjectAudioGroup(audioGroup))
     };
-
-    // TODO: For each resource in the YYP file, create a Resource instance
 
     // TODO: Load texture groups and ensure sprites are properly assigned
 
     // TODO: Load audio groups and ensure audio files are properly assigned
 
     // TODO: Load Included Files
+
+    // TODO: For each resource in the YYP file, create a Resource instance
   }
 
   // TODO: TO TEST, do deep comparison of the loaded content vs. the toObject output
