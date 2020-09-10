@@ -7,6 +7,7 @@ import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
 import { Gms2ProjectOption } from "./components/Gms2ProjectOption";
 import { Gms2ProjectConfig } from "./components/Gms2ProjectConfig";
 import { Gms2ProjectFolder } from "./components/Gms2ProjectFolder";
+import { Gms2ProjectRoomOrder } from "./components/Gms2ProjectRoomOrder";
 
 
 
@@ -42,10 +43,11 @@ export class Gms2Project {
    * The content of the YYP file, mirroring the data structure
    * in the file but with components replaced by model instances.
    */
-  #components!: Gms2ProjectComponents;
+  #components!: 
+  ;
 
   /**
-   * @param {Gms2ProjectConfig|string} options An options object or the path
+   * @param {Gms2ProjectConfig|string} [options] An options object or the path
    * to the .yyp file or a parent folder containing it. If not specified, will
    * look in the current directory and all children.
    */
@@ -125,9 +127,8 @@ export class Gms2Project {
       Options: yyp.Options.map(option => new Gms2ProjectOption(option)),
       configs: new Gms2ProjectConfig(yyp.configs),
       Folders: yyp.Folders.map(folder => new Gms2ProjectFolder(folder)),
+      RoomOrder: yyp.RoomOrder.map(roomOrder => new Gms2ProjectRoomOrder(roomOrder))
     };
-
-    // TODO: Load Room Order as instances
 
     // TODO: For each resource in the YYP file, create a Resource instance
 
@@ -137,6 +138,8 @@ export class Gms2Project {
 
     // TODO: Load Included Files
   }
+
+  // TODO: TO TEST, do deep comparison of the loaded content vs. the toObject output
 
   toObject(): YypComponents {
     const fields = Object.keys(this.#components) as (keyof YypComponents)[];

@@ -9,7 +9,7 @@ import { inspect } from 'util';
 // import {Resource} from "../project/resources/Resource";
 // import { Sprite } from '../project/resources/Sprite';
 // import json from "../project/lib/json";
-import {dedent,oneline} from "../lib/strings";
+import {undent,oneline} from "../lib/strings";
 
 const deeplog = (obj:any)=>{
   console.log(inspect(obj,false,null));
@@ -42,7 +42,7 @@ describe("GMS2.3 Pipeline SDK", function(){
     it("can dedent string literals",function(){
       const interp1 = 'hello';
       const interp2 = 'goodbye';
-      const dedented = dedent`
+      const dedented = undent`
         Here is a:
           multine string ${interp1}
           look

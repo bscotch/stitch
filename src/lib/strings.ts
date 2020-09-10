@@ -10,7 +10,7 @@ function populateTemplate(strings:TemplateStringsArray,...interps:string[]){
  * Shift all lines left by the *smallest* indentation level,
  * and remove initial newline and trailing spaces.
  */
-export function dedent(strings:TemplateStringsArray,...interps:string[]){
+export function undent(strings:TemplateStringsArray,...interps:string[]){
   let string = populateTemplate(strings,...interps);
   // Remove initial and final newlines
   string = string
@@ -27,7 +27,6 @@ export function dedent(strings:TemplateStringsArray,...interps:string[]){
     return string;
   }
   const dedented = string.replace(new RegExp(`^${minDent}`,'gm'),'');
-  console.log(dedented);
   return dedented;
 }
 

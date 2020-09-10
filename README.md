@@ -165,23 +165,23 @@ The root contents of the GMS2.3 `yyp` file are these:
   + (always "resourceVersion":"1.0")
   + "CopyToMask":-1 means "deploy to all targets". We use different masks based on config and target platform.
 
-### Assets
+### Resources
 
-Assets are found in `assetType/asset_name` folders, always with a file
-called `assetType/asset_name/asset_name.yy`. These are JSON files whose contents
+Resources are found in `resourceType/resource_name` folders, always with a file
+called `resourceType/resource_name/resource_name.yy`. These are JSON files whose contents
 vary by asset type, but that have the common fields:
 
 ```jsonc
 {
+  "name": "resource_name",
+  "resourceType": "GMShader",
+  "tags": [],
   // Location in the visible heirarchy (not on disk)
   "parent": {
     "name": "sample_resources",
     "path": "folders/sample_resources.yy",
   },
-  "resourceVersion": "1.0", // constant
-  "name": "asset_name",
-  "tags": [],
-  "resourceType": "GMShader"
+  "resourceVersion": "1.0" // constant
 }
 ```
 

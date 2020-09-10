@@ -1,22 +1,24 @@
 import { YypConfig } from "../../types/YypComponents";
 
+interface ConfigData extends Omit<YypConfig,'children'> {
+  children:Gms2ProjectConfig[]
+}
+
 export class Gms2ProjectConfig {
 
-  #name:string;
-  #children:Gms2ProjectConfig[];
+  #data: ConfigData ;
 
   constructor(option:YypConfig){
-    this.#name = option.name;
-    this.#children = option.children.map(child=>new Gms2ProjectConfig(child));
+    this.#data = {
+      ...option,
+      children: option.children.map(child=>new Gms2ProjectConfig(child))
+    };
   }
-
-  get name(){ return this.#name; }
-  get children(){ return [...this.#children]; }
 
   toObject(): YypConfig{
     return {
-      name: this.#name,
-      children: this.#children.map(child=>child.toObject())
+      ...this.#data,
+      children: this.#data.children.map(child=>child.toObject())
     };
   }
 }
