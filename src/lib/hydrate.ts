@@ -15,10 +15,15 @@ export function hydrationGenerator<PlainObject,TargetClass extends new (object:P
 
 
 // TODO: Figure out how to do this with a generic return type
-export function dehydrate<FancyObject extends {dehydrate:()=>any}>(fancyObject:FancyObject){
+
+export function dehydrate<PlainObject,FancyObject extends {dehydrate:()=>PlainObject}>(fancyObject:FancyObject){
   return fancyObject.dehydrate();
 }
 
-export function dehydrateArray<FancyObject extends {dehydrate:()=>any}>(fancyObjects:FancyObject[]){
-  return fancyObjects.map(dehydrate);
+// export function dehydrate<FancyObject extends {dehydrate:()=>any}>(fancyObject:FancyObject){
+//   return fancyObject.dehydrate();
+// }
+
+export function dehydrateArray<PlainObject,FancyObject extends {dehydrate:()=>PlainObject}>(fancyObjects:FancyObject[]){
+  return fancyObjects.map(object=>dehydrate<PlainObject,FancyObject>(object));
 }

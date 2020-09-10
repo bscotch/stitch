@@ -11,6 +11,7 @@ import { Gms2ProjectRoomOrder } from "./components/Gms2ProjectRoomOrder";
 import {Gms2ProjectTextureGroup} from './components/Gms2ProjectTextureGroup';
 import {Gms2ProjectAudioGroup} from './components/Gms2ProjectAudioGroup';
 import {hydrateArray} from "./hydrate";
+import { Gms2ProjectIncludedFile } from "./components/Gms2ProjectIncludedFile";
 
 export interface Gms2ProjectOptions {
   /**
@@ -130,13 +131,8 @@ export class Gms2Project {
       RoomOrder: hydrateArray(yyp.RoomOrder,Gms2ProjectRoomOrder),
       TextureGroups: hydrateArray(yyp.TextureGroups, Gms2ProjectTextureGroup),
       AudioGroups: hydrateArray(yyp.AudioGroups,Gms2ProjectAudioGroup),
+      IncludedFiles: hydrateArray(yyp.IncludedFiles,Gms2ProjectIncludedFile),
     };
-
-    // TODO: Load texture groups and ensure sprites are properly assigned
-
-    // TODO: Load audio groups and ensure audio files are properly assigned
-
-    // TODO: Load Included Files
 
     // TODO: For each resource in the YYP file, create a Resource instance
   }
