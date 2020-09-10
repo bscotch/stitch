@@ -8,7 +8,7 @@ export class Gms2ProjectFolder {
     this.#data = {...folder};
   }
 
-  toObject(): YypFolder{
+  dehydrate(): YypFolder{
     return {...this.#data};
   }
 }

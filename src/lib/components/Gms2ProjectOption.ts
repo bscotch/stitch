@@ -8,7 +8,7 @@ export class Gms2ProjectOption {
     this.#data = {...option};
   }
 
-  toObject(): YypOption{
+  dehydrate(): YypOption{
     return {...this.#data};
   }
 }

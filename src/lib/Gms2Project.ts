@@ -8,8 +8,9 @@ import { Gms2ProjectOption } from "./components/Gms2ProjectOption";
 import { Gms2ProjectConfig } from "./components/Gms2ProjectConfig";
 import { Gms2ProjectFolder } from "./components/Gms2ProjectFolder";
 import { Gms2ProjectRoomOrder } from "./components/Gms2ProjectRoomOrder";
-import {Gms2ProjectTextureGroup} from './componets/Gms2ProjectTextureGroup';
+import {Gms2ProjectTextureGroup} from './components/Gms2ProjectTextureGroup';
 import {Gms2ProjectAudioGroup} from './components/Gms2ProjectAudioGroup';
+import {hydrateArray} from "./hydrate";
 
 export interface Gms2ProjectOptions {
   /**
@@ -123,12 +124,12 @@ export class Gms2Project {
 
     this.#components = {
       ...yyp,
-      Options: yyp.Options.map(option => new Gms2ProjectOption(option)),
+      Options: hydrateArray(yyp.Options,Gms2ProjectOption),
       configs: new Gms2ProjectConfig(yyp.configs),
-      Folders: yyp.Folders.map(folder => new Gms2ProjectFolder(folder)),
-      RoomOrder: yyp.RoomOrder.map(roomOrder => new Gms2ProjectRoomOrder(roomOrder)),
-      TextureGroups: yyp.TextureGroups.map(textureGroup => new Gms2ProjectTextureGroup(textureGroup)),
-      AudioGroups: yyp.AudioGroups.map(audioGroup => new Gms2ProjectAudioGroup(audioGroup))
+      Folders: hydrateArray(yyp.Folders,Gms2ProjectFolder),
+      RoomOrder: hydrateArray(yyp.RoomOrder,Gms2ProjectRoomOrder),
+      TextureGroups: hydrateArray(yyp.TextureGroups, Gms2ProjectTextureGroup),
+      AudioGroups: hydrateArray(yyp.AudioGroups,Gms2ProjectAudioGroup),
     };
 
     // TODO: Load texture groups and ensure sprites are properly assigned
@@ -140,14 +141,14 @@ export class Gms2Project {
     // TODO: For each resource in the YYP file, create a Resource instance
   }
 
-  // TODO: TO TEST, do deep comparison of the loaded content vs. the toObject output
+  // TODO: TO TEST, do deep comparison of the loaded content vs. the dehydrate output
 
-  toObject(): YypComponents {
+  dehydrate(): YypComponents {
     const fields = Object.keys(this.#components) as (keyof YypComponents)[];
     const asObject: Partial<YypComponents> = {};
     for(const field of fields){
       const component = this.#components[field] as any;
-      asObject[field] = component?.toObject?.() ?? component;
+      asObject[field] = component?.dehydrate?.() ?? component;
     }
     return asObject as YypComponents;
   }

@@ -8,7 +8,7 @@ export class Gms2ProjectRoomOrder {
     this.#data = {...option};
   }
 
-  toObject(): YypRoomOrder{
+  dehydrate(): YypRoomOrder{
     return {...this.#data};
   }
 }

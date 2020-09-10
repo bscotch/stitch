@@ -8,14 +8,14 @@ const Json = JsonBig({useNativeBigInt:true});
 /**
  * Stringify JSON GMS2-style: windows newlines,
  * 4-space tabs, and allowing Int64s. Will attempt
- * to call .toObject() and use the return value of
+ * to call .dehydrate() and use the return value of
  * that on every key:value pair, allowing control
  * over how class instances are stringified.
  */
 export function stringify(stuff:any){
   return Json.stringify(
     stuff,
-    (key:string,value:any)=>value?.toObject?.() ?? value,
+    (key:string,value:any)=>value?.dehydrate?.() ?? value,
     4
   ).replace(/\r?\n/g,'\r\n');
 }

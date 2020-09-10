@@ -8,7 +8,7 @@ export class Gms2ProjectAudioGroup {
     this.#data = {...option};
   }
 
-  toObject(): YypAudioGroup{
+  dehydrate(): YypAudioGroup{
     return {...this.#data};
   }
 }
