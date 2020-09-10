@@ -1,24 +1,26 @@
 import {YypComponents} from "./YypComponents";
-import type {Gms2ProjectOption} from "../lib/components/Gms2ProjectOption";
-import type { Gms2ProjectConfig } from "../lib/components/Gms2ProjectConfig";
-import { Gms2ProjectFolder } from "../lib/components/Gms2ProjectFolder";
-import { Gms2ProjectRoomOrder } from "../lib/components/Gms2ProjectRoomOrder";
-import { Gms2ProjectTextureGroup } from "../lib/components/Gms2ProjectTextureGroup";
-import { Gms2ProjectAudioGroup } from "../lib/components/Gms2ProjectAudioGroup";
-import { Gms2ProjectIncludedFile } from "../lib/components/Gms2ProjectIncludedFile";
+import type {Gms2Option} from "../lib/components/Gms2Option";
+import type { Gms2Config } from "../lib/components/Gms2Config";
+import { Gms2Folder } from "../lib/components/Gms2Folder";
+import { Gms2RoomOrder } from "../lib/components/Gms2RoomOrder";
+import { Gms2TextureGroup } from "../lib/components/Gms2TextureGroup";
+import { Gms2AudioGroup } from "../lib/components/Gms2AudioGroup";
+import { Gms2IncludedFile } from "../lib/components/Gms2IncludedFile";
+import { Gms2Resource } from "../lib/components/Gms2Resource";
 
 // Convert over to new interface by extending
 // YypComponents, omitting each field as we
 // convert it into class instances.
 
-type ReplacedFields = "Options"|"configs"|"Folders"|"RoomOrder"|"TextureGroups"|"AudioGroups"|"IncludedFiles" ;
+type ReplacedFields = "Options"|"configs"|"Folders"|"RoomOrder"|"TextureGroups"|"AudioGroups"|"IncludedFiles"|"resources" ;
 
 export interface Gms2ProjectComponents extends Omit<YypComponents,ReplacedFields> {
-  Options: Gms2ProjectOption[],
-  configs: Gms2ProjectConfig,
-  Folders: Gms2ProjectFolder[],
-  RoomOrder: Gms2ProjectRoomOrder[],
-  TextureGroups: Gms2ProjectTextureGroup[],
-  AudioGroups: Gms2ProjectAudioGroup[],
-  IncludedFiles: Gms2ProjectIncludedFile[],
+  Options: Gms2Option[],
+  configs: Gms2Config,
+  Folders: Gms2Folder[],
+  RoomOrder: Gms2RoomOrder[],
+  TextureGroups: Gms2TextureGroup[],
+  AudioGroups: Gms2AudioGroup[],
+  IncludedFiles: Gms2IncludedFile[],
+  resources: Gms2Resource[],
 }

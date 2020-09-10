@@ -1,6 +1,6 @@
 import { YypOption } from "../../types/YypComponents";
 
-export class Gms2ProjectOption {
+export class Gms2Option {
 
   #data: YypOption;
 

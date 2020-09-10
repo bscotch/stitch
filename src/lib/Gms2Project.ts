@@ -4,14 +4,15 @@ import {oneline} from "./strings";
 import paths from "./paths";
 import { YypComponents } from "../types/YypComponents";
 import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
-import { Gms2ProjectOption } from "./components/Gms2Option";
+import { Gms2Option } from "./components/Gms2Option";
 import { Gms2Config } from "./components/Gms2Config";
 import { Gms2Folder } from "./components/Gms2Folder";
 import { Gms2RoomOrder } from "./components/Gms2RoomOrder";
 import {Gms2TextureGroup} from './components/Gms2TextureGroup';
 import {Gms2AudioGroup} from './components/Gms2AudioGroup';
-import {hydrateArray} from "./hydrate";
+import {hydrateArray, hydrate} from "./hydrate";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
+import { Gms2Resource } from "./components/Gms2Resource";
 
 export interface Gms2ProjectOptions {
   /**
@@ -125,13 +126,14 @@ export class Gms2Project {
 
     this.#components = {
       ...yyp,
-      Options: hydrateArray(yyp.Options,Gms2ProjectOption),
+      Options: hydrateArray(yyp.Options,Gms2Option),
       configs: new Gms2Config(yyp.configs),
       Folders: hydrateArray(yyp.Folders,Gms2Folder),
       RoomOrder: hydrateArray(yyp.RoomOrder,Gms2RoomOrder),
       TextureGroups: hydrateArray(yyp.TextureGroups, Gms2TextureGroup),
       AudioGroups: hydrateArray(yyp.AudioGroups,Gms2AudioGroup),
       IncludedFiles: hydrateArray(yyp.IncludedFiles,Gms2IncludedFile),
+      resources: hydrateArray(yyp.resources,Gms2Resource),
     };
 
     // TODO: For each resource in the YYP file, create a Resource instance
