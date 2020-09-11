@@ -1,4 +1,4 @@
-import path from "path";
+import nodePath from "path";
 
 function pathSpecificitySort(path1:string,path2:string){
   const path1Parts = path1.split(/[\\/]+/);
@@ -18,7 +18,22 @@ function pathSpecificitySort(path1:string,path2:string){
   return 0;
 }
 
+/**
+ * Given a path, return all of the parent paths
+ * leading up to it.
+ */
+function heirarchy(path:string){
+  const paths:string[] = [path];
+  while(nodePath.dirname(path) != path){
+    path = nodePath.dirname(path);
+    paths.push(path);
+  }
+  paths.reverse();
+  return paths;
+}
+
 export default {
-  ...path,
-  pathSpecificitySort
+  ...nodePath,
+  pathSpecificitySort,
+  heirarchy,
 };

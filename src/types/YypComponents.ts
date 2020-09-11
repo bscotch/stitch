@@ -32,7 +32,7 @@ export interface YypRoomOrder {
 
 export interface YypFolder {
   name: string,
-  tags: string,
+  tags: string[],
   folderPath: string,
   order: number,
   resourceType: "GMFolder"

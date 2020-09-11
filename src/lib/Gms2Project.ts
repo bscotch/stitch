@@ -2,7 +2,7 @@ import { Gms2PipelineError, assert } from "./errors";
 import fs from "./files";
 import { oneline } from "./strings";
 import paths from "./paths";
-import { YypComponents, YypResource } from "../types/YypComponents";
+import { YypComponents, YypFolder, YypResource } from "../types/YypComponents";
 import { Gms2ProjectComponents, Gms2ResourceSubclass } from "../types/Gms2ProjectComponents";
 import { Gms2Option } from "./components/Gms2Option";
 import { Gms2Config } from "./components/Gms2Config";
@@ -139,8 +139,43 @@ export class Gms2Project {
       resources: yyp.resources.map(Gms2Project._hydrateResource)
     };
 
+    // DEBORK
+    // TODO: Ensure that parent groups (folders) for all subgroups exist as separate entities.
+    // TODO: Remove duplicate datafile entries (these dupe on every boot)
+
     // TODO: Make it so that we can actually load an save a project file.
 
+  }
+
+  /**
+   * Ensure that a folder path exists, so that assets can be assigned to it.
+   */
+  ensureFolder(path:string,tags?:string[]){
+    // Clean up messy seperators
+    path = path.replace(/[/\\]+/,'/')
+      .replace(/^\//,'')
+      .replace(/\/$/,'');
+    // Get all subpaths
+    const heirarchy = paths.heirarchy(path);
+    for(const subPath of heirarchy){
+      // If we already have this one, move along
+      const folder = this.#components.Folders.find(folder=>folder.path==subPath);
+      if(folder){
+        continue;
+      }
+      // Otherwise create it!
+      const newFolderInfo: YypFolder = {
+        name: Gms2Folder.nameFromPath(subPath),
+        tags: tags || [],
+        folderPath: Gms2Folder.folderPathFromPath(subPath),
+        order: 1, // This value doesn't seem to do anything...
+        resourceType: "GMFolder",
+        resourceVersion: "1.0",
+      };
+      const newFolder = new Gms2Folder(newFolderInfo);
+      this.#components.Folders.push(newFolder);
+    }
+    // TODO: TEST AND THEN SAVE CHANGES TO DISK
   }
 
   static get _resourceClassMap() {
