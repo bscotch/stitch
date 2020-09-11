@@ -10,7 +10,7 @@ import { Gms2Folder } from "./components/Gms2Folder";
 import { Gms2RoomOrder } from "./components/Gms2RoomOrder";
 import { Gms2TextureGroup } from './components/Gms2TextureGroup';
 import { Gms2AudioGroup } from './components/Gms2AudioGroup';
-import { hydrateArray, hydrate } from "./hydrate";
+import { hydrateArray, dehydrateArray } from "./hydrate";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2Resource } from "./components/Gms2Resource";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
@@ -81,7 +81,7 @@ export class Gms2Project {
           you must specify which you want to use.
         `);
       }
-      yypPath = yypPath[0];
+      yypPath = yypPaths[0];
     }
 
     // Ensure the YYP file actually exists
@@ -97,6 +97,7 @@ export class Gms2Project {
 
   // The directory wherein this project lies.
   get absoluteDir() {
+    // TODO: This is WRONG
     return paths.dirname(this.yypAbsolutePath);
   }
 
@@ -105,8 +106,9 @@ export class Gms2Project {
       this.#gitRepoDirectory = null;
       // Look for a repo
       let path = this.absoluteDir;
-      while (path && path.includes(paths.sep)) {
-        if (fs.existsSync(paths.join(path, ".git"))) {
+      while (paths.dirname(path) != path) {
+        const possibleGitPath = paths.join(path, ".git");
+        if (fs.existsSync(possibleGitPath)) {
           this.#gitRepoDirectory = path;
         }
         path = paths.dirname(path);
@@ -163,7 +165,7 @@ export class Gms2Project {
 
   static _hydrateResource(data: YypResource) {
     const resourceType = data.id.path.split('/')[0] as (keyof typeof Gms2Project._resourceClassMap);
-    const subclass = this._resourceClassMap[resourceType];
+    const subclass = Gms2Project._resourceClassMap[resourceType];
     if (!subclass) {
       throw new Gms2PipelineError(
         `No constructor for resource ${resourceType} exists.`
@@ -180,8 +182,14 @@ export class Gms2Project {
     const fields = Object.keys(this.#components) as (keyof YypComponents)[];
     const asObject: Partial<YypComponents> = {};
     for (const field of fields) {
-      const component = this.#components[field] as any;
-      asObject[field] = component?.dehydrated ?? component;
+      if(Array.isArray(this.#components[field])){
+        // @ts-ignore
+        asObject[field] = dehydrateArray(this.#components[field]);
+      }
+      else{
+        const component = this.#components[field] as any;
+        asObject[field] = component?.dehydrated ?? component;
+      }
     }
     return asObject as YypComponents;
   }

@@ -5,11 +5,12 @@ import { join } from 'path';
 // import projectDiff from '../project/projectDiff';
 import { inspect } from 'util';
 import { Gms2Project } from '../lib/Gms2Project';
+import { dehydrateArray } from '../lib/hydrate';
 // import audioImport from "../cli/lib/audio-import";
 // import {execSync} from  "child_process";
 // import {Resource} from "../project/resources/Resource";
 // import { Sprite } from '../project/resources/Sprite';
-// import json from "../project/lib/json";
+import {loadFromFileSync} from "../lib/json";
 import { undent, oneline } from "../lib/strings";
 
 const deeplog = (obj: any) => {
@@ -82,8 +83,19 @@ at it goooo ${interp2}
 
   describe("Project Classes", function () {
     resetSandbox();
-    let project = new Gms2Project(sandboxRoot);
-    console.log('meh');
+
+    it("can hydrate and dehydrate the YYP file, resulting in the original data",function(){
+      const project = new Gms2Project(sandboxRoot);
+      const rawContent = loadFromFileSync(project.yypAbsolutePath);
+      const dehydrated = project.dehydrated;
+      expect(dehydrated,
+        "dehydrated content should match the original yyp file"
+      ).to.eql(rawContent);
+      const rawKeys = Object.keys(rawContent);
+      const dehydratedKeys = Object.keys(dehydrated);
+      expect([1,2,3],'array deep equality check should require same order').to.not.eql([2,1,3]);
+      expect(rawKeys,'dehydrated projects should have keys in the same order').to.eql(dehydratedKeys);
+    });
     //   it("written content is unchanged", function(){
     //     const originalFile = json.readFileSync(project.yypAbsolutePath);
     //     project.commit();
