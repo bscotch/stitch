@@ -2,8 +2,8 @@ import { Gms2PipelineError, assert } from "./errors";
 import fs from "./files";
 import { oneline } from "./strings";
 import paths from "./paths";
-import { YypComponents } from "../types/YypComponents";
-import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
+import { YypComponents, YypResource } from "../types/YypComponents";
+import { Gms2ProjectComponents, Gms2ResourceSubclass } from "../types/Gms2ProjectComponents";
 import { Gms2Option } from "./components/Gms2Option";
 import { Gms2Config } from "./components/Gms2Config";
 import { Gms2Folder } from "./components/Gms2Folder";
@@ -134,12 +134,44 @@ export class Gms2Project {
       TextureGroups: hydrateArray(yyp.TextureGroups, Gms2TextureGroup),
       AudioGroups: hydrateArray(yyp.AudioGroups, Gms2AudioGroup),
       IncludedFiles: hydrateArray(yyp.IncludedFiles, Gms2IncludedFile),
-      resources: yyp.resources.map(Gms2Resource.create),
+      resources: yyp.resources.map(Gms2Project._hydrateResource)
     };
 
-    // TODO: For each resource in the YYP file, create a Resource instance
-    //        + Start with Sounds, since that functionality is required for parity with past project
-    //          and they are simpler than Sprites (the other required functionality).
+    // TODO: Make it so that we can actually load an save a project file.
+
+  }
+
+  static get _resourceClassMap() {
+    const classMap = {
+      animcurves: Gms2Resource,    // ❌
+      extensions: Gms2Resource,    // ❌
+      fonts: Gms2Resource,         // ❌
+      notes: Gms2Resource,         // ❌
+      objects: Gms2Resource,       // ❌
+      paths: Gms2Resource,         // ❌
+      rooms: Gms2Resource,         // ❌
+      scripts: Gms2Resource,       // ❌
+      sequences: Gms2Resource,     // ❌
+      shaders: Gms2Resource,       // ❌
+      sounds: Gms2Sound,           // ✅
+      sprites: Gms2Resource,       // ❌
+      tilesets: Gms2Resource,      // ❌
+      timelines: Gms2Resource,     // ❌
+    } as const;
+    return classMap;
+  }
+
+  static _hydrateResource(data: YypResource) {
+    const resourceType = data.id.path.split('/')[0] as (keyof typeof Gms2Project._resourceClassMap);
+    const subclass = this._resourceClassMap[resourceType];
+    if (!subclass) {
+      throw new Gms2PipelineError(
+        `No constructor for resource ${resourceType} exists.`
+      );
+    }
+    const resource = new subclass(data, resourceType) as Gms2ResourceSubclass;
+    return resource;
+
   }
 
   // TODO: TO TEST, do deep comparison of the loaded content vs. the dehydrate output
@@ -154,3 +186,4 @@ export class Gms2Project {
     return asObject as YypComponents;
   }
 }
+
