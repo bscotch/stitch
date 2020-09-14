@@ -157,7 +157,13 @@ export class Gms2Project {
    * the asset will be created and placed into folder "/NEW".
    */
   upsertSound(sourcePath:string){
-    // const matchingSound = this.resources.findByField()
+    // Ensure that the sound file exists
+    // Get the name of the sound file
+    // See if a sound by that name already exists
+    //    Yes: Just copy the file over the old one
+    //    No: Create a new sound resource
+    // Save the .yy
+    // Save the .yyp
   }
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */

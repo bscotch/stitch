@@ -1,36 +1,29 @@
+import { YySound } from "../../../types/Yy";
 import { Gms2Resource } from "../Gms2Resource";
-import { YypResource } from "../../../types/YypComponents";
-
-
-const Gms2SoundYySample = {
-  "compression": 0,
-  "volume": 0.48,
-  "preload": false,
-  "bitRate": 128,
-  "sampleRate": 44100,
-  "type": 0,
-  "bitDepth": 1,
-  "audioGroupId": {
-    "name": "the_audiogroup",
-    "path": "audiogroups/the_audiogroup",
-  },
-  "soundFile": "sound.ogg",
-  "duration": 5.05763,
-  "parent": {
-    "name": "sample_resources",
-    "path": "folders/sample_resources.yy",
-  },
-  "resourceVersion": "1.0",
-  "name": "sound",
-  "tags": [],
-  "resourceType": "GMSound",
-};
-
-export type Gms2SoundYy = typeof Gms2SoundYySample;
-
 
 export class Gms2Sound extends Gms2Resource {
-  constructor(data: YypResource) {
-    super(data);
+
+  #yyData!: YySound; // Happens in the super() constructor
+
+  constructor(...setup: ConstructorParameters<typeof Gms2Resource>) {
+    super(...setup);
+  }
+
+  get audioFilePathAbsolute(){
+    return this.dataFilePathAbsolute('.ogg');
+  }
+
+  /** Overwrite this Sound's audio file with an external file. */
+  replaceAudioFile(externalAudioFilePath:string){
+    // Audio file's name is the same as the resource name
+    this.storage.copyFile(externalAudioFilePath,this.audioFilePathAbsolute);
+  }
+
+  /**
+   * Given a sound file, create a Gamemaker Sound asset with default parameter values.
+   * The resource will be named after the source file.
+  */
+  static create(): Gms2Sound {
+    
   }
 }

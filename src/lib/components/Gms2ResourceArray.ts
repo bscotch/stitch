@@ -9,8 +9,8 @@ export class  Gms2ResourceArray {
 
   #items: Gms2ResourceSubclass[];
 
-  constructor(data: YypResource[], private storage: Gms2Storage){
-    this.#items = data.map(Gms2ResourceArray._hydrateResource);
+  constructor(data: YypResource[], storage: Gms2Storage){
+    this.#items = data.map(item=>Gms2ResourceArray._hydrateResource(item,storage));
   }
 
   get dehydrated(): YypResource[] {
@@ -52,7 +52,7 @@ export class  Gms2ResourceArray {
     return classMap;
   }
 
-  static _hydrateResource(data: YypResource) {
+  static _hydrateResource(data: YypResource, storage: Gms2Storage) {
     const resourceType = data.id.path.split('/')[0] as (keyof typeof Gms2ResourceArray._resourceClassMap);
     const subclass = Gms2ResourceArray
       ._resourceClassMap[resourceType];
@@ -61,7 +61,7 @@ export class  Gms2ResourceArray {
         `No constructor for resource ${resourceType} exists.`
       );
     }
-    const resource = new subclass(data) as Gms2ResourceSubclass;
+    const resource = new subclass(data,storage) as Gms2ResourceSubclass;
     return resource;
 
   }

@@ -30,4 +30,28 @@ export class Gms2Storage {
     }
     return this.#gitRepoDirectory;
   }
+
+  copyFile(sourcePath:string,destinationPath:string){
+    assert(fs.existsSync(sourcePath),`copyFile: sourcePath ${sourcePath} does not exist`);
+    if(!this.isReadOnly){
+      fs.copyFileSync(sourcePath,destinationPath);
+      fs.ensureDirSync(paths.dirname(destinationPath));
+    }
+  }
+
+  saveBlob(filePath:string,data:string|Buffer){
+    if(!this.isReadOnly){
+      fs.writeFileSync(filePath,data);
+    }
+  }
+
+  saveJson(filePath:string,data:any){
+    if(!this.isReadOnly){
+      fs.writeJsonSync(filePath,data);
+    }
+  }
+
+  readJson(filePath:string){
+    return fs.readJsonSync(filePath);
+  }
 }
