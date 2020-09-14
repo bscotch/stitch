@@ -87,6 +87,12 @@ at it goooo ${interp2}
       const project = new Gms2Project(sandboxRoot);
       const rawContent = loadFromFileSync(project.yypAbsolutePath);
       const dehydrated = project.dehydrated;
+      // Note: Projects always ensure that "/NEW" (folder) exists,
+      // so delete it before making sure we got back what we put in
+      // (since it does not exist in the original)
+      const newStuffFolderIdx = dehydrated.Folders.findIndex(f=>f.name=='NEW');
+      expect(newStuffFolderIdx,'A /NEW folder should exist').to.be.greaterThan(-1);
+      dehydrated.Folders.splice(newStuffFolderIdx,1);
       expect(dehydrated,
         "dehydrated content should match the original yyp file"
       ).to.eql(rawContent);

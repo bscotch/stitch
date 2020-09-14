@@ -25,11 +25,12 @@ export class  Gms2ComponentArray <YypData,ComponentClass extends new (object:Yyp
 
   push(...items:InstanceType<ComponentClass>[]){
     this.#items.push(...items);
-    return this.list();
+    return this;
   }
 
   addNew(data:YypData){
     this.push( new this.#class(data));
+    return this;
   }
 
   /**
@@ -41,6 +42,7 @@ export class  Gms2ComponentArray <YypData,ComponentClass extends new (object:Yyp
     if(!existing){
       this.addNew(data);
     }
+    return this;
   }
 
   get dehydrated(): YypData[] {

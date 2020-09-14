@@ -2,7 +2,7 @@ import { Gms2PipelineError, assert } from "./errors";
 import fs from "./files";
 import { oneline } from "./strings";
 import paths from "./paths";
-import { YypComponents, YypFolder } from "../types/YypComponents";
+import { YypComponents } from "../types/YypComponents";
 import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
 import { Gms2Option } from "./components/Gms2Option";
 import { Gms2Config } from "./components/Gms2Config";
@@ -13,6 +13,7 @@ import { Gms2AudioGroup } from './components/Gms2AudioGroup';
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2ComponentArray } from "./components/Gms2ComponentArray";
 import { Gms2ResourceArray } from "./components/Gms2ResourceArray";
+import { Gms2Storage } from "./Gms2Storage";
 
 export interface Gms2ProjectOptions {
   /**
@@ -36,17 +37,13 @@ export interface Gms2ProjectOptions {
  */
 export class Gms2Project {
 
-  readonly yypAbsolutePath: string;
-  readonly isReadOnly: boolean;
-
-  /** Directory containing a .git file. null means no repo, undefined means no check has occurred. */
-  #gitRepoDirectory: string | null | undefined;
-
   /**
    * The content of the YYP file, mirroring the data structure
    * in the file but with components replaced by model instances.
    */
   #components!: Gms2ProjectComponents;
+
+  #storage: Gms2Storage;
 
   /**
    * @param {Gms2Config|string} [options] An options object or the path
@@ -61,7 +58,6 @@ export class Gms2Project {
         : options?.projectPath || process.cwd(),
       readOnly: (typeof options != 'string' && options?.readOnly) || false
     };
-    this.isReadOnly = options.readOnly as boolean;
 
     // Find the yyp filepath
     let yypPath = options.projectPath as string;
@@ -82,37 +78,16 @@ export class Gms2Project {
       }
       yypPath = yypPaths[0];
     }
-
     // Ensure the YYP file actually exists
     assert(fs.existsSync(yypPath), `YYP file does not exist: ${yypPath}`);
-    this.yypAbsolutePath = paths.resolve(yypPath);
-
-    // Require that the project is within a Git repo
-    assert(this.gitRepoDirectory, `No git repo found in any parent folder. Too dangerous to proceed.`);
 
     // Load up all the project files into class instances for manipulation
+    this.#storage = new Gms2Storage(paths.resolve(yypPath),options.readOnly as boolean);
     this.reload();
   }
 
-  // The directory wherein this project lies.
-  get absoluteDir() {
-    return paths.dirname(this.yypAbsolutePath);
-  }
-
-  get gitRepoDirectory() {
-    if (typeof this.#gitRepoDirectory == 'undefined') {
-      this.#gitRepoDirectory = null;
-      // Look for a repo
-      let path = this.absoluteDir;
-      while (paths.dirname(path) != path) {
-        const possibleGitPath = paths.join(path, ".git");
-        if (fs.existsSync(possibleGitPath)) {
-          this.#gitRepoDirectory = path;
-        }
-        path = paths.dirname(path);
-      }
-    }
-    return this.#gitRepoDirectory;
+  get yypAbsolutePath(){
+    return this.#storage.yypAbsolutePath;
   }
 
   get folders(){
@@ -129,7 +104,7 @@ export class Gms2Project {
    */
   reload() {
     // Load the YYP file, store RAW (ensure field resourceType: "GMProject" exists)
-    const yyp = fs.readJsonSync(this.yypAbsolutePath) as YypComponents;
+    const yyp = fs.readJsonSync(this.#storage.yypAbsolutePath) as YypComponents;
     assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
 
     this.#components = {
@@ -141,7 +116,7 @@ export class Gms2Project {
       TextureGroups: new Gms2ComponentArray(yyp.TextureGroups, Gms2TextureGroup),
       AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
       IncludedFiles: new Gms2ComponentArray(yyp.IncludedFiles, Gms2IncludedFile),
-      resources: new Gms2ResourceArray(yyp.resources)
+      resources: new Gms2ResourceArray(yyp.resources,this.#storage)
     };
 
     // DEBORK
@@ -187,7 +162,7 @@ export class Gms2Project {
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
   private _save(){
-    if(this.isReadOnly){
+    if(this.#storage.isReadOnly){
       return;
     }
     // TODO: Add saving logic (will need to cascade through all resources)
@@ -198,7 +173,9 @@ export class Gms2Project {
     const asObject: Partial<YypComponents> = {};
     for (const field of fields) {
       const components = this.#components[field];
-      if(components instanceof Gms2ComponentArray || components instanceof Gms2ResourceArray){
+      if( components instanceof Gms2ComponentArray ||
+          components instanceof Gms2ResourceArray ||
+          components instanceof Gms2Option){
         // @ts-ignore
         asObject[field] = components.dehydrated;
       }

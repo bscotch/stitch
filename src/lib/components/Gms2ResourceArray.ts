@@ -3,12 +3,13 @@ import { Gms2Resource } from "../components/Gms2Resource";
 import { Gms2Sound } from "../components/resources/Gms2Sound";
 import { YypResource } from "../../types/YypComponents";
 import { Gms2PipelineError } from "../errors";
+import { Gms2Storage } from "../Gms2Storage";
 
 export class  Gms2ResourceArray {
 
   #items: Gms2ResourceSubclass[];
 
-  constructor(data: YypResource[]){
+  constructor(data: YypResource[], private storage: Gms2Storage){
     this.#items = data.map(Gms2ResourceArray._hydrateResource);
   }
 
