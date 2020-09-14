@@ -2,18 +2,17 @@ import { Gms2PipelineError, assert } from "./errors";
 import fs from "./files";
 import { oneline } from "./strings";
 import paths from "./paths";
-import { YypComponents, YypFolder, YypResource } from "../types/YypComponents";
-import { Gms2ProjectComponents, Gms2ResourceSubclass } from "../types/Gms2ProjectComponents";
+import { YypComponents, YypFolder } from "../types/YypComponents";
+import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
 import { Gms2Option } from "./components/Gms2Option";
 import { Gms2Config } from "./components/Gms2Config";
 import { Gms2Folder } from "./components/Gms2Folder";
 import { Gms2RoomOrder } from "./components/Gms2RoomOrder";
 import { Gms2TextureGroup } from './components/Gms2TextureGroup';
 import { Gms2AudioGroup } from './components/Gms2AudioGroup';
-import { hydrateArray, dehydrateArray } from "./hydrate";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
-import { Gms2Resource } from "./components/Gms2Resource";
-import { Gms2Sound } from "./components/resources/Gms2Sound";
+import { Gms2ComponentArray } from "./components/Gms2ComponentArray";
+import { Gms2ResourceArray } from "./components/Gms2ResourceArray";
 
 export interface Gms2ProjectOptions {
   /**
@@ -129,14 +128,14 @@ export class Gms2Project {
 
     this.#components = {
       ...yyp,
-      Options: hydrateArray(yyp.Options, Gms2Option),
+      Options: new Gms2ComponentArray(yyp.Options, Gms2Option),
       configs: new Gms2Config(yyp.configs),
-      Folders: hydrateArray(yyp.Folders, Gms2Folder),
-      RoomOrder: hydrateArray(yyp.RoomOrder, Gms2RoomOrder),
-      TextureGroups: hydrateArray(yyp.TextureGroups, Gms2TextureGroup),
-      AudioGroups: hydrateArray(yyp.AudioGroups, Gms2AudioGroup),
-      IncludedFiles: hydrateArray(yyp.IncludedFiles, Gms2IncludedFile),
-      resources: yyp.resources.map(Gms2Project._hydrateResource)
+      Folders: new Gms2ComponentArray(yyp.Folders, Gms2Folder),
+      RoomOrder: new Gms2ComponentArray(yyp.RoomOrder, Gms2RoomOrder),
+      TextureGroups: new Gms2ComponentArray(yyp.TextureGroups, Gms2TextureGroup),
+      AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
+      IncludedFiles: new Gms2ComponentArray(yyp.IncludedFiles, Gms2IncludedFile),
+      resources: new Gms2ResourceArray(yyp.resources)
     };
 
     // DEBORK
@@ -178,48 +177,16 @@ export class Gms2Project {
     // TODO: TEST AND THEN SAVE CHANGES TO DISK
   }
 
-  static get _resourceClassMap() {
-    const classMap = {
-      animcurves: Gms2Resource,    // ❌
-      extensions: Gms2Resource,    // ❌
-      fonts: Gms2Resource,         // ❌
-      notes: Gms2Resource,         // ❌
-      objects: Gms2Resource,       // ❌
-      paths: Gms2Resource,         // ❌
-      rooms: Gms2Resource,         // ❌
-      scripts: Gms2Resource,       // ❌
-      sequences: Gms2Resource,     // ❌
-      shaders: Gms2Resource,       // ❌
-      sounds: Gms2Sound,           // ✅
-      sprites: Gms2Resource,       // ❌
-      tilesets: Gms2Resource,      // ❌
-      timelines: Gms2Resource,     // ❌
-    } as const;
-    return classMap;
-  }
-
-  static _hydrateResource(data: YypResource) {
-    const resourceType = data.id.path.split('/')[0] as (keyof typeof Gms2Project._resourceClassMap);
-    const subclass = Gms2Project._resourceClassMap[resourceType];
-    if (!subclass) {
-      throw new Gms2PipelineError(
-        `No constructor for resource ${resourceType} exists.`
-      );
-    }
-    const resource = new subclass(data, resourceType) as Gms2ResourceSubclass;
-    return resource;
-
-  }
-
   // TODO: TO TEST, do deep comparison of the loaded content vs. the dehydrate output
 
   get dehydrated(): YypComponents {
     const fields = Object.keys(this.#components) as (keyof YypComponents)[];
     const asObject: Partial<YypComponents> = {};
     for (const field of fields) {
-      if(Array.isArray(this.#components[field])){
+      const components = this.#components[field];
+      if(components instanceof Gms2ComponentArray || components instanceof Gms2ResourceArray){
         // @ts-ignore
-        asObject[field] = dehydrateArray(this.#components[field]);
+        asObject[field] = components.dehydrated;
       }
       else{
         const component = this.#components[field] as any;

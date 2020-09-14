@@ -1,7 +1,7 @@
 //❌✅⌛❓
 
 import { YypResource } from "../../types/YypComponents";
-import { Gms2ResourceType } from "../../types/Gms2ProjectComponents";
+import { Gms2ResourceType } from "../components/Gms2ResourceArray";
 
 export class Gms2Resource {
 

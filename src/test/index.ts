@@ -2,11 +2,9 @@ import { expect } from 'chai';
 // import { Project} from '../project/Project';
 import { ensureDirSync, emptyDirSync, copySync } from 'fs-extra';
 import paths from '../lib/paths';
-import { features } from 'process';
 // import projectDiff from '../project/projectDiff';
-import { inspect } from 'util';
+// import { inspect } from 'util';
 import { Gms2Project } from '../lib/Gms2Project';
-import { dehydrateArray } from '../lib/hydrate';
 // import audioImport from "../cli/lib/audio-import";
 // import {execSync} from  "child_process";
 // import {Resource} from "../project/resources/Resource";
@@ -14,19 +12,19 @@ import { dehydrateArray } from '../lib/hydrate';
 import {loadFromFileSync} from "../lib/json";
 import { undent, oneline } from "../lib/strings";
 
-const deeplog = (obj: any) => {
-  console.log(inspect(obj, false, null));
-};
+// const deeplog = (obj: any) => {
+//   console.log(inspect(obj, false, null));
+// };
 
 const sandboxRoot = './sand box/'; // Use a space to ensure nothing bad happens.
 const projectRoot = './sample-project/';
-const projectYYP = 'sample-project.yyp';
-const modulesRoot = "./sample-module-source/";
-const sourceProjectYYPPath = paths.join(projectRoot, projectYYP);
-const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
-const assetSampleRoot = './sample-assets/';
-const soundSampleRoot = `${assetSampleRoot}sounds/`;
-const audioSample = `${soundSampleRoot}mus_intro_jingle.wav`;
+// const projectYYP = 'sample-project.yyp';
+// const modulesRoot = "./sample-module-source/";
+// const sourceProjectYYPPath = paths.join(projectRoot, projectYYP);
+// const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
+// const assetSampleRoot = './sample-assets/';
+// const soundSampleRoot = `${assetSampleRoot}sounds/`;
+// const audioSample = `${soundSampleRoot}mus_intro_jingle.wav`;
 
 function resetSandbox(): void {
   ensureDirSync(sandboxRoot);
