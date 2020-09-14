@@ -17,6 +17,10 @@ export class  Gms2ComponentArray <YypData,ResourceClass extends new (object:YypD
     return this.#items.find(matchFunction);
   }
 
+  findByField(field:keyof InstanceType<ResourceClass>,value:any){
+    return this.#items.find(item=>item[field]==value);
+  }
+
   push(...items:InstanceType<ResourceClass>[]){
     this.#items.push(...items);
     return this.list();

@@ -40,4 +40,13 @@ export class Gms2Folder {
   static nameFromPath(path:string){
     return paths.parse(path).name;
   }
+
+  static get defaultDataValues(): Pick<YypFolder,'tags'|'order'|'resourceType'|'resourceVersion'>{
+    return {
+      tags: [],
+      order: 1, // This value doesn't seem to do anything...
+      resourceType: "GMFolder",
+      resourceVersion: "1.0",
+    };
+  }
 }

@@ -96,7 +96,6 @@ export class Gms2Project {
 
   // The directory wherein this project lies.
   get absoluteDir() {
-    // TODO: This is WRONG
     return paths.dirname(this.yypAbsolutePath);
   }
 
@@ -116,6 +115,9 @@ export class Gms2Project {
     return this.#gitRepoDirectory;
   }
 
+  get folders(){
+    return this.#components.Folders;
+  }
 
   /**
    * Recreate in-memory representations of the Gamemaker Project
@@ -158,18 +160,16 @@ export class Gms2Project {
     const heirarchy = paths.heirarchy(path);
     for(const subPath of heirarchy){
       // If we already have this one, move along
-      const folder = this.#components.Folders.find(folder=>folder.path==subPath);
+      const folder = this.folders.findByField('path',subPath);
       if(folder){
         continue;
       }
       // Otherwise create it!
       const newFolderInfo: YypFolder = {
+        ...Gms2Folder.defaultDataValues,
         name: Gms2Folder.nameFromPath(subPath),
-        tags: tags || [],
         folderPath: Gms2Folder.folderPathFromPath(subPath),
-        order: 1, // This value doesn't seem to do anything...
-        resourceType: "GMFolder",
-        resourceVersion: "1.0",
+        tags: tags || [],
       };
       const newFolder = new Gms2Folder(newFolderInfo);
       this.#components.Folders.push(newFolder);
