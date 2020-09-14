@@ -4,6 +4,7 @@ import { Gms2Sound } from "../components/resources/Gms2Sound";
 import { YypResource } from "../../types/YypComponents";
 import { Gms2PipelineError } from "../errors";
 import { Gms2Storage } from "../Gms2Storage";
+import paths from "../paths";
 
 export class  Gms2ResourceArray {
 
@@ -32,7 +33,15 @@ export class  Gms2ResourceArray {
   }
 
   upsertSound(sourcePath:string,storage:Gms2Storage){
-    return this.push(Gms2Sound.create(sourcePath,storage));
+    const {name} = paths.parse(sourcePath);
+    const existingSound = this.findByField('name',name,Gms2Sound);
+    if(existingSound){
+      existingSound.replaceAudioFile(sourcePath);
+      return this;
+    }
+    else{
+      return this.push(Gms2Sound.create(sourcePath,storage));
+    }
   }
 
   private push(newResource: Gms2Resource){

@@ -24,6 +24,7 @@ export class Gms2Sound extends Gms2Resource {
     );
     // Audio file's name is the same as the resource name
     this.storage.copyFile(externalAudioFilePath,this.audioFilePathAbsolute);
+    return this;
   }
 
   /**
