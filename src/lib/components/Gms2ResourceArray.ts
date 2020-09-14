@@ -6,15 +6,30 @@ import { Gms2PipelineError } from "../errors";
 
 export class  Gms2ResourceArray {
 
-  items: Gms2ResourceSubclass[];
+  #items: Gms2ResourceSubclass[];
 
   constructor(data: YypResource[]){
-    this.items = data.map(Gms2ResourceArray._hydrateResource);
+    this.#items = data.map(Gms2ResourceArray._hydrateResource);
   }
 
   get dehydrated(): YypResource[] {
-    return dehydrateArray(this.items);
+    return dehydrateArray(this.#items);
   }
+
+  filterByClass<subclass extends Gms2ResourceSubclassType>(resourceClass: subclass){
+    return this.#items
+      .filter(item=>(item instanceof resourceClass)) as InstanceType<subclass>[];
+  }
+
+  find<subclass extends Gms2ResourceSubclassType>(matchFunction: (item: Gms2ResourceSubclass)=>any, resourceClass: subclass){
+    return this.filterByClass(resourceClass)
+      .find(item=>matchFunction(item));
+  }
+
+  findByField<subclass extends Gms2ResourceSubclassType>(field:keyof Gms2ResourceSubclass,value:any, resourceClass: subclass){
+    return this.find(item=>item[field]==value,resourceClass);
+  }
+
 
   static get _resourceClassMap() {
     const classMap = {
@@ -50,5 +65,6 @@ export class  Gms2ResourceArray {
   }
 }
 
-export type Gms2ResourceSubclass = InstanceType<typeof Gms2ResourceArray._resourceClassMap[keyof typeof Gms2ResourceArray._resourceClassMap]>
+export type Gms2ResourceSubclass = InstanceType<typeof Gms2ResourceArray._resourceClassMap[keyof typeof Gms2ResourceArray._resourceClassMap]>;
+export type Gms2ResourceSubclassType = typeof Gms2ResourceArray._resourceClassMap[keyof typeof Gms2ResourceArray._resourceClassMap];
 export type Gms2ResourceType = keyof typeof Gms2ResourceArray._resourceClassMap;

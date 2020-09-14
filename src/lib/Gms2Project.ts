@@ -146,6 +146,8 @@ export class Gms2Project {
 
     // TODO: Make it so that we can actually load an save a project file.
 
+    // Ensure that the 'NEW' folder exists for imported assets.
+    this.ensureFolder('NEW');
   }
 
   /**
@@ -167,6 +169,16 @@ export class Gms2Project {
       },'path',subPath);
     }
     this._save();
+  }
+
+  /**
+   * Add or update an audio file. The name is taken from
+   * the sourcePath. If there already exists a sound asset
+   * with this name, its file will be replaced. Otherwise
+   * the asset will be created and placed into folder "/NEW".
+   */
+  upsertAudio(sourcePath:string){
+    
   }
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
