@@ -7,18 +7,18 @@ import { Gms2Storage } from "../Gms2Storage";
 
 export class  Gms2ResourceArray {
 
-  #items: Gms2ResourceSubclass[];
+  private items: Gms2ResourceSubclass[];
 
   constructor(data: YypResource[], storage: Gms2Storage){
-    this.#items = data.map(item=>Gms2ResourceArray._hydrateResource(item,storage));
+    this.items = data.map(item=>Gms2ResourceArray._hydrateResource(item,storage));
   }
 
   get dehydrated(): YypResource[] {
-    return dehydrateArray(this.#items);
+    return dehydrateArray(this.items);
   }
 
   filterByClass<subclass extends Gms2ResourceSubclassType>(resourceClass: subclass){
-    return this.#items
+    return this.items
       .filter(item=>(item instanceof resourceClass)) as InstanceType<subclass>[];
   }
 
@@ -31,6 +31,14 @@ export class  Gms2ResourceArray {
     return this.find(item=>item[field]==value,resourceClass);
   }
 
+  upsertSound(sourcePath:string,storage:Gms2Storage){
+    return this.push(Gms2Sound.create(sourcePath,storage));
+  }
+
+  private push(newResource: Gms2Resource){
+    this.items.push(newResource);
+    return this;
+  }
 
   static get _resourceClassMap() {
     const classMap = {

@@ -51,6 +51,6 @@ export interface YySound extends YyData {
   },
   /** `${name}.${ext} (e.g. mySound) */
   soundFile: string,
-  duration: number,
+  // duration: number, // This can be safely deleted, which is great since we don't want to compute it
   resourceType: "GMSound",
 }

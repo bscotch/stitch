@@ -11,7 +11,7 @@ export class Gms2Storage {
     assert(this.gitRepoDirectory, `No git repo found in any parent folder. Too dangerous to proceed.`);
   }
 
-  get yypDirAbsolutePath(){
+  get yypDirAbsolute(){
     return paths.dirname(this.yypAbsolutePath);
   }
 
@@ -19,7 +19,7 @@ export class Gms2Storage {
     if (typeof this.#gitRepoDirectory == 'undefined') {
       this.#gitRepoDirectory = null;
       // Look for a repo
-      let path = this.yypDirAbsolutePath;
+      let path = this.yypDirAbsolute;
       while (paths.dirname(path) != path) {
         const possibleGitPath = paths.join(path, ".git");
         if (fs.existsSync(possibleGitPath)) {
@@ -29,6 +29,12 @@ export class Gms2Storage {
       }
     }
     return this.#gitRepoDirectory;
+  }
+
+  ensureDir(dir:string){
+    if(!this.isReadOnly){
+      fs.ensureDirSync(dir);
+    }
   }
 
   copyFile(sourcePath:string,destinationPath:string){

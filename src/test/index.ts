@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 // import { Project} from '../project/Project';
-import { ensureDirSync, emptyDirSync, copySync } from 'fs-extra';
+import fs from '../lib/files';
 import paths from '../lib/paths';
 // import projectDiff from '../project/projectDiff';
 // import { inspect } from 'util';
@@ -11,6 +11,7 @@ import { Gms2Project } from '../lib/Gms2Project';
 // import { Sprite } from '../project/resources/Sprite';
 import {loadFromFileSync} from "../lib/json";
 import { undent, oneline } from "../lib/strings";
+import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 
 // const deeplog = (obj: any) => {
 //   console.log(inspect(obj, false, null));
@@ -22,19 +23,23 @@ const projectRoot = './sample-project/';
 // const modulesRoot = "./sample-module-source/";
 // const sourceProjectYYPPath = paths.join(projectRoot, projectYYP);
 // const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
-// const assetSampleRoot = './sample-assets/';
-// const soundSampleRoot = `${assetSampleRoot}sounds/`;
-// const audioSample = `${soundSampleRoot}mus_intro_jingle.wav`;
+const assetSampleRoot = './sample-assets/';
+const soundSampleRoot = `${assetSampleRoot}sounds/`;
+const audioSample = `${soundSampleRoot}mus_intro_jingle.wav`;
+
+function throwNever():never{
+  throw new Error("this should never happen");
+}
 
 function resetSandbox(): void {
-  ensureDirSync(sandboxRoot);
+  fs.ensureDirSync(sandboxRoot);
   try {
-    emptyDirSync(sandboxRoot);
+    fs.emptyDirSync(sandboxRoot);
   }
   catch (err) {
     console.log(err);
   }
-  copySync(projectRoot, sandboxRoot);
+  fs.copySync(projectRoot, sandboxRoot);
 }
 
 describe("GMS2.3 Pipeline SDK", function () {
@@ -84,7 +89,7 @@ at it goooo ${interp2}
 
     it("can hydrate and dehydrate the YYP file, resulting in the original data",function(){
       resetSandbox();
-      const project = new Gms2Project(sandboxRoot);
+      const project = new Gms2Project({projectPath:sandboxRoot,readOnly:true});
       const rawContent = loadFromFileSync(project.yypAbsolutePath);
       const dehydrated = project.dehydrated;
       // Note: Projects always ensure that "/NEW" (folder) exists,
@@ -118,6 +123,25 @@ at it goooo ${interp2}
       }
     });
 
+    it("can add sounds",function(){
+      resetSandbox();
+      const project = new Gms2Project(sandboxRoot);
+      expect(()=>project.upsertSound(audioSample+'-fake.mp3'),
+        'should not be able to upsert non-existing audio assets'
+      ).to.throw;
+      project.upsertSound(audioSample);
+      // Questions:
+      //   Is the sound in the yyp?
+      const audio = project.resources
+        .findByField('name',paths.parse(audioSample).name,Gms2Sound);
+      expect(audio,'New audio should be upserted').to.exist;
+      if(!audio){ throwNever(); }
+      //   Does the sound .yy exist?
+      expect(fs.existsSync(audio.yyPathAbsolute),'.yy file should exist').to.be.true;
+      //   Does the audio file exist?
+      expect(fs.existsSync(audio.audioFilePathAbsolute),'audio file should exist').to.be.true;
+    });
+
     //   it("written content is unchanged", function(){
     //     const originalFile = json.readFileSync(project.yypAbsolutePath);
     //     project.commit();
@@ -129,14 +153,6 @@ at it goooo ${interp2}
     //     project = new Project(sandboxRoot);
     //     expect(()=>project.ensureViewExists('bleh/new/secondLevel')).to.throw;
     //     project.ensureViewExists('sounds/new/secondLevel/thirdLevel');
-    //     const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
-    //     expect(changes.length).to.be.greaterThan(0);
-    //   });
-    //   xit("can add sounds",function(){
-    //     resetSandbox();
-    //     project = new Project(sandboxRoot);
-    //     expect(()=>project.upsertAudio(audioSample+'-fake.mp3')).to.throw;
-    //     project.upsertAudio(audioSample);
     //     const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
     //     expect(changes.length).to.be.greaterThan(0);
     //   });

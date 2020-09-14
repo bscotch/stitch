@@ -41,9 +41,9 @@ export class Gms2Project {
    * The content of the YYP file, mirroring the data structure
    * in the file but with components replaced by model instances.
    */
-  #components!: Gms2ProjectComponents;
+  private components!: Gms2ProjectComponents;
 
-  #storage: Gms2Storage;
+  private storage: Gms2Storage;
 
   /**
    * @param {Gms2Config|string} [options] An options object or the path
@@ -82,20 +82,20 @@ export class Gms2Project {
     assert(fs.existsSync(yypPath), `YYP file does not exist: ${yypPath}`);
 
     // Load up all the project files into class instances for manipulation
-    this.#storage = new Gms2Storage(paths.resolve(yypPath),options.readOnly as boolean);
+    this.storage = new Gms2Storage(paths.resolve(yypPath),options.readOnly as boolean);
     this.reload();
   }
 
   get yypAbsolutePath(){
-    return this.#storage.yypAbsolutePath;
+    return this.storage.yypAbsolutePath;
   }
 
   get folders(){
-    return this.#components.Folders;
+    return this.components.Folders;
   }
 
   get resources(){
-    return this.#components.resources;
+    return this.components.resources;
   }
 
   /**
@@ -104,10 +104,10 @@ export class Gms2Project {
    */
   reload() {
     // Load the YYP file, store RAW (ensure field resourceType: "GMProject" exists)
-    const yyp = fs.readJsonSync(this.#storage.yypAbsolutePath) as YypComponents;
+    const yyp = fs.readJsonSync(this.storage.yypAbsolutePath) as YypComponents;
     assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
 
-    this.#components = {
+    this.components = {
       ...yyp,
       Options: new Gms2ComponentArray(yyp.Options, Gms2Option),
       configs: new Gms2Config(yyp.configs),
@@ -116,7 +116,7 @@ export class Gms2Project {
       TextureGroups: new Gms2ComponentArray(yyp.TextureGroups, Gms2TextureGroup),
       AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
       IncludedFiles: new Gms2ComponentArray(yyp.IncludedFiles, Gms2IncludedFile),
-      resources: new Gms2ResourceArray(yyp.resources,this.#storage)
+      resources: new Gms2ResourceArray(yyp.resources,this.storage)
     };
 
     // DEBORK
@@ -147,7 +147,7 @@ export class Gms2Project {
         tags: tags || [],
       },'path',subPath);
     }
-    this._save();
+    this.save();
   }
 
   /**
@@ -157,28 +157,20 @@ export class Gms2Project {
    * the asset will be created and placed into folder "/NEW".
    */
   upsertSound(sourcePath:string){
-    // Ensure that the sound file exists
-    // Get the name of the sound file
-    // See if a sound by that name already exists
-    //    Yes: Just copy the file over the old one
-    //    No: Create a new sound resource
-    // Save the .yy
-    // Save the .yyp
+    this.resources.upsertSound(sourcePath,this.storage);
+    this.save();
   }
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
-  private _save(){
-    if(this.#storage.isReadOnly){
-      return;
-    }
-    // TODO: Add saving logic (will need to cascade through all resources)
+  private save(){
+    this.storage.saveJson(this.yypAbsolutePath,this.dehydrated);
   }
 
   get dehydrated(): YypComponents {
-    const fields = Object.keys(this.#components) as (keyof YypComponents)[];
+    const fields = Object.keys(this.components) as (keyof YypComponents)[];
     const asObject: Partial<YypComponents> = {};
     for (const field of fields) {
-      const components = this.#components[field];
+      const components = this.components[field];
       if( components instanceof Gms2ComponentArray ||
           components instanceof Gms2ResourceArray ||
           components instanceof Gms2Option){
@@ -186,7 +178,7 @@ export class Gms2Project {
         asObject[field] = components.dehydrated;
       }
       else{
-        const component = this.#components[field] as any;
+        const component = this.components[field] as any;
         asObject[field] = component?.dehydrated ?? component;
       }
     }
