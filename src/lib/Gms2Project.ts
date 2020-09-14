@@ -159,25 +159,23 @@ export class Gms2Project {
     // Get all subpaths
     const heirarchy = paths.heirarchy(path);
     for(const subPath of heirarchy){
-      // If we already have this one, move along
-      const folder = this.folders.findByField('path',subPath);
-      if(folder){
-        continue;
-      }
-      // Otherwise create it!
-      const newFolderInfo: YypFolder = {
+      this.folders.addIfNew({
         ...Gms2Folder.defaultDataValues,
         name: Gms2Folder.nameFromPath(subPath),
         folderPath: Gms2Folder.folderPathFromPath(subPath),
         tags: tags || [],
-      };
-      const newFolder = new Gms2Folder(newFolderInfo);
-      this.#components.Folders.push(newFolder);
+      },'path',subPath);
     }
-    // TODO: TEST AND THEN SAVE CHANGES TO DISK
+    this._save();
   }
 
-  // TODO: TO TEST, do deep comparison of the loaded content vs. the dehydrate output
+  /** Write *any* changes to disk. (Does nothing if readonly is true.) */
+  private _save(){
+    if(this.isReadOnly){
+      return;
+    }
+    // TODO: Add saving logic (will need to cascade through all resources)
+  }
 
   get dehydrated(): YypComponents {
     const fields = Object.keys(this.#components) as (keyof YypComponents)[];

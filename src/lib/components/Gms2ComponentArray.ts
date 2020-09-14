@@ -1,11 +1,13 @@
 import { dehydrateArray, hydrateArray } from "../hydrate";
 
-export class  Gms2ComponentArray <YypData,ResourceClass extends new (object:YypData)=>InstanceType<ResourceClass>&{dehydrated:YypData}> {
+export class  Gms2ComponentArray <YypData,ComponentClass extends new (object:YypData)=>InstanceType<ComponentClass>&{dehydrated:YypData}> {
 
-  #items: InstanceType<ResourceClass>[];
+  #items: InstanceType<ComponentClass>[];
+  #class: ComponentClass;
 
-  constructor(data:YypData[],resourceClass: ResourceClass){
+  constructor(data:YypData[],resourceClass: ComponentClass){
     this.#items = hydrateArray(data,resourceClass);
+    this.#class = resourceClass;
   }
 
   /** Get shallow-copy array of all item instances */
@@ -13,17 +15,32 @@ export class  Gms2ComponentArray <YypData,ResourceClass extends new (object:YypD
     return [...this.#items];
   }
 
-  find(matchFunction: (item: InstanceType<ResourceClass>)=>any){
+  find(matchFunction: (item: InstanceType<ComponentClass>)=>any){
     return this.#items.find(matchFunction);
   }
 
-  findByField(field:keyof InstanceType<ResourceClass>,value:any){
+  findByField(field:keyof InstanceType<ComponentClass>,value:any){
     return this.#items.find(item=>item[field]==value);
   }
 
-  push(...items:InstanceType<ResourceClass>[]){
+  push(...items:InstanceType<ComponentClass>[]){
     this.#items.push(...items);
     return this.list();
+  }
+
+  addNew(data:YypData){
+    this.push( new this.#class(data));
+  }
+
+  /**
+   * Create a new component instance if one doesn't already exist
+   * matching the given uniqueField:uniqueValue pair.
+   */
+  addIfNew(data:YypData,uniqueField:keyof InstanceType<ComponentClass>,uniqueFieldValue:any){
+    const existing = this.findByField(uniqueField,uniqueFieldValue);
+    if(!existing){
+      this.addNew(data);
+    }
   }
 
   get dehydrated(): YypData[] {
