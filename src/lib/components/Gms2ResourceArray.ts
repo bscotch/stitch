@@ -53,13 +53,14 @@ export class  Gms2ResourceArray {
 
   static _hydrateResource(data: YypResource) {
     const resourceType = data.id.path.split('/')[0] as (keyof typeof Gms2ResourceArray._resourceClassMap);
-    const subclass = Gms2ResourceArray._resourceClassMap[resourceType];
+    const subclass = Gms2ResourceArray
+      ._resourceClassMap[resourceType];
     if (!subclass) {
       throw new Gms2PipelineError(
         `No constructor for resource ${resourceType} exists.`
       );
     }
-    const resource = new subclass(data, resourceType) as Gms2ResourceSubclass;
+    const resource = new subclass(data) as Gms2ResourceSubclass;
     return resource;
 
   }

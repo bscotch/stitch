@@ -119,6 +119,10 @@ export class Gms2Project {
     return this.#components.Folders;
   }
 
+  get resources(){
+    return this.#components.resources;
+  }
+
   /**
    * Recreate in-memory representations of the Gamemaker Project
    * using its files.
@@ -177,8 +181,8 @@ export class Gms2Project {
    * with this name, its file will be replaced. Otherwise
    * the asset will be created and placed into folder "/NEW".
    */
-  upsertAudio(sourcePath:string){
-    
+  upsertSound(sourcePath:string){
+    // const matchingSound = this.resources.findByField()
   }
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
