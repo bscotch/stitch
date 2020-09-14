@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 // import { Project} from '../project/Project';
 import { ensureDirSync, emptyDirSync, copySync } from 'fs-extra';
-import { join } from 'path';
+import paths from '../lib/paths';
+import { features } from 'process';
 // import projectDiff from '../project/projectDiff';
 import { inspect } from 'util';
 import { Gms2Project } from '../lib/Gms2Project';
@@ -21,8 +22,8 @@ const sandboxRoot = './sand box/'; // Use a space to ensure nothing bad happens.
 const projectRoot = './sample-project/';
 const projectYYP = 'sample-project.yyp';
 const modulesRoot = "./sample-module-source/";
-const sourceProjectYYPPath = join(projectRoot, projectYYP);
-const sandboxProjectYYPPath = join(sandboxRoot, projectYYP);
+const sourceProjectYYPPath = paths.join(projectRoot, projectYYP);
+const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
 const assetSampleRoot = './sample-assets/';
 const soundSampleRoot = `${assetSampleRoot}sounds/`;
 const audioSample = `${soundSampleRoot}mus_intro_jingle.wav`;
@@ -81,10 +82,10 @@ at it goooo ${interp2}
     });
   });
 
-  describe("Project Classes", function () {
-    resetSandbox();
+  describe("Gms2 Project Class", function () {
 
     it("can hydrate and dehydrate the YYP file, resulting in the original data",function(){
+      resetSandbox();
       const project = new Gms2Project(sandboxRoot);
       const rawContent = loadFromFileSync(project.yypAbsolutePath);
       const dehydrated = project.dehydrated;
@@ -96,6 +97,23 @@ at it goooo ${interp2}
       expect([1,2,3],'array deep equality check should require same order').to.not.eql([2,1,3]);
       expect(rawKeys,'dehydrated projects should have keys in the same order').to.eql(dehydratedKeys);
     });
+
+    it("can create new folders", function(){
+      resetSandbox();
+      const project = new Gms2Project(sandboxRoot);
+      const newFolders = ["hello/world","deeply/nested/folder/structure"];
+      for(const newFolder of newFolders ){
+        project.ensureFolder(newFolder);
+      }
+      const projectFolders = project.dehydrated.Folders;
+      const allExpectedFolders = newFolders.map(f=>paths.heirarchy(f)).flat(3);
+      expect(allExpectedFolders.length).to.equal(6);
+      for(const expectedFolder of allExpectedFolders){
+        const folderInProject = projectFolders.find(f=>f.folderPath==`folders/${expectedFolder}.yy`);
+        expect(folderInProject,`Folder ${expectedFolder} should have been added`).to.exist;
+      }
+    });
+
     //   it("written content is unchanged", function(){
     //     const originalFile = json.readFileSync(project.yypAbsolutePath);
     //     project.commit();
@@ -184,9 +202,9 @@ at it goooo ${interp2}
     //   });
     //   it('can run from the CLI',function(){
     //     // Depending on whether running with node or ts-node, need different route
-    //     let cliPath = join(__dirname,'..','cli','gms2-tools-audio.js');
+    //     let cliPath = paths.join(__dirname,'..','cli','gms2-tools-audio.js');
     //     if(__filename.endsWith('.ts')){
-    //       cliPath = join(__dirname,'..','..','build','cli','gms2-tools-audio.js');
+    //       cliPath = paths.join(__dirname,'..','..','build','cli','gms2-tools-audio.js');
     //     }
     //     const args = `node "${cliPath}" -p "${sandboxProjectYYPPath}" -s "${soundSampleRoot}"`;
     //     const res = execSync(args);

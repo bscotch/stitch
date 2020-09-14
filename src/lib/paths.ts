@@ -20,7 +20,8 @@ function pathSpecificitySort(path1:string,path2:string){
 
 /**
  * Given a path, return all of the parent paths
- * leading up to it.
+ * leading up to it. Sorted by least to most specific
+ * (e.g. /hello comes before /hello/world)
  */
 function heirarchy(path:string){
   const paths:string[] = [path];
@@ -29,7 +30,7 @@ function heirarchy(path:string){
     paths.push(path);
   }
   paths.reverse();
-  return paths;
+  return paths.filter(p=>p!='.');
 }
 
 export default {
