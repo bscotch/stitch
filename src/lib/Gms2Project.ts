@@ -15,6 +15,8 @@ import { Gms2ComponentArray } from "./components/Gms2ComponentArray";
 import { Gms2ResourceArray } from "./components/Gms2ResourceArray";
 import { Gms2Storage } from "./Gms2Storage";
 import { Gms2ProjectConfig } from "./Gms2ProjectConfig";
+import { Gms2Sprite } from "./components/resources/Gms2Sprite";
+import { Gms2Sound } from "./components/resources/Gms2Sound";
 
 export interface Gms2ProjectOptions {
   /**
@@ -138,7 +140,7 @@ export class Gms2Project {
    * Ensure that the texture groups used in the config all exist, and
    * that sprites are properly assigned to them.
    */
-  syncTextureGroupsToConfig(){
+  private syncTextureGroupsToConfig(){
     for(const textureGroupName of this.config.textureGroupsWithAssignedFolders){
       this.components.TextureGroups.addIfNew({
         ...Gms2TextureGroup.defaultDataValues,
@@ -146,9 +148,10 @@ export class Gms2Project {
       },'name',textureGroupName);
     }
     // TODO: Ensure sprites are assigned to correct config texture groups
+    const sprites = this.components.resources.filterByClass(Gms2Sprite);
   }
 
-  syncAudioGroupsToConfig(){
+  private syncAudioGroupsToConfig(){
     for(const audioGroupName of this.config.audioGroupsWithAssignedFolders){
       this.components.AudioGroups.addIfNew({
         ...Gms2AudioGroup.defaultDataValues,
@@ -156,6 +159,7 @@ export class Gms2Project {
       },'name',audioGroupName);
     }
     // TODO: Ensure sounds are assigned to correct config audio groups
+    const sounds = this.components.resources.filterByClass(Gms2Sound);
   }
 
   /**

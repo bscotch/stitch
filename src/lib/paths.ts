@@ -1,5 +1,11 @@
 import nodePath from "path";
 
+/**
+ * Pass to `.sort()` got an array of paths to get
+ * them sorted by *least* to *most* specific (i.e.
+ * fewest to most subdirs) and alphabetically by
+ * directory within a specificity tier.
+ */
 function pathSpecificitySort(path1:string,path2:string){
   const path1Parts = path1.split(/[\\/]+/);
   const path2Parts = path2.split(/[\\/]+/);

@@ -1,4 +1,5 @@
 import { Gms2Storage } from "./Gms2Storage";
+import paths from "./paths";
 
 interface Gms2ProjectConfigFile {
   textureGroupAssignments:{
@@ -42,7 +43,17 @@ export class Gms2ProjectConfig {
   }
 
   get textureGroupsWithAssignedFolders(){
-    return Object.keys(this.textureGroupAssignments);
+    return Object.values(this.textureGroupAssignments);
+  }
+
+  /**
+   * The folders that have an assigned texture group,
+   * sorted from *least* to *most* specific (allowing
+   * texture groups of contained sprites to be assigned
+   * in order).
+   */
+  get foldersWithAssignedTextureGroups(){
+    return Gms2ProjectConfig.sortedKeys(this.textureGroupAssignments);
   }
 
   get audioGroupAssignments(){
@@ -50,7 +61,17 @@ export class Gms2ProjectConfig {
   }
 
   get audioGroupsWithAssignedFolders(){
-    return Object.keys(this.audioGroupAssignments);
+    return Object.values(this.audioGroupAssignments);
+  }
+
+  /**
+   * The folders that have an assigned texture group,
+   * sorted from *least* to *most* specific (allowing
+   * texture groups of contained sprites to be assigned
+   * in order).
+   */
+  get foldersWithAssignedAudioGroups(){
+    return Gms2ProjectConfig.sortedKeys(this.audioGroupAssignments);
   }
 
   upsertTextureGroupAssignment(folder:string,textureGroup:string){
@@ -75,5 +96,11 @@ export class Gms2ProjectConfig {
 
   private save(){
     this.storage.saveJson(this.filePathAbsolute,this.data);
+  }
+
+  static sortedKeys(object:{[key:string]:any}){
+    const keys = Object.keys(object);
+    keys.sort(paths.pathSpecificitySort);
+    return keys;
   }
 }
