@@ -1,7 +1,7 @@
 import { Gms2Storage } from "./Gms2Storage";
 
 interface Gms2ProjectConfigFile {
-  texturePageAssignments:{
+  textureGroupAssignments:{
     [folder:string]:string
   },
   audioGroupAssignments:{
@@ -16,7 +16,7 @@ export class Gms2ProjectConfig {
 
   constructor (readonly storage: Gms2Storage){
     const initialContent = {
-      texturePageAssignments:{},
+      textureGroupAssignments:{},
       audioGroupAssignments:{}
     };
     if(!storage.exists(this.filePathAbsolute)){
@@ -37,12 +37,12 @@ export class Gms2ProjectConfig {
     return this.storage.toAbsolutePath(this.name);
   }
 
-  get texturePageAssignments(){
-    return {...this.data.texturePageAssignments};
+  get textureGroupAssignments(){
+    return {...this.data.textureGroupAssignments};
   }
 
-  get texturePagesWithAssignedFolders(){
-    return Object.keys(this.texturePageAssignments);
+  get textureGroupsWithAssignedFolders(){
+    return Object.keys(this.textureGroupAssignments);
   }
 
   get audioGroupAssignments(){
@@ -53,18 +53,18 @@ export class Gms2ProjectConfig {
     return Object.keys(this.audioGroupAssignments);
   }
 
-  upsertTexturePageAssignment(folder:string,texturePage:string){
-    this.data.texturePageAssignments[folder] = texturePage;
+  upsertTextureGroupAssignment(folder:string,textureGroup:string){
+    this.data.textureGroupAssignments[folder] = textureGroup;
     this.save();
   }
 
-  deleteTexturePageAssignment(folder:string){
-    Reflect.deleteProperty(this.data.texturePageAssignments,folder);
+  deleteTextureGroupAssignment(folder:string){
+    Reflect.deleteProperty(this.data.textureGroupAssignments,folder);
     this.save();
   }
 
-  upsertAudioGroupAssignment(folder:string,texturePage:string){
-    this.data.audioGroupAssignments[folder] = texturePage;
+  upsertAudioGroupAssignment(folder:string,textureGroup:string){
+    this.data.audioGroupAssignments[folder] = textureGroup;
     this.save();
   }
 

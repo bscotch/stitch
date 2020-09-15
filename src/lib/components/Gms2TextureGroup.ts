@@ -14,15 +14,14 @@ export class Gms2TextureGroup {
     return {...this.#data};
   }
 
-  static create(name:string){
-    const data: YypTextureGroup = {
-      name,
+  static get defaultDataValues(): Omit<YypTextureGroup,'name'>{
+    return {
       // groupParent: {
       //   name: string,
       //   path: string
       // },
       isScaled: true,
-      autocrop: false,
+      autocrop: true,
       border: 2,
       mipsToGenerate: 0,
       targets: BigInt('461609314234257646'),

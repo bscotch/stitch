@@ -68,7 +68,7 @@ export interface YypAudioGroup {
 export interface YypTextureGroup {
   ConfigValues?: ConfigValue<YypTextureGroup>,
   name: string,
-  groupParent: {
+  groupParent?: {
     name: string,
     path: string
   },

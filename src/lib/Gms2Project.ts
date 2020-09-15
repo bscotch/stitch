@@ -121,16 +121,8 @@ export class Gms2Project {
       resources: new Gms2ResourceArray(yyp.resources,this.storage)
     };
 
-    // TODO: Ensure config texture groups exist.
-    for(const textureGroupName of this.config.texturePagesWithAssignedFolders){
-      const existingGroup = this.components.TextureGroups.findByField('name',textureGroupName);
-      if(!existingGroup){
-        Gms2TextureGroup.create(textureGroupName);
-      }
-    }
-
-
-    // TODO: Ensure sprites are assigned to correct config texture groups
+    this.syncTextureGroupsToConfig();
+    this.syncAudioGroupsToConfig();
 
     // DEBORK
     // TODO: Ensure that parent groups (folders) for all subgroups exist as separate entities.
@@ -140,6 +132,30 @@ export class Gms2Project {
 
     // Ensure that the 'NEW' folder exists for imported assets.
     this.ensureFolder('NEW');
+  }
+
+  /**
+   * Ensure that the texture groups used in the config all exist, and
+   * that sprites are properly assigned to them.
+   */
+  syncTextureGroupsToConfig(){
+    for(const textureGroupName of this.config.textureGroupsWithAssignedFolders){
+      this.components.TextureGroups.addIfNew({
+        ...Gms2TextureGroup.defaultDataValues,
+        name:textureGroupName
+      },'name',textureGroupName);
+    }
+    // TODO: Ensure sprites are assigned to correct config texture groups
+  }
+
+  syncAudioGroupsToConfig(){
+    for(const audioGroupName of this.config.audioGroupsWithAssignedFolders){
+      this.components.AudioGroups.addIfNew({
+        ...Gms2AudioGroup.defaultDataValues,
+        name:audioGroupName
+      },'name',audioGroupName);
+    }
+    // TODO: Ensure sounds are assigned to correct config audio groups
   }
 
   /**
