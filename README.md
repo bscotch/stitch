@@ -2,57 +2,128 @@
 
 Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not generally have pipeline features for managing assets. This package provides a collection of modules and command-line tools for automating tasks in GMS2 by directly managing its project files, and is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
+### Table of Contents
+
++ [Setup](#setup)
++ [Core Features](#features)
+  + [Configuration File](#config-file) - Manage the behavior of the GMS2 PDK.
+  + [Modules](#modules) - Import groups of assets from other GMS2 projects.
+    + [Module Notes](#modules-notes)
+  + [Importing external assets](#import-asset)  - Import audio and other assets into a project.
+    + [Import notes](#import-asset-notes)
+  + [Texture Page batch management](#texture-pages) - Automate texture page assignments 
+  + [Audio Group batch management](#audio-groups)
++ [Gamemaker Project File Structure](#gms2-file-structure)
+
 <b style="color:red">DANGER:</b> This toolkit's purpose is to externally modify your Gamemaker Studio 2 project files. This comes with enormous risk: any external changes made to your project may completely and permanently break your project. **DO NOT USE THIS TOOLKIT** unless you are using version control and have committed any important changes beforehand.
 
-**NOTE:** This toolkit only works for projects from GMS2 versions >= 2.3. GMS2 Versions <2.3 have a completely different file structure and are not at all compatible with this tool.
+**NOTE:** This toolkit only works for projects from GMS2 versions >= 2.3. GMS2 Versions <2.3 have a completely different file structure and are not at all compatible with this tool. We will generally keep the PDK up to date with current versions of GMS2, and will not make any effort towards backwards compatibility.
 
-## Core Features
+## Setup <a id="setup">
 
-### Gamemaker Modules
+### Requirements
 
-Gamemaker Studio has mechanisms to import assets from one Gamemaker project into another, as well as an "extensions" system, but this can be unwieldy to manage. We use a custom solution for this that we simply call "Modules". A "module" is a collection of assets that have a common folder name in their path. For example, for a module called "TitleScreen" and an asset heirarchy including:
++ [Node.js v14+](https://nodejs.org/) (may work on lower versions, but only tested on v14)
++ [Git](https://git-scm.com/) (if your project is not in a git repo, the PDK will not work)
++ [Gamemaker Studio 2.3+](https://www.yoyogames.com/gamemaker) projects
++ Windows 10 OS (may work on Mac, but only tested on Windows 10)
 
-+ `sprites/TitleScreen/{module content}
-+ `sounds/menus/TitleScreen/{module content}
+### Gamemaker Project Setup
 
-Everything inside those two groups, starting at the "TitleScreen" level and recursing through any subgroups, is included as a "TitleScreen" asset and can be imported together into another Gamemaker 2 project. In effect, the import first **deletes** all "TitleScreen" assets in the target and then clones all "TitleScreen" assets from the source, guaranteeing that your source and target projects will have exactly matching resources within the "TitleScreen" module.
+<details>
+<summary><b>Example file structure</b></summary>
 
-At Bscotch, we have a separate Gamemaker project for our shared asset library, including our login system, a large script library, common objects, and more. We use the module system to import this shared library into all of our games. This makes it easy to maintain shared assets and to start new projects with a huge head start.
+```bash
+project-root/ # folder containing all your project's stuff
+project-root/.git # created by `git init` or `git clone`
+project-root/package.json # (not required) created by `npm init`
+project-root/project-name/ # e.g. the name of your game
+project-root/project-name/project-name.yyp # main GMS2 project file (entrypoint)
+project-root/project-name/gms2pdk.config.json # GMS2 PDK configuration data
+```
+</details>
 
-#### Module Import Notes
+Yours doesn't have to look *exactly* like that but the general relationships should. For example, there must be a `.git` folder somewhere, and your [`.yyp` file](#yyp) must either be in the same directory as that `.git` folder or in a subdirectory as shown above.
 
+To start using the PDK with one of your GMS2 projects, do the following:
+
+1. Open a terminal in your project's root (e.g. via Git Bash or Powershell)
+  + On Windows 10 with Git installed, you can open the folder in File Explorer, right-click somewhere, and then click "Git Bash here". Alternatively, open the terminal anywhere and `cd` to the root of your project.
+1. Run `npm install -g @bscotch/gms2` for a *global* install of the PDK, allowing you to install it just once and use it for all projects. This causes the `gms2 ...` commands to become available in the terminal.
+1. Run `gms2 --help` to see all the things you can do.
+
+### GMS2 PDK Configuration File <a id="config-file"></a>
+
+To keep things stable and automatable, the PDK uses a configuration file (`gms2pdk.config.json`) to store things like Texture Page and Audio Group assignments. This file is stored alongside the [`.yyp` file](#yyp). You can edit it manually, but it's a better idea to use the PDK CLI commands (see the [Audio Groups](#audio-groups) and [Texture Pages](#texture-pages) sections for examples).
+
+<details>
+<summary><b>Config File contents</b></summary>
+
+```jsonc
+{
+  "texturePageAssignments":{
+    "folder":"texturePageName",
+    "folder/subfolder": "anotherTexturePageName"
+  },
+  "audioGroupAssignments":{
+    "folder":"audioGroupName",
+    "folder/subfolder": "anotherAudioGroupName"
+  }
+}
+```
+</details>
+
+## Core Features <a id="features"></a>
+
+### Gamemaker Modules <a id="modules"></a>
+
+Gamemaker Studio has mechanisms to import assets from one Gamemaker project into another, as well as an "extensions" system, but this can be unwieldy to manage. We use a custom solution for this that we simply call "Modules". A "module" is a collection of assets that have a common folder name in their path. For example, for a module called "TitleScreen" and an asset hierarchy including:
+
++ `sprites/TitleScreen/{module content}`
++ `sounds/menus/TitleScreen/{module content}`
++ `TitleScreen/`
+
+Everything inside those three "groups", starting at the "TitleScreen" level and recursing through any subgroups, is included as a "TitleScreen" asset and can be imported together into another Gamemaker 2 project.
+
+Use case: At Bscotch, we have a separate Gamemaker project for our shared asset library, including our login system, a large script library, common objects, and more. We use the module system to import this shared library into all of our games. This makes it easy to maintain shared assets and to start new projects with a huge head start.
+
+#### Module Import Notes <a id="modules-notes"></a>
+
++ Module assets in the target that are *not* in the source are deleted from the target.
 + Local texture page assignments are *not* overwritten when importing sprites. If the local sprite does not exist, or does exist but is assigned to a non-existent texture page, the source's texture page will be created locally and used by the imported sprite.
 
-### External Asset Importers
+### External Asset Importers <a id="import-asset"></a>
 
 Managing art, audio, and file assets can be quite painful. These things should always be part of some sort of pipeline, but GMS2 does not provide built-in pipeline tooling. This SDK provides mechanisms to import external content into GMS2 projects, so that you can build pipelines appropriate to your technology stack.
 
-For example, if your audio team dumps their files into a shared dropbox folder, you can use the CLI to batch-import from that folder. This will update all existing sound assets and add any new ones, using the filenames as Gamemaker assets names. No manual steps required!
+For example, if your audio team dumps their files into a shared Dropbox folder, you can use the CLI to batch-import from that folder. This will update all existing sound assets and add any new ones, using the filenames as Gamemaker assets names. No manual steps required!
 
 Or, if you have a content server storing images, sounds, or files, you can write a script to automatically import all up-to-date versions of those assets into your project.
 
 At Bscotch, we use importers for our sound, art, and localization pipelines, so that our game programmers do not need to manually find, import, or name assets created by other team members.
 
-#### Asset Import Notes
+#### Asset Import Notes <a id="import-asset-notes"></a>
 
 + Local texture page assignments are *not* overwritten when updating sprites. If the local sprite does not exist, or does exist but is assigned to a non-existent texture page, the source's texture page will be created locally and used by the imported sprite.
 
-### Texture Page Management
 
-Texture page assignment of sprites is a fully manual process, and there is no way to do it in batch via the GMS2 IDE.
+### Texture Page Management <a id="texture-pages"></a>
 
-The Pipeline SDK allows you to create a Texture Page Assignment configuration file that maps project folders to textures. For example, you might map `mainMenu/` to `mainMenuTexturePage`, so that *every* sprite inside that folder will be put into the same texture page.
+Texture page assignment of sprites via the GMS2 IDE is a fully manual process. The PDK allows you to map resource groups (the folders in the GMS2 IDE) to Texture Pages, so that all sprites within a specified group (recursing through subgroups) will be assigned to the same Texture Page. Groups with higher specificity take precedence.
 
-(Note that this won't happen automatically -- you'll need to run a command to cause all texture assignments in the project to be updated according to the config.)
+For example, you might map the group `sprites/mainMenu/` to the texture page `mainMenuTexturePage`, so that *every* sprite inside the `sprites/mainMenu/` folder (recursive) will be put into the same texture page. You might then map the group `sprites/mainMenu/subMenu` to a different page `subMenuTexturePage`. In this case, all sprites within `sprites/mainMenu/` are first mapped to `mainMenuTexturePage`, and then all sprites within `sprites/mainMenu/subMenu` are remapped to `subMenuTexturePage` (since that group has one additional subfolder and is therefore more specific).
 
-### Audio Group Management
+Texture Page assignments are stored in the [config file](#config-file) and can be modified via the CLI or by directly editing the configuration file.
+
+**WARNING**: If there is a Texture Page assignment conflict between the PDK config file and what you do manually via the GMS2 IDE, the config file will win and the changes you made via the IDE will get overwritten the next time you run a `gms2` CLI command.
+
+
+### Audio Group Management <a id="audio-groups"></a>
 
 Audio Groups suffer the same manual problems as Texture Pages, and the Pipeline SDK solves this in the same way.
 
 ## TODOs
 
-+ Lay out the feature set that this thing needs to have
-+ Figure out what questions remain to understand the complexity of completing that feature set
 + How are texture pages and assignments stored?
 + Figure out what the "order" field does for Resources
   + May be important for rooms, if not anything else
@@ -65,7 +136,7 @@ Audio Groups suffer the same manual problems as Texture Pages, and the Pipeline 
   + "mipsToGenerate":0 // don't care about this
   + MANUALLY HANDLED
 
-## Game Project File Structure & Content
+## Game Project File Structure & Content <a id="gms2-file-structure"></a>
 
 ### General File Information
 
@@ -123,7 +194,7 @@ simple list of strings.
 **Colors are not saved.** You can color-code assets, but these are only stored
 at the IDE level.
 
-### YYP
+### YYP <a id="yyp"></a>
 
 Each game project has a root `*.yyp` file that describes all of its resources
 and some of its high-level metadata. This is the entrypoint for Gamemaker projects.

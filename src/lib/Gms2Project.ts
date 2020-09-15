@@ -174,7 +174,7 @@ export class Gms2Project {
       if( components instanceof Gms2ComponentArray ||
           components instanceof Gms2ResourceArray ||
           components instanceof Gms2Option){
-        // @ts-ignore
+        // @ts-ignore (Bonus points to anyone who can do this concisely without a ts-ignore!)
         asObject[field] = components.dehydrated;
       }
       else{
