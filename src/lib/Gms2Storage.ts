@@ -31,10 +31,18 @@ export class Gms2Storage {
     return this.#gitRepoDirectory;
   }
 
+  toAbsolutePath(pathRelativeToYypDir:string){
+    return paths.join(this.yypDirAbsolute,pathRelativeToYypDir);
+  }
+
   ensureDir(dir:string){
     if(!this.isReadOnly){
       fs.ensureDirSync(dir);
     }
+  }
+
+  exists(path:string){
+    return fs.existsSync(path);
   }
 
   copyFile(sourcePath:string,destinationPath:string){

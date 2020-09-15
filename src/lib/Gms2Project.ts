@@ -14,6 +14,7 @@ import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2ComponentArray } from "./components/Gms2ComponentArray";
 import { Gms2ResourceArray } from "./components/Gms2ResourceArray";
 import { Gms2Storage } from "./Gms2Storage";
+import { Gms2ProjectConfig } from "./Gms2ProjectConfig";
 
 export interface Gms2ProjectOptions {
   /**
@@ -42,8 +43,8 @@ export class Gms2Project {
    * in the file but with components replaced by model instances.
    */
   private components!: Gms2ProjectComponents;
-
   private storage: Gms2Storage;
+  private config: Gms2ProjectConfig;
 
   /**
    * @param {Gms2Config|string} [options] An options object or the path
@@ -83,6 +84,7 @@ export class Gms2Project {
 
     // Load up all the project files into class instances for manipulation
     this.storage = new Gms2Storage(paths.resolve(yypPath),options.readOnly as boolean);
+    this.config = new Gms2ProjectConfig(this.storage);
     this.reload();
   }
 
@@ -118,6 +120,17 @@ export class Gms2Project {
       IncludedFiles: new Gms2ComponentArray(yyp.IncludedFiles, Gms2IncludedFile),
       resources: new Gms2ResourceArray(yyp.resources,this.storage)
     };
+
+    // TODO: Ensure config texture groups exist.
+    for(const textureGroupName of this.config.texturePagesWithAssignedFolders){
+      const existingGroup = this.components.TextureGroups.findByField('name',textureGroupName);
+      if(!existingGroup){
+        Gms2TextureGroup.create(textureGroupName);
+      }
+    }
+
+
+    // TODO: Ensure sprites are assigned to correct config texture groups
 
     // DEBORK
     // TODO: Ensure that parent groups (folders) for all subgroups exist as separate entities.
