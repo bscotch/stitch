@@ -17,6 +17,7 @@ import { Gms2Storage } from "./Gms2Storage";
 import { Gms2ProjectConfig } from "./Gms2ProjectConfig";
 import { Gms2Sprite } from "./components/resources/Gms2Sprite";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
+import { Gms2FolderArray } from "./Gms2FolderArray";
 
 export interface Gms2ProjectOptions {
   /**
@@ -108,6 +109,19 @@ export class Gms2Project {
 
   get audioGroups(){
     return this.components.AudioGroups;
+  }
+
+  /**
+   * Import modules from one GMS2 project into this one.
+   * @param fromProject A directory containing a single .yyp file somwhere, or the path directly to a .yyp file.
+   */
+  importModules(fromProjectPath: string,moduleNames:string[]){
+    const fromProject = new Gms2Project({projectPath:fromProjectPath,readOnly:true});
+    const normalizedModuleNames = moduleNames.map(moduleName=>moduleName.toLocaleLowerCase());
+
+
+    // Ensure texture and audio groups are properly assigned
+
   }
 
   /** Ensure that a texture group exists in the project. */
@@ -218,6 +232,11 @@ export class Gms2Project {
     return this;
   }
 
+  private ensureResourceGroupAssignments(){
+    return this.setTextureGroupsUsingConfig()
+      .setAudioGroupsUsingConfig();
+  }
+
   /**
    * Recreate in-memory representations of the Gamemaker Project
    * using its files.
@@ -231,7 +250,7 @@ export class Gms2Project {
       ...yyp,
       Options: new Gms2ComponentArray(yyp.Options, Gms2Option),
       configs: new Gms2Config(yyp.configs),
-      Folders: new Gms2ComponentArray(yyp.Folders, Gms2Folder),
+      Folders: new Gms2FolderArray(yyp.Folders),
       RoomOrder: new Gms2ComponentArray(yyp.RoomOrder, Gms2RoomOrder),
       TextureGroups: new Gms2ComponentArray(yyp.TextureGroups, Gms2TextureGroup),
       AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
@@ -239,17 +258,12 @@ export class Gms2Project {
       resources: new Gms2ResourceArray(yyp.resources,this.storage)
     };
 
-    this.setTextureGroupsUsingConfig();
-    this.setAudioGroupsUsingConfig();
+    this.ensureResourceGroupAssignments()
+      .addFolder('NEW'); // Imported assets should go into a NEW folder.
 
     // DEBORK
     // TODO: Ensure that parent groups (folders) for all subgroups exist as separate entities.
     // TODO: Remove duplicate datafile entries (these dupe on every boot)
-
-    // TODO: Make it so that we can actually load an save a project file.
-
-    // Ensure that the 'NEW' folder exists for imported assets.
-    this.addFolder('NEW');
   }
 
   /**

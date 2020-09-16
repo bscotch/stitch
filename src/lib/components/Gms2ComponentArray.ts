@@ -2,34 +2,34 @@ import { dehydrateArray, hydrateArray } from "../hydrate";
 
 export class  Gms2ComponentArray <YypData,ComponentClass extends new (object:YypData)=>InstanceType<ComponentClass>&{dehydrated:YypData}> {
 
-  #items: InstanceType<ComponentClass>[];
-  #class: ComponentClass;
+  protected items: InstanceType<ComponentClass>[];
+  private componentClass: ComponentClass;
 
   constructor(data:YypData[],resourceClass: ComponentClass){
-    this.#items = hydrateArray(data,resourceClass);
-    this.#class = resourceClass;
+    this.items = hydrateArray(data,resourceClass);
+    this.componentClass = resourceClass;
   }
 
   /** Get shallow-copy array of all item instances */
   list(){
-    return [...this.#items];
+    return [...this.items];
   }
 
   find(matchFunction: (item: InstanceType<ComponentClass>)=>any){
-    return this.#items.find(matchFunction);
+    return this.items.find(matchFunction);
   }
 
   findByField(field:keyof InstanceType<ComponentClass>,value:any){
-    return this.#items.find(item=>item[field]==value);
+    return this.items.find(item=>item[field]==value);
   }
 
   push(...items:InstanceType<ComponentClass>[]){
-    this.#items.push(...items);
+    this.items.push(...items);
     return this;
   }
 
   addNew(data:YypData){
-    this.push( new this.#class(data));
+    this.push( new this.componentClass(data));
     return this;
   }
 
@@ -46,6 +46,6 @@ export class  Gms2ComponentArray <YypData,ComponentClass extends new (object:Yyp
   }
 
   get dehydrated(): YypData[] {
-    return dehydrateArray(this.#items);
+    return dehydrateArray(this.items);
   }
 }
