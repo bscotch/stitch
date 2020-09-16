@@ -1,6 +1,6 @@
 # Gamemaker Studio 2 Pipeline Development Kit (GMS2 PDK)
 
-Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not generally have pipeline features for managing assets. This package provides a collection of modules and command-line tools for automating tasks in GMS2 by directly managing its project files, and is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
+Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not generally have features for automating tasks or creating asset pipelines. This "Pipeline Development Kit" provides a collection of node modules and command-line tools for automating tasks in GMS2 by directly managing its project files. The PDK is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
 ### Table of Contents
 
@@ -15,9 +15,9 @@ Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not genera
   + [Audio Group batch management](#audio-groups)
 + [Gamemaker Project File Structure](#gms2-file-structure)
 
-<b style="color:red">DANGER:</b> This toolkit's purpose is to externally modify your Gamemaker Studio 2 project files. This comes with enormous risk: any external changes made to your project may completely and permanently break your project. **DO NOT USE THIS TOOLKIT** unless you are using version control and have committed any important changes beforehand.
+<b style="color:red">DANGER:</b> This toolkit directly modifies your Gamemaker Studio 2 project files. This comes with enormous risk: any external changes made to your project may completely and permanently break your project. **DO NOT USE THIS TOOLKIT** unless you are using version control and have committed any important changes beforehand.
 
-**NOTE:** This toolkit only works for projects from GMS2 versions >= 2.3. GMS2 Versions <2.3 have a completely different file structure and are not at all compatible with this tool. We will generally keep the PDK up to date with current versions of GMS2, and will not make any effort towards backwards compatibility.
+**NOTE:** This toolkit only works for projects from GMS2 versions >= 2.3. GMS2 Versions <2.3 have a completely different file structure and are not at all compatible with this tool. We will generally keep the PDK up to date with current versions of GMS2, but will not make any effort towards backwards compatibility.
 
 ## Setup <a id="setup">
 
@@ -26,7 +26,7 @@ Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not genera
 + [Node.js v14+](https://nodejs.org/) (may work on lower versions, but only tested on v14)
 + [Git](https://git-scm.com/) (if your project is not in a git repo, the PDK will not work)
 + [Gamemaker Studio 2.3+](https://www.yoyogames.com/gamemaker) projects
-+ Windows 10 OS (may work on Mac, but only tested on Windows 10)
++ Windows 10 (the PDK might work on Mac, but is only developed and tested on Windows 10)
 
 ### Gamemaker Project Setup
 
@@ -39,11 +39,11 @@ project-root/.git # created by `git init` or `git clone`
 project-root/package.json # (not required) created by `npm init`
 project-root/project-name/ # e.g. the name of your game
 project-root/project-name/project-name.yyp # main GMS2 project file (entrypoint)
-project-root/project-name/gms2pdk.config.json # GMS2 PDK configuration data
+project-root/project-name/gms2pdk.config.json # GMS2 PDK configuration data (created by PDK)
 ```
 </details>
 
-Yours doesn't have to look *exactly* like that but the general relationships should. For example, there must be a `.git` folder somewhere, and your [`.yyp` file](#yyp) must either be in the same directory as that `.git` folder or in a subdirectory as shown above.
+Yours doesn't have to look *exactly* like that, but the general relationships should. For example, there must be a `.git` folder somewhere, and your [`.yyp` file](#yyp) must either be in the same directory as that `.git` folder or in a subdirectory as shown above.
 
 To start using the PDK with one of your GMS2 projects, do the following:
 
@@ -83,14 +83,15 @@ Gamemaker Studio has mechanisms to import assets from one Gamemaker project into
 + `sounds/menus/TitleScreen/{module content}`
 + `TitleScreen/`
 
-Everything inside those three "groups", starting at the "TitleScreen" level and recursing through any subgroups, is included as a "TitleScreen" asset and can be imported together into another Gamemaker 2 project.
+Everything inside those three "groups", starting at the "TitleScreen" level and including any subfolders, is included as a "TitleScreen" asset and can be imported together into another Gamemaker 2 project.
 
 Use case: At Bscotch, we have a separate Gamemaker project for our shared asset library, including our login system, a large script library, common objects, and more. We use the module system to import this shared library into all of our games. This makes it easy to maintain shared assets and to start new projects with a huge head start.
 
 #### Module Import Notes <a id="modules-notes"></a>
 
-+ Module assets in the target that are *not* in the source are deleted from the target.
-+ Local texture page assignments are *not* overwritten when importing sprites. If the local sprite does not exist, or does exist but is assigned to a non-existent texture page, the source's texture page will be created locally and used by the imported sprite.
++ **All data is overwritten** in the target for module assets. Any changes you've made that aren't also in the source module will be lost forever. The exception to this is Texture and Audio Group membership when you use the PDK's system to manage those. 
++ Module assets in the target that are *not* in the source are moved to a folder called "MODULE_CONFLICTS".
++ Failed imports may result in broken projects. Failures result from conflicts between the source and target, in particular when a resource in each has the same name but different type, or is in a different module.
 
 ### External Asset Importers <a id="import-asset"></a>
 
@@ -105,7 +106,6 @@ At Bscotch, we use importers for our sound, art, and localization pipelines, so 
 #### Asset Import Notes <a id="import-asset-notes"></a>
 
 + Local texture page assignments are *not* overwritten when updating sprites. If the local sprite does not exist, or does exist but is assigned to a non-existent texture page, the source's texture page will be created locally and used by the imported sprite.
-
 
 ### Texture Page Management <a id="texture-pages"></a>
 
