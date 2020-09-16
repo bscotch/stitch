@@ -83,6 +83,23 @@ at it goooo ${interp2}
       const expected = `Here is a: multine string ${interp1} look at it goooo ${interp2} weeee!`;
       expect(expected).to.equal(onelined);
     });
+
+    it("can sort paths by specificity",function(){
+      const pathList = [
+        'hello/world',
+        'hello',
+        'h/another',
+        'hello/world/goodbye'
+      ];
+      const expectedOrder = [
+        'hello',
+        'h/another',
+        'hello/world',
+        'hello/world/goodbye'
+      ];
+      pathList.sort(paths.pathSpecificitySort);
+      expect(pathList).to.eql(expectedOrder);
+    });
   });
 
   describe("Gms2 Project Class", function () {

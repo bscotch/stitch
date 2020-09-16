@@ -5,6 +5,7 @@ import { YypResource } from "../../types/YypComponents";
 import { Gms2PipelineError } from "../errors";
 import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";
+import { Gms2Sprite } from "./resources/Gms2Sprite";
 
 export class  Gms2ResourceArray {
 
@@ -62,7 +63,7 @@ export class  Gms2ResourceArray {
       sequences: Gms2Resource,     // ❌
       shaders: Gms2Resource,       // ❌
       sounds: Gms2Sound,           // ✅
-      sprites: Gms2Resource,       // ❌
+      sprites: Gms2Sprite,         // ✅
       tilesets: Gms2Resource,      // ❌
       timelines: Gms2Resource,     // ❌
     } as const;

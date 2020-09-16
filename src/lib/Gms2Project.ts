@@ -14,6 +14,9 @@ import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2ComponentArray } from "./components/Gms2ComponentArray";
 import { Gms2ResourceArray } from "./components/Gms2ResourceArray";
 import { Gms2Storage } from "./Gms2Storage";
+import { Gms2ProjectConfig } from "./Gms2ProjectConfig";
+import { Gms2Sprite } from "./components/resources/Gms2Sprite";
+import { Gms2Sound } from "./components/resources/Gms2Sound";
 
 export interface Gms2ProjectOptions {
   /**
@@ -42,8 +45,8 @@ export class Gms2Project {
    * in the file but with components replaced by model instances.
    */
   private components!: Gms2ProjectComponents;
-
   private storage: Gms2Storage;
+  private config: Gms2ProjectConfig;
 
   /**
    * @param {Gms2ProjectOptions|string} [options] An options object or the path
@@ -83,6 +86,7 @@ export class Gms2Project {
 
     // Load up all the project files into class instances for manipulation
     this.storage = new Gms2Storage(paths.resolve(yypPath),options.readOnly as boolean);
+    this.config = new Gms2ProjectConfig(this.storage);
     this.reload();
   }
 
@@ -119,6 +123,9 @@ export class Gms2Project {
       resources: new Gms2ResourceArray(yyp.resources,this.storage)
     };
 
+    this.syncTextureGroupsToConfig();
+    this.syncAudioGroupsToConfig();
+
     // DEBORK
     // TODO: Ensure that parent groups (folders) for all subgroups exist as separate entities.
     // TODO: Remove duplicate datafile entries (these dupe on every boot)
@@ -127,6 +134,32 @@ export class Gms2Project {
 
     // Ensure that the 'NEW' folder exists for imported assets.
     this.ensureFolder('NEW');
+  }
+
+  /**
+   * Ensure that the texture groups used in the config all exist, and
+   * that sprites are properly assigned to them.
+   */
+  private syncTextureGroupsToConfig(){
+    for(const textureGroupName of this.config.textureGroupsWithAssignedFolders){
+      this.components.TextureGroups.addIfNew({
+        ...Gms2TextureGroup.defaultDataValues,
+        name:textureGroupName
+      },'name',textureGroupName);
+    }
+    // TODO: Ensure sprites are assigned to correct config texture groups
+    const sprites = this.components.resources.filterByClass(Gms2Sprite);
+  }
+
+  private syncAudioGroupsToConfig(){
+    for(const audioGroupName of this.config.audioGroupsWithAssignedFolders){
+      this.components.AudioGroups.addIfNew({
+        ...Gms2AudioGroup.defaultDataValues,
+        name:audioGroupName
+      },'name',audioGroupName);
+    }
+    // TODO: Ensure sounds are assigned to correct config audio groups
+    const sounds = this.components.resources.filterByClass(Gms2Sound);
   }
 
   /**
@@ -174,7 +207,7 @@ export class Gms2Project {
       if( components instanceof Gms2ComponentArray ||
           components instanceof Gms2ResourceArray ||
           components instanceof Gms2Option){
-        // @ts-ignore
+        // @ts-ignore (Bonus points to anyone who can do this concisely without a ts-ignore!)
         asObject[field] = components.dehydrated;
       }
       else{
