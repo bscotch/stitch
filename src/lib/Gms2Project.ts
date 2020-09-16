@@ -46,7 +46,7 @@ export class Gms2Project {
   private storage: Gms2Storage;
 
   /**
-   * @param {Gms2Config|string} [options] An options object or the path
+   * @param {Gms2ProjectOptions|string} [options] An options object or the path
    * to the .yyp file or a parent folder containing it. If not specified, will
    * look in the current directory and all children.
    */
