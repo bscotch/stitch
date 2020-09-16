@@ -31,6 +31,11 @@ export class  Gms2ResourceArray {
     return this.items.filter(matchFunction);
   }
 
+  forEach(doSomething:(item:Gms2Resource)=>any){
+    this.items.forEach(doSomething);
+    return this;
+  }
+
   find<subclass extends Gms2ResourceSubclassType>(matchFunction: (item: Gms2ResourceSubclass)=>any, resourceClass: subclass){
     return this.filterByClass(resourceClass)
       .find(item=>matchFunction(item));

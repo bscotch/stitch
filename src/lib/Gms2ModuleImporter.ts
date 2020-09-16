@@ -1,6 +1,8 @@
 import { differenceBy } from "lodash";
 import { Gms2Resource } from "./components/Gms2Resource";
 import { Gms2ResourceSubclass } from "./components/Gms2ResourceArray";
+import { Gms2Sound } from "./components/resources/Gms2Sound";
+import { Gms2Sprite } from "./components/resources/Gms2Sprite";
 import { Gms2PipelineError } from "./errors";
 import type { Gms2Project } from "./Gms2Project";
 import paths from "./paths";
@@ -88,6 +90,18 @@ export class Gms2ModuleImporter {
     }
 
     this.toProject.ensureResourceGroupAssignments();
+
+    // Make sure any audio groups, texture pages, and other content referenced by new/updated
+    // resources actually exist.
+    this.toProject.resources.forEach(resource=>{
+      if(resource instanceof Gms2Sound){
+        this.toProject.addAudioGroup(resource.audioGroup);
+      }
+      else if(resource instanceof Gms2Sprite){
+        this.toProject.addTextureGroup(resource.textureGroup);
+      }
+    });
+
     this.toProject.save();
   }
 
