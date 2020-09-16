@@ -41,10 +41,9 @@ export class Gms2ModuleImporter {
 
     this.moveAlienResources(moduleName);
 
-    const sourceModuleResources = Gms2ModuleImporter.resourcesInModule(this.fromProject,moduleName);
-
     // For each source asset:
     //   + See if there exists an asset with the same name ANYWHERE in the project
+    const sourceModuleResources = Gms2ModuleImporter.resourcesInModule(this.fromProject,moduleName);
     const sourceResourcesToAdd: Gms2ResourceSubclass[] = [];
     /** {source:local} pairs */
     const updatePairs: Map<Gms2Resource, Gms2Resource> = new Map();
@@ -75,15 +74,9 @@ export class Gms2ModuleImporter {
       updatePairs.set(sourceModuleResource,matchingLocalResource);
     }
 
-    const cloneResourceToLocal = (sourceResource:Gms2Resource)=>{
-      this.toProject.addFolder(sourceResource.folder);
-      const localYyDirAbsolute = paths.join(this.toProject.storage.yypDirAbsolute,sourceResource.yyDirRelative);
-      this.toProject.storage.copy(sourceResource.yyDirAbsolute,localYyDirAbsolute);
-    };
-
     // Add new resources
     for(const sourceResource of sourceResourcesToAdd){
-      cloneResourceToLocal(sourceResource);
+      this.cloneResourceFiles(sourceResource);
       this.toProject.resources.register(sourceResource.dehydrated,this.toProject.storage);
     }
 
@@ -91,10 +84,16 @@ export class Gms2ModuleImporter {
     // (Note: we may need more nuance than simply overwriting,
     //  so we can hold onto the localResource reference just in case)
     for(const [sourceResource] of updatePairs){
-      cloneResourceToLocal(sourceResource);
+      this.cloneResourceFiles(sourceResource);
     }
 
     this.toProject.ensureResourceGroupAssignments();
     this.toProject.save();
+  }
+
+  private cloneResourceFiles(sourceResource:Gms2Resource){
+    this.toProject.addFolder(sourceResource.folder);
+    const localYyDirAbsolute = paths.join(this.toProject.storage.yypDirAbsolute,sourceResource.yyDirRelative);
+    this.toProject.storage.copy(sourceResource.yyDirAbsolute,localYyDirAbsolute);
   }
 }
