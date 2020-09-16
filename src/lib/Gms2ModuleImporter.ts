@@ -10,36 +10,38 @@ export class Gms2ModuleImporter {
 
   constructor(private fromProject: Gms2Project, private toProject: Gms2Project){}
 
+  static resourcesInModule(project:Gms2Project,moduleName:string){
+    return project.folders
+      .findModuleFolders(moduleName)
+      .map(folder=>project.resources.filterByFolder(folder.path)).flat(1);
+  }
+
   importModules(moduleNames:string[]){
     for(const moduleName of moduleNames){
       this.importModule(moduleName);
     }
   }
 
-  importModule(moduleName:string){
-
-    // Get the folders making up this.target module
-    const localModuleFolders = this.toProject.folders
-      .findModuleFolders(moduleName)
-      .map(folder=>folder.path);
-    const sourceModuleFolders = this.fromProject.folders
-      .findModuleFolders(moduleName)
-      .map(folder=>folder.path);
-
-    // Get the assets inside those folders
-    let localModuleResources = localModuleFolders
-      .map(folder=>this.toProject.resources.filterByFolder(folder)).flat(1);
-    const sourceModuleResources = sourceModuleFolders
-      .map(folder=>this.fromProject.resources.filterByFolder(folder)).flat(1);
-
-    // Move any existing assets into a folder called "MODULE_CONFLICTS" if they do not exist in expected resources
+  /**
+   * Move any existing assets into a folder called "MODULE_CONFLICTS"
+   * if they do not exist in expected resources
+   */
+  moveAlienResources(moduleName:string){
+    const localModuleResources = Gms2ModuleImporter.resourcesInModule(this.toProject,moduleName);
+    const sourceModuleResources = Gms2ModuleImporter.resourcesInModule(this.fromProject,moduleName);
     const alienResources = differenceBy(localModuleResources,sourceModuleResources,'name');
     if(alienResources.length){
       const conflictFolder = "MODULE_CONFLICTS";
       this.toProject.addFolder(conflictFolder);
       alienResources.forEach(resource=>resource.folder=conflictFolder);
-      localModuleResources = differenceBy(localModuleResources,alienResources,'name');
     }
+  }
+
+  importModule(moduleName:string){
+
+    this.moveAlienResources(moduleName);
+
+    const sourceModuleResources = Gms2ModuleImporter.resourcesInModule(this.fromProject,moduleName);
 
     // For each source asset:
     //   + See if there exists an asset with the same name ANYWHERE in the project
