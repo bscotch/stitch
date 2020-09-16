@@ -47,7 +47,7 @@ export class  Gms2ResourceArray {
       .filter(item=>(item instanceof resourceClass)) as InstanceType<subclass>[];
   }
 
-  ensureSoundExists(sourcePath:string,storage:Gms2Storage){
+  addSound(sourcePath:string,storage:Gms2Storage){
     const {name} = paths.parse(sourcePath);
     const existingSound = this.findByField('name',name,Gms2Sound);
     if(existingSound){

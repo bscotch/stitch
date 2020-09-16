@@ -60,6 +60,10 @@ function listFilesByExtensionSync(dir:string,extension:string|string[],recursive
 
 export default {
   // Override with custom methods, and add new ones
+  // Note: If adding more methods here, either directly from fs(-extra)
+  // or as custom method, ensure that it will work with wonky
+  // Gamemaker file formats (e.g. yy and yyp files are JSON-like, but
+  // have trailing commas and include BigInt values)
   existsSync: fs.existsSync,
   ensureDirSync,
   copyFileSync: fs.copyFileSync,

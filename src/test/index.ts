@@ -143,10 +143,10 @@ at it goooo ${interp2}
     it("can add sounds",function(){
       resetSandbox();
       const project = new Gms2Project(sandboxRoot);
-      expect(()=>project.ensureSoundExists(audioSample+'-fake.mp3'),
+      expect(()=>project.addSound(audioSample+'-fake.mp3'),
         'should not be able to upsert non-existing audio assets'
       ).to.throw;
-      project.ensureSoundExists(audioSample);
+      project.addSound(audioSample);
       // Questions:
       //   Is the sound in the yyp?
       const audio = project.resources

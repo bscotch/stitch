@@ -220,8 +220,8 @@ export class Gms2Project {
    * with this name, its file will be replaced. Otherwise
    * the asset will be created and placed into folder "/NEW".
    */
-  ensureSoundExists(sourcePath:string){
-    this.resources.ensureSoundExists(sourcePath,this.storage);
+  addSound(sourcePath:string){
+    this.resources.addSound(sourcePath,this.storage);
     this.save();
     return this;
   }
