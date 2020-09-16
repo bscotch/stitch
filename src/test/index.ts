@@ -129,7 +129,7 @@ at it goooo ${interp2}
       const project = new Gms2Project(sandboxRoot);
       const newFolders = ["hello/world","deeply/nested/folder/structure"];
       for(const newFolder of newFolders ){
-        project.ensureFolder(newFolder);
+        project.addFolder(newFolder);
       }
       const projectFolders = project.dehydrated.Folders;
       const allExpectedFolders = newFolders.map(f=>paths.heirarchy(f)).flat(3);
@@ -143,10 +143,10 @@ at it goooo ${interp2}
     it("can add sounds",function(){
       resetSandbox();
       const project = new Gms2Project(sandboxRoot);
-      expect(()=>project.upsertSound(audioSample+'-fake.mp3'),
+      expect(()=>project.ensureSoundExists(audioSample+'-fake.mp3'),
         'should not be able to upsert non-existing audio assets'
       ).to.throw;
-      project.upsertSound(audioSample);
+      project.ensureSoundExists(audioSample);
       // Questions:
       //   Is the sound in the yyp?
       const audio = project.resources
@@ -159,19 +159,78 @@ at it goooo ${interp2}
       expect(fs.existsSync(audio.audioFilePathAbsolute),'audio file should exist').to.be.true;
     });
 
+    it("can create a new texture group",function(){
+      resetSandbox();
+      const project = new Gms2Project(sandboxRoot);
+      const newTextureGroupName = 'NewTextureGroup';
+      // Create the texture group
+      expect(project.textureGroups.findByField('name',newTextureGroupName),
+        'the new texture group should not already exist'
+      ).to.not.exist;
+      project.addTextureGroup(newTextureGroupName);
+      expect(project.textureGroups.findByField('name',newTextureGroupName),
+        'the new texture group should be added'
+      ).to.exist;
+    });
+
+    it("can create a new audio group",function(){
+      resetSandbox();
+      const project = new Gms2Project(sandboxRoot);
+      const newAudioGroupName = 'NewAudioGroup';
+      // Create the texture group
+      expect(project.audioGroups.findByField('name',newAudioGroupName),
+        'the new audio group should not already exist'
+      ).to.not.exist;
+      project.addAudioGroup(newAudioGroupName);
+      expect(project.audioGroups.findByField('name',newAudioGroupName),
+        'the new audio group should be added'
+      ).to.exist;
+    });
+
+    it("can create texture group assignments",function(){
+      resetSandbox();
+      const project = new Gms2Project(sandboxRoot);
+      const newTextureGroupName = 'NewTextureGroup';
+      const sprite = project.resources.sprites[0];
+      expect(sprite.textureGroup,
+        'sprite should not be in target texture group'
+      ).to.not.equal(newTextureGroupName);
+      project.addTextureGroupAssignment(sprite.folder,newTextureGroupName);
+      // The new Texture page should exist
+      expect(project.textureGroups.findByField('name',newTextureGroupName),
+        'the new texture group should be added'
+      ).to.exist;
+      // The Sprite should be properly reassigned
+      expect(sprite.textureGroup,
+        'sprite should be reassigned'
+      ).to.equal(newTextureGroupName);
+    });
+
+    it("can create audio group assignments",function(){
+      resetSandbox();
+      const project = new Gms2Project(sandboxRoot);
+      const newAudioGroupName = 'NewAudioGroup';
+      const sound = project.resources.sounds[0];
+      expect(sound.audioGroup,
+        'sound should not be in target audio group'
+      ).to.not.equal(newAudioGroupName);
+      project.addAudioGroupAssignment(sound.folder,newAudioGroupName);
+      // The new Texture page should exist
+      expect(project.audioGroups.findByField('name',newAudioGroupName),
+        'the new audio group should be added'
+      ).to.exist;
+      // The Sprite should be properly reassigned
+      expect(sound.audioGroup,
+        'sound should be reassigned'
+      ).to.equal(newAudioGroupName);
+    });
+
+
     //   it("written content is unchanged", function(){
     //     const originalFile = json.readFileSync(project.yypAbsolutePath);
     //     project.commit();
     //     const writtenFile = json.readFileSync(project.yypAbsolutePath);
     //     expect(json.stringify(originalFile) == json.stringify(writtenFile)).to.be.true;
-    //   });
-    //   xit("can upsert folders",function(){
-    //     resetSandbox();
-    //     project = new Project(sandboxRoot);
-    //     expect(()=>project.ensureViewExists('bleh/new/secondLevel')).to.throw;
-    //     project.ensureViewExists('sounds/new/secondLevel/thirdLevel');
-    //     const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
-    //     expect(changes.length).to.be.greaterThan(0);
     //   });
     //   xit("can add included files",function(){
     //     // Can include any type of file, so use the sound file for convenience

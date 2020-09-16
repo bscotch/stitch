@@ -13,21 +13,14 @@ interface Gms2ProjectConfigFile {
 /** The Project Config lives alongside the .yyp file */
 export class Gms2ProjectConfig {
 
-  private data: Gms2ProjectConfigFile;
+  private data!: Gms2ProjectConfigFile;
 
   constructor (readonly storage: Gms2Storage){
-    const initialContent = {
-      textureGroupAssignments:{},
-      audioGroupAssignments:{}
-    };
     if(!storage.exists(this.filePathAbsolute)){
-      this.data = initialContent;
+      this.data = Gms2ProjectConfig.defaultContent;
       this.save();
     }
-    this.data = {
-      ...initialContent,
-      ...storage.readJson(this.filePathAbsolute)
-    };
+    this.load();
   }
 
   get name(){
@@ -74,33 +67,52 @@ export class Gms2ProjectConfig {
     return Gms2ProjectConfig.sortedKeys(this.audioGroupAssignments);
   }
 
-  upsertTextureGroupAssignment(folder:string,textureGroup:string){
+  ensureTextureGroupAssignmentExists(folder:string,textureGroup:string){
     this.data.textureGroupAssignments[folder] = textureGroup;
-    this.save();
+    return this.save();
   }
 
   deleteTextureGroupAssignment(folder:string){
     Reflect.deleteProperty(this.data.textureGroupAssignments,folder);
-    this.save();
+    return this.save();
   }
 
-  upsertAudioGroupAssignment(folder:string,textureGroup:string){
+  ensureAudioGroupAssignmentExists(folder:string,textureGroup:string){
     this.data.audioGroupAssignments[folder] = textureGroup;
-    this.save();
+    return this.save();
   }
 
   deleteAudioGroupAssignment(folder:string){
     Reflect.deleteProperty(this.data.audioGroupAssignments,folder);
-    this.save();
+    return this.save();
+  }
+
+  private load(){
+    this.data = Gms2ProjectConfig.defaultContent;
+    try{
+      Object.assign(this.data,this.storage.readJson(this.filePathAbsolute))
+    }
+    catch(err){
+      if( ! this.storage.isReadOnly){ throw err; }
+    }
+    return this;
   }
 
   private save(){
     this.storage.saveJson(this.filePathAbsolute,this.data);
+    return this;
   }
 
   static sortedKeys(object:{[key:string]:any}){
     const keys = Object.keys(object);
     keys.sort(paths.pathSpecificitySort);
     return keys;
+  }
+
+  static get defaultContent(){
+    return {
+      textureGroupAssignments:{},
+      audioGroupAssignments:{}
+    };
   }
 }

@@ -29,6 +29,11 @@ export class Gms2Resource {
     return this.yyData.name;
   }
 
+  /** The folder containing this resource (as viewed via the IDE) */
+  get folder(){
+    return this.yyData.parent.path.replace(/^folders\/(.*).yy$/,"$1");
+  }
+
   get yyDirRelative(){
     return path.dirname(this.yyPathRelative);
   }
@@ -45,6 +50,26 @@ export class Gms2Resource {
     return path.join(this.storage.yypDirAbsolute,this.yyPathRelative);
   }
 
+  /**
+   * Check to see if this resource is in a given folder (recursively).
+   * For example, for sprite 'sprites/menu/title/logo' both
+   * 'sprites' and 'sprites/menu' would return `true`.
+   */
+  isInFolder(folderPath:string,recursive=true){
+    folderPath = folderPath.replace(/\/$/,'');
+    if(! this.folder.startsWith(folderPath) ){
+      return false;
+    }
+    else if(this.folder == folderPath){
+      return true;
+    }
+    else if(recursive && this.folder.replace(folderPath,'')[0]=='/'){
+      // Then this.folder is a subdirectory of folderPath
+      return true;
+    }
+    return false;
+  }
+
   /** Resources typically have one or more companion files
    * alongside their .yy file. They often have the same name
    * as the resource, but generally have different extension.
@@ -55,7 +80,7 @@ export class Gms2Resource {
     return path.join(this.yyDirAbsolute,basename);
   }
 
-  private save(){
+  protected save(){
     // Save the YY data
     this.storage.saveJson(this.yyPathAbsolute,this.yyData);
   }

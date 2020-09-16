@@ -102,6 +102,14 @@ export class Gms2Project {
     return this.components.resources;
   }
 
+  get textureGroups(){
+    return this.components.TextureGroups;
+  }
+
+  get audioGroups(){
+    return this.components.AudioGroups;
+  }
+
   /**
    * Recreate in-memory representations of the Gamemaker Project
    * using its files.
@@ -123,8 +131,8 @@ export class Gms2Project {
       resources: new Gms2ResourceArray(yyp.resources,this.storage)
     };
 
-    this.syncTextureGroupsToConfig();
-    this.syncAudioGroupsToConfig();
+    this.setTextureGroupsUsingConfig();
+    this.setAudioGroupsUsingConfig();
 
     // DEBORK
     // TODO: Ensure that parent groups (folders) for all subgroups exist as separate entities.
@@ -133,39 +141,81 @@ export class Gms2Project {
     // TODO: Make it so that we can actually load an save a project file.
 
     // Ensure that the 'NEW' folder exists for imported assets.
-    this.ensureFolder('NEW');
+    this.addFolder('NEW');
+  }
+
+  /** Ensure that a texture group exists in the project. */
+  addTextureGroup(textureGroupName:string){
+    this.components.TextureGroups.addIfNew({
+      ...Gms2TextureGroup.defaultDataValues,
+      name:textureGroupName
+    },'name',textureGroupName);
+    return this;
+  }
+
+  /** Add a texture group assignment if it doesn't already exist. */
+  addTextureGroupAssignment(folder:string,textureGroupName:string){
+    this.config.ensureTextureGroupAssignmentExists(folder,textureGroupName);
+    this.setTextureGroupsUsingConfig();
+    return this;
   }
 
   /**
    * Ensure that the texture groups used in the config all exist, and
-   * that sprites are properly assigned to them.
+   * that sprites are properly assigned to them. (This must generally be re-run
+   * on configuration upate, since cannot handle inheritance with singleton updates.)
    */
-  private syncTextureGroupsToConfig(){
+  private setTextureGroupsUsingConfig(){
     for(const textureGroupName of this.config.textureGroupsWithAssignedFolders){
-      this.components.TextureGroups.addIfNew({
-        ...Gms2TextureGroup.defaultDataValues,
-        name:textureGroupName
-      },'name',textureGroupName);
+      this.addTextureGroup(textureGroupName);
     }
-    // TODO: Ensure sprites are assigned to correct config texture groups
-    const sprites = this.components.resources.filterByClass(Gms2Sprite);
+    // Ensure sprites are assigned to correct config texture groups
+    for(const folder of this.config.foldersWithAssignedTextureGroups){
+      this.components.resources
+        .filterByClassAndFolder(Gms2Sprite,folder)
+        .forEach(sprite=>sprite.textureGroup=this.config.textureGroupAssignments[folder]);
+    }
+    return this;
   }
 
-  private syncAudioGroupsToConfig(){
+  /** Ensure an audio group exists in the project */
+  addAudioGroup(audioGroupName:string){
+    this.components.AudioGroups.addIfNew({
+      ...Gms2AudioGroup.defaultDataValues,
+      name:audioGroupName
+    },'name',audioGroupName);
+    return this;
+  }
+
+  /** Add a texture group assignment if it doesn't already exist. */
+  addAudioGroupAssignment(folder:string,audioGroupName:string){
+    this.config.ensureAudioGroupAssignmentExists(folder,audioGroupName);
+    this.setAudioGroupsUsingConfig();
+    return this;
+  }
+
+  /**
+   * Ensure that the Sound assets have their Audio Groups correctly
+   * assigned based on the config file. (This must generally be re-run
+   * on configuration upate, since cannot handle inheritance with singleton updates.)
+   */
+  private setAudioGroupsUsingConfig(){
     for(const audioGroupName of this.config.audioGroupsWithAssignedFolders){
-      this.components.AudioGroups.addIfNew({
-        ...Gms2AudioGroup.defaultDataValues,
-        name:audioGroupName
-      },'name',audioGroupName);
+      this.addAudioGroup(audioGroupName);
     }
-    // TODO: Ensure sounds are assigned to correct config audio groups
-    const sounds = this.components.resources.filterByClass(Gms2Sound);
+    // Ensure sounds are assigned to correct config audio groups
+    for(const folder of this.config.foldersWithAssignedAudioGroups){
+      this.components.resources
+        .filterByClassAndFolder(Gms2Sound,folder)
+        .forEach(sprite=>sprite.audioGroup=this.config.audioGroupAssignments[folder]);
+    }
+    return this;
   }
 
   /**
    * Ensure that a folder path exists, so that assets can be assigned to it.
    */
-  ensureFolder(path:string,tags?:string[]){
+  addFolder(path:string,tags?:string[]){
     // Clean up messy seperators
     path = path.replace(/[/\\]+/,'/')
       .replace(/^\//,'')
@@ -181,6 +231,7 @@ export class Gms2Project {
       },'path',subPath);
     }
     this.save();
+    return this;
   }
 
   /**
@@ -189,14 +240,16 @@ export class Gms2Project {
    * with this name, its file will be replaced. Otherwise
    * the asset will be created and placed into folder "/NEW".
    */
-  upsertSound(sourcePath:string){
-    this.resources.upsertSound(sourcePath,this.storage);
+  ensureSoundExists(sourcePath:string){
+    this.resources.ensureSoundExists(sourcePath,this.storage);
     this.save();
+    return this;
   }
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
   private save(){
     this.storage.saveJson(this.yypAbsolutePath,this.dehydrated);
+    return this;
   }
 
   get dehydrated(): YypComponents {

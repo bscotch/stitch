@@ -19,6 +19,9 @@ export class  Gms2ResourceArray {
     return dehydrateArray(this.items);
   }
 
+  get sprites(){ return this.filterByClass(Gms2Sprite); }
+  get sounds(){ return this.filterByClass(Gms2Sound); }
+
   filterByClass<subclass extends Gms2ResourceSubclassType>(resourceClass: subclass){
     return this.items
       .filter(item=>(item instanceof resourceClass)) as InstanceType<subclass>[];
@@ -33,7 +36,18 @@ export class  Gms2ResourceArray {
     return this.find(item=>item[field]==value,resourceClass);
   }
 
-  upsertSound(sourcePath:string,storage:Gms2Storage){
+  /** Find all resources in a given folder */
+  filterByFolder(folder:string,recursive=true){
+    return this.items.filter(item=>item.isInFolder(folder,recursive));
+  }
+
+  /** Find all resources of a given type within a folder */
+  filterByClassAndFolder<subclass extends Gms2ResourceSubclassType>(resourceClass:subclass,folder:string,recursive=true){
+    return this.filterByFolder(folder,recursive)
+      .filter(item=>(item instanceof resourceClass)) as InstanceType<subclass>[];
+  }
+
+  ensureSoundExists(sourcePath:string,storage:Gms2Storage){
     const {name} = paths.parse(sourcePath);
     const existingSound = this.findByField('name',name,Gms2Sound);
     if(existingSound){

@@ -10,7 +10,7 @@ function pathSpecificitySort(path1:string,path2:string){
   const path1Parts = path1.split(/[\\/]+/);
   const path2Parts = path2.split(/[\\/]+/);
   if(path1Parts.length != path2Parts.length){
-    return path2Parts.length - path1Parts.length;
+    return path1Parts.length - path2Parts.length;
   }
   // Sort alphabetically but by folder
   for(let i=0; i<path1Parts.length; i++){

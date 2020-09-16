@@ -70,6 +70,16 @@ export class Gms2Sound extends Gms2Resource {
     return new Gms2Sound(localSoundYy,storage);
   }
 
+  get audioGroup(){
+    return this.yyData.audioGroupId.name;
+  }
+
+  set audioGroup(name:string){
+    this.yyData.audioGroupId.name = name;
+    this.yyData.audioGroupId.path = `audiogroups/${name}`;
+    this.save();
+  }
+
   static get audioGroupIdDefault(){
     return {
       name: 'audiogroup_default',
