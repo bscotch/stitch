@@ -155,7 +155,7 @@ export class Gms2Project {
 
   /** Add a texture group assignment if it doesn't already exist. */
   addTextureGroupAssignment(folder:string,textureGroupName:string){
-    this.config.ensureTextureGroupAssignmentExists(folder,textureGroupName);
+    this.config.addTextureGroupAssignment(folder,textureGroupName);
     this.setTextureGroupsUsingConfig();
     return this;
   }
@@ -189,7 +189,7 @@ export class Gms2Project {
 
   /** Add a texture group assignment if it doesn't already exist. */
   addAudioGroupAssignment(folder:string,audioGroupName:string){
-    this.config.ensureAudioGroupAssignmentExists(folder,audioGroupName);
+    this.config.addAudioGroupAssignment(folder,audioGroupName);
     this.setAudioGroupsUsingConfig();
     return this;
   }

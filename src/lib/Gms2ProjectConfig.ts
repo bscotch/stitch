@@ -10,6 +10,8 @@ interface Gms2ProjectConfigFile {
   }
 }
 
+type Gms2ProjectConfigAssignmentField = 'textureGroupAssignments'|'audioGroupAssignments';
+
 /** The Project Config lives alongside the .yyp file */
 export class Gms2ProjectConfig {
 
@@ -30,6 +32,7 @@ export class Gms2ProjectConfig {
   get filePathAbsolute(){
     return this.storage.toAbsolutePath(this.name);
   }
+
 
   get textureGroupAssignments(){
     return {...this.data.textureGroupAssignments};
@@ -67,24 +70,30 @@ export class Gms2ProjectConfig {
     return Gms2ProjectConfig.sortedKeys(this.audioGroupAssignments);
   }
 
-  ensureTextureGroupAssignmentExists(folder:string,textureGroup:string){
-    this.data.textureGroupAssignments[folder] = textureGroup;
+  private addGroupAssignement(type:Gms2ProjectConfigAssignmentField,folder:string,group:string){
+    this.data[type][folder] = group;
     return this.save();
+  }
+
+  private deleteGroupAssignment(type:Gms2ProjectConfigAssignmentField,folder:string){
+    Reflect.deleteProperty(this.data[type],folder);
+    return this.save();
+  }
+
+  addTextureGroupAssignment(folder:string,textureGroup:string){
+    return this.addGroupAssignement('textureGroupAssignments',folder,textureGroup);
   }
 
   deleteTextureGroupAssignment(folder:string){
-    Reflect.deleteProperty(this.data.textureGroupAssignments,folder);
-    return this.save();
+    return this.deleteGroupAssignment('textureGroupAssignments',folder);
   }
 
-  ensureAudioGroupAssignmentExists(folder:string,textureGroup:string){
-    this.data.audioGroupAssignments[folder] = textureGroup;
-    return this.save();
+  addAudioGroupAssignment(folder:string,textureGroup:string){
+    return this.addGroupAssignement('audioGroupAssignments',folder,textureGroup);
   }
 
   deleteAudioGroupAssignment(folder:string){
-    Reflect.deleteProperty(this.data.audioGroupAssignments,folder);
-    return this.save();
+    return this.deleteGroupAssignment('audioGroupAssignments',folder);
   }
 
   private load(){
