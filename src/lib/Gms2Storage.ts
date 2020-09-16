@@ -1,5 +1,5 @@
 import paths from "./paths";
-import { Gms2PipelineError, assert } from "./errors";
+import { assert } from "./errors";
 import fs from "./files";
 
 export class Gms2Storage {

@@ -110,40 +110,6 @@ export class Gms2Project {
     return this.components.AudioGroups;
   }
 
-  /**
-   * Recreate in-memory representations of the Gamemaker Project
-   * using its files.
-   */
-  reload() {
-    // Load the YYP file, store RAW (ensure field resourceType: "GMProject" exists)
-    const yyp = fs.readJsonSync(this.storage.yypAbsolutePath) as YypComponents;
-    assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
-
-    this.components = {
-      ...yyp,
-      Options: new Gms2ComponentArray(yyp.Options, Gms2Option),
-      configs: new Gms2Config(yyp.configs),
-      Folders: new Gms2ComponentArray(yyp.Folders, Gms2Folder),
-      RoomOrder: new Gms2ComponentArray(yyp.RoomOrder, Gms2RoomOrder),
-      TextureGroups: new Gms2ComponentArray(yyp.TextureGroups, Gms2TextureGroup),
-      AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
-      IncludedFiles: new Gms2ComponentArray(yyp.IncludedFiles, Gms2IncludedFile),
-      resources: new Gms2ResourceArray(yyp.resources,this.storage)
-    };
-
-    this.setTextureGroupsUsingConfig();
-    this.setAudioGroupsUsingConfig();
-
-    // DEBORK
-    // TODO: Ensure that parent groups (folders) for all subgroups exist as separate entities.
-    // TODO: Remove duplicate datafile entries (these dupe on every boot)
-
-    // TODO: Make it so that we can actually load an save a project file.
-
-    // Ensure that the 'NEW' folder exists for imported assets.
-    this.addFolder('NEW');
-  }
-
   /** Ensure that a texture group exists in the project. */
   addTextureGroup(textureGroupName:string){
     this.components.TextureGroups.addIfNew({
@@ -252,6 +218,44 @@ export class Gms2Project {
     return this;
   }
 
+  /**
+   * Recreate in-memory representations of the Gamemaker Project
+   * using its files.
+   */
+  private reload() {
+    // Load the YYP file, store RAW (ensure field resourceType: "GMProject" exists)
+    const yyp = fs.readJsonSync(this.storage.yypAbsolutePath) as YypComponents;
+    assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
+
+    this.components = {
+      ...yyp,
+      Options: new Gms2ComponentArray(yyp.Options, Gms2Option),
+      configs: new Gms2Config(yyp.configs),
+      Folders: new Gms2ComponentArray(yyp.Folders, Gms2Folder),
+      RoomOrder: new Gms2ComponentArray(yyp.RoomOrder, Gms2RoomOrder),
+      TextureGroups: new Gms2ComponentArray(yyp.TextureGroups, Gms2TextureGroup),
+      AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
+      IncludedFiles: new Gms2ComponentArray(yyp.IncludedFiles, Gms2IncludedFile),
+      resources: new Gms2ResourceArray(yyp.resources,this.storage)
+    };
+
+    this.setTextureGroupsUsingConfig();
+    this.setAudioGroupsUsingConfig();
+
+    // DEBORK
+    // TODO: Ensure that parent groups (folders) for all subgroups exist as separate entities.
+    // TODO: Remove duplicate datafile entries (these dupe on every boot)
+
+    // TODO: Make it so that we can actually load an save a project file.
+
+    // Ensure that the 'NEW' folder exists for imported assets.
+    this.addFolder('NEW');
+  }
+
+  /**
+   * The project's YYP content with everything as plain primitives (no custom class instances).
+   * Perfect for writing to JSON.
+   */
   get dehydrated(): YypComponents {
     const fields = Object.keys(this.components) as (keyof YypComponents)[];
     const asObject: Partial<YypComponents> = {};

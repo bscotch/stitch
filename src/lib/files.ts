@@ -1,10 +1,26 @@
+/**
+ * @file Gamemaker files and file-system needs have some specificies that
+ * aren't dealth with by native fs or popular library fs-extra. This module
+ * should be used for any file system operations, so that only those methods
+ * that we know won't create problems will be exported and useable (and any
+ * methods that would create problems can be rewritten).
+ */
+
 import fs from "fs-extra";
 import path from "./paths";
 import {writeFileSync as writeJsonSync,loadFromFileSync as readJsonSync} from "./json";
+import { assert } from "./errors";
+
+function ensureDirSync(dir:string){
+  if(!fs.existsSync(dir)){
+    fs.mkdirSync(dir,{recursive:true});
+  }
+  assert(fs.statSync(dir).isDirectory(),`Path ${dir} is not a directory.`);
+}
 
 /** Write file while ensuring the parent directories exist. */
 function writeFileSync(filePath:string,stuff:string|Buffer){
-  fs.ensureDirSync(path.dirname(filePath));
+  ensureDirSync(path.dirname(filePath));
   fs.writeFileSync(filePath,stuff);
 }
 
@@ -43,8 +59,12 @@ function listFilesByExtensionSync(dir:string,extension:string|string[],recursive
 }
 
 export default {
-  ...fs,
   // Override with custom methods, and add new ones
+  existsSync: fs.existsSync,
+  ensureDirSync,
+  copyFileSync: fs.copyFileSync,
+  copySync: fs.copySync,
+  emptyDirSync: fs.emptyDirSync,
   writeFileSync,
   writeJsonSync,
   readJsonSync,
