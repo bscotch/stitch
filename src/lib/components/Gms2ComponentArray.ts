@@ -41,8 +41,9 @@ export class  Gms2ComponentArray <YypData,ComponentClass extends new (object:Yyp
     const existing = this.findByField(uniqueField,uniqueFieldValue);
     if(!existing){
       this.addNew(data);
+      return true;
     }
-    return this;
+    return false;
   }
 
   get dehydrated(): YypData[] {

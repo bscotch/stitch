@@ -129,7 +129,7 @@ export class Gms2Project {
     this.components.TextureGroups.addIfNew({
       ...Gms2TextureGroup.defaultDataValues,
       name:textureGroupName
-    },'name',textureGroupName);
+    },'name',textureGroupName) && this.save(); // So only save if changed
     return this.save();
   }
 
@@ -163,8 +163,8 @@ export class Gms2Project {
     this.components.AudioGroups.addIfNew({
       ...Gms2AudioGroup.defaultDataValues,
       name:audioGroupName
-    },'name',audioGroupName);
-    return this.save();
+    },'name',audioGroupName) && this.save(); // So only save if changed
+    return this;
   }
 
   /** Add a texture group assignment if it doesn't already exist. */
