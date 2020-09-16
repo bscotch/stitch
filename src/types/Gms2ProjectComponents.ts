@@ -16,6 +16,7 @@ import type { Gms2AudioGroup } from "../lib/components/Gms2AudioGroup";
 import type { Gms2IncludedFile } from "../lib/components/Gms2IncludedFile";
 import type { Gms2ComponentArray } from "../lib/components/Gms2ComponentArray";
 import { Gms2ResourceArray } from "../lib/components/Gms2ResourceArray";
+import { Gms2FolderArray } from "../lib/Gms2FolderArray";
 
 // Convert over to new interface by extending
 // YypComponents, omitting each field as we
@@ -26,7 +27,7 @@ type ReplacedFields = "Options" | "configs" | "Folders" | "RoomOrder" | "Texture
 export interface Gms2ProjectComponents extends Omit<YypComponents, ReplacedFields> {
   Options: Gms2ComponentArray<YypOption,typeof Gms2Option>,
   configs: Gms2Config,
-  Folders: Gms2ComponentArray<YypFolder,typeof Gms2Folder>,
+  Folders: Gms2FolderArray,
   RoomOrder: Gms2ComponentArray<YypRoomOrder,typeof Gms2RoomOrder>,
   TextureGroups: Gms2ComponentArray<YypTextureGroup, typeof Gms2TextureGroup>,
   AudioGroups: Gms2ComponentArray<YypAudioGroup, typeof Gms2AudioGroup>,

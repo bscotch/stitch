@@ -15,7 +15,7 @@ export class Gms2FolderArray extends Gms2ComponentArray<YypFolder,typeof Gms2Fol
    * ending with "/BscotchPack" is part of that module. Case-insensitive.
    */
   findModuleFolders(module:string){
-    this.items.filter(item=>{
+    return this.items.filter(item=>{
       const subdirs = item.path.split('/');
       return subdirs[subdirs.length-1].toLocaleLowerCase() == module.toLocaleLowerCase();
     });

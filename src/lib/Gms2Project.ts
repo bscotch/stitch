@@ -12,12 +12,14 @@ import { Gms2TextureGroup } from './components/Gms2TextureGroup';
 import { Gms2AudioGroup } from './components/Gms2AudioGroup';
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2ComponentArray } from "./components/Gms2ComponentArray";
-import { Gms2ResourceArray } from "./components/Gms2ResourceArray";
+import { Gms2ResourceArray, Gms2ResourceSubclass } from "./components/Gms2ResourceArray";
 import { Gms2Storage } from "./Gms2Storage";
 import { Gms2ProjectConfig } from "./Gms2ProjectConfig";
 import { Gms2Sprite } from "./components/resources/Gms2Sprite";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
 import { Gms2FolderArray } from "./Gms2FolderArray";
+import differenceBy from "lodash/differenceBy";
+import { Gms2Resource } from "./components/Gms2Resource";
 
 export interface Gms2ProjectOptions {
   /**
@@ -111,17 +113,106 @@ export class Gms2Project {
     return this.components.AudioGroups;
   }
 
+  private importModule(fromProject:Gms2Project, moduleName:string ){
+    const normalizedModuleName = moduleName.toLocaleLowerCase();
+    /* Find all actions that we need to take, and anything that would prevent successful import. These include:
+        + ✅ Find all assets in the source within the module
+        + ✅ Find all assets in local within the module
+        + ✅ Find all assets in local within the module that are NOT also in the source,
+             and move these into a MODULE_CONFLICT folder
+        + throw error if an asset exists in the current project that has the same name
+          as an imported asset BUT either the type is different or the local asset is not in the same module.
+        + Add all the missing assets to the local
+        + Update all the assets that are in both the local and the source.
+    */
+
+    // Get the folders making up this module
+    const localModuleFolders = this.folders
+      .findModuleFolders(moduleName)
+      .map(folder=>folder.path);
+    const sourceModuleFolders = fromProject.folders
+      .findModuleFolders(moduleName)
+      .map(folder=>folder.path);
+
+    // Get the assets inside those folders
+    let localModuleResources = localModuleFolders
+      .map(folder=>this.resources.filterByFolder(folder)).flat(1);
+    const sourceModuleResources = sourceModuleFolders
+      .map(folder=>fromProject.resources.filterByFolder(folder)).flat(1);
+
+    // Move any existing assets into a folder called "MODULE_CONFLICTS" if they do not exist in expected resources
+    const alienResources = differenceBy(localModuleResources,sourceModuleResources,'name');
+    if(alienResources.length){
+      const conflictFolder = "MODULE_CONFLICTS";
+      this.addFolder(conflictFolder);
+      alienResources.forEach(resource=>resource.folder=conflictFolder);
+      localModuleResources = differenceBy(localModuleResources,alienResources,'name');
+    }
+
+    // For each source asset:
+    //   + See if there exists an asset with the same name ANYWHERE in the project
+    const sourceResourcesToAdd: Gms2ResourceSubclass[] = [];
+    /** {source:local} pairs */
+    const updatePairs: Map<Gms2Resource, Gms2Resource> = new Map();
+    for(const sourceModuleResource of sourceModuleResources){
+      const matchingLocalResource = this.resources
+        .findByField('name',sourceModuleResource.name,Gms2Resource);
+      if(!matchingLocalResource){
+        sourceResourcesToAdd.push(sourceModuleResource);
+        continue;
+      }
+      // If this is NOT in the local module, throw an error.
+      if(! matchingLocalResource.isInModule(moduleName)){
+        throw new Gms2PipelineError(oneline`
+          Conflict: local asset ${matchingLocalResource.name} exists
+          but is not in the expected module ${moduleName}
+        `);
+      }
+      // If this is of a different type, throw an error.
+      if( matchingLocalResource.resourceType != sourceModuleResource.resourceType){
+        throw new Gms2PipelineError(oneline`
+          Conflict: local asset ${matchingLocalResource.name} exists,
+          and is in the correct module,
+          but does not have the same resource type as the source.
+        `);
+      }
+      // Add to set as pair so that we can use the source as reference
+      // without having to search for it again.
+      updatePairs.set(sourceModuleResource,matchingLocalResource);
+    }
+
+    const cloneResourceToLocal = (sourceResource:Gms2Resource)=>{
+      this.addFolder(sourceResource.folder);
+      const localYyDirAbsolute = paths.join(this.storage.yypDirAbsolute,sourceResource.yyDirRelative);
+      this.storage.copy(sourceResource.yyDirAbsolute,localYyDirAbsolute);
+    };
+
+    // Add new resources
+    for(const sourceResource of sourceResourcesToAdd){
+      cloneResourceToLocal(sourceResource);
+      this.resources.register(sourceResource.dehydrated,this.storage);
+    }
+
+    // Update matching stuff
+    // (Note: we may need more nuance than simply overwriting,
+    //  so we can hold onto the localResource reference just in case)
+    for(const [sourceResource,localResource] of updatePairs){
+      cloneResourceToLocal(sourceResource);
+    }
+
+    this.ensureResourceGroupAssignments();
+    this.save();
+  }
+
   /**
    * Import modules from one GMS2 project into this one.
    * @param fromProject A directory containing a single .yyp file somwhere, or the path directly to a .yyp file.
    */
   importModules(fromProjectPath: string,moduleNames:string[]){
     const fromProject = new Gms2Project({projectPath:fromProjectPath,readOnly:true});
-    const normalizedModuleNames = moduleNames.map(moduleName=>moduleName.toLocaleLowerCase());
-
-
-    // Ensure texture and audio groups are properly assigned
-
+    for(const moduleName of moduleNames){
+      this.importModule(fromProject,moduleName);
+    }
   }
 
   /** Ensure that a texture group exists in the project. */
@@ -130,7 +221,7 @@ export class Gms2Project {
       ...Gms2TextureGroup.defaultDataValues,
       name:textureGroupName
     },'name',textureGroupName);
-    return this;
+    return this.save();
   }
 
   /** Add a texture group assignment if it doesn't already exist. */
@@ -164,7 +255,7 @@ export class Gms2Project {
       ...Gms2AudioGroup.defaultDataValues,
       name:audioGroupName
     },'name',audioGroupName);
-    return this;
+    return this.save();
   }
 
   /** Add a texture group assignment if it doesn't already exist. */

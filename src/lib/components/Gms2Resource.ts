@@ -3,6 +3,7 @@ import { YyData } from "../../types/Yy";
 
 import { YypResource } from "../../types/YypComponents";
 import { Gms2Storage } from "../Gms2Storage";
+import paths from "../paths";
 import path from "../paths";
 
 export class Gms2Resource {
@@ -33,6 +34,15 @@ export class Gms2Resource {
   get folder(){
     return this.yyData.parent.path.replace(/^folders\/(.*).yy$/,"$1");
   }
+  set folder(folderName:string){
+    this.yyData.parent.name = folderName;
+    this.yyData.parent.path = `folders/${folderName}.yy`;
+    this.save();
+  }
+
+  get resourceType(){
+    return this.yyData.resourceType;
+  }
 
   get yyDirRelative(){
     return path.dirname(this.yyPathRelative);
@@ -48,6 +58,19 @@ export class Gms2Resource {
 
   get yyPathAbsolute(){
     return path.join(this.storage.yypDirAbsolute,this.yyPathRelative);
+  }
+
+  /**
+   * Return the paths of all files that collectively make up this
+   * resource. In *all cases* that inclues a .yy file. The rest is
+   * resourceType-specific.
+  */
+  get filePathsAbsolute(){
+    return this.storage.listPaths(this.yyDirAbsolute);
+  }
+
+  get filePathsRelative(){
+    return this.filePathsAbsolute.map(filePath=>paths.relative(paths.join(this.yyDirAbsolute,'..','..'),filePath));
   }
 
   /**
@@ -68,6 +91,19 @@ export class Gms2Resource {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Check to see if this resource is part of a module,
+   * meaning that the module name exists as one of the subdirs
+   * of its folder. For example, if this resource is in
+   * sprites/BscotchPack/myPackOfSprites/... and you checked
+   * for module "BscotchPack", you'd get TRUE.
+   */
+  isInModule(moduleName:string){
+    return this.folder.split('/')
+      .map(subdir=>subdir.toLocaleLowerCase())
+      .includes(moduleName.toLocaleLowerCase());
   }
 
   /** Resources typically have one or more companion files

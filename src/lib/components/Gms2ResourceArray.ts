@@ -12,7 +12,7 @@ export class  Gms2ResourceArray {
   private items: Gms2ResourceSubclass[];
 
   constructor(data: YypResource[], storage: Gms2Storage){
-    this.items = data.map(item=>Gms2ResourceArray._hydrateResource(item,storage));
+    this.items = data.map(item=>Gms2ResourceArray.hydrateResource(item,storage));
   }
 
   get dehydrated(): YypResource[] {
@@ -25,6 +25,10 @@ export class  Gms2ResourceArray {
   filterByClass<subclass extends Gms2ResourceSubclassType>(resourceClass: subclass){
     return this.items
       .filter(item=>(item instanceof resourceClass)) as InstanceType<subclass>[];
+  }
+
+  filter(matchFunction:(item:Gms2Resource)=>any){
+    return this.items.filter(matchFunction);
   }
 
   find<subclass extends Gms2ResourceSubclassType>(matchFunction: (item: Gms2ResourceSubclass)=>any, resourceClass: subclass){
@@ -59,6 +63,15 @@ export class  Gms2ResourceArray {
     }
   }
 
+  /**
+   * Given Yyp data for a resource that **is not listed in the yyp file**
+   * but that **does have .yy and associated files**, add hydrate the object
+   * and add it to the Yyp.
+   */
+  register(data:YypResource,storage:Gms2Storage){
+    this.items.push(Gms2ResourceArray.hydrateResource(data,storage));
+  }
+
   private push(newResource: Gms2Resource){
     this.items.push(newResource);
     return this;
@@ -84,7 +97,7 @@ export class  Gms2ResourceArray {
     return classMap;
   }
 
-  static _hydrateResource(data: YypResource, storage: Gms2Storage) {
+  static hydrateResource(data: YypResource, storage: Gms2Storage) {
     const resourceType = data.id.path.split('/')[0] as (keyof typeof Gms2ResourceArray._resourceClassMap);
     const subclass = Gms2ResourceArray
       ._resourceClassMap[resourceType];

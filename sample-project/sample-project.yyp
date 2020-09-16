@@ -2,7 +2,7 @@
   "resources": [
     {"id":{"name":"object","path":"objects/object/object.yy",},"order":4,},
     {"id":{"name":"sprite","path":"sprites/sprite/sprite.yy",},"order":12,},
-    {"id":{"name":"font","path":"fonts/font/font.yy",},"order":2,},
+    {"id":{"name":"conflictingFont","path":"fonts/conflictingFont/conflictingFont.yy",},"order":0,},
     {"id":{"name":"sound","path":"sounds/sound/sound.yy",},"order":11,},
     {"id":{"name":"the_sequence","path":"sequences/the_sequence/the_sequence.yy",},"order":9,},
     {"id":{"name":"the_script","path":"scripts/the_script/the_script.yy",},"order":8,},
@@ -64,6 +64,7 @@
     {"folderPath":"folders/sample_resources/level2.yy","order":15,"resourceVersion":"1.0","name":"level2","tags":[],"resourceType":"GMFolder",},
     {"folderPath":"folders/sample_resources/level2/level3.yy","order":1,"resourceVersion":"1.0","name":"level3","tags":[],"resourceType":"GMFolder",},
     {"folderPath":"folders/sample_resources/group with spaces and !$@#%()*&.yy","order":16,"resourceVersion":"1.0","name":"group with spaces and !$@#%()*&","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/sample_resources/BscotchPack.yy","order":17,"resourceVersion":"1.0","name":"BscotchPack","tags":[],"resourceType":"GMFolder",},
   ],
   "AudioGroups": [
     {"targets":461609314234257646,"resourceVersion":"1.0","name":"audiogroup_default","resourceType":"GMAudioGroup",},
@@ -74,6 +75,7 @@
     {"isScaled":true,"autocrop":true,"border":2,"mipsToGenerate":0,"targets":461609314234257646,"resourceVersion":"1.0","name":"the_texture_group","resourceType":"GMTextureGroup",},
   ],
   "IncludedFiles": [
+    {"CopyToMask":-1,"filePath":"datafiles/level_1","resourceVersion":"1.0","name":"discoverable_datafile.txt","resourceType":"GMIncludedFile",},
     {"CopyToMask":-1,"filePath":"datafiles/level_1","resourceVersion":"1.0","name":"discoverable_datafile.txt","resourceType":"GMIncludedFile",},
     {"CopyToMask":-1,"filePath":"datafiles/level_1","resourceVersion":"1.0","name":"discoverable_datafile.txt","resourceType":"GMIncludedFile",},
     {"CopyToMask":-1,"filePath":"datafiles/level_1","resourceVersion":"1.0","name":"discoverable_datafile.txt","resourceType":"GMIncludedFile",},

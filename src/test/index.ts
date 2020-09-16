@@ -12,6 +12,7 @@ import { Gms2Project } from '../lib/Gms2Project';
 import {loadFromFileSync} from "../lib/json";
 import { undent, oneline } from "../lib/strings";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
+import { differenceBy } from 'lodash';
 
 // const deeplog = (obj: any) => {
 //   console.log(inspect(obj, false, null));
@@ -19,10 +20,10 @@ import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 
 const sandboxRoot = './sand box/'; // Use a space to ensure nothing bad happens.
 const projectRoot = './sample-project/';
-// const projectYYP = 'sample-project.yyp';
-// const modulesRoot = "./sample-module-source/";
+const projectYYP = 'sample-project.yyp';
+const modulesRoot = "./sample-module-source/";
 // const sourceProjectYYPPath = paths.join(projectRoot, projectYYP);
-// const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
+const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
 const assetSampleRoot = './sample-assets/';
 const soundSampleRoot = `${assetSampleRoot}sounds/`;
 const audioSample = `${soundSampleRoot}mus_intro_jingle.wav`;
@@ -225,13 +226,6 @@ at it goooo ${interp2}
       ).to.equal(newAudioGroupName);
     });
 
-
-    //   it("written content is unchanged", function(){
-    //     const originalFile = json.readFileSync(project.yypAbsolutePath);
-    //     project.commit();
-    //     const writtenFile = json.readFileSync(project.yypAbsolutePath);
-    //     expect(json.stringify(originalFile) == json.stringify(writtenFile)).to.be.true;
-    //   });
     //   xit("can add included files",function(){
     //     // Can include any type of file, so use the sound file for convenience
     //     resetSandbox();
@@ -245,32 +239,22 @@ at it goooo ${interp2}
     //     changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
     //     expect(changes.length).to.be.greaterThan(0);
     //   });
-    //   xit("can accurately report view project heirarchy.", function() {
-    //     resetSandbox();
-    //     project = new Project(sandboxProjectYYPPath);
-    //     const testSprite = project.resources.find(function(thisResource){
-    //       return thisResource.name == "new_sprite" && thisResource.type == "GMSprite";
-    //     });
-    //     expect(testSprite).to.exist;
-    //     expect((testSprite as Resource).projectHeirarchyPath).to.equal("sprites/testGroup/testSubGroup/new_sprite");
-    //   });
-    //   xit("can parse texture groups from the project directory", function(){
-    //     resetSandbox();
-    //     project = new Project(sandboxProjectYYPPath);
-    //     const theseTextures = project.textureGroups;
-    //     expect(theseTextures.length).to.be.greaterThan(0);
-    //     const texture = theseTextures.find(function(texture) { return texture.name == "TestTexture";});
-    //     expect(texture).to.exist;
-    //   });
     // });
 
-    // xdescribe("Modules", function(){
-    //   it("can import modules from one project into another", function(){
-    //     resetSandbox();
-    //     const project = new Project(sandboxProjectYYPPath);
-    //     project.importModules(modulesRoot,["BscotchPack","AnotherModule"]);
-    //   });
-    // });
+    describe("Modules", function(){
+      it("can import modules from one project into another", function(){
+        resetSandbox();
+        const modules = ["BscotchPack","AnotherModule"];
+        const sourceProject = new Gms2Project({projectPath: sandboxProjectYYPPath,readOnly:true});
+        const resourcesToImport = sourceProject.resources.filter(resource=>{
+          return modules.some(module=>resource.isInModule(module));
+        }).map(resource=>resource.dehydrated);
+        const project = new Gms2Project(sandboxProjectYYPPath);
+        project.importModules(modulesRoot,modules);
+        const unexported = differenceBy(project.resources.dehydrated,resourcesToImport,'name');
+        expect(unexported.length,'every module asset should have been imported').to.equal(0);
+      });
+    });
 
     // xdescribe("gms-tools CLIs",function(){
     //   it('fails when it should',function(){

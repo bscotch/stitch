@@ -1,7 +1,9 @@
 {
   "resources": [
-    {"id":{"name":"Object1","path":"objects/Object1/Object1.yy",},"order":0,},
-    {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},"order":0,},
+    {"id":{"name":"bscotchpackObject","path":"objects/bscotchpackObject/bscotchpackObject.yy",},"order":0,},
+    {"id":{"name":"bscotchpackNote","path":"notes/bscotchpackNote/bscotchpackNote.yy",},"order":0,},
+    {"id":{"name":"bscotchpackScript","path":"scripts/bscotchpackScript/bscotchpackScript.yy",},"order":0,},
+    {"id":{"name":"anotherModuleRoom","path":"rooms/anotherModuleRoom/anotherModuleRoom.yy",},"order":0,},
   ],
   "Options": [
     {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
@@ -28,7 +30,7 @@
     ],
   },
   "RoomOrder": [
-    {"name":"Room1","path":"rooms/Room1/Room1.yy",},
+    {"name":"anotherModuleRoom","path":"rooms/anotherModuleRoom/anotherModuleRoom.yy",},
   ],
   "Folders": [
     {"folderPath":"folders/Sprites.yy","order":1,"resourceVersion":"1.0","name":"Sprites","tags":[],"resourceType":"GMFolder",},
@@ -46,6 +48,11 @@
     {"folderPath":"folders/Notes.yy","order":13,"resourceVersion":"1.0","name":"Notes","tags":[],"resourceType":"GMFolder",},
     {"folderPath":"folders/Extensions.yy","order":14,"resourceVersion":"1.0","name":"Extensions","tags":[],"resourceType":"GMFolder",},
     {"folderPath":"folders/group1.yy","order":15,"resourceVersion":"1.0","name":"group1","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/BscotchPack.yy","order":16,"resourceVersion":"1.0","name":"BscotchPack","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/BscotchPack/bsp_subgroup.yy","order":1,"resourceVersion":"1.0","name":"bsp_subgroup","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/Objects/subobjects.yy","order":1,"resourceVersion":"1.0","name":"subobjects","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/Objects/subobjects/BscotchPack.yy","order":1,"resourceVersion":"1.0","name":"BscotchPack","tags":[],"resourceType":"GMFolder",},
+    {"folderPath":"folders/Rooms/AnotherModule.yy","order":1,"resourceVersion":"1.0","name":"AnotherModule","tags":[],"resourceType":"GMFolder",},
   ],
   "AudioGroups": [
     {"targets":461609314234257646,"resourceVersion":"1.0","name":"audiogroup_default","resourceType":"GMAudioGroup",},

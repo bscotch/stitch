@@ -41,6 +41,15 @@ export class Gms2Storage {
     }
   }
 
+  listPaths(dir:string){
+    return fs.listPathsSync(dir);
+  }
+
+  /** Copy a file or recursively copy a directory */
+  copy(from:string,to:string){
+    return fs.copySync(from,to,{overwrite:true});
+  }
+
   exists(path:string){
     return fs.existsSync(path);
   }
