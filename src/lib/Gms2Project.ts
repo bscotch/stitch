@@ -246,6 +246,10 @@ export class Gms2Project {
     return Gms2IncludedFile.import(this,path,content,subdirectory);
   }
 
+  addConfig(name:string){
+    this.components.configs.addChild(name);
+  }
+
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
   save(){
     this.storage.saveJson(this.yypAbsolutePath,this.dehydrated);

@@ -9,7 +9,7 @@
   + ~~Ability to replace existing files~~
   + ~~Ability to add new files~~
   + ~~Ability to add files using data blobs~~
-+ Deal with GMS2 configs (seem to disappear on save, so have no reference data)
++ Deal with GMS2 configs: On module import, if an asset has a config create it.
 + Add Included Files to module import
 + Add methods to update version in files
 + Deal with texture page inheritance (disappears on save)

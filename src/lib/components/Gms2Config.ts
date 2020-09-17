@@ -7,19 +7,23 @@ interface ConfigData extends Omit<YypConfig,'children'> {
 
 export class Gms2Config {
 
-  #data: ConfigData ;
+  private data: ConfigData ;
 
   constructor(option:YypConfig){
-    this.#data = {
+    this.data = {
       ...option,
       children: hydrateArray(option.children, Gms2Config)
     };
   }
 
+  addChild(name:string){
+    this.data.children.push(new Gms2Config({name,children:[]}));
+  }
+
   get dehydrated(): YypConfig{
     return {
-      ...this.#data,
-      children: dehydrateArray(this.#data.children)
+      ...this.data,
+      children: dehydrateArray(this.data.children)
     };
   }
 }
