@@ -247,7 +247,10 @@ export class Gms2Project {
   }
 
   addConfig(name:string){
-    this.components.configs.addChild(name);
+    if( ! this.components.configs.findChild(name)){
+      this.components.configs.addChild(name);
+      this.save();
+    }
   }
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */

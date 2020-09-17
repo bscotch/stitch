@@ -16,8 +16,16 @@ export class Gms2Config {
     };
   }
 
+  get name(){
+    return this.data.name;
+  }
+
   addChild(name:string){
     this.data.children.push(new Gms2Config({name,children:[]}));
+  }
+
+  findChild(name:string){
+    return this.data.children.find(child=>child.name==name);
   }
 
   get dehydrated(): YypConfig{

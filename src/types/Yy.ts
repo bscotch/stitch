@@ -1,5 +1,6 @@
 
 export interface YyData {
+  ConfigValues?:{[configName:string]:{[field:string]:string}}
   name: string,
   resourceType: string,
   tags: string[],

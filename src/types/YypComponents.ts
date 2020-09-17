@@ -16,6 +16,7 @@ export interface YypResource {
 }
 
 export interface YypOption {
+  ConfigValues?:{[configName:string]:{[field:string]:string}},
   name: string,
   path: string
 }
@@ -57,7 +58,7 @@ export interface ConfigValue<Component> {
 }
 
 export interface YypAudioGroup {
-  ConfigValues?: ConfigValue<YypAudioGroup>,
+  ConfigValues?:{[configName:string]:{[field:string]:string}},
   name: string,
   targets: BigInt,
   resourceType: "GMAudioGroup",
@@ -66,7 +67,7 @@ export interface YypAudioGroup {
 
 
 export interface YypTextureGroup {
-  ConfigValues?: ConfigValue<YypTextureGroup>,
+  ConfigValues?:{[configName:string]:{[field:string]:string}},
   name: string,
   groupParent?: {
     name: string,
@@ -87,7 +88,7 @@ enum IncludedFileMask {
 }
 
 export interface YypIncludedFile {
-  ConfigValues?: ConfigValue<YypIncludedFile>,
+  ConfigValues?:{[configName:string]:{CopyToMask:string}},
   /** The name of the file, including extension, without the path */
   name: string,
   CopyToMask: IncludedFileMask | number,

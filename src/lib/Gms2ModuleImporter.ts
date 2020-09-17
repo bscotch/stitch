@@ -91,7 +91,7 @@ export class Gms2ModuleImporter {
 
     this.toProject.ensureResourceGroupAssignments();
 
-    // Make sure any audio groups, texture pages, and other content referenced by new/updated
+    // Make sure any audio groups, texture pages, configs and other content referenced by new/updated
     // resources actually exist.
     this.toProject.resources.forEach(resource=>{
       if(resource instanceof Gms2Sound){
@@ -99,6 +99,9 @@ export class Gms2ModuleImporter {
       }
       else if(resource instanceof Gms2Sprite){
         this.toProject.addTextureGroup(resource.textureGroup);
+      }
+      for(const configName of resource.configNames){
+        this.toProject.addConfig(configName);
       }
     });
 

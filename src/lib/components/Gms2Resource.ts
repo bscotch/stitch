@@ -60,6 +60,11 @@ export class Gms2Resource {
     return path.join(this.storage.yypDirAbsolute,this.yyPathRelative);
   }
 
+  /** The list of configurations that apply to this resource in some way. */
+  get configNames(){
+    return Object.keys(this.yyData.ConfigValues ||{});
+  }
+
   /**
    * Return the paths of all files that collectively make up this
    * resource. In *all cases* that inclues a .yy file. The rest is
