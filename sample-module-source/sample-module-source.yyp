@@ -27,6 +27,7 @@
     "name": "Default",
     "children": [
       {"name":"steam","children":[],},
+      {"name":"BscotchPack","children":[],},
     ],
   },
   "RoomOrder": [
@@ -60,7 +61,9 @@
   "TextureGroups": [
     {"isScaled":true,"autocrop":true,"border":2,"mipsToGenerate":0,"targets":461609314234257646,"resourceVersion":"1.0","name":"Default","resourceType":"GMTextureGroup",},
   ],
-  "IncludedFiles": [],
+  "IncludedFiles": [
+    {"ConfigValues":{"BscotchPack":{"CopyToMask":"0"}},"CopyToMask":-1,"filePath":"datafiles/BscotchPack","resourceVersion":"1.0","name":"moduleFile.txt","resourceType":"GMIncludedFile",},
+  ],
   "MetaData": {
     "IDEVersion": "2.3.0.529",
   },

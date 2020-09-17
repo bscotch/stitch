@@ -89,7 +89,8 @@ Use case: At Bscotch, we have a separate Gamemaker project for our shared asset 
 
 #### Module Import Notes <a id="modules-notes"></a>
 
-+ **All data is overwritten** in the target for module assets. Any changes you've made that aren't also in the source module will be lost forever. The exception to this is Texture and Audio Group membership when you use the PDK's system to manage those. 
++ **All data is overwritten** in the target for module assets. Any changes you've made that aren't also in the source module will be lost forever. The exception to this is Texture and Audio Group membership when you use the PDK's system to manage those.
++ Only **resources** (e.g. sprites, objects, scripts, etc -- the things in the IDE's resource tree) and **IncludedFiles** are importable.
 + Module assets in the target that are *not* in the source are moved to a folder called "MODULE_CONFLICTS".
 + Failed imports may result in broken projects. Failures result from conflicts between the source and target, in particular when a resource in each has the same name but different type, or is in a different module.
 

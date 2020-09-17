@@ -75,7 +75,7 @@ export class Gms2IncludedFile {
   isInModule(moduleName:string){
     return this.data.filePath.split('/')
       .map(folder=>folder.toLocaleLowerCase())
-      .includes(moduleName);
+      .includes(moduleName.toLocaleLowerCase());
   }
 
   get dehydrated(): YypIncludedFile{

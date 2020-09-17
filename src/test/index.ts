@@ -278,13 +278,30 @@ at it goooo ${interp2}
     it("can import modules from one project into another", function(){
       const sourceProject = getResetProject(true);
       const modules = ["BscotchPack","AnotherModule"];
+
+      // Initial state
+      const project = new Gms2Project(sandboxProjectYYPPath);
       const resourcesToImport = sourceProject.resources.filter(resource=>{
         return modules.some(module=>resource.isInModule(module));
       }).map(resource=>resource.dehydrated);
-      const project = new Gms2Project(sandboxProjectYYPPath);
+      expect(project.configs.findChild('BscotchPack'),
+        'BscotchPack config should not exist before import'
+      ).to.not.exist;
+
+      // IMPORT
       project.importModules(modulesRoot,modules);
+
+      // Check Resources
       const unexported = differenceBy(project.resources.dehydrated,resourcesToImport,'name');
       expect(unexported.length,'every module asset should have been imported').to.equal(0);
+
+      // Check IncludedFiles
+      expect(project.configs.findChild('BscotchPack'),
+        'BscotchPack config should be imported'
+      ).to.exist;
+      expect(project.includedFiles.findByField('name','moduleFile.txt'),
+        'included file should be imported'
+      ).to.exist;
     });
 
 

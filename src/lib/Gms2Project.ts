@@ -118,6 +118,10 @@ export class Gms2Project {
     return this.components.IncludedFiles;
   }
 
+  get configs(){
+    return this.components.configs;
+  }
+
   /**
    * Import modules from one GMS2 project into this one.
    * @param fromProject A directory containing a single .yyp file somwhere, or the path directly to a .yyp file.
