@@ -12,7 +12,7 @@ import { Gms2Project } from '../lib/Gms2Project';
 import {loadFromFileSync} from "../lib/json";
 import { undent, oneline } from "../lib/strings";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
-import { differenceBy } from 'lodash';
+import { differenceBy, fromPairs } from 'lodash';
 import { Gms2PipelineError } from '../lib/errors';
 
 // const deeplog = (obj: any) => {
@@ -302,6 +302,16 @@ at it goooo ${interp2}
       expect(project.includedFiles.findByField('name','moduleFile.txt'),
         'included file should be imported'
       ).to.exist;
+    });
+
+    it("can set the version in options files",function(){
+      const project = getResetProject();
+      const testPlatforms = ['windows','android'] as const;
+      const version = '100.5.6-rc.11';
+      project.version = version;
+      for(const platform of testPlatforms){
+        expect(project.versionOnPlatform(platform)).to.equal('100.5.6.11');
+      }
     });
 
 

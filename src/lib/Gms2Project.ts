@@ -22,6 +22,9 @@ import { Gms2ComponentArrayWithStorage } from "./components/Gms2ComponentArrayWi
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
 
+
+export type Gms2TargetPlatform = typeof Gms2Project.platforms[number];
+
 export interface Gms2ProjectOptions {
   /**
    * Path to a directory in which a .yyp file can be
@@ -120,6 +123,43 @@ export class Gms2Project {
 
   get configs(){
     return this.components.configs;
+  }
+
+  /**
+   * Set the project version in all options files.
+   * (Note that the PS4 and Switch options files do not include the version
+   *  -- that must be set outside of Gamemaker).
+   * Can use one of:
+   *    + "0.0.0.0" syntax (exactly as Gamemaker stores versions)
+   *    + "0.0.0" syntax (semver without prereleases -- the 4th value will always be 0)
+   *    + "0.0.0-rc.0" syntax (the 4th number will be the RC number)
+   * The four numbers will appear in all cases as the string "major.minor.patch.candidate"
+   */
+  set version (versionString:string){
+    const parts = versionString
+      .match(/^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(\.(?<revision>\d+))?(-rc.(?<candidate>\d+))$/);
+    if(!parts){
+      throw new Gms2PipelineError(`Version string ${versionString} is not a valid format.`);
+    }
+    const {major,minor,patch,revision,candidate} = parts.groups as {[part:string]:string};
+    const optionsDir = paths.join(this.storage.yypDirAbsolute,'options');
+    const optionsFiles = this.storage.listFiles(optionsDir,true);
+    for(const file of optionsFiles){
+      // Load it, change the version, and save
+      const content = this.storage.loadJson(file);
+      const platform = paths.basename(paths.dirname(file)) as Gms2TargetPlatform;
+      if(Gms2Project.platforms.includes(platform)){
+        const versionKey = `option_${platform}_version`;
+        content[versionKey] = [major,minor,patch,candidate||revision||'0'].join('.');
+        this.storage.saveJson(file,content);
+      }
+    }
+  }
+
+  versionOnPlatform(platform: Gms2TargetPlatform){
+    const optionsFile = paths.join(this.storage.yypDirAbsolute,'options',platform,`options_${platform}.yy`);
+    const versionKey = `option_${platform}_version`;
+    return this.storage.loadJson(optionsFile)[versionKey] as string;
   }
 
   /**
@@ -319,6 +359,23 @@ export class Gms2Project {
       }
     }
     return asObject as YypComponents;
+  }
+
+  static get platforms(){
+    return [
+      'amazonfire',
+      'android',
+      'html5',
+      'ios',
+      'linux',
+      'mac',
+      'ps4',
+      'switch',
+      'tvos',
+      'windows',
+      'windowsuap',
+      'xboxone'
+    ] as const;
   }
 }
 

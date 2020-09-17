@@ -27,7 +27,7 @@ export class Gms2IncludedFile {
 
   /** Get the file content */
   get contentAsBuffer():Buffer{
-    return this.storage.readBlob(this.filePathAbsolute);
+    return this.storage.loadBlob(this.filePathAbsolute);
   }
   /**
    * Set the file content on disk. If string or Buffer,
@@ -107,7 +107,7 @@ export class Gms2IncludedFile {
   }
 
   static importFromFile(project:Gms2Project,path:string,subdirectory?:string){
-    const blob = project.storage.readBlob(path);
+    const blob = project.storage.loadBlob(path);
     return Gms2IncludedFile.importFromData(project,path,blob,subdirectory);
   }
 

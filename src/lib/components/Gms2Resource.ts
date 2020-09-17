@@ -23,7 +23,7 @@ export class Gms2Resource {
     else{
       this.data = {...data};
     }
-    this.yyData = this.storage.readJson(this.yyPathAbsolute);
+    this.yyData = this.storage.loadJson(this.yyPathAbsolute);
   }
 
   get name(){

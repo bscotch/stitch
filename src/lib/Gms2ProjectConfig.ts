@@ -99,7 +99,7 @@ export class Gms2ProjectConfig {
   private load(){
     this.data = Gms2ProjectConfig.defaultContent;
     try{
-      Object.assign(this.data,this.storage.readJson(this.filePathAbsolute));
+      Object.assign(this.data,this.storage.loadJson(this.filePathAbsolute));
     }
     catch(err){
       if( ! this.storage.isReadOnly){ throw err; }

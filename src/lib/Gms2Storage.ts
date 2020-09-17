@@ -90,11 +90,11 @@ export class Gms2Storage {
     }
   }
 
-  readBlob(filePath:string){
+  loadBlob(filePath:string){
     return fs.readFileSync(filePath);
   }
 
-  readJson(filePath:string){
+  loadJson(filePath:string){
     return fs.readJsonSync(filePath);
   }
 }
