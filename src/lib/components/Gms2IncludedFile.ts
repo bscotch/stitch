@@ -1,4 +1,4 @@
-import json from "../../project/lib/json";
+import {parse} from "../../lib/json";
 import { YypIncludedFile } from "../../types/YypComponents";
 import { Gms2PipelineError } from "../errors";
 import type { Gms2Project } from "../Gms2Project";
@@ -44,7 +44,7 @@ export class Gms2IncludedFile {
 
   /** If the content is JSON, get it as a parsed Javascript structure (else throw) */
   get contentParsedAsJson(){
-    return json.parse(this.contentAsString);
+    return parse(this.contentAsString);
   }
 
   /** Get the file content as a string */

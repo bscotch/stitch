@@ -1,5 +1,5 @@
 import { difference, uniqBy } from "lodash";
-import json from "../../project/lib/json";
+import {stringify} from "../../lib/json";
 import { Gms2Storage } from "../Gms2Storage";
 import { dehydrateArray } from "../hydrate";
 import { logInfo } from "../log";
@@ -51,7 +51,7 @@ export abstract class Gms2ComponentArrayBase
   }
 
   uniqueYypDataEntries(data:YypData[]){
-    const uniqueData = uniqBy(data,json.stringify);
+    const uniqueData = uniqBy(data,stringify);
     const removedItems = difference(data,uniqueData);
     if(removedItems.length){
       logInfo(`Duplicate entries found: ${removedItems.length} duplicates removed`);
