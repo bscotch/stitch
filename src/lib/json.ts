@@ -6,8 +6,7 @@ import path from "path";
 const Json = JsonBig({ useNativeBigInt: true });
 
 /**
- * Stringify JSON GMS2-style: windows newlines,
- * 4-space tabs, and allowing Int64s. Will attempt
+ * Stringify JSON allowing Int64s. Will attempt
  * to get .dehydrated and use the return value of
  * that on every key:value pair, allowing control
  * over how class instances are stringified.
@@ -16,8 +15,8 @@ export function stringify(stuff: any) {
   return Json.stringify(
     stuff,
     (key: string, value: any) => value?.dehydrated ?? value,
-    4
-  ).replace(/\r?\n/g, '\r\n');
+    "\t"
+  );
 }
 
 /**

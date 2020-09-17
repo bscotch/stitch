@@ -6,10 +6,11 @@
  * methods that would create problems can be rewritten).
  */
 
-import fs from "fs-extra";
+import fs, { existsSync } from "fs-extra";
 import path from "./paths";
 import {writeFileSync as writeJsonSync,loadFromFileSync as readJsonSync} from "./json";
 import { assert } from "./errors";
+import sortKeys from "sort-keys";
 
 function ensureDirSync(dir:string){
   if(!fs.existsSync(dir)){
@@ -73,6 +74,30 @@ function copyFileSync(sourcePath:string,targetPath:string){
   fs.copyFileSync(sourcePath,targetPath);
 }
 
+/**
+ * Find all .yy and .yyp files and rewrite them as valid
+ * JSON (no trailing commas) with consistent spacing, and
+ * with fields alphabetized.
+ * (Gamemaker .yy and .yyp files are *basically* JSON, and
+ * if they are rewritten as valid JSON GMS2.3 can read them
+ * just fine.)
+ * @param path Either a yy(p) file or a directory containing some.
+ */
+function convertGms2FilesToJson(path:string){
+  assert(existsSync(path),`Cannot convert GMS2 files: ${path} does not exist.`);
+  const targetFiles: string[] = [];
+  if(fs.statSync(path).isFile()){
+    targetFiles.push(path);
+  }
+  else{
+    targetFiles.push(...listFilesByExtensionSync(path,['yy','yyp'],true));
+  }
+  for(const targetFile of targetFiles){
+    const parsed = readJsonSync(targetFile);
+    writeJsonSync(targetFile,sortKeys(parsed,{deep:true}));
+  }
+}
+
 export default {
   // Override with custom methods, and add new ones
   // Note: If adding more methods here, either directly from fs(-extra)
@@ -93,5 +118,6 @@ export default {
   listFoldersSync,
   listFilesSync,
   listFilesByExtensionSync,
+  convertGms2FilesToJson,
 };
 

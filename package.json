@@ -52,6 +52,7 @@
     "json-bigint": "^1.0.0",
     "lodash": "^4.17.20",
     "md5-file": "^5.0.0",
+    "sort-keys": "^4.0.0",
     "uuid": "^8.3.0"
   },
   "devDependencies": {
