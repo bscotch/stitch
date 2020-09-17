@@ -33,7 +33,7 @@ function throwNever():never{
   throw new Error("this should never happen");
 }
 
-function resetSandbox(): void {
+function resetSandbox() {
   fs.ensureDirSync(sandboxRoot);
   try {
     fs.emptyDirSync(sandboxRoot);
@@ -42,6 +42,11 @@ function resetSandbox(): void {
     console.log(err);
   }
   fs.copySync(projectRoot, sandboxRoot);
+}
+
+function getResetProject(readOnly=false){
+  resetSandbox();
+  return new Gms2Project({projectPath:sandboxRoot,readOnly});
 }
 
 describe("GMS2.3 Pipeline SDK", function () {
@@ -107,8 +112,7 @@ at it goooo ${interp2}
   describe("Gms2 Project Class", function () {
 
     it("can hydrate and dehydrate the YYP file, resulting in the original data",function(){
-      resetSandbox();
-      const project = new Gms2Project({projectPath:sandboxRoot,readOnly:true});
+      const project = getResetProject(true);
       const rawContent = loadFromFileSync(project.yypAbsolutePath);
       const dehydrated = project.dehydrated;
       // Note: Projects always ensure that "/NEW" (folder) exists,
@@ -127,8 +131,7 @@ at it goooo ${interp2}
     });
 
     it("can create new folders", function(){
-      resetSandbox();
-      const project = new Gms2Project(sandboxRoot);
+      const project = getResetProject();
       const newFolders = ["hello/world","deeply/nested/folder/structure"];
       for(const newFolder of newFolders ){
         project.addFolder(newFolder);
@@ -143,8 +146,7 @@ at it goooo ${interp2}
     });
 
     it("can add sounds",function(){
-      resetSandbox();
-      const project = new Gms2Project(sandboxRoot);
+      const project = getResetProject();
       expect(()=>project.addSound(audioSample+'-fake.mp3'),
         'should not be able to upsert non-existing audio assets'
       ).to.throw;
@@ -162,8 +164,7 @@ at it goooo ${interp2}
     });
 
     it("can create a new texture group",function(){
-      resetSandbox();
-      const project = new Gms2Project(sandboxRoot);
+      const project = getResetProject();
       const newTextureGroupName = 'NewTextureGroup';
       // Create the texture group
       expect(project.textureGroups.findByField('name',newTextureGroupName),
@@ -176,8 +177,7 @@ at it goooo ${interp2}
     });
 
     it("can create a new audio group",function(){
-      resetSandbox();
-      const project = new Gms2Project(sandboxRoot);
+      const project = getResetProject();
       const newAudioGroupName = 'NewAudioGroup';
       // Create the texture group
       expect(project.audioGroups.findByField('name',newAudioGroupName),
@@ -190,8 +190,7 @@ at it goooo ${interp2}
     });
 
     it("can create texture group assignments",function(){
-      resetSandbox();
-      const project = new Gms2Project(sandboxRoot);
+      const project = getResetProject();
       const newTextureGroupName = 'NewTextureGroup';
       const sprite = project.resources.sprites[0];
       expect(sprite.textureGroup,
@@ -209,8 +208,7 @@ at it goooo ${interp2}
     });
 
     it("can create audio group assignments",function(){
-      resetSandbox();
-      const project = new Gms2Project(sandboxRoot);
+      const project = getResetProject();
       const newAudioGroupName = 'NewAudioGroup';
       const sound = project.resources.sounds[0];
       expect(sound.audioGroup,
@@ -236,8 +234,7 @@ at it goooo ${interp2}
     });
 
     it("can update existing included files on import",function(){
-      resetSandbox();
-      const project = new Gms2Project(sandboxRoot);
+      const project = getResetProject();
 
       const filesDir = `${assetSampleRoot}/includedFiles`;
 
@@ -246,19 +243,18 @@ at it goooo ${interp2}
       const sharedFileSourceContent = 'This content should get copied over.';
       const sharedFile = project.includedFiles.findByField('name','shared.txt');
       if(!sharedFile){throw new Gms2PipelineError(`shared file should exist`);}
-      expect(sharedFile.content,'shared file before copy should be empty').to.eql(Buffer.from([]));
-      project.addIncludedFile(`${filesDir}/${existingFilePath}`,'shared');
-      expect(sharedFile.content.toString()).to.eql(sharedFileSourceContent);
+      expect(sharedFile.contentAsBuffer,'shared file before copy should be empty').to.eql(Buffer.from([]));
+      project.addIncludedFile(`${filesDir}/${existingFilePath}`,null,'shared');
+      expect(sharedFile.contentAsBuffer.toString()).to.eql(sharedFileSourceContent);
 
     });
 
     it("can import new included files", function(){
-      resetSandbox();
-      const project = new Gms2Project(sandboxRoot);
+      const project = getResetProject();
 
       // Add all files from a directory
       const filesDir = `${assetSampleRoot}/includedFiles/files`;
-      project.addIncludedFile(filesDir,'BscotchPack');
+      project.addIncludedFile(filesDir,null,'BscotchPack');
       const expectedFiles = fs.listFilesSync(filesDir)
         .map(filePath=>paths.parse(filePath).base);
       for(const filePath of expectedFiles){
@@ -266,10 +262,22 @@ at it goooo ${interp2}
       }
     });
 
+    it("can add an IncludedFile using a data blob", function(){
+      const project = getResetProject();
+
+      const binaryExample = Buffer.from([1,2,3]);
+      expect(project.addIncludedFile('binary',binaryExample)[0].contentAsBuffer).to.eql(binaryExample);
+
+      const textExample = "hello";
+      expect(project.addIncludedFile('text',textExample)[0].contentAsString).to.eql(textExample);
+
+      const jsonExample = {hello:[1,2,3]};
+      expect(project.addIncludedFile('json',jsonExample)[0].contentParsedAsJson).to.eql(jsonExample);
+    });
+
     it("can import modules from one project into another", function(){
-      resetSandbox();
+      const sourceProject = getResetProject(true);
       const modules = ["BscotchPack","AnotherModule"];
-      const sourceProject = new Gms2Project({projectPath: sandboxProjectYYPPath,readOnly:true});
       const resourcesToImport = sourceProject.resources.filter(resource=>{
         return modules.some(module=>resource.isInModule(module));
       }).map(resource=>resource.dehydrated);

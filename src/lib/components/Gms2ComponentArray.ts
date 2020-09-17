@@ -14,7 +14,8 @@ export class Gms2ComponentArray<
   }
 
   addNew(data:YypData){
-    this.push( new this.componentClass(data));
-    return this;
+    const newComponent = new this.componentClass(data);
+    this.push(newComponent);
+    return newComponent;
   }
 }

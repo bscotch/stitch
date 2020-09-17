@@ -7,7 +7,7 @@
 + ~~Add module import~~
 + Add Included File import
   + ~~Ability to replace existing files~~
-  + Ability to add new files
+  + ~~Ability to add new files~~
   + Ability to add files using data blobs
 + Add Included Files to module import
 + Add methods to update version in files

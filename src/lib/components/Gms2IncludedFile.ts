@@ -1,6 +1,6 @@
-import { match } from "assert";
+import json from "../../project/lib/json";
 import { YypIncludedFile } from "../../types/YypComponents";
-import { assert, Gms2PipelineError } from "../errors";
+import { Gms2PipelineError } from "../errors";
 import type { Gms2Project } from "../Gms2Project";
 import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";
@@ -26,25 +26,43 @@ export class Gms2IncludedFile {
   }
 
   /** Get the file content */
-  get content(){
+  get contentAsBuffer():Buffer{
     return this.storage.readBlob(this.filePathAbsolute);
   }
-  set content(blob:Buffer|string){
-    this.storage.saveBlob(this.filePathAbsolute,blob);
+  /**
+   * Set the file content on disk. If string or Buffer,
+   * just directly write. In all other cases, JSON stringify.
+  */
+  setContent(data:any){
+    if(typeof data == 'string' || Buffer.isBuffer(data)){
+      this.storage.saveBlob(this.filePathAbsolute,data);
+    }
+    else{
+      this.storage.saveJson(this.filePathAbsolute,data);
+    }
+  }
+
+  /** If the content is JSON, get it as a parsed Javascript structure (else throw) */
+  get contentParsedAsJson(){
+    return json.parse(this.contentAsString);
+  }
+
+  /** Get the file content as a string */
+  get contentAsString(): string{
+    return this.contentAsBuffer.toString();
   }
 
   /**
    * Replace this Included File's content with the content
    * from another file (names don't need to match)
    */
-  replaceContent(sourceFile:string){
+  replaceWithFileContent(sourceFile:string){
     this.storage.copyFile(sourceFile,this.filePathAbsolute);
   }
 
   get dehydrated(): YypIncludedFile{
     return {...this.#data};
   }
-
 
   static get defaultDataValues(): Omit<YypIncludedFile,'name'|'filePath'>{
     return {
@@ -59,18 +77,26 @@ export class Gms2IncludedFile {
       throw new Gms2PipelineError(`${path} is not a directory`);
     }
     const filePaths = project.storage.listFiles(path,true);
+    const importedFiles: Gms2IncludedFile[] = [];
     for(const filePath of filePaths){
       // Use relative pathing to ensure that organization inside GMS2
       // matches original folder heirarchy, but all inside whatever 'subdirectory' was provided
       const filePathRelativeToStart = paths.relative(path,filePath);
       const relativeSubdirectory = paths.join(subdirectory||'.',paths.dirname(filePathRelativeToStart));
-      Gms2IncludedFile.importFromFile(project,filePath,relativeSubdirectory);
+      importedFiles.push(Gms2IncludedFile.importFromFile(project,filePath,relativeSubdirectory));
     }
-    return;
+    return importedFiles;
   }
 
   static importFromFile(project:Gms2Project,path:string,subdirectory?:string){
+    const blob = project.storage.readBlob(path);
+    return Gms2IncludedFile.importFromData(project,path,blob,subdirectory);
+  }
 
+  static importFromData(project:Gms2Project,path:string,content:any,subdirectory?:string){
+    if( [null,undefined].includes(content) ){
+      throw new Gms2PipelineError(`IncludedFile import using data cannot have null/undefined as that data.`);
+    }
     const fileName = paths.parse(path).base;
     // (Ensure POSIX-style seps)
     const directoryRelative = `datafiles/${paths.asPosixPath(subdirectory||'.')}`;
@@ -81,7 +107,7 @@ export class Gms2IncludedFile {
       // If the file is in the SAME PLACE, then just replace the file contents
       // If it's in a different subdir, assume that something unintended is going on
       if(matchingFile.directoryRelative == directoryRelative){
-        matchingFile.replaceContent(path);
+        matchingFile.setContent(content);
       }
       else{
         throw new Gms2PipelineError(oneline`
@@ -90,47 +116,36 @@ export class Gms2IncludedFile {
           If they are different files, rename one of them.
         `);
       }
+      return matchingFile;
     }
     else{
       // This is a new file
       // Create the Yyp data and add to the project
       // Copy over the file
-      project.includedFiles.addNew({
+      const newIncludedFile = project.includedFiles.addNew({
         ...Gms2IncludedFile.defaultDataValues,
         name: fileName,
         filePath: directoryRelative
-      }).replaceContent(path);
+      });
+      newIncludedFile.setContent(content);
       project.save();
+      return newIncludedFile;
     }
-
-    return project;
   }
 
 
-  static import(project:Gms2Project,path:string,subdirectory?:string){
-    assert(project.storage.exists(path),`File ${path} does not exist.`);
-
-    // Handle files if the initial path is a directory
-    if(project.storage.isDirectory(path)){
-      Gms2IncludedFile.importFromDirectory(project,path,subdirectory);
+  static import(project:Gms2Project,path:string,content?:any,subdirectory?:string){
+    if( ! [null,undefined].includes(content) ){
+      return [Gms2IncludedFile.importFromData(project,path,content,subdirectory)];
+    }
+    else if(! project.storage.exists(path)){
+      throw new Gms2PipelineError(`Path ${path} does not exist and no alternate content provided.`);
+    }
+    else if(project.storage.isDirectory(path)){
+      return Gms2IncludedFile.importFromDirectory(project,path,subdirectory);
     }
     else{
-      Gms2IncludedFile.importFromFile(project,path,subdirectory);
+      return [Gms2IncludedFile.importFromFile(project,path,subdirectory)];
     }
-
-    // const added = this.components.IncludedFiles.addIfNew({
-    //   ...Gms2IncludedFile.defaultDataValues,
-    //   name: fileName,
-    //   filePath: directoryRelative
-    // },'name',fileName);
-
-    // const fileName = IncludedFile.nameFromSource(path);
-    // const existingResource = this.includedFiles.find(includedFile=>includedFile.name==fileName);
-    // if(existingResource){
-    //   return existingResource.replaceIncludedFile(path);
-    // }
-    // else{
-    //   return IncludedFile.create(this,path,subdirectory);
-    // }
   }
 }

@@ -237,10 +237,13 @@ export class Gms2Project {
    * an iOS bug wherein all included files are effectively in a flat heirarchy.
    * see {@link https://docs2.yoyogames.com/source/_build/3_scripting/4_gml_reference/sprites/sprite_add.html}
    * @param path Direct filepath or a directory from which all files (recursively) should be loaded
+   * @param content If set, will create a new file instead of copying content from an existing one.
+   *                If the content is a string or buffer it will be written as-is. All other cases are
+   *                JSON stringified. Must not be null or undefined in order to take effect.
    * @param subdirectory Subdirectory inside the Datafiles folder in which to place this resource.
    */
-  addIncludedFile(path:string,subdirectory?:string){
-    Gms2IncludedFile.import(this,path,subdirectory);
+  addIncludedFile(path:string,content?:any,subdirectory?:string){
+    return Gms2IncludedFile.import(this,path,content,subdirectory);
   }
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
