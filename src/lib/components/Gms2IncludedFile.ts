@@ -8,15 +8,15 @@ import { oneline } from "../strings";
 
 export class Gms2IncludedFile {
 
-  #data: YypIncludedFile;
+  private data: YypIncludedFile;
 
   constructor(option:YypIncludedFile,private storage:Gms2Storage){
-    this.#data = {...option};
+    this.data = {...option};
   }
 
-  get name(){ return this.#data.name; }
+  get name(){ return this.data.name; }
   /** The directory containing this file, relative to project root  */
-  get directoryRelative(){ return this.#data.filePath; }
+  get directoryRelative(){ return this.data.filePath; }
   get directoryAbsolute(){ return paths.join(this.storage.yypDirAbsolute,this.directoryRelative);}
   get filePathRelative(){
     return paths.join(this.directoryRelative,this.name);
@@ -52,6 +52,18 @@ export class Gms2IncludedFile {
     return this.contentAsBuffer.toString();
   }
 
+  /** The list of configurations that apply to this file in some way. */
+  get configNames(){
+    return Object.keys(this.data.ConfigValues ||{});
+  }
+  /** The configuration overrides for this file */
+  get config(){
+    return this.data.ConfigValues;
+  }
+  set config(configuration: {[configName:string]:{CopyToMask:string}}|undefined){
+    this.data.ConfigValues = configuration;
+  }
+
   /**
    * Replace this Included File's content with the content
    * from another file (names don't need to match)
@@ -60,8 +72,14 @@ export class Gms2IncludedFile {
     this.storage.copyFile(sourceFile,this.filePathAbsolute);
   }
 
+  isInModule(moduleName:string){
+    return this.data.filePath.split('/')
+      .map(folder=>folder.toLocaleLowerCase())
+      .includes(moduleName);
+  }
+
   get dehydrated(): YypIncludedFile{
-    return {...this.#data};
+    return {...this.data};
   }
 
   static get defaultDataValues(): Omit<YypIncludedFile,'name'|'filePath'>{

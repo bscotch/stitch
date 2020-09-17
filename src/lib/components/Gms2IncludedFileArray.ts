@@ -1,25 +1,15 @@
-import { difference, uniqBy } from "lodash";
 import { YypIncludedFile } from "../../types/YypComponents";
 import { Gms2Storage } from "../Gms2Storage";
-import { dehydrateArray, hydrateArray } from "../hydrate";
-import { logInfo } from "../log";
+import { Gms2ComponentArrayWithStorage } from "./Gms2ComponentArrayWithStorage"
 import { Gms2IncludedFile } from "./Gms2IncludedFile";
 
-export class Gms2IncludedFileArray{
+export class Gms2IncludedFileArray extends Gms2ComponentArrayWithStorage<YypIncludedFile, typeof Gms2IncludedFile>{
 
-  protected items: Gms2IncludedFile[];
-
-  constructor(data:YypIncludedFile[],private storage:Gms2Storage){
-    // Remove duplicates
-    const uniqueData = uniqBy(data,'name');
-    const removedItems = difference(data,uniqueData);
-    if(removedItems.length){
-      logInfo(`Duplicate included files found: ${removedItems.length} duplicates removed`);
-    }
-    this.items = hydrateArray(uniqueData,Gms2IncludedFile);
+  constructor(data:YypIncludedFile[],storage: Gms2Storage){
+    super(data,Gms2IncludedFile,storage);
   }
 
-  get dehydrated(): YypIncludedFile[] {
-    return dehydrateArray(this.items);
+  filterByModule(moduleName:string){
+    return this.items.filter(item=>item.isInModule(moduleName));
   }
 }

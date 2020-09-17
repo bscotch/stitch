@@ -20,6 +20,7 @@ import { Gms2FolderArray } from "./Gms2FolderArray";
 import { Gms2ModuleImporter } from "./Gms2ModuleImporter";
 import { Gms2ComponentArrayWithStorage } from "./components/Gms2ComponentArrayWithStorage";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
+import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
 
 export interface Gms2ProjectOptions {
   /**
@@ -281,7 +282,7 @@ export class Gms2Project {
       RoomOrder: new Gms2ComponentArray(yyp.RoomOrder, Gms2RoomOrder),
       TextureGroups: new Gms2ComponentArray(yyp.TextureGroups, Gms2TextureGroup),
       AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
-      IncludedFiles: new Gms2ComponentArrayWithStorage(yyp.IncludedFiles,Gms2IncludedFile,this.storage),
+      IncludedFiles: new Gms2IncludedFileArray(yyp.IncludedFiles,this.storage),
       resources: new Gms2ResourceArray(yyp.resources,this.storage)
     };
 
