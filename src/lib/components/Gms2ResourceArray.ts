@@ -14,7 +14,7 @@ export class  Gms2ResourceArray {
   private items: Gms2ResourceSubclass[];
 
   constructor(data: YypResource[], storage: Gms2Storage){
-    const uniqueData = uniqBy(data,'name');
+    const uniqueData = uniqBy(data,'id.name');
     const removedItems = difference(data,uniqueData);
     if(removedItems.length){
       logInfo(`Duplicate resources found: ${removedItems.length} duplicates removed`);

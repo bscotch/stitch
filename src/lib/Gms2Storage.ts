@@ -1,34 +1,26 @@
 import paths from "./paths";
-import { assert } from "./errors";
+import { assert, Gms2PipelineError } from "./errors";
 import fs from "./files";
+import child_process from "child_process";
 
 export class Gms2Storage {
 
-  /** Directory containing a .git file. null means no repo, undefined means no check has occurred. */
-  #gitRepoDirectory: string | null | undefined;
-
   constructor(readonly yypAbsolutePath:string, readonly isReadOnly=false){
-    assert(this.gitRepoDirectory, `No git repo found in any parent folder. Too dangerous to proceed.`);
+    if(!this.workingDirIsClean && process.env.GMS2PDK_DEV != 'true'){
+      throw new Gms2PipelineError(`GIT ERROR: Working directory is not clean. Commit or stash your work!`);
+    }
   }
 
   get yypDirAbsolute(){
     return paths.dirname(this.yypAbsolutePath);
   }
 
-  get gitRepoDirectory() {
-    if (typeof this.#gitRepoDirectory == 'undefined') {
-      this.#gitRepoDirectory = null;
-      // Look for a repo
-      let path = this.yypDirAbsolute;
-      while (paths.dirname(path) != path) {
-        const possibleGitPath = paths.join(path, ".git");
-        if (fs.existsSync(possibleGitPath)) {
-          this.#gitRepoDirectory = path;
-        }
-        path = paths.dirname(path);
-      }
-    }
-    return this.#gitRepoDirectory;
+  get workingDirIsClean(){
+    const isClean = child_process
+      .spawnSync(`git status`,{cwd:this.yypDirAbsolute,shell:true})
+      .stdout.toString()
+      .includes('working tree clean');
+    return isClean;
   }
 
   toAbsolutePath(pathRelativeToYypDir:string){

@@ -2,8 +2,11 @@
 
 Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not generally have features for automating tasks or creating asset pipelines. This "Pipeline Development Kit" provides a collection of node modules and command-line tools for automating tasks in GMS2 by directly managing its project files. The PDK is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
+<span style="color:red"><b>⚠ WARNING ⚠</b> Use at your own risk.</span> The PDK could completely break your Gamemaker project. If you do not completely trust your version control system, you should not use the PDK. To help keep you safe, the PDK will not run unless your project is in a git repo with a clean working directory, but that only helps if you know how to use git to recover in case something goes wrong.
+
 ### Table of Contents
 
++ [Compatibility Issues](#compatibility)
 + [Setup](#setup)
 + [Core Features](#features)
   + [Configuration File](#config-file) - Manage the behavior of the GMS2 PDK.
@@ -15,17 +18,19 @@ Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not genera
   + [Audio Group batch management](#audio-groups)
 + [Gamemaker Project File Structure](#gms2-file-structure)
 
-<b style="color:red">DANGER:</b> This toolkit directly modifies your Gamemaker Studio 2 project files. This comes with enormous risk: any external changes made to your project may completely and permanently break your project. **DO NOT USE THIS TOOLKIT** unless you are using version control and have committed any important changes beforehand.
+## Gamemaker Studio Compatibility Issues
 
-**NOTE:** This toolkit only works for projects from GMS2 versions >= 2.3. GMS2 Versions <2.3 have a completely different file structure and are not at all compatible with this tool. We will generally keep the PDK up to date with current versions of GMS2, but will not make any effort towards backwards compatibility.
+This project will generally stay up to date with current, stable versions of Gamemaker Studio 2. We will not typically test new versions of the PDK against older versions of Gamemaker Studio, and will also make no effort to maintain backwards compatibility. We'll list any known compatibility issues here.
+
++ **GMS2 versions < 2.3.0.529** are guaranteed **not to work** with any version of the PDK. Gamemaker completely changed its project structure in 2.3.0.529, and that's the structure we developed the original PDK for.
 
 ## Setup <a id="setup">
 
 ### Requirements
 
 + [Node.js v14+](https://nodejs.org/) (may work on lower versions, but only tested on v14)
-+ [Git](https://git-scm.com/) (if your project is not in a git repo, the PDK will not work)
-+ [Gamemaker Studio 2.3+](https://www.yoyogames.com/gamemaker) projects
++ [Git](https://git-scm.com/) (if your project is not in a git repo, or your working tree is not clean, <span color="red">the PDK will refuse to run</span>)
++ [Gamemaker Studio 2.3+](https://www.yoyogames.com/gamemaker) projects (versions prior to GMS2.3 have a completely different project structure and are inompatible with this tool).
 + Windows 10 (the PDK might work on Mac, but is only developed and tested on Windows 10)
 
 ### Gamemaker Project Setup

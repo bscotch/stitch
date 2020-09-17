@@ -12,8 +12,10 @@ import { Gms2Project } from '../lib/Gms2Project';
 import {loadFromFileSync} from "../lib/json";
 import { undent, oneline } from "../lib/strings";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
-import { differenceBy, fromPairs } from 'lodash';
+import { differenceBy } from 'lodash';
 import { Gms2PipelineError } from '../lib/errors';
+
+process.env.GMS2PDK_DEV = 'true';
 
 // const deeplog = (obj: any) => {
 //   console.log(inspect(obj, false, null));
