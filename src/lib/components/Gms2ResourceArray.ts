@@ -6,12 +6,19 @@ import { Gms2PipelineError } from "../errors";
 import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";
 import { Gms2Sprite } from "./resources/Gms2Sprite";
+import { difference, uniqBy } from "lodash";
+import { logInfo } from "../log";
 
 export class  Gms2ResourceArray {
 
   private items: Gms2ResourceSubclass[];
 
   constructor(data: YypResource[], storage: Gms2Storage){
+    const uniqueData = uniqBy(data,'name');
+    const removedItems = difference(data,uniqueData);
+    if(removedItems.length){
+      logInfo(`Duplicate resources found: ${removedItems.length} duplicates removed`);
+    }
     this.items = data.map(item=>Gms2ResourceArray.hydrateResource(item,storage));
   }
 

@@ -13,6 +13,7 @@ import {loadFromFileSync} from "../lib/json";
 import { undent, oneline } from "../lib/strings";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 import { differenceBy } from 'lodash';
+import { Gms2PipelineError } from '../lib/errors';
 
 // const deeplog = (obj: any) => {
 //   console.log(inspect(obj, false, null));
@@ -226,35 +227,47 @@ at it goooo ${interp2}
       ).to.equal(newAudioGroupName);
     });
 
-    //   xit("can add included files",function(){
-    //     // Can include any type of file, so use the sound file for convenience
-    //     resetSandbox();
-    //     let changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
-    //     project = new Project(sandboxRoot);
-    //     expect(()=>project.upsertIncludedFile(audioSample+'-fake.mp3')).to.throw;
-    //     project.upsertIncludedFile(audioSample);
-    //     changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
-    //     expect(changes.length).to.be.greaterThan(0);
-    //     project.upsertIncludedFile('./README.md','sub/dir');
-    //     changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
-    //     expect(changes.length).to.be.greaterThan(0);
-    //   });
-    // });
+    it("can add included files",function(){
+      resetSandbox();
+      const project = new Gms2Project(sandboxRoot);
 
-    describe("Modules", function(){
-      it("can import modules from one project into another", function(){
-        resetSandbox();
-        const modules = ["BscotchPack","AnotherModule"];
-        const sourceProject = new Gms2Project({projectPath: sandboxProjectYYPPath,readOnly:true});
-        const resourcesToImport = sourceProject.resources.filter(resource=>{
-          return modules.some(module=>resource.isInModule(module));
-        }).map(resource=>resource.dehydrated);
-        const project = new Gms2Project(sandboxProjectYYPPath);
-        project.importModules(modulesRoot,modules);
-        const unexported = differenceBy(project.resources.dehydrated,resourcesToImport,'name');
-        expect(unexported.length,'every module asset should have been imported').to.equal(0);
-      });
+      // Attempt to add non-existent file
+      expect(()=>project.addIncludedFile(audioSample+'-fake.mp3'),
+        'attempting to add a non-existent file should throw'
+      ).to.throw;
+
+      const filesDir = `${assetSampleRoot}/includedFiles`;
+
+      // Add a file that already exists
+      const existingFilePath = `shared/shared.txt`;
+      const sharedFileSourceContent = 'This content should get copied over.';
+      const sharedFile = project.includedFiles.findByField('name','shared.txt');
+      if(!sharedFile){throw new Gms2PipelineError(`shared file should exist`);}
+      expect(sharedFile.fileContent,'shared file before copy should be empty').to.eql(Buffer.from([]));
+      project.addIncludedFile(`${filesDir}/${existingFilePath}`,'shared');
+      expect(sharedFile.fileContent.toString()).to.eql(sharedFileSourceContent);
+
+      // // TODO: Make sure the file exists and is referenced in the project
+
+      // // Add all files from a directory
+      // project.addIncludedFile(filesDir,'BscotchPack');
+
+      process.exit(1);
     });
+
+    it("can import modules from one project into another", function(){
+      resetSandbox();
+      const modules = ["BscotchPack","AnotherModule"];
+      const sourceProject = new Gms2Project({projectPath: sandboxProjectYYPPath,readOnly:true});
+      const resourcesToImport = sourceProject.resources.filter(resource=>{
+        return modules.some(module=>resource.isInModule(module));
+      }).map(resource=>resource.dehydrated);
+      const project = new Gms2Project(sandboxProjectYYPPath);
+      project.importModules(modulesRoot,modules);
+      const unexported = differenceBy(project.resources.dehydrated,resourcesToImport,'name');
+      expect(unexported.length,'every module asset should have been imported').to.equal(0);
+    });
+
 
     // xdescribe("gms-tools CLIs",function(){
     //   it('fails when it should',function(){

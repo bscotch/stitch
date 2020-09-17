@@ -39,8 +39,21 @@ function heirarchy(path:string){
   return paths.filter(p=>p!='.');
 }
 
+/**
+ * Given a path with any style of separators,
+ * return the same path with POSIX-style separators.
+ */
+export function asPosixPath (pathString:string){
+  const parts = pathString.split(/[/\\]+/g);
+  const withPosixSeps = nodePath.posix.join(...parts);
+  // When converting a Windows absolute path, e.g. C:// must become /c/
+  return withPosixSeps.replace(/^([a-z])\/\//i,'/$1/');
+}
+
+
 export default {
   ...nodePath,
   pathSpecificitySort,
   heirarchy,
+  asPosixPath
 };

@@ -81,10 +81,17 @@ export interface YypTextureGroup {
   resourceVersion: "1.0",
 }
 
-export interface YypInludedFiles {
-  ConfigValues?: ConfigValue<YypInludedFiles>,
+enum IncludedFileMask {
+  All = -1,
+  None = 0,
+}
+
+export interface YypIncludedFile {
+  ConfigValues?: ConfigValue<YypIncludedFile>,
+  /** The name of the file, including extension, without the path */
   name: string,
-  CopyToMask: number | string,
+  CopyToMask: IncludedFileMask | number,
+  /** `datafiles/${subdir}` */
   filePath: string,
   resourceType: "GMIncludedFile",
   resourceVersion: "1.0",
@@ -107,7 +114,7 @@ export interface YypComponents {
   Folders: YypFolder[],
   AudioGroups: YypAudioGroup[],
   TextureGroups: YypTextureGroup[],
-  IncludedFiles: YypInludedFiles[],
+  IncludedFiles: YypIncludedFile[],
   MetaData: {
     IDEVersion: string
   }

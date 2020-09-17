@@ -64,11 +64,13 @@ export default {
   // or as custom method, ensure that it will work with wonky
   // Gamemaker file formats (e.g. yy and yyp files are JSON-like, but
   // have trailing commas and include BigInt values)
+  statSync: fs.statSync,
   existsSync: fs.existsSync,
   ensureDirSync,
   copyFileSync: fs.copyFileSync,
   copySync: fs.copySync,
   emptyDirSync: fs.emptyDirSync,
+  readFileSync: fs.readFileSync,
   writeFileSync,
   writeJsonSync,
   readJsonSync,

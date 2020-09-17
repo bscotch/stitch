@@ -122,19 +122,6 @@ Texture Page assignments are stored in the [config file](#config-file) and can b
 
 Audio Groups suffer the same manual problems as Texture Pages, and the Pipeline SDK solves this in the same way.
 
-## TODOs
-
-+ How are texture pages and assignments stored?
-+ Figure out what the "order" field does for Resources
-  + May be important for rooms, if not anything else
-+ Figure out what the "order" field does for Folders
-+ Does config impact texture/audiogroup target assignment?
-+ For texturegroups, what values do we need to be able to specify for:
-  + "isScaled":true 
-  + "autocrop":false 
-  + "border":2
-  + "mipsToGenerate":0 // don't care about this
-  + MANUALLY HANDLED
 
 ## Game Project File Structure & Content <a id="gms2-file-structure"></a>
 

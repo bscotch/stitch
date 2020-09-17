@@ -41,8 +41,12 @@ export class Gms2Storage {
     }
   }
 
-  listPaths(dir:string){
-    return fs.listPathsSync(dir);
+  listFiles(dir:string,recursive?:boolean){
+    return fs.listFilesSync(dir,recursive);
+  }
+
+  listPaths(dir:string,recursive?:boolean){
+    return fs.listPathsSync(dir,recursive);
   }
 
   /** Copy a file or recursively copy a directory */
@@ -54,12 +58,24 @@ export class Gms2Storage {
     return fs.existsSync(path);
   }
 
+  isFile(path:string){
+    return fs.statSync(path).isFile();
+  }
+
+  isDirectory(path:string){
+    return fs.statSync(path).isDirectory();
+  }
+
   copyFile(sourcePath:string,destinationPath:string){
     assert(fs.existsSync(sourcePath),`copyFile: sourcePath ${sourcePath} does not exist`);
     if(!this.isReadOnly){
       fs.copyFileSync(sourcePath,destinationPath);
       fs.ensureDirSync(paths.dirname(destinationPath));
     }
+  }
+
+  asPosixPath(path:string){
+    return paths.asPosixPath(path);
   }
 
   saveBlob(filePath:string,data:string|Buffer){
@@ -72,6 +88,10 @@ export class Gms2Storage {
     if(!this.isReadOnly){
       fs.writeJsonSync(filePath,data);
     }
+  }
+
+  readBlob(filePath:string){
+    return fs.readFileSync(filePath);
   }
 
   readJson(filePath:string){

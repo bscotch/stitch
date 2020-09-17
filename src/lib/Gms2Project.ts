@@ -10,17 +10,16 @@ import { Gms2Folder } from "./components/Gms2Folder";
 import { Gms2RoomOrder } from "./components/Gms2RoomOrder";
 import { Gms2TextureGroup } from './components/Gms2TextureGroup';
 import { Gms2AudioGroup } from './components/Gms2AudioGroup';
-import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2ComponentArray } from "./components/Gms2ComponentArray";
-import { Gms2ResourceArray, Gms2ResourceSubclass } from "./components/Gms2ResourceArray";
+import { Gms2ResourceArray } from "./components/Gms2ResourceArray";
 import { Gms2Storage } from "./Gms2Storage";
 import { Gms2ProjectConfig } from "./Gms2ProjectConfig";
 import { Gms2Sprite } from "./components/resources/Gms2Sprite";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
 import { Gms2FolderArray } from "./Gms2FolderArray";
-import differenceBy from "lodash/differenceBy";
-import { Gms2Resource } from "./components/Gms2Resource";
 import { Gms2ModuleImporter } from "./Gms2ModuleImporter";
+import { Gms2ComponentArrayWithStorage } from "./components/Gms2ComponentArrayWithStorage";
+import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 
 export interface Gms2ProjectOptions {
   /**
@@ -112,6 +111,10 @@ export class Gms2Project {
 
   get audioGroups(){
     return this.components.AudioGroups;
+  }
+
+  get includedFiles(){
+    return this.components.IncludedFiles;
   }
 
   /**
@@ -226,6 +229,71 @@ export class Gms2Project {
     return this;
   }
 
+  /**
+   * Import a new IncludedFile based on an external file.
+   * By default will appear in "datafiles" root folder, but you can specificy
+   * a subdirectory path. If an included file with this name already exists
+   * in **ANY** subdirectory it will be overwritten. (Names must be unique due to
+   * an iOS bug wherein all included files are effectively in a flat heirarchy.
+   * see {@link https://docs2.yoyogames.com/source/_build/3_scripting/4_gml_reference/sprites/sprite_add.html}
+   * @param path Direct filepath or a directory from which all files (recursively) should be loaded
+   * @param subdirectory Subdirectory inside the Datafiles folder in which to place this resource.
+   */
+  addIncludedFile(path:string,subdirectory?:string){
+    assert(this.storage.exists(path),`File ${path} does not exist.`);
+
+    // Handle files if the initial path is a directory
+    if(this.storage.isDirectory(path)){
+      // Recursively add all files
+      const filePaths = this.storage.listFiles(path,true);
+      for(const filePath of filePaths){
+        // Use relative pathing to ensure that organization inside GMS2
+        // matches original folder heirarchy, but all inside whatever 'subdirectory' was provided
+        const filePathRelativeToStart = paths.relative(path,filePath);
+        const relativeSubdirectory = paths.join(subdirectory||'.',paths.dirname(filePathRelativeToStart));
+        this.addIncludedFile(filePath,relativeSubdirectory);
+      }
+      return;
+    }
+
+    // Import the file
+    const fileName = paths.parse(path).base;
+    // (Ensure POSIX-style seps)
+    const directoryRelative = `datafiles/${paths.asPosixPath(subdirectory||'.')}`;
+
+    // See if something already exists with this name
+    const matchingFile = this.components.IncludedFiles.findByField('name',fileName);
+    if(matchingFile){
+      // If the file is in the SAME PLACE, then just replace the file contents
+      // If it's in a different subdir, assume that something unintended is going on
+      if(matchingFile.directoryRelative == directoryRelative){
+        this.storage.copyFile(path,matchingFile.filePathAbsolute);
+      }
+      else{
+        throw new Gms2PipelineError(oneline`
+          CONFLICT: A file by name ${fileName} already exists in a different subdirectory.
+          If they are the same file, ensure they have the same subdirectory.
+          If they are different files, rename one of them.
+        `);
+      }
+    }
+
+    // const added = this.components.IncludedFiles.addIfNew({
+    //   ...Gms2IncludedFile.defaultDataValues,
+    //   name: fileName,
+    //   filePath: directoryRelative
+    // },'name',fileName);
+
+    // const fileName = IncludedFile.nameFromSource(path);
+    // const existingResource = this.includedFiles.find(includedFile=>includedFile.name==fileName);
+    // if(existingResource){
+    //   return existingResource.replaceIncludedFile(path);
+    // }
+    // else{
+    //   return IncludedFile.create(this,path,subdirectory);
+    // }
+  }
+
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
   save(){
     this.storage.saveJson(this.yypAbsolutePath,this.dehydrated);
@@ -254,7 +322,7 @@ export class Gms2Project {
       RoomOrder: new Gms2ComponentArray(yyp.RoomOrder, Gms2RoomOrder),
       TextureGroups: new Gms2ComponentArray(yyp.TextureGroups, Gms2TextureGroup),
       AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
-      IncludedFiles: new Gms2ComponentArray(yyp.IncludedFiles, Gms2IncludedFile),
+      IncludedFiles: new Gms2ComponentArrayWithStorage(yyp.IncludedFiles,Gms2IncludedFile,this.storage),
       resources: new Gms2ResourceArray(yyp.resources,this.storage)
     };
 
