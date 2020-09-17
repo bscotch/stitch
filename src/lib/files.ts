@@ -25,6 +25,9 @@ function writeFileSync(filePath:string,stuff:string|Buffer){
 }
 
 function listPathsSync(dir:string,recursive=false){
+  if(fs.statSync(dir).isFile()){
+    return [dir];
+  }
   const paths = fs.readdirSync(dir)
     .map(aPath=>path.join(dir,aPath));
   if(recursive){
@@ -44,7 +47,14 @@ function listFoldersSync(dir:string,recursive=false){
     .filter(pathName=>fs.statSync(pathName).isDirectory());
 }
 
+/**
+ * List all files in a directory or, if 'dir' is already a file,
+ * just return that filename as an array.
+ */
 function listFilesSync(dir:string,recursive=false){
+  if(fs.statSync(dir).isFile()){
+    return [dir];
+  }
   return listPathsSync(dir,recursive)
     .filter(filePath=>fs.statSync(filePath).isFile());
 }
@@ -58,6 +68,11 @@ function listFilesByExtensionSync(dir:string,extension:string|string[],recursive
     });
 }
 
+function copyFileSync(sourcePath:string,targetPath:string){
+  ensureDirSync(path.dirname(targetPath));
+  fs.copyFileSync(sourcePath,targetPath);
+}
+
 export default {
   // Override with custom methods, and add new ones
   // Note: If adding more methods here, either directly from fs(-extra)
@@ -67,7 +82,7 @@ export default {
   statSync: fs.statSync,
   existsSync: fs.existsSync,
   ensureDirSync,
-  copyFileSync: fs.copyFileSync,
+  copyFileSync,
   copySync: fs.copySync,
   emptyDirSync: fs.emptyDirSync,
   readFileSync: fs.readFileSync,

@@ -227,14 +227,17 @@ at it goooo ${interp2}
       ).to.equal(newAudioGroupName);
     });
 
-    it("can add included files",function(){
-      resetSandbox();
+    it("will fail if importing non-existent included file",function(){
       const project = new Gms2Project(sandboxRoot);
-
       // Attempt to add non-existent file
       expect(()=>project.addIncludedFile(audioSample+'-fake.mp3'),
         'attempting to add a non-existent file should throw'
       ).to.throw;
+    });
+
+    it("can update existing included files on import",function(){
+      resetSandbox();
+      const project = new Gms2Project(sandboxRoot);
 
       const filesDir = `${assetSampleRoot}/includedFiles`;
 
@@ -243,16 +246,24 @@ at it goooo ${interp2}
       const sharedFileSourceContent = 'This content should get copied over.';
       const sharedFile = project.includedFiles.findByField('name','shared.txt');
       if(!sharedFile){throw new Gms2PipelineError(`shared file should exist`);}
-      expect(sharedFile.fileContent,'shared file before copy should be empty').to.eql(Buffer.from([]));
+      expect(sharedFile.content,'shared file before copy should be empty').to.eql(Buffer.from([]));
       project.addIncludedFile(`${filesDir}/${existingFilePath}`,'shared');
-      expect(sharedFile.fileContent.toString()).to.eql(sharedFileSourceContent);
+      expect(sharedFile.content.toString()).to.eql(sharedFileSourceContent);
 
-      // // TODO: Make sure the file exists and is referenced in the project
+    });
 
-      // // Add all files from a directory
-      // project.addIncludedFile(filesDir,'BscotchPack');
+    it("can import new included files", function(){
+      resetSandbox();
+      const project = new Gms2Project(sandboxRoot);
 
-      process.exit(1);
+      // Add all files from a directory
+      const filesDir = `${assetSampleRoot}/includedFiles/files`;
+      project.addIncludedFile(filesDir,'BscotchPack');
+      const expectedFiles = fs.listFilesSync(filesDir)
+        .map(filePath=>paths.parse(filePath).base);
+      for(const filePath of expectedFiles){
+        expect(project.includedFiles.findByField('name',filePath),'all imported files should exist').to.exist;
+      }
     });
 
     it("can import modules from one project into another", function(){

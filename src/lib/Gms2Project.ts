@@ -240,58 +240,7 @@ export class Gms2Project {
    * @param subdirectory Subdirectory inside the Datafiles folder in which to place this resource.
    */
   addIncludedFile(path:string,subdirectory?:string){
-    assert(this.storage.exists(path),`File ${path} does not exist.`);
-
-    // Handle files if the initial path is a directory
-    if(this.storage.isDirectory(path)){
-      // Recursively add all files
-      const filePaths = this.storage.listFiles(path,true);
-      for(const filePath of filePaths){
-        // Use relative pathing to ensure that organization inside GMS2
-        // matches original folder heirarchy, but all inside whatever 'subdirectory' was provided
-        const filePathRelativeToStart = paths.relative(path,filePath);
-        const relativeSubdirectory = paths.join(subdirectory||'.',paths.dirname(filePathRelativeToStart));
-        this.addIncludedFile(filePath,relativeSubdirectory);
-      }
-      return;
-    }
-
-    // Import the file
-    const fileName = paths.parse(path).base;
-    // (Ensure POSIX-style seps)
-    const directoryRelative = `datafiles/${paths.asPosixPath(subdirectory||'.')}`;
-
-    // See if something already exists with this name
-    const matchingFile = this.components.IncludedFiles.findByField('name',fileName);
-    if(matchingFile){
-      // If the file is in the SAME PLACE, then just replace the file contents
-      // If it's in a different subdir, assume that something unintended is going on
-      if(matchingFile.directoryRelative == directoryRelative){
-        this.storage.copyFile(path,matchingFile.filePathAbsolute);
-      }
-      else{
-        throw new Gms2PipelineError(oneline`
-          CONFLICT: A file by name ${fileName} already exists in a different subdirectory.
-          If they are the same file, ensure they have the same subdirectory.
-          If they are different files, rename one of them.
-        `);
-      }
-    }
-
-    // const added = this.components.IncludedFiles.addIfNew({
-    //   ...Gms2IncludedFile.defaultDataValues,
-    //   name: fileName,
-    //   filePath: directoryRelative
-    // },'name',fileName);
-
-    // const fileName = IncludedFile.nameFromSource(path);
-    // const existingResource = this.includedFiles.find(includedFile=>includedFile.name==fileName);
-    // if(existingResource){
-    //   return existingResource.replaceIncludedFile(path);
-    // }
-    // else{
-    //   return IncludedFile.create(this,path,subdirectory);
-    // }
+    Gms2IncludedFile.import(this,path,subdirectory);
   }
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */

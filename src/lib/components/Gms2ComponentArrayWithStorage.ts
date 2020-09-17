@@ -15,7 +15,8 @@ export class Gms2ComponentArrayWithStorage<
   }
 
   addNew(data:YypData){
-    this.push( new this.componentClass(data,this.storage));
-    return this;
+    const newInstance = new this.componentClass(data,this.storage);
+    this.push(newInstance);
+    return newInstance;
   }
 }

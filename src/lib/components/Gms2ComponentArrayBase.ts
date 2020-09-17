@@ -31,7 +31,7 @@ export abstract class Gms2ComponentArrayBase
     return this;
   }
 
-  abstract addNew(data:YypData):Gms2ComponentArrayBase<YypData,ComponentClass>;
+  abstract addNew(data:YypData):ComponentClass;
 
   /**
    * Create a new component instance if one doesn't already exist
@@ -40,8 +40,7 @@ export abstract class Gms2ComponentArrayBase
   addIfNew(data:YypData,uniqueField:keyof InstanceType<ComponentClass>,uniqueFieldValue:any){
     const existing = this.findByField(uniqueField,uniqueFieldValue);
     if(!existing){
-      this.addNew(data);
-      return true;
+      return this.addNew(data);
     }
     return false;
   }
