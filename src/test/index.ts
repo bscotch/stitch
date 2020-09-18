@@ -14,6 +14,7 @@ import { undent, oneline } from "../lib/strings";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 import { differenceBy } from 'lodash';
 import { Gms2PipelineError } from '../lib/errors';
+import { Gms2Script } from '../lib/components/resources/Gms2Script';
 
 process.env.GMS2PDK_DEV = 'true';
 
@@ -145,6 +146,18 @@ at it goooo ${interp2}
         const folderInProject = projectFolders.find(f=>f.folderPath==`folders/${expectedFolder}.yy`);
         expect(folderInProject,`Folder ${expectedFolder} should have been added`).to.exist;
       }
+    });
+
+    it('can create new scripts', function(){
+      const project = getResetProject();
+      const name = 'helloWorld';
+      const code = 'function hello (world){ return world;}';
+      project.addScript(name,code);
+      const script = project.resources.findByField('name',name,Gms2Script);
+      if(!script){
+        throw new Error('script should have been added');
+      }
+      expect(script.code).to.equal(code);
     });
 
     it("can add sounds",function(){

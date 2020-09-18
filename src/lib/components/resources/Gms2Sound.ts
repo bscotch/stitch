@@ -12,6 +12,10 @@ export class Gms2Sound extends Gms2Resource {
     super(...setup);
   }
 
+  createYyFile(){
+
+  }
+
   get audioFilePathAbsolute(){
     return paths.join(this.yyDirAbsolute,this.yyData.soundFile);
   }
@@ -32,6 +36,8 @@ export class Gms2Sound extends Gms2Resource {
    * The resource will be named after the source file.
   */
   static create(externalAudioFilePath:string,storage:Gms2Storage): Gms2Sound {
+    // TODO: Refactor to make use of createYyFile()
+
     const {name,base} = paths.parse(externalAudioFilePath);
 
     const constants = {

@@ -270,8 +270,16 @@ export class Gms2Project {
    */
   addSound(sourcePath:string){
     this.resources.addSound(sourcePath,this.storage);
-    this.save();
-    return this;
+    return this.save();
+  }
+
+  /**
+   * Add a script resource. Unless you're trying to make
+   * global variables, your code should be wrapped in a function!
+   */
+  addScript(name:string,code:string){
+    this.resources.addScript(name,code,this.storage);
+    return this.save();
   }
 
   /**

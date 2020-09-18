@@ -2,6 +2,7 @@ import { YyData } from "../../types/Yy";
 //❌✅⌛❓
 
 import { YypResource } from "../../types/YypComponents";
+import { Gms2PipelineError } from "../errors";
 import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";
 import path from "../paths";
@@ -13,9 +14,9 @@ export class Gms2Resource {
 
   /**
    *  Create a resource using either the direct YYP-sourced object
-   *  -or- the relative path to its yyp file (e.g. sounds/mySound/mySound.yyp)
+   *  -or- the relative path to its yy file (e.g. sounds/mySound/mySound.yy)
    */
-  constructor(data: YypResource | string, protected storage: Gms2Storage) {
+  constructor(data: YypResource | string, protected storage: Gms2Storage, ensureYyFile=false) {
     if(typeof data == 'string'){
       const {name} = path.parse(data);
       this.data = {id:{name,path:data},order:0};
@@ -23,11 +24,23 @@ export class Gms2Resource {
     else{
       this.data = {...data};
     }
+    if(!this.storage.exists(this.yyPathAbsolute)){
+      if(!ensureYyFile){
+        throw new Gms2PipelineError(`CONFLICT: Entry for ${this.data.id.name} in yyp does not have a .yy file.`);
+      }
+      // Create a default one!
+      this.createYyFile();
+    }
     this.yyData = this.storage.loadJson(this.yyPathAbsolute);
   }
 
+  /** Create a generic Yy file, given YypData (must be implemented by each specifific resource.) */
+  createYyFile(){
+    throw new Gms2PipelineError(`Cannot create YY file for generic Resource instance.`);
+  }
+
   get name(){
-    return this.yyData.name;
+    return this.yyData?.name ?? this.data.id.name;
   }
 
   /** The folder containing this resource (as viewed via the IDE) */

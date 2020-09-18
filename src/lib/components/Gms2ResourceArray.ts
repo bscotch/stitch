@@ -8,6 +8,7 @@ import paths from "../paths";
 import { Gms2Sprite } from "./resources/Gms2Sprite";
 import { difference, uniqBy } from "lodash";
 import { logInfo } from "../log";
+import { Gms2Script } from "./resources/Gms2Script";
 
 export class  Gms2ResourceArray {
 
@@ -26,8 +27,9 @@ export class  Gms2ResourceArray {
     return dehydrateArray(this.items);
   }
 
-  get sprites(){ return this.filterByClass(Gms2Sprite); }
+  get sprites(){ return this.filterByClass(Gms2Sprite);}
   get sounds(){ return this.filterByClass(Gms2Sound); }
+  get scripts(){ return this.filterByClass(Gms2Script);}
 
   filterByClass<subclass extends Gms2ResourceSubclassType>(resourceClass: subclass){
     return this.items
@@ -73,6 +75,10 @@ export class  Gms2ResourceArray {
     else{
       return this.push(Gms2Sound.create(sourcePath,storage));
     }
+  }
+
+  addScript(name:string,code:string,storage:Gms2Storage){
+    return this.push(Gms2Script.create(name,code,storage));
   }
 
   /**

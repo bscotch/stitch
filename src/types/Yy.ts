@@ -14,6 +14,12 @@ export interface YyData {
   resourceVersion: "1.0" // constant
 }
 
+export interface YyScript extends YyData {
+  isDnD: false,
+  isCompatibility: false,
+  resourceType: "GMScript"
+}
+
 enum SoundChannel {
   Mono,
   Stereo,
