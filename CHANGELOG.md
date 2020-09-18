@@ -1,4 +1,13 @@
-## 0.0.1 (2020-09-18)
+## [0.1.1](https://github.com/bscotch/gms2/compare/v0.1.0...v0.1.1) (2020-09-18)
+
+
+### Bug Fixes
+
+* **Versioning:** Changelogs are being created before versioning, causing them to be one version behind reality. ([ed90f79](https://github.com/bscotch/gms2/commit/ed90f7943f7eab1da9af8588f44852bae976c0a6))
+
+
+
+# [0.1.0](https://github.com/bscotch/gms2/compare/8240278735d87cd1c7576773622c5b2ee368d1ae...v0.1.0) (2020-09-18)
 
 
 ### Bug Fixes
