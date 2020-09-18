@@ -8,6 +8,7 @@ Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not genera
 
 + [Compatibility Issues](#compatibility)
 + [Setup](#setup)
++ [CLI](#cli)
 + [Core Features](#features)
   + [Configuration File](#config-file) - Manage the behavior of the GMS2 PDK.
   + [Modules](#modules) - Import groups of assets from other GMS2 projects.
@@ -76,7 +77,22 @@ To keep things stable and automatable, the PDK uses a configuration file (`gms2p
   }
 }
 ```
+
 </details>
+
+## CLI <a id="cli"></a>
+
+<b style="color:red">⚠ NOT YET IMPLEMENTED ⚠</b>
+  
++ ❌ import
+  + modules --source-project=path --modules=m1,m2
+  + sounds --source-path=dir/file --extensions=mp3,wave
+  + files --source-path=dir/file --extensions=txt
++ ❌ assign
+  + texture-groups --folder=sprites/myGroupOfSprites --group-name=name
+  + audio-groups --folder=sound/myGroupOfSounds --group-name=name
++ ❌ version --set=version --get=platform
++ ✅ jsonify --dir --filepath
 
 ## Core Features <a id="features"></a>
 
@@ -268,3 +284,9 @@ namely formatting them as `<type>(<scope>): <subject>` where `type` is one of:
 + perf: A code change that improves performance
 + test: Adding missing or correcting existing tests
 + chore: Changes to the build process or auxiliary tools and libraries such as documentation generation
+
+### Legend
+
++ ❌ something that is not yet completed
++ ✅ something that has been completed, in the context of other things that have not, to make it easier to track todos.
++ ⚠  something that the user should pay very close attention to in order to stay out of trouble

@@ -13,7 +13,7 @@
 + ~~Add Included Files to module import, ensuring configs are also created.~~
 + ~~Add methods to update version in files~~
 + ~~Add requirement that working directory be clean (i.e. things are safely packed away into a Git commit)~~
-  + Separately identify case where Git is not even available so that error message is more useful.
+  + ~~Separately identify case where Git is not even available so that error message is more useful.~~
 + Add CLI commands
 + Add git pre-commit hook to convert all .yy and .yyp files to plain JSON to minimize conflicts.
 + Spine! Where does the file go?
