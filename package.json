@@ -9,7 +9,7 @@
   "files": [
     "build/cli/**/*",
     "build/lib/**/*",
-    "build/index.js"
+    "build/index.*"
   ],
   "bin": {
     "gms2": "./build/cli/gms2.js"
