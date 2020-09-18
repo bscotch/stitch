@@ -1,3 +1,17 @@
+## [0.1.2](https://github.com/bscotch/gms2/compare/v0.1.1...v0.1.2) (2020-09-18)
+
+
+### Bug Fixes
+
+* Type files are not being included in the published npm package for the index file. ([12c5d55](https://github.com/bscotch/gms2/commit/12c5d55ea34f2e5adc9c1826e4d2feaf3aa85809))
+
+
+### Features
+
+* Add default export of the Gms2Project class to the index. ([a68dfa6](https://github.com/bscotch/gms2/commit/a68dfa6e486db09fc64330911eafecd9f1f4fc23))
+
+
+
 ## [0.1.1](https://github.com/bscotch/gms2/compare/v0.1.0...v0.1.1) (2020-09-18)
 
 
