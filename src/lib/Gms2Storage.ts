@@ -16,11 +16,15 @@ export class Gms2Storage {
   }
 
   get workingDirIsClean(){
-    const isClean = child_process
-      .spawnSync(`git status`,{cwd:this.yypDirAbsolute,shell:true})
-      .stdout.toString()
-      .includes('working tree clean');
-    return isClean;
+    const gitProcessHandle = child_process
+      .spawnSync(`git status`,{cwd:this.yypDirAbsolute,shell:true});
+    if (gitProcessHandle.status != 0){
+      throw new Gms2PipelineError(gitProcessHandle.stderr.toString());
+    }
+    else{
+      const isClean = gitProcessHandle.stdout.toString().includes('working tree clean');
+      return isClean;
+    }
   }
 
   toAbsolutePath(pathRelativeToYypDir:string){
