@@ -104,6 +104,7 @@ export default {
   // or as custom method, ensure that it will work with wonky
   // Gamemaker file formats (e.g. yy and yyp files are JSON-like, but
   // have trailing commas and include BigInt values)
+  chmodSync: fs.chmodSync,
   statSync: fs.statSync,
   existsSync: fs.existsSync,
   ensureDirSync,

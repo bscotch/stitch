@@ -3,5 +3,8 @@
     "eslint.validate": [
         "javascript",
         "typescript"
-    ]
+    ],
+    "files.exclude": {
+        "**/.git": false
+    }
 }
