@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/bscotchRepos/gms2.git"
+    "url": "git+ssh://git@github.com:bscotch/gms2.git"
   },
   "keywords": [
     "gamemaker",
@@ -38,7 +38,7 @@
     "Shi Chen (https://www.bscotch.net/about)"
   ],
   "license": "MIT",
-  "homepage": "https://bitbucket.org/bscotchRepos/gms2#readme",
+  "homepage": "https://github.com/bscotch/gms2",
   "dependencies": {
     "chalk": "^4.1.0",
     "commander": "^6.1.0",
