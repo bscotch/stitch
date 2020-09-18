@@ -2,7 +2,6 @@ import paths from "./paths";
 import { assert, Gms2PipelineError } from "./errors";
 import fs from "./files";
 import child_process from "child_process";
-import { undent } from "./strings";
 
 export class Gms2Storage {
 
@@ -10,7 +9,9 @@ export class Gms2Storage {
     if(!this.workingDirIsClean && process.env.GMS2PDK_DEV != 'true'){
       throw new Gms2PipelineError(`GIT ERROR: Working directory is not clean. Commit or stash your work!`);
     }
-    this.installPrecommitHook();
+    if(process.env.GMS2PDK_DEV != 'true'){
+      this.installPrecommitHook();
+    }
   }
 
   get yypDirAbsolute(){
@@ -55,19 +56,18 @@ export class Gms2Storage {
     if(fs.existsSync(preCommitFilePath)){
       return;
     }
-    const hookCode = undent`
-      #!/bin/sh
+    const hookCode = `#!/bin/sh
 
-      # Gamemaker Studio stores yy and yyp files with trailing commas and non-standard
-      # spacing. The GMS2 PDK creates standard JSON files with predictable spacing upon save,
-      # thus causing large numbers of cosmetic file changes that will pollute the Git history.
-      # This hook forces all yy/yyp files in the repo to be in a standardized JSON format
-      # prior to commiting, so that the files are always guaranteed to have the exact same
-      # structure, whether they were last edited by Gamemaker Studio or the PDK.
+# Gamemaker Studio stores yy and yyp files with trailing commas and non-standard
+# spacing. The GMS2 PDK creates standard JSON files with predictable spacing upon save,
+# thus causing large numbers of cosmetic file changes that will pollute the Git history.
+# This hook forces all yy/yyp files in the repo to be in a standardized JSON format
+# prior to commiting, so that the files are always guaranteed to have the exact same
+# structure, whether they were last edited by Gamemaker Studio or the PDK.
 
-      npx gms2 jsonify`;
+npx gms2 jsonify`;
     fs.writeFileSync(preCommitFilePath, hookCode);
-    fs.chmodSync(preCommitFilePath,777);
+    fs.chmodSync(preCommitFilePath,'777');
   }
 
   listFiles(dir:string,recursive?:boolean){

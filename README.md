@@ -47,6 +47,7 @@ project-root/project-name/ # e.g. the name of your game
 project-root/project-name/project-name.yyp # main GMS2 project file (entrypoint)
 project-root/project-name/gms2pdk.config.json # GMS2 PDK configuration data (created by PDK)
 ```
+
 </details>
 
 Yours doesn't have to look *exactly* like that, but the general relationships should. For example, there must be a `.git` folder somewhere, and your [`.yyp` file](#yyp) must either be in the same directory as that `.git` folder or in a subdirectory as shown above.
@@ -57,6 +58,8 @@ To start using the PDK with one of your GMS2 projects, do the following:
   + On Windows 10 with Git installed, you can open the folder in File Explorer, right-click somewhere, and then click "Git Bash here". Alternatively, open the terminal anywhere and `cd` to the root of your project.
 1. Run `npm install -g @bscotch/gms2` for a *global* install of the PDK, allowing you to install it just once and use it for all projects. This causes the `gms2 ...` commands to become available in the terminal.
 1. Run `gms2 --help` to see all the things you can do.
+
+**⚠ ALERT ⚠** When run, the PDK will attempt to install a pre-commit git hook that will convert all .yy and .yyp files to plain JSON (using `gms2 jsonify`). This is likely what you want to have happen. If you already have a pre-commit hook, this one will not be installed. You can simply add the line `npx gms2 jsonify` somewhere in your existing pre-commit hook to get the same result.
 
 ### GMS2 PDK Configuration File <a id="config-file"></a>
 
