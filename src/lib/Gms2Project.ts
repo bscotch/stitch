@@ -38,6 +38,15 @@ export interface Gms2ProjectOptions {
    * locking the project instance. Cannot be unlocked.
    */
   readOnly?: boolean,
+  /**
+   * By default Gms2Project instances will throw an
+   * error before doing anything when they are in an
+   * unclean Git repo. This is to reduce the likelihood
+   * of unrecoverable changes. You can turn off this
+   * requirement, but you sure better know what you're
+   * doing!
+   */
+  dangerouslyAllowDirtyWorkingDir?: boolean,
 }
 
 /**
@@ -66,7 +75,10 @@ export class Gms2Project {
       projectPath: typeof options == 'string'
         ? options
         : options?.projectPath || process.cwd(),
-      readOnly: (typeof options != 'string' && options?.readOnly) || false
+      readOnly:
+        (typeof options != 'string' && options?.readOnly) || false,
+      dangerouslyAllowDirtyWorkingDir:
+        (typeof options != 'string' && options?.dangerouslyAllowDirtyWorkingDir) || false,
     };
 
     // Find the yyp filepath
@@ -92,7 +104,11 @@ export class Gms2Project {
     assert(fs.existsSync(yypPath), `YYP file does not exist: ${yypPath}`);
 
     // Load up all the project files into class instances for manipulation
-    this.storage = new Gms2Storage(paths.resolve(yypPath),options.readOnly as boolean);
+    this.storage = new Gms2Storage(
+      paths.resolve(yypPath),
+      options.readOnly as boolean,
+      options.dangerouslyAllowDirtyWorkingDir as boolean
+    );
     this.config = new Gms2ProjectConfig(this.storage);
     this.reload();
   }

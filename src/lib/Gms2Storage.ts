@@ -5,8 +5,8 @@ import child_process from "child_process";
 
 export class Gms2Storage {
 
-  constructor(readonly yypAbsolutePath:string, readonly isReadOnly=false){
-    if(!this.workingDirIsClean && process.env.GMS2PDK_DEV != 'true'){
+  constructor(readonly yypAbsolutePath:string, readonly isReadOnly=false, readonly bypassGitRequirement=false){
+    if(!this.workingDirIsClean && !bypassGitRequirement && process.env.GMS2PDK_DEV != 'true'){
       throw new Gms2PipelineError(`GIT ERROR: Working directory is not clean. Commit or stash your work!`);
     }
     if(process.env.GMS2PDK_DEV != 'true'){
