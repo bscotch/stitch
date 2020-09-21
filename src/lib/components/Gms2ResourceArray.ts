@@ -1,5 +1,5 @@
 import { dehydrateArray } from "../hydrate";
-import { Gms2Resource } from "../components/Gms2Resource";
+import { Gms2ResourceBase } from "./resources/Gms2ResourceBase";
 import { Gms2Sound } from "../components/resources/Gms2Sound";
 import { YypResource } from "../../types/YypComponents";
 import { Gms2PipelineError } from "../errors";
@@ -9,6 +9,17 @@ import { Gms2Sprite } from "./resources/Gms2Sprite";
 import { difference, uniqBy } from "lodash";
 import { logInfo } from "../log";
 import { Gms2Script } from "./resources/Gms2Script";
+import { Gms2Animation } from "./resources/Gms2Animation";
+import { Gms2Extension } from "./resources/Gms2Extension";
+import { Gms2Font } from "./resources/Gms2Font";
+import { Gms2Note } from "./resources/Gms2Note";
+import { Gms2Object } from "./resources/Gms2Object";
+import { Gms2Path } from "./resources/Gms2Path";
+import { Gms2Room } from "./resources/Gms2Room";
+import { Gms2Sequence } from "./resources/Gms2Sequence";
+import { Gms2Shader } from "./resources/Gms2Shader";
+import { Gms2Tileset } from "./resources/Gms2Tileset";
+import { Gms2Timeline } from "./resources/Gms2Timeline";
 
 export class  Gms2ResourceArray {
 
@@ -37,11 +48,11 @@ export class  Gms2ResourceArray {
       .filter(item=>(item instanceof resourceClass)) as InstanceType<subclass>[];
   }
 
-  filter(matchFunction:(item:Gms2Resource)=>any){
+  filter(matchFunction:(item:Gms2ResourceBase)=>any){
     return this.items.filter(matchFunction);
   }
 
-  forEach(doSomething:(item:Gms2Resource)=>any){
+  forEach(doSomething:(item:Gms2ResourceBase)=>any){
     this.items.forEach(doSomething);
     return this;
   }
@@ -121,27 +132,27 @@ export class  Gms2ResourceArray {
     this.items.push(Gms2ResourceArray.hydrateResource(data,storage));
   }
 
-  private push(newResource: Gms2Resource){
+  private push(newResource: Gms2ResourceBase){
     this.items.push(newResource);
     return this;
   }
 
   static get _resourceClassMap() {
     const classMap = {
-      animcurves: Gms2Resource,    // ❌
-      extensions: Gms2Resource,    // ❌
-      fonts: Gms2Resource,         // ❌
-      notes: Gms2Resource,         // ❌
-      objects: Gms2Resource,       // ❌
-      paths: Gms2Resource,         // ❌
-      rooms: Gms2Resource,         // ❌
-      scripts: Gms2Script,         // ✅
-      sequences: Gms2Resource,     // ❌
-      shaders: Gms2Resource,       // ❌
-      sounds: Gms2Sound,           // ✅
-      sprites: Gms2Sprite,         // ✅
-      tilesets: Gms2Resource,      // ❌
-      timelines: Gms2Resource,     // ❌
+      animcurves: Gms2Animation,
+      extensions: Gms2Extension,
+      fonts: Gms2Font,
+      notes: Gms2Note,
+      objects: Gms2Object,
+      paths: Gms2Path,
+      rooms: Gms2Room,
+      scripts: Gms2Script,
+      sequences: Gms2Sequence,
+      shaders: Gms2Shader,
+      sounds: Gms2Sound,
+      sprites: Gms2Sprite,
+      tilesets: Gms2Tileset,
+      timelines: Gms2Timeline,
     } as const;
     return classMap;
   }
@@ -161,6 +172,6 @@ export class  Gms2ResourceArray {
   }
 }
 
-export type Gms2ResourceSubclass = InstanceType<typeof Gms2ResourceArray._resourceClassMap[keyof typeof Gms2ResourceArray._resourceClassMap]>;
-export type Gms2ResourceSubclassType = typeof Gms2ResourceArray._resourceClassMap[keyof typeof Gms2ResourceArray._resourceClassMap];
+export type Gms2ResourceSubclassType = typeof Gms2ResourceArray._resourceClassMap[keyof typeof Gms2ResourceArray._resourceClassMap] | typeof Gms2ResourceBase;
+export type Gms2ResourceSubclass = InstanceType<Gms2ResourceSubclassType>;
 export type Gms2ResourceType = keyof typeof Gms2ResourceArray._resourceClassMap;

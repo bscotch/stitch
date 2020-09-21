@@ -1,14 +1,14 @@
 import { YySound } from "../../../types/Yy";
-import { Gms2Resource } from "../Gms2Resource";
+import { Gms2ResourceBase } from "./Gms2ResourceBase";
 import paths from "../../paths";
 import { Gms2Storage } from "../../Gms2Storage";
 import { assert } from "../../errors";
 
-export class Gms2Sound extends Gms2Resource {
+export class Gms2Sound extends Gms2ResourceBase {
 
   protected yyData!: YySound; // Happens in the super() constructor
 
-  constructor(...setup: ConstructorParameters<typeof Gms2Resource>) {
+  constructor(...setup: ConstructorParameters<typeof Gms2ResourceBase>) {
     super(...setup);
   }
 

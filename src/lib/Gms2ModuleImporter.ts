@@ -1,6 +1,6 @@
 import { differenceBy } from "lodash";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
-import { Gms2Resource } from "./components/Gms2Resource";
+import { Gms2ResourceBase } from "./components/resources/Gms2ResourceBase";
 import { Gms2ResourceSubclass } from "./components/Gms2ResourceArray";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
 import { Gms2Sprite } from "./components/resources/Gms2Sprite";
@@ -50,10 +50,10 @@ export class Gms2ModuleImporter {
     const sourceModuleResources = Gms2ModuleImporter.resourcesInModule(this.fromProject,moduleName);
     const sourceResourcesToAdd: Gms2ResourceSubclass[] = [];
     /** {source:local} pairs */
-    const updatePairs: Map<Gms2Resource, Gms2Resource> = new Map();
+    const updatePairs: Map<Gms2ResourceBase, Gms2ResourceBase> = new Map();
     for(const sourceModuleResource of sourceModuleResources){
       const matchingLocalResource = this.toProject.resources
-        .findByField('name',sourceModuleResource.name,Gms2Resource);
+        .findByField('name',sourceModuleResource.name,Gms2ResourceBase);
       if(!matchingLocalResource){
         sourceResourcesToAdd.push(sourceModuleResource);
         continue;
@@ -160,7 +160,7 @@ export class Gms2ModuleImporter {
     this.toProject.save();
   }
 
-  private cloneResourceFiles(sourceResource:Gms2Resource){
+  private cloneResourceFiles(sourceResource:Gms2ResourceBase){
     this.toProject.addFolder(sourceResource.folder);
     const localYyDirAbsolute = paths.join(this.toProject.storage.yypDirAbsolute,sourceResource.yyDirRelative);
     this.toProject.storage.copy(sourceResource.yyDirAbsolute,localYyDirAbsolute);

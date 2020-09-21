@@ -1,13 +1,13 @@
-import { YyData } from "../../types/Yy";
+import { YyData } from "../../../types/Yy";
 //❌✅⌛❓
 
-import { YypResource } from "../../types/YypComponents";
-import { Gms2PipelineError } from "../errors";
-import { Gms2Storage } from "../Gms2Storage";
-import paths from "../paths";
-import path from "../paths";
+import { YypResource } from "../../../types/YypComponents";
+import { Gms2PipelineError } from "../../errors";
+import { Gms2Storage } from "../../Gms2Storage";
+import paths from "../../paths";
+import path from "../../paths";
 
-export class Gms2Resource {
+export class Gms2ResourceBase {
 
   protected data: YypResource;
   protected yyData: YyData;
