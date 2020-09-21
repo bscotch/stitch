@@ -2,6 +2,7 @@
 import JsonBig from "json-bigint";
 import fs from "fs-extra";
 import path from "path";
+import { Gms2PipelineError } from "./errors";
 
 const Json = JsonBig({ useNativeBigInt: true });
 
@@ -33,7 +34,12 @@ export function loadFromFileSync(filePath: string) {
   let content = fs.readFileSync(filePath, 'utf8');
   // Strip trailing commas before parsing as JSON
   content = content.replace(/,(\s*[}\]])/g, "$1");
-  return Json.parse(content);
+  try{
+    return Json.parse(content);
+  }
+  catch{
+    throw new Gms2PipelineError(`Content of ${filePath} is not valid JSON.`);
+  }
 }
 
 /**
