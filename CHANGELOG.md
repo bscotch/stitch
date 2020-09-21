@@ -1,3 +1,12 @@
+## [0.3.3](https://github.com/bscotch/gms2/compare/v0.3.2...v0.3.3) (2020-09-21)
+
+
+### Features
+
+* Provide (dangerous) bypass option so that the requirement to be in a clean Git repo can be skipped when that is needed (e.g. for testing/development) ([4ad30cc](https://github.com/bscotch/gms2/commit/4ad30cc4f1943c84e12fd85da21e63ed0afcefc2))
+
+
+
 ## [0.3.2](https://github.com/bscotch/gms2/compare/v0.3.1...v0.3.2) (2020-09-21)
 
 
