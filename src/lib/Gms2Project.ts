@@ -274,7 +274,7 @@ export class Gms2Project {
   }
 
   /**
-   * Add a script resource. Unless you're trying to make
+   * Add or update a script resource. Unless you're trying to make
    * global variables, your code should be wrapped in a function!
    */
   addScript(name:string,code:string){

@@ -78,7 +78,14 @@ export class  Gms2ResourceArray {
   }
 
   addScript(name:string,code:string,storage:Gms2Storage){
-    return this.push(Gms2Script.create(name,code,storage));
+    const script = this.findByField('name',name,Gms2Script);
+    if(script){
+      script.code = code;
+      return this;
+    }
+    else{
+      return this.push(Gms2Script.create(name,code,storage));
+    }
   }
 
   /**
