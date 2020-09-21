@@ -336,6 +336,14 @@ at it goooo ${interp2}
       for(const platform of testPlatforms){
         expect(project.versionOnPlatform(platform)).to.equal('100.5.6.11');
       }
+      // Ensure version formats generally work (errors thrown if they don't)
+      for(const validVersion of ['10.0.10','5.3.6.1','100.9.3-rc.3333']){
+        project.version = validVersion;
+      }
+      // Test a handful of invalid formats
+      for(const invalidVersion of ['10.0.10.9.9','.5.3.5','100.9.3-hotfix.3333','1.1.1.1-rc.1']){
+        expect(()=>project.version = invalidVersion).to.throw();
+      }
     });
 
 
