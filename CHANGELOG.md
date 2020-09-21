@@ -1,3 +1,12 @@
+# [0.3.0](https://github.com/bscotch/gms2/compare/v0.2.1...v0.3.0) (2020-09-21)
+
+
+### Features
+
+* Add ability to delete a resource. ([f0b2bca](https://github.com/bscotch/gms2/commit/f0b2bca48834f1b7d10a602c6305dc15821d45e3))
+
+
+
 ## [0.2.1](https://github.com/bscotch/gms2/compare/v0.2.0...v0.2.1) (2020-09-21)
 
 
