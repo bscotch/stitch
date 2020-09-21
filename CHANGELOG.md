@@ -1,3 +1,12 @@
+## [0.3.1](https://github.com/bscotch/gms2/compare/v0.3.0...v0.3.1) (2020-09-21)
+
+
+### Bug Fixes
+
+* The version setter throws invalid format errors with completely valid version strings. ([675f56d](https://github.com/bscotch/gms2/commit/675f56dcc36bbc326fc355dff5b6f913e2f761da))
+
+
+
 # [0.3.0](https://github.com/bscotch/gms2/compare/v0.2.1...v0.3.0) (2020-09-21)
 
 
