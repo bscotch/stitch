@@ -1,3 +1,12 @@
+# [0.2.0](https://github.com/bscotch/gms2/compare/v0.1.2...v0.2.0) (2020-09-21)
+
+
+### Features
+
+* Create Script class and add method to Projects for creating new ([d9baefe](https://github.com/bscotch/gms2/commit/d9baefe576d723686337b1433abad5f2e317a0ad))
+
+
+
 ## [0.1.2](https://github.com/bscotch/gms2/compare/v0.1.1...v0.1.2) (2020-09-18)
 
 
