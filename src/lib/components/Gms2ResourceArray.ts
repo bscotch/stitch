@@ -135,7 +135,7 @@ export class  Gms2ResourceArray {
       objects: Gms2Resource,       // ❌
       paths: Gms2Resource,         // ❌
       rooms: Gms2Resource,         // ❌
-      scripts: Gms2Resource,       // ❌
+      scripts: Gms2Script,         // ✅
       sequences: Gms2Resource,     // ❌
       shaders: Gms2Resource,       // ❌
       sounds: Gms2Sound,           // ✅
