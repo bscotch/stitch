@@ -143,6 +143,15 @@ export class Gms2Resource {
     return { ...this.data };
   }
 
+  /**
+   * Delete all files, including yy files, associated with this resource.
+   * Should only be used when deleting the resourcese from the project.
+   */
+  deleteFiles(){
+    this.storage.emptyDir(this.yyDirAbsolute);
+    return this;
+  }
+
   static get parentDefault(){
     return {
       name: "NEW",

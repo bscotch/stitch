@@ -30,6 +30,7 @@ export class  Gms2ResourceArray {
   get sprites(){ return this.filterByClass(Gms2Sprite);}
   get sounds(){ return this.filterByClass(Gms2Sound); }
   get scripts(){ return this.filterByClass(Gms2Script);}
+  get all(){ return [...this.items]; }
 
   filterByClass<subclass extends Gms2ResourceSubclassType>(resourceClass: subclass){
     return this.items
@@ -48,6 +49,14 @@ export class  Gms2ResourceArray {
   find<subclass extends Gms2ResourceSubclassType>(matchFunction: (item: Gms2ResourceSubclass)=>any, resourceClass: subclass){
     return this.filterByClass(resourceClass)
       .find(item=>matchFunction(item));
+  }
+
+  findByName<subclass extends Gms2ResourceSubclassType>(name:any, resourceClass?: subclass){
+    const item = this.items.find(i=>i.name==name);
+    if(item && resourceClass && !(item instanceof resourceClass)){
+      return;
+    }
+    return item;
   }
 
   findByField<subclass extends Gms2ResourceSubclassType>(field:keyof Gms2ResourceSubclass,value:any, resourceClass: subclass){
@@ -86,6 +95,21 @@ export class  Gms2ResourceArray {
     else{
       return this.push(Gms2Script.create(name,code,storage));
     }
+  }
+
+  /**
+   * Delete a resource, if it exists. **NOTE:** if other
+   * resources depend on this one you'll be creating errors
+   * by deleting it!
+   */
+  deleteByName(name:string){
+    const resourceIdx = this.items.findIndex(i=>i.name==name);
+    if(resourceIdx<0){
+      return this;
+    }
+    const [resource] = this.items.splice(resourceIdx,1);
+    resource.deleteFiles();
+    return this;
   }
 
   /**

@@ -282,6 +282,11 @@ export class Gms2Project {
     return this.save();
   }
 
+  deleteResourceByName(name:string){
+    this.resources.deleteByName(name);
+    return this.save();
+  }
+
   /**
    * Import a new IncludedFile based on an external file.
    * By default will appear in "datafiles" root folder, but you can specificy

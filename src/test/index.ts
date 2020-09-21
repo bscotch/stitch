@@ -114,6 +114,15 @@ at it goooo ${interp2}
 
   describe("Gms2 Project Class", function () {
 
+    it("can delete a resource", function(){
+      const project = getResetProject(true);
+      const name = project.resources.all[0].name;
+      expect(project.resources.findByName(name)).to.exist;
+      project.deleteResourceByName(name);
+      expect(project.resources.findByName(name)).to.not.exist;
+      expect(project.dehydrated.resources.find(r=>r.id.name==name)).to.not.exist;
+    });
+
     it("can hydrate and dehydrate the YYP file, resulting in the original data",function(){
       const project = getResetProject(true);
       const rawContent = loadFromFileSync(project.yypAbsolutePath);

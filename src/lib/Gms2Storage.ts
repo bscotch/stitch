@@ -50,6 +50,13 @@ export class Gms2Storage {
     }
   }
 
+  /** Delete all files and folders (recursively) inside this directory. */
+  emptyDir(dir:string){
+    if(!this.isReadOnly){
+      fs.emptyDirSync(dir);
+    }
+  }
+
   installPrecommitHook(){
     const gitRoot = this.gitWorkingTreeRoot;
     const preCommitFilePath = paths.join(gitRoot,'.git','hooks','pre-commit');
