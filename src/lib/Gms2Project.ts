@@ -137,7 +137,7 @@ export class Gms2Project {
    */
   set version (versionString:string){
     const parts = versionString
-      .match(/^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(\.(?<revision>\d+))?(-rc.(?<candidate>\d+))$/);
+      .match(/^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)((\.(?<revision>\d+))|(-rc.(?<candidate>\d+)))?$/);
     if(!parts){
       throw new Gms2PipelineError(`Version string ${versionString} is not a valid format.`);
     }

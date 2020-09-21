@@ -47,6 +47,10 @@ export class Gms2Resource {
   get folder(){
     return this.yyData.parent.path.replace(/^folders\/(.*).yy$/,"$1");
   }
+  /**
+   * Set the parent folder for this resource. Note that you may
+   * run into errors if this folder doesn't already exist.
+   */
   set folder(folderName:string){
     this.yyData.parent.name = folderName;
     this.yyData.parent.path = `folders/${folderName}.yy`;
@@ -124,6 +128,16 @@ export class Gms2Resource {
       .includes(moduleName.toLocaleLowerCase());
   }
 
+  /**
+   * Delete all files, including yy files, associated with this resource.
+   * Should only be used when deleting the resourcese from the project.
+   */
+  deleteFiles(){
+    this.storage.emptyDir(this.yyDirAbsolute);
+    return this;
+  }
+
+
   /** Resources typically have one or more companion files
    * alongside their .yy file. They often have the same name
    * as the resource, but generally have different extension.
@@ -141,15 +155,6 @@ export class Gms2Resource {
 
   get dehydrated(): YypResource {
     return { ...this.data };
-  }
-
-  /**
-   * Delete all files, including yy files, associated with this resource.
-   * Should only be used when deleting the resourcese from the project.
-   */
-  deleteFiles(){
-    this.storage.emptyDir(this.yyDirAbsolute);
-    return this;
   }
 
   static get parentDefault(){
