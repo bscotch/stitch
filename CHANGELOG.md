@@ -1,3 +1,12 @@
+## [0.3.4](https://github.com/bscotch/gms2/compare/v0.3.3...v0.3.4) (2020-09-21)
+
+
+### Features
+
+* Only check the Git working directory if not bypassing that check. ([0d316e9](https://github.com/bscotch/gms2/commit/0d316e95a8be49b1510992e0dbfea71bd8bea03b))
+
+
+
 ## [0.3.3](https://github.com/bscotch/gms2/compare/v0.3.2...v0.3.3) (2020-09-21)
 
 
