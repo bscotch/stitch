@@ -1,3 +1,12 @@
+## [0.2.1](https://github.com/bscotch/gms2/compare/v0.2.0...v0.2.1) (2020-09-21)
+
+
+### Bug Fixes
+
+* When calling the 'addScript' method, the script is always added even if one already exists by the same name. Should create the script if new, else update its code. ([ef4782c](https://github.com/bscotch/gms2/commit/ef4782cc64aa2ae3abb9021d6f51c638f1b49de4))
+
+
+
 # [0.2.0](https://github.com/bscotch/gms2/compare/v0.1.2...v0.2.0) (2020-09-21)
 
 
