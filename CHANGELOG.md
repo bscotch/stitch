@@ -1,3 +1,18 @@
+## [0.3.2](https://github.com/bscotch/gms2/compare/v0.3.1...v0.3.2) (2020-09-21)
+
+
+### Bug Fixes
+
+* Script assets are not converted to new Script objects when loading a project. ([90357d2](https://github.com/bscotch/gms2/commit/90357d2b0b055af159a238d6d75e6932b228a8fc))
+
+
+### Features
+
+* Create template subclasses for all resource types so that they can be populated at any time without the developer having to remember to register that subclass with the ResourceArray. ([fa5e5c0](https://github.com/bscotch/gms2/commit/fa5e5c025ecf99fab4dbc3efa392553a4d43c5d3))
+* When trying to load JSON, throw a descriptive error when the file content is NOT json. ([fa3fea1](https://github.com/bscotch/gms2/commit/fa3fea1a8b12f2d5600707256be82f55d81f3384))
+
+
+
 ## [0.3.1](https://github.com/bscotch/gms2/compare/v0.3.0...v0.3.1) (2020-09-21)
 
 
