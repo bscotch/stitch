@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/gms2",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Gamemaker Studio 2 Pipeline Development Kit (GMS2 PDK): Tools for creating Gamemaker Studio 2 asset pipelines.",
   "engines": {
     "node": ">=14.0.0"

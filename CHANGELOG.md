@@ -1,3 +1,12 @@
+## [0.3.5](https://github.com/bscotch/gms2/compare/v0.3.4...v0.3.5) (2020-09-22)
+
+
+### Features
+
+* Remove the deleteFiles method on Resources, since that allows deletion of files without de-referencing from the YYP file. Move that logic into the ResourceArray instead. ([f70ae46](https://github.com/bscotch/gms2/commit/f70ae46c0490ca8a095de3e3dd63b7fa79d46150))
+
+
+
 ## [0.3.4](https://github.com/bscotch/gms2/compare/v0.3.3...v0.3.4) (2020-09-21)
 
 
