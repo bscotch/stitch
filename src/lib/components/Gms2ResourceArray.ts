@@ -25,7 +25,7 @@ export class  Gms2ResourceArray {
 
   private items: Gms2ResourceSubclass[];
 
-  constructor(data: YypResource[], storage: Gms2Storage){
+  constructor(data: YypResource[], private storage: Gms2Storage){
     const uniqueData = uniqBy(data,'id.name');
     const removedItems = difference(data,uniqueData);
     if(removedItems.length){
@@ -119,7 +119,7 @@ export class  Gms2ResourceArray {
       return this;
     }
     const [resource] = this.items.splice(resourceIdx,1);
-    resource.deleteFiles();
+    this.storage.emptyDir(resource.yyDirAbsolute);
     return this;
   }
 

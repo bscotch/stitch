@@ -128,16 +128,6 @@ export class Gms2ResourceBase {
       .includes(moduleName.toLocaleLowerCase());
   }
 
-  /**
-   * Delete all files, including yy files, associated with this resource.
-   * Should only be used when deleting the resourcese from the project.
-   */
-  deleteFiles(){
-    this.storage.emptyDir(this.yyDirAbsolute);
-    return this;
-  }
-
-
   /** Resources typically have one or more companion files
    * alongside their .yy file. They often have the same name
    * as the resource, but generally have different extension.
