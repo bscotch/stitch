@@ -6,20 +6,23 @@ import { Gms2PipelineError } from "../../errors";
 import { Gms2Storage } from "../../Gms2Storage";
 import paths from "../../paths";
 import path from "../../paths";
+import type { Gms2ResourceArray } from "../Gms2ResourceArray";
 
 export class Gms2ResourceBase {
 
   protected data: YypResource;
   protected yyData: YyData;
+  /** The root directory for this resource type */
+  protected resourceRoot: keyof typeof Gms2ResourceArray._resourceClassMap | 'resource' = 'resource';
 
   /**
    *  Create a resource using either the direct YYP-sourced object
-   *  -or- the relative path to its yy file (e.g. sounds/mySound/mySound.yy)
+   *  -or- the name of the resource
    */
   constructor(data: YypResource | string, protected storage: Gms2Storage, ensureYyFile=false) {
     if(typeof data == 'string'){
-      const {name} = path.parse(data);
-      this.data = {id:{name,path:data},order:0};
+      const name = data;
+      this.data = {id:{name,path:`${this.resourceRoot}/${name}/${name}.yy`},order:0};
     }
     else{
       this.data = {...data};
@@ -35,12 +38,12 @@ export class Gms2ResourceBase {
   }
 
   /** Create a generic Yy file, given YypData (must be implemented by each specifific resource.) */
-  createYyFile(){
-    throw new Gms2PipelineError(`Cannot create YY file for generic Resource instance.`);
+  protected createYyFile(){
+    throw new Gms2PipelineError(`createYyFile is not implemented on type ${this.resourceRoot}`);
   }
 
   get name(){
-    return this.yyData?.name ?? this.data.id.name;
+    return this.data.id.name;
   }
 
   /** The folder containing this resource (as viewed via the IDE) */

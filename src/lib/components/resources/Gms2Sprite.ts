@@ -4,6 +4,7 @@ import { Gms2ResourceBase } from "./Gms2ResourceBase";
 export class Gms2Sprite extends Gms2ResourceBase {
 
   protected yyData!: YySprite; // Happens in the super() constructor
+  protected resourceRoot = "sprites" as const;
 
   constructor(...setup: ConstructorParameters<typeof Gms2ResourceBase>) {
     super(...setup);

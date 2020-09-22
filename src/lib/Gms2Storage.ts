@@ -57,6 +57,12 @@ export class Gms2Storage {
     }
   }
 
+  deleteFile(path:string){
+    if(!this.isReadOnly){
+      fs.removeSync(path);
+    }
+  }
+
   installPrecommitHook(){
     const gitRoot = this.gitWorkingTreeRoot;
     const preCommitFilePath = paths.join(gitRoot,'.git','hooks','pre-commit');

@@ -2,52 +2,20 @@ import { YySound } from "../../../types/Yy";
 import { Gms2ResourceBase } from "./Gms2ResourceBase";
 import paths from "../../paths";
 import { Gms2Storage } from "../../Gms2Storage";
-import { assert } from "../../errors";
 
 export class Gms2Sound extends Gms2ResourceBase {
 
   protected yyData!: YySound; // Happens in the super() constructor
+  protected resourceRoot = "sounds" as const;
 
   constructor(...setup: ConstructorParameters<typeof Gms2ResourceBase>) {
     super(...setup);
   }
 
-  createYyFile(){
-
-  }
-
-  get audioFilePathAbsolute(){
-    return paths.join(this.yyDirAbsolute,this.yyData.soundFile);
-  }
-
-  /** Overwrite this Sound's audio file with an external file. */
-  replaceAudioFile(externalAudioFilePath:string){
-    assert(
-      paths.extname(this.audioFilePathAbsolute)==paths.extname(externalAudioFilePath),
-      'source audio type does not match current type'
-    );
-    // Audio file's name is the same as the resource name
-    this.storage.copyFile(externalAudioFilePath,this.audioFilePathAbsolute);
-    return this;
-  }
-
-  /**
-   * Given a sound file, create a Gamemaker Sound asset with default parameter values.
-   * The resource will be named after the source file.
-  */
-  static create(externalAudioFilePath:string,storage:Gms2Storage): Gms2Sound {
-    // TODO: Refactor to make use of createYyFile()
-
-    const {name,base} = paths.parse(externalAudioFilePath);
-
-    const constants = {
-      resourceVersion: "1.0",
-      resourceType: "GMSound",
-    } as const;
-
+  protected createYyFile(){
     const yyData: YySound = {
-      ...constants,
-      name,
+      name: this.name,
+      soundFile: this.name,
       tags: [],
       parent: Gms2Sound.parentDefault,
       compression: 0,
@@ -58,22 +26,27 @@ export class Gms2Sound extends Gms2ResourceBase {
       type: 1,
       bitDepth: 1,
       audioGroupId: Gms2Sound.audioGroupIdDefault,
-      soundFile: base,
+      resourceType: "GMSound",
+      resourceVersion: "1.0",
     };
+    this.storage.saveJson(this.yyPathAbsolute,yyData);
+  }
 
-    // Create the .yy file and copy over the audio file
-    const localPath = (file:string)=>paths.join('sounds',name,file);
-    const localSoundYy   = localPath(`${name}.yy`);
-    const localAudioPath = localPath(base);
-    const absPath = (local:string)=> paths.join(storage.yypDirAbsolute,local);
-    const absSoundDir    = absPath(localPath(''));
-    const absSoundYy     = absPath(localSoundYy);
-    const absAudioPath   = absPath(localAudioPath);
+  get audioFilePathAbsolute(){
+    return paths.join(this.yyDirAbsolute,this.yyData.soundFile);
+  }
 
-    storage.ensureDir(absSoundDir);
-    storage.saveJson(absSoundYy,yyData);
-    storage.copyFile(externalAudioFilePath,absAudioPath);
-    return new Gms2Sound(localSoundYy,storage);
+  /** Overwrite this Sound's audio file with an external file. */
+  replaceAudioFile(externalAudioFilePath:string){
+    const extension = paths.extname(externalAudioFilePath);
+    const oldFileName = this.yyData.soundFile;
+    const newFileName = `${this.name}${extension}`;
+    if(oldFileName != newFileName){
+      this.storage.deleteFile(this.audioFilePathAbsolute);
+    }
+    this.yyData.soundFile = newFileName;
+    this.storage.copyFile(externalAudioFilePath,this.audioFilePathAbsolute);
+    return this;
   }
 
   get audioGroup(){
@@ -91,5 +64,15 @@ export class Gms2Sound extends Gms2ResourceBase {
       name: 'audiogroup_default',
       path: "audiogroups/audiogroup_default",
     };
+  }
+
+  /**
+   * Given a sound file, create a Gamemaker Sound asset with default parameter values.
+   * The resource will be named after the source file.
+  */
+  static create(externalAudioFilePath:string,storage:Gms2Storage): Gms2Sound {
+    const {name} = paths.parse(externalAudioFilePath);
+    return new Gms2Sound(name,storage,true)
+      .replaceAudioFile(externalAudioFilePath);
   }
 }

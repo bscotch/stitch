@@ -6,12 +6,13 @@ import { Gms2ResourceBase } from "./Gms2ResourceBase";
 export class Gms2Script extends Gms2ResourceBase {
 
   protected yyData!: YyScript; // Happens in the super() constructor
+  protected resourceRoot = "scripts" as const;
 
   constructor(...setup: ConstructorParameters<typeof Gms2ResourceBase>) {
     super(...setup);
   }
 
-  createYyFile(){
+  protected createYyFile(){
     const yyData: YyScript = {
       name: this.name,
       tags: [],
@@ -37,7 +38,7 @@ export class Gms2Script extends Gms2ResourceBase {
   }
 
   static create(name:string,code:string,storage:Gms2Storage){
-    const script = new Gms2Script({id:{name,path:`scripts/${name}/${name}.yy`},order:1},storage,true);
+    const script = new Gms2Script(name,storage,true);
     script.code = code;
     return script;
   }

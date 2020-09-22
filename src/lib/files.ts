@@ -107,6 +107,7 @@ export default {
   chmodSync: fs.chmodSync,
   statSync: fs.statSync,
   existsSync: fs.existsSync,
+  removeSync: fs.removeSync,
   ensureDirSync,
   copyFileSync,
   copySync: fs.copySync,
