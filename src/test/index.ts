@@ -1,12 +1,11 @@
 import { expect } from 'chai';
 // import { Project} from '../project/Project';
 import fs from '../lib/files';
+import fs_extra from "fs-extra";
 import paths from '../lib/paths';
 // import projectDiff from '../project/projectDiff';
 // import { inspect } from 'util';
 import { Gms2Project } from '../lib/Gms2Project';
-// import audioImport from "../cli/lib/audio-import";
-// import {execSync} from  "child_process";
 // import {Resource} from "../project/resources/Resource";
 // import { Sprite } from '../project/resources/Sprite';
 import {loadFromFileSync} from "../lib/json";
@@ -15,6 +14,8 @@ import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 import { differenceBy } from 'lodash';
 import { Gms2PipelineError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
+import jsonify from '../cli/lib/jsonify';
+import files from '../lib/files';
 
 process.env.GMS2PDK_DEV = 'true';
 
@@ -58,7 +59,7 @@ describe("GMS2.3 Pipeline SDK", function () {
     resetSandbox();
   });
 
-  describe("Unit Tests", function () {
+  xdescribe("Unit Tests", function () {
 
     it("can dedent string literals", function () {
       const interp1 = 'hello';
@@ -112,7 +113,7 @@ at it goooo ${interp2}
     });
   });
 
-  describe("Gms2 Project Class", function () {
+  xdescribe("Gms2 Project Class", function () {
 
     it("can delete a resource", function(){
       const project = getResetProject(true);
@@ -345,87 +346,95 @@ at it goooo ${interp2}
         expect(()=>project.version = invalidVersion).to.throw();
       }
     });
+  });
 
+  describe("Gamemaker Studio 2: Pipeline Development Kit CLI",function(){
+    it('fails when it should',function(){
+      // Arguments are required
+      //execSync(args);
+      // expect(()=>execSync(args)).to.throw;
+      // // Will not try to import an invalid file
+      // expect(()=>audioImport(sandboxProjectYYPPath,audioSample + 'fake-ext.wav')).to.throw;
+      // // Will fail if hitting a folder without any sound files
+      // expect(()=>audioImport(sandboxProjectYYPPath,`${sandboxRoot}views`)).to.throw;
+      // // Will fail if project path is invalid
+      // expect(()=>audioImport(sandboxProjectYYPPath+'fake-ext.meh',audioSample)).to.throw;
+      // expect(()=>audioImport('./project.json',audioSample)).to.throw;
+    });
 
-    // xdescribe("gms-tools CLIs",function(){
-    //   it('fails when it should',function(){
-    //     // Arguments are required
-    //     expect(()=>audioImport('','')).to.throw;
-    //     // Will not try to import an invalid file
-    //     expect(()=>audioImport(sandboxProjectYYPPath,audioSample + 'fake-ext.wav')).to.throw;
-    //     // Will fail if hitting a folder without any sound files
-    //     expect(()=>audioImport(sandboxProjectYYPPath,`${sandboxRoot}views`)).to.throw;
-    //     // Will fail if project path is invalid
-    //     expect(()=>audioImport(sandboxProjectYYPPath+'fake-ext.meh',audioSample)).to.throw;
-    //     expect(()=>audioImport('./project.json',audioSample)).to.throw;
-    //   });
-    //   it('can import single audio files',function(){
-    //     resetSandbox();
-    //     audioImport(sandboxProjectYYPPath,audioSample);
-    //     const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
-    //     expect(changes.length).to.be.greaterThan(0);
-    //   });
-    //   it('can import single audio files',function(){
-    //     resetSandbox();
-    //     audioImport(sandboxProjectYYPPath,soundSampleRoot);
-    //     const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
-    //     expect(changes.length).to.be.greaterThan(0);
-    //   });
-    //   it('can run from the CLI',function(){
-    //     // Depending on whether running with node or ts-node, need different route
-    //     let cliPath = paths.join(__dirname,'..','cli','gms2-tools-audio.js');
-    //     if(__filename.endsWith('.ts')){
-    //       cliPath = paths.join(__dirname,'..','..','build','cli','gms2-tools-audio.js');
-    //     }
-    //     const args = `node "${cliPath}" -p "${sandboxProjectYYPPath}" -s "${soundSampleRoot}"`;
-    //     const res = execSync(args);
-    //     console.log(res.toString());
-    //   });
-    //   it('can add a folder and texture to the "Textures" of the config file', function(){
-    //     resetSandbox();
-    //     const project = new Project(sandboxProjectYYPPath);
-    //     const folder  = "Sprites/testGroup";
-    //     const subfolder = "Sprites/testGroup/testSubGroup";
-    //     const texture = "TestTexture";
-    //     const subTexture = "OtherTestTexture";
-    //     const topLevelTextureID = project.getTextureByName(texture)?.id;
-    //     const subTextureID = project.getTextureByName(subTexture)?.id;
+    it('Can jsonify a yyp file', function(){
+      resetSandbox();
+      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath)).to.throw();
+      jsonify(paths.resolve(sandboxProjectYYPPath));
+      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath)).to.not.throw();
+    });
+    // it('can import single audio files',function(){
+    //   resetSandbox();
+    //   audioImport(sandboxProjectYYPPath,audioSample);
+    //   const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
+    //   expect(changes.length).to.be.greaterThan(0);
+    // });
+    // it('can import single audio files',function(){
+    //   resetSandbox();
+    //   audioImport(sandboxProjectYYPPath,soundSampleRoot);
+    //   const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
+    //   expect(changes.length).to.be.greaterThan(0);
+    // });
+    // it('can run from the CLI',function(){
+    //   // Depending on whether running with node or ts-node, need different route
+    //   let cliPath = paths.join(__dirname,'..','cli','gms2-tools-audio.js');
+    //   if(__filename.endsWith('.ts')){
+    //     cliPath = paths.join(__dirname,'..','..','build','cli','gms2-tools-audio.js');
+    //   }
+    //   const args = `node "${cliPath}" -p "${sandboxProjectYYPPath}" -s "${soundSampleRoot}"`;
+    //   const res = execSync(args);
+    //   console.log(res.toString());
+    // });
+    // it('can add a folder and texture to the "Textures" of the config file', function(){
+    //   resetSandbox();
+    //   const project = new Project(sandboxProjectYYPPath);
+    //   const folder  = "Sprites/testGroup";
+    //   const subfolder = "Sprites/testGroup/testSubGroup";
+    //   const texture = "TestTexture";
+    //   const subTexture = "OtherTestTexture";
+    //   const topLevelTextureID = project.getTextureByName(texture)?.id;
+    //   const subTextureID = project.getTextureByName(subTexture)?.id;
 
-    //     expect(topLevelTextureID).to.be.a("string");
-    //     const thisView      = project.getViewByPath(folder);
-    //     expect(thisView).to.exist;
-    //     const spritesInViewRecursive = thisView.getChildren("GMSprite", true) as Sprite[];
-    //     expect(spritesInViewRecursive.length, "Should have found two sprites.").to.equal(2);
-    //     for (const sprite of spritesInViewRecursive) {
-    //       expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID is not set to default.").to.not.equal(topLevelTextureID);
-    //     }
-    //     expect(function(){
-    //       project.addFolderToTextureGroup("wrongFolder", "wrongTexture");
-    //     }, "Should fail if wrong texture and folder.").to.throw;
-    //     expect(function(){
-    //       project.addFolderToTextureGroup(folder, "wrongTexture");
-    //     }, "Should fail if wrong texture.").to.throw;
-    //     expect(function(){
-    //       project.addFolderToTextureGroup("wrongFolder", texture);
-    //     }, "Should fail if wrong folder.").to.throw;
-    //     project.addFolderToTextureGroup(folder, texture);
-    //     for (const sprite of spritesInViewRecursive) {
-    //       expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID was not assigned as intended.").to.equal(topLevelTextureID);
-    //     }
-    //     project.removeFolderFromTextureGroups(folder);
-    //     project.addFolderToTextureGroup(subfolder, subTexture);
-    //     project.addFolderToTextureGroup(folder, texture);
-    //     const spritesInParentView = thisView.getChildren("GMSprite", false) as Sprite[];
-    //     const spritesInSubView    = project.getViewByPath(subfolder).getChildren("GMSprite", true) as Sprite[];
-    //     expect(spritesInParentView.length).to.be.greaterThan(0);
-    //     expect(spritesInSubView.length).to.be.greaterThan(0);
-    //     for (const sprite of spritesInParentView) {
-    //       expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID was not assigned as intended.").to.equal(topLevelTextureID);
-    //     }
-    //     for (const sprite of spritesInSubView) {
-    //       expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID was not assigned as intended.").to.equal(subTextureID);
-    //     }
-    //   });
+    //   expect(topLevelTextureID).to.be.a("string");
+    //   const thisView      = project.getViewByPath(folder);
+    //   expect(thisView).to.exist;
+    //   const spritesInViewRecursive = thisView.getChildren("GMSprite", true) as Sprite[];
+    //   expect(spritesInViewRecursive.length, "Should have found two sprites.").to.equal(2);
+    //   for (const sprite of spritesInViewRecursive) {
+    //     expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID is not set to default.").to.not.equal(topLevelTextureID);
+    //   }
+    //   expect(function(){
+    //     project.addFolderToTextureGroup("wrongFolder", "wrongTexture");
+    //   }, "Should fail if wrong texture and folder.").to.throw;
+    //   expect(function(){
+    //     project.addFolderToTextureGroup(folder, "wrongTexture");
+    //   }, "Should fail if wrong texture.").to.throw;
+    //   expect(function(){
+    //     project.addFolderToTextureGroup("wrongFolder", texture);
+    //   }, "Should fail if wrong folder.").to.throw;
+    //   project.addFolderToTextureGroup(folder, texture);
+    //   for (const sprite of spritesInViewRecursive) {
+    //     expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID was not assigned as intended.").to.equal(topLevelTextureID);
+    //   }
+    //   project.removeFolderFromTextureGroups(folder);
+    //   project.addFolderToTextureGroup(subfolder, subTexture);
+    //   project.addFolderToTextureGroup(folder, texture);
+    //   const spritesInParentView = thisView.getChildren("GMSprite", false) as Sprite[];
+    //   const spritesInSubView    = project.getViewByPath(subfolder).getChildren("GMSprite", true) as Sprite[];
+    //   expect(spritesInParentView.length).to.be.greaterThan(0);
+    //   expect(spritesInSubView.length).to.be.greaterThan(0);
+    //   for (const sprite of spritesInParentView) {
+    //     expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID was not assigned as intended.").to.equal(topLevelTextureID);
+    //   }
+    //   for (const sprite of spritesInSubView) {
+    //     expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID was not assigned as intended.").to.equal(subTextureID);
+    //   }
+    // });
   });
 
   after(function () {
