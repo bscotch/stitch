@@ -114,7 +114,7 @@ at it goooo ${interp2}
     });
   });
 
-  xdescribe("Gms2 Project Class", function () {
+  describe("Gms2 Project Class", function () {
 
     it("can delete a resource", function(){
       const project = getResetProject(true);
@@ -347,9 +347,30 @@ at it goooo ${interp2}
         expect(()=>project.version = invalidVersion).to.throw();
       }
     });
+
+
+
+    it.only('Can jsonify a yyp file', function(){
+
+      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath)).to.throw();
+
+      fs.convertGms2FilesToJson(paths.resolve(sandboxProjectYYPPath));
+      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath)).to.not.throw();
+
+      const originalProject = getResetProject(true);
+      const dehydrated = originalProject.dehydrated;
+      // Note: Projects always ensure that "/NEW" (folder) exists,
+      // so delete it before making sure we got back what we put in
+      // (since it does not exist in the original)
+      const newStuffFolderIdx = dehydrated.Folders.findIndex(f=>f.name=='NEW');
+      dehydrated.Folders.splice(newStuffFolderIdx,1);
+
+      const jsonifiedContent = fs.readJsonSync(sandboxProjectYYPPath);
+      expect(dehydrated).to.eql(jsonifiedContent);
+    });
   });
 
-  describe("Gamemaker Studio 2: Pipeline Development Kit CLI",function(){
+  xdescribe("Gamemaker Studio 2: Pipeline Development Kit CLI",function(){
     it('fails when it should',function(){
       // Arguments are required
 
@@ -363,13 +384,6 @@ at it goooo ${interp2}
       // // Will fail if project path is invalid
       // expect(()=>audioImport(sandboxProjectYYPPath+'fake-ext.meh',audioSample)).to.throw;
       // expect(()=>audioImport('./project.json',audioSample)).to.throw;
-    });
-
-    it('Can jsonify a yyp file', function(){
-      resetSandbox();
-      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath)).to.throw();
-      jsonify(paths.resolve(sandboxProjectYYPPath));
-      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath)).to.not.throw();
     });
 
 
