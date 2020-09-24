@@ -88,7 +88,7 @@ To keep things stable and automatable, the PDK uses a configuration file (`gms2p
 <b style="color:red">⚠ NOT YET IMPLEMENTED ⚠</b>
   
 + ❌ import
-  + modules --source-project=path --modules=m1,m2
+  + modules --source_project=path --modules=m1,m2 --target_project=path
   + sounds --source-path=dir/file --extensions=mp3,wave
   + files --source-path=dir/file --extensions=txt
 + ❌ assign
