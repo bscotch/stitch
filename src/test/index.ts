@@ -348,25 +348,29 @@ at it goooo ${interp2}
       }
     });
 
-
-
-    it.only('Can jsonify a yyp file', function(){
-
-      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath)).to.throw();
-
-      fs.convertGms2FilesToJson(paths.resolve(sandboxProjectYYPPath));
-      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath)).to.not.throw();
-
-      const originalProject = getResetProject(true);
-      const dehydrated = originalProject.dehydrated;
-      // Note: Projects always ensure that "/NEW" (folder) exists,
-      // so delete it before making sure we got back what we put in
-      // (since it does not exist in the original)
-      const newStuffFolderIdx = dehydrated.Folders.findIndex(f=>f.name=='NEW');
-      dehydrated.Folders.splice(newStuffFolderIdx,1);
-
+    it('Can jsonify a yyp file', function(){
+      resetSandbox();
+      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath), "Original yyp file shoud not be parsable as json.").to.throw();
+      const originalContent = fs.readJsonSync(sandboxProjectYYPPath);
+      fs.convertGms2FileToJson(paths.resolve(sandboxProjectYYPPath));
+      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath), "Jsonified yyp file should be parsable as json.").to.not.throw();
       const jsonifiedContent = fs.readJsonSync(sandboxProjectYYPPath);
-      expect(dehydrated).to.eql(jsonifiedContent);
+      expect(originalContent, "Jsonification should not change the content.").to.eql(jsonifiedContent);
+    });
+
+    it('Can batch jsonify yy(p) files in a directory', function(){
+      resetSandbox();
+      const gms2Files = fs.listFilesByExtensionSync(paths.resolve(sandboxRoot), [".yy", ".yyp"]);
+      gms2Files.forEach(gms2File=>
+      {
+        expect(()=>fs_extra.readJsonSync(gms2File), "Original yy(p) file shoud not be parsable as json.").to.throw();
+      });
+
+      fs.batchConvertGms2FilesToJson(paths.resolve(sandboxRoot));
+      gms2Files.forEach(gms2File=>
+      {
+        expect(()=>fs_extra.readJsonSync(gms2File), "Jsonified yyp file should be parsable as json.").to.not.throw();
+      });
     });
   });
 
