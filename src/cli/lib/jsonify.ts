@@ -8,5 +8,13 @@ export type JsonifyOptions = {
 
 export default function(options: JsonifyOptions){
   cli_assert.assertMutualExclusion(options.file, options.directory);
-  fs.batchConvertGms2FilesToJson(options.file || options.directory || process.cwd());
+  if (options.file){
+    fs.convertGms2FileToJson(options.file);
+  }
+  else if (options.directory){
+    fs.batchConvertGms2FilesToJson(options.directory);
+  }
+  else{
+    fs.batchConvertGms2FilesToJson(process.cwd());
+  }
 }
