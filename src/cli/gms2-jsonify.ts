@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import commander from "commander";
 import { oneline } from "../lib/strings";
-import jsonify from './lib/jsonify';
+import jsonify, {JsonifyOptions} from './lib/jsonify';
 
 const cli = commander;
 
@@ -16,4 +16,4 @@ cli.description("Convert every .yy and .yyp file into valid JSON.")
   `)
   .parse(process.argv);
 
-jsonify(cli.file, cli.directory);
+jsonify(cli as JsonifyOptions);
