@@ -14,8 +14,8 @@ import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 import { differenceBy } from 'lodash';
 import { Gms2PipelineError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
-import jsonify from '../cli/lib/jsonify';
-import files from '../lib/files';
+import jsonify, { JsonifyOptions } from '../cli/lib/jsonify';
+import cli_assert from '../cli/lib/cli-assert';
 import importModules from '../cli/lib/import-modules';
 
 process.env.GMS2PDK_DEV = 'true';
@@ -374,20 +374,17 @@ at it goooo ${interp2}
     });
   });
 
-  xdescribe("Gamemaker Studio 2: Pipeline Development Kit CLI",function(){
-    it('fails when it should',function(){
-      // Arguments are required
+  describe.only("Gamemaker Studio 2: Pipeline Development Kit CLI",function(){
+    it.only('Jsonify fails when it should',function(){
 
+      const jsonifyOptions: JsonifyOptions = {
+        file: "this",
+        directory: "that"
+      };
+      expect(()=>jsonify(jsonifyOptions), "Should fail when providing both file and directory input.").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
       // Will not run when source project path is invalid
-      expect(()=>importModules("fake_source_project_path", ["non_existing_module"])).to.throw();
-      // expect(()=>execSync(args)).to.throw;
-      // // Will not try to import an invalid file
-      // expect(()=>audioImport(sandboxProjectYYPPath,audioSample + 'fake-ext.wav')).to.throw;
-      // // Will fail if hitting a folder without any sound files
-      // expect(()=>audioImport(sandboxProjectYYPPath,`${sandboxRoot}views`)).to.throw;
-      // // Will fail if project path is invalid
-      // expect(()=>audioImport(sandboxProjectYYPPath+'fake-ext.meh',audioSample)).to.throw;
-      // expect(()=>audioImport('./project.json',audioSample)).to.throw;
+      //expect(()=>importModules("fake_source_project_path", ["non_existing_module"])).to.throw();
+
     });
 
 
