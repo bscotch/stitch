@@ -278,15 +278,49 @@ export class Gms2Project {
     return this;
   }
 
+  public supportedSoundFileExtensions = ["mp3","ogg","wav","wma"];
   /**
    * Add or update an audio file. The name is taken from
    * the sourcePath. If there already exists a sound asset
    * with this name, its file will be replaced. Otherwise
    * the asset will be created and placed into folder "/NEW".
+   * Support the following extensions:
+   * 1. mp3
+   * 2. ogg
+   * 3. wav
+   * 4. wma
    */
   addSound(sourcePath:string){
+    assert(fs.statSync(sourcePath).isFile(), `sourcePath is not a file: ${sourcePath}`);
+    const fileExt = paths.extname(sourcePath).slice(1);
+    assert(this.supportedSoundFileExtensions.includes(fileExt), oneline`
+      Cannot import sound file with extension: ${fileExt}.
+      Only supports: ${this.supportedSoundFileExtensions.join(",")}
+      `);
     this.resources.addSound(sourcePath,this.storage);
     return this.save();
+  }
+
+  /**
+   * Batch add or update audio files from a directory.
+   * Support the following extensions:
+   * 1. mp3
+   * 2. ogg
+   * 3. wav
+   * 4. wma
+   */
+  batchAddSound(sourcePath:string, extensions = this.supportedSoundFileExtensions){
+    assert(fs.statSync(sourcePath).isDirectory(), `sourcePath is not a directory: ${sourcePath}`);
+    extensions.forEach(extension=>{
+      assert(this.supportedSoundFileExtensions.includes(extension), oneline`
+      Cannot batch import sound file with extension: ${extension}.
+      Only supports: ${this.supportedSoundFileExtensions.join(",")}
+      `);
+    });
+    const targetFiles = fs.listFilesByExtensionSync(sourcePath, extensions);
+    targetFiles.forEach(targetFile=>{
+      this.addSound(targetFile);
+    });
   }
 
   /**

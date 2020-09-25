@@ -33,6 +33,9 @@ const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
 const assetSampleRoot = paths.resolve('./sample-assets/');
 const soundSampleRoot = paths.join(assetSampleRoot, "sounds");
 const audioSample = paths.join(soundSampleRoot,"mus_intro_jingle.wav");
+const invalidAudioSample = paths.join(soundSampleRoot, "sfx_badgeunlock_m4a.m4a");
+const invalidAudioSampleExt = paths.extname(invalidAudioSample).slice(1);
+const batchAudioSampleNames = ["sfx_badgeunlock_intro", "mus_intro_jingle", "sfx_badgeunlock_mp3", "sfx_badgeunlock_wma"];
 const testWorkingDir = process.cwd();
 
 function throwNever():never{
@@ -174,9 +177,12 @@ at it goooo ${interp2}
 
     it("can add sounds",function(){
       const project = getResetProject();
-      expect(()=>project.addSound(audioSample+'-fake.mp3'),
+      expect(()=>project.addSound(audioSample+"fake_path"),
         'should not be able to upsert non-existing audio assets'
-      ).to.throw;
+      ).to.throw();
+      expect(()=>project.addSound(invalidAudioSample),
+        'should not be able to upsert audio assets with unsupported extensions.'
+      ).to.throw();
       project.addSound(audioSample);
       // Questions:
       //   Is the sound in the yyp?
@@ -188,6 +194,29 @@ at it goooo ${interp2}
       expect(fs.existsSync(audio.yyPathAbsolute),'.yy file should exist').to.be.true;
       //   Does the audio file exist?
       expect(fs.existsSync(audio.audioFilePathAbsolute),'audio file should exist').to.be.true;
+    });
+
+    it("can batch add sounds",function(){
+      const project = getResetProject();
+      expect(()=>project.batchAddSound(soundSampleRoot+'-fake.mp3'),
+        'should not be able to batch add sounds from non-existing path'
+      ).to.throw();
+      expect(()=>project.batchAddSound(soundSampleRoot, [invalidAudioSampleExt]),
+        'should not be able to batch add sounds with unsupported extensions.'
+      ).to.throw();
+      project.batchAddSound(soundSampleRoot);
+      // Questions:
+      //   Is the sound in the yyp?
+      batchAudioSampleNames.forEach(batchAudioSampleName=>{
+        const audio = project.resources
+          .findByField('name',batchAudioSampleName,Gms2Sound);
+        expect(audio,'New audio should be upserted').to.exist;
+        if(!audio){ throwNever(); }
+        //   Does the sound .yy exist?
+        expect(fs.existsSync(audio.yyPathAbsolute),'.yy file should exist').to.be.true;
+        //   Does the audio file exist?
+        expect(fs.existsSync(audio.audioFilePathAbsolute),'audio file should exist').to.be.true;
+      });
     });
 
     it("can create a new texture group",function(){
@@ -257,7 +286,7 @@ at it goooo ${interp2}
       // Attempt to add non-existent file
       expect(()=>project.addIncludedFile(audioSample+'-fake.mp3'),
         'attempting to add a non-existent file should throw'
-      ).to.throw;
+      ).to.throw();
     });
 
     it("can update existing included files on import",function(){
@@ -418,7 +447,7 @@ at it goooo ${interp2}
       expect(()=>importModules(incorrectImportModulesOtions), "Should fail when target_project_path is entered but does not exists").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
     });
 
-    it.only('Import Modules succeeds when it should', function(){
+    it('Import Modules succeeds when it should', function(){
       process.chdir(sandboxRoot);
       let importModulesOtions: ImportModuleOptions = {
         source_project_path: modulesRoot,
