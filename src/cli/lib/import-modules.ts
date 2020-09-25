@@ -1,21 +1,24 @@
 import { Gms2Project } from '../../lib/Gms2Project';
-import fs from '../../lib/files';
-import { assert } from '../../lib/errors';
+import cliAssert from './cli-assert';
 
-export default function(source_project_path:string, modules:string[] | string, target_project_path?:string){
-  assert(fs.existsSync(source_project_path), `Source project does not exists at: ${source_project_path}`);
-  let targetModules: string[];
-  if (!Array.isArray(modules)){
-    targetModules = [modules] as string[];
+export type ImportModuleOptions = {
+  source_project_path: string,
+  modules: string[],
+  target_project_path ?: string
+}
+
+export default function(options: ImportModuleOptions){
+  const {source_project_path, modules} = options;
+  let {target_project_path} = options;
+  cliAssert.assertPathExists(source_project_path);
+  cliAssert.assertAtLeastOneTruthy(...modules);
+  if(target_project_path){
+    cliAssert.assertPathExists(target_project_path);
   }
   else{
-    targetModules = modules;
+    target_project_path = process.cwd();
   }
-  targetModules.forEach((module)=>{
-    assert((typeof module) == "string", `Target modules are not entered as strings: ${module}`);
-  });
 
-  const targetProject = new Gms2Project(target_project_path || process.cwd());
-  targetProject.importModules(source_project_path,targetModules);
-  return targetProject;
+  const targetProject = new Gms2Project(target_project_path);
+  targetProject.importModules(source_project_path,modules);
 }
