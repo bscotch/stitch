@@ -16,7 +16,7 @@ import { Gms2PipelineError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import jsonify, { JsonifyOptions } from '../cli/lib/jsonify';
 import cli_assert from '../cli/lib/cli-assert';
-import importModules from '../cli/lib/import-modules';
+import importModules, { ImportModuleOptions } from '../cli/lib/import-modules';
 
 process.env.GMS2PDK_DEV = 'true';
 
@@ -375,26 +375,35 @@ at it goooo ${interp2}
   });
 
   describe.only("Gamemaker Studio 2: Pipeline Development Kit CLI",function(){
-    it.only('Jsonify fails when it should',function(){
-
+    it('Jsonify fails when it should',function(){
       const jsonifyOptions: JsonifyOptions = {
         file: "this",
         directory: "that"
       };
       expect(()=>jsonify(jsonifyOptions), "Should fail when providing both file and directory input.").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
-      // Will not run when source project path is invalid
-      //expect(()=>importModules("fake_source_project_path", ["non_existing_module"])).to.throw();
-
     });
 
 
-    it('Can import modules', function(){
+    it('Import Modules fails when it should', function(){
       resetSandbox();
-      const modules = ["BscotchPack","AnotherModule"];
-      expect(()=>importModules(modulesRoot, modules, sandboxProjectYYPPath)).to.not.throw();
-      resetSandbox();
-      const aModule = "BscotchPack";
-      expect(()=>importModules(modulesRoot, aModule, sandboxProjectYYPPath)).to.not.throw();
+      let importModulesOtions: ImportModuleOptions = {
+        source_project_path: "fake_source_project_path",
+        modules: ["BscotchPack","AnotherModule"]
+      };
+      expect(()=>importModules(importModulesOtions), "Should fail when source_project_path does not exists").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+
+      importModulesOtions = {
+        source_project_path: modulesRoot,
+        modules: [""]
+      };
+      expect(()=>importModules(importModulesOtions), "Should fail when there is no valid module inputs").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+
+      importModulesOtions = {
+        source_project_path: modulesRoot,
+        modules: ["BscotchPack","AnotherModule"],
+        target_project_path: "fake_target_project_path"
+      };
+      expect(()=>importModules(importModulesOtions), "Should fail when target_project_path is entered but does not exists").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
     });
 
     // it('can import single audio files',function(){
