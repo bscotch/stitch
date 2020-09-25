@@ -4,4 +4,6 @@ const cli = commander;
 
 cli.description("Import assets to Gamemaker Studio 2 projects.")
   .command("modules", "Import modules from a source Gamemaker Studio 2 project to a target project.")
+  .command("sounds", "Import sound assets from a file or a path to a target project.")
   .parse(process.argv);
+

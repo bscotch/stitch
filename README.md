@@ -89,7 +89,7 @@ To keep things stable and automatable, the PDK uses a configuration file (`gms2p
   
 + ❌ import
   + ✅ modules --source_project=path --modules=m1,m2 --target_project=path
-  + sounds --source-path=dir/file --extensions=mp3,wave
+  + ✅ sounds --source_path=path --extensions=mp3,wave --target_project=path
   + files --source-path=dir/file --extensions=txt
 + ❌ assign
   + texture-groups --folder=sprites/myGroupOfSprites --group-name=name
