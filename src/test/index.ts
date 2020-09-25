@@ -24,15 +24,16 @@ process.env.GMS2PDK_DEV = 'true';
 //   console.log(inspect(obj, false, null));
 // };
 
-const sandboxRoot = './sand box/'; // Use a space to ensure nothing bad happens.
-const projectRoot = './sample-project/';
+const sandboxRoot = paths.resolve('./sand box/'); // Use a space to ensure nothing bad happens.
+const projectRoot = paths.resolve('./sample-project/');
 const projectYYP = 'sample-project.yyp';
-const modulesRoot = "./sample-module-source/";
+const modulesRoot = paths.resolve("./sample-module-source/");
 // const sourceProjectYYPPath = paths.join(projectRoot, projectYYP);
 const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
-const assetSampleRoot = './sample-assets/';
-const soundSampleRoot = `${assetSampleRoot}sounds/`;
-const audioSample = `${soundSampleRoot}mus_intro_jingle.wav`;
+const assetSampleRoot = paths.resolve('./sample-assets/');
+const soundSampleRoot = paths.join(assetSampleRoot, "sounds");
+const audioSample = paths.join(soundSampleRoot,"mus_intro_jingle.wav");
+const testWorkingDir = process.cwd();
 
 function throwNever():never{
   throw new Error("this should never happen");
@@ -60,7 +61,7 @@ describe("GMS2.3 Pipeline SDK", function () {
     resetSandbox();
   });
 
-  xdescribe("Unit Tests", function () {
+  describe("Unit Tests", function () {
 
     it("can dedent string literals", function () {
       const interp1 = 'hello';
@@ -349,24 +350,22 @@ at it goooo ${interp2}
     });
 
     it('Can jsonify a yyp file', function(){
-      resetSandbox();
       expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath), "Original yyp file shoud not be parsable as json.").to.throw();
       const originalContent = fs.readJsonSync(sandboxProjectYYPPath);
-      fs.convertGms2FileToJson(paths.resolve(sandboxProjectYYPPath));
+      fs.convertGms2FileToJson(sandboxProjectYYPPath);
       expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath), "Jsonified yyp file should be parsable as json.").to.not.throw();
       const jsonifiedContent = fs.readJsonSync(sandboxProjectYYPPath);
       expect(originalContent, "Jsonification should not change the content.").to.eql(jsonifiedContent);
     });
 
     it('Can batch jsonify yy(p) files in a directory', function(){
-      resetSandbox();
-      const gms2Files = fs.listFilesByExtensionSync(paths.resolve(sandboxRoot), [".yy", ".yyp"]);
+      const gms2Files = fs.listFilesByExtensionSync(sandboxRoot, [".yy", ".yyp"]);
       gms2Files.forEach(gms2File=>
       {
         expect(()=>fs_extra.readJsonSync(gms2File), "Original yy(p) file shoud not be parsable as json.").to.throw();
       });
 
-      fs.batchConvertGms2FilesToJson(paths.resolve(sandboxRoot));
+      fs.batchConvertGms2FilesToJson(sandboxRoot);
       gms2Files.forEach(gms2File=>
       {
         expect(()=>fs_extra.readJsonSync(gms2File), "Jsonified yyp file should be parsable as json.").to.not.throw();
@@ -374,36 +373,74 @@ at it goooo ${interp2}
     });
   });
 
-  describe.only("Gamemaker Studio 2: Pipeline Development Kit CLI",function(){
+  describe("Gamemaker Studio 2: Pipeline Development Kit CLI",function(){
     it('Jsonify fails when it should',function(){
-      const jsonifyOptions: JsonifyOptions = {
+      const incorrectJsonifyOptions: JsonifyOptions = {
         file: "this",
         directory: "that"
       };
-      expect(()=>jsonify(jsonifyOptions), "Should fail when providing both file and directory input.").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+      expect(()=>jsonify(incorrectJsonifyOptions), "Should fail when providing both file and directory input.").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+    });
+
+    it('Jsonify succeeds when it should',function(){
+      let jsonifyOptions: JsonifyOptions = {
+        file: sandboxProjectYYPPath
+      };
+      expect(()=>jsonify(jsonifyOptions), "Should succeed when processing just a file input.").to.not.throw();
+      jsonifyOptions = {
+        directory: sandboxRoot
+      };
+      expect(()=>jsonify(jsonifyOptions), "Should succeed when processing just a directory input.").to.not.throw();
+      process.chdir(sandboxRoot);
+      jsonifyOptions = {};
+      expect(()=>jsonify(jsonifyOptions), "Should succeed when there is no input.").to.not.throw();
     });
 
 
     it('Import Modules fails when it should', function(){
-      resetSandbox();
-      let importModulesOtions: ImportModuleOptions = {
+      let incorrectImportModulesOtions: ImportModuleOptions = {
         source_project_path: "fake_source_project_path",
         modules: ["BscotchPack","AnotherModule"]
       };
-      expect(()=>importModules(importModulesOtions), "Should fail when source_project_path does not exists").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when source_project_path does not exists").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
 
-      importModulesOtions = {
+      incorrectImportModulesOtions = {
         source_project_path: modulesRoot,
         modules: [""]
       };
-      expect(()=>importModules(importModulesOtions), "Should fail when there is no valid module inputs").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when there is no valid module inputs").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
 
-      importModulesOtions = {
+      incorrectImportModulesOtions = {
         source_project_path: modulesRoot,
         modules: ["BscotchPack","AnotherModule"],
         target_project_path: "fake_target_project_path"
       };
-      expect(()=>importModules(importModulesOtions), "Should fail when target_project_path is entered but does not exists").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when target_project_path is entered but does not exists").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+    });
+
+    it.only('Import Modules succeeds when it should', function(){
+      process.chdir(sandboxRoot);
+      let importModulesOtions: ImportModuleOptions = {
+        source_project_path: modulesRoot,
+        modules: ["BscotchPack","AnotherModule"]
+      };
+      expect(()=>importModules(importModulesOtions), "Should succeed when with valid source path and multiple modules").to.not.throw();
+
+      resetSandbox();
+      importModulesOtions = {
+        source_project_path: modulesRoot,
+        modules: ["BscotchPack"]
+      };
+      expect(()=>importModules(importModulesOtions), "Should succeed when with valid source path and 1 module").to.not.throw();
+
+      resetSandbox();
+      process.chdir(paths.join(sandboxRoot, "notes"));
+      importModulesOtions = {
+        source_project_path: modulesRoot,
+        modules: ["BscotchPack"],
+        target_project_path: sandboxProjectYYPPath
+      };
+      expect(()=>importModules(importModulesOtions), "Should succeed when target project path is defined even if the cwd is not where the project is").to.not.throw();
     });
 
     // it('can import single audio files',function(){
@@ -477,6 +514,7 @@ at it goooo ${interp2}
 
   after(function () {
     // new Project(sandboxProjectYYPPath);
+    process.chdir(testWorkingDir);
     resetSandbox();
   });
 });
