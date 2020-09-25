@@ -1,3 +1,5 @@
+import fs from '../../lib/files';
+
 class Gms2PipelineCLIAssertionError extends Error {
   constructor(message: string) {
     super(message);
@@ -6,7 +8,7 @@ class Gms2PipelineCLIAssertionError extends Error {
   }
 }
 
-export function assert(claim: any, message: string) {
+function assert(claim: any, message: string) {
   if (!claim) {
     throw new Gms2PipelineCLIAssertionError(message);
   }
@@ -33,8 +35,16 @@ function assertAtLeastOneTruthy(...args:any[]){
   assert(truthyArgs.length == 1, `Must have one non-empty inputs.`);
 }
 
+function assertPathExists(...args:any[]){
+  args.forEach(arg=>{
+    assert(fs.existsSync(arg), `The given path does not exists at: ${arg}`);
+  });
+}
+
 export default{
   assertMutualExclusion,
   assertAtLeastOneTruthy,
-  Gms2PipelineCLIAssertionError
+  assertPathExists,
+  Gms2PipelineCLIAssertionError,
+  assert
 };
