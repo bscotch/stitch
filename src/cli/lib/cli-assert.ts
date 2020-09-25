@@ -32,7 +32,7 @@ function assertMutualExclusion(...args:any[]){
 
 function assertAtLeastOneTruthy(...args:any[]){
   const truthyArgs = getTruthyArg(...args);
-  assert(truthyArgs.length >= 1, `Must have one non-empty inputs.`);
+  assert(truthyArgs.length >= 1, `Must have one non-empty inputs. Current non-empty inputs are: ${truthyArgs}`);
 }
 
 function assertPathExists(...args:any[]){
