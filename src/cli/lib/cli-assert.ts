@@ -30,7 +30,7 @@ function assertMutualExclusion(...args:any[]){
   assert(truthyArgs.length <= 1, `Cannot accept these mutually exclusive inputs: ${truthyArgs}`);
 }
 
-function assertAtLeastOneTruthy(...args:any[]){
+function assertAtLeastOneTruthy(args:string[]){
   const truthyArgs = getTruthyArg(...args);
   assert(truthyArgs.length >= 1, `Must have one non-empty inputs. Current non-empty inputs are: ${truthyArgs}`);
 }
