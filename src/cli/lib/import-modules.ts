@@ -11,7 +11,7 @@ export default function(options: ImportModuleOptions){
   const {source_project_path, modules} = options;
   let {target_project_path} = options;
   cliAssert.assertPathExists(source_project_path);
-  cliAssert.assertAtLeastOneTruthy(...modules);
+  cliAssert.assertAtLeastOneTruthy(modules);
   if(target_project_path){
     cliAssert.assertPathExists(target_project_path);
   }

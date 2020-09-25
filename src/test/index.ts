@@ -17,6 +17,7 @@ import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import jsonify, { JsonifyOptions } from '../cli/lib/jsonify';
 import cli_assert from '../cli/lib/cli-assert';
 import importModules, { ImportModuleOptions } from '../cli/lib/import-modules';
+import importSounds, {ImportSoundsOptions} from '../cli/lib/import-sounds'
 
 process.env.GMS2PDK_DEV = 'true';
 
@@ -449,27 +450,47 @@ at it goooo ${interp2}
 
     it('Import Modules succeeds when it should', function(){
       process.chdir(sandboxRoot);
-      let importModulesOtions: ImportModuleOptions = {
+      let importModulesOptions: ImportModuleOptions = {
         source_project_path: modulesRoot,
         modules: ["BscotchPack","AnotherModule"]
       };
-      expect(()=>importModules(importModulesOtions), "Should succeed when with valid source path and multiple modules").to.not.throw();
+      expect(()=>importModules(importModulesOptions), "Should succeed when with valid source path and multiple modules").to.not.throw();
 
       resetSandbox();
-      importModulesOtions = {
+      importModulesOptions = {
         source_project_path: modulesRoot,
         modules: ["BscotchPack"]
       };
-      expect(()=>importModules(importModulesOtions), "Should succeed when with valid source path and 1 module").to.not.throw();
+      expect(()=>importModules(importModulesOptions), "Should succeed when with valid source path and 1 module").to.not.throw();
+    });
+
+    it('Import Sounds fails when it should',function(){
+      const incorrectImportSoundsOptions: ImportSoundsOptions = {
+        source_path: audioSample,
+        extensions: ["wav"]
+      };
+      expect(()=>importSounds(incorrectImportSoundsOptions), "Should fail when providing both a file file and extensions.").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+    });
+
+    it('Import Sounds when it should',function(){
+      process.chdir(sandboxRoot);
+      let importSoundsOptions: ImportSoundsOptions = {
+        source_path: audioSample
+      };
+      expect(()=>importSounds(importSoundsOptions), "Should succeed when source path points to a valid file").to.not.throw();
 
       resetSandbox();
-      process.chdir(paths.join(sandboxRoot, "notes"));
-      importModulesOtions = {
-        source_project_path: modulesRoot,
-        modules: ["BscotchPack"],
-        target_project_path: sandboxProjectYYPPath
+      importSoundsOptions = {
+        source_path: soundSampleRoot
       };
-      expect(()=>importModules(importModulesOtions), "Should succeed when target project path is defined even if the cwd is not where the project is").to.not.throw();
+      expect(()=>importSounds(importSoundsOptions), "Should succeed when source path points to a valid folder").to.not.throw();
+
+      resetSandbox();
+      importSoundsOptions = {
+        source_path: soundSampleRoot,
+        extensions: ["wav"]
+      };
+      expect(()=>importSounds(importSoundsOptions), "Should succeed when source path points to a valid folder and importing only a subset of extensions.").to.not.throw();
     });
 
     // it('can import single audio files',function(){
