@@ -335,7 +335,7 @@ at it goooo ${interp2}
       }
     });
 
-    it.only("can import new included files by extensions", function(){
+    it("can import new included files by extensions", function(){
       const project = getResetProject();
 
       // Add all files from a directory
