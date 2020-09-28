@@ -2,19 +2,10 @@ import fs from "../../lib/files";
 import cli_assert from './cli-assert';
 
 export type JsonifyOptions = {
-  file?: string,
-  directory? : string
+  path: string
 };
 
 export default function(options: JsonifyOptions){
-  cli_assert.assertMutualExclusion(options.file, options.directory);
-  if (options.file){
-    fs.convertGms2FileToJson(options.file);
-  }
-  else if (options.directory){
-    fs.batchConvertGms2FilesToJson(options.directory);
-  }
-  else{
-    fs.batchConvertGms2FilesToJson(process.cwd());
-  }
+  cli_assert.assert(options.path, `Must provide a path. If you want to use the current directory, try "--path ."`);
+  fs.convertGms2FilesToJson(options.path);
 }

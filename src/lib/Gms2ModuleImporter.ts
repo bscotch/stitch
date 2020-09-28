@@ -40,7 +40,9 @@ export class Gms2ModuleImporter {
     if(alienResources.length){
       const conflictFolder = "MODULE_CONFLICTS";
       this.toProject.addFolder(conflictFolder);
-      alienResources.forEach(resource=>resource.folder=conflictFolder);
+      for(const resource of alienResources){
+        resource.folder=conflictFolder;
+      }
     }
   }
 

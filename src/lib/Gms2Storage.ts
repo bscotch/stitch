@@ -78,7 +78,7 @@ export class Gms2Storage {
 # prior to commiting, so that the files are always guaranteed to have the exact same
 # structure, whether they were last edited by Gamemaker Studio or the PDK.
 
-npx gms2 jsonify
+npx gms2 jsonify --path .
 git add *.yy
 git add *.yyp
 `;
