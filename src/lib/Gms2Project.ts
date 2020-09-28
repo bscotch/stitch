@@ -319,7 +319,7 @@ export class Gms2Project {
       targetFiles.push(sourcePath);
     }
     else{
-      targetFiles = fs.listFilesByExtensionSync(sourcePath, allowExtensions);
+      targetFiles = fs.listFilesByExtensionSync(sourcePath, allowExtensions, true);
     }
     for(const targetFile of targetFiles){
       this.addSoundbyFile(targetFile);
