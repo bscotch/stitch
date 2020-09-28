@@ -26,7 +26,7 @@ export class Gms2ProjectConfig {
   }
 
   get name(){
-    return 'gms2pdk.config.json';
+    return 'stitch.config.json';
   }
 
   get filePathAbsolute(){

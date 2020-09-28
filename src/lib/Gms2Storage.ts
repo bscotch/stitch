@@ -76,7 +76,7 @@ export class Gms2Storage {
 # thus causing large numbers of cosmetic file changes that will pollute the Git history.
 # This hook forces all yy/yyp files in the repo to be in a standardized JSON format
 # prior to commiting, so that the files are always guaranteed to have the exact same
-# structure, whether they were last edited by Gamemaker Studio or the PDK.
+# structure, whether they were last edited by Gamemaker Studio or Stitch.
 
 npx gms2 jsonify
 git add *.yy

@@ -5,6 +5,6 @@
         "typescript"
     ],
     "files.exclude": {
-        "**/.git": false
+        "**/.git/hooks/": false
     }
 }
