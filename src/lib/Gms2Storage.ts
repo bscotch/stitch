@@ -87,7 +87,7 @@ git add *.yyp
   }
 
   listFiles(dir:string,recursive?:boolean,allowedExtension?:string[]){
-    if (allowedExtension){
+    if (allowedExtension && allowedExtension.length > 0){
       return fs.listFilesByExtensionSync(dir, allowedExtension, recursive);
     }
     else{

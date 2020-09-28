@@ -304,7 +304,10 @@ export class Gms2Project {
    * @param {string[]} [allowExtensions] Only allow defined extensions.
    * If not defined, will allow all supported extensions.
    */
-  addSounds(sourcePath:string, allowExtensions = Gms2Project.supportedSoundFileExtensions){
+  addSounds(sourcePath:string, allowExtensions?: string[]){
+    if (!allowExtensions || allowExtensions.length == 0){
+      allowExtensions = Gms2Project.supportedSoundFileExtensions;
+    }
     for (const extension of allowExtensions){
       assert(Gms2Project.supportedSoundFileExtensions.includes(extension), oneline`
       Cannot batch import sound file with extension: ${extension}.
