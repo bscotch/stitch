@@ -1,16 +1,11 @@
 
-<header>
-  <div style="text-align:center;">
-    <img  src="https://img.bscotch.net/fit-in/256x256/logos/stitch.png"
-          style="max-width:100%;height:auto;"
-          alt="Stitch (Gamemaker Studio 2 Pipeline Development Kit) Logo">
-  </div>
-  <h1 style="text-align:center;">
-    Stitch<br/>
-    <span style="color:gray;font-size:80%">The Gamemaker Studio 2 Pipeline Development Kit</span>
-  </h1>
-  <address style="text-style:italic;margin-bottom:10px;text-align:center;color:darkgray;">By Butterscotch Shenanigans</address>
-</header>
+
+<img  src="https://img.bscotch.net/fit-in/256x256/logos/stitch.png"
+      style="max-width:100%;height:auto;"
+      alt="Stitch (Gamemaker Studio 2 Pipeline Development Kit) Logo">
+<h1>
+  Stitch: The Gamemaker Studio 2 Pipeline Development Kit
+</h1>
 
 
 Gamemaker Studio 2 (<abbr title="Gamemaker Studio 2">GMS2</abbr>) is a powerful game-making tool, but it does not generally have features for automating tasks or creating asset pipelines. <dfn>Stitch</dfn> is a "Pipeline Development Kit" providing a collection of command-line tools and a Node.js API for automating tasks in GMS2 by directly managing its project files.
@@ -23,7 +18,7 @@ Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bsc
 
 + [Compatibility Issues](#compatibility)
 + [Setup](#setup)
-+ [CLI](#cli)
++ [Commandline Interface](#cli)
 + [Core Features](#features)
   + [Configuration File](#config-file) - Manage the behavior of Stitch.
   + [Modules](#modules) - Import groups of assets from other GMS2 projects.
@@ -38,16 +33,16 @@ Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bsc
 
 This project will generally stay up to date with current, stable versions of Gamemaker Studio 2. We will not typically test new versions of Stitch against older versions of Gamemaker Studio, and will also make no effort to maintain backwards compatibility. We'll list any known compatibility issues here.
 
-+ **GMS2 versions < 2.3.0.529** are guaranteed **not to work** with any version of Stitch. Gamemaker completely changed its project structure in 2.3.0.529, and that's the structure we developed the original Stitch for.
++ **GMS2 versions < 2.3.0.529** are guaranteed **not to work** with any version of Stitch. Gamemaker completely changed its project structure in 2.3.0.529, and all prior project structures are completely incompatible with Stitch.
 
 ## Setup <a id="setup">
 
 ### Requirements
 
-+ [Node.js v14+](https://nodejs.org/) (may work on lower versions, but only tested on v14)
-+ [Git](https://git-scm.com/) (if your project is not in a git repo, or your working tree is not clean, <span color="red">Stitch will refuse to run</span>)
-+ [Gamemaker Studio 2.3+](https://www.yoyogames.com/gamemaker) projects (versions prior to GMS2.3 have a completely different project structure and are inompatible with this tool).
-+ Windows 10 (Stitch might work on Mac, but is only developed and tested on Windows 10)
++ [Node.js v14+](https://nodejs.org/)
++ [Git](https://git-scm.com/) (if your project is not in a git repo, or your working tree is not clean, <strong>Stitch will refuse to run</strong>)
++ [Gamemaker Studio 2.3+](https://www.yoyogames.com/gamemaker) projects
++ Windows 10 (other operating systems may work but are untested)
 
 ### Gamemaker Project Setup
 
@@ -74,7 +69,7 @@ To start using Stitch with one of your GMS2 projects, do the following:
 1. Run `npm install -g @bscotch/gms2` for a *global* install of Stitch, allowing you to install it just once and use it for all projects. This causes the `gms2 ...` commands to become available in the terminal.
 1. Run `gms2 --help` to see all the things you can do.
 
-**⚠ ALERT ⚠** When run, Stitch will attempt to install a pre-commit git hook that will convert all .yy and .yyp files to plain JSON (using `gms2 jsonify`). This is likely what you want to have happen. If you already have a pre-commit hook, this one will not be installed. You can simply add the line `npx gms2 jsonify` somewhere in your existing pre-commit hook to get the same result.
+**⚠ ALERT ⚠** When run, Stitch will attempt to install a pre-commit git hook that will convert all .yy and .yyp files to plain JSON (using `gms2 jsonify`). This is likely what you want. If you already have a pre-commit hook, this one will not be installed. You can simply add the line `npx gms2 jsonify --path .` somewhere in your existing pre-commit hook to get the same result.
 
 ### Stitch Configuration File <a id="config-file"></a>
 
@@ -98,7 +93,7 @@ To keep things stable and automatable, Stitch uses a configuration file (`stitch
 
 </details>
 
-## CLI <a id="cli"></a>
+## Using the CLI <a id="cli"></a>
 
 <b style="color:red">⚠ NOT YET IMPLEMENTED ⚠</b>
   
@@ -124,7 +119,7 @@ Gamemaker Studio has mechanisms to import assets from one Gamemaker project into
 
 Everything inside those three "groups", starting at the "TitleScreen" level and including any subfolders, is included as a "TitleScreen" asset and can be imported together into another Gamemaker 2 project.
 
-Use case: At Bscotch, we have a separate Gamemaker project for our shared asset library, including our login system, a large script library, common objects, and more. We use the module system to import this shared library into all of our games. This makes it easy to maintain shared assets and to start new projects with a huge head start.
+Use case: At Bscotch, we have a separate Gamemaker project for our shared asset library that includes our login system, a large script library, common objects, and more. We use the module system to import this shared library into all of our games, and to keep it up to date in all games.
 
 #### Module Import Notes <a id="modules-notes"></a>
 
