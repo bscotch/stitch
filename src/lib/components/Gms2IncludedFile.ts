@@ -101,7 +101,7 @@ export class Gms2IncludedFile {
       // Use relative pathing to ensure that organization inside GMS2
       // matches original folder heirarchy, but all inside whatever 'subdirectory' was provided
       const filePathRelativeToStart = paths.relative(path,filePath);
-      const relativeSubdirectory = paths.join(subdirectory||'.',paths.dirname(filePathRelativeToStart));
+      const relativeSubdirectory = paths.join(subdirectory||'NEW',paths.dirname(filePathRelativeToStart));
       importedFiles.push(Gms2IncludedFile.importFromFile(project,filePath,relativeSubdirectory));
     }
     return importedFiles;
@@ -118,7 +118,7 @@ export class Gms2IncludedFile {
     }
     const fileName = paths.parse(path).base;
     // (Ensure POSIX-style seps)
-    const directoryRelative = `datafiles/${paths.asPosixPath(subdirectory||'.')}`;
+    const directoryRelative = `datafiles/${paths.asPosixPath(subdirectory||'NEW')}`;
 
     // See if something already exists with project name
     const matchingFile = project.includedFiles.findByField('name',fileName);
