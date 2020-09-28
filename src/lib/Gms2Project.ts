@@ -350,8 +350,8 @@ export class Gms2Project {
    *                JSON stringified. Must not be null or undefined in order to take effect.
    * @param subdirectory Subdirectory inside the Datafiles folder in which to place this resource.
    */
-  addIncludedFile(path:string,content?:any,subdirectory?:string){
-    return Gms2IncludedFile.import(this,path,content,subdirectory);
+  addIncludedFiles(path:string,content?:any,subdirectory?:string, allowedExtensions?:string[]){
+    return Gms2IncludedFile.import(this,path,content,subdirectory, allowedExtensions);
   }
 
   addConfig(name:string){

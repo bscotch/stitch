@@ -86,8 +86,13 @@ git add *.yyp
     fs.chmodSync(preCommitFilePath,'777');
   }
 
-  listFiles(dir:string,recursive?:boolean){
-    return fs.listFilesSync(dir,recursive);
+  listFiles(dir:string,recursive?:boolean,allowedExtension?:string[]){
+    if (allowedExtension){
+      return fs.listFilesByExtensionSync(dir, allowedExtension, recursive);
+    }
+    else{
+      return fs.listFilesSync(dir,recursive);
+    }
   }
 
   listPaths(dir:string,recursive?:boolean){

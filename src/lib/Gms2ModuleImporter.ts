@@ -119,7 +119,7 @@ export class Gms2ModuleImporter {
       if(!matching){
         // Trim off the 'datafiles' parent folder
         const subdir = paths.join(sourceModuleFile.directoryRelative,'..');
-        matching = this.toProject.addIncludedFile(sourceModuleFile.filePathAbsolute,null,subdir)[0] as Gms2IncludedFile;
+        matching = this.toProject.addIncludedFiles(sourceModuleFile.filePathAbsolute,null,subdir)[0] as Gms2IncludedFile;
         // Check the Config status of the source and match it to the target
         // (including adding configs if they don't exist)
         matching.config = sourceModuleFile.config;

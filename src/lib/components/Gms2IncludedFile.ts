@@ -90,11 +90,12 @@ export class Gms2IncludedFile {
     };
   }
 
-  static importFromDirectory(project:Gms2Project,path:string,subdirectory?:string){
+  static importFromDirectory(project:Gms2Project,path:string,subdirectory?:string, allowedExtensions?:string[]){
     if(!project.storage.isDirectory(path)){
       throw new Gms2PipelineError(`${path} is not a directory`);
     }
-    const filePaths = project.storage.listFiles(path,true);
+    const filePaths = project.storage.listFiles(path,true, allowedExtensions);
+
     const importedFiles: Gms2IncludedFile[] = [];
     for(const filePath of filePaths){
       // Use relative pathing to ensure that organization inside GMS2
@@ -152,7 +153,7 @@ export class Gms2IncludedFile {
   }
 
 
-  static import(project:Gms2Project,path:string,content?:any,subdirectory?:string){
+  static import(project:Gms2Project,path:string,content?:any,subdirectory?:string, allowedExtensions?: string[]){
     if( ! [null,undefined].includes(content) ){
       return [Gms2IncludedFile.importFromData(project,path,content,subdirectory)];
     }
@@ -160,7 +161,7 @@ export class Gms2IncludedFile {
       throw new Gms2PipelineError(`Path ${path} does not exist and no alternate content provided.`);
     }
     else if(project.storage.isDirectory(path)){
-      return Gms2IncludedFile.importFromDirectory(project,path,subdirectory);
+      return Gms2IncludedFile.importFromDirectory(project,path,subdirectory, allowedExtensions);
     }
     else{
       return [Gms2IncludedFile.importFromFile(project,path,subdirectory)];

@@ -300,7 +300,7 @@ at it goooo ${interp2}
     it("will fail if importing non-existent included file",function(){
       const project = new Gms2Project(sandboxRoot);
       // Attempt to add non-existent file
-      expect(()=>project.addIncludedFile(audioSample+'-fake.mp3'),
+      expect(()=>project.addIncludedFiles(audioSample+'-fake.mp3'),
         'attempting to add a non-existent file should throw'
       ).to.throw();
     });
@@ -316,7 +316,7 @@ at it goooo ${interp2}
       const sharedFile = project.includedFiles.findByField('name','shared.txt');
       if(!sharedFile){throw new Gms2PipelineError(`shared file should exist`);}
       expect(sharedFile.contentAsBuffer,'shared file before copy should be empty').to.eql(Buffer.from([]));
-      project.addIncludedFile(`${filesDir}/${existingFilePath}`,null,'shared');
+      project.addIncludedFiles(`${filesDir}/${existingFilePath}`,null,'shared');
       expect(sharedFile.contentAsBuffer.toString()).to.eql(sharedFileSourceContent);
 
     });
@@ -326,7 +326,7 @@ at it goooo ${interp2}
 
       // Add all files from a directory
       const filesDir = `${assetSampleRoot}/includedFiles/files`;
-      project.addIncludedFile(filesDir,null,'BscotchPack');
+      project.addIncludedFiles(filesDir,null,'BscotchPack');
       const expectedFiles = fs.listFilesSync(filesDir)
         .map(filePath=>paths.parse(filePath).base);
       for(const filePath of expectedFiles){
@@ -334,17 +334,38 @@ at it goooo ${interp2}
       }
     });
 
+    it.only("can import new included files by extensions", function(){
+      const project = getResetProject();
+
+      // Add all files from a directory
+      const filesDir = `${assetSampleRoot}/includedFiles/files`;
+      const allowedExtensions = ["json", "md"];
+      project.addIncludedFiles(filesDir,null,'BscotchPack',allowedExtensions);
+      const availableFiles = fs.listFilesSync(filesDir)
+        .map(filePath=>paths.parse(filePath).base);
+      for(const filePath of availableFiles){
+        const fileExtension = paths.extname(filePath).slice(1);
+        const res = project.includedFiles.findByField('name',filePath);
+        if (allowedExtensions.includes(fileExtension)){
+          expect(res,'all imported files should exist').to.exist;
+        }
+        else{
+          expect(res,'all imported files should exist').to.not.exist;
+        }
+      }
+    });
+
     it("can add an IncludedFile using a data blob", function(){
       const project = getResetProject();
 
       const binaryExample = Buffer.from([1,2,3]);
-      expect(project.addIncludedFile('binary',binaryExample)[0].contentAsBuffer).to.eql(binaryExample);
+      expect(project.addIncludedFiles('binary',binaryExample)[0].contentAsBuffer).to.eql(binaryExample);
 
       const textExample = "hello";
-      expect(project.addIncludedFile('text',textExample)[0].contentAsString).to.eql(textExample);
+      expect(project.addIncludedFiles('text',textExample)[0].contentAsString).to.eql(textExample);
 
       const jsonExample = {hello:[1,2,3]};
-      expect(project.addIncludedFile('json',jsonExample)[0].contentParsedAsJson).to.eql(jsonExample);
+      expect(project.addIncludedFiles('json',jsonExample)[0].contentParsedAsJson).to.eql(jsonExample);
     });
 
     it("can import modules from one project into another", function(){
