@@ -1,23 +1,23 @@
 import { Gms2Project } from '../../lib/Gms2Project';
 import cli_assert from './cli-assert';
-import fs from '../../lib/files'
+import fs from '../../lib/files';
 
 export type ImportSoundsOptions = {
   source_path: string,
-  extensions?: string[],
+  allow_extensions?: string[],
   target_project_path?: string
 }
 
 export default function(options: ImportSoundsOptions){
-  const {source_path, extensions} = options;
-  let {target_project_path} = options;
+  const {source_path} = options;
+  let {target_project_path, allow_extensions} = options;
 
   cli_assert.assertPathExists(source_path);
-  if (fs.statSync(source_path).isFile() && extensions){
-    cli_assert.assertMutualExclusion(source_path, extensions);
+  if (allow_extensions){
+    cli_assert.assertAtLeastOneTruthy(allow_extensions);
   }
-  if (extensions){
-    cli_assert.assertAtLeastOneTruthy(extensions);
+  else{
+    allow_extensions = [];
   }
   if (target_project_path){
     cli_assert.assertPathExists(target_project_path);
@@ -27,10 +27,5 @@ export default function(options: ImportSoundsOptions){
   }
 
   const targetProject = new Gms2Project(target_project_path);
-  if (fs.statSync(source_path).isFile()){
-    targetProject.addSound(source_path);
-  }
-  else{
-    targetProject.batchAddSound(source_path, extensions);
-  }
+  targetProject.addSounds(source_path, cli_assert.getTruthyArgs(allow_extensions));
 }

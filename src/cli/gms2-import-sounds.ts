@@ -6,15 +6,14 @@ import importSounds, {ImportSoundsOptions} from "./lib/import-sounds";
 const cli = commander;
 
 cli.description("Import sound assets from a file or a path to a target project.")
-  .requiredOption("--source_path <path>", oneline`
+  .requiredOption("--source-path <path>", oneline`
     Path to the sound file or the folder containing the sounds files.
   `)
-  .option("--extensions <extensions...>", oneline`
-    When source_path is a folder,
+  .option("--allow-extensions <extensions...>", oneline`
     input one or more of the supported extensions: mp3, wav, ogg, wma. 
-    If undefined, Will attempt to import all supported extensions.
+    If not set, Will attempt to import all supported extensions.
   `)
-  .option("--target_project_path <path>", oneline`
+  .option("--target-project-path <path>", oneline`
     Directory to the target Gamemaker Studio 2 project. If not set, will use the current directory.
   `)
   .parse(process.argv);
