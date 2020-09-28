@@ -3,6 +3,6 @@ import { ImportBaseOptions, normalizeOptions } from './import-base-options';
 
 export default function(options: ImportBaseOptions){
   options = normalizeOptions(options);
-  const targetProject = new Gms2Project(options.target_project_path);
-  targetProject.addSounds(options.source_path, options.allow_extensions);
+  const targetProject = new Gms2Project(options.targetProjectPath);
+  targetProject.addSounds(options.sourcePath, options.allowExtensions);
 }

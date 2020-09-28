@@ -2,23 +2,23 @@ import { Gms2Project } from '../../lib/Gms2Project';
 import cli_assert from './cli-assert';
 
 export type ImportModuleOptions = {
-  source_project_path: string,
+  sourceProjectPath: string,
   modules: string[],
-  target_project_path ?: string
+  targetProjectPath ?: string
 }
 
 export default function(options: ImportModuleOptions){
-  const {source_project_path, modules} = options;
-  let {target_project_path} = options;
-  cli_assert.assertPathExists(source_project_path);
+  const {sourceProjectPath, modules} = options;
+  let {targetProjectPath} = options;
+  cli_assert.assertPathExists(sourceProjectPath);
   cli_assert.assertAtLeastOneTruthy(modules);
-  if(target_project_path){
-    cli_assert.assertPathExists(target_project_path);
+  if(targetProjectPath){
+    cli_assert.assertPathExists(targetProjectPath);
   }
   else{
-    target_project_path = process.cwd();
+    targetProjectPath = process.cwd();
   }
 
-  const targetProject = new Gms2Project(target_project_path);
-  targetProject.importModules(source_project_path,cli_assert.getTruthyArgs(modules));
+  const targetProject = new Gms2Project(targetProjectPath);
+  targetProject.importModules(sourceProjectPath,cli_assert.getTruthyArgs(modules));
 }
