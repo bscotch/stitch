@@ -1,16 +1,23 @@
 
-<header style="text-align:center;">
-  <img  src="https://img.bscotch.net/fit-in/256x256/logos/stitch.png"
-        style="max-width:100%;height:auto;"
-        alt="Stitch (Gamemaker Studio 2 Pipeline Development Kit) Logo">
-  <h1 style="text-align:center;">Stitch: The Gamemaker Studio 2 Pipeline Development Kit</h1>
-  <address style="margin-bottom:0">By Butterscotch Shenanigans</address>
+<header>
+  <div style="text-align:center;">
+    <img  src="https://img.bscotch.net/fit-in/256x256/logos/stitch.png"
+          style="max-width:100%;height:auto;"
+          alt="Stitch (Gamemaker Studio 2 Pipeline Development Kit) Logo">
+  </div>
+  <h1 style="text-align:center;">
+    Stitch<br/>
+    <span style="color:gray;font-size:80%">The Gamemaker Studio 2 Pipeline Development Kit</span>
+  </h1>
+  <address style="text-style:italic;margin-bottom:10px;text-align:center;color:darkgray;">By Butterscotch Shenanigans</address>
 </header>
 
 
-Gamemaker Studio 2 (GMS2) is a powerful game-making tool, but it does not generally have features for automating tasks or creating asset pipelines. This "Pipeline Development Kit" provides a collection of node modules and command-line tools for automating tasks in GMS2 by directly managing its project files. Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
+Gamemaker Studio 2 (<abbr title="Gamemaker Studio 2">GMS2</abbr>) is a powerful game-making tool, but it does not generally have features for automating tasks or creating asset pipelines. <dfn>Stitch</dfn> is a "Pipeline Development Kit" providing a collection of command-line tools and a Node.js API for automating tasks in GMS2 by directly managing its project files.
 
-<span style="color:red"><b>⚠ WARNING ⚠</b> Use at your own risk.</span> Stitch could completely break your Gamemaker project. If you do not completely trust your version control system, you should not use Stitch. To help keep you safe, Stitch will not run unless your project is in a git repo with a clean working directory, but that only helps if you know how to use git to recover in case something goes wrong.
+Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
+
+<strong>⚠ WARNING ⚠ Use at your own risk.</strong> Stitch could completely break your Gamemaker project. If you do not completely trust your version control system, you should not use Stitch. To help keep you safe, Stitch will not run unless your project is in a git repo with a clean working directory, but that only helps if you know how to use git to recover in case something goes wrong.
 
 ### Table of Contents
 
