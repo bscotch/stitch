@@ -1,32 +1,32 @@
 import cli_assert from './cli-assert';
 
 export type ImportBaseOptions = {
-  source_path: string,
-  allow_extensions?: string[],
-  target_project_path?: string
+  sourcePath: string,
+  allowExtensions?: string[],
+  targetProjectPath?: string
 }
 
 export function normalizeOptions(options: ImportBaseOptions){
-  const {source_path} = options;
-  let {target_project_path, allow_extensions} = options;
+  const {sourcePath} = options;
+  let {targetProjectPath, allowExtensions} = options;
 
-  cli_assert.assertPathExists(source_path);
-  if (allow_extensions){
-    cli_assert.assertAtLeastOneTruthy(allow_extensions);
+  cli_assert.assertPathExists(sourcePath);
+  if (allowExtensions){
+    cli_assert.assertAtLeastOneTruthy(allowExtensions);
   }
   else{
-    allow_extensions = [];
+    allowExtensions = [];
   }
-  if (target_project_path){
-    cli_assert.assertPathExists(target_project_path);
+  if (targetProjectPath){
+    cli_assert.assertPathExists(targetProjectPath);
   }
   else{
-    target_project_path = process.cwd();
+    targetProjectPath = process.cwd();
   }
 
   return {
-    source_path,
-    allow_extensions: cli_assert.getTruthyArgs(allow_extensions),
-    target_project_path
+    sourcePath,
+    allowExtensions: cli_assert.getTruthyArgs(allowExtensions),
+    targetProjectPath
   };
 }

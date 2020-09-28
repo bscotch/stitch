@@ -6,7 +6,7 @@ import import_modules, { ImportModuleOptions } from './lib/import-modules';
 const cli = commander;
 
 cli.description("Import modules from a source Gamemaker Studio 2 project to a target project.")
-  .requiredOption("--source-project <path>", oneline`
+  .requiredOption("--source-project-path <path>", oneline`
     Path to the source Gamemaker Studio 2 project.
   `)
   .requiredOption("--modules <names...>", oneline`
