@@ -1,13 +1,8 @@
 import { expect } from 'chai';
-// import { Project} from '../project/Project';
 import fs from '../lib/files';
 import fs_extra from "fs-extra";
 import paths from '../lib/paths';
-// import projectDiff from '../project/projectDiff';
-// import { inspect } from 'util';
 import { Gms2Project } from '../lib/Gms2Project';
-// import {Resource} from "../project/resources/Resource";
-// import { Sprite } from '../project/resources/Sprite';
 import {loadFromFileSync} from "../lib/json";
 import { undent, oneline } from "../lib/strings";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
@@ -17,7 +12,7 @@ import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import jsonify, { JsonifyOptions } from '../cli/lib/jsonify';
 import cli_assert from '../cli/lib/cli-assert';
 import importModules, { ImportModuleOptions } from '../cli/lib/import-modules';
-import importSounds, {ImportSoundsOptions} from '../cli/lib/import-sounds'
+import importSounds, {ImportSoundsOptions} from '../cli/lib/import-sounds';
 
 process.env.GMS2PDK_DEV = 'true';
 
@@ -36,7 +31,7 @@ const soundSampleRoot = paths.join(assetSampleRoot, "sounds");
 const audioSample = paths.join(soundSampleRoot,"mus_intro_jingle.wav");
 const invalidAudioSample = paths.join(soundSampleRoot, "sfx_badgeunlock_m4a.m4a");
 const invalidAudioSampleExt = paths.extname(invalidAudioSample).slice(1);
-const batchAudioSampleNames = ["sfx_badgeunlock_intro", "mus_intro_jingle", "sfx_badgeunlock_mp3", "sfx_badgeunlock_wma"];
+const batchAudioSampleNames = ["sfx_badgeunlock_intro.ogg", "mus_intro_jingle.wav", "sfx_badgeunlock_mp3.mp3", "sfx_badgeunlock_wma.wma"];
 const testWorkingDir = process.cwd();
 
 function throwNever():never{
@@ -176,15 +171,15 @@ at it goooo ${interp2}
       expect(script.code).to.equal(code);
     });
 
-    it("can add sounds",function(){
+    it("can add a single sound asset",function(){
       const project = getResetProject();
-      expect(()=>project.addSound(audioSample+"fake_path"),
+      expect(()=>project.addSounds(audioSample+"fake_path"),
         'should not be able to upsert non-existing audio assets'
       ).to.throw();
-      expect(()=>project.addSound(invalidAudioSample),
+      expect(()=>project.addSounds(invalidAudioSample),
         'should not be able to upsert audio assets with unsupported extensions.'
       ).to.throw();
-      project.addSound(audioSample);
+      project.addSounds(audioSample);
       // Questions:
       //   Is the sound in the yyp?
       const audio = project.resources
@@ -197,27 +192,46 @@ at it goooo ${interp2}
       expect(fs.existsSync(audio.audioFilePathAbsolute),'audio file should exist').to.be.true;
     });
 
-    it("can batch add sounds",function(){
-      const project = getResetProject();
-      expect(()=>project.batchAddSound(soundSampleRoot+'-fake.mp3'),
+    it("can batch add sound assets",function(){
+      let project = getResetProject();
+      expect(()=>project.addSounds(soundSampleRoot+'-fake.mp3'),
         'should not be able to batch add sounds from non-existing path'
       ).to.throw();
-      expect(()=>project.batchAddSound(soundSampleRoot, [invalidAudioSampleExt]),
+      expect(()=>project.addSounds(soundSampleRoot, [invalidAudioSampleExt]),
         'should not be able to batch add sounds with unsupported extensions.'
       ).to.throw();
-      project.batchAddSound(soundSampleRoot);
+      project.addSounds(soundSampleRoot);
       // Questions:
       //   Is the sound in the yyp?
-      batchAudioSampleNames.forEach(batchAudioSampleName=>{
+      for (const batchAudioSampleName of batchAudioSampleNames){
         const audio = project.resources
-          .findByField('name',batchAudioSampleName,Gms2Sound);
+          .findByField('name',paths.parse(batchAudioSampleName).name,Gms2Sound);
         expect(audio,'New audio should be upserted').to.exist;
         if(!audio){ throwNever(); }
         //   Does the sound .yy exist?
         expect(fs.existsSync(audio.yyPathAbsolute),'.yy file should exist').to.be.true;
         //   Does the audio file exist?
         expect(fs.existsSync(audio.audioFilePathAbsolute),'audio file should exist').to.be.true;
-      });
+      }
+
+      project = getResetProject();
+      const allowedExtensions = ["wav"];
+      project.addSounds(soundSampleRoot, allowedExtensions);
+      for (const batchAudioSampleName of batchAudioSampleNames){
+        const extension = paths.extname(batchAudioSampleName).slice(1);
+        const isAllowedExtension = allowedExtensions.includes(extension);
+        const audio = project.resources
+          .findByField('name',paths.parse(batchAudioSampleName).name,Gms2Sound);
+        if (isAllowedExtension){
+          expect(audio,'Allowed extension should be upserted').to.exist;
+          if(!audio){ throwNever(); }
+          expect(fs.existsSync(audio.yyPathAbsolute),'.yy file should exist').to.be.true;
+          expect(fs.existsSync(audio.audioFilePathAbsolute),'audio file should exist').to.be.true;
+        }
+        else{
+          expect(audio,'Non-allowed extensions should not be upserted').to.not.exist;
+        }
+      }
     });
 
     it("can create a new texture group",function(){
@@ -379,10 +393,10 @@ at it goooo ${interp2}
       }
     });
 
-    it('Can jsonify a yyp file', function(){
+    it('Can jsonify a single yyp file', function(){
       expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath), "Original yyp file shoud not be parsable as json.").to.throw();
       const originalContent = fs.readJsonSync(sandboxProjectYYPPath);
-      fs.convertGms2FileToJson(sandboxProjectYYPPath);
+      fs.convertGms2FilesToJson(sandboxProjectYYPPath);
       expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath), "Jsonified yyp file should be parsable as json.").to.not.throw();
       const jsonifiedContent = fs.readJsonSync(sandboxProjectYYPPath);
       expect(originalContent, "Jsonification should not change the content.").to.eql(jsonifiedContent);
@@ -390,89 +404,81 @@ at it goooo ${interp2}
 
     it('Can batch jsonify yy(p) files in a directory', function(){
       const gms2Files = fs.listFilesByExtensionSync(sandboxRoot, [".yy", ".yyp"]);
-      gms2Files.forEach(gms2File=>
-      {
+      for (const gms2File of gms2Files){
         expect(()=>fs_extra.readJsonSync(gms2File), "Original yy(p) file shoud not be parsable as json.").to.throw();
-      });
+      }
 
-      fs.batchConvertGms2FilesToJson(sandboxRoot);
-      gms2Files.forEach(gms2File=>
-      {
+      fs.convertGms2FilesToJson(sandboxRoot);
+      for (const gms2File of gms2Files){
         expect(()=>fs_extra.readJsonSync(gms2File), "Jsonified yyp file should be parsable as json.").to.not.throw();
-      });
+      }
     });
   });
 
   describe("Gamemaker Studio 2: Pipeline Development Kit CLI",function(){
-    it('Jsonify fails when it should',function(){
-      const incorrectJsonifyOptions: JsonifyOptions = {
-        file: "this",
-        directory: "that"
-      };
-      expect(()=>jsonify(incorrectJsonifyOptions), "Should fail when providing both file and directory input.").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
-    });
-
-    it('Jsonify succeeds when it should',function(){
+    it('Jsonify command',function(){
       let jsonifyOptions: JsonifyOptions = {
-        file: sandboxProjectYYPPath
+        path: sandboxProjectYYPPath
       };
       expect(()=>jsonify(jsonifyOptions), "Should succeed when processing just a file input.").to.not.throw();
       jsonifyOptions = {
-        directory: sandboxRoot
+        path: sandboxRoot
       };
       expect(()=>jsonify(jsonifyOptions), "Should succeed when processing just a directory input.").to.not.throw();
+
       process.chdir(sandboxRoot);
-      jsonifyOptions = {};
-      expect(()=>jsonify(jsonifyOptions), "Should succeed when there is no input.").to.not.throw();
+      jsonifyOptions = {
+        path: "."
+      };
+      expect(()=>jsonify(jsonifyOptions), "Should succeed when using '.' to point to the cwd").to.not.throw();
+
+      jsonifyOptions = {path: ""};
+      expect(()=>jsonify(jsonifyOptions), "Should fail when there is no input.").to.throw(cli_assert.Gms2PipelineCliAssertionError);
     });
 
 
-    it('Import Modules fails when it should', function(){
+    it('Import Modules command', function(){
       let incorrectImportModulesOtions: ImportModuleOptions = {
         source_project_path: "fake_source_project_path",
         modules: ["BscotchPack","AnotherModule"]
       };
-      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when source_project_path does not exists").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when source_project_path does not exists").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
       incorrectImportModulesOtions = {
         source_project_path: modulesRoot,
         modules: [""]
       };
-      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when there is no valid module inputs").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
+      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when there is no valid module inputs").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
       incorrectImportModulesOtions = {
         source_project_path: modulesRoot,
         modules: ["BscotchPack","AnotherModule"],
         target_project_path: "fake_target_project_path"
       };
-      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when target_project_path is entered but does not exists").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
-    });
+      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when target_project_path is entered but does not exists").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
-    it('Import Modules succeeds when it should', function(){
       process.chdir(sandboxRoot);
       let importModulesOptions: ImportModuleOptions = {
         source_project_path: modulesRoot,
         modules: ["BscotchPack","AnotherModule"]
       };
-      expect(()=>importModules(importModulesOptions), "Should succeed when with valid source path and multiple modules").to.not.throw();
+      expect(()=>importModules(importModulesOptions), "Should succeed when run with valid source path and multiple modules").to.not.throw();
 
       resetSandbox();
       importModulesOptions = {
         source_project_path: modulesRoot,
         modules: ["BscotchPack"]
       };
-      expect(()=>importModules(importModulesOptions), "Should succeed when with valid source path and 1 module").to.not.throw();
+      expect(()=>importModules(importModulesOptions), "Should succeed when run with valid source path and 1 module").to.not.throw();
     });
 
-    it('Import Sounds fails when it should',function(){
+    it('Import Sounds command',function(){
       const incorrectImportSoundsOptions: ImportSoundsOptions = {
-        source_path: audioSample,
-        extensions: ["wav"]
+        source_path: soundSampleRoot,
+        allow_extensions: [""]
       };
-      expect(()=>importSounds(incorrectImportSoundsOptions), "Should fail when providing both a file file and extensions.").to.throw(cli_assert.Gms2PipelineCLIAssertionError);
-    });
+      expect(()=>importSounds(incorrectImportSoundsOptions), "Should fail when providing no valid extensions.").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
-    it('Import Sounds when it should',function(){
       process.chdir(sandboxRoot);
       let importSoundsOptions: ImportSoundsOptions = {
         source_path: audioSample
@@ -488,33 +494,15 @@ at it goooo ${interp2}
       resetSandbox();
       importSoundsOptions = {
         source_path: soundSampleRoot,
-        extensions: ["wav"]
+        allow_extensions: ["wav"]
       };
       expect(()=>importSounds(importSoundsOptions), "Should succeed when source path points to a valid folder and importing only a subset of extensions.").to.not.throw();
     });
 
-    // it('can import single audio files',function(){
-    //   resetSandbox();
-    //   audioImport(sandboxProjectYYPPath,audioSample);
-    //   const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
-    //   expect(changes.length).to.be.greaterThan(0);
-    // });
-    // it('can import single audio files',function(){
-    //   resetSandbox();
-    //   audioImport(sandboxProjectYYPPath,soundSampleRoot);
-    //   const changes = projectDiff(sourceProjectYYPPath,sandboxProjectYYPPath);
-    //   expect(changes.length).to.be.greaterThan(0);
-    // });
-    // it('can run from the CLI',function(){
-    //   // Depending on whether running with node or ts-node, need different route
-    //   let cliPath = paths.join(__dirname,'..','cli','gms2-tools-audio.js');
-    //   if(__filename.endsWith('.ts')){
-    //     cliPath = paths.join(__dirname,'..','..','build','cli','gms2-tools-audio.js');
-    //   }
-    //   const args = `node "${cliPath}" -p "${sandboxProjectYYPPath}" -s "${soundSampleRoot}"`;
-    //   const res = execSync(args);
-    //   console.log(res.toString());
-    // });
+
+
+
+
     // it('can add a folder and texture to the "Textures" of the config file', function(){
     //   resetSandbox();
     //   const project = new Project(sandboxProjectYYPPath);

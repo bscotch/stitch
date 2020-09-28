@@ -8,7 +8,10 @@ export const cli = commander;
 cli.version(version, '-v, --version')
   .description('Gamemaker Studio 2: Pipeline Development Kit CLI')
   .command("import",  "Import assets to Gamemaker Studio 2 projects.")
-  .command("jsonify", "Convert every .yy and .yyp file into valid JSON.");
+  .command("jsonify", "Convert .yy and .yyp files into valid JSON.");
+
+//Trim the input and filter out empty space inputs such as " "
+const args = process.argv.map(arg=>arg.trim());
 
 // Do the work!
-cli.parse(process.argv);
+cli.parse(args);

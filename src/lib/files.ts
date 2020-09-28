@@ -75,35 +75,27 @@ function copyFileSync(sourcePath:string,targetPath:string){
 }
 
 /**
- * Convert a .yy(p) file and rewrite it as valid
+ * Convert yy(p) files and rewrite them as valid
  * JSON (no trailing commas) with consistent spacing, and
  * with fields alphabetized.
  * (Gamemaker .yy and .yyp files are *basically* JSON, and
  * if they are rewritten as valid JSON GMS2.3 can read them
  * just fine.)
- * @param path Path to a yy(p) file.
+ * @param path Path to a yy(p) file or a folder containing them.
  */
-function convertGms2FileToJson(path:string){
-  assert(existsSync(path),`Cannot convert GMS2 file: ${path} does not exist.`);
-  assert(fs.statSync(path).isFile(), `The given path does not point to a file: ${path}`);
-
-  const parsed = readJsonSync(path);
-  writeJsonSync(path,sortKeys(parsed,{deep:true}));
-}
-
-/**
- * Find all .yy and .yyp files and rewrite them as valid
- * JSON (no trailing commas) with consistent spacing, and
- * with fields alphabetized.
- * @param path A directory containing yy(p) files.
- */
-function batchConvertGms2FilesToJson(path:string){
+function convertGms2FilesToJson(path:string){
   assert(existsSync(path),`Cannot convert GMS2 files: ${path} does not exist.`);
-  assert(fs.statSync(path).isDirectory(), `The given path does not point to a directory: ${path}`)
   const targetFiles: string[] = [];
-  targetFiles.push(...listFilesByExtensionSync(path,['yy','yyp'],true));
+  if (fs.statSync(path).isFile()){
+    targetFiles.push(path);
+  }
+  else{
+    targetFiles.push(...listFilesByExtensionSync(path,['yy','yyp'],true));
+  }
   for(const targetFile of targetFiles){
-    convertGms2FileToJson(targetFile);
+    assert(existsSync(targetFile),`Cannot convert GMS2 file: ${targetFile} does not exist.`);
+    const parsed = readJsonSync(targetFile);
+    writeJsonSync(targetFile,sortKeys(parsed,{deep:true}));
   }
 }
 
@@ -130,7 +122,6 @@ export default {
   listFoldersSync,
   listFilesSync,
   listFilesByExtensionSync,
-  batchConvertGms2FilesToJson,
-  convertGms2FileToJson
+  convertGms2FilesToJson
 };
 
