@@ -20,13 +20,13 @@ process.env.GMS2PDK_DEV = 'true';
 //   console.log(inspect(obj, false, null));
 // };
 
-const sandboxRoot = paths.resolve('./sand box/'); // Use a space to ensure nothing bad happens.
-const projectRoot = paths.resolve('./sample-project/');
+const sandboxRoot = ('./sand box/'); // Use a space to ensure nothing bad happens.
+const projectRoot = ('./sample-project/');
 const projectYYP = 'sample-project.yyp';
-const modulesRoot = paths.resolve("./sample-module-source/");
+const modulesRoot = ("./sample-module-source/");
 // const sourceProjectYYPPath = paths.join(projectRoot, projectYYP);
 const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
-const assetSampleRoot = paths.resolve('./sample-assets/');
+const assetSampleRoot = ('./sample-assets/');
 const soundSampleRoot = paths.join(assetSampleRoot, "sounds");
 const audioSample = paths.join(soundSampleRoot,"mus_intro_jingle.wav");
 const invalidAudioSample = paths.join(soundSampleRoot, "sfx_badgeunlock_m4a.m4a");
@@ -39,6 +39,7 @@ function throwNever():never{
 }
 
 function resetSandbox() {
+  process.chdir(testWorkingDir);
   fs.ensureDirSync(sandboxRoot);
   try {
     fs.emptyDirSync(sandboxRoot);
@@ -440,13 +441,15 @@ at it goooo ${interp2}
     it('Import Modules command', function(){
       let incorrectImportModulesOtions: ImportModuleOptions = {
         source_project_path: "fake_source_project_path",
-        modules: ["BscotchPack","AnotherModule"]
+        modules: ["BscotchPack","AnotherModule"],
+        target_project_path: sandboxRoot
       };
       expect(()=>importModules(incorrectImportModulesOtions), "Should fail when source_project_path does not exists").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
       incorrectImportModulesOtions = {
         source_project_path: modulesRoot,
-        modules: [""]
+        modules: [""],
+        target_project_path: sandboxRoot
       };
       expect(()=>importModules(incorrectImportModulesOtions), "Should fail when there is no valid module inputs").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
@@ -457,17 +460,18 @@ at it goooo ${interp2}
       };
       expect(()=>importModules(incorrectImportModulesOtions), "Should fail when target_project_path is entered but does not exists").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
-      process.chdir(sandboxRoot);
       let importModulesOptions: ImportModuleOptions = {
         source_project_path: modulesRoot,
-        modules: ["BscotchPack","AnotherModule"]
+        modules: ["BscotchPack","AnotherModule"],
+        target_project_path: sandboxRoot
       };
       expect(()=>importModules(importModulesOptions), "Should succeed when run with valid source path and multiple modules").to.not.throw();
 
       resetSandbox();
       importModulesOptions = {
         source_project_path: modulesRoot,
-        modules: ["BscotchPack"]
+        modules: ["BscotchPack"],
+        target_project_path: sandboxRoot
       };
       expect(()=>importModules(importModulesOptions), "Should succeed when run with valid source path and 1 module").to.not.throw();
     });
@@ -475,26 +479,29 @@ at it goooo ${interp2}
     it('Import Sounds command',function(){
       const incorrectImportSoundsOptions: ImportSoundsOptions = {
         source_path: soundSampleRoot,
-        allow_extensions: [""]
+        allow_extensions: [""],
+        target_project_path: sandboxRoot
       };
       expect(()=>importSounds(incorrectImportSoundsOptions), "Should fail when providing no valid extensions.").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
-      process.chdir(sandboxRoot);
       let importSoundsOptions: ImportSoundsOptions = {
-        source_path: audioSample
+        source_path: audioSample,
+        target_project_path: sandboxRoot
       };
       expect(()=>importSounds(importSoundsOptions), "Should succeed when source path points to a valid file").to.not.throw();
 
       resetSandbox();
       importSoundsOptions = {
-        source_path: soundSampleRoot
+        source_path: soundSampleRoot,
+        target_project_path: sandboxRoot
       };
       expect(()=>importSounds(importSoundsOptions), "Should succeed when source path points to a valid folder").to.not.throw();
 
       resetSandbox();
       importSoundsOptions = {
         source_path: soundSampleRoot,
-        allow_extensions: ["wav"]
+        allow_extensions: ["wav"],
+        target_project_path: sandboxRoot
       };
       expect(()=>importSounds(importSoundsOptions), "Should succeed when source path points to a valid folder and importing only a subset of extensions.").to.not.throw();
     });
@@ -552,7 +559,6 @@ at it goooo ${interp2}
 
   after(function () {
     // new Project(sandboxProjectYYPPath);
-    process.chdir(testWorkingDir);
     resetSandbox();
   });
 });
