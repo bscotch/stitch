@@ -1,12 +1,13 @@
 import { YyData } from "../../../types/Yy";
-import { Gms2ResourceBase } from "./Gms2ResourceBase";
+import type { ResourceType } from "../Gms2ResourceArray";
+import { Gms2ResourceBase, Gms2ResourceBaseParameters } from "./Gms2ResourceBase";
 
 export class Gms2Shader extends Gms2ResourceBase {
 
   protected yyData!: YyData; // Happens in the super() constructor
-  protected resourceRoot = "shaders" as const;
+  static resourceRoot:ResourceType = "shaders";
 
-  constructor(...setup: ConstructorParameters<typeof Gms2ResourceBase>) {
-    super(...setup);
+  constructor(...setup: Gms2ResourceBaseParameters) {
+    super(Gms2Shader.myResourceType,...setup);
   }
 }

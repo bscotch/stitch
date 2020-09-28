@@ -1,15 +1,15 @@
 import { YyScript } from "../../../types/Yy";
 import { Gms2Storage } from "../../Gms2Storage";
 import paths from "../../paths";
-import { Gms2ResourceBase } from "./Gms2ResourceBase";
+import type { ResourceType } from "../Gms2ResourceArray";
+import { Gms2ResourceBase, Gms2ResourceBaseParameters } from "./Gms2ResourceBase";
 
 export class Gms2Script extends Gms2ResourceBase {
-
+  static myResourceType: ResourceType = "scripts";
   protected yyData!: YyScript; // Happens in the super() constructor
-  protected resourceRoot = "scripts" as const;
 
-  constructor(...setup: ConstructorParameters<typeof Gms2ResourceBase>) {
-    super(...setup);
+  constructor(...setup: Gms2ResourceBaseParameters) {
+    super(Gms2Script.myResourceType,...setup);
   }
 
   protected createYyFile(){
