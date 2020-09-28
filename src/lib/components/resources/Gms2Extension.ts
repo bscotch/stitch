@@ -1,12 +1,13 @@
 import { YyData } from "../../../types/Yy";
-import { Gms2ResourceBase } from "./Gms2ResourceBase";
+import type { ResourceType } from "../Gms2ResourceArray";
+import { Gms2ResourceBase, Gms2ResourceBaseParameters } from "./Gms2ResourceBase";
 
 export class Gms2Extension extends Gms2ResourceBase {
 
   protected yyData!: YyData; // Happens in the super() constructor
-  protected resourceRoot = "extensions" as const;
+  static resourceRoot: ResourceType = "extensions";
 
-  constructor(...setup: ConstructorParameters<typeof Gms2ResourceBase>) {
-    super(...setup);
+  constructor(...setup: Gms2ResourceBaseParameters) {
+    super(Gms2Extension.myResourceType,...setup);
   }
 }

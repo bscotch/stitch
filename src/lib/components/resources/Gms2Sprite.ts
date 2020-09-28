@@ -1,13 +1,14 @@
 import { YySprite } from "../../../types/Yy";
-import { Gms2ResourceBase } from "./Gms2ResourceBase";
+import { Gms2ResourceBase, Gms2ResourceBaseParameters } from "./Gms2ResourceBase";
+import type { ResourceType } from "../Gms2ResourceArray";
 
 export class Gms2Sprite extends Gms2ResourceBase {
 
   protected yyData!: YySprite; // Happens in the super() constructor
-  protected resourceRoot = "sprites" as const;
+  static myResourceType: ResourceType = "sprites";
 
-  constructor(...setup: ConstructorParameters<typeof Gms2ResourceBase>) {
-    super(...setup);
+  constructor(...setup: Gms2ResourceBaseParameters) {
+    super(Gms2Sprite.myResourceType,...setup);
   }
 
   get textureGroup(){

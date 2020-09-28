@@ -158,7 +158,8 @@ export class  Gms2ResourceArray {
   }
 
   static hydrateResource(data: YypResource, storage: Gms2Storage) {
-    const resourceType = data.id.path.split('/')[0] as (keyof typeof Gms2ResourceArray._resourceClassMap);
+    const resourceType = data.id.path.split('/')[0] as (ResourceType);
+    // const subclass = Gms2Timeline;
     const subclass = Gms2ResourceArray
       ._resourceClassMap[resourceType];
     if (!subclass) {
@@ -171,6 +172,8 @@ export class  Gms2ResourceArray {
 
   }
 }
+
+export type ResourceType = (keyof typeof Gms2ResourceArray._resourceClassMap);
 
 export type Gms2ResourceSubclassType = typeof Gms2ResourceArray._resourceClassMap[keyof typeof Gms2ResourceArray._resourceClassMap] | typeof Gms2ResourceBase;
 export type Gms2ResourceSubclass = InstanceType<Gms2ResourceSubclassType>;

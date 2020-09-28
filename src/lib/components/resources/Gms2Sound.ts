@@ -1,15 +1,15 @@
 import { YySound } from "../../../types/Yy";
-import { Gms2ResourceBase } from "./Gms2ResourceBase";
+import { Gms2ResourceBase, Gms2ResourceBaseParameters} from "./Gms2ResourceBase";
 import paths from "../../paths";
 import { Gms2Storage } from "../../Gms2Storage";
+import type { ResourceType } from "../Gms2ResourceArray";
 
 export class Gms2Sound extends Gms2ResourceBase {
-
+  static myResourceType: ResourceType = "sounds";
   protected yyData!: YySound; // Happens in the super() constructor
-  protected resourceRoot = "sounds" as const;
 
-  constructor(...setup: ConstructorParameters<typeof Gms2ResourceBase>) {
-    super(...setup);
+  constructor(...setup: Gms2ResourceBaseParameters) {
+    super(Gms2Sound.myResourceType, ...setup);
   }
 
   protected createYyFile(){
