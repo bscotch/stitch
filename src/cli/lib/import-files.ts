@@ -4,6 +4,6 @@ import { ImportBaseOptions, normalizeOptions } from './import-base-options';
 export default function(options: ImportBaseOptions){
   options = normalizeOptions(options);
   console.log(options);
-  const targetProject = new Gms2Project(options.target_project_path);
-  targetProject.addIncludedFiles(options.source_path, null, undefined, options.allow_extensions);
+  const targetProject = new Gms2Project(options.targetProjectPath);
+  targetProject.addIncludedFiles(options.sourcePath, null, undefined, options.allowExtensions);
 }
