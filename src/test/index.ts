@@ -214,6 +214,9 @@ at it goooo ${interp2}
         expect(fs.existsSync(audio.yyPathAbsolute),'.yy file should exist').to.be.true;
         //   Does the audio file exist?
         expect(fs.existsSync(audio.audioFilePathAbsolute),'audio file should exist').to.be.true;
+        const resourceName = audio.name;
+        const expectedResourceProjectPath = paths.resolve(paths.join(sandboxRoot, "sounds", resourceName, `${resourceName}.yy`));
+        expect(audio.yyPathAbsolute).to.equal(expectedResourceProjectPath);
       }
 
       project = getResetProject();
