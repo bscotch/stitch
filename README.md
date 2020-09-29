@@ -104,8 +104,8 @@ To keep things stable and automatable, Stitch uses a configuration file (`stitch
 + ❌ assign
   + texture-groups --folder=sprites/myGroupOfSprites --group-name=name
   + audio-groups --folder=sound/myGroupOfSounds --group-name=name
-+ ❌ set
-  + version --version
++ ✅ set
+  + ✅ version --version
 + ✅ jsonify --dir --filepath
 
 ## Core Features <a id="features"></a>

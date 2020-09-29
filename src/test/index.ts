@@ -14,6 +14,8 @@ import cli_assert from '../cli/lib/cli-assert';
 import importModules, { ImportModuleOptions } from '../cli/lib/import-modules';
 import importSounds from '../cli/lib/import-sounds';
 import { ImportBaseOptions } from '../cli/lib/import-base-options';
+import version, {VersionOptions} from '../cli/lib/version';
+import importFiles from '../cli/lib/import-files';
 
 process.env.GMS2PDK_DEV = 'true';
 
@@ -543,10 +545,23 @@ at it goooo ${interp2}
       expect(()=>importSounds(ImportBaseOptions), "Should succeed when source path points to a valid folder and importing only a subset of extensions.").to.not.throw();
     });
 
+    it('Import Files command', function(){
+      const ImportBaseOptions: ImportBaseOptions = {
+        sourcePath: paths.join(assetSampleRoot, "includedFiles", "files"),
+        targetProjectPath: sandboxRoot
+      };
+      expect(()=>importFiles(ImportBaseOptions), "Should succeed when source path points to a valid folder").to.not.throw();
+    });
 
-
-
-
+    it('Set Version command', function(){
+      const project = getResetProject();
+      const versionOptions: VersionOptions = {
+        version: "100.5.6-rc.11",
+        targetProjectPath: sandboxRoot
+      };
+      expect(()=>version(versionOptions), "Should succeed when version is valid").to.not.throw();
+      expect(project.versionOnPlatform("windows")).to.equal('100.5.6.11');
+    });
     // it('can add a folder and texture to the "Textures" of the config file', function(){
     //   resetSandbox();
     //   const project = new Project(sandboxProjectYYPPath);
