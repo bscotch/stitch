@@ -327,11 +327,16 @@ at it goooo ${interp2}
 
       // Add all files from a directory
       const filesDir = `${assetSampleRoot}/includedFiles/files`;
-      project.addIncludedFiles(filesDir,null,'BscotchPack');
-      const expectedFiles = fs.listFilesSync(filesDir)
+      const subdir = 'BscotchPack';
+      project.addIncludedFiles(filesDir,null,subdir);
+      const expectedFilePaths = fs.listFilesSync(filesDir, true);
+      const expectedFileNames = expectedFilePaths
         .map(filePath=>paths.parse(filePath).base);
-      for(const filePath of expectedFiles){
-        expect(project.includedFiles.findByField('name',filePath),'all imported files should exist').to.exist;
+      for(const filePath of expectedFileNames){
+        const fileResource = project.includedFiles.findByField('name',filePath);
+        expect(fileResource,'all imported files should exist in the project resource').to.exist;
+        const datafileDir = paths.join(sandboxRoot, fileResource?.dehydrated.filePath || "");
+        expect(fs.existsSync(datafileDir),'all imported files should exist in the actual datafiles path').to.be.true;
       }
     });
 
