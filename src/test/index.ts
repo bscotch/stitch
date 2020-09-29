@@ -21,13 +21,13 @@ process.env.GMS2PDK_DEV = 'true';
 //   console.log(inspect(obj, false, null));
 // };
 
-const sandboxRoot = ('./sand box/'); // Use a space to ensure nothing bad happens.
-const projectRoot = ('./sample-project/');
+const sandboxRoot = './sand box/'; // Use a space to ensure nothing bad happens.
+const projectRoot = './sample-project/';
 const projectYYP = 'sample-project.yyp';
-const modulesRoot = ("./sample-module-source/");
+const modulesRoot = "./sample-module-source/";
 // const sourceProjectYYPPath = paths.join(projectRoot, projectYYP);
 const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
-const assetSampleRoot = ('./sample-assets/');
+const assetSampleRoot = './sample-assets/';
 const soundSampleRoot = paths.join(assetSampleRoot, "sounds");
 const audioSample = paths.join(soundSampleRoot,"mus_intro_jingle.wav");
 const invalidAudioSample = paths.join(soundSampleRoot, "sfx_badgeunlock_m4a.m4a");
@@ -334,8 +334,11 @@ at it goooo ${interp2}
         .map(filePath=>paths.parse(filePath).base);
       for(const filePath of expectedFileNames){
         const fileResource = project.includedFiles.findByField('name',filePath);
-        expect(fileResource,'all imported files should exist in the project resource').to.exist;
-        const datafileDir = paths.join(sandboxRoot, fileResource?.dehydrated.filePath || "");
+        if (!fileResource){
+          console.log('all imported files should exist in the project resource');
+          throwNever();
+        }
+        const datafileDir = paths.join(sandboxRoot, fileResource.dehydrated.filePath);
         expect(fs.existsSync(datafileDir),'all imported files should exist in the actual datafiles path').to.be.true;
       }
     });
@@ -398,9 +401,13 @@ at it goooo ${interp2}
       expect(project.configs.findChild('BscotchPack'),
         'BscotchPack config should be imported'
       ).to.exist;
-      expect(project.includedFiles.findByField('name','moduleFile.txt'),
-        'included file should be imported'
-      ).to.exist;
+      const resourceData = project.includedFiles.findByField('name','moduleFile.txt');
+      if(!resourceData){
+        console.log('included file should be imported');
+        throwNever();
+      }
+      const datafileDir = paths.join(sandboxRoot, resourceData.dehydrated.filePath);
+      expect(fs.existsSync(datafileDir), "The imported files should exist in the actual datafiles path");
     });
 
     it("can set the version in options files",function(){
