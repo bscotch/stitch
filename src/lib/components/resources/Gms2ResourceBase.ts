@@ -6,7 +6,7 @@ import { Gms2PipelineError } from "../../errors";
 import { Gms2Storage } from "../../Gms2Storage";
 import paths from "../../paths";
 import path from "../../paths";
-import type { ResourceType } from "../Gms2ResourceArray";
+import type { Gms2ResourceType } from "../Gms2ResourceArray";
 
 export type Gms2ResourceBaseParameters = [data: YypResource | string, storage: Gms2Storage, ensureYyFile?:boolean];
 
@@ -14,13 +14,12 @@ export class Gms2ResourceBase {
 
   protected data: YypResource;
   protected yyData: YyData;
-  static  myResourceType: ResourceType;
 
   /**
    *  Create a resource using either the direct YYP-sourced object
    *  -or- the name of the resource
    */
-  constructor(protected resourceRoot: ResourceType,data: YypResource | string, protected storage: Gms2Storage, ensureYyFile=false) {
+  constructor(protected resourceRoot: Gms2ResourceType,data: YypResource | string, protected storage: Gms2Storage, ensureYyFile=false) {
     if(typeof data == 'string'){
       const name = data;
       this.data = {id:{name,path:`${this.resourceRoot}/${name}/${name}.yy`},order:0};
