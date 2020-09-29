@@ -280,7 +280,7 @@ export class Gms2Project {
 
   static get supportedSoundFileExtensions() { return ["mp3","ogg","wav","wma"]; }
 
-  private addSoundbyFile(sourcePath:string){
+  private addSoundByFile(sourcePath:string){
     const fileExt = paths.extname(sourcePath).slice(1);
     assert(Gms2Project.supportedSoundFileExtensions.includes(fileExt), oneline`
       Cannot import sound file with extension: ${fileExt}.
@@ -322,7 +322,7 @@ export class Gms2Project {
       targetFiles = fs.listFilesByExtensionSync(sourcePath, allowExtensions, true);
     }
     for(const targetFile of targetFiles){
-      this.addSoundbyFile(targetFile);
+      this.addSoundByFile(targetFile);
     }
   }
 
