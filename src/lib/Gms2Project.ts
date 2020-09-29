@@ -342,7 +342,7 @@ export class Gms2Project {
 
   /**
    * Import a new IncludedFile based on an external file.
-   * By default will appear in "datafiles" root folder, but you can specificy
+   * By default will appear in "datafiles/NEW" folder, but you can specificy
    * a subdirectory path. If an included file with this name already exists
    * in **ANY** subdirectory it will be overwritten. (Names must be unique due to
    * an iOS bug wherein all included files are effectively in a flat heirarchy.
