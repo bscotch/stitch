@@ -4,8 +4,8 @@ import {
   SpriteCollisionKind,
   SpriteOrigin,
   SpritePlaybackSpeedType,
-} from "../../../types/Yy";
-import { assert } from "../../errors";
+} from "../../../types/YySprite";
+import { assert, Gms2PipelineError } from "../../errors";
 import { Gms2Storage } from "../../Gms2Storage";
 import paths from "../../paths";
 import { oneline } from "../../strings";
@@ -76,28 +76,31 @@ export class Gms2Sprite extends Gms2ResourceBase {
 
   static async getSubimageData(subimageDirectory:string,storage:Gms2Storage){
     // Find the subimages
-    const subimages = storage.listFiles(subimageDirectory,false,['png']);
-    assert(subimages.length,`No png subimages found in ${subimageDirectory}`);
+    const subimagePaths = storage.listFiles(subimageDirectory,false,['png']);
+    assert(subimagePaths.length,`No png subimages found in ${subimageDirectory}`);
     // Make sure all images are the same size and are actual PNGs
-    const data = {width:0,height:0,sourcePaths:[] as string[],names:[] as string[]};
-    for(const subimage of subimages){
-      const info = await sharp(subimage).metadata();
-      assert(info.format=='png',`Subimage ${subimage} is not in PNG format.`);
-      if(!data.names.length){
-        data.width = info.width;
-        data.height = info.height;
+    const subimagesSummary = {width:0,height:0,sourcePaths:[] as string[],names:[] as string[]};
+    for(const subimagePath of subimagePaths){
+      const subimageInfo = await sharp(subimagePath).metadata();
+      assert(subimageInfo.format=='png',`Subimage ${subimagePath} is not in PNG format.`);
+      if(!subimageInfo.width || !subimageInfo.height){
+        throw new Gms2PipelineError(`Subimage ${subimagePath} is malformed: missing a width or height.`);
+      }
+      if(!subimagesSummary.names.length){
+        subimagesSummary.width = subimageInfo.width;
+        subimagesSummary.height = subimageInfo.height;
       }
       else{
         assert(
-          info.width == data.width && info.height == data.height,
-          oneline`Subimage ${subimage} has different dimensions (${info.width}x${info.height})
-                  than prior subimages (${data.width}x${data.height})`
+          subimageInfo.width == subimagesSummary.width && subimageInfo.height == subimagesSummary.height,
+          oneline`Subimage ${subimagePath} has different dimensions (${subimageInfo.width}x${subimageInfo.height})
+                  than prior subimages (${subimagesSummary.width}x${subimagesSummary.height})`
         );
       }
-      data.sourcePaths.push(subimage);
-      data.names.push(paths.basename(subimage));
+      subimagesSummary.sourcePaths.push(subimagePath);
+      subimagesSummary.names.push(paths.basename(subimagePath));
     }
-    return data;
+    return subimagesSummary;
   }
 
   static get textureGroupIdDefault(){
