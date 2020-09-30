@@ -48,15 +48,26 @@ export class Gms2ResourceBase {
 
   /** The folder containing this resource (as viewed via the IDE) */
   get folder(){
-    return this.yyData.parent.path.replace(/^folders\/(.*).yy$/,"$1");
+    return this.yyData.parent.path.replace(/^folders\/(.*)\.yy$/,"$1");
   }
   /**
    * Set the parent folder for this resource. Note that you may
    * run into errors if this folder doesn't already exist.
    */
   set folder(folderName:string){
-    this.yyData.parent.name = folderName;
-    this.yyData.parent.path = `folders/${folderName}.yy`;
+    if (folderName.match(/\.yyp/g)){
+      //This means the resource should be at the root level of the project, such as
+      // "parent": {
+      //   "name": "sample-project",
+      //   "path": "sample-project.yyp",
+      // },
+      this.yyData.parent.name = folderName.replace(/\.yyp/g, "");
+      this.yyData.parent.path = folderName;
+    }
+    else{
+      this.yyData.parent.name = folderName;
+      this.yyData.parent.path = `folders/${folderName}.yy`;
+    }
     this.save();
   }
 
