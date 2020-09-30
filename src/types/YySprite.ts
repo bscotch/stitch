@@ -84,15 +84,22 @@ interface SpriteFrame {
   resourceType:"GMSpriteFrame"
 }
 
+enum SpriteLayerBlendMode {
+  Normal,
+  Add,
+  Subtract,
+  Multiply,
+}
+
 interface SpriteLayer {
   /** (Default true) */
   visible:boolean,
   /** (Default false) */
   isLocked:boolean,
-  /** (What is this? Enum?) */
-  blendMode:0,
-  /** (What is this? Range?) */
-  opacity:100.0,
+  /** Default 0 */
+  blendMode:SpriteLayerBlendMode,
+  /** Range from 0-100 */
+  opacity:number,
   /** ("default" for the base layer) */
   displayName:string,
   resourceVersion:"1.0",
@@ -101,6 +108,56 @@ interface SpriteLayer {
   /** Seems to be unused -- always an empty array. */
   tags:[],
   resourceType:"GMImageLayer"
+}
+
+interface SpriteSequenceTrackKeyframe {
+  id:string,
+  /** Appears to be the index position within the keyframes array */
+  Key:number,
+  /** Appears to always be 1 for sprites */
+  Length:1,
+  /** Default false */
+  Stretch:boolean,
+  /** Default false */
+  Disabled:boolean,
+  /** Default false */
+  IsCreationKey:boolean,
+  Channels:{
+    [channel:string]:{
+      Id:{
+        /** Frame/subimage GUID */
+        name: string,
+        /** Sprite .yy file (e.g. sprites/sprites/thisSprite.yy) */
+        path: string
+      },
+      resourceVersion:"1.0",
+      resourceType:"SpriteFrameKeyframe"
+    }
+  },
+  resourceVersion:"1.0",
+  resourceType:"Keyframe<SpriteFrameKeyframe>"
+}
+
+interface SpriteSequenceTrack {
+  name:"frames",
+  spriteId:null,
+  keyframes:{
+    Keyframes: SpriteSequenceTrackKeyframe[],
+    resourceVersion:"1.0",
+    resourceType:"KeyframeStore<SpriteFrameKeyframe>"
+  },
+  trackColour:0,
+  inheritsTrackColour:true,
+  builtinName:0,
+  traits:0,
+  interpolation:1,
+  tracks:[],
+  events:[],
+  modifiers:[],
+  isCreationTrack:false,
+  resourceVersion:"1.0",
+  tags:[],
+  resourceType:"GMSpriteFramesTrack"
 }
 
 interface SpriteSequence {
@@ -113,38 +170,60 @@ interface SpriteSequence {
   timeUnits: 1,
   /** (Default 1) What is this? */
   playback: 1,
-  /** FPS (probably 30, 45, or 60) */
+  /** FPS (probably 30, 45, or 60), set via the editor */
   playbackSpeed: number,
+  /** FPS type, set via the editor */
   playbackSpeedType: SpritePlaybackSpeedType,
   /** (Default true) What is this? */
   autoRecord: true,
+  /** (Default true) What is this? */
   volume: 1.0,
+  /** Number of frames */
   length: 2.0,
-  events: {"Keyframes":[],"resourceVersion":"1.0","resourceType":"KeyframeStore<MessageEventKeyframe>",},
-  moments: {"Keyframes":[],"resourceVersion":"1.0","resourceType":"KeyframeStore<MomentsEventKeyframe>",},
-  tracks: [
-    {"name":"frames","spriteId":null,"keyframes":{"Keyframes":[
-      {"id":"c49cf451-e332-4284-88ad-605b9b54c139","Key":0.0,"Length":1.0,"Stretch":false,"Disabled":false,"IsCreationKey":false,"Channels":{"0":{"Id":{"name":"98c41232-eb8d-41fc-a6d9-156eafb4d651","path":"sprites/sprite/sprite.yy",},"resourceVersion":"1.0","resourceType":"SpriteFrameKeyframe",},},"resourceVersion":"1.0","resourceType":"Keyframe<SpriteFrameKeyframe>",},
-      {"id":"ea220aa2-106b-4e02-a07f-286e4079a42b","Key":1.0,"Length":1.0,"Stretch":false,"Disabled":false,"IsCreationKey":false,"Channels":{"0":{"Id":{"name":"34126976-a5d5-4f2a-988b-384c47e1f81e","path":"sprites/sprite/sprite.yy",},"resourceVersion":"1.0","resourceType":"SpriteFrameKeyframe",},},"resourceVersion":"1.0","resourceType":"Keyframe<SpriteFrameKeyframe>",},
-    ],"resourceVersion":"1.0","resourceType":"KeyframeStore<SpriteFrameKeyframe>",},"trackColour":0,"inheritsTrackColour":true,"builtinName":0,"traits":0,"interpolation":1,"tracks":[],"events":[],"modifiers":[],"isCreationTrack":false,"resourceVersion":"1.0","tags":[],"resourceType":"GMSpriteFramesTrack",},
-  ],
+  events: {
+    Keyframes:[],
+    resourceVersion:"1.0",
+    resourceType:"KeyframeStore<MessageEventKeyframe>"
+  },
+  moments: {
+    Keyframes:[],
+    resourceVersion:"1.0",
+    resourceType:"KeyframeStore<MomentsEventKeyframe>"
+  },
+  tracks: SpriteSequenceTrack[],
+  /** Appears to be constant for sprites */
   visibleRange: null,
+  /** Appears to be constant for sprites */
   lockOrigin: false,
+  /** Appears to be constant for sprites */
   showBackdrop: true,
+  /** Appears to be constant for sprites */
   showBackdropImage: false,
+  /** Appears to be constant for sprites */
   backdropImagePath: "",
+  /** Appears to be constant for sprites */
   backdropImageOpacity: 0.5,
+  /** Appears to be constant for sprites */
   backdropWidth: 1366,
+  /** Appears to be constant for sprites */
   backdropHeight: 768,
-  backdropXOffset: 0.0,
-  backdropYOffset: 0.0,
+  /** Appears to be constant for sprites */
+  backdropXOffset: 0,
+  /** Appears to be constant for sprites */
+  backdropYOffset: 0,
   xorigin: 32,
   yorigin: 32,
   eventToFunction: {},
   eventStubScript: null,
-  parent: {"name":"sprite","path":"sprites/sprite/sprite.yy",},
+  parent: {
+    /** The sprite's name */
+    name:string,
+    /** The sprite's relative yy path */
+    path:string
+  },
   resourceVersion: "1.3",
-  name: "sprite",
+  /** The sprite's name */
+  name: string,
   tags: [],
   resourceType: "GMSequence",
 }
