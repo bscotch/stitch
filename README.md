@@ -95,18 +95,16 @@ To keep things stable and automatable, Stitch uses a configuration file (`stitch
 
 ## Using the CLI <a id="cli"></a>
 
-<b style="color:red">⚠ NOT YET IMPLEMENTED ⚠</b>
-  
 + ✅ import
-  + ✅ modules --source-project=path --modules=m1,m2 --target-project=path
-  + ✅ sounds --source-path=path --extensions=mp3,wave --target-project=path
-  + ✅ files --source-path=dir/file --extensions=txt --target-project=path
-+ ❌ assign
-  + texture-groups --folder=sprites/myGroupOfSprites --group-name=name
-  + audio-groups --folder=sound/myGroupOfSounds --group-name=name
+  + ✅ modules --source-project=path --modules=m1,m2
+  + ✅ sounds --source-path=path --extensions=mp3,wave
+  + ✅ files --source-path=dir/file --extensions=txt
++ ✅ assign
+  + ✅ texture-groups --folder=sprites/myGroupOfSprites --group-name=name
+  + ✅ audio-groups --folder=sound/myGroupOfSounds --group-name=name
 + ✅ set
   + ✅ version --version
-+ ✅ jsonify --dir --filepath
++ ✅ jsonify --path
 
 ## Core Features <a id="features"></a>
 

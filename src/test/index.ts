@@ -16,6 +16,7 @@ import importSounds from '../cli/lib/import-sounds';
 import { ImportBaseOptions } from '../cli/lib/import-base-options';
 import version, {VersionOptions} from '../cli/lib/version';
 import importFiles from '../cli/lib/import-files';
+import {assignAudioGroups, assignTextureGroups, AssignCliOptions} from '../cli/lib/assign';
 
 process.env.GMS2PDK_DEV = 'true';
 
@@ -562,51 +563,54 @@ at it goooo ${interp2}
       expect(()=>version(versionOptions), "Should succeed when version is valid").to.not.throw();
       expect(project.versionOnPlatform("windows")).to.equal('100.5.6.11');
     });
-    // it('can add a folder and texture to the "Textures" of the config file', function(){
-    //   resetSandbox();
-    //   const project = new Project(sandboxProjectYYPPath);
-    //   const folder  = "Sprites/testGroup";
-    //   const subfolder = "Sprites/testGroup/testSubGroup";
-    //   const texture = "TestTexture";
-    //   const subTexture = "OtherTestTexture";
-    //   const topLevelTextureID = project.getTextureByName(texture)?.id;
-    //   const subTextureID = project.getTextureByName(subTexture)?.id;
 
-    //   expect(topLevelTextureID).to.be.a("string");
-    //   const thisView      = project.getViewByPath(folder);
-    //   expect(thisView).to.exist;
-    //   const spritesInViewRecursive = thisView.getChildren("GMSprite", true) as Sprite[];
-    //   expect(spritesInViewRecursive.length, "Should have found two sprites.").to.equal(2);
-    //   for (const sprite of spritesInViewRecursive) {
-    //     expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID is not set to default.").to.not.equal(topLevelTextureID);
-    //   }
-    //   expect(function(){
-    //     project.addFolderToTextureGroup("wrongFolder", "wrongTexture");
-    //   }, "Should fail if wrong texture and folder.").to.throw;
-    //   expect(function(){
-    //     project.addFolderToTextureGroup(folder, "wrongTexture");
-    //   }, "Should fail if wrong texture.").to.throw;
-    //   expect(function(){
-    //     project.addFolderToTextureGroup("wrongFolder", texture);
-    //   }, "Should fail if wrong folder.").to.throw;
-    //   project.addFolderToTextureGroup(folder, texture);
-    //   for (const sprite of spritesInViewRecursive) {
-    //     expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID was not assigned as intended.").to.equal(topLevelTextureID);
-    //   }
-    //   project.removeFolderFromTextureGroups(folder);
-    //   project.addFolderToTextureGroup(subfolder, subTexture);
-    //   project.addFolderToTextureGroup(folder, texture);
-    //   const spritesInParentView = thisView.getChildren("GMSprite", false) as Sprite[];
-    //   const spritesInSubView    = project.getViewByPath(subfolder).getChildren("GMSprite", true) as Sprite[];
-    //   expect(spritesInParentView.length).to.be.greaterThan(0);
-    //   expect(spritesInSubView.length).to.be.greaterThan(0);
-    //   for (const sprite of spritesInParentView) {
-    //     expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID was not assigned as intended.").to.equal(topLevelTextureID);
-    //   }
-    //   for (const sprite of spritesInSubView) {
-    //     expect(sprite.rawDataFromYY.textureGroupId, "Sprite texture ID was not assigned as intended.").to.equal(subTextureID);
-    //   }
-    // });
+    it('Assign Texture Group command', function(){
+      let project = getResetProject();
+      let sprite = project.resources.sprites[0];
+      const newTextureGroupName = 'NewTextureGroup';
+      const assignTextureOptions: AssignCliOptions = {
+        folder: sprite.folder,
+        groupName: newTextureGroupName,
+        targetProjectPath: sandboxRoot
+      };
+      expect(()=>assignTextureGroups(assignTextureOptions), "Should succeed when the arguments are correct").to.not.throw();
+
+      project = new Gms2Project(sandboxProjectYYPPath);
+      sprite = project.resources.sprites[0];
+      // The new Texture page should exist
+      expect(project.textureGroups.findByField('name',newTextureGroupName),
+        'the new texture group should be added'
+      ).to.exist;
+      // The Sprite should be properly reassigned
+      expect(sprite.textureGroup,
+        'sprite should be reassigned'
+      ).to.equal(newTextureGroupName);
+    });
+
+    it('Assign Audio Group command', function(){
+      let project = getResetProject();
+      let sound = project.resources.sounds[0];
+      const newAudioGroupName = "NewAudioGroup";
+      const assignAudioOptions: AssignCliOptions = {
+        folder: sound.folder,
+        groupName: newAudioGroupName,
+        targetProjectPath: sandboxRoot
+      };
+      expect(sound.audioGroup,
+        'sound should not be in target audio group'
+      ).to.not.equal(newAudioGroupName);
+      expect(()=>assignAudioGroups(assignAudioOptions), "Should succeed when the arguments are correct").to.not.throw();
+
+      project = new Gms2Project(sandboxProjectYYPPath);
+      sound = project.resources.sounds[0];
+      expect(project.audioGroups.findByField('name',newAudioGroupName),
+        'the new audio group should be added'
+      ).to.exist;
+      // The Sprite should be properly reassigned
+      expect(sound.audioGroup,
+        'sound should be reassigned'
+      ).to.equal(newAudioGroupName);
+    });
   });
 
   after(function () {
