@@ -1,4 +1,4 @@
-function populateTemplate(strings:TemplateStringsArray,...interps:string[]){
+function populateTemplate(strings:TemplateStringsArray,...interps:any[]){
   let string = '';
   for(let i = 0; i<strings.length; i++){
     string += `${strings[i]||''}${interps[i]||''}`;
@@ -10,7 +10,7 @@ function populateTemplate(strings:TemplateStringsArray,...interps:string[]){
  * Shift all lines left by the *smallest* indentation level,
  * and remove initial newline and trailing spaces.
  */
-export function undent(strings:TemplateStringsArray,...interps:string[]){
+export function undent(strings:TemplateStringsArray,...interps:any[]){
   let string = populateTemplate(strings,...interps);
   // Remove initial and final newlines
   string = string
@@ -33,7 +33,7 @@ export function undent(strings:TemplateStringsArray,...interps:string[]){
 /**
  * Remove linebreaks and extra spacing in a template string.
  */
-export function oneline(strings:TemplateStringsArray,...interps:string[]){
+export function oneline(strings:TemplateStringsArray,...interps:any[]){
   return populateTemplate(strings,...interps)
     .replace(/^\s+/,'')
     .replace(/\s+$/,'')

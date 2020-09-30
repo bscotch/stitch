@@ -62,7 +62,7 @@ export interface YySound extends YyData {
   resourceType: "GMSound",
 }
 
-enum SpriteCollisionKind {
+export enum SpriteCollisionKind {
   Precise,
   Rectangle,
   Ellipse,
@@ -71,13 +71,13 @@ enum SpriteCollisionKind {
   RectangleWithRotation,
 }
 
-enum SpriteBoundingBoxMode {
+export enum SpriteBoundingBoxMode {
   Automatic,
   FullImage,
   Manual,
 }
 
-enum SpriteOrigin {
+export enum SpriteOrigin {
   TopLeft,
   TopCenter,
   TopRight,
@@ -89,7 +89,7 @@ enum SpriteOrigin {
   BottomRight
 }
 
-enum SpritePlaybackSpeedType {
+export enum SpritePlaybackSpeedType {
   FramesPerSecond,
   FramesPerGameFrame,
 }
@@ -218,31 +218,31 @@ interface SpriteSequence {
  * as needed for editing existing sprites.
  */
 export interface YySprite extends YyData {
-  // bboxMode: SpriteBoundingBoxMode,
-  // collisionKind: SpriteCollisionKind,
-  // /** (What is this?) */
-  // type: 0,
-  // origin: SpriteOrigin,
-  // /** (Default true.) */
-  // preMultiplyAlpha: boolean,
-  // /** (Default true.) */
-  // edgeFiltering: boolean,
-  // /** 0-255. Only meaningful if collision type is "Precise". */
-  // collisionTolerance: number,
-  // /** (What is this?) */
-  // swfPrecision: 2.525,
-  // bbox_left: number,
-  // bbox_right: number,
-  // bbox_top: number,
-  // bbox_bottom: number,
-  // /** (Default false.) Horizontally tiled */
-  // HTile: boolean,
-  // /** (Default false.) Vertically tiled */
-  // VTile: boolean,
-  // /** (Default false.) Used for 3d (not sure how set...) */
-  // For3D: boolean,
-  // width: number,
-  // height: number,
+  bboxMode: SpriteBoundingBoxMode,
+  collisionKind: SpriteCollisionKind,
+  /** (What is this?) */
+  type: 0,
+  origin: SpriteOrigin,
+  /** (Default true.) */
+  preMultiplyAlpha: boolean,
+  /** (Default true.) */
+  edgeFiltering: boolean,
+  /** 0-255. Only meaningful if collision type is "Precise". */
+  collisionTolerance: number,
+  /** (What is this?) */
+  swfPrecision: 2.525,
+  bbox_left: number,
+  bbox_right: number,
+  bbox_top: number,
+  bbox_bottom: number,
+  /** (Default false.) Horizontally tiled */
+  HTile: boolean,
+  /** (Default false.) Vertically tiled */
+  VTile: boolean,
+  /** (Default false.) Used for 3d (not sure how set...) */
+  For3D: boolean,
+  width: number,
+  height: number,
   /** Matches the texture's id from the YYP file */
   textureGroupId: {
     /** the name of the Texture Group */
@@ -250,14 +250,14 @@ export interface YySprite extends YyData {
     /** seems to just be `texturegroups/${name}` */
     path: string,
   },
-  // /** (What is this?) */
-  // swatchColours: null,
-  // /** (What is this?) */
-  // gridX: 0,
-  // /** (What is this?) */
-  // gridY: 0,
-  // frames: SpriteFrame[],
-  // sequence: SpriteSequence,
-  // layers: SpriteLayer[],
+  /** (What is this?) */
+  swatchColours: null,
+  /** (What is this?) */
+  gridX: 0,
+  /** (What is this?) */
+  gridY: 0,
+  frames: SpriteFrame[],
+  sequence: SpriteSequence,
+  layers: SpriteLayer[],
   resourceType: "GMSprite"
 }
