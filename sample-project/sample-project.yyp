@@ -1,5 +1,6 @@
 {
   "resources": [
+    {"id":{"name":"Sprite2","path":"sprites/Sprite2/Sprite2.yy",},"order":17,},
     {"id":{"name":"object","path":"objects/object/object.yy",},"order":4,},
     {"id":{"name":"sprite","path":"sprites/sprite/sprite.yy",},"order":12,},
     {"id":{"name":"conflictingFont","path":"fonts/conflictingFont/conflictingFont.yy",},"order":0,},
