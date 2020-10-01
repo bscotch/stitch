@@ -8,3 +8,5 @@ type KeyFromValue<V, T extends Record<PropertyKey, PropertyKey>> = {
 export type Inverted<T extends Record<PropertyKey, PropertyKey>> = {
   [V in T[keyof T]]: KeyFromValue<V, T>
 };
+
+export type EmptyArray = readonly [];
