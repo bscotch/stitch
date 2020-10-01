@@ -1,3 +1,4 @@
+import { assert } from "./errors";
 import { Gms2Storage } from "./Gms2Storage";
 import paths from "./paths";
 
@@ -71,6 +72,8 @@ export class Gms2ProjectConfig {
   }
 
   private addGroupAssignement(type:Gms2ProjectConfigAssignmentField,folder:string,group:string){
+    assert(!['','/','\\'].includes(folder),
+      `Cannot assign groups to the root level. Use default groups for that.`);
     this.data[type][folder] = group;
     return this.save();
   }
