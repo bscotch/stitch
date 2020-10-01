@@ -137,6 +137,12 @@ Or, if you have a content server storing images, sounds, or files, you can write
 
 At Bscotch, we use importers for our sound, art, and localization pipelines, so that our game programmers do not need to manually find, import, or name assets created by other team members.
 
+#### Sprites
+
+⚠WARNING⚠ Automation of sprite images must only be performed when those images
+are **fully managed outside of Gamemaker**, and when the sprite has only the default
+layer.
+
 #### Asset Import Notes <a id="import-asset-notes"></a>
 
 + Local texture page assignments are *not* overwritten when updating sprites. If the local sprite does not exist, or does exist but is assigned to a non-existent texture page, the source's texture page will be created locally and used by the imported sprite.

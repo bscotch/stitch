@@ -143,7 +143,7 @@ results in the following files:
 
 + `sprites/sampleSprite/`
 + `sprites/sampleSprite/sampleSprite.yy`
-+ `sprites/sampleSprite/{frameId1}.png`
++ `sprites/sampleSprite/{frameId1}.png` Composite image (actually rendered by the game)
 + `sprites/sampleSprite/layers/`
 + `sprites/sampleSprite/layers/{frameId1}/`
 + `sprites/sampleSprite/layers/{frameId1}/{layerId1}.png`
@@ -346,7 +346,7 @@ Adding a new subimage via the Editor leaves the original GUIDs
 intact and simply adds the new one.
 
 Sorting subimages via the Editor has no impact on the file
-structure, but does change the `.yy` file: he objects in the
+structure, but does change the `.yy` file: the objects in the
 `frames` array are are sorted to reflect the order seen in
 the editor, as are those in `sequence.tracks.keyframes.Keyframes`.
 
