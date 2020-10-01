@@ -767,3 +767,26 @@ following exceptions:
 + `length` reflects the current number of frames
 + `tracks.keyframes` reflects the current frames and their order (one
   keyframe object per frame).
+
+
+### Sprites referenced by Sequence resources
+
+Sprites can be used in Sequence Resources, and their frames can
+be directly reference by those sequences. The references are by
+index only, so the GUID of the linked frames is not used and any
+changes to frames (re-ordering, deletion, or addition) are not
+reflected by Gamemaker in changes to the code/resources that
+refer to them.
+
+For example, if a sprite has two frames, a sequence refers
+to frame1 of that sprite, and then we delete frame1 via the
+GMS2 editor, the sequence still refers to the same index
+position as before. Gamemaker allows this, at least in the editor,
+with out-of-bounds indexes falling back on the last existing
+frame.
+
+Collectively, this means that Gamemaker does not dynamically
+track references to sprite frames in any way, and any change
+that causes a specific image to have a different index will
+cause all references to that image to be referencing a different
+image now.
