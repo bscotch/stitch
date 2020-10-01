@@ -2,7 +2,7 @@ import { YyData } from "../../../types/Yy";
 //❌✅⌛❓
 
 import { YypResource } from "../../../types/YypComponents";
-import { Gms2PipelineError } from "../../errors";
+import { assert, Gms2PipelineError } from "../../errors";
 import { Gms2Storage } from "../../Gms2Storage";
 import paths from "../../paths";
 import path from "../../paths";
@@ -55,19 +55,9 @@ export class Gms2ResourceBase {
    * run into errors if this folder doesn't already exist.
    */
   set folder(folderName:string){
-    if (folderName.match(/\.yyp/g)){
-      //This means the resource should be at the root level of the project, such as
-      // "parent": {
-      //   "name": "sample-project",
-      //   "path": "sample-project.yyp",
-      // },
-      this.yyData.parent.name = folderName.replace(/\.yyp/g, "");
-      this.yyData.parent.path = folderName;
-    }
-    else{
-      this.yyData.parent.name = folderName;
-      this.yyData.parent.path = `folders/${folderName}.yy`;
-    }
+    assert( ! ['','/','\\'].includes(folderName), `Root level folder assignments are not allowed.`);
+    this.yyData.parent.name = folderName;
+    this.yyData.parent.path = `folders/${folderName}.yy`;
     this.save();
   }
 
