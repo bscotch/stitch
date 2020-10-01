@@ -42,6 +42,10 @@ export class Gms2ResourceBase {
     throw new Gms2PipelineError(`createYyFile is not implemented on type ${this.resourceRoot}`);
   }
 
+  get id(){
+    return {...this.data.id};
+  }
+
   get name(){
     return this.data.id.name;
   }
