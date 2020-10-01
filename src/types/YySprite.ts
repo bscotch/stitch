@@ -1,3 +1,4 @@
+import { EmptyArray } from "./Utility";
 import { YyData } from "./Yy";
 
 export enum SpriteCollisionKind {
@@ -10,6 +11,7 @@ export enum SpriteCollisionKind {
 }
 
 export enum SpriteBoundingBoxMode {
+  /** what does this imply about bboxes? */
   Automatic,
   FullImage,
   Manual,
@@ -52,7 +54,7 @@ interface SpriteImage {
   resourceVersion:"1.0",
   name:"",
   /** An empty array (there seems to be no way to add tags to frames) */
-  tags:[],
+  tags: EmptyArray,
   resourceType:"GMSpriteBitmap"
 }
 
@@ -80,11 +82,11 @@ interface SpriteFrame {
    * for their "FrameId.name" field.
    */
   name:string,
-  tags:[],
+  tags:EmptyArray,
   resourceType:"GMSpriteFrame"
 }
 
-enum SpriteLayerBlendMode {
+export enum SpriteLayerBlendMode {
   Normal,
   Add,
   Subtract,
@@ -106,7 +108,7 @@ interface SpriteLayer {
   /** The unique GUID for this layer, used by Frames in their LayerId field. */
   name:string,
   /** Seems to be unused -- always an empty array. */
-  tags:[],
+  tags:EmptyArray,
   resourceType:"GMImageLayer"
 }
 
@@ -151,12 +153,12 @@ interface SpriteSequenceTrack {
   builtinName:0,
   traits:0,
   interpolation:1,
-  tracks:[],
-  events:[],
-  modifiers:[],
+  tracks:EmptyArray,
+  events:EmptyArray,
+  modifiers:EmptyArray,
   isCreationTrack:false,
   resourceVersion:"1.0",
-  tags:[],
+  tags:EmptyArray,
   resourceType:"GMSpriteFramesTrack"
 }
 
@@ -176,17 +178,17 @@ interface SpriteSequence {
   playbackSpeedType: SpritePlaybackSpeedType,
   /** (Default true) What is this? */
   autoRecord: true,
-  /** (Default true) What is this? */
-  volume: 1.0,
+  /** (Default 1) What is this? */
+  volume: number,
   /** Number of frames */
-  length: 2.0,
+  length: number,
   events: {
-    Keyframes:[],
+    Keyframes:EmptyArray,
     resourceVersion:"1.0",
     resourceType:"KeyframeStore<MessageEventKeyframe>"
   },
   moments: {
-    Keyframes:[],
+    Keyframes:EmptyArray,
     resourceVersion:"1.0",
     resourceType:"KeyframeStore<MomentsEventKeyframe>"
   },
@@ -211,8 +213,10 @@ interface SpriteSequence {
   backdropXOffset: 0,
   /** Appears to be constant for sprites */
   backdropYOffset: 0,
-  xorigin: 32,
-  yorigin: 32,
+  /** The sprite's origin (x-coord) */
+  xorigin: number,
+  /** The sprite's origin (y-coord) */
+  yorigin: number,
   eventToFunction: {},
   eventStubScript: null,
   parent: {
@@ -224,7 +228,7 @@ interface SpriteSequence {
   resourceVersion: "1.3",
   /** The sprite's name */
   name: string,
-  tags: [],
+  tags: EmptyArray,
   resourceType: "GMSequence",
 }
 
@@ -279,3 +283,68 @@ export interface YySprite extends YyData {
   layers: SpriteLayer[],
   resourceType: "GMSprite"
 }
+
+export const yyDataConstants = {
+  For3D: false,
+  HTile: false,
+  VTile: false,
+  type: 0,
+  gridX: 0,
+  gridY: 0,
+  resourceType: "GMSprite",
+  resourceVersion: "1.0",
+  swatchColours: null,
+  swfPrecision: 2.525
+} as const;
+export const yyDataLayerConstants = {
+  resourceType: "GMImageLayer",
+  resourceVersion: "1.0",
+  tags:[]
+} as const;
+export const yyDataSequenceConstants = {
+  autoRecord: true,
+  backdropHeight: 768,
+  backdropImageOpacity: 0.5,
+  backdropImagePath: "",
+  backdropWidth: 1366,
+  backdropXOffset: 0,
+  backdropYOffset: 0,
+  eventStubScript: null,
+  eventToFunction: {},
+  events: {
+    Keyframes: [],
+    resourceType: "KeyframeStore<MessageEventKeyframe>",
+    resourceVersion: "1.0"
+  },
+  lockOrigin: false,
+  moments: {
+    Keyframes: [],
+    resourceType: "KeyframeStore<MomentsEventKeyframe>",
+    resourceVersion: "1.0"
+  },
+  playback: 1,
+  resourceType: "GMSequence",
+  resourceVersion: "1.3",
+  showBackdrop: true,
+  showBackdropImage: false,
+  tags: [],
+  timeUnits: 1,
+  visibleRange: null,
+  volume: 1,
+} as const;
+export const yyDataSequenceTrackConstants = {
+  builtinName: 0,
+  events: [],
+  inheritsTrackColour: true,
+  interpolation: 1,
+  isCreationTrack: false,
+  modifiers: [],
+  name: "frames",
+  resourceType: "GMSpriteFramesTrack",
+  resourceVersion: "1.0",
+  spriteId: null,
+  tags: [],
+  tracks: [],
+  trackColour: 0,
+  traits: 0,
+} as const;
