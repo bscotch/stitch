@@ -48,7 +48,8 @@
     "json-bigint": "^1.0.0",
     "lodash": "^4.17.20",
     "sharp": "^0.26.1",
-    "sort-keys": "^4.0.0"
+    "sort-keys": "^4.0.0",
+    "uuid": "^8.3.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.12",
@@ -57,6 +58,7 @@
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.11.2",
     "@types/sharp": "^0.26.0",
+    "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
     "@typescript-eslint/parser": "^3.10.1",
     "chai": "^4.2.0",
