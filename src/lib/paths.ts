@@ -43,17 +43,30 @@ function heirarchy(path:string){
  * Given a path with any style of separators,
  * return the same path with POSIX-style separators.
  */
-export function asPosixPath (pathString:string){
+function asPosixPath (pathString:string){
   const parts = pathString.split(/[/\\]+/g);
   const withPosixSeps = nodePath.posix.join(...parts);
   // When converting a Windows absolute path, e.g. C:// must become /c/
   return withPosixSeps.replace(/^([a-z])\/\//i,'/$1/');
 }
 
+function trimTrailingSlash(pathString:string){
+  return pathString.replace(/[/\\]+$/,'');
+}
+
+/**
+ * Given the path to a directory, return the final subdirectory name.
+ * E.g. from /hello/world/ return "world".
+ */
+export function subfolderName(directoryPath:string){
+  return nodePath.parse(trimTrailingSlash(directoryPath)).base;
+}
 
 export default {
   ...nodePath,
   pathSpecificitySort,
   heirarchy,
-  asPosixPath
+  asPosixPath,
+  trimTrailingSlash,
+  subfolderName
 };
