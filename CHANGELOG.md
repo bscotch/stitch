@@ -1,3 +1,12 @@
+# [0.5.0](https://github.com/bscotch/stitch/compare/v0.4.0...v0.5.0) (2020-10-06)
+
+
+### Features
+
+* Rename CLI command to 'stitch' instead of 'gms2'. ([7a388b8](https://github.com/bscotch/stitch/commit/7a388b816a503e9b4d85299333ae67a086b3befe))
+
+
+
 # [0.4.0](https://github.com/bscotch/stitch/compare/v0.3.5...v0.4.0) (2020-10-06)
 
 
