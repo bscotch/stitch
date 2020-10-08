@@ -1,3 +1,13 @@
+## [0.6.2](https://github.com/bscotch/stitch/compare/v0.6.1...v0.6.2) (2020-10-08)
+
+
+### Features
+
+* Allow forcing the deborkifier command to bypass the requirement of being in a clean git working directory. ([c398a95](https://github.com/bscotch/stitch/commit/c398a954d30677976f9228bb3a1f2fc096d7960b))
+* On project save, also run the jsonify converter on all yy files in the project. ([ff0aaa1](https://github.com/bscotch/stitch/commit/ff0aaa1fd0fa4cbc03b78298c518607cd6d4fc9d))
+
+
+
 ## [0.6.1](https://github.com/bscotch/stitch/compare/v0.6.0...v0.6.1) (2020-10-08)
 
 

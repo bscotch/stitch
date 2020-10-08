@@ -1,74 +1,311 @@
 {
-  "resources": [
-    {"id":{"name":"bscotchpackObject","path":"objects/bscotchpackObject/bscotchpackObject.yy",},"order":0,},
-    {"id":{"name":"bscotchpackNote","path":"notes/bscotchpackNote/bscotchpackNote.yy",},"order":0,},
-    {"id":{"name":"bscotchpackScript","path":"scripts/bscotchpackScript/bscotchpackScript.yy",},"order":0,},
-    {"id":{"name":"anotherModuleRoom","path":"rooms/anotherModuleRoom/anotherModuleRoom.yy",},"order":0,},
-  ],
-  "Options": [
-    {"name":"Amazon Fire","path":"options/amazonfire/options_amazonfire.yy",},
-    {"name":"Android","path":"options/android/options_android.yy",},
-    {"name":"HTML5","path":"options/html5/options_html5.yy",},
-    {"name":"iOS","path":"options/ios/options_ios.yy",},
-    {"name":"Linux","path":"options/linux/options_linux.yy",},
-    {"name":"macOS","path":"options/mac/options_mac.yy",},
-    {"name":"Main","path":"options/main/options_main.yy",},
-    {"name":"PlayStation 4","path":"options/ps4/options_ps4.yy",},
-    {"name":"Switch","path":"options/switch/options_switch.yy",},
-    {"name":"tvOS","path":"options/tvos/options_tvos.yy",},
-    {"name":"Windows","path":"options/windows/options_windows.yy",},
-    {"name":"Windows UWP","path":"options/windowsuap/options_windowsuap.yy",},
-    {"name":"Xbox One","path":"options/xboxone/options_xboxone.yy",},
-  ],
-  "isDnDProject": false,
-  "isEcma": false,
-  "tutorialPath": "",
-  "configs": {
-    "name": "Default",
-    "children": [
-      {"name":"steam","children":[],},
-      {"name":"BscotchPack","children":[],},
-    ],
-  },
-  "RoomOrder": [
-    {"name":"anotherModuleRoom","path":"rooms/anotherModuleRoom/anotherModuleRoom.yy",},
-  ],
-  "Folders": [
-    {"folderPath":"folders/Sprites.yy","order":1,"resourceVersion":"1.0","name":"Sprites","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Tile Sets.yy","order":2,"resourceVersion":"1.0","name":"Tile Sets","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Sounds.yy","order":3,"resourceVersion":"1.0","name":"Sounds","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Paths.yy","order":4,"resourceVersion":"1.0","name":"Paths","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Scripts.yy","order":5,"resourceVersion":"1.0","name":"Scripts","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Shaders.yy","order":6,"resourceVersion":"1.0","name":"Shaders","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Fonts.yy","order":7,"resourceVersion":"1.0","name":"Fonts","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Timelines.yy","order":8,"resourceVersion":"1.0","name":"Timelines","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Objects.yy","order":9,"resourceVersion":"1.0","name":"Objects","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Rooms.yy","order":10,"resourceVersion":"1.0","name":"Rooms","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Sequences.yy","order":11,"resourceVersion":"1.0","name":"Sequences","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Animation Curves.yy","order":12,"resourceVersion":"1.0","name":"Animation Curves","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Notes.yy","order":13,"resourceVersion":"1.0","name":"Notes","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Extensions.yy","order":14,"resourceVersion":"1.0","name":"Extensions","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/group1.yy","order":15,"resourceVersion":"1.0","name":"group1","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/BscotchPack.yy","order":16,"resourceVersion":"1.0","name":"BscotchPack","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/BscotchPack/bsp_subgroup.yy","order":1,"resourceVersion":"1.0","name":"bsp_subgroup","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Objects/subobjects.yy","order":1,"resourceVersion":"1.0","name":"subobjects","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Objects/subobjects/BscotchPack.yy","order":1,"resourceVersion":"1.0","name":"BscotchPack","tags":[],"resourceType":"GMFolder",},
-    {"folderPath":"folders/Rooms/AnotherModule.yy","order":1,"resourceVersion":"1.0","name":"AnotherModule","tags":[],"resourceType":"GMFolder",},
-  ],
-  "AudioGroups": [
-    {"targets":461609314234257646,"resourceVersion":"1.0","name":"audiogroup_default","resourceType":"GMAudioGroup",},
-  ],
-  "TextureGroups": [
-    {"isScaled":true,"autocrop":true,"border":2,"mipsToGenerate":0,"targets":461609314234257646,"resourceVersion":"1.0","name":"Default","resourceType":"GMTextureGroup",},
-  ],
-  "IncludedFiles": [
-    {"ConfigValues":{"BscotchPack":{"CopyToMask":"0"}},"CopyToMask":-1,"filePath":"datafiles/BscotchPack","resourceVersion":"1.0","name":"moduleFile.txt","resourceType":"GMIncludedFile",},
-  ],
-  "MetaData": {
-    "IDEVersion": "2.3.0.529",
-  },
-  "resourceVersion": "1.3",
-  "name": "sample-module-source",
-  "tags": [],
-  "resourceType": "GMProject",
+	"AudioGroups": [
+		{
+			"name": "audiogroup_default",
+			"resourceType": "GMAudioGroup",
+			"resourceVersion": "1.0",
+			"targets": 461609314234257646
+		}
+	],
+	"Folders": [
+		{
+			"folderPath": "folders/Sprites.yy",
+			"name": "Sprites",
+			"order": 1,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Tile Sets.yy",
+			"name": "Tile Sets",
+			"order": 2,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Sounds.yy",
+			"name": "Sounds",
+			"order": 3,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Paths.yy",
+			"name": "Paths",
+			"order": 4,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Scripts.yy",
+			"name": "Scripts",
+			"order": 5,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Shaders.yy",
+			"name": "Shaders",
+			"order": 6,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Fonts.yy",
+			"name": "Fonts",
+			"order": 7,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Timelines.yy",
+			"name": "Timelines",
+			"order": 8,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Objects.yy",
+			"name": "Objects",
+			"order": 9,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Rooms.yy",
+			"name": "Rooms",
+			"order": 10,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Sequences.yy",
+			"name": "Sequences",
+			"order": 11,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Animation Curves.yy",
+			"name": "Animation Curves",
+			"order": 12,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Notes.yy",
+			"name": "Notes",
+			"order": 13,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Extensions.yy",
+			"name": "Extensions",
+			"order": 14,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/group1.yy",
+			"name": "group1",
+			"order": 15,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/BscotchPack.yy",
+			"name": "BscotchPack",
+			"order": 16,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/BscotchPack/bsp_subgroup.yy",
+			"name": "bsp_subgroup",
+			"order": 1,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Objects/subobjects.yy",
+			"name": "subobjects",
+			"order": 1,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Objects/subobjects/BscotchPack.yy",
+			"name": "BscotchPack",
+			"order": 1,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		},
+		{
+			"folderPath": "folders/Rooms/AnotherModule.yy",
+			"name": "AnotherModule",
+			"order": 1,
+			"resourceType": "GMFolder",
+			"resourceVersion": "1.0",
+			"tags": []
+		}
+	],
+	"IncludedFiles": [
+		{
+			"ConfigValues": {
+				"BscotchPack": {
+					"CopyToMask": "0"
+				}
+			},
+			"CopyToMask": -1,
+			"filePath": "datafiles/BscotchPack",
+			"name": "moduleFile.txt",
+			"resourceType": "GMIncludedFile",
+			"resourceVersion": "1.0"
+		}
+	],
+	"MetaData": {
+		"IDEVersion": "2.3.0.529"
+	},
+	"Options": [
+		{
+			"name": "Amazon Fire",
+			"path": "options/amazonfire/options_amazonfire.yy"
+		},
+		{
+			"name": "Android",
+			"path": "options/android/options_android.yy"
+		},
+		{
+			"name": "HTML5",
+			"path": "options/html5/options_html5.yy"
+		},
+		{
+			"name": "iOS",
+			"path": "options/ios/options_ios.yy"
+		},
+		{
+			"name": "Linux",
+			"path": "options/linux/options_linux.yy"
+		},
+		{
+			"name": "macOS",
+			"path": "options/mac/options_mac.yy"
+		},
+		{
+			"name": "Main",
+			"path": "options/main/options_main.yy"
+		},
+		{
+			"name": "PlayStation 4",
+			"path": "options/ps4/options_ps4.yy"
+		},
+		{
+			"name": "Switch",
+			"path": "options/switch/options_switch.yy"
+		},
+		{
+			"name": "tvOS",
+			"path": "options/tvos/options_tvos.yy"
+		},
+		{
+			"name": "Windows",
+			"path": "options/windows/options_windows.yy"
+		},
+		{
+			"name": "Windows UWP",
+			"path": "options/windowsuap/options_windowsuap.yy"
+		},
+		{
+			"name": "Xbox One",
+			"path": "options/xboxone/options_xboxone.yy"
+		}
+	],
+	"RoomOrder": [
+		{
+			"name": "anotherModuleRoom",
+			"path": "rooms/anotherModuleRoom/anotherModuleRoom.yy"
+		}
+	],
+	"TextureGroups": [
+		{
+			"autocrop": true,
+			"border": 2,
+			"isScaled": true,
+			"mipsToGenerate": 0,
+			"name": "Default",
+			"resourceType": "GMTextureGroup",
+			"resourceVersion": "1.0",
+			"targets": 461609314234257646
+		}
+	],
+	"configs": {
+		"children": [
+			{
+				"children": [],
+				"name": "steam"
+			},
+			{
+				"children": [],
+				"name": "BscotchPack"
+			}
+		],
+		"name": "Default"
+	},
+	"isDnDProject": false,
+	"isEcma": false,
+	"name": "sample-module-source",
+	"resourceType": "GMProject",
+	"resourceVersion": "1.3",
+	"resources": [
+		{
+			"id": {
+				"name": "bscotchpackObject",
+				"path": "objects/bscotchpackObject/bscotchpackObject.yy"
+			},
+			"order": 0
+		},
+		{
+			"id": {
+				"name": "bscotchpackNote",
+				"path": "notes/bscotchpackNote/bscotchpackNote.yy"
+			},
+			"order": 0
+		},
+		{
+			"id": {
+				"name": "bscotchpackScript",
+				"path": "scripts/bscotchpackScript/bscotchpackScript.yy"
+			},
+			"order": 0
+		},
+		{
+			"id": {
+				"name": "anotherModuleRoom",
+				"path": "rooms/anotherModuleRoom/anotherModuleRoom.yy"
+			},
+			"order": 0
+		}
+	],
+	"tags": [],
+	"tutorialPath": ""
 }
