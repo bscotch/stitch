@@ -1,3 +1,13 @@
+# [0.6.0](https://github.com/bscotch/stitch/compare/v0.5.0...v0.6.0) (2020-10-08)
+
+
+### Features
+
+* Add 'debork' CLI command that loads and saves a project, which will fix common issues, install any hooks, and normalize the file contents as plain JSON. ([a58bd35](https://github.com/bscotch/stitch/commit/a58bd35fd03be80c2466c34fa69a6da0dd973924))
+* Have the jsonify script log a warning instead of throw an error when the yy/p file is not valid JSON. ([0c276da](https://github.com/bscotch/stitch/commit/0c276da5240e0a19777aa5dabaec7b607d534c4a))
+
+
+
 # [0.5.0](https://github.com/bscotch/stitch/compare/v0.4.0...v0.5.0) (2020-10-06)
 
 
