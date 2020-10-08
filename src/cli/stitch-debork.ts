@@ -8,6 +8,10 @@ cli.description("Fix and normalize common issues in a Gamemaker Studio 2.3+ Proj
   .option("--target-project-path <path>", oneline`
     Path to the target Gamemaker Studio 2 project. If not set, will use the current directory.
   `)
+  .option("--force",oneline`
+    Normally you can only debork if your git working directory is clean.
+    You can bypass this if you really know what you're doing.
+  `)
   .parse(process.argv);
 
-(new Gms2Project(cli.targetProjectPath)).save();
+(new Gms2Project({projectPath:cli.targetProjectPath,dangerouslyAllowDirtyWorkingDir:cli.force})).save();
