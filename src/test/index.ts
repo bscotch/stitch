@@ -144,9 +144,11 @@ at it goooo ${interp2}
         "dehydrated content should match the original yyp file"
       ).to.eql(rawContent);
       const rawKeys = Object.keys(rawContent);
+      rawKeys.sort();
       const dehydratedKeys = Object.keys(dehydrated);
+      dehydratedKeys.sort();
       expect([1,2,3],'array deep equality check should require same order').to.not.eql([2,1,3]);
-      expect(rawKeys,'dehydrated projects should have keys in the same order').to.eql(dehydratedKeys);
+      expect(rawKeys,'dehydrated projects should have the same keys').to.eql(dehydratedKeys);
     });
 
     it("can create new folders", function(){

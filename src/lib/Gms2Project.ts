@@ -21,6 +21,7 @@ import { Gms2ModuleImporter } from "./Gms2ModuleImporter";
 import { Gms2ComponentArrayWithStorage } from "./components/Gms2ComponentArrayWithStorage";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
+import jsonify from "../cli/lib/jsonify";
 
 
 export type Gms2TargetPlatform = typeof Gms2Project.platforms[number];
@@ -367,6 +368,8 @@ export class Gms2Project {
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
   save(){
     this.storage.saveJson(this.yypAbsolutePath,this.dehydrated);
+    // Also jsonify ALL files, just to keep things nice and clean.
+    fs.convertGms2FilesToJson(this.storage.yypDirAbsolute);
     return this;
   }
 
