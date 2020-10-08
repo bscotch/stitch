@@ -1,3 +1,12 @@
+## [0.6.3](https://github.com/bscotch/stitch/compare/v0.6.2...v0.6.3) (2020-10-08)
+
+
+### Features
+
+* Ensure that the .git and node_modules folders are excluded from recursive path lookups. ([eb1abd4](https://github.com/bscotch/stitch/commit/eb1abd4d88032b52bd70bef2c0eab9d3464d1508))
+
+
+
 ## [0.6.2](https://github.com/bscotch/stitch/compare/v0.6.1...v0.6.2) (2020-10-08)
 
 
