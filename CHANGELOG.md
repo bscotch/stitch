@@ -1,3 +1,12 @@
+## [0.6.4](https://github.com/bscotch/stitch/compare/v0.6.3...v0.6.4) (2020-10-08)
+
+
+### Bug Fixes
+
+* Warnings for yy(p) files that cannot be converted to JSON only include the parent path. ([efaf00a](https://github.com/bscotch/stitch/commit/efaf00ac7edcc8d786565b27665c8160d8406c8b))
+
+
+
 ## [0.6.3](https://github.com/bscotch/stitch/compare/v0.6.2...v0.6.3) (2020-10-08)
 
 
