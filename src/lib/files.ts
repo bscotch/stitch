@@ -11,6 +11,7 @@ import path from "./paths";
 import {writeFileSync as writeJsonSync,loadFromFileSync as readJsonSync} from "./json";
 import { assert } from "./errors";
 import sortKeys from "sort-keys";
+import { warn } from "console";
 
 function ensureDirSync(dir:string){
   if(!fs.existsSync(dir)){
@@ -94,8 +95,13 @@ function convertGms2FilesToJson(path:string){
   }
   for(const targetFile of targetFiles){
     assert(existsSync(targetFile),`Cannot convert GMS2 file: ${targetFile} does not exist.`);
-    const parsed = readJsonSync(targetFile);
-    writeJsonSync(targetFile,sortKeys(parsed,{deep:true}));
+    try{
+      const parsed = readJsonSync(targetFile);
+      writeJsonSync(targetFile,sortKeys(parsed,{deep:true}));
+    }
+    catch(err){
+      warn(`Cannot convert file "${path}" to regular JSON.`);
+    }
   }
 }
 
