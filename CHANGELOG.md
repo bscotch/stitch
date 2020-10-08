@@ -1,3 +1,12 @@
+## [0.6.1](https://github.com/bscotch/stitch/compare/v0.6.0...v0.6.1) (2020-10-08)
+
+
+### Bug Fixes
+
+* The package-lock is out of date and causes minor errors during git commits. ([f7ab46d](https://github.com/bscotch/stitch/commit/f7ab46d62defc23138460d471172ff3b33ddb6e1))
+
+
+
 # [0.6.0](https://github.com/bscotch/stitch/compare/v0.5.0...v0.6.0) (2020-10-08)
 
 
