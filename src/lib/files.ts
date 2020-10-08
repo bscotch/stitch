@@ -31,6 +31,7 @@ function listPathsSync(dir:string,recursive=false){
     return [dir];
   }
   const paths = fs.readdirSync(dir)
+    .filter(aPath=>!['node_modules','.git'].includes(aPath))
     .map(aPath=>path.join(dir,aPath));
   if(recursive){
     const morePaths = paths
