@@ -101,7 +101,7 @@ function convertGms2FilesToJson(path:string){
       writeJsonSync(targetFile,sortKeys(parsed,{deep:true}));
     }
     catch(err){
-      warn(`Cannot convert file "${path}" to regular JSON.`);
+      warn(`Cannot convert file "${targetFile}" to regular JSON.`);
     }
   }
 }
