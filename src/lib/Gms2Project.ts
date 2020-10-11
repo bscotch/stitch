@@ -160,7 +160,7 @@ export class Gms2Project {
     }
     const {major,minor,patch,revision,candidate} = parts.groups as {[part:string]:string};
     const optionsDir = paths.join(this.storage.yypDirAbsolute,'options');
-    const optionsFiles = this.storage.listFiles(optionsDir,true);
+    const optionsFiles = this.storage.listFiles(optionsDir,true, ["yy"]);
     for(const file of optionsFiles){
       // Load it, change the version, and save
       const content = this.storage.loadJson(file);
