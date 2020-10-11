@@ -559,7 +559,7 @@ at it goooo ${interp2}
     it('Set Version command', function(){
       const project = getResetProject();
       const versionOptions: VersionOptions = {
-        version: "100.5.6-rc.11",
+        projectVersion: "100.5.6-rc.11",
         targetProjectPath: sandboxRoot
       };
       expect(()=>version(versionOptions), "Should succeed when version is valid").to.not.throw();
