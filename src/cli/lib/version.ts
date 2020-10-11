@@ -2,12 +2,12 @@ import cli_assert from './cli-assert';
 import { Gms2Project } from '../../lib/Gms2Project';
 
 export type VersionOptions = {
-  version: string,
+  projectVersion: string,
   targetProjectPath?: string
 };
 
 export default function(options: VersionOptions){
-  cli_assert.assert(options.version, "Must provide a valid version.");
+  cli_assert.assert(options.projectVersion, "Must provide a valid version.");
   if (options.targetProjectPath){
     cli_assert.assertPathExists(options.targetProjectPath);
   }
@@ -15,5 +15,5 @@ export default function(options: VersionOptions){
     options.targetProjectPath = process.cwd();
   }
   const targetProject = new Gms2Project(options.targetProjectPath);
-  targetProject.version = options.version;
+  targetProject.version = options.projectVersion;
 }
