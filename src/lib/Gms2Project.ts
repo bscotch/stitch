@@ -362,9 +362,6 @@ export class Gms2Project {
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
   save(){
-    // Only save if there is a meaningful difference, to minimize file
-    // writing and history noise
-    // const current = this.storage.
     this.storage.writeJson(this.yypAbsolutePath,this.dehydrated);
     return this;
   }

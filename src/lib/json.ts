@@ -3,6 +3,7 @@ import JsonBig from "json-bigint";
 import fs from "fs-extra";
 import path from "path";
 import { Gms2PipelineError } from "./errors";
+import sortKeys from "sort-keys";
 
 const Json = JsonBig({ useNativeBigInt: true });
 
@@ -46,6 +47,20 @@ export function loadFromFileSync(filePath: string) {
  * Write GMS2-style JSON into an object
  */
 export function writeFileSync(filePath: string, stuff: any) {
+  const sortedStuff = sortKeys(stuff);
+  const stringifiedSortedStuff = stringify(sortedStuff);
+  // Only write if necessary
   fs.ensureDirSync(path.dirname(filePath));
-  fs.writeFileSync(filePath, stringify(stuff));
+  try{
+    const existing = sortKeys(loadFromFileSync(filePath));
+    if(stringify(existing) == stringifiedSortedStuff){
+      return;
+    }
+  }
+  catch(err){
+    if(!['ENOENT'].includes(err?.code)){
+      throw err;
+    }
+  }
+  fs.writeFileSync(filePath, stringifiedSortedStuff);
 }
