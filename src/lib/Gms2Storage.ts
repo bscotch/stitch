@@ -10,7 +10,8 @@ export class Gms2Storage {
       throw new Gms2PipelineError(`GIT ERROR: Working directory is not clean. Commit or stash your work!`);
     }
     if(process.env.GMS2PDK_DEV != 'true'){
-      this.installPrecommitHook();
+      // ! Replace this with a hook that throws when the yyp file is plain JSON (instead of GMS2's weird format)
+      // this.installPrecommitHook();
     }
   }
 
@@ -78,7 +79,7 @@ export class Gms2Storage {
 # prior to commiting, so that the files are always guaranteed to have the exact same
 # structure, whether they were last edited by Gamemaker Studio or Stitch.
 
-npx gms2 jsonify --path .
+npx @bscotch/stitch jsonify --path .
 git add *.yy
 git add *.yyp
 `;
