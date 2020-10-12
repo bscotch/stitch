@@ -6,7 +6,7 @@ import { Gms2Project } from '../lib/Gms2Project';
 import {loadFromFileSync} from "../lib/json";
 import { undent, oneline } from "../lib/strings";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
-import { differenceBy } from 'lodash';
+import { differenceBy, map } from 'lodash';
 import { Gms2PipelineError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import jsonify, { JsonifyOptions } from '../cli/lib/jsonify';
@@ -32,6 +32,7 @@ const modulesRoot = "./sample-module-source/";
 const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
 const assetSampleRoot = './sample-assets/';
 const soundSampleRoot = paths.join(assetSampleRoot, "sounds");
+const spriteSampleRoot = paths.join(assetSampleRoot, "sprites");
 const audioSample = paths.join(soundSampleRoot,"mus_intro_jingle.wav");
 const invalidAudioSample = paths.join(soundSampleRoot, "sfx_badgeunlock_m4a.m4a");
 const invalidAudioSampleExt = paths.extname(invalidAudioSample).slice(1);
@@ -327,7 +328,6 @@ at it goooo ${interp2}
       expect(sharedFile.contentAsBuffer,'shared file before copy should be empty').to.eql(Buffer.from([]));
       project.addIncludedFiles(`${filesDir}/${existingFilePath}`,null,'shared');
       expect(sharedFile.contentAsBuffer.toString()).to.eql(sharedFileSourceContent);
-
     });
 
     it("can import new included files", function(){
@@ -383,6 +383,15 @@ at it goooo ${interp2}
 
       const jsonExample = {hello:[1,2,3]};
       expect(project.addIncludedFiles('json',jsonExample)[0].contentParsedAsJson).to.eql(jsonExample);
+    });
+
+    it("can import sprites", function(){
+      const project = getResetProject();
+      expect(project.resources.findByName('mySprite'),
+        'sprite should not exist before being added'
+      ).to.not.exist;
+      project.addSprites(spriteSampleRoot);
+      expect(project.resources.findByName('mySprite')).to.exist;
     });
 
     it("can import modules from one project into another", function(){

@@ -149,6 +149,7 @@ export class Gms2ResourceBase {
   protected save(){
     // Save the YY data
     this.storage.writeJson(this.yyPathAbsolute,this.yyData);
+    return this;
   }
 
   get dehydrated(): YypResource {

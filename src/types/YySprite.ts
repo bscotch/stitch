@@ -58,9 +58,8 @@ interface SpriteImage {
   resourceType:"GMSpriteBitmap"
 }
 
-interface SpriteCompositeImage extends Omit<SpriteImage,'LayerId'|'name'> {
+interface SpriteCompositeImage extends Omit<SpriteImage,'LayerId'> {
   LayerId:null,
-  name:"composite",
 }
 
 interface SpriteFrame {
@@ -284,7 +283,7 @@ export interface YySprite extends YyData {
   resourceType: "GMSprite"
 }
 
-export const yyDataConstants = {
+export const yyDataDefaults = {
   For3D: false,
   HTile: false,
   VTile: false,
@@ -294,14 +293,27 @@ export const yyDataConstants = {
   resourceType: "GMSprite",
   resourceVersion: "1.0",
   swatchColours: null,
-  swfPrecision: 2.525
+  swfPrecision: 2.525,
+  bboxMode: SpriteBoundingBoxMode.Automatic,
+  bbox_left: 0,
+  bbox_top: 0,
+  collisionKind: SpriteCollisionKind.Rectangle,
+  origin: SpriteOrigin.Custom,
+  preMultiplyAlpha: false,
+  collisionTolerance: 0,
+  edgeFiltering: false,
 } as const;
-export const yyDataLayerConstants = {
+export const yyDataLayerDefaults = {
+  blendMode: SpriteLayerBlendMode.Normal,
+  displayName: "default",
+  opacity: 100,
+  isLocked: false,
+  visible: true,
   resourceType: "GMImageLayer",
   resourceVersion: "1.0",
   tags:[]
 } as const;
-export const yyDataSequenceConstants = {
+export const yyDataSequenceDefaults = {
   autoRecord: true,
   backdropHeight: 768,
   backdropImageOpacity: 0.5,
@@ -331,8 +343,10 @@ export const yyDataSequenceConstants = {
   timeUnits: 1,
   visibleRange: null,
   volume: 1,
+  playbackSpeed: 60,
+  playbackSpeedType: SpritePlaybackSpeedType.FramesPerSecond,
 } as const;
-export const yyDataSequenceTrackConstants = {
+export const yyDataSequenceTrackDefaults = {
   builtinName: 0,
   events: [],
   inheritsTrackColour: true,

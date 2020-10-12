@@ -42,12 +42,12 @@
   "license": "MIT",
   "homepage": "https://github.com/bscotch/gms2",
   "dependencies": {
+    "@bscotch/spritely": "^0.6.0",
     "chalk": "^4.1.0",
     "commander": "^6.1.0",
     "fs-extra": "^9.0.1",
     "json-bigint": "^1.0.0",
     "lodash": "^4.17.20",
-    "sharp": "^0.26.1",
     "sort-keys": "^4.0.0",
     "uuid": "^8.3.0"
   },

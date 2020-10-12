@@ -90,22 +90,34 @@ export class  Gms2ResourceArray {
     const existingSound = this.findByField('name',name,Gms2Sound);
     if(existingSound){
       existingSound.replaceAudioFile(sourcePath);
-      return this;
     }
     else{
-      return this.push(Gms2Sound.create(sourcePath,storage));
+      this.push(Gms2Sound.create(sourcePath,storage));
     }
+    return this;
   }
 
   addScript(name:string,code:string,storage:Gms2Storage){
     const script = this.findByField('name',name,Gms2Script);
     if(script){
       script.code = code;
-      return this;
     }
     else{
-      return this.push(Gms2Script.create(name,code,storage));
+      this.push(Gms2Script.create(name,code,storage));
     }
+    return this;
+  }
+
+  addSprite(sourceFolder:string,storage:Gms2Storage){
+    const name = paths.basename(sourceFolder);
+    const sprite = this.findByField('name',name,Gms2Sprite);
+    if(sprite){
+      sprite.replaceFrames(sourceFolder);
+    }
+    else{
+      this.push(Gms2Sprite.create(sourceFolder,storage));
+    }
+    return this;
   }
 
   /**

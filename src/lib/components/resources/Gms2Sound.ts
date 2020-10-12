@@ -44,7 +44,7 @@ export class Gms2Sound extends Gms2ResourceBase {
     }
     this.yyData.soundFile = newFileName;
     this.storage.copyFile(externalAudioFilePath,this.audioFilePathAbsolute);
-    return this;
+    return this.save();
   }
 
   get audioGroup(){

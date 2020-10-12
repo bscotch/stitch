@@ -20,6 +20,7 @@ import { Gms2FolderArray } from "./Gms2FolderArray";
 import { Gms2ModuleImporter } from "./Gms2ModuleImporter";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
+import { SpritelyBatch } from "@bscotch/spritely";
 
 export interface Gms2ProjectOptions {
   /**
@@ -320,6 +321,7 @@ export class Gms2Project {
     for(const targetFile of targetFiles){
       this.addSoundByFile(targetFile);
     }
+    return this;
   }
 
   /**
@@ -329,6 +331,38 @@ export class Gms2Project {
   addScript(name:string,code:string){
     this.resources.addScript(name,code,this.storage);
     return this.save();
+  }
+
+  /**
+   * Add or update a sprite resource, given a folder (sprite)
+   * containing subimages (frames). Will use the folder name
+   * as the sprite name. Completely replaces the images for
+   * the target sprite, and frames are put in alphabetical order
+   * by source name.
+   */
+  private addSprite(sourceFolder:string){
+    this.resources.addSprite(sourceFolder,this.storage);
+    return this.save();
+  }
+
+  /**
+   * Given a source folder that is either a sprite or a
+   * a folder containing sprites (where a 'sprite' is a folder
+   * containing one or more immediate child PNGs that are
+   * all the same size -- nesting is allowed), add or update
+   * the game project sprites using those images. This completely
+   * replaces the existing images for that sprite. The folder
+   * name is used directly as the sprite name (parent folders
+   * are ignored for this.)
+   */
+  addSprites(sourceFolder:string){
+    const spriteBatch = new SpritelyBatch(sourceFolder);
+    const sprites = spriteBatch.sprites;
+    assert(sprites.length,`No sprites found in ${sourceFolder}`);
+    for(const sprite of sprites){
+      this.addSprite(sprite.path);
+    }
+    return this;
   }
 
   deleteResourceByName(name:string){
