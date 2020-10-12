@@ -1,3 +1,20 @@
+## [0.6.5](https://github.com/bscotch/stitch/compare/v0.6.4...v0.6.5) (2020-10-12)
+
+
+### Bug Fixes
+
+* The precommit hook for converting all files to JSON will no longer be installed, as it destablizes the Gamemaker IDE. ([d561436](https://github.com/bscotch/stitch/commit/d561436195edb0872e43da4d63833cea7aebb65c))
+* Update set version cli's unit test to also use `projectVersion` ([82f301a](https://github.com/bscotch/stitch/commit/82f301a46b7e2f5531a0b69db687c7b144516b0a))
+* Update the version CLI command to parse the correct argument. ([f8d6296](https://github.com/bscotch/stitch/commit/f8d62968b2199856961f7f58dd01000776b1412b))
+* Update the version setter to only target *.yy files in the options ([7e1831e](https://github.com/bscotch/stitch/commit/7e1831ed0b63a5a121856d1b8eb4e6817a3e3bcd))
+
+
+### Features
+
+* Stitch will now only save yy(p) files if there has been a meaningful change. This reduces the file structure conflicts between Gamemaker and Stitch. ([3371304](https://github.com/bscotch/stitch/commit/3371304ed5004c8136fd55a283b64034026f41de))
+
+
+
 ## [0.6.4](https://github.com/bscotch/stitch/compare/v0.6.3...v0.6.4) (2020-10-08)
 
 
