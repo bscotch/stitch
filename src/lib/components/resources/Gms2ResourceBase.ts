@@ -34,7 +34,7 @@ export class Gms2ResourceBase {
       // Create a default one!
       this.createYyFile();
     }
-    this.yyData = this.storage.loadJson(this.yyPathAbsolute);
+    this.yyData = this.storage.readJson(this.yyPathAbsolute);
   }
 
   /** Create a generic Yy file, given YypData (must be implemented by each specifific resource.) */
@@ -144,7 +144,7 @@ export class Gms2ResourceBase {
 
   protected save(){
     // Save the YY data
-    this.storage.saveJson(this.yyPathAbsolute,this.yyData);
+    this.storage.writeJson(this.yyPathAbsolute,this.yyData);
   }
 
   get dehydrated(): YypResource {

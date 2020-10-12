@@ -27,7 +27,7 @@ export class Gms2IncludedFile {
 
   /** Get the file content */
   get contentAsBuffer():Buffer{
-    return this.storage.loadBlob(this.filePathAbsolute);
+    return this.storage.readBlob(this.filePathAbsolute);
   }
   /**
    * Set the file content on disk. If string or Buffer,
@@ -35,10 +35,10 @@ export class Gms2IncludedFile {
   */
   setContent(data:any){
     if(typeof data == 'string' || Buffer.isBuffer(data)){
-      this.storage.saveBlob(this.filePathAbsolute,data);
+      this.storage.writeBlob(this.filePathAbsolute,data);
     }
     else{
-      this.storage.saveJson(this.filePathAbsolute,data);
+      this.storage.writeJson(this.filePathAbsolute,data);
     }
   }
 
@@ -108,7 +108,7 @@ export class Gms2IncludedFile {
   }
 
   static importFromFile(project:Gms2Project,path:string,subdirectory?:string){
-    const blob = project.storage.loadBlob(path);
+    const blob = project.storage.readBlob(path);
     return Gms2IncludedFile.importFromData(project,path,blob,subdirectory);
   }
 

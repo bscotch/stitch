@@ -129,23 +129,23 @@ git add *.yyp
     return paths.asPosixPath(path);
   }
 
-  saveBlob(filePath:string,data:string|Buffer){
+  writeBlob(filePath:string,data:string|Buffer){
     if(!this.isReadOnly){
       fs.writeFileSync(filePath,data);
     }
   }
 
-  saveJson(filePath:string,data:any){
+  writeJson(filePath:string,data:any){
     if(!this.isReadOnly){
       fs.writeJsonSync(filePath,data);
     }
   }
 
-  loadBlob(filePath:string){
+  readBlob(filePath:string){
     return fs.readFileSync(filePath);
   }
 
-  loadJson(filePath:string){
+  readJson(filePath:string){
     return fs.readJsonSync(filePath);
   }
 }

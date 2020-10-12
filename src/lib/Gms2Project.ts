@@ -18,13 +18,8 @@ import { Gms2Sprite } from "./components/resources/Gms2Sprite";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
 import { Gms2FolderArray } from "./Gms2FolderArray";
 import { Gms2ModuleImporter } from "./Gms2ModuleImporter";
-import { Gms2ComponentArrayWithStorage } from "./components/Gms2ComponentArrayWithStorage";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
-import jsonify from "../cli/lib/jsonify";
-
-
-export type Gms2TargetPlatform = typeof Gms2Project.platforms[number];
 
 export interface Gms2ProjectOptions {
   /**
@@ -163,12 +158,12 @@ export class Gms2Project {
     const optionsFiles = this.storage.listFiles(optionsDir,true, ["yy"]);
     for(const file of optionsFiles){
       // Load it, change the version, and save
-      const content = this.storage.loadJson(file);
+      const content = this.storage.readJson(file);
       const platform = paths.basename(paths.dirname(file)) as Gms2TargetPlatform;
       if(Gms2Project.platforms.includes(platform)){
         const versionKey = `option_${platform}_version`;
         content[versionKey] = [major,minor,patch,candidate||revision||'0'].join('.');
-        this.storage.saveJson(file,content);
+        this.storage.writeJson(file,content);
       }
     }
   }
@@ -176,7 +171,7 @@ export class Gms2Project {
   versionOnPlatform(platform: Gms2TargetPlatform){
     const optionsFile = paths.join(this.storage.yypDirAbsolute,'options',platform,`options_${platform}.yy`);
     const versionKey = `option_${platform}_version`;
-    return this.storage.loadJson(optionsFile)[versionKey] as string;
+    return this.storage.readJson(optionsFile)[versionKey] as string;
   }
 
   /**
@@ -367,9 +362,10 @@ export class Gms2Project {
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
   save(){
-    this.storage.saveJson(this.yypAbsolutePath,this.dehydrated);
-    // Also jsonify ALL files, just to keep things nice and clean.
-    fs.convertGms2FilesToJson(this.storage.yypDirAbsolute);
+    // Only save if there is a meaningful difference, to minimize file
+    // writing and history noise
+    // const current = this.storage.
+    this.storage.writeJson(this.yypAbsolutePath,this.dehydrated);
     return this;
   }
 
@@ -448,3 +444,4 @@ export class Gms2Project {
   }
 }
 
+export type Gms2TargetPlatform = typeof Gms2Project.platforms[number];

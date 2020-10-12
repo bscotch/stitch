@@ -27,7 +27,7 @@ export class Gms2Sound extends Gms2ResourceBase {
       resourceType: "GMSound",
       resourceVersion: "1.0",
     };
-    this.storage.saveJson(this.yyPathAbsolute,yyData);
+    this.storage.writeJson(this.yyPathAbsolute,yyData);
   }
 
   get audioFilePathAbsolute(){

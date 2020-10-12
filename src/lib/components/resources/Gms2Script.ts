@@ -20,7 +20,7 @@ export class Gms2Script extends Gms2ResourceBase {
       isDnD:false,
       isCompatibility:false
     };
-    this.storage.saveJson(this.yyPathAbsolute,yyData);
+    this.storage.writeJson(this.yyPathAbsolute,yyData);
   }
 
   get codeFilePathAbsolute(){
@@ -28,11 +28,11 @@ export class Gms2Script extends Gms2ResourceBase {
   }
 
   set code(code:string){
-    this.storage.saveBlob(this.codeFilePathAbsolute,code);
+    this.storage.writeBlob(this.codeFilePathAbsolute,code);
   }
 
   get code(){
-    return this.storage.loadBlob(this.codeFilePathAbsolute).toString();
+    return this.storage.readBlob(this.codeFilePathAbsolute).toString();
   }
 
   static create(name:string,code:string,storage:Gms2Storage){

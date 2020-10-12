@@ -102,7 +102,7 @@ export class Gms2ProjectConfig {
   private load(){
     this.data = Gms2ProjectConfig.defaultContent;
     try{
-      Object.assign(this.data,this.storage.loadJson(this.filePathAbsolute));
+      Object.assign(this.data,this.storage.readJson(this.filePathAbsolute));
     }
     catch(err){
       if( ! this.storage.isReadOnly){ throw err; }
@@ -111,7 +111,7 @@ export class Gms2ProjectConfig {
   }
 
   private save(){
-    this.storage.saveJson(this.filePathAbsolute,this.data);
+    this.storage.writeJson(this.filePathAbsolute,this.data);
     return this;
   }
 
