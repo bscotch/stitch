@@ -1,3 +1,13 @@
+# [0.8.0](https://github.com/bscotch/stitch/compare/v0.7.0...v0.8.0) (2020-10-13)
+
+
+### Features
+
+* All CLI commands now include a --force option, for those who want to live dangerously. ([e1a959d](https://github.com/bscotch/stitch/commit/e1a959d07ffafe3a0d895a7127bcdec1a9b7aa3f))
+* CLI 'assign' commands are now under the 'set' command, since the distinction isn't obvious. ([33c8593](https://github.com/bscotch/stitch/commit/33c85932e8780aa80cfe2b592e83fa44db71531f))
+
+
+
 # [0.7.0](https://github.com/bscotch/stitch/compare/v0.6.5...v0.7.0) (2020-10-13)
 
 
