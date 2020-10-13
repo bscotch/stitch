@@ -100,10 +100,9 @@ To keep things stable and automatable, Stitch uses a configuration file (`stitch
   + ✅ sounds --source-path=path --extensions=mp3,wave
   + ✅ files --source-path=path --extensions=txt
   + ✅ sprites --source-path=path
-+ ✅ assign
++ ✅ set
   + ✅ texture-groups --folder=sprites/myGroupOfSprites --group-name=name
   + ✅ audio-groups --folder=sound/myGroupOfSounds --group-name=name
-+ ✅ set
   + ✅ version --version
 + ✅ jsonify --path
 
