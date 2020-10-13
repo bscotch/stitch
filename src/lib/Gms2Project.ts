@@ -21,6 +21,7 @@ import { Gms2ModuleImporter } from "./Gms2ModuleImporter";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
 import { SpritelyBatch } from "@bscotch/spritely";
+import { logWarning } from "./log";
 
 export interface Gms2ProjectOptions {
   /**
@@ -138,10 +139,32 @@ export class Gms2Project {
     return this.components.configs;
   }
 
+  private switchSearchRegex = new RegExp(`(?<pre><DisplayVersion>)(?<versionString>.*)(?<post></DisplayVersion>)`);
+
+  private setSwitchVersion(normalizedVersionString:string, fileName: string){
+    const oldContent = this.storage.readBlob(fileName).toString();
+    const newContent = oldContent.replace(this.switchSearchRegex, `$1${normalizedVersionString}$3`);
+    this.storage.writeBlob(fileName,newContent);
+  }
+
+  private getSwitchVersion(fileName: string){
+    const content = this.storage.readBlob(fileName).toString();
+    const newContent = content.match(this.switchSearchRegex)?.groups;
+    if (newContent){
+      return newContent["versionString"];
+    }
+    else{
+      throw new Gms2PipelineError(`Cannot parse the Switch *.nmeta file to obtain the version`);
+    }
+  }
+
+  //Xbox key name follows a different pattern, hence the special treatment
+  private xboxVersionKey = "option_xbone_version";
+
   /**
    * Set the project version in all options files.
-   * (Note that the PS4 and Switch options files do not include the version
-   *  -- that must be set outside of Gamemaker).
+   * (Note that the Switch options files do not include the version
+   *  -- that must be set outside of Gamemaker in the *.nmeta file).
    * Can use one of:
    *    + "0.0.0.0" syntax (exactly as Gamemaker stores versions)
    *    + "0.0.0" syntax (semver without prereleases -- the 4th value will always be 0)
@@ -155,24 +178,53 @@ export class Gms2Project {
       throw new Gms2PipelineError(`Version string ${versionString} is not a valid format.`);
     }
     const {major,minor,patch,revision,candidate} = parts.groups as {[part:string]:string};
+    const normalizedVersionString = [major,minor,patch,candidate||revision||'0'].join('.');
     const optionsDir = paths.join(this.storage.yypDirAbsolute,'options');
-    const optionsFiles = this.storage.listFiles(optionsDir,true, ["yy"]);
+    const optionsFiles = this.storage.listFiles(optionsDir,true, ["yy", "nmeta"]);
     for(const file of optionsFiles){
       // Load it, change the version, and save
-      const content = this.storage.readJson(file);
-      const platform = paths.basename(paths.dirname(file)) as Gms2TargetPlatform;
-      if(Gms2Project.platforms.includes(platform)){
-        const versionKey = `option_${platform}_version`;
-        content[versionKey] = [major,minor,patch,candidate||revision||'0'].join('.');
-        this.storage.writeJson(file,content);
+      if (paths.extname(file) == ".yy"){
+        const content = this.storage.readJson(file);
+        const platform = paths.basename(paths.dirname(file)) as Gms2TargetPlatform;
+        if(Gms2Project.platforms.includes(platform)){
+          let versionKey = `option_${platform}_version`;
+          if (platform == "xboxone"){
+            versionKey = this.xboxVersionKey;
+          }
+          content[versionKey] = normalizedVersionString;
+          this.storage.writeJson(file,content);
+        }
+      }
+      // Switch *.nmeta file needs special treatment
+      else if (paths.extname(file) == ".nmeta"){
+        this.setSwitchVersion(normalizedVersionString, file);
+      }
+      else{
+        throw new Gms2PipelineError(`Found unsupported file format in the options dir: ${file}`);
       }
     }
   }
 
   versionOnPlatform(platform: Gms2TargetPlatform){
-    const optionsFile = paths.join(this.storage.yypDirAbsolute,'options',platform,`options_${platform}.yy`);
-    const versionKey = `option_${platform}_version`;
-    return this.storage.readJson(optionsFile)[versionKey] as string;
+    const optionsDir = paths.join(this.storage.yypDirAbsolute,'options');
+    if (platform != "switch"){
+      const optionsFile = paths.join(optionsDir,platform,`options_${platform}.yy`);
+      let versionKey = `option_${platform}_version`;
+      if (platform == "xboxone"){
+        versionKey = this.xboxVersionKey;
+      }
+      return this.storage.readJson(optionsFile)[versionKey] as string;
+    }
+    else{
+      const optionsFile = this.storage.listFiles(optionsDir,true, ["nmeta"])?.[0];
+      if (optionsFile){
+        return this.getSwitchVersion(optionsFile);
+      }
+      else{
+        logWarning(`The project does not contain a valid *.nmeta file with version info.`);
+        return "";
+      }
+    }
   }
 
   /**

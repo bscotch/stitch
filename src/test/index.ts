@@ -393,11 +393,11 @@ describe("GMS2.3 Pipeline SDK", function () {
 
     it("can set the version in options files",function(){
       const project = getResetProject();
-      const testPlatforms = ['windows','android'] as const;
+      const testPlatforms = Gms2Project.platforms;
       const version = '100.5.6-rc.11';
       project.version = version;
       for(const platform of testPlatforms){
-        expect(project.versionOnPlatform(platform)).to.equal('100.5.6.11');
+        expect(project.versionOnPlatform(platform), `${platform}'s version is not set.`).to.equal('100.5.6.11');
       }
       // Ensure version formats generally work (errors thrown if they don't)
       for(const validVersion of ['10.0.10','5.3.6.1','100.9.3-rc.3333']){
