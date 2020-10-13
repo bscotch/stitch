@@ -98,7 +98,8 @@ To keep things stable and automatable, Stitch uses a configuration file (`stitch
 + ✅ import
   + ✅ modules --source-project=path --modules=m1,m2
   + ✅ sounds --source-path=path --extensions=mp3,wave
-  + ✅ files --source-path=dir/file --extensions=txt
+  + ✅ files --source-path=path --extensions=txt
+  + ✅ sprites --source-path=path
 + ✅ assign
   + ✅ texture-groups --folder=sprites/myGroupOfSprites --group-name=name
   + ✅ audio-groups --folder=sound/myGroupOfSounds --group-name=name

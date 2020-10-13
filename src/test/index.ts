@@ -467,8 +467,8 @@ at it goooo ${interp2}
     });
   });
 
-  describe("Gamemaker Studio 2: Pipeline Development Kit CLI",function(){
-    it('Jsonify command',function(){
+  describe("CLI",function(){
+    it('can jsonify',function(){
       let jsonifyOptions: JsonifyOptions = {
         path: sandboxProjectYYPPath
       };
@@ -489,7 +489,7 @@ at it goooo ${interp2}
     });
 
 
-    it('Import Modules command', function(){
+    it('can import modules', function(){
       let incorrectImportModulesOtions: ImportModuleOptions = {
         sourceProjectPath: "fake_source_project_path",
         modules: ["BscotchPack","AnotherModule"],
@@ -527,7 +527,7 @@ at it goooo ${interp2}
       expect(()=>importModules(importModulesOptions), "Should succeed when run with valid source path and 1 module").to.not.throw();
     });
 
-    it('Import Sounds command',function(){
+    it('can import sounds',function(){
       const incorrectImportBaseOptions: ImportBaseOptions = {
         sourcePath: soundSampleRoot,
         allowExtensions: [""],
@@ -557,7 +557,7 @@ at it goooo ${interp2}
       expect(()=>importSounds(ImportBaseOptions), "Should succeed when source path points to a valid folder and importing only a subset of extensions.").to.not.throw();
     });
 
-    it('Import Files command', function(){
+    it('can import files', function(){
       const ImportBaseOptions: ImportBaseOptions = {
         sourcePath: paths.join(assetSampleRoot, "includedFiles", "files"),
         targetProjectPath: sandboxRoot
@@ -565,7 +565,7 @@ at it goooo ${interp2}
       expect(()=>importFiles(ImportBaseOptions), "Should succeed when source path points to a valid folder").to.not.throw();
     });
 
-    it('Set Version command', function(){
+    it('can set the project version', function(){
       const project = getResetProject();
       const versionOptions: VersionOptions = {
         projectVersion: "100.5.6-rc.11",
@@ -575,7 +575,7 @@ at it goooo ${interp2}
       expect(project.versionOnPlatform("windows")).to.equal('100.5.6.11');
     });
 
-    it('Assign Texture Group command', function(){
+    it('can assign texture groups', function(){
       let project = getResetProject();
       let sprite = project.resources.sprites[0];
       const newTextureGroupName = 'NewTextureGroup';
@@ -598,7 +598,7 @@ at it goooo ${interp2}
       ).to.equal(newTextureGroupName);
     });
 
-    it('Assign Audio Group command', function(){
+    it('can assign audio groups', function(){
       let project = getResetProject();
       let sound = project.resources.sounds[0];
       const newAudioGroupName = "NewAudioGroup";
