@@ -2,6 +2,7 @@
 import commander, { CommanderStatic } from "commander";
 import { oneline, undent } from "@bscotch/utility";
 import {assignTextureGroups, AssignCliOptions} from './lib/assign';
+import options from "./lib/cli-options";
 
 const cli = commander;
 
@@ -15,9 +16,8 @@ cli.description(undent`
   .requiredOption("--group-name <name>", oneline`
     The name of the texture group. If it does not exist, it will be created.
   `)
-  .option("--target-project-path <path>", oneline`
-    Path to the target Gamemaker Studio 2 project. If not set, will use the current directory.
-  `)
+  .option(...options.targetProjectPath)
+  .option(...options.force)
   .parse(process.argv);
 
 assignTextureGroups(cli as AssignCliOptions & CommanderStatic);

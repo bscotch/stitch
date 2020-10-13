@@ -3,7 +3,8 @@ import cli_assert from './cli-assert';
 export type ImportBaseOptions = {
   sourcePath: string,
   allowExtensions?: string[],
-  targetProjectPath?: string
+  targetProjectPath?: string,
+  force?: boolean,
 }
 
 export function normalizeOptions(options: ImportBaseOptions){

@@ -3,6 +3,9 @@ import { ImportBaseOptions, normalizeOptions } from './import-base-options';
 
 export default function(options: ImportBaseOptions){
   options = normalizeOptions(options);
-  const targetProject = new Gms2Project(options.targetProjectPath);
+  const targetProject = new Gms2Project({
+    projectPath: options.targetProjectPath,
+    dangerouslyAllowDirtyWorkingDir: options.force
+  });
   targetProject.addIncludedFiles(options.sourcePath, null, undefined, options.allowExtensions);
 }

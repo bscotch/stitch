@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import commander, { CommanderStatic } from "commander";
-import { oneline, undent } from "@bscotch/utility";
+import { undent } from "@bscotch/utility";
 import version, {VersionOptions} from './lib/version';
+import options from "./lib/cli-options";
 
 const cli = commander;
 
@@ -16,9 +17,8 @@ cli.description(undent`
       + "0.0.0-rc.0" syntax (the 4th number will be the RC number)
       The four numbers will appear in all cases as the string "major.minor.patch.candidate"
   `)
-  .option("--target-project-path <path>", oneline`
-    Path to the target Gamemaker Studio 2 project. If not set, will use the current directory.
-  `)
+  .option(...options.targetProjectPath)
+  .option(...options.force)
   .parse(process.argv);
 
 version(cli as VersionOptions & CommanderStatic);

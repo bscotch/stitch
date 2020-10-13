@@ -3,6 +3,7 @@ import commander, { CommanderStatic } from "commander";
 import { oneline, undent } from "@bscotch/utility";
 import { ImportBaseOptions } from "./lib/import-base-options";
 import importFiles from "./lib/import-files";
+import options from "./lib/cli-options";
 
 const cli = commander;
 
@@ -17,9 +18,8 @@ cli.description(undent`
     Only allow certain extensions to be imported. 
     If not set, Will attempt to import all files.
   `)
-  .option("--target-project-path <path>", oneline`
-    Path to the target Gamemaker Studio 2 project. If not set, will use the current directory.
-  `)
+  .option(...options.targetProjectPath)
+  .option(...options.force)
   .parse(process.argv);
 
 importFiles(cli as ImportBaseOptions & CommanderStatic);

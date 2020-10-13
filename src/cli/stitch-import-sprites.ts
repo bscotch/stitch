@@ -3,6 +3,7 @@ import commander, { CommanderStatic } from "commander";
 import { oneline, undent } from "@bscotch/utility";
 import importSprites from "./lib/import-sprites";
 import { ImportBaseOptions } from "./lib/import-base-options";
+import options from "./lib/cli-options";
 
 const cli = commander;
 
@@ -17,9 +18,8 @@ cli.description(undent`
   .requiredOption("--source-path <path>", oneline`
     Path to the sprite folder or root folder containing multiple sprites.
   `)
-  .option("--target-project-path <path>", oneline`
-    Path to the target Gamemaker Studio 2 project. If not set, will use the current directory.
-  `)
+  .option(...options.targetProjectPath)
+  .option(...options.force)
   .parse(process.argv);
 
 importSprites(cli as ImportBaseOptions & CommanderStatic);

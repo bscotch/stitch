@@ -3,6 +3,7 @@ import commander, { CommanderStatic } from "commander";
 import { oneline, undent } from "@bscotch/utility";
 import importSounds from "./lib/import-sounds";
 import { ImportBaseOptions } from "./lib/import-base-options";
+import options from "./lib/cli-options";
 
 const cli = commander;
 
@@ -17,9 +18,8 @@ cli.description(undent`
     input one or more of the supported extensions: mp3, wav, ogg, wma. 
     If not set, Will attempt to import all supported extensions.
   `)
-  .option("--target-project-path <path>", oneline`
-    Path to the target Gamemaker Studio 2 project. If not set, will use the current directory.
-  `)
+  .option(...options.targetProjectPath)
+  .option(...options.force)
   .parse(process.argv);
 
 importSounds(cli as ImportBaseOptions & CommanderStatic);

@@ -4,7 +4,8 @@ import { Gms2Project } from '../../lib/Gms2Project';
 export type AssignCliOptions = {
   folder: string,
   groupName: string,
-  targetProjectPath?: string
+  targetProjectPath?: string,
+  force?: boolean,
 }
 
 function normalizeAssignOptions(options: AssignCliOptions){
@@ -25,12 +26,18 @@ function normalizeAssignOptions(options: AssignCliOptions){
 
 export function assignTextureGroups (options: AssignCliOptions){
   options = normalizeAssignOptions(options);
-  const targetProject = new Gms2Project(options.targetProjectPath);
+  const targetProject = new Gms2Project({
+    projectPath: options.targetProjectPath,
+    dangerouslyAllowDirtyWorkingDir: options.force
+  });
   targetProject.addTextureGroupAssignment(options.folder, options.groupName);
 }
 
 export function assignAudioGroups (options: AssignCliOptions){
   options = normalizeAssignOptions(options);
-  const targetProject = new Gms2Project(options.targetProjectPath);
+  const targetProject = new Gms2Project({
+    projectPath: options.targetProjectPath,
+    dangerouslyAllowDirtyWorkingDir: options.force
+  });
   targetProject.addAudioGroupAssignment(options.folder, options.groupName);
 }

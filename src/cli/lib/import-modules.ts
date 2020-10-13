@@ -4,7 +4,8 @@ import cli_assert from './cli-assert';
 export type ImportModuleOptions = {
   sourceProjectPath: string,
   modules: string[],
-  targetProjectPath ?: string
+  targetProjectPath ?: string,
+  force?: boolean,
 }
 
 export default function(options: ImportModuleOptions){
@@ -19,6 +20,9 @@ export default function(options: ImportModuleOptions){
     targetProjectPath = process.cwd();
   }
 
-  const targetProject = new Gms2Project(targetProjectPath);
+  const targetProject = new Gms2Project({
+    projectPath: options.targetProjectPath,
+    dangerouslyAllowDirtyWorkingDir: options.force
+  });
   targetProject.importModules(sourceProjectPath,cli_assert.getTruthyArgs(modules));
 }

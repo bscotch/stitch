@@ -2,6 +2,7 @@
 import commander, { CommanderStatic } from "commander";
 import { oneline } from "@bscotch/utility";
 import import_modules, { ImportModuleOptions } from './lib/import-modules';
+import options from "./lib/cli-options";
 
 const cli = commander;
 
@@ -12,9 +13,8 @@ cli.description("Import modules from a source Gamemaker Studio 2 project to a ta
   .requiredOption("--modules <names...>", oneline`
     The names of the modules in the source project to import.
   `)
-  .option("--target-project <path>", oneline`
-    Path to the target Gamemaker Studio 2 project. If not set, will use the current directory.
-  `)
+  .option(...options.targetProjectPath)
+  .option(...options.force)
   .parse(process.argv);
 
 import_modules(cli as (ImportModuleOptions & CommanderStatic));

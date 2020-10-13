@@ -3,7 +3,8 @@ import { Gms2Project } from '../../lib/Gms2Project';
 
 export type VersionOptions = {
   projectVersion: string,
-  targetProjectPath?: string
+  targetProjectPath?: string,
+  force?: boolean,
 };
 
 export default function(options: VersionOptions){
@@ -14,6 +15,9 @@ export default function(options: VersionOptions){
   else{
     options.targetProjectPath = process.cwd();
   }
-  const targetProject = new Gms2Project(options.targetProjectPath);
+  const targetProject = new Gms2Project({
+    projectPath: options.targetProjectPath,
+    dangerouslyAllowDirtyWorkingDir: options.force
+  });
   targetProject.version = options.projectVersion;
 }
