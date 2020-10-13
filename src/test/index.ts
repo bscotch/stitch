@@ -6,14 +6,13 @@ import { Gms2Project } from '../lib/Gms2Project';
 import {loadFromFileSync} from "../lib/json";
 import { undent, oneline } from "../lib/strings";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
-import { differenceBy, map } from 'lodash';
+import { differenceBy } from 'lodash';
 import { Gms2PipelineError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import jsonify, { JsonifyOptions } from '../cli/lib/jsonify';
 import cli_assert from '../cli/lib/cli-assert';
 import importModules, { ImportModuleOptions } from '../cli/lib/import-modules';
 import importSounds from '../cli/lib/import-sounds';
-import { ImportBaseOptions } from '../cli/lib/import-base-options';
 import version, {VersionOptions} from '../cli/lib/version';
 import importFiles from '../cli/lib/import-files';
 import {assignAudioGroups, assignTextureGroups, AssignCliOptions} from '../cli/lib/assign';
@@ -528,41 +527,41 @@ at it goooo ${interp2}
     });
 
     it('can import sounds',function(){
-      const incorrectImportBaseOptions: ImportBaseOptions = {
+      const invalidOptions = {
         sourcePath: soundSampleRoot,
         allowExtensions: [""],
         targetProjectPath: sandboxRoot
       };
-      expect(()=>importSounds(incorrectImportBaseOptions), "Should fail when providing no valid extensions.").to.throw(cli_assert.Gms2PipelineCliAssertionError);
+      expect(()=>importSounds(invalidOptions), "Should fail when providing no valid extensions.").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
-      let ImportBaseOptions: ImportBaseOptions = {
+      const fileOptions = {
         sourcePath: audioSample,
         targetProjectPath: sandboxRoot
       };
-      expect(()=>importSounds(ImportBaseOptions), "Should succeed when source path points to a valid file").to.not.throw();
+      expect(()=>importSounds(fileOptions), "Should succeed when source path points to a valid file").to.not.throw();
 
       resetSandbox();
-      ImportBaseOptions = {
+      const folderOptions = {
         sourcePath: soundSampleRoot,
         targetProjectPath: sandboxRoot
       };
-      expect(()=>importSounds(ImportBaseOptions), "Should succeed when source path points to a valid folder").to.not.throw();
+      expect(()=>importSounds(folderOptions), "Should succeed when source path points to a valid folder").to.not.throw();
 
       resetSandbox();
-      ImportBaseOptions = {
+      const filteredOptions = {
         sourcePath: soundSampleRoot,
         allowExtensions: ["wav"],
         targetProjectPath: sandboxRoot
       };
-      expect(()=>importSounds(ImportBaseOptions), "Should succeed when source path points to a valid folder and importing only a subset of extensions.").to.not.throw();
+      expect(()=>importSounds(filteredOptions), "Should succeed when source path points to a valid folder and importing only a subset of extensions.").to.not.throw();
     });
 
     it('can import files', function(){
-      const ImportBaseOptions: ImportBaseOptions = {
+      const options = {
         sourcePath: paths.join(assetSampleRoot, "includedFiles", "files"),
         targetProjectPath: sandboxRoot
       };
-      expect(()=>importFiles(ImportBaseOptions), "Should succeed when source path points to a valid folder").to.not.throw();
+      expect(()=>importFiles(options), "Should succeed when source path points to a valid folder").to.not.throw();
     });
 
     it('can set the project version', function(){
