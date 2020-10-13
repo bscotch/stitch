@@ -8,26 +8,20 @@ export type ImportBaseOptions = {
 }
 
 export function normalizeOptions(options: ImportBaseOptions){
-  const {sourcePath} = options;
-  let {targetProjectPath, allowExtensions} = options;
-
-  cli_assert.assertPathExists(sourcePath);
-  if (allowExtensions){
-    cli_assert.assertAtLeastOneTruthy(allowExtensions);
+  cli_assert.assertPathExists(options.sourcePath);
+  if (options.allowExtensions){
+    cli_assert.assertAtLeastOneTruthy(options.allowExtensions);
+    options.allowExtensions = cli_assert.getTruthyArgs(options.allowExtensions);
   }
   else{
-    allowExtensions = [];
+    options.allowExtensions = [];
   }
-  if (targetProjectPath){
-    cli_assert.assertPathExists(targetProjectPath);
+  if (options.targetProjectPath){
+    cli_assert.assertPathExists(options.targetProjectPath);
   }
   else{
-    targetProjectPath = process.cwd();
+    options.targetProjectPath = process.cwd();
   }
 
-  return {
-    sourcePath,
-    allowExtensions: cli_assert.getTruthyArgs(allowExtensions),
-    targetProjectPath
-  };
+  return options;
 }

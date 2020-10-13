@@ -2,7 +2,6 @@ import paths from "./paths";
 import { assert, Gms2PipelineError } from "./errors";
 import fs from "./files";
 import child_process from "child_process";
-import { dir } from "console";
 
 export class Gms2Storage {
 
