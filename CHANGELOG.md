@@ -1,3 +1,21 @@
+# [0.7.0](https://github.com/bscotch/stitch/compare/v0.6.5...v0.7.0) (2020-10-13)
+
+
+### Features
+
+* Add 'id' getter to base resource class. IDs are frequently used in other contexts, so being able to easily fetch them is useful. ([584a8d9](https://github.com/bscotch/stitch/commit/584a8d9f066a88366a22f2fa579d22bd6e978361))
+* Add EmptyArray utility type. Gamemaker files frequently have arrays that are always empty, and this type is needed to properly document that. ([9928a54](https://github.com/bscotch/stitch/commit/9928a54ef65ec970778aa4225411e058c2418e86))
+* Add path methods for getting the subdirectory name for a given directory. ([5d01b7f](https://github.com/bscotch/stitch/commit/5d01b7f3396d8eba3318cd13870d7ceca2abb329))
+* Add Sharp as a dependency for any needed image manipulation and metadata gathering in preparation for adding sprite import functionality. Create sample subimage sources for experimenting with how GMS2 sprite import works, and to use in downstream tests. Begin drafting sprite subclass methods for creating sprites from images. ([43c5550](https://github.com/bscotch/stitch/commit/43c5550dfb055984ddc927f62ffe80b986bdb19a))
+* Add UUID module with an enum for storing UUID5 namespace constants. ([b816486](https://github.com/bscotch/stitch/commit/b816486fc9c5782ccd248ab9da9b267890be39ee))
+* Complete draft of methods to create new Sprite yy files. ([c95500e](https://github.com/bscotch/stitch/commit/c95500e997e57790b480771931dd8bf82e19f9a5))
+* Fully type Sprite YY file contents. ([baa3a6c](https://github.com/bscotch/stitch/commit/baa3a6c23868cc1bcd6f6e0cd1f58d74cd2a59d8))
+* Stitch now includes a method for batch importing sprite assets ([b5504b7](https://github.com/bscotch/stitch/commit/b5504b7bd555051dd5ed88a0e92ad207f43ae3d5))
+* The CLI now includes an import sprites command. ([a8d6b3d](https://github.com/bscotch/stitch/commit/a8d6b3d822c8af9d1dc0dd71282fcc8ffcfb2ae7))
+* Use the EmptyArray type of all always-empty arrays in Sprite YY files, and create objects for all the constant values inside Sprite YY files to make building them from scratch easier. ([046143a](https://github.com/bscotch/stitch/commit/046143a17a1a244d1fb6fa7fa7a2dcbcef501b5f))
+
+
+
 ## [0.6.5](https://github.com/bscotch/stitch/compare/v0.6.4...v0.6.5) (2020-10-12)
 
 
