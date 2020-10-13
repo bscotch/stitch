@@ -1,3 +1,12 @@
+## [0.8.2](https://github.com/bscotch/stitch/compare/v0.8.1...v0.8.2) (2020-10-13)
+
+
+### Bug Fixes
+
+* The --force option will no longer be stripped from CLI commands. The options normalizer no longer whitelists fields, making it easier to add command options. ([aa85185](https://github.com/bscotch/stitch/commit/aa8518525e9506393560170f88a6238f56cf68a4))
+
+
+
 ## [0.8.1](https://github.com/bscotch/stitch/compare/v0.8.0...v0.8.1) (2020-10-13)
 
 
