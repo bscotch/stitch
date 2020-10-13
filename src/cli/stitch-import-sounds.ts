@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import commander, { CommanderStatic } from "commander";
-import { oneline, undent } from "../lib/strings";
+import { oneline, undent } from "@bscotch/utility";
 import importSounds from "./lib/import-sounds";
 import { ImportBaseOptions } from "./lib/import-base-options";
 

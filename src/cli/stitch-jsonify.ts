@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import commander, { CommanderStatic } from "commander";
-import { oneline } from "../lib/strings";
+import { oneline } from "@bscotch/utility";
 import jsonify, {JsonifyOptions} from './lib/jsonify';
 
 const cli = commander;

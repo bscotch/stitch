@@ -4,7 +4,7 @@ import { Gms2PipelineError } from "../errors";
 import type { Gms2Project } from "../Gms2Project";
 import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";
-import { oneline } from "../strings";
+import { oneline } from "@bscotch/utility";
 
 export class Gms2IncludedFile {
 

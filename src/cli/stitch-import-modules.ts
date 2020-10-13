@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import commander, { CommanderStatic } from "commander";
-import { oneline } from "../lib/strings";
+import { oneline } from "@bscotch/utility";
 import import_modules, { ImportModuleOptions } from './lib/import-modules';
 
 const cli = commander;

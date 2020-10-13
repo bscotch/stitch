@@ -7,7 +7,7 @@ import { Gms2Sprite } from "./components/resources/Gms2Sprite";
 import { Gms2PipelineError } from "./errors";
 import type { Gms2Project } from "./Gms2Project";
 import paths from "./paths";
-import { oneline, undent } from "./strings";
+import { oneline, undent } from "@bscotch/utility";
 
 export class Gms2ModuleImporter {
 

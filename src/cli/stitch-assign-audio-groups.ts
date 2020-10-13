@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import commander, { CommanderStatic } from "commander";
-import { oneline, undent } from "../lib/strings";
+import { oneline, undent } from "@bscotch/utility";
 import {assignAudioGroups, AssignCliOptions} from './lib/assign';
 
 const cli = commander;

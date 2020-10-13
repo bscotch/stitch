@@ -43,6 +43,7 @@
   "homepage": "https://github.com/bscotch/gms2",
   "dependencies": {
     "@bscotch/spritely": "^0.6.0",
+    "@bscotch/utility": "^0.5.0",
     "chalk": "^4.1.0",
     "commander": "^6.1.0",
     "fs-extra": "^9.0.1",

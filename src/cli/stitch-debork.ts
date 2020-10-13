@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import commander from "commander";
 import { Gms2Project } from "../lib/Gms2Project";
-import { oneline } from "../lib/strings";
+import { oneline } from "@bscotch/utility";
 const cli = commander;
 
 cli.description("Fix and normalize common issues in a Gamemaker Studio 2.3+ Project.")

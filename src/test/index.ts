@@ -4,7 +4,6 @@ import fs_extra from "fs-extra";
 import paths from '../lib/paths';
 import { Gms2Project } from '../lib/Gms2Project';
 import {loadFromFileSync} from "../lib/json";
-import { undent, oneline } from "../lib/strings";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 import { differenceBy } from 'lodash';
 import { Gms2PipelineError } from '../lib/errors';
@@ -66,40 +65,6 @@ describe("GMS2.3 Pipeline SDK", function () {
   });
 
   describe("Unit Tests", function () {
-
-    it("can dedent string literals", function () {
-      const interp1 = 'hello';
-      const interp2 = 'goodbye';
-      const dedented = undent`
-        Here is a:
-          multine string ${interp1}
-          look
-      at it goooo ${interp2}
-              weeee!
-      
-      `;
-      const expected = `  Here is a:
-    multine string ${interp1}
-    look
-at it goooo ${interp2}
-        weeee!`;
-      expect(expected).to.equal(dedented);
-    });
-
-    it("can oneline string literals", function () {
-      const interp1 = 'hello';
-      const interp2 = 'goodbye';
-      const onelined = oneline`
-        Here is a:
-          multine string ${interp1}
-          look
-      at it goooo ${interp2}
-              weeee!
-      
-      `;
-      const expected = `Here is a: multine string ${interp1} look at it goooo ${interp2} weeee!`;
-      expect(expected).to.equal(onelined);
-    });
 
     it("can sort paths by specificity",function(){
       const pathList = [
