@@ -12,6 +12,12 @@ import {writeFileSync as writeJsonSync,loadFromFileSync as readJsonSync} from ".
 import { assert } from "./errors";
 import sortKeys from "sort-keys";
 import { warn } from "console";
+import {
+  listPathsSync,
+  listFoldersSync,
+  listFilesSync,
+  listFilesByExtensionSync,
+} from "@bscotch/utility";
 
 function ensureDirSync(dir:string){
   if(!fs.existsSync(dir)){
@@ -24,51 +30,6 @@ function ensureDirSync(dir:string){
 function writeFileSync(filePath:string,stuff:string|Buffer){
   ensureDirSync(path.dirname(filePath));
   fs.writeFileSync(filePath,stuff);
-}
-
-function listPathsSync(dir:string,recursive=false){
-  if(fs.statSync(dir).isFile()){
-    return [dir];
-  }
-  const paths = fs.readdirSync(dir)
-    .filter(aPath=>!['node_modules','.git'].includes(aPath))
-    .map(aPath=>path.join(dir,aPath));
-  if(recursive){
-    const morePaths = paths
-      .filter(path=>fs.statSync(path).isDirectory())
-      .map(dir=>listPathsSync(dir,true))
-      .flat(3);
-    paths.push(...morePaths);
-  }
-  paths.sort(path.pathSpecificitySort);
-  return paths;
-}
-
-
-function listFoldersSync(dir:string,recursive=false){
-  return listPathsSync(dir,recursive)
-    .filter(pathName=>fs.statSync(pathName).isDirectory());
-}
-
-/**
- * List all files in a directory or, if 'dir' is already a file,
- * just return that filename as an array.
- */
-function listFilesSync(dir:string,recursive=false){
-  if(fs.statSync(dir).isFile()){
-    return [dir];
-  }
-  return listPathsSync(dir,recursive)
-    .filter(filePath=>fs.statSync(filePath).isFile());
-}
-
-function listFilesByExtensionSync(dir:string,extension:string|string[],recursive=false){
-  const extensions = Array.isArray(extension) ? extension : [extension];
-  return listFilesSync(dir,recursive)
-    .filter(fileName=>{
-      const ext = path.parse(fileName).ext.slice(1);
-      return extensions.includes(ext);
-    });
 }
 
 function copyFileSync(sourcePath:string,targetPath:string){
