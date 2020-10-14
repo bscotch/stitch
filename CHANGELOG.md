@@ -1,3 +1,12 @@
+## [0.9.1](https://github.com/bscotch/stitch/compare/v0.9.0...v0.9.1) (2020-10-14)
+
+
+### Bug Fixes
+
+* The sprite import argument --flatten no longer requires a parameter, since that doesn't make any sense. ([5bba50e](https://github.com/bscotch/stitch/commit/5bba50ebe8d0eb87025b2b1012b71188bf56b20e))
+
+
+
 # [0.9.0](https://github.com/bscotch/stitch/compare/v0.8.3...v0.9.0) (2020-10-14)
 
 
