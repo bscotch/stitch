@@ -1,3 +1,12 @@
+## [0.9.3](https://github.com/bscotch/stitch/compare/v0.9.2...v0.9.3) (2020-10-14)
+
+
+### Bug Fixes
+
+* The --force option now works on the setter CLI commands. Closes [#13](https://github.com/bscotch/stitch/issues/13). ([3e3a619](https://github.com/bscotch/stitch/commit/3e3a619a1e11720036a14344814ed3498ad88f7f))
+
+
+
 ## [0.9.2](https://github.com/bscotch/stitch/compare/v0.9.1...v0.9.2) (2020-10-14)
 
 
