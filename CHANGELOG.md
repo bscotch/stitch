@@ -1,3 +1,12 @@
+# [0.9.0](https://github.com/bscotch/stitch/compare/v0.8.3...v0.9.0) (2020-10-14)
+
+
+### Features
+
+* Batch-importing sprites now allows options to prefix sprite names, enforce casing requirements, and flatten source folders into the sprite name. ([8683c24](https://github.com/bscotch/stitch/commit/8683c24a19c3dfa1227f596a02853403b2654a2c))
+
+
+
 ## [0.8.3](https://github.com/bscotch/stitch/compare/v0.8.2...v0.8.3) (2020-10-14)
 
 
