@@ -31,7 +31,7 @@ cli.description(undent`
     casing of assets even if the source is either inconsistent
     or uses a different casing than intended in the game project.
   `,'snake')
-  .option('--flatten <prefix>',oneline`
+  .option('--flatten',oneline`
     By default each sprite resource is named by its final folder
     (e.g. a sprite at 'root/my/sprite' will be called 'sprite').
     Use this flag to convert the entire post-root path to the
