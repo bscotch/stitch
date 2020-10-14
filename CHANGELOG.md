@@ -1,3 +1,12 @@
+## [0.9.2](https://github.com/bscotch/stitch/compare/v0.9.1...v0.9.2) (2020-10-14)
+
+
+### Features
+
+* Confirmation messages will now appear in the console upon import of sprites, sounds, files, and scripts. ([8ce29e0](https://github.com/bscotch/stitch/commit/8ce29e00c148cc2fb5952bf1f64751303668b191))
+
+
+
 ## [0.9.1](https://github.com/bscotch/stitch/compare/v0.9.0...v0.9.1) (2020-10-14)
 
 
