@@ -22,6 +22,7 @@ import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
 import { SpritelyBatch } from "@bscotch/spritely";
 import {snakeCase,camelCase,pascalCase} from "change-case";
+import { logInfo } from "./log";
 
 export interface SpriteImportOptions {
   /** Optionally prefix sprite names on import */
@@ -463,7 +464,9 @@ export class Gms2Project {
    * @param subdirectory Subdirectory inside the Datafiles folder in which to place this resource.
    */
   addIncludedFiles(path:string,content?:any,subdirectory?:string, allowedExtensions?:string[]){
-    return Gms2IncludedFile.import(this,path,content,subdirectory, allowedExtensions);
+    const file = Gms2IncludedFile.import(this,path,content,subdirectory, allowedExtensions);
+    logInfo(`upserted file ${path}`);
+    return file;
   }
 
   addConfig(name:string){

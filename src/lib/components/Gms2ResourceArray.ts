@@ -90,9 +90,11 @@ export class  Gms2ResourceArray {
     const existingSound = this.findByField('name',name,Gms2Sound);
     if(existingSound){
       existingSound.replaceAudioFile(sourcePath);
+      logInfo(`updated sound ${name}`);
     }
     else{
       this.push(Gms2Sound.create(sourcePath,storage));
+      logInfo(`created sound ${name}`);
     }
     return this;
   }
@@ -101,9 +103,11 @@ export class  Gms2ResourceArray {
     const script = this.findByField('name',name,Gms2Script);
     if(script){
       script.code = code;
+      logInfo(`updated script ${name}`);
     }
     else{
       this.push(Gms2Script.create(name,code,storage));
+      logInfo(`created script ${name}`);
     }
     return this;
   }
@@ -113,9 +117,11 @@ export class  Gms2ResourceArray {
     const sprite = this.findByField('name',name,Gms2Sprite);
     if(sprite){
       sprite.replaceFrames(sourceFolder);
+      logInfo(`updated sprite ${name}`);
     }
     else{
       this.push(Gms2Sprite.create(sourceFolder,storage,name));
+      logInfo(`created sprite ${name}`);
     }
     return this;
   }
