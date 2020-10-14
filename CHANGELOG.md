@@ -1,3 +1,18 @@
+## [0.8.3](https://github.com/bscotch/stitch/compare/v0.8.2...v0.8.3) (2020-10-14)
+
+
+### Bug Fixes
+
+* Querying Switch version in the absence of the nmeta file now throws ([9fcb2a7](https://github.com/bscotch/stitch/commit/9fcb2a74bc86759a93a5b548c66cc72ba7776afc))
+
+
+### Features
+
+* Setting and getting versions now supports xbox and switch. ([07cd9e8](https://github.com/bscotch/stitch/commit/07cd9e80a532d7de0ac692ea4068677fe1f0c683))
+* The sample project now has Switch metadata file. ([1839a22](https://github.com/bscotch/stitch/commit/1839a22394ea523ac5d92cc318741725c96ce0ea))
+
+
+
 ## [0.8.2](https://github.com/bscotch/stitch/compare/v0.8.1...v0.8.2) (2020-10-13)
 
 
