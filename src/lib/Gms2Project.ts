@@ -221,8 +221,7 @@ export class Gms2Project {
         return this.getSwitchVersion(optionsFile);
       }
       else{
-        logWarning(`The project does not contain a valid *.nmeta file with version info.`);
-        return "";
+        throw new Gms2PipelineError(`The project does not contain a valid *.nmeta file with version info.`);
       }
     }
   }
