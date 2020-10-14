@@ -9,19 +9,13 @@ export type AssignCliOptions = {
 }
 
 function normalizeAssignOptions(options: AssignCliOptions){
-  let {targetProjectPath} = options;
-  if (targetProjectPath){
-    cli_assert.assertPathExists(targetProjectPath);
+  if (options.targetProjectPath){
+    cli_assert.assertPathExists(options.targetProjectPath);
   }
   else{
-    targetProjectPath = process.cwd();
+    options.targetProjectPath = process.cwd();
   }
-
-  return {
-    folder: options.folder,
-    groupName: options.groupName,
-    targetProjectPath
-  };
+  return options;
 }
 
 export function assignTextureGroups (options: AssignCliOptions){
