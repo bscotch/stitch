@@ -108,14 +108,14 @@ export class  Gms2ResourceArray {
     return this;
   }
 
-  addSprite(sourceFolder:string,storage:Gms2Storage){
-    const name = paths.basename(sourceFolder);
+  addSprite(sourceFolder:string,storage:Gms2Storage,nameOverride?:string){
+    const name = nameOverride || paths.basename(sourceFolder);
     const sprite = this.findByField('name',name,Gms2Sprite);
     if(sprite){
       sprite.replaceFrames(sourceFolder);
     }
     else{
-      this.push(Gms2Sprite.create(sourceFolder,storage));
+      this.push(Gms2Sprite.create(sourceFolder,storage,name));
     }
     return this;
   }

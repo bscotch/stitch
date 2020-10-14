@@ -22,9 +22,7 @@ Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bsc
 + [Core Features](#features)
   + [Configuration File](#config-file) - Manage the behavior of Stitch.
   + [Modules](#modules) - Import groups of assets from other GMS2 projects.
-    + [Module Notes](#modules-notes)
-  + [Importing external assets](#import-asset)  - Import audio and other assets into a project.
-    + [Import notes](#import-asset-notes)
+  + [Importing external assets](#import-asset)
   + [Texture Page batch management](#texture-pages) - Automate texture page assignments 
   + [Audio Group batch management](#audio-groups)
 + [Gamemaker Project File Structure](./docs/gms2-file-structure.md)
@@ -141,7 +139,8 @@ At Bscotch, we use importers for our sound, art, and localization pipelines, so 
 
 ⚠WARNING⚠ Automation of sprite images must only be performed when those images
 are **fully managed outside of Gamemaker**, and when the sprite has only the default
-layer.
+layer. While you may make changes to the sprite inside of Gamemaker, any changes you
+make to layers or subimages will be overwritten if you re-import the sprite.
 
 #### Asset Import Notes <a id="import-asset-notes"></a>
 

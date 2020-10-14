@@ -21,7 +21,23 @@ import { Gms2ModuleImporter } from "./Gms2ModuleImporter";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
 import { SpritelyBatch } from "@bscotch/spritely";
-import { logWarning } from "./log";
+import {snakeCase,camelCase,pascalCase} from "change-case";
+
+export interface SpriteImportOptions {
+  /** Optionally prefix sprite names on import */
+  prefix?: string,
+  /** Enforce casing standards. Defaults to 'snake'. */
+  case?: 'snake'|'camel'|'pascal',
+  /**
+   * Normally only the immediate parent folder containing
+   * images is used as the sprite name. Optionally "flatten"
+   * the parent folders up to the root (the root being
+   * where the import started) to create the name. For example,
+   * for `root/my/sprite/image.png` the flattened name would
+   * be `my_sprite` (if using snake case).
+   */
+  flatten?: boolean
+}
 
 export interface Gms2ProjectOptions {
   /**
@@ -391,8 +407,8 @@ export class Gms2Project {
    * the target sprite, and frames are put in alphabetical order
    * by source name.
    */
-  private addSprite(sourceFolder:string){
-    this.resources.addSprite(sourceFolder,this.storage);
+  private addSprite(sourceFolder:string,nameOverride?:string){
+    this.resources.addSprite(sourceFolder,this.storage,nameOverride);
     return this.save();
   }
 
@@ -406,12 +422,24 @@ export class Gms2Project {
    * name is used directly as the sprite name (parent folders
    * are ignored for this.)
    */
-  addSprites(sourceFolder:string){
+  addSprites(sourceFolder:string, options?: SpriteImportOptions){
     const spriteBatch = new SpritelyBatch(sourceFolder);
     const sprites = spriteBatch.sprites;
     assert(sprites.length,`No sprites found in ${sourceFolder}`);
     for(const sprite of sprites){
-      this.addSprite(sprite.path);
+      let name = options?.flatten
+        ? paths.relative(sourceFolder,sprite.path)
+        : paths.subfolderName(sprite.path);
+      name = name.replace(/[.\\/]/g,' ')
+        .replace(/\s+/,' ')
+        .trim();
+      const casing = options?.case || 'snake';
+      const casedName = (casing=='snake' && snakeCase(name)) ||
+        (casing=='camel' && camelCase(name)) ||
+        (casing=='pascal' && pascalCase(name)) ||
+        '';
+      assert(casedName,`could not convert ${name} to ${casing} case`);
+      this.addSprite(sprite.path,`${options?.prefix||''}${casedName}`);
     }
     return this;
   }

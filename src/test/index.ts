@@ -354,8 +354,17 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(project.resources.findByName('mySprite'),
         'sprite should not exist before being added'
       ).to.not.exist;
-      project.addSprites(spriteSampleRoot);
+      project.addSprites(spriteSampleRoot,{case:'camel'});
       expect(project.resources.findByName('mySprite')).to.exist;
+    });
+
+    it("can import sprites while prefixing and flattening names",async function(){
+      const project = getResetProject();
+      expect(project.resources.findByName('mySprite'),
+        'sprite should not exist before being added'
+      ).to.not.exist;
+      project.addSprites(spriteSampleRoot,{flatten:true,prefix:'sp_',case:'snake'});
+      expect(project.resources.findByName('sp_this_is_my_sprite')).to.exist;
     });
 
     it("can import modules from one project into another", function(){

@@ -4,6 +4,7 @@ import { oneline, undent } from "@bscotch/utility";
 import importSprites from "./lib/import-sprites";
 import { ImportBaseOptions } from "./lib/import-base-options";
 import options from "./lib/cli-options";
+import { SpriteImportOptions } from "../lib/Gms2Project";
 
 const cli = commander;
 
@@ -20,6 +21,23 @@ cli.description(undent`
   `)
   .option(...options.targetProjectPath)
   .option(...options.force)
+  .option('--prefix <prefix>',oneline`
+    Prefix the source names when creating/updateing sprites
+    based on the source folders. Prefixing is performed after
+    casing, so it will be used as-is.
+  `)
+  .option('--case <snake|camel|pascal>',oneline`
+    Normalize the casing upon import. This ensures consistent
+    casing of assets even if the source is either inconsistent
+    or uses a different casing than intended in the game project.
+  `,'snake')
+  .option('--flatten <prefix>',oneline`
+    By default each sprite resource is named by its final folder
+    (e.g. a sprite at 'root/my/sprite' will be called 'sprite').
+    Use this flag to convert the entire post-root path to the
+    sprite's name (e.g. 'root/my/sprite' will be called 'my_sprite'
+    if using snake case).
+  `)
   .parse(process.argv);
 
-importSprites(cli as ImportBaseOptions & CommanderStatic);
+importSprites(cli as ImportBaseOptions & SpriteImportOptions & CommanderStatic);
