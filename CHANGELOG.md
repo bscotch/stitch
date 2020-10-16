@@ -1,3 +1,12 @@
+## [0.9.4](https://github.com/bscotch/stitch/compare/v0.9.3...v0.9.4) (2020-10-16)
+
+
+### Features
+
+* Error messages whose source project might be ambiguous during a module import now include the project they came from. ([26bb105](https://github.com/bscotch/stitch/commit/26bb105b264f55d171a39d2fc1d360f6c22a5414))
+
+
+
 ## [0.9.3](https://github.com/bscotch/stitch/compare/v0.9.2...v0.9.3) (2020-10-14)
 
 
