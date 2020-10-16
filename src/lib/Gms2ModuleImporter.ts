@@ -1,4 +1,4 @@
-import { differenceBy } from "lodash";
+import { differenceBy, update } from "lodash";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2ResourceBase } from "./components/resources/Gms2ResourceBase";
 import { Gms2ResourceSubclass } from "./components/Gms2ResourceArray";
@@ -8,6 +8,7 @@ import { Gms2PipelineError } from "./errors";
 import type { Gms2Project } from "./Gms2Project";
 import paths from "./paths";
 import { oneline, undent } from "@bscotch/utility";
+import { logInfo } from "./log";
 
 export class Gms2ModuleImporter {
 
@@ -42,6 +43,7 @@ export class Gms2ModuleImporter {
       this.toProject.addFolder(conflictFolder);
       for(const resource of alienResources){
         resource.folder=conflictFolder;
+        logInfo(`moved conflicting asset ${resource.name} into MODULE_CONFLICTS folder`)
       }
     }
   }
@@ -85,12 +87,18 @@ export class Gms2ModuleImporter {
       this.cloneResourceFiles(sourceResource);
       this.toProject.resources.register(sourceResource.dehydrated,this.toProject.storage);
     }
+    if(sourceResourcesToAdd.length){
+      logInfo(`added ${sourceResourcesToAdd.length} new resources`);
+    }
 
     // Update matching stuff
     // (Note: we may need more nuance than simply overwriting,
     //  so we can hold onto the localResource reference just in case)
     for(const [sourceResource] of updatePairs){
       this.cloneResourceFiles(sourceResource);
+    }
+    if(updatePairs.size){
+      logInfo(`updated ${updatePairs.size} resources`);
     }
 
     this.toProject.ensureResourceGroupAssignments();
@@ -155,11 +163,12 @@ export class Gms2ModuleImporter {
   }
 
   importModule(moduleName:string){
-
+    logInfo(`importing module: ${moduleName}`);
     this.moveAlienResources(moduleName);
     this.importResources(moduleName);
     this.importIncludedFiles(moduleName);
     this.toProject.save();
+    logInfo(`${moduleName} module import complete`);
   }
 
   private cloneResourceFiles(sourceResource:Gms2ResourceBase){

@@ -259,7 +259,7 @@ export class Gms2Project {
       ...Gms2TextureGroup.defaultDataValues,
       name:textureGroupName
     },'name',textureGroupName) && this.save(); // So only save if changed
-    return this.save();
+    return this;
   }
 
   /** Add a texture group assignment if it doesn't already exist. */
