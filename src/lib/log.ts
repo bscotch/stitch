@@ -1,6 +1,6 @@
 import chalk from "chalk";
 
-const PREFIX = 'STITCH'
+const PREFIX = 'STITCH';
 
 export function logError(message:string){
   console.error(chalk.gray(PREFIX),chalk.bold.redBright("ERROR"),message);

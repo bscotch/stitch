@@ -1,4 +1,4 @@
-import { differenceBy, update } from "lodash";
+import { differenceBy } from "lodash";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2ResourceBase } from "./components/resources/Gms2ResourceBase";
 import { Gms2ResourceSubclass } from "./components/Gms2ResourceArray";
@@ -43,7 +43,7 @@ export class Gms2ModuleImporter {
       this.toProject.addFolder(conflictFolder);
       for(const resource of alienResources){
         resource.folder=conflictFolder;
-        logInfo(`moved conflicting asset ${resource.name} into MODULE_CONFLICTS folder`)
+        logInfo(`moved conflicting asset ${resource.name} into MODULE_CONFLICTS folder`);
       }
     }
   }
