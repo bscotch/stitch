@@ -1,3 +1,12 @@
+## [0.9.5](https://github.com/bscotch/stitch/compare/v0.9.4...v0.9.5) (2020-10-16)
+
+
+### Features
+
+* Imports now provide some simple console logging, mostly so you know that things are happening. ([8805cbf](https://github.com/bscotch/stitch/commit/8805cbfed3d5cedcee2a2f74002939209cce7997))
+
+
+
 ## [0.9.4](https://github.com/bscotch/stitch/compare/v0.9.3...v0.9.4) (2020-10-16)
 
 
