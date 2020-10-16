@@ -103,12 +103,12 @@ export class Gms2Project {
       const yypPaths = fs.listFilesByExtensionSync(yypParentPath, 'yyp', true);
       if (yypPaths.length == 0) {
         throw new Gms2PipelineError(
-          "Couldn't find the .yyp file in this project."
+          `Couldn't find a .yyp file in "${yypParentPath}"`
         );
       }
       if (yypPaths.length > 1) {
         throw new Gms2PipelineError(oneline`
-          Found multiple .yyp files in the project.
+          Found multiple .yyp files in "${yypParentPath}".
           When more than one is present,
           you must specify which you want to use.
         `);
