@@ -1,13 +1,15 @@
 import chalk from "chalk";
 
+const PREFIX = 'STITCH'
+
 export function logError(message:string){
-  console.error(chalk.gray('[GMS2]'),chalk.bold.redBright("ERROR:"),chalk.yellow(message));
+  console.error(chalk.gray(PREFIX),chalk.bold.redBright("ERROR"),message);
 }
 
 export function logInfo(message:string){
-  console.log(chalk.gray('[GMS2]'),chalk.gray(message));
+  console.log(chalk.gray(PREFIX),message);
 }
 
 export function logWarning(message:string){
-  console.log(chalk.gray('[GMS2]'),chalk.bold.yellow("WARNING:"),chalk.yellow(message));
+  console.log(chalk.gray(PREFIX),chalk.bold.yellow("WARNING"),message);
 }
