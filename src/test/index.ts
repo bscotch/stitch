@@ -445,30 +445,55 @@ describe("GMS2.3 Pipeline SDK", function () {
       let jsonifyOptions: JsonifyOptions = {
         path: sandboxProjectYYPPath
       };
-      expect(()=>jsonify(jsonifyOptions), "Should succeed when processing just a file input.").to.not.throw();
+      expect(()=>jsonify(jsonifyOptions),
+        "Should succeed when processing just a file input."
+      ).to.not.throw();
       jsonifyOptions = {
         path: sandboxRoot
       };
-      expect(()=>jsonify(jsonifyOptions), "Should succeed when processing just a directory input.").to.not.throw();
+      expect(()=>jsonify(jsonifyOptions),
+        "Should succeed when processing just a directory input."
+      ).to.not.throw();
 
       process.chdir(sandboxRoot);
       jsonifyOptions = {
         path: "."
       };
-      expect(()=>jsonify(jsonifyOptions), "Should succeed when using '.' to point to the cwd").to.not.throw();
+      expect(()=>jsonify(jsonifyOptions),
+        "Should succeed when using '.' to point to the cwd"
+      ).to.not.throw();
 
       jsonifyOptions = {path: ""};
-      expect(()=>jsonify(jsonifyOptions), "Should fail when there is no input.").to.throw(cli_assert.Gms2PipelineCliAssertionError);
+      expect(()=>jsonify(jsonifyOptions),
+        "Should fail when there is no input."
+      ).to.throw(cli_assert.Gms2PipelineCliAssertionError);
+    });
+
+    it('cannot import modules missing dependencies',function(){
+      const importModulesOptions = {
+        sourceProjectPath: modulesRoot,
+        modules: ["MissingDependency"],
+        targetProjectPath: sandboxRoot
+      };
+      expect(()=>importModules(importModulesOptions),
+        "Should fail when there is a missing dependency"
+      ).to.throw();
+      importModulesOptions.modules.push('BscotchPack');
+      expect(()=>importModules(importModulesOptions),
+        "Should succeed when modules include all dependencies"
+      ).to.not.throw();
     });
 
 
     it('can import modules', function(){
-      let incorrectImportModulesOtions: ImportModuleOptions = {
+      let incorrectImportModulesOtions = {
         sourceProjectPath: "fake_source_project_path",
         modules: ["BscotchPack","AnotherModule"],
         targetProjectPath: sandboxRoot
       };
-      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when sourceProjectPath does not exists").to.throw(cli_assert.Gms2PipelineCliAssertionError);
+      expect(()=>importModules(incorrectImportModulesOtions),
+        "Should fail when sourceProjectPath does not exists"
+      ).to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
       incorrectImportModulesOtions = {
         sourceProjectPath: modulesRoot,

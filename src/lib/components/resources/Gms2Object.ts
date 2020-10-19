@@ -10,14 +10,31 @@ export class Gms2Object extends Gms2ResourceBase {
   }
 
   /* This object's parent object. */
-  get parent(){
+  get parentName(){
     return this.yyData.parentObjectId?.name;
   }
-  set parent(name: string|undefined){
+  /**
+   * Set this object's parent object.
+   * **WARNING** does not check if that object exists.
+   */
+  set parentName(name: string|undefined){
     this.yyData.parentObjectId = name
       ? {
         name,
         path: `objects/${name}/${name}.yy`
+      }
+      : null ;
+    this.save();
+  }
+
+  get spriteName(){
+    return this.yyData.spriteId?.name;
+  }
+  set spriteName(name: string|undefined){
+    this.yyData.spriteId = name
+      ? {
+        name,
+        path: `sprites/${name}/${name}.yy`
       }
       : null ;
     this.save();

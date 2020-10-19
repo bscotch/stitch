@@ -27,8 +27,6 @@ export class Gms2ModuleImporter {
   constructor(private fromProject: Gms2Project, private toProject: Gms2Project){}
 
   importModules(moduleNames:string[],options?:Gms2ImportModulesOptions){
-    // TODO: Ensure that all object dependencies (sprites and parents) exist
-    // TODO: among the modules being imported.
     if(!options?.skipDependencyCheck){
       const sourceResources = moduleNames
         .map(moduleName=>Gms2ModuleImporter.resourcesInModule(this.fromProject,moduleName)).flat(2);
@@ -36,11 +34,20 @@ export class Gms2ModuleImporter {
         if(sourceResource.type!='objects'){
           continue;
         }
-        const sprite = sourceResource as Gms2Object;
-        if(sprite.parent){
+        const object = sourceResource as Gms2Object;
+        if(object.parentName){
           const parentIsInModules = sourceResources
-            .find(resource=>resource.type=='objects' && resource.name==sprite.parent);
-          assert(parentIsInModules,`Resource ${sprite}`)
+            .find(resource=>resource.type=='objects' && resource.name==object.parentName);
+          assert(parentIsInModules,oneline`
+            Parent "${object.parentName}" for object "${object.name}" is not in the imported modules
+          `);
+        }
+        if(object.spriteName){
+          const spriteIsInModules = sourceResources
+            .find(resource=>resource.type=='sprites' && resource.name==object.spriteName);
+          assert(spriteIsInModules,oneline`
+            Sprite "${object.spriteName}" for object "${object.name}" is not in the imported modules
+          `);
         }
       }
     }

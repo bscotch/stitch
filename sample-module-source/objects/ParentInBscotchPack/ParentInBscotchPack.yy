@@ -4,7 +4,10 @@
   "visible": true,
   "spriteMaskId": null,
   "persistent": false,
-  "parentObjectId": null,
+  "parentObjectId": {
+    "name": "bscotchpackObject",
+    "path": "objects/bscotchpackObject/bscotchpackObject.yy",
+  },
   "physicsObject": false,
   "physicsSensor": false,
   "physicsShape": 1,
@@ -17,17 +20,15 @@
   "physicsStartAwake": true,
   "physicsKinematic": false,
   "physicsShapePoints": [],
-  "eventList": [
-    {"isDnD":false,"eventNum":0,"eventType":0,"collisionObjectId":null,"parent":{"name":"bscotchpackObject","path":"objects/bscotchpackObject/bscotchpackObject.yy",},"resourceVersion":"1.0","name":"","tags":[],"resourceType":"GMEvent",},
-  ],
+  "eventList": [],
   "properties": [],
   "overriddenProperties": [],
   "parent": {
-    "name": "BscotchPack",
-    "path": "folders/Objects/subobjects/BscotchPack.yy",
+    "name": "MissingDependency",
+    "path": "folders/MissingDependency.yy",
   },
   "resourceVersion": "1.0",
-  "name": "bscotchpackObject",
+  "name": "ParentInBscotchPack",
   "tags": [],
   "resourceType": "GMObject",
 }
