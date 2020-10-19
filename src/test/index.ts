@@ -15,6 +15,7 @@ import importSounds from '../cli/lib/import-sounds';
 import version, {VersionOptions} from '../cli/lib/version';
 import importFiles from '../cli/lib/import-files';
 import {assignAudioGroups, assignTextureGroups, AssignCliOptions} from '../cli/lib/assign';
+import { Gms2Object } from '../lib/components/resources/Gms2Object';
 
 process.env.GMS2PDK_DEV = 'true';
 
@@ -129,6 +130,29 @@ describe("GMS2.3 Pipeline SDK", function () {
         const folderInProject = projectFolders.find(f=>f.folderPath==`folders/${expectedFolder}.yy`);
         expect(folderInProject,`Folder ${expectedFolder} should have been added`).to.exist;
       }
+    });
+
+    it('can add an object', function(){
+      const project = getResetProject();
+      const name = 'myRandomObject';
+      let object = project.resources.findByField('name',name,Gms2Object);
+      expect(object,'object should not exist before being added').to.not.exist;
+
+      // Get a parent object and sprite to add later
+      const sprite = project.resources.sprites[0];
+      const parent = project.resources.objects[0];
+
+      project.addObject(name);
+      object = project.resources.findByField('name',name,Gms2Object);
+      if(!object){
+        throw new Gms2PipelineError('object should have been added');
+      }
+
+      // Update the object's parent and sprite.
+      object.spriteName = sprite.name;
+      object.parentName = parent.name;
+      expect(object.spriteName).to.equal(sprite.name);
+      expect(object.parentName).to.equal(parent.name);
     });
 
     it('can create new scripts', function(){

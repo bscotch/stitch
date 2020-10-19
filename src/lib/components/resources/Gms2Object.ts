@@ -1,4 +1,5 @@
-import { YyObject } from "../../../types/YyObject";
+import { YyObject,yyDataDefaults } from "../../../types/YyObject";
+import { Gms2Storage } from "../../Gms2Storage";
 import { Gms2ResourceBase, Gms2ResourceBaseParameters } from "./Gms2ResourceBase";
 
 export class Gms2Object extends Gms2ResourceBase {
@@ -38,5 +39,25 @@ export class Gms2Object extends Gms2ResourceBase {
       }
       : null ;
     this.save();
+  }
+
+  protected createYyFile (){
+    const yyData: YyObject = {
+      ...yyDataDefaults,
+      name: this.name,
+      parent: Gms2Object.parentDefault,
+    };
+    this.storage.writeJson(this.yyPathAbsolute,yyData);
+  }
+
+  /**
+   * Create a new object
+   * @param subimageDirectory Absolute path to a directory containing the
+   *                          subimages for this sprite. Will non-recursively
+   *                          search for png images within that directory
+   *                          and sort them alphabetically.
+   */
+  static create(name:string,storage:Gms2Storage) {
+    return new Gms2Object(name,storage,true);
   }
 }

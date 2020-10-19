@@ -39,8 +39,9 @@ export class  Gms2ResourceArray {
   }
 
   get sprites(){ return this.filterByClass(Gms2Sprite);}
-  get sounds(){ return this.filterByClass(Gms2Sound); }
+  get sounds (){ return this.filterByClass(Gms2Sound );}
   get scripts(){ return this.filterByClass(Gms2Script);}
+  get objects(){ return this.filterByClass(Gms2Object);}
   get all(){ return [...this.items]; }
 
   filterByClass<subclass extends Gms2ResourceSubclassType>(resourceClass: subclass){
@@ -122,6 +123,18 @@ export class  Gms2ResourceArray {
     else{
       this.push(Gms2Sprite.create(sourceFolder,storage,name));
       logInfo(`created sprite ${name}`);
+    }
+    return this;
+  }
+
+  addObject(name:string,storage:Gms2Storage){
+    const object = this.findByField('name',name,Gms2Object);
+    if(!object){
+      this.push(Gms2Object.create(name,storage));
+      logInfo(`created object ${name}`);
+    }
+    else{
+      logInfo(`object ${name} already exists`);
     }
     return this;
   }

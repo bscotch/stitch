@@ -445,6 +445,11 @@ export class Gms2Project {
     return this;
   }
 
+  addObject(name:string){
+    this.resources.addObject(name,this.storage);
+    return this.save();
+  }
+
   deleteResourceByName(name:string){
     this.resources.deleteByName(name);
     return this.save();
