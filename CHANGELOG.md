@@ -1,3 +1,15 @@
+# [0.10.0](https://github.com/bscotch/stitch/compare/v0.9.5...v0.10.0) (2020-10-19)
+
+
+### Features
+
+* GMS2 Objects now have typings. Only some events are typed since there are many and there is no current use case for most. ([bfa3762](https://github.com/bscotch/stitch/commit/bfa37626d4146238351742e5a7e0d74fcde520c1))
+* Module imports now fail if module objects are not self-contained (all associated sprites and parent objects must also be in the imported modules). ([1eb62f1](https://github.com/bscotch/stitch/commit/1eb62f1e0ec104ab5a1228355cfe0453bdc14438))
+* Objects can now be programmatically added to projects. ([39d5518](https://github.com/bscotch/stitch/commit/39d5518ccef968ef709b25208d7b24ccb0f1bb24))
+* The prefix for console logs is now STITCH (instead of GMS2) and colors are improved. ([bf36e73](https://github.com/bscotch/stitch/commit/bf36e73c4b3ee6c933d4e6fddab616518b66b7fc))
+
+
+
 ## [0.9.5](https://github.com/bscotch/stitch/compare/v0.9.4...v0.9.5) (2020-10-16)
 
 
