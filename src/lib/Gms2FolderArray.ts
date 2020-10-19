@@ -1,6 +1,6 @@
 /** @file Extend the generic Gms2ComponentArray to add folders-specific contents */
 
-import { YypFolder } from "../types/YypComponents";
+import { YypFolder } from "../types/Yyp";
 import { Gms2ComponentArray } from "./components/Gms2ComponentArray";
 import { Gms2Folder } from "./components/Gms2Folder";
 

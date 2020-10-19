@@ -1,5 +1,5 @@
 
-export interface YyData {
+export interface YyBase {
   ConfigValues?:{[configName:string]:{[field:string]:string}}
   name: string,
   resourceType: string,
@@ -14,7 +14,7 @@ export interface YyData {
   resourceVersion: "1.0" // constant
 }
 
-export interface YyScript extends YyData {
+export interface YyScript extends YyBase {
   isDnD: false,
   isCompatibility: false,
   resourceType: "GMScript"
@@ -38,7 +38,7 @@ enum SoundBitDepth {
   Bit16
 }
 
-export interface YySound extends YyData {
+export interface YySound extends YyBase {
   /** Default 0. Compression level */
   compression: SoundCompression,
   /** Default 1. Number from 0-1 */

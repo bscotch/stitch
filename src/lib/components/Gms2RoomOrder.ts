@@ -1,4 +1,4 @@
-import { YypRoomOrder } from "../../types/YypComponents";
+import { YypRoomOrder } from "../../types/Yyp";
 
 export class Gms2RoomOrder {
 

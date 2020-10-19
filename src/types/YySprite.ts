@@ -1,5 +1,5 @@
 import { EmptyArray } from "./Utility";
-import { YyData } from "./Yy";
+import { YyBase } from "./Yy";
 
 export enum SpriteCollisionKind {
   Precise,
@@ -238,7 +238,7 @@ interface SpriteSequence {
  * Until then, we can just include fields
  * as needed for editing existing sprites.
  */
-export interface YySprite extends YyData {
+export interface YySprite extends YyBase {
   bboxMode: SpriteBoundingBoxMode,
   collisionKind: SpriteCollisionKind,
   /** (What is this?) */

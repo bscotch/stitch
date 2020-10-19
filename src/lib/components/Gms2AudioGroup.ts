@@ -1,4 +1,4 @@
-import { YypAudioGroup } from "../../types/YypComponents";
+import { YypAudioGroup } from "../../types/Yyp";
 
 export class Gms2AudioGroup {
 

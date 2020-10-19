@@ -5,12 +5,12 @@ import {
   yyDataSequenceDefaults,
   yyDataSequenceTrackDefaults,
 } from "../../../types/YySprite";
-import { assert, Gms2PipelineError } from "../../errors";
 import { Gms2Storage } from "../../Gms2Storage";
 import paths from "../../paths";
 import { Gms2ResourceBase, Gms2ResourceBaseParameters } from "./Gms2ResourceBase";
 import {Spritely} from "@bscotch/spritely";
 import {uuidV4} from "../../uuid";
+import { types } from "util";
 
 interface SpriteFrameSource {
   sourcePath:string,

@@ -2,7 +2,7 @@ import { Gms2PipelineError, assert } from "./errors";
 import fs from "./files";
 import { oneline } from "@bscotch/utility";
 import paths from "./paths";
-import { YypComponents } from "../types/YypComponents";
+import { YypComponents } from "../types/Yyp";
 import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
 import { Gms2Option } from "./components/Gms2Option";
 import { Gms2Config } from "./components/Gms2Config";

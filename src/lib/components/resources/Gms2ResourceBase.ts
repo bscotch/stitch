@@ -1,7 +1,7 @@
-import { YyData } from "../../../types/Yy";
+import { YyBase } from "../../../types/Yy";
 //❌✅⌛❓
 
-import { YypResource } from "../../../types/YypComponents";
+import { YypResource } from "../../../types/Yyp";
 import { assert, Gms2PipelineError } from "../../errors";
 import { Gms2Storage } from "../../Gms2Storage";
 import paths from "../../paths";
@@ -13,7 +13,7 @@ export type Gms2ResourceBaseParameters = [data: YypResource | string, storage: G
 export class Gms2ResourceBase {
 
   protected data: YypResource;
-  protected yyData: YyData;
+  protected yyData: YyBase;
 
   /**
    *  Create a resource using either the direct YYP-sourced object
@@ -48,6 +48,11 @@ export class Gms2ResourceBase {
 
   get name(){
     return this.data.id.name;
+  }
+
+  /** The type, named by the root folder containing the resource type's .yy files. */
+  get type(){
+    return this.resourceRoot;
   }
 
   /** The folder containing this resource (as viewed via the IDE) */

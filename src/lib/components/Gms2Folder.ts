@@ -1,4 +1,4 @@
-import { YypFolder } from "../../types/YypComponents";
+import { YypFolder } from "../../types/Yyp";
 import paths from "../paths";
 
 export class Gms2Folder {

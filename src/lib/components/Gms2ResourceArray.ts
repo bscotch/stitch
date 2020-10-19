@@ -1,7 +1,7 @@
 import { dehydrateArray } from "../hydrate";
 import { Gms2ResourceBase } from "./resources/Gms2ResourceBase";
 import { Gms2Sound } from "../components/resources/Gms2Sound";
-import { YypResource } from "../../types/YypComponents";
+import { YypResource } from "../../types/Yyp";
 import { Gms2PipelineError } from "../errors";
 import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";

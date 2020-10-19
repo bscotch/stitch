@@ -4,17 +4,47 @@ import { Gms2ResourceBase } from "./components/resources/Gms2ResourceBase";
 import { Gms2ResourceSubclass } from "./components/Gms2ResourceArray";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
 import { Gms2Sprite } from "./components/resources/Gms2Sprite";
-import { Gms2PipelineError } from "./errors";
+import { assert, Gms2PipelineError } from "./errors";
 import type { Gms2Project } from "./Gms2Project";
 import paths from "./paths";
 import { oneline, undent } from "@bscotch/utility";
 import { logInfo } from "./log";
+import { Gms2Object } from "./components/resources/Gms2Object";
+
+export interface Gms2ImportModulesOptions {
+  /**
+   * Normally all dependencies (parent objects and sprites)
+   * for the objects within the modules must also be in those
+   * modules (modules don't have to be self-contained, but the
+   * collection of imported modules does.) You can bypass
+   * that requirement. 
+   */
+  skipDependencyCheck?:boolean
+}
 
 export class Gms2ModuleImporter {
 
   constructor(private fromProject: Gms2Project, private toProject: Gms2Project){}
 
-  importModules(moduleNames:string[]){
+  importModules(moduleNames:string[],options?:Gms2ImportModulesOptions){
+    // TODO: Ensure that all object dependencies (sprites and parents) exist
+    // TODO: among the modules being imported.
+    if(!options?.skipDependencyCheck){
+      const sourceResources = moduleNames
+        .map(moduleName=>Gms2ModuleImporter.resourcesInModule(this.fromProject,moduleName)).flat(2);
+      for(const sourceResource of sourceResources){
+        if(sourceResource.type!='objects'){
+          continue;
+        }
+        const sprite = sourceResource as Gms2Object;
+        if(sprite.parent){
+          const parentIsInModules = sourceResources
+            .find(resource=>resource.type=='objects' && resource.name==sprite.parent);
+          assert(parentIsInModules,`Resource ${sprite}`)
+        }
+      }
+    }
+
     for(const moduleName of moduleNames){
       this.importModule(moduleName);
     }

@@ -1,5 +1,5 @@
 import {parse} from "../../lib/json";
-import { YypIncludedFile } from "../../types/YypComponents";
+import { YypIncludedFile } from "../../types/Yyp";
 import { Gms2PipelineError } from "../errors";
 import type { Gms2Project } from "../Gms2Project";
 import { Gms2Storage } from "../Gms2Storage";

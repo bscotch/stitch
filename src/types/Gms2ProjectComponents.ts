@@ -5,7 +5,7 @@ import {
   YypRoomOrder,
   YypTextureGroup,
   YypIncludedFile as YypInludedFile,
-} from "./YypComponents";
+} from "./Yyp";
 import type { Gms2Option } from "../lib/components/Gms2Option";
 import type { Gms2Config } from "../lib/components/Gms2Config";
 import type { Gms2RoomOrder } from "../lib/components/Gms2RoomOrder";

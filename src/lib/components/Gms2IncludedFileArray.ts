@@ -1,4 +1,4 @@
-import { YypIncludedFile } from "../../types/YypComponents";
+import { YypIncludedFile } from "../../types/Yyp";
 import { Gms2Storage } from "../Gms2Storage";
 import { Gms2ComponentArrayWithStorage } from "./Gms2ComponentArrayWithStorage"
 import { Gms2IncludedFile } from "./Gms2IncludedFile";

@@ -6,12 +6,14 @@
  * instances.
  */
 
+export interface YypResourceId {
+  name: string,
+  path: string
+}
+
 /** A 'Resource' is a an asset like a sprite, object, script, and so on. */
 export interface YypResource {
-  id: {
-    name: string,
-    path: string
-  },
+  id: YypResourceId,
   order: number
 }
 

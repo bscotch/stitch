@@ -1,4 +1,4 @@
-import { YypConfig } from "../../types/YypComponents";
+import { YypConfig } from "../../types/Yyp";
 import { hydrateArray, dehydrateArray,} from '../hydrate';
 
 interface ConfigData extends Omit<YypConfig,'children'> {
