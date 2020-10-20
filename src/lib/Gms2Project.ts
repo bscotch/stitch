@@ -455,6 +455,11 @@ export class Gms2Project {
     return this.save();
   }
 
+  deleteIncludedFileByName(baseName:string){
+    this.includedFiles.deleteByName(baseName);
+    return this.save();
+  }
+
   /**
    * Import a new IncludedFile based on an external file.
    * By default will appear in "datafiles/NEW" folder, but you can specificy

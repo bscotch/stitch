@@ -54,9 +54,9 @@ function resetSandbox() {
   fs.copySync(projectRoot, sandboxRoot);
 }
 
-function getResetProject(readOnly=false){
+function getResetProject(options?:{readonly?:boolean}){
   resetSandbox();
-  return new Gms2Project({projectPath:sandboxRoot,readOnly});
+  return new Gms2Project({projectPath:sandboxRoot,readOnly:options?.readonly});
 }
 
 describe("GMS2.3 Pipeline SDK", function () {
@@ -88,7 +88,7 @@ describe("GMS2.3 Pipeline SDK", function () {
   describe("Gms2 Project Class", function () {
 
     it("can delete a resource", function(){
-      const project = getResetProject(true);
+      const project = getResetProject({readonly:true});
       const name = project.resources.all[0].name;
       expect(project.resources.findByName(name)).to.exist;
       project.deleteResourceByName(name);
@@ -96,8 +96,17 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(project.dehydrated.resources.find(r=>r.id.name==name)).to.not.exist;
     });
 
+    it('can delete an included file',function(){
+      const project = getResetProject();
+      const file = project.includedFiles.list()[0];
+      expect(file,'file must exist to be deleted').to.exist;
+      project.deleteIncludedFileByName(file.name);
+      expect(project.includedFiles.find(f=>f.name==file.name),'file should not be in yyp').to.be.undefined;
+      expect(fs.existsSync(file.filePathAbsolute),'file should not exist on disk').to.be.false;
+    });
+
     it("can hydrate and dehydrate the YYP file, resulting in the original data",function(){
-      const project = getResetProject(true);
+      const project = getResetProject({readonly:true});
       const rawContent = loadFromFileSync(project.yypAbsolutePath);
       const dehydrated = project.dehydrated;
       // Note: Projects always ensure that "/NEW" (folder) exists,
@@ -392,7 +401,7 @@ describe("GMS2.3 Pipeline SDK", function () {
     });
 
     it("can import modules from one project into another", function(){
-      const sourceProject = getResetProject(true);
+      const sourceProject = getResetProject({readonly:true});
       const modules = ["BscotchPack","AnotherModule"];
 
       // Initial state

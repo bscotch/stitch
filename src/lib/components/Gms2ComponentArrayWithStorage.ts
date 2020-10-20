@@ -8,7 +8,7 @@ export class Gms2ComponentArrayWithStorage<
   (new (object:YypData,storage:Gms2Storage)=>InstanceType<ComponentClass>&{dehydrated:YypData})
 > extends Gms2ComponentArrayBase<YypData,ComponentClass>{
 
-  constructor(data:YypData[],private componentClass: ComponentClass,private storage:Gms2Storage){
+  constructor(data:YypData[],protected componentClass: ComponentClass,protected storage:Gms2Storage){
     super();
     // Remove duplicates
     this.items = hydrateArray(this.uniqueYypDataEntries(data),this.componentClass,this.storage);
