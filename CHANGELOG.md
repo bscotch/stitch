@@ -1,3 +1,12 @@
+# [0.11.0](https://github.com/bscotch/stitch/compare/v0.10.0...v0.11.0) (2020-10-20)
+
+
+### Features
+
+* Included files can now be deleted programmatically. ([cb62c84](https://github.com/bscotch/stitch/commit/cb62c843018161f5a98519a4baae5435c548ad58))
+
+
+
 # [0.10.0](https://github.com/bscotch/stitch/compare/v0.9.5...v0.10.0) (2020-10-19)
 
 
