@@ -1,5 +1,5 @@
 /**
- * @file Gamemaker files and file-system needs have some specificies that
+ * @file GameMaker files and file-system needs have some specificies that
  * aren't dealth with by native fs or popular library fs-extra. This module
  * should be used for any file system operations, so that only those methods
  * that we know won't create problems will be exported and useable (and any
@@ -41,7 +41,7 @@ function copyFileSync(sourcePath:string,targetPath:string){
  * Convert yy(p) files and rewrite them as valid
  * JSON (no trailing commas) with consistent spacing, and
  * with fields alphabetized.
- * (Gamemaker .yy and .yyp files are *basically* JSON, and
+ * (GameMaker .yy and .yyp files are *basically* JSON, and
  * if they are rewritten as valid JSON GMS2.3 can read them
  * just fine.)
  * @param path Path to a yy(p) file or a folder containing them.
@@ -72,7 +72,7 @@ export default {
   // Override with custom methods, and add new ones
   // Note: If adding more methods here, either directly from fs(-extra)
   // or as custom method, ensure that it will work with wonky
-  // Gamemaker file formats (e.g. yy and yyp files are JSON-like, but
+  // GameMaker file formats (e.g. yy and yyp files are JSON-like, but
   // have trailing commas and include BigInt values)
   chmodSync: fs.chmodSync,
   statSync: fs.statSync,

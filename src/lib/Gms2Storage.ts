@@ -75,12 +75,12 @@ export class Gms2Storage {
     }
     const hookCode = `#!/bin/sh
 
-# Gamemaker Studio stores yy and yyp files with trailing commas and non-standard
+# GameMaker Studio stores yy and yyp files with trailing commas and non-standard
 # spacing. The GMS2 PDK creates standard JSON files with predictable spacing upon save,
 # thus causing large numbers of cosmetic file changes that will pollute the Git history.
 # This hook forces all yy/yyp files in the repo to be in a standardized JSON format
 # prior to commiting, so that the files are always guaranteed to have the exact same
-# structure, whether they were last edited by Gamemaker Studio or Stitch.
+# structure, whether they were last edited by GameMaker Studio or Stitch.
 
 npx @bscotch/stitch jsonify --path .
 git add *.yy

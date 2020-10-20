@@ -65,7 +65,7 @@ export interface Gms2ProjectOptions {
 }
 
 /**
- * Convert a Gamemaker Studio 2.3+ project
+ * Convert a GameMaker Studio 2.3+ project
  * into an internal representation that can
  * be manipulated programmatically.
  */
@@ -181,9 +181,9 @@ export class Gms2Project {
   /**
    * Set the project version in all options files.
    * (Note that the Switch options files do not include the version
-   *  -- that must be set outside of Gamemaker in the *.nmeta file).
+   *  -- that must be set outside of GameMaker in the *.nmeta file).
    * Can use one of:
-   *    + "0.0.0.0" syntax (exactly as Gamemaker stores versions)
+   *    + "0.0.0.0" syntax (exactly as GameMaker stores versions)
    *    + "0.0.0" syntax (semver without prereleases -- the 4th value will always be 0)
    *    + "0.0.0-rc.0" syntax (the 4th number will be the RC number)
    * The four numbers will appear in all cases as the string "major.minor.patch.candidate"
@@ -251,6 +251,7 @@ export class Gms2Project {
     const fromProject = new Gms2Project({projectPath:fromProjectPath,readOnly:true});
     const importer = new Gms2ModuleImporter(fromProject,this);
     importer.importModules(moduleNames);
+    return this;
   }
 
   /** Ensure that a texture group exists in the project. */
@@ -498,7 +499,7 @@ export class Gms2Project {
   }
 
   /**
-   * Recreate in-memory representations of the Gamemaker Project
+   * Recreate in-memory representations of the GameMaker Project
    * using its files.
    */
   private reload() {

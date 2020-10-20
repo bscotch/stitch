@@ -6,9 +6,9 @@ import options from "./lib/cli-options";
 
 const cli = commander;
 
-cli.description("Import modules from a source Gamemaker Studio 2 project to a target project.")
+cli.description("Import modules from a source GameMaker Studio 2 project to a target project.")
   .requiredOption("--source-project-path <path>", oneline`
-    Path to the source Gamemaker Studio 2 project.
+    Path to the source GameMaker Studio 2 project.
   `)
   .requiredOption("--modules <names...>", oneline`
     The names of the modules in the source project to import.

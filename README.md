@@ -1,48 +1,74 @@
 
 
-<img  src="https://img.bscotch.net/fit-in/256x256/logos/stitch.png"
-      style="max-width:100%;height:auto;"
-      alt="Stitch (Gamemaker Studio 2 Pipeline Development Kit) Logo">
-<h1>
-  Stitch: The Gamemaker Studio 2 Pipeline Development Kit
-</h1>
+![Stitch (GameMaker Studio 2 Pipeline Development Kit) Logo](https://img.bscotch.net/fit-in/256x256/logos/stitch.png)
 
+# Stitch: The GameMaker Studio 2 Pipeline Development Kit
 
-Gamemaker Studio 2 (<abbr title="Gamemaker Studio 2">GMS2</abbr>) is a powerful game-making tool, but it does not generally have features for automating tasks or creating asset pipelines. <dfn>Stitch</dfn> is a "Pipeline Development Kit" providing a collection of command-line tools and a Node.js API for automating tasks in GMS2 by directly managing its project files.
+GameMaker Studio 2 (<abbr title="GameMaker Studio 2">GMS2</abbr>) is a powerful game-making tool, but it does not generally have features for automating development or build tasks, or for creating asset pipelines. <dfn>Stitch</dfn> is a Pipeline Development Kit providing a collection of command-line tools and a Node.JS API for automating GMS2 project management by directly manipulating its project files.
 
 Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
-<strong>⚠ WARNING ⚠ Use at your own risk.</strong> Stitch could completely break your Gamemaker project. If you do not completely trust your version control system, you should not use Stitch. To help keep you safe, Stitch will not run unless your project is in a git repo with a clean working directory, but that only helps if you know how to use git to recover in case something goes wrong.
+**⚠WARNING⚠ Use at your own risk.** Stitch could completely break your GameMaker project. If you do not completely trust your version control system, you should not use Stitch. To help keep you safe, Stitch will not run unless your project is in a git repo with a clean working directory, but that only helps if you know how to use git to recover in case something goes wrong.
 
 ### Table of Contents
 
-+ [Compatibility Issues](#compatibility)
++ [Version Compatibility](#compatibility)
 + [Setup](#setup)
-+ [Commandline Interface](#cli)
++ [Command Line Interface](#cli)
 + [Core Features](#features)
   + [Configuration File](#config-file) - Manage the behavior of Stitch.
   + [Modules](#modules) - Import groups of assets from other GMS2 projects.
   + [Importing external assets](#import-asset)
   + [Texture Page batch management](#texture-pages) - Automate texture page assignments 
   + [Audio Group batch management](#audio-groups)
-+ [Gamemaker Project File Structure](./docs/gms2-file-structure.md)
++ [GameMaker Project File Structure](./docs/gms2-file-structure.md)
 
-## Gamemaker Studio Compatibility Issues
+## GameMaker Studio Compatibility Issues
 
-This project will generally stay up to date with current, stable versions of Gamemaker Studio 2. We will not typically test new versions of Stitch against older versions of Gamemaker Studio, and will also make no effort to maintain backwards compatibility. We'll list any known compatibility issues here.
+This project will generally stay up to date with current, stable versions of GameMaker Studio 2. We will not typically test new versions of Stitch against older versions of GameMaker Studio, and will also make no effort to maintain backwards compatibility. We'll list any known compatibility issues here, and we welcome GitHub Issues for any compatibility issues you discover.
 
-+ **GMS2 versions < 2.3.0.529** are guaranteed **not to work** with any version of Stitch. Gamemaker completely changed its project structure in 2.3.0.529, and all prior project structures are completely incompatible with Stitch.
++ **GMS2 versions < 2.3.0.529** are guaranteed **not to work** with any version of Stitch. GameMaker completely changed its project structure in 2.3.0.529, and all prior project structures are completely incompatible with Stitch.
 
 ## Setup <a id="setup">
 
 ### Requirements
 
-+ [Node.js v14+](https://nodejs.org/)
-+ [Git](https://git-scm.com/) (if your project is not in a git repo, or your working tree is not clean, <strong>Stitch will refuse to run</strong>)
-+ [Gamemaker Studio 2.3+](https://www.yoyogames.com/gamemaker) projects
++ [Node.JS v14+](https://nodejs.org/)
++ [Git](https://git-scm.com/) (if your project is not in a git repo, or your working tree is not clean, <strong>Stitch will refuse to run</strong> unless you use the "force" options (which you definitely shouldn't do))
++ [GameMaker Studio 2.3+](https://www.yoyogames.com/gamemaker) projects
 + Windows 10 (other operating systems may work but are untested)
 
-### Gamemaker Project Setup
+### Installation
+
+Install/update globally with `npm install -g @bscotch/stitch@latest`. This will let you use the CLI commands anywhere on your system.
+
+If you are creating a pipeline in Node.JS, you may want to install locally (same as above, with the `-g`) and import directly into your code. That would look something like this:
+
+```ts
+// @file Some component of your Typescript pipeline
+import {Gms2Project} from "@bscotch/stitch";
+
+const projectPath = 'my/project';
+// Open a project in read-only mode to prevent any changes
+const myProject = new Gms2Project({projectPath,readOnly:true});
+
+// Manipulate the project (toy example showing a few available methods)
+myProject
+  .importModules('other/project',['my_module'])
+  .addTextureGroupAssignment('Sprites/interface','interface')
+  .addSounds('my/sounds/source')
+  .addSprites('my/art/assets',{prefix:'sp_',case:'snake'})
+  .addIncludedFiles('my/localization/files');
+```
+
+Most things are synchronous, though you may need to deal with
+async responses now and then.
+
+Note that the documentation is currently only within the code itself,
+but will be surfaced for you with Typescript-aware IDEs
+(such as Visual Studio Code).
+
+### GameMaker Project Setup
 
 <details>
 <summary><b>Example file structure</b></summary>
@@ -67,7 +93,7 @@ To start using Stitch with one of your GMS2 projects, do the following:
 1. Run `npm install -g @bscotch/gms2` for a *global* install of Stitch, allowing you to install it just once and use it for all projects. This causes the `gms2 ...` commands to become available in the terminal.
 1. Run `gms2 --help` to see all the things you can do.
 
-**⚠ ALERT ⚠** When run, Stitch will attempt to install a pre-commit git hook that will convert all .yy and .yyp files to plain JSON (using `gms2 jsonify`). This is likely what you want. If you already have a pre-commit hook, this one will not be installed. You can simply add the line `npx gms2 jsonify --path .` somewhere in your existing pre-commit hook to get the same result.
+**⚠ ALERT ⚠** When run, Stitch will attempt to install a pre-commit git hook that will convert all `.yy` and `.yyp` files to plain JSON (using `gms2 jsonify`). This is likely what you want. If you already have a pre-commit hook, this one will not be installed. You can simply add the line `npx gms2 jsonify --path .` somewhere in your existing pre-commit hook to get the same result.
 
 ### Stitch Configuration File <a id="config-file"></a>
 
@@ -106,22 +132,22 @@ To keep things stable and automatable, Stitch uses a configuration file (`stitch
 
 ## Core Features <a id="features"></a>
 
-### Gamemaker Modules <a id="modules"></a>
+### GameMaker Modules <a id="modules"></a>
 
-Gamemaker Studio has mechanisms to import assets from one Gamemaker project into another, as well as an "extensions" system, but this can be unwieldy to manage. We use a custom solution for this that we simply call "Modules". A "module" is a collection of assets that have a common folder name in their path. For example, for a module called "TitleScreen" and an asset hierarchy including:
+GameMaker Studio has mechanisms to import assets from one GameMaker project into another, as well as an "extensions" system, but this can be unwieldy to manage. We use a custom solution for this that we simply call "Modules". A "module" is a collection of assets that have a common folder name in their path. For example, for a module called "TitleScreen" and an asset hierarchy including:
 
 + `sprites/TitleScreen/{module content}`
 + `sounds/menus/TitleScreen/{module content}`
 + `TitleScreen/`
 
-Everything inside those three "groups", starting at the "TitleScreen" level and including any subfolders, is included as a "TitleScreen" asset and can be imported together into another Gamemaker 2 project.
+Everything inside those three "groups", starting at the "TitleScreen" level and including any subfolders, is included as a "TitleScreen" asset and can be imported together into another GameMaker 2 project.
 
-Use case: At Bscotch, we have a separate Gamemaker project for our shared asset library that includes our login system, a large script library, common objects, and more. We use the module system to import this shared library into all of our games, and to keep it up to date in all games.
+Use case: At Bscotch, we have a separate GameMaker project for our shared asset library that includes our login system, a large script library, common objects, and more. We use the module system to import this shared library into all of our games, and to keep it up to date in all games.
 
 #### Module Import Notes <a id="modules-notes"></a>
 
 + **All data is overwritten** in the target for module assets. Any changes you've made that aren't also in the source module will be lost forever. The exception to this is Texture and Audio Group membership when you use Stitch's system to manage those.
-+ Only **resources** (e.g. sprites, objects, scripts, etc -- the things in the IDE's resource tree) and **IncludedFiles** are importable.
++ Only **resources** (e.g. sprites, objects, scripts, etc. -- the things in the IDE's resource tree) and **IncludedFiles** are importable.
 + Module assets in the target that are *not* in the source are moved to a folder called "MODULE_CONFLICTS".
 + Failed imports may result in broken projects. Failures result from conflicts between the source and target, in particular when a resource in each has the same name but different type, or is in a different module.
 
@@ -129,7 +155,7 @@ Use case: At Bscotch, we have a separate Gamemaker project for our shared asset 
 
 Managing art, audio, and file assets can be quite painful. These things should always be part of some sort of pipeline, but GMS2 does not provide built-in pipeline tooling. Stitch provides mechanisms to import external content into GMS2 projects, so that you can build pipelines appropriate to your technology stack.
 
-For example, if your audio team dumps their files into a shared Dropbox folder, you can use the CLI to batch-import from that folder. This will update all existing sound assets and add any new ones, using the filenames as Gamemaker assets names. No manual steps required!
+For example, if your audio team dumps their files into a shared Dropbox folder, you can use the CLI to batch-import from that folder. This will update all existing sound assets and add any new ones, using the filenames as GameMaker assets names. No manual steps required!
 
 Or, if you have a content server storing images, sounds, or files, you can write a script to automatically import all up-to-date versions of those assets into your project.
 
@@ -138,9 +164,9 @@ At Bscotch, we use importers for our sound, art, and localization pipelines, so 
 #### Sprites
 
 ⚠WARNING⚠ Automation of sprite images must only be performed when those images
-are **fully managed outside of Gamemaker**, and when the sprite has only the default
-layer. While you may make changes to the sprite inside of Gamemaker, any changes you
-make to layers or subimages will be overwritten if you re-import the sprite.
+are **fully managed outside of GameMaker**, and when the sprite has only the default
+layer. While you may make changes to the sprite inside of GameMaker, any changes you
+make to layers or sub-images will be overwritten if you re-import the sprite.
 
 #### Asset Import Notes <a id="import-asset-notes"></a>
 
@@ -164,6 +190,29 @@ Audio Groups suffer the same manual problems as Texture Pages, and Stitch solves
 
 ## Contributing
 
+We would love to get your contributions to Stitch! This section details our expectations and requirements if you do want to contribute.
+
+### Issues and Suggestions
+
+If you discover bugs or missing features, please post them as GitHub issues. Be extremely detailed and thorough in your explanation of the issue/suggestion and why it's important to address it.
+
+Note that it will not be a high priority for the Bscotch team to address issues and feature that we ourselves don't actively need. To make your own fixes/features, see the next section.
+
+### Contributing Code
+
+The fastest way to get fixes and features into Stitch is to submit them yourself! By forking this repo and making changes, you can have your own version of Stitch that works however you want.
+
+If you want to bring your changes back into the main Stitch repo, you can make a pull request to do so. Note that your code will be under strict requirements to make sure that things don't turn into spaghetti:
+
++ Code must be fully typed Typescript (no `any` or `//ts-ignore` unless strictly necessary).
++ If adding a similar feature to something that already exists, the code must follow a similar pattern and re-use as much existing code as possible (no DRY violations).
++ Names of variables, methods, etc. must be consistent with those already in the project.
++ There must be test cases that cover your changes/additions (see `src/test/index.ts`). We don't require unit tests, just functional tests.
++ The pull request must be rebase-able on the HEAD of the `develop` branch without conflict.
++ Commit messages must follow the project conventions (below).
+
+It is very likely that we will ask for minor changes to the code before accepting a pull request.
+
 ### Commit conventions
 
 We follow the conventional-changelog Angular convention for commit messages,
@@ -172,14 +221,16 @@ namely formatting them as `<type>(<scope>): <subject>` where `type` is one of:
 + feat: A new feature
 + fix: A bug fix
 + docs: Documentation only changes
-+ style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
++ style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc.)
 + refactor: A code change that neither fixes a bug nor adds a feature
 + perf: A code change that improves performance
 + test: Adding missing or correcting existing tests
 + chore: Changes to the build process or auxiliary tools and libraries such as documentation generation
 
+
+
 ### Legend
 
 + ❌ something that is not yet completed
-+ ✅ something that has been completed, in the context of other things that have not, to make it easier to track todos.
++ ✅ something that has been completed, in the context of other things that have not, to make it easier to track to-dos.
 + ⚠  something that the user should pay very close attention to in order to stay out of trouble

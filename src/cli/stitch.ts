@@ -7,8 +7,8 @@ export const cli = commander;
 // Kick it off
 cli.version(version, '-v, --version')
   .description('Stitch')
-  .command("import",  "Import assets to Gamemaker Studio 2 projects.")
-  .command("set",  "Modify metadata in Gamemaker Studio 2 projects.")
+  .command("import",  "Import assets to GameMaker Studio 2 projects.")
+  .command("set",  "Modify metadata in GameMaker Studio 2 projects.")
   .command("debork", "Run Stitch on the project without making any changes, which will clean up some common issues and normalize the file content.")
   .command("jsonify", "Convert .yy and .yyp files into valid JSON.");
 

@@ -4,7 +4,7 @@ import { Gms2Project } from "../lib/Gms2Project";
 import options from "./lib/cli-options";
 const cli = commander;
 
-cli.description("Fix and normalize common issues in a Gamemaker Studio 2.3+ Project.")
+cli.description("Fix and normalize common issues in a GameMaker Studio 2.3+ Project.")
   .option(...options.targetProjectPath)
   .option(...options.force)
   .parse(process.argv);

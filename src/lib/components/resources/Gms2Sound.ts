@@ -65,7 +65,7 @@ export class Gms2Sound extends Gms2ResourceBase {
   }
 
   /**
-   * Given a sound file, create a Gamemaker Sound asset with default parameter values.
+   * Given a sound file, create a GameMaker Sound asset with default parameter values.
    * The resource will be named after the source file.
   */
   static create(externalAudioFilePath:string,storage:Gms2Storage): Gms2Sound {

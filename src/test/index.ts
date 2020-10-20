@@ -17,31 +17,50 @@ import importFiles from '../cli/lib/import-files';
 import {assignAudioGroups, assignTextureGroups, AssignCliOptions} from '../cli/lib/assign';
 import { Gms2Object } from '../lib/components/resources/Gms2Object';
 
+/*
+Can be used to inform Stitch components that we are in
+a development environment, for tweaking behavior if needed.
+*/
 process.env.GMS2PDK_DEV = 'true';
 
-// const deeplog = (obj: any) => {
-//   console.log(inspect(obj, false, null));
-// };
-
-const sandboxRoot = './sand box/'; // Use a space to ensure nothing bad happens.
+/*
+Tests require manipulating gamemaker project files.
+There is a `sample-assets` folder for storing importable
+assets, a `sample-module-source` folder containing a
+GameMaker project to be used as a module source,
+a `sample-project` folder containing a GameMaker project
+to be manipulated in test cases, and finally a sandbox
+folder that `sample-project` is copied into prior to each
+test (to guarantee that we're always starting with the
+same environment, and to prevent accidentally making
+changes to the source project).
+*/
+const sandboxRoot = './sand box/'; // Use a space to ensure nothing bad happens when paths have a space
 const projectRoot = './sample-project/';
-const projectYYP = 'sample-project.yyp';
 const modulesRoot = "./sample-module-source/";
-// const sourceProjectYYPPath = paths.join(projectRoot, projectYYP);
-const sandboxProjectYYPPath = paths.join(sandboxRoot, projectYYP);
+const sandboxProjectYYPPath = paths.join(sandboxRoot, 'sample-project.yyp');
+
+// Sample assets
 const assetSampleRoot = './sample-assets/';
 const soundSampleRoot = paths.join(assetSampleRoot, "sounds");
 const spriteSampleRoot = paths.join(assetSampleRoot, "sprites");
-const audioSample = paths.join(soundSampleRoot,"mus_intro_jingle.wav");
-const invalidAudioSample = paths.join(soundSampleRoot, "sfx_badgeunlock_m4a.m4a");
-const invalidAudioSampleExt = paths.extname(invalidAudioSample).slice(1);
-const batchAudioSampleNames = ["sfx_badgeunlock_intro.ogg", "mus_intro_jingle.wav", "sfx_badgeunlock_mp3.mp3", "sfx_badgeunlock_wma.wma"];
+const soundSample = paths.join(soundSampleRoot,"mus_intro_jingle.wav");
 const testWorkingDir = process.cwd();
 
+/**
+ * To allow Typescript to infer that something exists,
+ * we often need to wrap an (if(!exists){throw Error})
+ * around it. This simple method makes that non-verbose.
+ */
 function throwNever():never{
   throw new Error("this should never happen");
 }
 
+/**
+ * Replace all files in the sandbox with the original
+ * source project, allowing for tests to start with
+ * a clean slate.
+ */
 function resetSandbox() {
   process.chdir(testWorkingDir);
   fs.ensureDirSync(sandboxRoot);
@@ -58,6 +77,9 @@ function getResetProject(options?:{readonly?:boolean}){
   resetSandbox();
   return new Gms2Project({projectPath:sandboxRoot,readOnly:options?.readonly});
 }
+
+// TESTS
+// TODO: Refactor into multiple files...
 
 describe("GMS2.3 Pipeline SDK", function () {
 
@@ -178,17 +200,18 @@ describe("GMS2.3 Pipeline SDK", function () {
 
     it("can add a single sound asset",function(){
       const project = getResetProject();
-      expect(()=>project.addSounds(audioSample+"fake_path"),
+      expect(()=>project.addSounds(soundSample+"fake_path"),
         'should not be able to upsert non-existing audio assets'
       ).to.throw();
+      const invalidAudioSample = paths.join(soundSampleRoot, "sfx_badgeunlock_m4a.m4a");
       expect(()=>project.addSounds(invalidAudioSample),
         'should not be able to upsert audio assets with unsupported extensions.'
       ).to.throw();
-      project.addSounds(audioSample);
+      project.addSounds(soundSample);
       // Questions:
       //   Is the sound in the yyp?
       const audio = project.resources
-        .findByField('name',paths.parse(audioSample).name,Gms2Sound);
+        .findByField('name',paths.parse(soundSample).name,Gms2Sound);
       expect(audio,'New audio should be upserted').to.exist;
       if(!audio){ throwNever(); }
       //   Does the sound .yy exist?
@@ -202,10 +225,13 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(()=>project.addSounds(soundSampleRoot+'-fake.mp3'),
         'should not be able to batch add sounds from non-existing path'
       ).to.throw();
+      const invalidAudioSample = paths.join(soundSampleRoot, "sfx_badgeunlock_m4a.m4a");
+      const invalidAudioSampleExt = paths.extname(invalidAudioSample).slice(1);
       expect(()=>project.addSounds(soundSampleRoot, [invalidAudioSampleExt]),
         'should not be able to batch add sounds with unsupported extensions.'
       ).to.throw();
       project.addSounds(soundSampleRoot);
+      const batchAudioSampleNames = ["sfx_badgeunlock_intro.ogg", "mus_intro_jingle.wav", "sfx_badgeunlock_mp3.mp3", "sfx_badgeunlock_wma.wma"];
       // Questions:
       //   Is the sound in the yyp?
       for (const batchAudioSampleName of batchAudioSampleNames){
@@ -307,7 +333,7 @@ describe("GMS2.3 Pipeline SDK", function () {
     it("will fail if importing non-existent included file",function(){
       const project = new Gms2Project(sandboxRoot);
       // Attempt to add non-existent file
-      expect(()=>project.addIncludedFiles(audioSample+'-fake.mp3'),
+      expect(()=>project.addIncludedFiles(soundSample+'-fake.mp3'),
         'attempting to add a non-existent file should throw'
       ).to.throw();
     });
@@ -567,7 +593,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(()=>importSounds(invalidOptions), "Should fail when providing no valid extensions.").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
       const fileOptions = {
-        sourcePath: audioSample,
+        sourcePath: soundSample,
         targetProjectPath: sandboxRoot
       };
       expect(()=>importSounds(fileOptions), "Should succeed when source path points to a valid file").to.not.throw();

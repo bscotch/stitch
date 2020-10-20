@@ -11,7 +11,7 @@ export default {
   targetProjectPath: [
     "-t --target-project-path <path>",
     oneline`
-      Path to the target Gamemaker Studio 2 project. If not set, will use the current directory.
+      Path to the target GameMaker Studio 2 project. If not set, will use the current directory.
     `
   ],
 } as const;
