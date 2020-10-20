@@ -1,7 +1,13 @@
-import { YySound } from "../../../types/Yy";
+import {
+  SoundSampleRate,
+  YySound,
+  SoundChannel,
+  SoundCompression,
+} from "../../../types/Yy";
 import { Gms2ResourceBase, Gms2ResourceBaseParameters} from "./Gms2ResourceBase";
 import paths from "../../paths";
 import { Gms2Storage } from "../../Gms2Storage";
+import { assert } from "../../errors";
 
 export class Gms2Sound extends Gms2ResourceBase {
   protected yyData!: YySound; // Happens in the super() constructor
@@ -32,6 +38,29 @@ export class Gms2Sound extends Gms2ResourceBase {
 
   get audioFilePathAbsolute(){
     return paths.join(this.yyDirAbsolute,this.yyData.soundFile);
+  }
+
+  set sampleRate(rate:SoundSampleRate){
+    this.yyData.sampleRate = rate;
+    this.save();
+  }
+
+  set bitRate(rate:number){
+    assert(rate>8,'rate must be at least 8');
+    assert(rate<513,'rate must be no more than 512');
+    assert(rate % 8 == 0,'rate must be a multiple of 8');
+    this.yyData.bitRate = rate;
+    this.save();
+  }
+
+  set channels(channel: SoundChannel){
+    this.yyData.type = channel;
+    this.save();
+  }
+
+  set compression(level: SoundCompression){
+    this.yyData.compression = level;
+    this.save();
   }
 
   /** Overwrite this Sound's audio file with an external file. */

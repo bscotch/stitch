@@ -20,13 +20,13 @@ export interface YyScript extends YyBase {
   resourceType: "GMScript"
 }
 
-enum SoundChannel {
+export enum SoundChannel {
   Mono,
   Stereo,
   ThreeD
 }
 
-enum SoundCompression {
+export enum SoundCompression {
   Uncompressed,
   Compressed,
   UncompressedOnLoad,
@@ -38,6 +38,8 @@ enum SoundBitDepth {
   Bit16
 }
 
+export type SoundSampleRate = 5512 | 11025 | 22050 | 32000 | 44100 | 48000;
+
 export interface YySound extends YyBase {
   /** Default 0. Compression level */
   compression: SoundCompression,
@@ -47,7 +49,7 @@ export interface YySound extends YyBase {
   /** Default 128. Starting from 8, increments of 8, max of 512 */
   bitRate: number,
   /** Default 44100 */
-  sampleRate: 5512 | 11025 | 22050 | 32000 | 44100 | 48000,
+  sampleRate: SoundSampleRate,
   /** Mono/stereo/3d */
   type: SoundChannel,
   /** Default 1 */
