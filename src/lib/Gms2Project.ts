@@ -485,6 +485,7 @@ export class Gms2Project {
       this.components.configs.addChild(name);
       this.save();
     }
+    return this;
   }
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
