@@ -474,8 +474,8 @@ export class Gms2Project {
    *                JSON stringified. Must not be null or undefined in order to take effect.
    * @param subdirectory Subdirectory inside the Datafiles folder in which to place this resource.
    */
-  addIncludedFiles(path:string,content?:any,subdirectory?:string, allowedExtensions?:string[]){
-    const file = Gms2IncludedFile.import(this,path,content,subdirectory, allowedExtensions);
+  addIncludedFiles(path:string,options?:{content?:any,subdirectory?:string, allowedExtensions?:string[]}){
+    const file = Gms2IncludedFile.import(this,path,options?.content,options?.subdirectory, options?.allowedExtensions);
     logInfo(`upserted file ${path}`);
     return file;
   }

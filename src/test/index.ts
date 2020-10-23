@@ -349,7 +349,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       const sharedFile = project.includedFiles.findByField('name','shared.txt');
       if(!sharedFile){throw new Gms2PipelineError(`shared file should exist`);}
       expect(sharedFile.contentAsBuffer,'shared file before copy should be empty').to.eql(Buffer.from([]));
-      project.addIncludedFiles(`${filesDir}/${existingFilePath}`,null,'shared');
+      project.addIncludedFiles(`${filesDir}/${existingFilePath}`,{subdirectory:'shared'});
       expect(sharedFile.contentAsBuffer.toString()).to.eql(sharedFileSourceContent);
     });
 
@@ -359,7 +359,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       // Add all files from a directory
       const filesDir = `${assetSampleRoot}/includedFiles/files`;
       const subdir = 'BscotchPack';
-      project.addIncludedFiles(filesDir,null,subdir);
+      project.addIncludedFiles(filesDir,{subdirectory:subdir});
       const expectedFilePaths = fs.listFilesSync(filesDir, true);
       const expectedFileNames = expectedFilePaths
         .map(filePath=>paths.parse(filePath).base);
@@ -380,7 +380,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       // Add all files from a directory
       const filesDir = `${assetSampleRoot}/includedFiles/files`;
       const allowedExtensions = ["json", "md"];
-      project.addIncludedFiles(filesDir,null,'BscotchPack',allowedExtensions);
+      project.addIncludedFiles(filesDir,{subdirectory:'BscotchPack',allowedExtensions});
       const availableFiles = fs.listFilesSync(filesDir)
         .map(filePath=>paths.parse(filePath).base);
       for(const filePath of availableFiles){
@@ -399,13 +399,13 @@ describe("GMS2.3 Pipeline SDK", function () {
       const project = getResetProject();
 
       const binaryExample = Buffer.from([1,2,3]);
-      expect(project.addIncludedFiles('binary',binaryExample)[0].contentAsBuffer).to.eql(binaryExample);
+      expect(project.addIncludedFiles('binary',{content:binaryExample})[0].contentAsBuffer).to.eql(binaryExample);
 
       const textExample = "hello";
-      expect(project.addIncludedFiles('text',textExample)[0].contentAsString).to.eql(textExample);
+      expect(project.addIncludedFiles('text',{content:textExample})[0].contentAsString).to.eql(textExample);
 
       const jsonExample = {hello:[1,2,3]};
-      expect(project.addIncludedFiles('json',jsonExample)[0].contentParsedAsJson).to.eql(jsonExample);
+      expect(project.addIncludedFiles('json',{content:jsonExample})[0].contentParsedAsJson).to.eql(jsonExample);
     });
 
     it("can import sprites", function(){

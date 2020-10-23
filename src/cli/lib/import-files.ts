@@ -7,5 +7,5 @@ export default function(options: ImportBaseOptions){
     projectPath: options.targetProjectPath,
     dangerouslyAllowDirtyWorkingDir: options.force
   });
-  targetProject.addIncludedFiles(options.sourcePath, null, undefined, options.allowExtensions);
+  targetProject.addIncludedFiles(options.sourcePath, {allowedExtensions: options.allowExtensions});
 }
