@@ -1,3 +1,14 @@
+# [1.0.0](https://github.com/bscotch/stitch/compare/v0.11.0...v1.0.0) (2020-10-26)
+
+
+### Features
+
+* Options for adding included files are now bundled into an options object to simplify the API. BREAKING. ([ab77489](https://github.com/bscotch/stitch/commit/ab774891bfefa7b2421a871b114e13dac474412d))
+* The CLI set subcommands for texture and audio groups are no longer plural, since that was confusing. BREAKING. ([92dbbb8](https://github.com/bscotch/stitch/commit/92dbbb8d1df86087e07ab968094e9364c8fa5ced))
+* The Sound class now allows setting properties such as bitrate, sample rate, and channels. ([7b4488a](https://github.com/bscotch/stitch/commit/7b4488a6bab1694e20b2f06b9ae2c9b0a9e7e8dd))
+
+
+
 # [0.11.0](https://github.com/bscotch/stitch/compare/v0.10.0...v0.11.0) (2020-10-20)
 
 
@@ -117,7 +128,7 @@
 ### Features
 
 * Add 'id' getter to base resource class. IDs are frequently used in other contexts, so being able to easily fetch them is useful. ([584a8d9](https://github.com/bscotch/stitch/commit/584a8d9f066a88366a22f2fa579d22bd6e978361))
-* Add EmptyArray utility type. GameMaker files frequently have arrays that are always empty, and this type is needed to properly document that. ([9928a54](https://github.com/bscotch/stitch/commit/9928a54ef65ec970778aa4225411e058c2418e86))
+* Add EmptyArray utility type. Gamemaker files frequently have arrays that are always empty, and this type is needed to properly document that. ([9928a54](https://github.com/bscotch/stitch/commit/9928a54ef65ec970778aa4225411e058c2418e86))
 * Add path methods for getting the subdirectory name for a given directory. ([5d01b7f](https://github.com/bscotch/stitch/commit/5d01b7f3396d8eba3318cd13870d7ceca2abb329))
 * Add Sharp as a dependency for any needed image manipulation and metadata gathering in preparation for adding sprite import functionality. Create sample subimage sources for experimenting with how GMS2 sprite import works, and to use in downstream tests. Begin drafting sprite subclass methods for creating sprites from images. ([43c5550](https://github.com/bscotch/stitch/commit/43c5550dfb055984ddc927f62ffe80b986bdb19a))
 * Add UUID module with an enum for storing UUID5 namespace constants. ([b816486](https://github.com/bscotch/stitch/commit/b816486fc9c5782ccd248ab9da9b267890be39ee))
@@ -134,7 +145,7 @@
 
 ### Bug Fixes
 
-* The precommit hook for converting all files to JSON will no longer be installed, as it destablizes the GameMaker IDE. ([d561436](https://github.com/bscotch/stitch/commit/d561436195edb0872e43da4d63833cea7aebb65c))
+* The precommit hook for converting all files to JSON will no longer be installed, as it destablizes the Gamemaker IDE. ([d561436](https://github.com/bscotch/stitch/commit/d561436195edb0872e43da4d63833cea7aebb65c))
 * Update set version cli's unit test to also use `projectVersion` ([82f301a](https://github.com/bscotch/stitch/commit/82f301a46b7e2f5531a0b69db687c7b144516b0a))
 * Update the version CLI command to parse the correct argument. ([f8d6296](https://github.com/bscotch/stitch/commit/f8d62968b2199856961f7f58dd01000776b1412b))
 * Update the version setter to only target *.yy files in the options ([7e1831e](https://github.com/bscotch/stitch/commit/7e1831ed0b63a5a121856d1b8eb4e6817a3e3bcd))
@@ -142,7 +153,7 @@
 
 ### Features
 
-* Stitch will now only save yy(p) files if there has been a meaningful change. This reduces the file structure conflicts between GameMaker and Stitch. ([3371304](https://github.com/bscotch/stitch/commit/3371304ed5004c8136fd55a283b64034026f41de))
+* Stitch will now only save yy(p) files if there has been a meaningful change. This reduces the file structure conflicts between Gamemaker and Stitch. ([3371304](https://github.com/bscotch/stitch/commit/3371304ed5004c8136fd55a283b64034026f41de))
 
 
 
@@ -363,7 +374,7 @@
 * Add ability to import files as IncludedFiles, starting with ([5184c48](https://github.com/bscotch/stitch/commit/5184c48784d822752ac019665aa6f2f290a559c5))
 * Add ability to import new IncludedFiles. ([8e2bd0a](https://github.com/bscotch/stitch/commit/8e2bd0a55bee8e051156a9e74ca4a0249438b1e7))
 * Add ability to upsert sounds into a project. ([ed08b47](https://github.com/bscotch/stitch/commit/ed08b47963414e4306437feb10a6fbb390ce872a))
-* Add CLI command for 'jsonifying' yy and yyp files (convert GameMaker's project files into standard JSON). ([660ed75](https://github.com/bscotch/stitch/commit/660ed75a3f9f94b7e62992cf53c0ff38d811250c))
+* Add CLI command for 'jsonifying' yy and yyp files (convert Gamemaker's project files into standard JSON). ([660ed75](https://github.com/bscotch/stitch/commit/660ed75a3f9f94b7e62992cf53c0ff38d811250c))
 * Add code for installing pre commit hook to run jsonify. ([899a267](https://github.com/bscotch/stitch/commit/899a267aba6d74d42c14b85c21b7af001736abc7))
 * Add generic "assert" that throws custom ([9605627](https://github.com/bscotch/stitch/commit/96056278604be3f2827b13b27c60e6ab7eef647d))
 * Add generic file manipulation methods to the new Storage class, and add typing to the Sound resource's .yy file information. ([8981909](https://github.com/bscotch/stitch/commit/898190997f5a774f9a04c1dab4136acf0f9f897a))
@@ -394,7 +405,7 @@
 * Fix bugs preventing dehydration from resulting in the same data as the original yyp file ([2cf0bf0](https://github.com/bscotch/stitch/commit/2cf0bf0e2fdefed94bb7dd4f3c51e8f40880d64e))
 * Have IncludedFiles be included in imported modules. ([da37277](https://github.com/bscotch/stitch/commit/da37277ec4625430f26d0e5bbd428bb7702289c4))
 * Have lists of Audio Group and Texture Group folders sorted by specificty to simplify making assignments. ([046bdf4](https://github.com/bscotch/stitch/commit/046bdf469060a0452afbeb58389ddf90a7078bae))
-* Limit file system methods to a whitelist, instead of everything in fs-extra, so that we must explicitly ensure that any included method will work as expeted with GameMaker files. ([fd4ffb2](https://github.com/bscotch/stitch/commit/fd4ffb24bb8b120124b5349a13a5c6792d5b7c0a))
+* Limit file system methods to a whitelist, instead of everything in fs-extra, so that we must explicitly ensure that any included method will work as expeted with Gamemaker files. ([fd4ffb2](https://github.com/bscotch/stitch/commit/fd4ffb24bb8b120124b5349a13a5c6792d5b7c0a))
 * Populate useful file- and folder-management methods. ([5406516](https://github.com/bscotch/stitch/commit/540651605c2b4f852e9e04f9d45d0f32a346db34))
 * Remove legacy code from prior version of this project (for GMS <2.3). ([1fb9801](https://github.com/bscotch/stitch/commit/1fb9801ea82880df1505e5cd3385dcb9d1fe3f25))
 * Replace 'toObject' with 'dehydrate' so that the verb is more understanble. Add generic hydration/deydration methods to make code more readable. ([75defd2](https://github.com/bscotch/stitch/commit/75defd2fc4b07a3b2a470ea82d67421ccc982a94))
