@@ -1,3 +1,13 @@
+# [1.1.0](https://github.com/bscotch/stitch/compare/v1.0.0...v1.1.0) (2020-10-26)
+
+
+### Features
+
+* Error names have been changed to 'Stitch...' from 'Gms2Pipeline...'. BREAKING. ([8dd0c1d](https://github.com/bscotch/stitch/commit/8dd0c1d6dcd768a9fc08e44359e061e6f2c1cc3f))
+* File-writing now first deletes the target file and then writes, since the GMS2 IDE handles that better than writing over existing files. ([a552e88](https://github.com/bscotch/stitch/commit/a552e8859843d80ac76bcdb4f8bea4c83db8f765))
+
+
+
 # [1.0.0](https://github.com/bscotch/stitch/compare/v0.11.0...v1.0.0) (2020-10-26)
 
 
