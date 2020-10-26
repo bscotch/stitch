@@ -414,7 +414,7 @@ figure out where to make your changes:
 ### Commit conventions
 
 We follow the conventional-changelog Angular convention for commit messages,
-namely formatting them as `<type>(<scope>): <subject>` where `type` is one of:
+namely formatting them as `<type>: <subject>` where `type` is one of:
 
 + feat: A new feature
 + fix: A bug fix

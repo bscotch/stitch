@@ -42,7 +42,7 @@
   "license": "MIT",
   "homepage": "https://github.com/bscotch/gms2",
   "dependencies": {
-    "@bscotch/spritely": "^1.1.1",
+    "@bscotch/spritely": "^1.1.2",
     "@bscotch/utility": "^0.5.1",
     "chalk": "^4.1.0",
     "change-case": "^4.1.1",
