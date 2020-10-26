@@ -33,14 +33,15 @@
     "gms2",
     "gms",
     "yy",
-    "gml"
+    "gml",
+    "pipeline"
   ],
   "author": "Adam Coster (https://www.bscotch.net/about)",
   "contributors": [
     "Shi Chen (https://www.bscotch.net/about)"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/bscotch/gms2",
+  "homepage": "https://github.com/bscotch/stitch",
   "dependencies": {
     "@bscotch/spritely": "^1.1.2",
     "@bscotch/utility": "^0.5.1",
