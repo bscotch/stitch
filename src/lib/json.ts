@@ -51,7 +51,7 @@ export function writeFileSync(filePath: string, stuff: any) {
   const stringifiedSortedStuff = stringify(sortedStuff);
   // Only write if necessary
   fs.ensureDirSync(path.dirname(filePath));
-  if(fs.existsSync(filePath) && fs.statSync(filePath).isDirectory){
+  if(fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()){
     throw new StitchError(`Cannot write file to ${filePath}; path is a directory`);
   }
   try{
@@ -67,9 +67,11 @@ export function writeFileSync(filePath: string, stuff: any) {
   }
   // The GameMaker IDE may better handle live file changes
   // when files are deleted and replaced instead of written over.
+  // fs.writeFileSync(filePath,stringifiedSortedStuff); // Swap back to this if untrue
+
   const tempFilePath = `${filePath}.stitch.tmp`;
-  fs.writeFileSync(filePath,stringifiedSortedStuff);
-  // fs.writeFileSync(tempFilePath, stringifiedSortedStuff);
-  // fs.removeSync(filePath);
-  // fs.moveSync(tempFilePath,filePath);
+
+  fs.writeFileSync(tempFilePath, stringifiedSortedStuff);
+  fs.removeSync(filePath);
+  fs.moveSync(tempFilePath,filePath);
 }
