@@ -1,5 +1,5 @@
 import paths from "./paths";
-import { assert, Gms2PipelineError } from "./errors";
+import { assert, StitchError } from "./errors";
 import fs from "./files";
 import child_process from "child_process";
 import { oneline } from "@bscotch/utility";
@@ -8,7 +8,7 @@ export class Gms2Storage {
 
   constructor(readonly yypAbsolutePath:string, readonly isReadOnly=false, readonly bypassGitRequirement=false){
     if(!bypassGitRequirement && process.env.GMS2PDK_DEV != 'true' && !this.workingDirIsClean){
-      throw new Gms2PipelineError(oneline`
+      throw new StitchError(oneline`
         Working directory for ${paths.basename(yypAbsolutePath)} is not clean. Commit or stash your work!
       `);
     }
@@ -26,7 +26,7 @@ export class Gms2Storage {
     const gitProcessHandle = child_process
       .spawnSync(`git status`,{cwd:this.yypDirAbsolute,shell:true});
     if (gitProcessHandle.status != 0){
-      throw new Gms2PipelineError(gitProcessHandle.stderr.toString());
+      throw new StitchError(gitProcessHandle.stderr.toString());
     }
     else{
       const isClean = gitProcessHandle.stdout.toString().includes('working tree clean');
@@ -38,7 +38,7 @@ export class Gms2Storage {
     const gitProcessHandle = child_process
       .spawnSync(`git worktree list`,{cwd:this.yypDirAbsolute,shell:true});
     if (gitProcessHandle.status != 0){
-      throw new Gms2PipelineError(gitProcessHandle.stderr.toString());
+      throw new StitchError(gitProcessHandle.stderr.toString());
     }
     return gitProcessHandle.stdout.toString()
       .split(/\s+/g)[0];
@@ -67,6 +67,7 @@ export class Gms2Storage {
     }
   }
 
+  /** @deprecated */
   installPrecommitHook(){
     const gitRoot = this.gitWorkingTreeRoot;
     const preCommitFilePath = paths.join(gitRoot,'.git','hooks','pre-commit');

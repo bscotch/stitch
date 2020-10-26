@@ -2,7 +2,7 @@
 import JsonBig from "json-bigint";
 import fs from "fs-extra";
 import path from "path";
-import { Gms2PipelineError } from "./errors";
+import { StitchError } from "./errors";
 import sortKeys from "sort-keys";
 
 const Json = JsonBig({ useNativeBigInt: true });
@@ -39,7 +39,7 @@ export function loadFromFileSync(filePath: string) {
     return Json.parse(content);
   }
   catch{
-    throw new Gms2PipelineError(`Content of ${filePath} is not valid JSON.`);
+    throw new StitchError(`Content of ${filePath} is not valid JSON.`);
   }
 }
 
@@ -51,6 +51,9 @@ export function writeFileSync(filePath: string, stuff: any) {
   const stringifiedSortedStuff = stringify(sortedStuff);
   // Only write if necessary
   fs.ensureDirSync(path.dirname(filePath));
+  if(fs.existsSync(filePath) && fs.statSync(filePath).isDirectory){
+    throw new StitchError(`Cannot write file to ${filePath}; path is a directory`);
+  }
   try{
     const existing = sortKeys(loadFromFileSync(filePath));
     if(stringify(existing) == stringifiedSortedStuff){
@@ -62,5 +65,11 @@ export function writeFileSync(filePath: string, stuff: any) {
       throw err;
     }
   }
-  fs.writeFileSync(filePath, stringifiedSortedStuff);
+  // The GameMaker IDE may better handle live file changes
+  // when files are deleted and replaced instead of written over.
+  const tempFilePath = `${filePath}.stitch.tmp`;
+  fs.writeFileSync(filePath,stringifiedSortedStuff);
+  // fs.writeFileSync(tempFilePath, stringifiedSortedStuff);
+  // fs.removeSync(filePath);
+  // fs.moveSync(tempFilePath,filePath);
 }

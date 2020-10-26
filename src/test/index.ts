@@ -6,7 +6,7 @@ import { Gms2Project } from '../lib/Gms2Project';
 import {loadFromFileSync} from "../lib/json";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 import { differenceBy } from 'lodash';
-import { Gms2PipelineError } from '../lib/errors';
+import { StitchError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import jsonify, { JsonifyOptions } from '../cli/lib/jsonify';
 import cli_assert from '../cli/lib/cli-assert';
@@ -176,7 +176,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       project.addObject(name);
       object = project.resources.findByField('name',name,Gms2Object);
       if(!object){
-        throw new Gms2PipelineError('object should have been added');
+        throw new StitchError('object should have been added');
       }
 
       // Update the object's parent and sprite.
@@ -347,7 +347,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       const existingFilePath = `shared/shared.txt`;
       const sharedFileSourceContent = 'This content should get copied over.';
       const sharedFile = project.includedFiles.findByField('name','shared.txt');
-      if(!sharedFile){throw new Gms2PipelineError(`shared file should exist`);}
+      if(!sharedFile){throw new StitchError(`shared file should exist`);}
       expect(sharedFile.contentAsBuffer,'shared file before copy should be empty').to.eql(Buffer.from([]));
       project.addIncludedFiles(`${filesDir}/${existingFilePath}`,{subdirectory:'shared'});
       expect(sharedFile.contentAsBuffer.toString()).to.eql(sharedFileSourceContent);

@@ -2,7 +2,7 @@ import { YyBase } from "../../../types/Yy";
 //❌✅⌛❓
 
 import { YypResource } from "../../../types/Yyp";
-import { assert, Gms2PipelineError } from "../../errors";
+import { assert, StitchError } from "../../errors";
 import { Gms2Storage } from "../../Gms2Storage";
 import paths from "../../paths";
 import path from "../../paths";
@@ -29,7 +29,7 @@ export class Gms2ResourceBase {
     }
     if(!this.storage.exists(this.yyPathAbsolute)){
       if(!ensureYyFile){
-        throw new Gms2PipelineError(`CONFLICT: Entry for ${this.data.id.name} in yyp does not have a .yy file.`);
+        throw new StitchError(`CONFLICT: Entry for ${this.data.id.name} in yyp does not have a .yy file.`);
       }
       // Create a default one!
       this.createYyFile();
@@ -39,7 +39,7 @@ export class Gms2ResourceBase {
 
   /** Create a generic Yy file, given YypData (must be implemented by each specifific resource.) */
   protected createYyFile(){
-    throw new Gms2PipelineError(`createYyFile is not implemented on type ${this.resourceRoot}`);
+    throw new StitchError(`createYyFile is not implemented on type ${this.resourceRoot}`);
   }
 
   get id(){

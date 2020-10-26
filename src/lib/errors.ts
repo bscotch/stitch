@@ -1,22 +1,22 @@
 
-export class Gms2PipelineError extends Error {
+export class StitchError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "Gms2PipelineError";
+    this.name = "StitchError";
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
-class Gms2PipelineAssertionError extends Error {
+class StitchAssertionError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "Gms2PipelineAssertionError";
+    this.name = "StitchAssertionError";
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
 export function assert(claim: any, message: string) {
   if (!claim) {
-    throw new Gms2PipelineAssertionError(message);
+    throw new StitchAssertionError(message);
   }
 }

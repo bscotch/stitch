@@ -4,7 +4,7 @@ import { Gms2ResourceBase } from "./components/resources/Gms2ResourceBase";
 import { Gms2ResourceSubclass } from "./components/Gms2ResourceArray";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
 import { Gms2Sprite } from "./components/resources/Gms2Sprite";
-import { assert, Gms2PipelineError } from "./errors";
+import { assert, StitchError } from "./errors";
 import type { Gms2Project } from "./Gms2Project";
 import paths from "./paths";
 import { oneline, undent } from "@bscotch/utility";
@@ -101,14 +101,14 @@ export class Gms2ModuleImporter {
       }
       // If this.target is NOT in the local module, throw an error.
       if(! matchingLocalResource.isInModule(moduleName)){
-        throw new Gms2PipelineError(oneline`
+        throw new StitchError(oneline`
           Conflict: local asset ${matchingLocalResource.name} exists
           but is not in the expected module ${moduleName}
         `);
       }
       // If this.target is of a different type, throw an error.
       if( matchingLocalResource.resourceType != sourceModuleResource.resourceType){
-        throw new Gms2PipelineError(oneline`
+        throw new StitchError(oneline`
           Conflict: local asset ${matchingLocalResource.name} exists,
           and is in the correct module,
           but does not have the same resource type as the source.
@@ -179,7 +179,7 @@ export class Gms2ModuleImporter {
       }
       else{
         // Exists but not in module: CONFLICT
-        throw new Gms2PipelineError(oneline`
+        throw new StitchError(oneline`
           Conflict: local asset ${sourceModuleFile.name} exists,
           but is not in the ${moduleName} module.
         `);
@@ -191,7 +191,7 @@ export class Gms2ModuleImporter {
       const localModuleFiles  = Gms2ModuleImporter.moduleIncludedFiles(this.toProject,moduleName);
       const extraFiles = differenceBy(localModuleFiles,sourceModuleFiles,'name');
       if(extraFiles.length){
-        throw new Gms2PipelineError(undent`
+        throw new StitchError(undent`
         CONFLICT: The following files were NOT in the source module but are in the target module.
           ${extraFiles.map(file=>file.name).join(', ')}
         `);

@@ -1,6 +1,6 @@
 import {parse} from "../../lib/json";
 import { YypIncludedFile } from "../../types/Yyp";
-import { Gms2PipelineError } from "../errors";
+import { StitchError } from "../errors";
 import type { Gms2Project } from "../Gms2Project";
 import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";
@@ -92,7 +92,7 @@ export class Gms2IncludedFile {
 
   static importFromDirectory(project:Gms2Project,path:string,subdirectory?:string, allowedExtensions?:string[]){
     if(!project.storage.isDirectory(path)){
-      throw new Gms2PipelineError(`${path} is not a directory`);
+      throw new StitchError(`${path} is not a directory`);
     }
     const filePaths = project.storage.listFiles(path,true, allowedExtensions);
 
@@ -114,7 +114,7 @@ export class Gms2IncludedFile {
 
   static importFromData(project:Gms2Project,path:string,content:any,subdirectory?:string){
     if( [null,undefined].includes(content) ){
-      throw new Gms2PipelineError(`IncludedFile import using data cannot have null/undefined as that data.`);
+      throw new StitchError(`IncludedFile import using data cannot have null/undefined as that data.`);
     }
     const fileName = paths.parse(path).base;
     // (Ensure POSIX-style seps)
@@ -129,7 +129,7 @@ export class Gms2IncludedFile {
         matchingFile.setContent(content);
       }
       else{
-        throw new Gms2PipelineError(oneline`
+        throw new StitchError(oneline`
           CONFLICT: A file by name ${fileName} already exists in a different subdirectory.
           If they are the same file, ensure they have the same subdirectory.
           If they are different files, rename one of them.
@@ -158,7 +158,7 @@ export class Gms2IncludedFile {
       return [Gms2IncludedFile.importFromData(project,path,content,subdirectory)];
     }
     else if(! project.storage.exists(path)){
-      throw new Gms2PipelineError(`Path ${path} does not exist and no alternate content provided.`);
+      throw new StitchError(`Path ${path} does not exist and no alternate content provided.`);
     }
     else if(project.storage.isDirectory(path)){
       return Gms2IncludedFile.importFromDirectory(project,path,subdirectory, allowedExtensions);

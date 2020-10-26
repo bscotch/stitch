@@ -2,7 +2,7 @@ import { dehydrateArray } from "../hydrate";
 import { Gms2ResourceBase } from "./resources/Gms2ResourceBase";
 import { Gms2Sound } from "../components/resources/Gms2Sound";
 import { YypResource } from "../../types/Yyp";
-import { Gms2PipelineError } from "../errors";
+import { StitchError } from "../errors";
 import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";
 import { Gms2Sprite } from "./resources/Gms2Sprite";
@@ -194,7 +194,7 @@ export class  Gms2ResourceArray {
     const subclass = Gms2ResourceArray
       ._resourceClassMap[resourceType];
     if (!subclass) {
-      throw new Gms2PipelineError(
+      throw new StitchError(
         `No constructor for resource ${resourceType} exists.`
       );
     }

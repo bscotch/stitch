@@ -1,4 +1,4 @@
-import { Gms2PipelineError, assert } from "./errors";
+import { StitchError, assert } from "./errors";
 import fs from "./files";
 import { oneline } from "@bscotch/utility";
 import paths from "./paths";
@@ -102,12 +102,12 @@ export class Gms2Project {
       const yypParentPath = yypPath;
       const yypPaths = fs.listFilesByExtensionSync(yypParentPath, 'yyp', true);
       if (yypPaths.length == 0) {
-        throw new Gms2PipelineError(
+        throw new StitchError(
           `Couldn't find a .yyp file in "${yypParentPath}"`
         );
       }
       if (yypPaths.length > 1) {
-        throw new Gms2PipelineError(oneline`
+        throw new StitchError(oneline`
           Found multiple .yyp files in "${yypParentPath}".
           When more than one is present,
           you must specify which you want to use.
@@ -171,7 +171,7 @@ export class Gms2Project {
       return newContent["versionString"];
     }
     else{
-      throw new Gms2PipelineError(`Cannot parse the Switch *.nmeta file to obtain the version`);
+      throw new StitchError(`Cannot parse the Switch *.nmeta file to obtain the version`);
     }
   }
 
@@ -192,7 +192,7 @@ export class Gms2Project {
     const parts = versionString
       .match(/^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)((\.(?<revision>\d+))|(-rc.(?<candidate>\d+)))?$/);
     if(!parts){
-      throw new Gms2PipelineError(`Version string ${versionString} is not a valid format.`);
+      throw new StitchError(`Version string ${versionString} is not a valid format.`);
     }
     const {major,minor,patch,revision,candidate} = parts.groups as {[part:string]:string};
     const normalizedVersionString = [major,minor,patch,candidate||revision||'0'].join('.');
@@ -217,7 +217,7 @@ export class Gms2Project {
         this.setSwitchVersion(normalizedVersionString, file);
       }
       else{
-        throw new Gms2PipelineError(`Found unsupported file format in the options dir: ${file}`);
+        throw new StitchError(`Found unsupported file format in the options dir: ${file}`);
       }
     }
   }
@@ -238,7 +238,7 @@ export class Gms2Project {
         return this.getSwitchVersion(optionsFile);
       }
       else{
-        throw new Gms2PipelineError(`The project does not contain a valid *.nmeta file with version info.`);
+        throw new StitchError(`The project does not contain a valid *.nmeta file with version info.`);
       }
     }
   }
