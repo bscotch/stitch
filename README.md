@@ -29,7 +29,7 @@ This project will generally stay up to date with the most recent versions of Gam
 
 Install/update globally with `npm install -g @bscotch/stitch@latest`. This will let you use the CLI commands anywhere on your system. To install a specific version of Stitch, replace `@latest` with `@x.y.z`, where `x.y.x` is the specific version.
 
-Note that updates to Stitch are likely to introduce new features and change existing features, so update with caution and [check the changelog](./CHANGELOG.md) first.
+**ⓘ Note:** Updates to Stitch are likely to introduce new features and change existing features, so update with caution and [check the changelog](./CHANGELOG.md) first.
 
 If you are creating a pipeline in Node.JS, you may want to install locally (same as above, but without the `-g`) and import directly into your code. Using Stitch programmatically will look something like this:
 
@@ -51,7 +51,7 @@ myProject
   .addIncludedFiles('my/localization/files');
 ```
 
-Note that the documentation is currently only within the code itself,
+**ⓘ Note:** The documentation is currently only within the code itself,
 but will be surfaced for you with Typescript-aware IDEs
 (such as Visual Studio Code). The examples here and below are all in
 Typescript, but you can use plain Node.JS instead. The main difference
@@ -132,18 +132,14 @@ This also works for Included Files.
 
 Use case: At Bscotch, we have a separate GameMaker project for our shared asset library that includes our login system, a large script library, common objects, extensions for managing In-App Purchase, and more. We use the module system to import the required subsets of this shared library into each of our games as needed. This allows us to guarantee that all games have the same, up to date code, and allows us to test common features in a single project.
 
-#### Module Import example
-
-**CLI**
-
 ```sh
+# CLI
 stitch import modules -h # Get help about importing modules
 stitch import modules --source-project-path=path/to/your/modules-project --modules=my_module,my_other_module
 ```
 
-**Typescript**
-
 ```ts
+// Typescript
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
 myProject.importModules('path/to/your/modules-project',['my_module','my_other_module']);
@@ -176,16 +172,14 @@ containing all those sprite folders to automatically update/create in-game sprit
 assets for each folder. During import, you can specify several options to map the
 original art file names onto standardized sprite names.
 
-**CLI**
-
 ```sh
+# CLI
 stitch import sprites -h # Get help about importing sprites
 stitch import sprites --source-path=path/to/your/sprites
 ```
 
-**Typescript**
-
 ```ts
+// Typescript
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
 myProject.addSprites('path/to/your/sprites');
@@ -205,16 +199,14 @@ sprite properties (those not in the frame editor) will be maintained between imp
 
 You can batch-import audio files into GameMaker as sound assets.
 
-**CLI**
-
 ```sh
+# CLI
 stitch import sounds -h # Get help about importing audio
 stitch import sounds --source-path=path/to/your/sounds
 ```
 
-**Typescript**
-
 ```ts
+// Typescript
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
 myProject.addSounds('path/to/your/sounds');
@@ -229,9 +221,8 @@ prior to making production builds. During import you can
 put files into subfolders, and you can even create files on
 the fly when using Stitch programmatically.
 
-**CLI**
-
 ```sh
+# CLI
 stitch import files -h # Get help about importing audio
 # Add all txt and json files found in a folder (recursively)
 stitch import files --source-path=path/to/your/files --allow-extensions=txt,json
@@ -239,9 +230,8 @@ stitch import files --source-path=path/to/your/files --allow-extensions=txt,json
 stitch import files --source-path=path/to/your/file.txt
 ```
 
-**Typescript**
-
 ```ts
+// Typescript
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
 // Add all txt and json files found in a folder (recursively)
@@ -254,15 +244,16 @@ myProject.addIncludedFiles('path/to/your/new-file.txt',{content:'Here is the fil
 
 #### Create/Update Scripts
 
-You can create scripts programmatically:
+You can create and update scripts programmatically:
 
 ```ts
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
-myProject.addScript('your/script/name','function(){}');
+myProject.addScript('your/script/name','// Just a placeholder now!');
+myProject.resources.findByName('name').code = 'function functionName(arg1){return arg1;}'
 ```
 
-#### Create/Update Objects
+#### Create Objects
 
 You can create Objects programmatically:
 
@@ -274,28 +265,26 @@ myProject.addObject('your/object/name');
 
 ### Texture Group Management <a id="texture-pages"></a>
 
-Texture group assignment of sprites via the GMS2 IDE is a fully manual, per-sprite process. Stitch allows you to map resource "Groups" (the folders in the GMS2 IDE) to Texture Groups, so that all sprites within a specified folder (recursing through subfolders) will be assigned to the same Texture Page. Groups with higher specificity take precedence.
+Texture group assignment of sprites via the GMS2 IDE is a fully manual, per-sprite process. Stitch allows you to map folders (in the GMS2 IDE resource tree) to Texture Groups, so that all sprites within a specified folder (recursing through subfolders) will be assigned to the same Texture Page. Folders with *higher specificity* take precedence.
 
 For example, you might map the group `sprites/mainMenu/` to the texture page `mainMenuTexturePage`, so that *every* sprite inside the `sprites/mainMenu/` folder (recursive) will be put into the same texture page. You might then map the group `sprites/mainMenu/subMenu` to a different page `subMenuTexturePage`. In this case, all sprites within `sprites/mainMenu/` are first mapped to `mainMenuTexturePage`, and then all sprites within `sprites/mainMenu/subMenu` are remapped to `subMenuTexturePage` (since that group has one additional subfolder and is therefore more specific).
 
 Texture Page assignments are stored in the [config file](#config-file) and can be modified via the CLI or by directly editing the configuration file.
 
-If you've added sprites to a folder via the IDE (instead of via the Stitch sprite importer),
+**ⓘ NOTE:** If you've added sprites to a folder via the IDE (instead of via the Stitch sprite importer),
 you'll need to run a Stitch command to ensure those sprites have their assignments changed.
 
-**CLI**
-
 ```sh
+# CLI
 stitch set texture-group -h # Get help assigning texture groups
 stitch set texture-group --folder=folder/in/the/ide --group-name=nameOfYourTextureGroup
-# Run the 'deborker' to ensure all assignments are correct,
-# especially after making manual changes in the IDE.
+# Run the 'deborker' to ensure all assignments are correct
+# after making manual changes via the IDE.
 stitch debork
 ```
 
-**Typescript**
-
 ```ts
+// Typescript
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
 // Create a new Texture Group (without assigning anything to it)
@@ -311,9 +300,8 @@ myProject.addTextureGroupAssignment('folder/in/the/ide','nameOfYourTextureGroup'
 
 Audio Group management is solved the [same way that Texture Groups are managed](#texture-pages).
 
-**CLI**
-
 ```sh
+# CLI
 stitch set audio-group -h # Get help assigning audio groups
 stitch set audio-group --folder=folder/in/the/ide --group-name=nameOfYourAudioGroup
 # Run the 'deborker' to ensure all assignments are correct,
@@ -321,9 +309,8 @@ stitch set audio-group --folder=folder/in/the/ide --group-name=nameOfYourAudioGr
 stitch debork
 ```
 
-**Typescript**
-
 ```ts
+// Typescript
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
 // Create a new Audio Group (without assigning anything to it)
@@ -335,7 +322,7 @@ myProject.addAudioGroupAssignment('folder/in/the/ide','nameOfYourAudioGroup');
 
 ### Programmatically Modifying Your Project and Assets
 
-Stitch provides many ways to modify assets, allowing you write
+Stitch grants access to the guts of GMS2 project assets, allowing you write
 scripts and pipelines that automate asset management in all kinds of ways.
 For example, you may want to replace a script with different content,
 set all sounds to have a different bitrate, and more.
@@ -347,19 +334,27 @@ use a Typescript-aware IDE to view the documentation while creating a
 project, but some samples are below:
 
 ```ts
-
 import {Gms2Project} from "@bscotch/stitch";
+
+// Load a project by searching starting in the current working directory
 const myProject = new Gms2Project();
-myProject.version = "1.0.0"; // Set the version in all options files
+// Set the version in all options files
+myProject.version = "1.0.0";
 myProject.deleteResourceByName('myCrappySprite');
 myProject.deleteIncludedFileByName('secrets.txt');
-myProject.addFolder('my/new/folder'); // Create new folders in the IDE
 myProject.addConfig('develop');
+// Create new folders in the asset tree shown in the IDE
+myProject.addFolder('my/new/folder');
 
+// Manipulating existing resources my require first finding them.
+
+// For 
 const anObject = myProject.resources.findByName('myObject');
 // -or-
 const anObject = myProject.resources.objects.find(object=>object.name=='myObject');
-anObject.spriteName = 'aDifferentSprite'; // Change the object's sprite
+
+// Change the object's sprite
+anObject.spriteName = 'aDifferentSprite';
 
 // Change the bitRate of all sounds
 myProject.resources.sounds.forEach(sound=>{
@@ -367,8 +362,9 @@ myProject.resources.sounds.forEach(sound=>{
 })
 ```
 
-Note that we add features on an as-needed basis, so some asset types
-have more modification options than others (and some have none). If
+**ⓘ Note:** We (Bscotch) add features only when we need them, so existing functionality
+will always be limited. However, the code is set up to make it relatively
+easy for someone familiar with Typescript to be able to add features: if
 you want to add new features, see [how you can contribute](#contribute).
 
 ## Contributing <a id="contribute"></a>
@@ -387,14 +383,33 @@ The fastest way to get fixes and features into Stitch is to submit them yourself
 
 If you want to bring your changes back into the main Stitch repo, you can make a pull request to do so. Note that your code will be under strict requirements to make sure that things don't turn into spaghetti:
 
-+ Code must be fully typed Typescript (no `any` or `//ts-ignore` unless strictly necessary).
++ Code must be fully typed Typescript (no `as any` or `//ts-ignore` unless absolutely necessary).
 + If adding a similar feature to something that already exists, the code must follow a similar pattern and re-use as much existing code as possible (no DRY violations).
 + Names of variables, methods, etc. must be consistent with those already in the project.
 + There must be test cases that cover your changes/additions (see `src/test/index.ts`). We don't require unit tests, just functional tests.
-+ The pull request must be rebase-able on the HEAD of the `develop` branch without conflict.
++ The pull request must be git-rebase-able on the HEAD of the `develop` branch without conflict.
 + Commit messages must follow the project conventions (below).
 
 It is very likely that we will ask for minor changes to the code before accepting a pull request.
+
+### Code Layout
+
+Here's a high-level overview of how this project is set up so that you can
+figure out where to make your changes:
+
++ `src/` contains all Typescript source code
++ `build/` will contain all build code, if you make local builds using the Typescript compiler
++ `sample-assets/` is for images, sounds, and other content for testing import functions
++ `sample-module-source/` is a GMS2.3 project used as a module source for testing module imports
++ `sample-project/` is a GMS2.3 project used as the target for imports and other manipulations in test cases.
++ `sand box/` is a temporary folder created when you run tests, where a copies of the sample-project are made
++ `src/index.ts` is the entry point for the project. It could be changed to export more types and features.
++ `src/test/index.ts` is the entry point for testing.
++ `src/lib/` is the bulk of where all functionality is coded
++ `src/cli` is where CLI-specific code lives
++ `src/lib/Gms2Project.ts` exports the main class shown in this documentation, that is used to create a manipulatable model of GameMaker projects. Project-level and batch-resource operations are exposed by this `Gms2Project` class. You should be able to find your way to any other existing feature of this project by starting with this part of the code.
++ `src/lib/components/` contains classes for modeling the components that appear in a project's .yyp file.
++ `src/lib/components/resources/` contains classes for each type of GMS2 resource (e.g. Sprites, Scripts, etc). This is where most core functionality is coded up. At base these classes do nothing but load and save `.yy` files -- functionality is added to them as needed. When adding new functionality, use existing functionality (perhaps from other resource types) as a reference.
 
 ### Commit conventions
 
@@ -403,17 +418,8 @@ namely formatting them as `<type>(<scope>): <subject>` where `type` is one of:
 
 + feat: A new feature
 + fix: A bug fix
-+ docs: Documentation only changes
-+ style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc.)
 + refactor: A code change that neither fixes a bug nor adds a feature
-+ perf: A code change that improves performance
 + test: Adding missing or correcting existing tests
++ docs: Documentation only changes
++ perf: A code change that improves performance
 + chore: Changes to the build process or auxiliary tools and libraries such as documentation generation
-
-
-
-### Legend
-
-+ ❌ something that is not yet completed
-+ ✅ something that has been completed, in the context of other things that have not, to make it easier to track to-dos.
-+ ⚠  something that the user should pay very close attention to in order to stay out of trouble
