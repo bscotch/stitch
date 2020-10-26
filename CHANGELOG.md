@@ -1,3 +1,12 @@
+## [1.1.3](https://github.com/bscotch/stitch/compare/v1.1.2...v1.1.3) (2020-10-26)
+
+
+### Bug Fixes
+
+* The running IDE will no longer require a restart when doing an import. ([d62b573](https://github.com/bscotch/stitch/commit/d62b573e859d935783b0dd61bffcb9161acdad63))
+
+
+
 ## [1.1.2](https://github.com/bscotch/stitch/compare/v1.1.1...v1.1.2) (2020-10-26)
 
 
