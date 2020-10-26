@@ -38,14 +38,12 @@ function ensureDirSync(dir:string){
 function writeFileSync(filePath:string,stuff:string|Buffer){
   assert(!isDir(filePath),`${filePath} is a directory; it cannot have a file written over it`);
   ensureDirSync(path.dirname(filePath));
-  fs.removeSync(filePath); // GMS2 IDE works better when files are NEW vs. replaced
   fs.writeFileSync(filePath,stuff);
 }
 
 function copyFileSync(sourcePath:string,targetPath:string){
   ensureDirSync(path.dirname(targetPath));
   assert(!isDir(targetPath),`${targetPath} is a directory; it cannot have a file written over it`);
-  fs.removeSync(targetPath); // GMS2 IDE works better when files are NEW vs. replaced
   fs.copyFileSync(sourcePath,targetPath);
 }
 

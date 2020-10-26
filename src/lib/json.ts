@@ -67,11 +67,5 @@ export function writeFileSync(filePath: string, stuff: any) {
   }
   // The GameMaker IDE may better handle live file changes
   // when files are deleted and replaced instead of written over.
-  // fs.writeFileSync(filePath,stringifiedSortedStuff); // Swap back to this if untrue
-
-  const tempFilePath = `${filePath}.stitch.tmp`;
-
-  fs.writeFileSync(tempFilePath, stringifiedSortedStuff);
-  fs.removeSync(filePath);
-  fs.moveSync(tempFilePath,filePath);
+  fs.writeFileSync(filePath,stringifiedSortedStuff); // Swap back to this if untrue
 }
