@@ -1,5 +1,10 @@
 # GameMaker Studio 2.3+ Project File Structure
 
+This document contains notes about the files that collectively make up
+a Gamemaker Studio 2.3+ project. It is incomplete and may not be up to
+date, so it should be considered a starting point to understand how
+projects are put together.
+
 ## File types
 
 The main organizational content of a GameMaker project is in JSON-like files,
@@ -17,7 +22,7 @@ files of various resource-specific types.
 + Every resource ends up in a flat file structure inside a per-resource-type root folder.
 + There is one file folder per resource type.
 + Organization of resource files within each resource folder seems to be unchanged relative
-  to GMS2.2. *Mosty* conists of `type/name/name.yy`, sometimes with additional files of various types.
+  to GMS2.2. *Mostly* consists of `type/name/name.yy`, sometimes with additional files of various types.
 + Which folder an asset is in is determined by that asset's `.yy` file via the `"parent"` field.
 
 Examples:
@@ -52,7 +57,7 @@ simple list of strings.
 ## Colors
 
 **Colors are not saved.** You can color-code assets, but these are only stored
-at the IDE level.
+at the IDE level and therefore are not accessible by Stitch.
 
 ## GUIDs
 
@@ -63,13 +68,13 @@ identifiers are needed but user-provided names are not available.
 
 We don't know what algorithm is used to generate these identifiers, but all our experiments show
 that as long as they are dash-separated hex strings with the exact same number of characters as
-GUIDs created by GMS2 itself they'll work just fine. We use either random UUIDs (v4) or
+GUIDs created by GMS2 itself they'll work just fine. We can use either random UUIDs (v4) or
 generate them based on well-defined parameters (v3), depending on context.
 
 ## YYP <a id="yyp"></a>
 
 Each game project has a root `*.yyp` file that describes all of its resources
-and some of its high-level metadata. This is the entrypoint for GameMaker projects.
+and some of its high-level metadata. This is the entry point for GameMaker projects.
 
 The root contents of the GMS2.3 `yyp` file are these:
 
@@ -150,191 +155,9 @@ results in the following files:
 
 (`frameId1`, `layerId1`, <i>etc</i> are placeholders for random GMS2-generated GUIDs.)
 
-<details>
-  <summary><code>.yy</code> file content of a brand new sprite</summary>
 
 For details on what each of these fields mean and their allowed values, see
 [the Typescript typings](../src/types/YySprite.ts).
-
-```jsonc
-{
-	"For3D": false,
-	"HTile": false,
-	"VTile": false,
-	"bboxMode": 0,
-	"bbox_bottom": 0,
-	"bbox_left": 0,
-	"bbox_right": 0,
-	"bbox_top": 0,
-	"collisionKind": 1,
-	"collisionTolerance": 0,
-	"edgeFiltering": false,
-	"frames": [
-		{
-			"compositeImage": {
-				"FrameId": {
-					"name": "{frameId1}",
-					"path": "sprites/sampleSprite/sampleSprite.yy"
-				},
-				"layerId1": null,
-				"name": "",
-				"resourceType": "GMSpriteBitmap",
-				"resourceVersion": "1.0",
-				"tags": []
-			},
-			"images": [
-				{
-					"FrameId": {
-						"name": "{frameId1}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"layerId1": {
-						"name": "{frameId1}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"name": "",
-					"resourceType": "GMSpriteBitmap",
-					"resourceVersion": "1.0",
-					"tags": []
-				}
-			],
-			"name": "{frameId1}",
-			"parent": {
-				"name": "sampleSprite",
-				"path": "sprites/sampleSprite/sampleSprite.yy"
-			},
-			"resourceType": "GMSpriteFrame",
-			"resourceVersion": "1.0",
-			"tags": []
-		}
-	],
-	"gridX": 0,
-	"gridY": 0,
-	"height": 64,
-	"layers": [
-		{
-			"blendMode": 0,
-			"displayName": "default",
-			"isLocked": false,
-			"name": "{layerId1}",
-			"opacity": 100,
-			"resourceType": "GMImageLayer",
-			"resourceVersion": "1.0",
-			"tags": [],
-			"visible": true
-		}
-	],
-	"name": "sampleSprite",
-	"origin": 0,
-	"parent": {
-		"name": "Sprites",
-		"path": "folders/Sprites.yy"
-	},
-	"preMultiplyAlpha": false,
-	"resourceType": "GMSprite",
-	"resourceVersion": "1.0",
-	"sequence": {
-		"autoRecord": true,
-		"backdropHeight": 768,
-		"backdropImageOpacity": 0.5,
-		"backdropImagePath": "",
-		"backdropWidth": 1366,
-		"backdropXOffset": 0,
-		"backdropYOffset": 0,
-		"eventStubScript": null,
-		"eventToFunction": {},
-		"events": {
-			"Keyframes": [],
-			"resourceType": "KeyframeStore<MessageEventKeyframe>",
-			"resourceVersion": "1.0"
-		},
-		"length": 1,
-		"lockOrigin": false,
-		"moments": {
-			"Keyframes": [],
-			"resourceType": "KeyframeStore<MomentsEventKeyframe>",
-			"resourceVersion": "1.0"
-		},
-		"name": "sampleSprite",
-		"parent": {
-			"name": "sampleSprite",
-			"path": "sprites/sampleSprite/sampleSprite.yy"
-		},
-		"playback": 1,
-		"playbackSpeed": 30,
-		"playbackSpeedType": 0,
-		"resourceType": "GMSequence",
-		"resourceVersion": "1.3",
-		"showBackdrop": true,
-		"showBackdropImage": false,
-		"spriteId": {
-			"name": "sampleSprite",
-			"path": "sprites/sampleSprite/sampleSprite.yy"
-		},
-		"tags": [],
-		"timeUnits": 1,
-		"tracks": [
-			{
-				"builtinName": 0,
-				"events": [],
-				"inheritsTrackColour": true,
-				"interpolation": 1,
-				"isCreationTrack": false,
-				"keyframes": {
-					"Keyframes": [
-						{
-							"Channels": {
-								"0": {
-									"Id": {
-										"name": "{frameId1}",
-										"path": "sprites/sampleSprite/sampleSprite.yy"
-									},
-									"resourceType": "SpriteFrameKeyframe",
-									"resourceVersion": "1.0"
-								}
-							},
-							"Disabled": false,
-							"IsCreationKey": false,
-							"Key": 0,
-							"Length": 1,
-							"Stretch": false,
-							"id": "5fd00e24-be25-487f-9b9e-3edf9bede751",
-							"resourceType": "Keyframe<SpriteFrameKeyframe>",
-							"resourceVersion": "1.0"
-						}
-					],
-					"resourceType": "KeyframeStore<SpriteFrameKeyframe>",
-					"resourceVersion": "1.0"
-				},
-				"modifiers": [],
-				"name": "frames",
-				"resourceType": "GMSpriteFramesTrack",
-				"resourceVersion": "1.0",
-				"spriteId": null,
-				"tags": [],
-				"trackColour": 0,
-				"tracks": [],
-				"traits": 0
-			}
-		],
-		"visibleRange": null,
-		"volume": 1,
-		"xorigin": 0,
-		"yorigin": 0
-	},
-	"swatchColours": null,
-	"swfPrecision": 2.525,
-	"tags": [],
-	"textureGroupId": {
-		"name": "Default",
-		"path": "texturegroups/Default"
-	},
-	"type": 0,
-	"width": 64
-}
-```
-
-</details>
 
 
 ### Modified (complex) sprites
@@ -382,373 +205,10 @@ file structure:
 + `sprites/sampleSprite/layers/{frameId3}/{layerId1}.png`
 + `sprites/sampleSprite/layers/{frameId3}/{layerId2}.png`
 
-(`frameId1`, `layerId1`, <i>etc</i> are placeholders for random GMS2-generated GUIDs.)
-
-<details>
-  <summary><code>.yy</code> file content of a complex sprite</summary>
+(`frameId1`, `layerId1`, *etc.* are placeholders for random GMS2-generated GUIDs.)
 
 For details on what each of these fields mean and their allowed values, see
 [the Typescript typings](../src/types/YySprite.ts).
-
-```jsonc
-{
-	"For3D": false,
-	"HTile": false,
-	"VTile": false,
-	"bboxMode": 0,
-	"bbox_bottom": 181,
-	"bbox_left": 0,
-	"bbox_right": 181,
-	"bbox_top": 0,
-	"collisionKind": 1,
-	"collisionTolerance": 0,
-	"edgeFiltering": false,
-	"frames": [
-		{
-			"compositeImage": {
-				"FrameId": {
-					"name": "{frameId1}",
-					"path": "sprites/sampleSprite/sampleSprite.yy"
-				},
-				"LayerId": null,
-				"name": "",
-				"resourceType": "GMSpriteBitmap",
-				"resourceVersion": "1.0",
-				"tags": []
-			},
-			"images": [
-				{
-					"FrameId": {
-						"name": "{frameId1}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"LayerId": {
-						"name": "{layerId1}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"name": "",
-					"resourceType": "GMSpriteBitmap",
-					"resourceVersion": "1.0",
-					"tags": []
-				},
-				{
-					"FrameId": {
-						"name": "{frameId1}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"LayerId": {
-						"name": "{layerId2}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"name": "",
-					"resourceType": "GMSpriteBitmap",
-					"resourceVersion": "1.0",
-					"tags": []
-				}
-			],
-			"name": "{frameId1}",
-			"parent": {
-				"name": "sampleSprite",
-				"path": "sprites/sampleSprite/sampleSprite.yy"
-			},
-			"resourceType": "GMSpriteFrame",
-			"resourceVersion": "1.0",
-			"tags": []
-		},
-		{
-			"compositeImage": {
-				"FrameId": {
-					"name": "{frameId2}",
-					"path": "sprites/sampleSprite/sampleSprite.yy"
-				},
-				"LayerId": null,
-				"name": "",
-				"resourceType": "GMSpriteBitmap",
-				"resourceVersion": "1.0",
-				"tags": []
-			},
-			"images": [
-				{
-					"FrameId": {
-						"name": "{frameId2}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"LayerId": {
-						"name": "{layerId1}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"name": "",
-					"resourceType": "GMSpriteBitmap",
-					"resourceVersion": "1.0",
-					"tags": []
-				},
-				{
-					"FrameId": {
-						"name": "{frameId2}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"LayerId": {
-						"name": "{layerId2}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"name": "",
-					"resourceType": "GMSpriteBitmap",
-					"resourceVersion": "1.0",
-					"tags": []
-				}
-			],
-			"name": "{frameId2}",
-			"parent": {
-				"name": "sampleSprite",
-				"path": "sprites/sampleSprite/sampleSprite.yy"
-			},
-			"resourceType": "GMSpriteFrame",
-			"resourceVersion": "1.0",
-			"tags": []
-		},
-		{
-			"compositeImage": {
-				"FrameId": {
-					"name": "{frameId3}",
-					"path": "sprites/sampleSprite/sampleSprite.yy"
-				},
-				"LayerId": null,
-				"name": "",
-				"resourceType": "GMSpriteBitmap",
-				"resourceVersion": "1.0",
-				"tags": []
-			},
-			"images": [
-				{
-					"FrameId": {
-						"name": "{frameId3}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"LayerId": {
-						"name": "{layerId1}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"name": "",
-					"resourceType": "GMSpriteBitmap",
-					"resourceVersion": "1.0",
-					"tags": []
-				},
-				{
-					"FrameId": {
-						"name": "{frameId3}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"LayerId": {
-						"name": "{layerId2}",
-						"path": "sprites/sampleSprite/sampleSprite.yy"
-					},
-					"name": "",
-					"resourceType": "GMSpriteBitmap",
-					"resourceVersion": "1.0",
-					"tags": []
-				}
-			],
-			"name": "{frameId3}",
-			"parent": {
-				"name": "sampleSprite",
-				"path": "sprites/sampleSprite/sampleSprite.yy"
-			},
-			"resourceType": "GMSpriteFrame",
-			"resourceVersion": "1.0",
-			"tags": []
-		}
-	],
-	"gridX": 0,
-	"gridY": 0,
-	"height": 182,
-	"layers": [
-		{
-			"blendMode": 0,
-			"displayName": "Layer Group 1",
-			"isLocked": false,
-			"layers": [
-				{
-					"blendMode": 0,
-					"displayName": "newLayer",
-					"isLocked": false,
-					"name": "{layerId2}",
-					"opacity": 100,
-					"resourceType": "GMImageLayer",
-					"resourceVersion": "1.0",
-					"tags": [],
-					"visible": true
-				}
-			],
-			"name": "{layerGroupId1}",
-			"opacity": 100,
-			"resourceType": "GMImageFolderLayer",
-			"resourceVersion": "1.0",
-			"tags": [],
-			"visible": true
-		},
-		{
-			"blendMode": 0,
-			"displayName": "renamedDefaultLayer",
-			"isLocked": false,
-			"name": "{layerId1}",
-			"opacity": 100,
-			"resourceType": "GMImageLayer",
-			"resourceVersion": "1.0",
-			"tags": [],
-			"visible": true
-		}
-	],
-	"name": "sampleSprite",
-	"origin": 9,
-	"parent": {
-		"name": "Sprites",
-		"path": "folders/Sprites.yy"
-	},
-	"preMultiplyAlpha": false,
-	"resourceType": "GMSprite",
-	"resourceVersion": "1.0",
-	"sequence": {
-		"autoRecord": true,
-		"backdropHeight": 768,
-		"backdropImageOpacity": 0.5,
-		"backdropImagePath": "",
-		"backdropWidth": 1366,
-		"backdropXOffset": 0,
-		"backdropYOffset": 0,
-		"eventStubScript": null,
-		"eventToFunction": {},
-		"events": {
-			"Keyframes": [],
-			"resourceType": "KeyframeStore<MessageEventKeyframe>",
-			"resourceVersion": "1.0"
-		},
-		"length": 3,
-		"lockOrigin": false,
-		"moments": {
-			"Keyframes": [],
-			"resourceType": "KeyframeStore<MomentsEventKeyframe>",
-			"resourceVersion": "1.0"
-		},
-		"name": "sampleSprite",
-		"parent": {
-			"name": "sampleSprite",
-			"path": "sprites/sampleSprite/sampleSprite.yy"
-		},
-		"playback": 1,
-		"playbackSpeed": 30,
-		"playbackSpeedType": 0,
-		"resourceType": "GMSequence",
-		"resourceVersion": "1.3",
-		"showBackdrop": true,
-		"showBackdropImage": false,
-		"spriteId": {
-			"name": "sampleSprite",
-			"path": "sprites/sampleSprite/sampleSprite.yy"
-		},
-		"tags": [],
-		"timeUnits": 1,
-		"tracks": [
-			{
-				"builtinName": 0,
-				"events": [],
-				"inheritsTrackColour": true,
-				"interpolation": 1,
-				"isCreationTrack": false,
-				"keyframes": {
-					"Keyframes": [
-						{
-							"Channels": {
-								"0": {
-									"Id": {
-										"name": "{frameId1}",
-										"path": "sprites/sampleSprite/sampleSprite.yy"
-									},
-									"resourceType": "SpriteFrameKeyframe",
-									"resourceVersion": "1.0"
-								}
-							},
-							"Disabled": false,
-							"IsCreationKey": false,
-							"Key": 0,
-							"Length": 1,
-							"Stretch": false,
-							"id": "1ff3bd6a-b2b6-4546-b9f2-e8859645706d",
-							"resourceType": "Keyframe<SpriteFrameKeyframe>",
-							"resourceVersion": "1.0"
-						},
-						{
-							"Channels": {
-								"0": {
-									"Id": {
-										"name": "{frameId2}",
-										"path": "sprites/sampleSprite/sampleSprite.yy"
-									},
-									"resourceType": "SpriteFrameKeyframe",
-									"resourceVersion": "1.0"
-								}
-							},
-							"Disabled": false,
-							"IsCreationKey": false,
-							"Key": 1,
-							"Length": 1,
-							"Stretch": false,
-							"id": "56c8a118-8f2b-4130-88b0-d1169244be18",
-							"resourceType": "Keyframe<SpriteFrameKeyframe>",
-							"resourceVersion": "1.0"
-						},
-						{
-							"Channels": {
-								"0": {
-									"Id": {
-										"name": "{frameId3}",
-										"path": "sprites/sampleSprite/sampleSprite.yy"
-									},
-									"resourceType": "SpriteFrameKeyframe",
-									"resourceVersion": "1.0"
-								}
-							},
-							"Disabled": false,
-							"IsCreationKey": false,
-							"Key": 2,
-							"Length": 1,
-							"Stretch": false,
-							"id": "9a7f14d8-bfa8-43dd-a563-f037f9579870",
-							"resourceType": "Keyframe<SpriteFrameKeyframe>",
-							"resourceVersion": "1.0"
-						}
-					],
-					"resourceType": "KeyframeStore<SpriteFrameKeyframe>",
-					"resourceVersion": "1.0"
-				},
-				"modifiers": [],
-				"name": "frames",
-				"resourceType": "GMSpriteFramesTrack",
-				"resourceVersion": "1.0",
-				"spriteId": null,
-				"tags": [],
-				"trackColour": 0,
-				"tracks": [],
-				"traits": 0
-			}
-		],
-		"visibleRange": null,
-		"volume": 1,
-		"xorigin": 132,
-		"yorigin": 93
-	},
-	"swatchColours": null,
-	"swfPrecision": 2.525,
-	"tags": [],
-	"textureGroupId": {
-		"name": "Default",
-		"path": "texturegroups/Default"
-	},
-	"type": 0,
-	"width": 182
-}
-```
-
-</details>
 
 
 ### Sprite Sequence

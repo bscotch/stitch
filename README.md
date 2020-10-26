@@ -57,7 +57,7 @@ but will be surfaced for you with Typescript-aware IDEs
 Typescript, but you can use plain Node.JS instead. The main difference
 there will be in how you import Stitch: instead of
 `import {Gms2Project} from "@bscotch/stitch"` you'd probably use
-`const {Gms2Project} = require('"@bscotch/stitch')`.
+`const {Gms2Project} = require('@bscotch/stitch')`.
 
 
 ### Preparing your GameMaker project for Stitch
@@ -76,7 +76,7 @@ project-root/project-name/stitch.config.json # Stitch configuration data (create
 
 </details>
 
-Yours doesn't have to look *exactly* like the example, but the general relationships should. For example, there must be a `.git` folder somewhere (created when you run `git init` or `git clone`), and your [`.yyp` file](#yyp) must either be in the same directory as that `.git` folder or in a subdirectory as shown above.
+Yours doesn't have to look *exactly* like the example, but the general relationships should. For example, there must be a `.git` folder somewhere (created when you run `git init` or `git clone`), and your [`.yyp` file](docs/gms2-file-structure.md#yyp) must either be in the same directory as that `.git` folder or in a subdirectory as shown above.
 
 To start using Stitch with one of your GMS2 projects, do the following:
 
@@ -87,7 +87,7 @@ To start using Stitch with one of your GMS2 projects, do the following:
 
 ### Stitch Configuration File <a id="config-file"></a>
 
-To keep things stable and automatable, Stitch uses a configuration file (`stitch.config.json`) to store things like Texture Page and Audio Group assignments. This file is stored alongside the [`.yyp` file](#yyp). You can edit it manually, but it's a better idea to use Stitch CLI commands (see the [Audio Groups](#audio-groups) and [Texture Pages](#texture-pages) sections for examples).
+To keep things stable and automatable, Stitch uses a configuration file (`stitch.config.json`) to store things like Texture Page and Audio Group assignments. This file is stored alongside the [`.yyp` file](docs/gms2-file-structure.md#yyp). You can edit it manually, but it's a better idea to use Stitch CLI commands (see the [Audio Groups](#audio-groups) and [Texture Pages](#texture-pages) sections for examples).
 
 <details>
 <summary><b>Config file example</b></summary>
