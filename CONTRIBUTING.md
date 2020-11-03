@@ -21,7 +21,7 @@ If you want to bring your changes back into the main Stitch repo, you can make a
 + The pull request must be git-rebase-able on the HEAD of the `develop` branch without conflict.
 + Commit messages must follow the project conventions (below).
 
-It is very likely that we will ask for minor changes to the code before accepting a pull request.
+It is likely that we will ask for minor changes to the code before accepting a pull request, to ensure that the code base stays consistent.
 
 ## Code Layout
 
@@ -42,7 +42,47 @@ figure out where to make your changes:
 + `src/lib/components/` contains classes for modeling the components that appear in a project's .yyp file.
 + `src/lib/components/resources/` contains classes for each type of GMS2 resource (e.g. Sprites, Scripts, etc). This is where most core functionality is coded up. At base these classes do nothing but load and save `.yy` files -- functionality is added to them as needed. When adding new functionality, use existing functionality (perhaps from other resource types) as a reference.
 
+## Setting up your development environment
+
+After forking this repo to your own GitHub account
+and cloning locally:
+
++ Open a terminal in the root of this project.
+  + Run `npm install`
+  + Run `npm run build`
+  + Run `npm test`
++ If all tests are passing, you're good to go!
+
+## How to test your code
+
+If you are using Visual Studio Code, you can open
+up the debug panel from the sidebar and hit the play
+button to run tests. Output will appear in your Debug
+Console.
+
+In the debugger dropdown you'll see two options:
+
+1. "Stitch Tests (via ts-node)" will directly run
+   the Typescript code. This is the easiest way to
+   ensure you're testing the code that you see.
+2. "Stitch Tests (requires compile)" runs the compiled
+   JavaScript. This is the same behavior as running
+   `npm test` from the command line. If you are using
+   this option, make sure you first compile the code
+   so that you guarantee you're testing your actual changes.
+3. For manual tests, you'll need to make sure you're
+   importing from the `build` directory instead of `src`.
+
+To compile the code into JavaScript, you'll need to run
+`npm run build`. Alternatively, you can run the Typescript
+compiler in watch mode to re-compile the code every time
+you save a change, using `npx tsc -w`.
+
 ## Commit conventions
+
+All of your commits must follow the conventions below.
+We recommend squashing your commits into one commit per
+feature/bugfix, but that isn't required.
 
 We follow the conventional-changelog Angular convention for commit messages,
 namely formatting them as `<type>: <subject>` where `type` is one of:
