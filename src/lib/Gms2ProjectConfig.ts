@@ -111,7 +111,7 @@ export class Gms2ProjectConfig {
   }
 
   private save(){
-    this.storage.writeJson(this.filePathAbsolute,this.data);
+    this.storage.writeJson(this.filePathAbsolute,this.data,true);
     return this;
   }
 

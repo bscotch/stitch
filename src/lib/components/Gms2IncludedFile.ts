@@ -38,7 +38,7 @@ export class Gms2IncludedFile {
       this.storage.writeBlob(this.filePathAbsolute,data);
     }
     else{
-      this.storage.writeJson(this.filePathAbsolute,data);
+      this.storage.writeJson(this.filePathAbsolute,data,true);
     }
   }
 

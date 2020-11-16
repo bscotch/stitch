@@ -12,10 +12,6 @@ export class Gms2Storage {
         Working directory for ${paths.basename(yypAbsolutePath)} is not clean. Commit or stash your work!
       `);
     }
-    if(process.env.GMS2PDK_DEV != 'true'){
-      // ! Replace this with a hook that throws when the yyp file is plain JSON (instead of GMS2's weird format)
-      // this.installPrecommitHook();
-    }
   }
 
   get yypDirAbsolute(){
@@ -67,30 +63,6 @@ export class Gms2Storage {
     }
   }
 
-  /** @deprecated */
-  installPrecommitHook(){
-    const gitRoot = this.gitWorkingTreeRoot;
-    const preCommitFilePath = paths.join(gitRoot,'.git','hooks','pre-commit');
-    if(fs.existsSync(preCommitFilePath)){
-      return;
-    }
-    const hookCode = `#!/bin/sh
-
-# GameMaker Studio stores yy and yyp files with trailing commas and non-standard
-# spacing. The GMS2 PDK creates standard JSON files with predictable spacing upon save,
-# thus causing large numbers of cosmetic file changes that will pollute the Git history.
-# This hook forces all yy/yyp files in the repo to be in a standardized JSON format
-# prior to commiting, so that the files are always guaranteed to have the exact same
-# structure, whether they were last edited by GameMaker Studio or Stitch.
-
-npx @bscotch/stitch jsonify --path .
-git add *.yy
-git add *.yyp
-`;
-    fs.writeFileSync(preCommitFilePath, hookCode);
-    fs.chmodSync(preCommitFilePath,'777');
-  }
-
   listFiles(dir:string,recursive?:boolean,allowedExtension?:string[]){
     if (allowedExtension && allowedExtension.length > 0){
       return fs.listFilesByExtensionSync(dir, allowedExtension, recursive);
@@ -139,9 +111,12 @@ git add *.yyp
     }
   }
 
-  writeJson(filePath:string,data:any){
+  /** Write data as JSON, defaulting to GMS2.3-style JSON
+   * @param {boolean} [plain] Use regular JSON instead of GMS2.3-style.
+   */
+  writeJson(filePath:string,data:any,plain=false){
     if(!this.isReadOnly){
-      fs.writeJsonSync(filePath,data);
+      fs.writeJsonSync(filePath,data,plain);
     }
   }
 

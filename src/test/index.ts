@@ -8,7 +8,6 @@ import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 import { differenceBy } from 'lodash';
 import { StitchError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
-import jsonify, { JsonifyOptions } from '../cli/lib/jsonify';
 import cli_assert from '../cli/lib/cli-assert';
 import importModules, { ImportModuleOptions } from '../cli/lib/import-modules';
 import importSounds from '../cli/lib/import-sounds';
@@ -16,6 +15,8 @@ import version, {VersionOptions} from '../cli/lib/version';
 import importFiles from '../cli/lib/import-files';
 import {assignAudioGroups, assignTextureGroups, AssignCliOptions} from '../cli/lib/assign';
 import { Gms2Object } from '../lib/components/resources/Gms2Object';
+import {jsonify as stringify} from "../lib/jsonify";
+import { undent } from '@bscotch/utility';
 
 /*
 Can be used to inform Stitch components that we are in
@@ -104,6 +105,28 @@ describe("GMS2.3 Pipeline SDK", function () {
       ];
       pathList.sort(paths.pathSpecificitySort);
       expect(pathList).to.eql(expectedOrder);
+    });
+
+    it("can create GMS2-style JSON", function(){
+      expect(stringify({
+        hello:'world',
+        parent:{child:['10','20']},
+        array:[{name:'child1',field:true},{name:"child2"}]
+      })).to.equal(undent`
+        {
+          "hello": "world",
+          "parent": {
+            "child": [
+              "10",
+              "20",
+            ],
+          },
+          "array": [
+            {"name":"child1","field":true,},
+            {"name":"child2",},
+          ],
+        }
+      `);
     });
   });
 
@@ -477,56 +500,9 @@ describe("GMS2.3 Pipeline SDK", function () {
       }
     });
 
-    it('Can jsonify a single yyp file', function(){
-      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath), "Original yyp file shoud not be parsable as json.").to.throw();
-      const originalContent = fs.readJsonSync(sandboxProjectYYPPath);
-      fs.convertGms2FilesToJson(sandboxProjectYYPPath);
-      expect(()=>fs_extra.readJsonSync(sandboxProjectYYPPath), "Jsonified yyp file should be parsable as json.").to.not.throw();
-      const jsonifiedContent = fs.readJsonSync(sandboxProjectYYPPath);
-      expect(originalContent, "Jsonification should not change the content.").to.eql(jsonifiedContent);
-    });
-
-    it('Can batch jsonify yy(p) files in a directory', function(){
-      const gms2Files = fs.listFilesByExtensionSync(sandboxRoot, [".yy", ".yyp"]);
-      for (const gms2File of gms2Files){
-        expect(()=>fs_extra.readJsonSync(gms2File), "Original yy(p) file shoud not be parsable as json.").to.throw();
-      }
-
-      fs.convertGms2FilesToJson(sandboxRoot);
-      for (const gms2File of gms2Files){
-        expect(()=>fs_extra.readJsonSync(gms2File), "Jsonified yyp file should be parsable as json.").to.not.throw();
-      }
-    });
   });
 
   describe("CLI",function(){
-    it('can jsonify',function(){
-      let jsonifyOptions: JsonifyOptions = {
-        path: sandboxProjectYYPPath
-      };
-      expect(()=>jsonify(jsonifyOptions),
-        "Should succeed when processing just a file input."
-      ).to.not.throw();
-      jsonifyOptions = {
-        path: sandboxRoot
-      };
-      expect(()=>jsonify(jsonifyOptions),
-        "Should succeed when processing just a directory input."
-      ).to.not.throw();
-
-      process.chdir(sandboxRoot);
-      jsonifyOptions = {
-        path: "."
-      };
-      expect(()=>jsonify(jsonifyOptions),
-        "Should succeed when using '.' to point to the cwd"
-      ).to.not.throw();
-
-      jsonifyOptions = {path: ""};
-      expect(()=>jsonify(jsonifyOptions),
-        "Should fail when there is no input."
-      ).to.throw(cli_assert.Gms2PipelineCliAssertionError);
-    });
 
     it('cannot import modules missing dependencies',function(){
       const importModulesOptions = {

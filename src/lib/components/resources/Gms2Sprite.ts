@@ -121,7 +121,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
   replaceFrames(spriteDirectory:string){
     const sprite = new Spritely(spriteDirectory);
     // Ensure that the sizes match
-    this.setDims(sprite.width,sprite.height);
+    this.setDims(sprite.width as number,sprite.height as number);
     // Replace all the frames
 
     // Clear out the current files (except the yy file)
