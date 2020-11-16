@@ -17,7 +17,7 @@ export function stringify(stuff: any) {
   return Json.stringify(
     stuff,
     (key: string, value: any) => value?.dehydrated ?? value,
-    "\t"
+    2
   );
 }
 
@@ -47,15 +47,17 @@ export function loadFromFileSync(filePath: string) {
  * Write GMS2-style JSON into an object
  */
 export function writeFileSync(filePath: string, stuff: any) {
-  const sortedStuff = sortKeys(stuff);
-  const stringifiedSortedStuff = stringify(sortedStuff);
   // Only write if necessary
   fs.ensureDirSync(path.dirname(filePath));
   if(fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()){
     throw new StitchError(`Cannot write file to ${filePath}; path is a directory`);
   }
   try{
+    // Stringification may differ, so check for being the same
+    // after removing sorting and spacing differences.
     const existing = sortKeys(loadFromFileSync(filePath));
+    const sortedStuff = sortKeys(stuff);
+    const stringifiedSortedStuff = stringify(sortedStuff);
     if(stringify(existing) == stringifiedSortedStuff){
       return;
     }
@@ -67,5 +69,5 @@ export function writeFileSync(filePath: string, stuff: any) {
   }
   // The GameMaker IDE may better handle live file changes
   // when files are deleted and replaced instead of written over.
-  fs.writeFileSync(filePath,stringifiedSortedStuff); // Swap back to this if untrue
+  fs.writeFileSync(filePath,stringify(stuff)); // Swap back to this if untrue
 }

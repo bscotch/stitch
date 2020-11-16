@@ -8,9 +8,8 @@
 
 import fs, { existsSync } from "fs-extra";
 import path from "./paths";
-import {writeFileSync as writeJsonSync,loadFromFileSync as readJsonSync} from "./json";
+import {writeFileSync as writeJsonSync,loadFromFileSync as readJsonSync, stringify} from "./json";
 import { assert } from "./errors";
-import sortKeys from "sort-keys";
 import { warn } from "console";
 import {
   listPathsSync,
@@ -69,7 +68,7 @@ function convertGms2FilesToJson(path:string){
     assert(existsSync(targetFile),`Cannot convert GMS2 file: ${targetFile} does not exist.`);
     try{
       const parsed = readJsonSync(targetFile);
-      writeJsonSync(targetFile,sortKeys(parsed,{deep:true}));
+      fs.writeFileSync(targetFile,stringify(parsed));
     }
     catch(err){
       warn(`Cannot convert file "${targetFile}" to regular JSON.`);
