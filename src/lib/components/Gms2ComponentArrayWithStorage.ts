@@ -5,7 +5,7 @@ import {Gms2ComponentArrayBase} from "./Gms2ComponentArrayBase";
 export class Gms2ComponentArrayWithStorage<
   YypData,
   ComponentClass extends
-  (new (object:YypData,storage:Gms2Storage)=>InstanceType<ComponentClass>&{dehydrated:YypData})
+  (new (object:YypData,storage:Gms2Storage)=>InstanceType<ComponentClass>&{toJSON():YypData})
 > extends Gms2ComponentArrayBase<YypData,ComponentClass>{
 
   constructor(data:YypData[],protected componentClass: ComponentClass,protected storage:Gms2Storage){

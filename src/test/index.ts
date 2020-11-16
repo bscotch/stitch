@@ -115,7 +115,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(project.resources.findByName(name)).to.exist;
       project.deleteResourceByName(name);
       expect(project.resources.findByName(name)).to.not.exist;
-      expect(project.dehydrated.resources.find(r=>r.id.name==name)).to.not.exist;
+      expect(project.toJSON().resources.find(r=>r.id.name==name)).to.not.exist;
     });
 
     it('can delete an included file',function(){
@@ -130,7 +130,7 @@ describe("GMS2.3 Pipeline SDK", function () {
     it("can hydrate and dehydrate the YYP file, resulting in the original data",function(){
       const project = getResetProject({readonly:true});
       const rawContent = loadFromFileSync(project.yypAbsolutePath);
-      const dehydrated = project.dehydrated;
+      const dehydrated = project.toJSON();
       // Note: Projects always ensure that "/NEW" (folder) exists,
       // so delete it before making sure we got back what we put in
       // (since it does not exist in the original)
@@ -154,7 +154,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       for(const newFolder of newFolders ){
         project.addFolder(newFolder);
       }
-      const projectFolders = project.dehydrated.Folders;
+      const projectFolders = project.toJSON().Folders;
       const allExpectedFolders = newFolders.map(f=>paths.heirarchy(f)).flat(3);
       expect(allExpectedFolders.length).to.equal(6);
       for(const expectedFolder of allExpectedFolders){
@@ -369,7 +369,7 @@ describe("GMS2.3 Pipeline SDK", function () {
           console.log('all imported files should exist in the project resource');
           throwNever();
         }
-        const datafileDir = paths.join(sandboxRoot, fileResource.dehydrated.filePath);
+        const datafileDir = paths.join(sandboxRoot, fileResource.toJSON().filePath);
         expect(fs.existsSync(datafileDir),'all imported files should exist in the actual datafiles path').to.be.true;
       }
     });
@@ -434,7 +434,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       const project = new Gms2Project(sandboxProjectYYPPath);
       const resourcesToImport = sourceProject.resources.filter(resource=>{
         return modules.some(module=>resource.isInModule(module));
-      }).map(resource=>resource.dehydrated);
+      }).map(resource=>resource.toJSON());
       expect(project.configs.findChild('BscotchPack'),
         'BscotchPack config should not exist before import'
       ).to.not.exist;
@@ -443,7 +443,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       project.importModules(modulesRoot,modules);
 
       // Check Resources
-      const unexported = differenceBy(project.resources.dehydrated,resourcesToImport,'name');
+      const unexported = differenceBy(project.resources.toJSON(),resourcesToImport,'name');
       expect(unexported.length,'every module asset should have been imported').to.equal(0);
 
       // Check IncludedFiles
@@ -455,7 +455,7 @@ describe("GMS2.3 Pipeline SDK", function () {
         console.log('included file should be imported');
         throwNever();
       }
-      const datafileDir = paths.join(sandboxRoot, resourceData.dehydrated.filePath);
+      const datafileDir = paths.join(sandboxRoot, resourceData.toJSON().filePath);
       expect(fs.existsSync(datafileDir), "The imported files should exist in the actual datafiles path");
     });
 

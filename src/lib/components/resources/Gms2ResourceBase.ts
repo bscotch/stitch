@@ -157,7 +157,7 @@ export class Gms2ResourceBase {
     return this;
   }
 
-  get dehydrated(): YypResource {
+  toJSON(): YypResource {
     return { ...this.data };
   }
 

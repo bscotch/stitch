@@ -122,7 +122,7 @@ export class Gms2ModuleImporter {
     // Add new resources
     for(const sourceResource of sourceResourcesToAdd){
       this.cloneResourceFiles(sourceResource);
-      this.toProject.resources.register(sourceResource.dehydrated,this.toProject.storage);
+      this.toProject.resources.register(sourceResource.toJSON(),this.toProject.storage);
     }
     if(sourceResourcesToAdd.length){
       logInfo(`added ${sourceResourcesToAdd.length} new resources`);

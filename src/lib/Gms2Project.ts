@@ -490,7 +490,7 @@ export class Gms2Project {
 
   /** Write *any* changes to disk. (Does nothing if readonly is true.) */
   save(){
-    this.storage.writeJson(this.yypAbsolutePath,this.dehydrated);
+    this.storage.writeJson(this.yypAbsolutePath,this);
     return this;
   }
 
@@ -532,7 +532,7 @@ export class Gms2Project {
    * A deep copy of the project's YYP content with everything as plain primitives (no custom class instances).
    * Perfect for writing to JSON.
    */
-  get dehydrated(): YypComponents {
+  toJSON(): YypComponents {
     const fields = Object.keys(this.components) as (keyof YypComponents)[];
     const asObject: Partial<YypComponents> = {};
     for (const field of fields) {
@@ -541,11 +541,11 @@ export class Gms2Project {
           components instanceof Gms2ResourceArray ||
           components instanceof Gms2Option){
         // @ts-ignore (Bonus points to anyone who can do this concisely without a ts-ignore!)
-        asObject[field] = components.dehydrated;
+        asObject[field] = components.toJSON();
       }
       else{
         const component = this.components[field] as any;
-        asObject[field] = component?.dehydrated ?? component;
+        asObject[field] = component?.toJSON?.() ?? component;
       }
     }
     return asObject as YypComponents;

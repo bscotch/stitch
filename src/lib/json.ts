@@ -8,17 +8,10 @@ import sortKeys from "sort-keys";
 const Json = JsonBig({ useNativeBigInt: true });
 
 /**
- * Stringify JSON allowing Int64s. Will attempt
- * to get .dehydrated and use the return value of
- * that on every key:value pair, allowing control
- * over how class instances are stringified.
+ * Stringify JSON allowing Int64s.
  */
 export function stringify(stuff: any) {
-  return Json.stringify(
-    stuff,
-    (key: string, value: any) => value?.dehydrated ?? value,
-    2
-  );
+  return Json.stringify(stuff,null,2);
 }
 
 /**
@@ -56,7 +49,7 @@ export function writeFileSync(filePath: string, stuff: any) {
     // Stringification may differ, so check for being the same
     // after removing sorting and spacing differences.
     const existing = sortKeys(loadFromFileSync(filePath));
-    const sortedStuff = sortKeys(stuff);
+    const sortedStuff = sortKeys(stuff?.toJSON?.() ?? stuff);
     const stringifiedSortedStuff = stringify(sortedStuff);
     if(stringify(existing) == stringifiedSortedStuff){
       return;

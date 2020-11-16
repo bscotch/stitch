@@ -21,7 +21,7 @@ export class Gms2Folder {
     return this.#data.name;
   }
 
-  get dehydrated(): YypFolder{
+  toJSON(): YypFolder{
     return {...this.#data};
   }
 

@@ -8,8 +8,8 @@ export abstract class Gms2ComponentArrayBase
 <
   YypData,
   ComponentClass extends
-  (new (object:YypData)=>InstanceType<ComponentClass>&{dehydrated:YypData}) |
-  (new (object:YypData,storage:Gms2Storage)=>InstanceType<ComponentClass>&{dehydrated:YypData})
+  (new (object:YypData)=>InstanceType<ComponentClass>&{toJSON:()=>YypData}) |
+  (new (object:YypData,storage:Gms2Storage)=>InstanceType<ComponentClass>&{toJSON:()=>YypData})
 > {
 
   protected items: InstanceType<ComponentClass>[] = [];
@@ -46,7 +46,7 @@ export abstract class Gms2ComponentArrayBase
     return false;
   }
 
-  get dehydrated(): YypData[] {
+  toJSON(): YypData[] {
     return dehydrateArray(this.items);
   }
 

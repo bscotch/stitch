@@ -78,7 +78,7 @@ export class Gms2IncludedFile {
       .includes(moduleName.toLocaleLowerCase());
   }
 
-  get dehydrated(): YypIncludedFile{
+  toJSON(): YypIncludedFile{
     return {...this.data};
   }
 

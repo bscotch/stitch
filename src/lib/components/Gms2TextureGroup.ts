@@ -10,7 +10,7 @@ export class Gms2TextureGroup {
 
   get name(){ return this.#data.name; }
 
-  get dehydrated(): YypTextureGroup{
+  toJSON(): YypTextureGroup{
     return {...this.#data};
   }
 

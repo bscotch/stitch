@@ -34,7 +34,7 @@ export class  Gms2ResourceArray {
     this.items = data.map(item=>Gms2ResourceArray.hydrateResource(item,storage));
   }
 
-  get dehydrated(): YypResource[] {
+  toJSON(): YypResource[] {
     return dehydrateArray(this.items);
   }
 

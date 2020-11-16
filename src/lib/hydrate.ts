@@ -18,10 +18,10 @@ export function hydrateArray
 
 // TODO: Figure out how to do this with a generic return type
 
-export function dehydrate<PlainObject,FancyObject extends {dehydrated:PlainObject}>(fancyObject:FancyObject){
-  return fancyObject.dehydrated;
+export function dehydrate<PlainObject,FancyObject extends {toJSON:()=>PlainObject}>(fancyObject:FancyObject){
+  return fancyObject.toJSON();
 }
 
-export function dehydrateArray<PlainObject,FancyObject extends {dehydrated:PlainObject}>(fancyObjects:FancyObject[]){
+export function dehydrateArray<PlainObject,FancyObject extends {toJSON:()=>PlainObject}>(fancyObjects:FancyObject[]){
   return fancyObjects.map(object=>dehydrate<PlainObject,FancyObject>(object));
 }

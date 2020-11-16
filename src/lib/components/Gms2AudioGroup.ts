@@ -10,7 +10,7 @@ export class Gms2AudioGroup {
 
   get name(){ return this.#data.name; }
 
-  get dehydrated(): YypAudioGroup{
+  toJSON(): YypAudioGroup {
     return {...this.#data};
   }
 

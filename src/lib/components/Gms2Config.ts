@@ -28,7 +28,7 @@ export class Gms2Config {
     return this.data.children.find(child=>child.name==name);
   }
 
-  get dehydrated(): YypConfig{
+  toJSON(): YypConfig{
     return {
       ...this.data,
       children: dehydrateArray(this.data.children)

@@ -8,7 +8,7 @@ export class Gms2Option {
     this.#data = {...option};
   }
 
-  get dehydrated(): YypOption{
+  toJSON(): YypOption{
     return {...this.#data};
   }
 }

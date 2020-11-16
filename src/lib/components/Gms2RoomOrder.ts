@@ -8,7 +8,7 @@ export class Gms2RoomOrder {
     this.#data = {...option};
   }
 
-  get dehydrated(): YypRoomOrder{
+  toJSON(): YypRoomOrder{
     return {...this.#data};
   }
 }
