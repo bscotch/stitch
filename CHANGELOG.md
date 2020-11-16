@@ -1,3 +1,14 @@
+# [1.2.0](https://github.com/bscotch/stitch/compare/v1.1.4...v1.2.0) (2020-11-16)
+
+
+### Features
+
+* Classes now use 'toJSON()' instead of getter 'dehydrated', since toJSON() is a native part of JavaScript. Breaking. ([44bce97](https://github.com/bscotch/stitch/commit/44bce97151a31bc02cd8ccfb9c0d2651e26c1614))
+* Write JSON without sorting keys and with tabs as two spaces, to reduce Git conflicts with GameMaker's output format. ([ae09c69](https://github.com/bscotch/stitch/commit/ae09c69c5c2e47f7a225b6421f590b93f19c3f90))
+* yy and yyp files are now saved in GMS2-style JSON. The CLI 'jsonify' command has been removed, as it is no longer needed. BREAKING. ([59dda95](https://github.com/bscotch/stitch/commit/59dda952399173d7a5414ae8bc630ec21777444a))
+
+
+
 ## [1.1.4](https://github.com/bscotch/stitch/compare/v1.1.3...v1.1.4) (2020-10-26)
 
 
