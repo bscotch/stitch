@@ -10,27 +10,31 @@ import paths from "../../paths";
 import { Gms2ResourceBase, Gms2ResourceBaseParameters } from "./Gms2ResourceBase";
 import {Spritely} from "@bscotch/spritely";
 import {uuidV4} from "../../uuid";
+import { NumberFixed } from "../../NumberFixed";
 
-interface SpriteFrameSource {
-  sourcePath:string,
-  name:string,
-  guid:string,
-}
-
-interface SpriteSource {
-  guid: string,
-  spriteName: string,
-  width: number,
-  height: number,
-  frames: SpriteFrameSource[]
-}
-
+const toSingleDecimalNumber = (number:number|undefined)=>{
+  return new NumberFixed(number||0,1);
+};
 export class Gms2Sprite extends Gms2ResourceBase {
 
   protected yyData!: YySprite; // Happens in the super() constructor
+  // In sprite .yy under the "sequence" section:
 
   constructor(...setup: Gms2ResourceBaseParameters) {
     super("sprites",...setup);
+  }
+
+  protected get fieldConverters(){
+    return {
+      'sequence.volume':toSingleDecimalNumber,
+      'sequence.playbackSpeed':toSingleDecimalNumber,
+      'sequence.length':toSingleDecimalNumber,
+      'sequence.visibleRange.x': toSingleDecimalNumber,
+      'sequence.visibleRange.y': toSingleDecimalNumber,
+      'sequence.backdropXOffset': toSingleDecimalNumber,
+      'sequence.backdropYOffset': toSingleDecimalNumber,
+      'layers.*.opacity': toSingleDecimalNumber,
+    };
   }
 
   get textureGroup(){
@@ -64,7 +68,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
       parent: Gms2Sprite.parentDefault,
       sequence: {
         ...yyDataSequenceDefaults,
-        length: 0, // Update with number of frames
+        length: new NumberFixed(0), // Update with number of frames
         name: this.name,
         parent:  this.id,
         spriteId: this.id,
@@ -137,7 +141,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
     this.yyData.frames = [];
     this.yyData.sequence.tracks[0].keyframes.Keyframes = [];
     const keyFrames = this.yyData.sequence.tracks[0].keyframes.Keyframes;
-    this.yyData.sequence.length = 0;
+    this.yyData.sequence.length = new NumberFixed(0);
     const layerId = this.yyData.layers[0].name;
     for(const subimagePath of sprite.paths){
       const frameGuid = uuidV4();
@@ -181,7 +185,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
       });
       keyFrames.push({
         id: uuidV4(),
-        Key:this.yyData.sequence.length,
+        Key: Number(this.yyData.sequence.length),
         Length:1,
         Stretch: false,
         Disabled: false,
@@ -199,7 +203,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
         resourceVersion:"1.0",
         resourceType:"Keyframe<SpriteFrameKeyframe>"
       });
-      this.yyData.sequence.length++;
+      this.yyData.sequence.length = new NumberFixed(Number(this.yyData.sequence.length) + 1);
     }
     return this.save();
   }

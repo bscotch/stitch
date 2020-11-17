@@ -1,3 +1,4 @@
+import { NumberFixed } from "../lib/NumberFixed";
 import { EmptyArray } from "./Utility";
 import { YyBase } from "./Yy";
 
@@ -100,7 +101,7 @@ interface SpriteLayer {
   /** Default 0 */
   blendMode:SpriteLayerBlendMode,
   /** Range from 0-100 */
-  opacity:number,
+  opacity:NumberFixed,
   /** ("default" for the base layer) */
   displayName:string,
   resourceVersion:"1.0",
@@ -172,15 +173,15 @@ interface SpriteSequence {
   /** (Default 1) What is this? */
   playback: 1,
   /** FPS (probably 30, 45, or 60), set via the editor */
-  playbackSpeed: number,
+  playbackSpeed: NumberFixed,
   /** FPS type, set via the editor */
   playbackSpeedType: SpritePlaybackSpeedType,
   /** (Default true) What is this? */
   autoRecord: true,
   /** (Default 1) What is this? */
-  volume: number,
+  volume: NumberFixed,
   /** Number of frames */
-  length: number,
+  length: NumberFixed,
   events: {
     Keyframes:EmptyArray,
     resourceVersion:"1.0",
@@ -193,7 +194,7 @@ interface SpriteSequence {
   },
   tracks: SpriteSequenceTrack[],
   /** Appears to be constant for sprites */
-  visibleRange: null,
+  visibleRange: null|{x:NumberFixed,y:NumberFixed},
   /** Appears to be constant for sprites */
   lockOrigin: false,
   /** Appears to be constant for sprites */
@@ -208,10 +209,10 @@ interface SpriteSequence {
   backdropWidth: 1366,
   /** Appears to be constant for sprites */
   backdropHeight: 768,
-  /** Appears to be constant for sprites */
-  backdropXOffset: 0,
-  /** Appears to be constant for sprites */
-  backdropYOffset: 0,
+  /** Appears to be constant for sprites (0) */
+  backdropXOffset: NumberFixed,
+  /** Appears to be constant for sprites (0) */
+  backdropYOffset: NumberFixed,
   /** The sprite's origin (x-coord) */
   xorigin: number,
   /** The sprite's origin (y-coord) */
@@ -230,6 +231,12 @@ interface SpriteSequence {
   tags: EmptyArray,
   resourceType: "GMSequence",
 }
+
+// In sprite .yy under the "sequence" section:
+
+// In "layers:
+
+// "opacity"
 
 /**
  * Data structure for Sprite .yy files.
@@ -306,7 +313,7 @@ export const yyDataDefaults = {
 export const yyDataLayerDefaults = {
   blendMode: SpriteLayerBlendMode.Normal,
   displayName: "default",
-  opacity: 100,
+  opacity: new NumberFixed(100),
   isLocked: false,
   visible: true,
   resourceType: "GMImageLayer",
@@ -319,8 +326,8 @@ export const yyDataSequenceDefaults = {
   backdropImageOpacity: 0.5,
   backdropImagePath: "",
   backdropWidth: 1366,
-  backdropXOffset: 0,
-  backdropYOffset: 0,
+  backdropXOffset: new NumberFixed(0),
+  backdropYOffset: new NumberFixed(0),
   eventStubScript: null,
   eventToFunction: {},
   events: {
@@ -341,9 +348,10 @@ export const yyDataSequenceDefaults = {
   showBackdropImage: false,
   tags: [],
   timeUnits: 1,
+  /** Should be a NumberFixed? */
   visibleRange: null,
-  volume: 1,
-  playbackSpeed: 60,
+  volume: new NumberFixed(1),
+  playbackSpeed: new NumberFixed(60),
   playbackSpeedType: SpritePlaybackSpeedType.FramesPerSecond,
 } as const;
 export const yyDataSequenceTrackDefaults = {

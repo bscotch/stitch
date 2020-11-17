@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import fs from '../lib/files';
-import fs_extra from "fs-extra";
 import paths from '../lib/paths';
 import { Gms2Project } from '../lib/Gms2Project';
 import {loadFromFileSync} from "../lib/json";
@@ -17,6 +16,7 @@ import {assignAudioGroups, assignTextureGroups, AssignCliOptions} from '../cli/l
 import { Gms2Object } from '../lib/components/resources/Gms2Object';
 import {jsonify as stringify} from "../lib/jsonify";
 import { undent } from '@bscotch/utility';
+import { NumberFixed } from '../lib/NumberFixed';
 
 /*
 Can be used to inform Stitch components that we are in
@@ -89,6 +89,12 @@ describe("GMS2.3 Pipeline SDK", function () {
   });
 
   describe("Unit Tests", function () {
+
+    it('Can create fixed-decimal numbers',function(){
+      expect(`${Number(15.1234134)}`).to.equal('15.1234134');
+      expect(`${new NumberFixed(15.1234134,1)}`).to.equal('15.1');
+      expect(`${new NumberFixed(15.1234134,3)}`).to.equal('15.123');
+    });
 
     it("can sort paths by specificity",function(){
       const pathList = [
