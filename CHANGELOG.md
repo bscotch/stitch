@@ -1,3 +1,14 @@
+# [1.3.0](https://github.com/bscotch/stitch/compare/v1.2.0...v1.3.0) (2020-11-17)
+
+
+### Features
+
+* A new NumberFixed class, also used by jsonify, allows numbers with single-decimal precision. This can be used to reduce yy file changes, since GameMaker writes some numbers in this way. ([9ba711a](https://github.com/bscotch/stitch/commit/9ba711a232cfd87db7b175cb1ff7276f914f519f))
+* Sprites now load and save some numbers using single-decimal numbers, matching GameMaker's output. This reduces meaningless Git history changes. ([d5dbde6](https://github.com/bscotch/stitch/commit/d5dbde6cf00c59d89f399777c9cb264f3f3859c1))
+* The base resource class now allows for data transformations on load, so that plain JSON sources can be used to create more complex types. ([5fc8182](https://github.com/bscotch/stitch/commit/5fc81820d8161b22ccfb5f308041692b3d9e0162))
+
+
+
 # [1.2.0](https://github.com/bscotch/stitch/compare/v1.1.4...v1.2.0) (2020-11-16)
 
 
