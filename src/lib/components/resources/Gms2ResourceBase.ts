@@ -1,5 +1,4 @@
 import { YyBase } from "../../../types/Yy";
-//❌✅⌛❓
 
 import { YypResource } from "../../../types/Yyp";
 import { assert, StitchError } from "../../errors";
@@ -7,6 +6,7 @@ import { Gms2Storage } from "../../Gms2Storage";
 import paths from "../../paths";
 import path from "../../paths";
 import type { Gms2ResourceType } from "../Gms2ResourceArray";
+import {transformValueByPath} from "@bscotch/utility";
 
 export type Gms2ResourceBaseParameters = [data: YypResource | string, storage: Gms2Storage, ensureYyFile?:boolean];
 
@@ -35,11 +35,26 @@ export class Gms2ResourceBase {
       this.createYyFile();
     }
     this.yyData = this.storage.readJson(this.yyPathAbsolute);
+    // Convert numbers to NumberFixed instances where necessary
+    if(this.fieldConverters){
+      for(const path of Object.keys(this.fieldConverters)){
+        transformValueByPath(this.yyData,path,this.fieldConverters[path]);
+      }
+    }
   }
 
   /** Create a generic Yy file, given YypData (must be implemented by each specifific resource.) */
   protected createYyFile(){
     throw new StitchError(`createYyFile is not implemented on type ${this.resourceRoot}`);
+  }
+
+  /**
+   * Convert data types after reading from JSON, for values that
+   * need functionality that differes from default (such as fixed-decimal numbers).
+   * Uses a field path, e.g. "firstLevel.secondLevel".
+   */
+  protected get fieldConverters(): {[fieldPath:string]:(value:any)=>any}{
+    return {};
   }
 
   get id(){
