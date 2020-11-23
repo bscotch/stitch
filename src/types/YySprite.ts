@@ -115,9 +115,9 @@ interface SpriteLayer {
 interface SpriteSequenceTrackKeyframe {
   id:string,
   /** Appears to be the index position within the keyframes array */
-  Key:number,
+  Key: NumberFixed,
   /** Appears to always be 1 for sprites */
-  Length:1,
+  Length: NumberFixed,
   /** Default false */
   Stretch:boolean,
   /** Default false */

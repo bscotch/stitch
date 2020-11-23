@@ -33,6 +33,8 @@ export class Gms2Sprite extends Gms2ResourceBase {
       'sequence.visibleRange.y': toSingleDecimalNumber,
       'sequence.backdropXOffset': toSingleDecimalNumber,
       'sequence.backdropYOffset': toSingleDecimalNumber,
+      'sequence.tracks.*.keyframes.Keyframes.*.Key': toSingleDecimalNumber,
+      'sequence.tracks.*.keyframes.Keyframes.*.Length': toSingleDecimalNumber,
       'layers.*.opacity': toSingleDecimalNumber,
     };
   }
@@ -185,8 +187,8 @@ export class Gms2Sprite extends Gms2ResourceBase {
       });
       keyFrames.push({
         id: uuidV4(),
-        Key: Number(this.yyData.sequence.length),
-        Length:1,
+        Key: new NumberFixed(this.yyData.sequence.length),
+        Length: new NumberFixed(1),
         Stretch: false,
         Disabled: false,
         IsCreationKey: false,
