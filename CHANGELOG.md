@@ -1,3 +1,12 @@
+## [1.3.1](https://github.com/bscotch/stitch/compare/v1.3.0...v1.3.1) (2020-11-23)
+
+
+### Bug Fixes
+
+* The track keyframe 'Key' and 'Length' fields in Sprite yy files now render as single-decimal-precision numbers. ([d1f223c](https://github.com/bscotch/stitch/commit/d1f223c6d173905936688d7a689af656c65c9378))
+
+
+
 # [1.3.0](https://github.com/bscotch/stitch/compare/v1.2.0...v1.3.0) (2020-11-17)
 
 
