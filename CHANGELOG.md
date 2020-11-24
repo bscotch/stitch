@@ -1,3 +1,17 @@
+# [1.4.0](https://github.com/bscotch/stitch/compare/v1.3.1...v1.4.0) (2020-11-24)
+
+
+### Bug Fixes
+
+* The sound channel and compression getter and setter now use ([c9663e7](https://github.com/bscotch/stitch/commit/c9663e746ddafe930527323186a4b55cf23fa947))
+
+
+### Features
+
+* Can set the channel and compression of sound resources. ([4920008](https://github.com/bscotch/stitch/commit/4920008464d8037aee9f9e8bfb8ee2ca4315a6b3))
+
+
+
 ## [1.3.1](https://github.com/bscotch/stitch/compare/v1.3.0...v1.3.1) (2020-11-23)
 
 
