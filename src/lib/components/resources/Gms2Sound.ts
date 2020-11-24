@@ -3,6 +3,8 @@ import {
   YySound,
   SoundChannel,
   SoundCompression,
+  SoundCompressionAsString,
+  SoundChannelAsString,
 } from "../../../types/YySound";
 import { Gms2ResourceBase, Gms2ResourceBaseParameters} from "./Gms2ResourceBase";
 import paths from "../../paths";
@@ -54,39 +56,31 @@ export class Gms2Sound extends Gms2ResourceBase {
   }
 
   get channels(){
-    return this.yyData.type;
+    return SoundChannel[this.yyData.type] as SoundChannelAsString;
   }
 
-  set channels(channel: SoundChannel){
-    this.setChannel(channel);
-  }
-
-  private setChannel(channel: SoundChannel){
+  set channels(channelAsString: SoundChannelAsString){
+    const channel = SoundChannel[channelAsString];
     this.yyData.type = channel;
     this.save();
   }
 
-  setChannelByString(channelAsString: keyof typeof SoundChannel){
-    const channel = SoundChannel[channelAsString];
-    this.setChannel(channel);
+  channelsAsIndex(){
+    return this.yyData.type;
   }
 
   get compression(){
-    return this.yyData.compression;
+    return SoundCompression[this.yyData.compression] as SoundCompressionAsString;
   }
 
-  set compression(level: SoundCompression){
-    this.setCompreesion(level);
-  }
-
-  private setCompreesion(level: SoundCompression){
+  set compression(levelAsString: SoundCompressionAsString){
+    const level = SoundCompression[levelAsString];
     this.yyData.compression = level;
     this.save();
   }
 
-  setCompressionByString(levelAsString: keyof typeof SoundCompression){
-    const level = SoundCompression[levelAsString];
-    this.setCompreesion(level);
+  compressionAsIndex(){
+    return this.yyData.compression;
   }
 
   /** Overwrite this Sound's audio file with an external file. */
