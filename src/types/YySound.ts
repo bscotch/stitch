@@ -13,6 +13,9 @@ export enum SoundCompression {
   CompressedStreamed,
 }
 
+export type SoundChannelAsString = keyof typeof SoundChannel;
+export type SoundCompressionAsString = keyof typeof SoundCompression;
+
 enum SoundBitDepth {
   Bit8,
   Bit16

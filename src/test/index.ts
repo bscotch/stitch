@@ -250,22 +250,29 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(fs.existsSync(audio.audioFilePathAbsolute),'audio file should exist').to.be.true;
     });
 
-    it.only("can modify a single sound asset",function(){
+    it("can modify a single sound asset",function(){
       const project = getResetProject();
       project.addSounds(soundSample);
       const audio = project.resources
         .findByField('name',paths.parse(soundSample).name,Gms2Sound);
+      if (!audio){
+        throw new Error('audio should have been added');
+      }
       //Changing channels
-      audio?.setChannelByString("Mono");
-      expect(audio?.channels).to.equal(SoundChannel.Mono);
-      audio?.setChannelByString("Stereo");
-      expect(audio?.channels).to.equal(SoundChannel.Stereo);
+      audio.channels = "Mono";
+      expect(audio?.channels).to.equal("Mono");
+      expect(audio?.channelsAsIndex()).to.equal(SoundChannel.Mono);
+      audio.channels = "Stereo";
+      expect(audio?.channels).to.equal("Stereo");
+      expect(audio?.channelsAsIndex()).to.equal(SoundChannel.Stereo);
 
       //Changing compressions
-      audio?.setCompressionByString("Compressed");
-      expect(audio?.compression).to.equal(SoundCompression.Compressed);
-      audio?.setCompressionByString("UncompressedOnLoad");
-      expect(audio?.compression).to.equal(SoundCompression.UncompressedOnLoad);
+      audio.compression = "Compressed";
+      expect(audio?.compression).to.equal("Compressed");
+      expect(audio?.compressionAsIndex()).to.equal(SoundCompression.Compressed);
+      audio.compression = "UncompressedOnLoad";
+      expect(audio?.compression).to.equal("UncompressedOnLoad");
+      expect(audio?.compressionAsIndex()).to.equal(SoundCompression.UncompressedOnLoad);
     });
 
     it("can batch add sound assets",function(){
