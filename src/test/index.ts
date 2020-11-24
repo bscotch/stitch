@@ -17,6 +17,7 @@ import { Gms2Object } from '../lib/components/resources/Gms2Object';
 import {jsonify as stringify} from "../lib/jsonify";
 import { undent } from '@bscotch/utility';
 import { NumberFixed } from '../lib/NumberFixed';
+import { SoundChannel, SoundCompression } from '../types/YySound';
 
 /*
 Can be used to inform Stitch components that we are in
@@ -247,6 +248,24 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(fs.existsSync(audio.yyPathAbsolute),'.yy file should exist').to.be.true;
       //   Does the audio file exist?
       expect(fs.existsSync(audio.audioFilePathAbsolute),'audio file should exist').to.be.true;
+    });
+
+    it.only("can modify a single sound asset",function(){
+      const project = getResetProject();
+      project.addSounds(soundSample);
+      const audio = project.resources
+        .findByField('name',paths.parse(soundSample).name,Gms2Sound);
+      //Changing channels
+      audio?.setChannelByString("Mono");
+      expect(audio?.channels).to.equal(SoundChannel.Mono);
+      audio?.setChannelByString("Stereo");
+      expect(audio?.channels).to.equal(SoundChannel.Stereo);
+
+      //Changing compressions
+      audio?.setCompressionByString("Compressed");
+      expect(audio?.compression).to.equal(SoundCompression.Compressed);
+      audio?.setCompressionByString("UncompressedOnLoad");
+      expect(audio?.compression).to.equal(SoundCompression.UncompressedOnLoad);
     });
 
     it("can batch add sound assets",function(){

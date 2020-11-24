@@ -3,11 +3,11 @@ import {
   YySound,
   SoundChannel,
   SoundCompression,
-} from "../../../types/Yy";
+} from "../../../types/YySound";
 import { Gms2ResourceBase, Gms2ResourceBaseParameters} from "./Gms2ResourceBase";
 import paths from "../../paths";
 import { Gms2Storage } from "../../Gms2Storage";
-import { assert } from "../../errors";
+import { assert, StitchError } from "../../errors";
 
 export class Gms2Sound extends Gms2ResourceBase {
   protected yyData!: YySound; // Happens in the super() constructor
@@ -53,14 +53,40 @@ export class Gms2Sound extends Gms2ResourceBase {
     this.save();
   }
 
+  get channels(){
+    return this.yyData.type;
+  }
+
   set channels(channel: SoundChannel){
+    this.setChannel(channel);
+  }
+
+  private setChannel(channel: SoundChannel){
     this.yyData.type = channel;
     this.save();
   }
 
+  setChannelByString(channelAsString: keyof typeof SoundChannel){
+    const channel = SoundChannel[channelAsString];
+    this.setChannel(channel);
+  }
+
+  get compression(){
+    return this.yyData.compression;
+  }
+
   set compression(level: SoundCompression){
+    this.setCompreesion(level);
+  }
+
+  private setCompreesion(level: SoundCompression){
     this.yyData.compression = level;
     this.save();
+  }
+
+  setCompressionByString(levelAsString: keyof typeof SoundCompression){
+    const level = SoundCompression[levelAsString];
+    this.setCompreesion(level);
   }
 
   /** Overwrite this Sound's audio file with an external file. */
