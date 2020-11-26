@@ -17,7 +17,7 @@ import { Gms2ProjectConfig } from "./Gms2ProjectConfig";
 import { Gms2Sprite } from "./components/resources/Gms2Sprite";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
 import { Gms2FolderArray } from "./Gms2FolderArray";
-import { Gms2ModuleImporter } from "./Gms2ModuleImporter";
+import { Gms2ImportModulesOptions, Gms2ModuleImporter } from "./Gms2ModuleImporter";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
 import { SpritelyBatch } from "@bscotch/spritely";
@@ -245,12 +245,17 @@ export class Gms2Project {
 
   /**
    * Import modules from one GMS2 project into this one.
-   * @param fromProject A directory containing a single .yyp file somwhere, or the path directly to a .yyp file.
+   * @param fromProject A directory containing a single .yyp file somwhere,
+   * or the path directly to a .yyp file.
+   * @param moduleNames An optional list of module names.
+   * If not provided, or an empty list, all source project
+   * root folders are used as module names (in other words,
+   * all assets are imported).
    */
-  importModules(fromProjectPath: string,moduleNames:string[]){
+  importModules(fromProjectPath: string,moduleNames?:string[],options?:Gms2ImportModulesOptions){
     const fromProject = new Gms2Project({projectPath:fromProjectPath,readOnly:true});
     const importer = new Gms2ModuleImporter(fromProject,this);
-    importer.importModules(moduleNames);
+    importer.importModules(moduleNames,options);
     return this;
   }
 

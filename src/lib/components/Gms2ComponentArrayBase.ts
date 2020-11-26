@@ -19,6 +19,14 @@ export abstract class Gms2ComponentArrayBase
     return [...this.items];
   }
 
+  filter(matchFunction: (item: InstanceType<ComponentClass>)=>any){
+    return this.items.filter(matchFunction);
+  }
+
+  filterByField(field:keyof InstanceType<ComponentClass>,value:any){
+    return this.items.filter(item=>item[field]==value);
+  }
+
   find(matchFunction: (item: InstanceType<ComponentClass>)=>any){
     return this.items.find(matchFunction);
   }

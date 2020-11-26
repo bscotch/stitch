@@ -514,6 +514,28 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(fs.existsSync(datafileDir), "The imported files should exist in the actual datafiles path");
     });
 
+    it("can import *all* assets from a project",function(){
+      // TODO: THIS IS JUST COPIED FROM PRIOR TEST
+      // TODO: IMPORT EVERYTHING AND MAKE SURE IT APPEARS
+      getResetProject({readonly:true});
+
+      // Initial state
+      const project = new Gms2Project(sandboxProjectYYPPath);
+      project.importModules(modulesRoot);
+
+      // Check IncludedFiles
+      expect(project.configs.findChild('BscotchPack'),
+        'BscotchPack config should be imported'
+      ).to.exist;
+      const resourceData = project.includedFiles.findByField('name','moduleFile.txt');
+      if(!resourceData){
+        console.log('included file should be imported');
+        throwNever();
+      }
+      const datafileDir = paths.join(sandboxRoot, resourceData.toJSON().filePath);
+      expect(fs.existsSync(datafileDir), "The imported files should exist in the actual datafiles path");
+    });
+
     it("can set the version in options files",function(){
       const project = getResetProject();
       const testPlatforms = Gms2Project.platforms;

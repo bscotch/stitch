@@ -1,18 +1,18 @@
+import { Gms2ImportModulesOptions } from '../../lib/Gms2ModuleImporter';
 import { Gms2Project } from '../../lib/Gms2Project';
 import cli_assert from './cli-assert';
 
-export type ImportModuleOptions = {
+export interface ImportModuleOptions extends Gms2ImportModulesOptions {
   sourceProjectPath: string,
-  modules: string[],
+  modules?: string[],
   targetProjectPath ?: string,
   force?: boolean,
 }
 
 export default function(options: ImportModuleOptions){
-  const {sourceProjectPath, modules} = options;
+  const {sourceProjectPath} = options;
   let {targetProjectPath} = options;
   cli_assert.assertPathExists(sourceProjectPath);
-  cli_assert.assertAtLeastOneTruthy(modules);
   if(targetProjectPath){
     cli_assert.assertPathExists(targetProjectPath);
   }
@@ -24,5 +24,5 @@ export default function(options: ImportModuleOptions){
     projectPath: options.targetProjectPath,
     dangerouslyAllowDirtyWorkingDir: options.force
   });
-  targetProject.importModules(sourceProjectPath,cli_assert.getTruthyArgs(modules));
+  targetProject.importModules(sourceProjectPath,options.modules,options);
 }
