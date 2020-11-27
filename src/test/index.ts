@@ -5,7 +5,7 @@ import { Gms2Project } from '../lib/Gms2Project';
 import {loadFromFileSync} from "../lib/json";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 import { differenceBy } from 'lodash';
-import { StitchError } from '../lib/errors';
+import { StitchError, StitchAssertionError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import cli_assert from '../cli/lib/cli-assert';
 import importModules, { ImportModuleOptions } from '../cli/lib/import-modules';
@@ -585,45 +585,66 @@ describe("GMS2.3 Pipeline SDK", function () {
 
   describe("CLI",function(){
 
-    it('cannot import modules missing dependencies',function(){
+    it('cannot import modules missing dependencies',async function(){
+      resetSandbox();
       const importModulesOptions = {
         sourceProjectPath: modulesRoot,
         modules: ["MissingDependency"],
         targetProjectPath: sandboxRoot
       };
-      expect(()=>importModules(importModulesOptions),
-        "Should fail when there is a missing dependency"
-      ).to.throw();
+      try{
+        await importModules(importModulesOptions);
+        throw new Error('Should fail when there is a missing dependency');
+      }
+      catch(err){
+        if(! (err instanceof StitchAssertionError)){
+          throw err;
+        }
+      }
       importModulesOptions.modules.push('BscotchPack');
-      expect(()=>importModules(importModulesOptions),
-        "Should succeed when modules include all dependencies"
-      ).to.not.throw();
+      await importModules(importModulesOptions); // will throw if it fails
     });
 
 
-    it('can import modules', function(){
+    it('can import modules', async function(){
+      resetSandbox();
       let incorrectImportModulesOtions = {
         sourceProjectPath: "fake_source_project_path",
         modules: ["BscotchPack","AnotherModule"],
         targetProjectPath: sandboxRoot
       };
-      expect(()=>importModules(incorrectImportModulesOtions),
-        "Should fail when sourceProjectPath does not exists"
-      ).to.throw(cli_assert.Gms2PipelineCliAssertionError);
+
+      try{
+        await importModules(incorrectImportModulesOtions);
+        throw new Error('Should fail when sourceProjectPath does not exists');
+      }
+      catch(err){
+        if(! (err instanceof cli_assert.Gms2PipelineCliAssertionError)){
+          throw err;
+        }
+      }
 
       incorrectImportModulesOtions = {
         sourceProjectPath: modulesRoot,
         modules: ["BscotchPack","AnotherModule"],
         targetProjectPath: "fake_target_project_path"
       };
-      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when targetProjectPath is entered but does not exists").to.throw(cli_assert.Gms2PipelineCliAssertionError);
+      try{
+        await importModules(incorrectImportModulesOtions);
+        throw new Error('Should fail when targetProjectPath is entered but does not exists');
+      }
+      catch(err){
+        if(! (err instanceof cli_assert.Gms2PipelineCliAssertionError)){
+          throw err;
+        }
+      }
 
       let importModulesOptions: ImportModuleOptions = {
         sourceProjectPath: modulesRoot,
         modules: ["BscotchPack","AnotherModule"],
         targetProjectPath: sandboxRoot
       };
-      expect(()=>importModules(importModulesOptions), "Should succeed when run with valid source path and multiple modules").to.not.throw();
+      await importModules(importModulesOptions); // will throw if error
 
       resetSandbox();
       importModulesOptions = {
@@ -631,10 +652,26 @@ describe("GMS2.3 Pipeline SDK", function () {
         modules: ["BscotchPack"],
         targetProjectPath: sandboxRoot
       };
-      expect(()=>importModules(importModulesOptions), "Should succeed when run with valid source path and 1 module").to.not.throw();
+      await importModules(importModulesOptions);
+    });
+
+    it('can import modules from a remote repo', async function(){
+      resetSandbox();
+      await importModules({
+        doNotMoveConflicting:true,
+        modules:['scripts'],
+        sourceGithub:'gm-core/gdash@6.0.2',
+        targetProjectPath: sandboxRoot
+      });
+      const project = new Gms2Project({projectPath:sandboxRoot,readOnly:true});
+      expect(project.resources.findByName('_reverse')).to.exist;
+      expect(project.resources.findByName('preimport')).to.exist;
+
+      process.exit(1);
     });
 
     it('can import sounds',function(){
+      resetSandbox();
       const invalidOptions = {
         sourcePath: soundSampleRoot,
         allowExtensions: [""],
@@ -665,6 +702,7 @@ describe("GMS2.3 Pipeline SDK", function () {
     });
 
     it('can import files', function(){
+      resetSandbox();
       const options = {
         sourcePath: paths.join(assetSampleRoot, "includedFiles", "files"),
         targetProjectPath: sandboxRoot

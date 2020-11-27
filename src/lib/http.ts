@@ -77,15 +77,15 @@ export async function unzipRemote (url:string,toDir:string){
   if(!pathname?.endsWith('.zip')){
     throw new StitchError(`Expected URL to Zip file to end with '.zip'.`);
   }
+  fs.ensureDirSync(toDir);
+  if(fs.readdirSync(toDir).length>0){
+    throw new StitchError(`Output directory ${toDir} is not empty.`);
+  }
   const response = await get(url);
   if(!response.contentType.includes('zip')){
     throw new StitchError(
       `Expected downloaded content-type to included 'zip', got ${response.contentType}.`
     );
-  }
-  fs.ensureDirSync(toDir);
-  if(fs.readdirSync(toDir).length>0){
-    throw new StitchError(`Output directory ${toDir} is not empty.`);
   }
   const zipDir = await unzipper.Open.buffer(response.data);
   await zipDir.extract({concurrency:5,path:toDir});

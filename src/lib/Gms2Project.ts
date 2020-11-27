@@ -100,17 +100,22 @@ export class Gms2Project {
     let yypPath = options.projectPath as string;
     if (!yypPath.endsWith(".yyp")) {
       const yypParentPath = yypPath;
-      const yypPaths = fs.listFilesByExtensionSync(yypParentPath, 'yyp', true);
+      const yypPaths = fs.listFilesByExtensionSync(yypParentPath, 'yyp', true)
+        .filter(yyp=>{
+          try{
+            Gms2Project.parseYypFile(yyp);
+            return true;
+          }
+          catch{ return false; }
+        });
       if (yypPaths.length == 0) {
         throw new StitchError(
-          `Couldn't find a .yyp file in "${yypParentPath}"`
+          `Couldn't find a Stitch-compatible .yyp file in "${yypParentPath}"`
         );
       }
       if (yypPaths.length > 1) {
         throw new StitchError(oneline`
-          Found multiple .yyp files in "${yypParentPath}".
-          When more than one is present,
-          you must specify which you want to use.
+          Found multiple Stitch-compatible .yyp files in "${yypParentPath}".
         `);
       }
       yypPath = yypPaths[0];
@@ -510,7 +515,9 @@ export class Gms2Project {
    */
   private reload() {
     // Load the YYP file, store RAW (ensure field resourceType: "GMProject" exists)
-    const yyp = fs.readJsonSync(this.storage.yypAbsolutePath) as YypComponents;
+    const yyp = Gms2Project.parseYypFile(this.storage.yypAbsolutePath);
+    
+    fs.readJsonSync(this.storage.yypAbsolutePath) as YypComponents;
     assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
 
     this.components = {
@@ -571,6 +578,15 @@ export class Gms2Project {
       'windowsuap',
       'xboxone'
     ] as const;
+  }
+
+  /**
+   * Check a YYP file for version comaptibility with Stitch.
+   */
+  private static parseYypFile(yypFilepath:string){
+    const yyp = fs.readJsonSync(yypFilepath) as YypComponents;
+    assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
+    return yyp;
   }
 }
 

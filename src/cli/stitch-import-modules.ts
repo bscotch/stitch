@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import commander, { CommanderStatic } from "commander";
 import { oneline } from "@bscotch/utility";
-import import_modules, { ImportModuleOptions } from './lib/import-modules';
+import importModules, { ImportModuleOptions } from './lib/import-modules';
 import options from "./lib/cli-options";
+import { assert, StitchError } from "../lib/errors";
 
-const cli = commander;
+const cli = commander as (ImportModuleOptions & CommanderStatic);
 
 cli.description("Import modules from a source GameMaker Studio 2 project into a target project.")
   .option("-g --source-github <url>", oneline`
@@ -13,7 +14,7 @@ cli.description("Import modules from a source GameMaker Studio 2 project into a 
     The version suffix is optional, and
     can be a branch name, a tag, or a commit hash.
   `)
-  .option("-s --source-path <path>", oneline`
+  .option("-s --source-project-path <path>", oneline`
     Local path to the source GameMaker Studio 2 project.
   `)
   .option("-u --source-url <url>", oneline`
@@ -62,7 +63,5 @@ cli.description("Import modules from a source GameMaker Studio 2 project into a 
   .option(...options.force)
   .parse(process.argv);
 
-// If the source is from a remote, need to fetch it first!
 
-
-import_modules(cli as (ImportModuleOptions & CommanderStatic));
+importModules(cli);
