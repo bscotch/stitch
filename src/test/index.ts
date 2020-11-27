@@ -18,6 +18,7 @@ import {jsonify as stringify} from "../lib/jsonify";
 import { undent } from '@bscotch/utility';
 import { NumberFixed } from '../lib/NumberFixed';
 import { SoundChannel, SoundCompression } from '../types/YySound';
+import {get} from "../lib/http";
 
 /*
 Can be used to inform Stitch components that we are in
@@ -81,8 +82,6 @@ function getResetProject(options?:{readonly?:boolean}){
 }
 
 // TESTS
-// TODO: Refactor into multiple files...
-
 describe("GMS2.3 Pipeline SDK", function () {
 
   beforeEach(function () {
@@ -91,7 +90,26 @@ describe("GMS2.3 Pipeline SDK", function () {
 
   describe("Unit Tests", function () {
 
-    it('Can create fixed-decimal numbers',function(){
+    it('can fetch a text URL', async function(){
+      const page = await get('https://beta.bscotch.net/api/dummy/content-type/text');
+      expect(page.contentType.startsWith('text/plain')).to.be.true;
+      expect(page.data).to.equal('Hello World');
+    });
+
+    it('can fetch a binary URL', async function(){
+      const page = await get('https://beta.bscotch.net/api/dummy/content-type/binary');
+      expect(page.contentType.startsWith('application/octet-stream')).to.be.true;
+      expect(Buffer.isBuffer(page.data)).to.be.true;
+      expect(page.data.toString()).to.equal('Hello World');
+    });
+
+    it('can fetch a JSON URL', async function(){
+      const page = await get('https://beta.bscotch.net/api/dummy/content-type/json');
+      expect(page.contentType.startsWith('application/json')).to.be.true;
+      expect(page.data.Hello).to.equal('World');
+    });
+
+    it('can create fixed-decimal numbers',function(){
       expect(`${Number(15.1234134)}`).to.equal('15.1234134');
       expect(`${new NumberFixed(15.1234134,1)}`).to.equal('15.1');
       expect(`${new NumberFixed(15.1234134,3)}`).to.equal('15.123');

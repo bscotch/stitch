@@ -3,13 +3,21 @@ import commander, { CommanderStatic } from "commander";
 import { oneline } from "@bscotch/utility";
 import import_modules, { ImportModuleOptions } from './lib/import-modules';
 import options from "./lib/cli-options";
-import { Gms2ImportModulesOptions } from "../lib/Gms2ModuleImporter";
 
 const cli = commander;
 
 cli.description("Import modules from a source GameMaker Studio 2 project into a target project.")
-  .requiredOption("--source-project-path <path>", oneline`
-  Path to the source GameMaker Studio 2 project.
+  .option("-g --source-github <url>", oneline`
+    Repo owner and name for a Gamemaker Studio 2 project
+    on GitHub in format "{owner}/{repo-name}@version".
+    The version suffix is optional, and
+    can be a branch name, a tag, or a commit hash.
+  `)
+  .option("-s --source-path <path>", oneline`
+    Local path to the source GameMaker Studio 2 project.
+  `)
+  .option("-u --source-url <url>", oneline`
+    URL to a zipped GameMaker Studio 2 project.
   `)
   .option("--modules <names...>", oneline`
     The names of the modules in the source project to import.
@@ -53,5 +61,8 @@ cli.description("Import modules from a source GameMaker Studio 2 project into a 
   .option(...options.targetProjectPath)
   .option(...options.force)
   .parse(process.argv);
+
+// If the source is from a remote, need to fetch it first!
+
 
 import_modules(cli as (ImportModuleOptions & CommanderStatic));

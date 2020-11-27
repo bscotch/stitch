@@ -159,7 +159,7 @@ myProject.importModules('path/to/your/modules-project',['my_module','my_other_mo
 myProject.importModules('path/to/your/modules-project');
 ```
 
-#### Avoiding name conflicts on import
+#### Avoiding name conflicts
 
 **Imports are dangerous** because GameMaker Studio has no concept of name-spacing. This makes it
 easy to overwrite a resource that just happens to have the same name but is something different.
