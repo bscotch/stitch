@@ -138,15 +138,28 @@ You can also choose to import *everything* from a source project by omitting
 the module list during imports. Behind the scenes, Stitch treats each root-level
 folder as a Module.
 
+Stitch can use the following as source projects:
+
++ Local projects (on your machine, CLI or scripting)
++ Github repos (CLI only)
++ URLs to zip files containing a GameMaker project (CLI only)
+
+Note that source projects must be from Stitch-compatible versions of GameMaker!
+
 Use case: At Bscotch, we have a separate GameMaker project for our shared asset library that includes our login system, a large script library, common objects, extensions for managing In-App Purchase, and more. We use the module system to import the required subsets of this shared library into each of our games as needed. This allows us to guarantee that all games have the same, up to date code, and allows us to test common features in a single project.
 
 ```sh
 # CLI
 stitch import modules -h # Get help about importing modules
+
 # Import specific modules:
 stitch import modules --source-project-path=path/to/your/modules-project --modules=my_module,my_other_module
+
 # Import everything:
 stitch import modules --source-project-path=path/to/your/modules-project
+
+# Import from GitHub
+stitch import modules --source-github=gm-core/gdash@6.0.2 --modules=util
 ```
 
 ```ts

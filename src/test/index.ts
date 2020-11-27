@@ -666,8 +666,6 @@ describe("GMS2.3 Pipeline SDK", function () {
       const project = new Gms2Project({projectPath:sandboxRoot,readOnly:true});
       expect(project.resources.findByName('_reverse')).to.exist;
       expect(project.resources.findByName('preimport')).to.exist;
-
-      process.exit(1);
     });
 
     it('can import sounds',function(){
