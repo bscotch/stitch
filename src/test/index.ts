@@ -18,7 +18,7 @@ import {jsonify as stringify} from "../lib/jsonify";
 import { undent } from '@bscotch/utility';
 import { NumberFixed } from '../lib/NumberFixed';
 import { SoundChannel, SoundCompression } from '../types/YySound';
-import {get} from "../lib/http";
+import {get, unzipRemote} from "../lib/http";
 
 /*
 Can be used to inform Stitch components that we are in
@@ -107,6 +107,15 @@ describe("GMS2.3 Pipeline SDK", function () {
       const page = await get('https://beta.bscotch.net/api/dummy/content-type/json');
       expect(page.contentType.startsWith('application/json')).to.be.true;
       expect(page.data.Hello).to.equal('World');
+    });
+
+    it('can download and unzip an archive', async function(){
+      const dir = 'zip-download';
+      const smallRepo = 'https://github.com/bscotch/node-util/archive/d1264e78319521c9667206330a9aaa36fa82e1a5.zip?ignore=this';
+      const downloadedTo = await unzipRemote(smallRepo,dir);
+      expect(downloadedTo).to.match(/node-util-d1264e78319521c9667206330a9aaa36fa82e1a5/);
+      fs.emptyDirSync(dir);
+      fs.removeSync(dir);
     });
 
     it('can create fixed-decimal numbers',function(){
@@ -601,13 +610,6 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(()=>importModules(incorrectImportModulesOtions),
         "Should fail when sourceProjectPath does not exists"
       ).to.throw(cli_assert.Gms2PipelineCliAssertionError);
-
-      incorrectImportModulesOtions = {
-        sourceProjectPath: modulesRoot,
-        modules: [""],
-        targetProjectPath: sandboxRoot
-      };
-      expect(()=>importModules(incorrectImportModulesOtions), "Should fail when there is no valid module inputs").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
       incorrectImportModulesOtions = {
         sourceProjectPath: modulesRoot,

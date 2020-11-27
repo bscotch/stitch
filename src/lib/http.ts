@@ -1,7 +1,11 @@
 import http from 'http';
 import https from 'https';
+import fs from 'fs-extra';
 import Url from 'url';
 import { StitchError } from './errors';
+import unzipper from "unzipper";
+import path from "path";
+import { zip } from 'lodash';
 
 interface GetResponse {
   contentType:string,
@@ -22,8 +26,21 @@ export async function get(url:string):Promise<GetResponse>{
         chunks.push(chunk);
       });
       res.on('end', () => {
-        const data = Buffer.concat(chunks);
+        const status = res.statusCode || 500;
+        if(status>300 && status < 400){
+          // Then is probably a redirect
+          if(!res.headers.location){
+            throw new StitchError(`Got status ${status} but no location header for redirect.`);
+          }
+          return resolve(get(res.headers.location));
+        }
+        if(status>399){
+          throw new StitchError(
+            `Got non-200 response code ${status} when trying to download ${url}`
+          );
+        }
         const contentType = res.headers['content-type'];
+        const data = Buffer.concat(chunks);
         const response: GetResponse = {
           contentType: contentType||'application/octet-stream',
           data
@@ -49,4 +66,28 @@ export async function get(url:string):Promise<GetResponse>{
       reject(err);
     });
   });
+}
+
+/**
+ * Downloads and unzip a remote zip file, returning the root path
+ * to the unzipped contents.
+ */
+export async function unzipRemote (url:string,toDir:string){
+  const {pathname} = Url.parse(url);
+  if(!pathname?.endsWith('.zip')){
+    throw new StitchError(`Expected URL to Zip file to end with '.zip'.`);
+  }
+  const response = await get(url);
+  if(!response.contentType.includes('zip')){
+    throw new StitchError(
+      `Expected downloaded content-type to included 'zip', got ${response.contentType}.`
+    );
+  }
+  fs.ensureDirSync(toDir);
+  if(fs.readdirSync(toDir).length>0){
+    throw new StitchError(`Output directory ${toDir} is not empty.`);
+  }
+  const zipDir = await unzipper.Open.buffer(response.data);
+  await zipDir.extract({concurrency:5,path:toDir});
+  return path.join(toDir,zipDir.files[0].path);
 }
