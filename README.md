@@ -118,9 +118,13 @@ This README includes example CLI calls in the relevant sections, but should not 
 
 ## Features <a id="features"></a>
 
-### Modules <a id="modules"></a>
+### Module Import/Installation <a id="modules"></a>
 
-GameMaker Studio has mechanisms to import assets from one GameMaker project into another, as well as an "extensions" system, but these can both be unwieldy to manage and have many drawbacks. We use a custom solution for this that we simply call "Modules". A "module" is a collection of assets that have a common folder name in their path. For example, for a module called "TitleScreen" and an asset hierarchy including:
+Importing assets from one GMS2 project into another is a painful process, especially
+when you want to re-import updated assets.
+Stitch uses a custom solution for this that we call "Modules".
+A "module" is a collection of assets that have a common folder name in their path.
+For example, for a module called "TitleScreen" and an asset hierarchy including:
 
 + `sprites/TitleScreen/{module content}`
 + `sounds/menus/TitleScreen/{module content}`
@@ -130,26 +134,60 @@ Everything inside those three "groups", starting at the "TitleScreen" level and 
 
 This also works for Included Files.
 
+You can also choose to import *everything* from a source project by omitting
+the module list during imports. Behind the scenes, Stitch treats each root-level
+folder as a Module.
+
 Use case: At Bscotch, we have a separate GameMaker project for our shared asset library that includes our login system, a large script library, common objects, extensions for managing In-App Purchase, and more. We use the module system to import the required subsets of this shared library into each of our games as needed. This allows us to guarantee that all games have the same, up to date code, and allows us to test common features in a single project.
 
 ```sh
 # CLI
 stitch import modules -h # Get help about importing modules
+# Import specific modules:
 stitch import modules --source-project-path=path/to/your/modules-project --modules=my_module,my_other_module
+# Import everything:
+stitch import modules --source-project-path=path/to/your/modules-project
 ```
 
 ```ts
 // Typescript
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
+// Import specific modules:
 myProject.importModules('path/to/your/modules-project',['my_module','my_other_module']);
+// Import everything:
+myProject.importModules('path/to/your/modules-project');
 ```
+
+#### Avoiding name conflicts on import
+
+**Imports are dangerous** because GameMaker Studio has no concept of name-spacing. This makes it
+easy to overwrite a resource that just happens to have the same name but is something different.
+The default Stitch import options err on the side of throwing errors when something looks like a conflict,
+but there is no way to guarantee that you'll only replace things you intend to replace.
+
+If you are writing code that you want to be able to import into other projects,
+or want to be able to import code from other projects,
+follow these best practices to minimize the chances of a conflict:
+
++ Minimize the number of global identifiers (scripts, global functions, global variables, and all assets).
+  Everything that can be globally referenced carries a risk of having a name conflict.
++ To help with the prior goal, use structs to bundle functions and variables together.
+  The struct then acts like a namespace. Unfortunately GameMaker does not have good
+  Intellisense for function inside of structs, so this might do more harm than good
+  (you can use the alternative, unofficial editor [GMEdit](https://yellowafterlife.itch.io/gmedit)
+  to get better Intellisense).
++ Name your global entities in a way that will make them very likely to be unique.
+  Prefixing all global entities with a short module identifier
+  creates a simple namespacing mechanism,
+  and will also group them together in Intellisense hints and search results.
 
 #### Module Import Notes <a id="modules-notes"></a>
 
 + **All data is overwritten** in the target for module assets. Any changes you've made that aren't also in the source module will be lost forever. The exception to this is Texture and Audio Group membership when you use Stitch's system to manage those.
 + Only **resources** (e.g. sprites, objects, scripts, etc. -- the things in the IDE's resource tree) and **Included Files** are importable as modules.
-+ Module assets in the target that are *not* in the source are moved to a folder called "MODULE_CONFLICTS". This prevents data loss.
++ Module assets in the target that are *not* in the source are moved to a folder called "MODULE_CONFLICTS". This prevents data loss. This behavior can be changed with the `doNotMoveConflicting` programmatic option or the `--do-not-move-conflicting` CLI flag.
++ GameMaker Studio does not have a concept of *namespacing*, so it is easy to end up with conflicting asset names between the source and target. By default an error is thrown in this case (leading to an incomplete import) so that you can manually resolve the conflict. You can can this behavior using the `onClobber` programmatic option or the `--on-clobber` CLI option, setting the value to `overwrite` (to keep the source version) or `skip` (to keep the target version).
 + Failed imports may result in broken projects. Failures result from conflicts between the source and target, in particular when a resource in each has the same name but different type, or is in a different module.
 
 ### Import Assets <a id="import-asset"></a>
