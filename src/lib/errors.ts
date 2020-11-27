@@ -7,7 +7,7 @@ export class StitchError extends Error {
   }
 }
 
-class StitchAssertionError extends Error {
+export class StitchAssertionError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "StitchAssertionError";
