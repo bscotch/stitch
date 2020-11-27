@@ -1,3 +1,15 @@
+# [1.5.0](https://github.com/bscotch/stitch/compare/v1.4.0...v1.5.0) (2020-11-27)
+
+
+### Features
+
+* Assets can now be imported from other projects by remote URL, such as from Github. ([e13ad5b](https://github.com/bscotch/stitch/commit/e13ad5be98f18ebad17acba0dc56a64ac9de2578))
+* Importing modules now allows importing *all* assets from one project into another. This also required adding and exposing new import options to control what happens with conflicts. ([a2455b4](https://github.com/bscotch/stitch/commit/a2455b4cbfaa47e0badb5ddb8270001e24bd853b))
+* Stitch library now includes method to download and extract a remote zip file. This will be required for direct module imports from remote GameMaker projects. ([295cacd](https://github.com/bscotch/stitch/commit/295cacd15cef425fb5e69c7cdea3b2cbec1c52fa))
+* The Stitch library now contains a general HTTP(S) getter. This sets the stage for downloading remote projects for module import. ([be255ff](https://github.com/bscotch/stitch/commit/be255ff7bcdc52524edebaedca2944c92f5f3c32))
+
+
+
 # [1.4.0](https://github.com/bscotch/stitch/compare/v1.3.1...v1.4.0) (2020-11-24)
 
 
