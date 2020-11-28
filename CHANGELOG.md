@@ -1,4 +1,4 @@
-## [2.1.1](https://github.com/bscotch/stitch/compare/v2.1.0...v2.1.1) (2020-11-28)
+## [2.1.2](https://github.com/bscotch/stitch/compare/v2.1.0...v2.1.2) (2020-11-28)
 
 
 ### Bug Fixes
