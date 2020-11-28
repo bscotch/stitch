@@ -1,3 +1,16 @@
+# [2.1.0](https://github.com/bscotch/stitch/compare/v2.0.0...v2.1.0) (2020-11-28)
+
+
+### Features
+
+* Downloading/unzipping now includes console logs, since it can take a while for large projects and feedback is useful. ([1053cb9](https://github.com/bscotch/stitch/commit/1053cb9d9f149fddb25f0daa21a3f462436f25ea))
+* Env-var loading now includes a helper specifically for GitHub tokens. ([8bbe9f6](https://github.com/bscotch/stitch/commit/8bbe9f6310c921a79b4e611ebd7e66e2b0f395cf))
+* Merging from GitHub and URL are now separate methods in the Gms2Project class, allowing them to be used programmatically. In addition, when fetching from GitHub a GITHUB_PERSONAL_ACCESS_TOKEN env var is loaded (if found) to use as API credentials, allowing access to private repos. ([c8fe701](https://github.com/bscotch/stitch/commit/c8fe70132b6cd7a0987fa24f8155573e497982ca))
+* The HTTP getter now allows for setting headers, so that credentials can be passed for accessing private GitHub repos. ([c05090d](https://github.com/bscotch/stitch/commit/c05090d40eb8f6cb5619fb238a7e60bb9e676cc5))
+* The Stitch library now includes an environment variable load that searces in HOME and CWD for whitelisted variable names in env files named .env, .stitch.env, or stitch.env. This will allow future features, like storing GitHub credentials for accessing private repos for project merges. ([4e4378a](https://github.com/bscotch/stitch/commit/4e4378ace0789b8baf6676740ee26faad8b732da))
+
+
+
 # [2.0.0](https://github.com/bscotch/stitch/compare/v1.5.0...v2.0.0) (2020-11-28)
 
 
