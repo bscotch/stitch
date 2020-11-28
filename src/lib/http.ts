@@ -5,13 +5,14 @@ import Url from 'url';
 import { StitchError } from './errors';
 import unzipper from "unzipper";
 import path from "path";
+import { logInfo } from './log';
 
 interface GetResponse {
   contentType:string,
   data:any
 }
 
-export async function get(url:string,headers?:{[key:string]:string}):Promise<GetResponse>{
+export async function get(url:string,headers?:{[key:string]:string|undefined}):Promise<GetResponse>{
   const {protocol} = Url.parse(url);
   const httpType = protocol?.match(/^(https?):$/)?.[1] as 'http'|'https'|null;
   if( !httpType ){
@@ -72,7 +73,7 @@ export async function get(url:string,headers?:{[key:string]:string}):Promise<Get
  * Downloads and unzip a remote zip file, returning the root path
  * to the unzipped contents.
  */
-export async function unzipRemote (url:string,toDir:string){
+export async function unzipRemote (url:string,toDir:string,headers?:{[header:string]:any}){
   const {pathname} = Url.parse(url);
   if(!pathname?.endsWith('.zip')){
     throw new StitchError(`Expected URL to Zip file to end with '.zip'.`);
@@ -81,13 +82,16 @@ export async function unzipRemote (url:string,toDir:string){
   if(fs.readdirSync(toDir).length>0){
     throw new StitchError(`Output directory ${toDir} is not empty.`);
   }
-  const response = await get(url);
+  logInfo('Downloading...');
+  const response = await get(url,headers);
   if(!response.contentType.includes('zip')){
     throw new StitchError(
       `Expected downloaded content-type to included 'zip', got ${response.contentType}.`
     );
   }
+  logInfo('Unzipping...');
   const zipDir = await unzipper.Open.buffer(response.data);
-  await zipDir.extract({concurrency:5,path:toDir});
+  await zipDir.extract({concurrency:10,path:toDir});
+  logInfo('Unzipped!');
   return path.join(toDir,zipDir.files[0].path);
 }
