@@ -118,22 +118,25 @@ This README includes example CLI calls in the relevant sections, but should not 
 
 ## Features <a id="features"></a>
 
-### Project Merging <a id="modules"></a>
+### Merging Projects <a id="modules"></a>
 
 Importing assets from one GMS2 project into another is a painful process, especially
-when you want to re-import updated assets.
-Stitch includes a merger that allows you to bring a subset of
+when you want to re-import.
+Stitch includes a merger that lets you import a subset of
 resources and included files from one GameMaker project into another.
+This allows you to share and re-use code, while making it easy
+to keep that code up to date.
 
-Project Merging use cases:
-
-+ Creating a private library of code shared across multiple games.
-+ Creating a public library of utility assets for other developers.
+**⚠WARNING⚠** Merging GameMaker projects could permanently break your
+project. Only bypass the source control requirement if you are completely
+okay with having a ruined project!
 
 Since GameMaker does not have name-spacing, merging projects can be a complicated
 and dangerous process. The Stitch merger provides many options so that
 you can carefully control merge behavior, and will output warnings and errors
-when things go awry.
+when things go awry. Carefully check your options when merging to make sure
+you're getting what you want and, where possible, only merge projects that
+are using [good naming practices](#best-practice-naming) to reduce the chances of conflicts and confusion.
 
 Stitch can use the following as source projects for merging:
 
@@ -143,20 +146,38 @@ Stitch can use the following as source projects for merging:
 
 Note that source projects must be from Stitch-compatible versions of GameMaker.
 
+If you want to use a *private* GitHub repo as a source, you'll need
+to create a
+[Personal Access Token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token)
+for your GitHub account and then make it available to Stitch via the environment
+variable `GITHUB_PERSONAL_ACCESS_TOKEN`. You can do this by creating a file called
+`.env` or `stitch.env`, in the same place from which you're running Stitch or
+in your home folder, and adding the line `GITHUB_PERSONAL_ACCESS_TOKEN=your_access_token`.
+Stitch will automatically check those locations for your token.
+
 
 ```sh
 # CLI
-stitch merge -h # Get help about merging
+stitch merge -h # Get up-to-date documentation on merging options
 
 # Import everything
 stitch merge --source=source/path
 
 # Import all sprites in a folder matching "title"
 # -or- if the sprite name matches regex ^sp_title_
-stitch merge --source=source/path --if-name-matches=^sp_title_ --if-folder-matches=title --types=sprites
+stitch merge --source=source/path --if-name-matches=^sp_title_ --if-folder-matches=title --types=sprites\
 
-# Import scripts from a project on GitHub
-stitch merge --source-github=gm-core/gdash@6.0.2 --types==scripts
+# Merge from a GitHub repo (latest commit)
+stitch merge --source-github=gm-core/gdash
+
+# Import scripts from a project on GitHub (from the commit tagged "v6.0.2")
+stitch merge --source-github=gm-core/gdash@v6.0.2 --types==scripts
+
+# Merge from a GitHub repo (latest commit on the master branch)
+stitch merge --source-github=gm-core/gdash@master
+
+# Merge from a GitHub repo (that most recent commit with a semver tag)
+stitch merge --source-github="gm-core/gdash?^v(\\d+\\.){2}\\d+$"
 ```
 
 ```ts
@@ -176,7 +197,7 @@ myProject.merge('path/to/your/modules-project', {
 });
 ```
 
-#### Avoiding name conflicts
+#### Avoid name conflicts <a id="best-practice-naming"></a>
 
 **Imports are dangerous** because GameMaker Studio has no concept of name-spacing. This makes it
 easy to overwrite a resource that just happens to have the same name but is something different.
@@ -189,23 +210,15 @@ follow these best practices to minimize the chances of a conflict:
 
 + Minimize the number of global identifiers (scripts, global functions, global variables, and all assets).
   Everything that can be globally referenced carries a risk of having a name conflict.
-+ To help with the prior goal, use structs to bundle functions and variables together.
-  The struct then acts like a namespace. Unfortunately GameMaker does not have good
-  Intellisense for function inside of structs, so this might do more harm than good
++ Use structs to bundle functions and variables together, creating a basic namespace.
+  Unfortunately GameMaker does not have good
+  Intellisense for functions inside of structs, so this might not ideal
   (you can use the alternative, unofficial editor [GMEdit](https://yellowafterlife.itch.io/gmedit)
   to get better Intellisense).
 + Name your global entities in a way that will make them very likely to be unique.
-  Prefixing all global entities with a short module identifier
+  Prefixing all global entities with a short project identifier
   creates a simple namespacing mechanism,
-  and will also group them together in Intellisense hints and search results.
-
-#### Module Import Notes <a id="modules-notes"></a>
-
-+ **All data is overwritten** in the target for module assets. Any changes you've made that aren't also in the source module will be lost forever. The exception to this is Texture and Audio Group membership when you use Stitch's system to manage those.
-+ Only **resources** (e.g. sprites, objects, scripts, etc. -- the things in the IDE's resource tree) and **Included Files** are importable as modules.
-+ Module assets in the target that are *not* in the source are moved to a folder called "MODULE_CONFLICTS". This prevents data loss. This behavior can be changed with the `doNotMoveConflicting` programmatic option or the `--do-not-move-conflicting` CLI flag.
-+ GameMaker Studio does not have a concept of *namespacing*, so it is easy to end up with conflicting asset names between the source and target. By default an error is thrown in this case (leading to an incomplete merge) so that you can manually resolve the conflict. You can can this behavior using the `onClobber` programmatic option or the `--on-clobber` CLI option, setting the value to `overwrite` (to keep the source version) or `skip` (to keep the target version).
-+ Failed imports may result in broken projects. Failures result from conflicts between the source and target, in particular when a resource in each has the same name but different type, or is in a different module.
+  and will also group related things together in Intellisense hints and search results.
 
 ### Create Assets <a id="import-asset"></a>
 
@@ -244,7 +257,7 @@ We have another tool, [Spritely](https://github.com/bscotch/spritely), that you
 can use to batch-crop and batch-bleed your images prior to importing them into
 GameMaker as sprites.
 
-⚠WARNING⚠ Many changes you make to sprites imported via Stitch will be overwritten
+**⚠WARNING⚠** Many changes you make to sprites imported via Stitch will be overwritten
 the next time you run Stitch on those same sprites. In particular, changes to frames
 or frame order will be undone, and any layers you've added will be deleted. Other
 sprite properties (those not in the frame editor) will be maintained between imports.
