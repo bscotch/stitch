@@ -44,3 +44,8 @@ export function loadEnvironmentVariables<T extends Readonly<string[]>>(varNames:
   }
   return env;
 }
+
+/** Load env var GITHUB_PERSONAL_ACCESS_TOKEN if it exists */
+export function getGithubAccessToken(){
+  return loadEnvironmentVariables(['GITHUB_PERSONAL_ACCESS_TOKEN']).GITHUB_PERSONAL_ACCESS_TOKEN;
+}
