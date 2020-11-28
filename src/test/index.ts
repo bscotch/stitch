@@ -8,7 +8,7 @@ import { differenceBy } from 'lodash';
 import { StitchError, StitchAssertionError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import cli_assert from '../cli/lib/cli-assert';
-import importModules, { ImportModuleOptions } from '../cli/lib/merge';
+import importModules, { Gms2MergeCliOptions } from '../cli/lib/merge';
 import importSounds from '../cli/lib/add-sounds';
 import version, {VersionOptions} from '../cli/lib/version';
 import importFiles from '../cli/lib/add-files';
@@ -177,7 +177,7 @@ describe("GMS2.3 Pipeline SDK", function () {
 
   describe("Gms2 Project Class", function () {
 
-    it("can delete a resource", function(){
+    it.only("can delete a resource", function(){
       const project = getResetProject({readonly:true});
       const name = project.resources.all[0].name;
       expect(project.resources.findByName(name)).to.exist;
@@ -638,7 +638,7 @@ describe("GMS2.3 Pipeline SDK", function () {
         throw new Error('Should fail when source does not exists');
       }
       catch(err){
-        if(! (err instanceof cli_assert.Gms2PipelineCliAssertionError)){
+        if(err?.code!='ENOENT' ){
           throw err;
         }
       }
@@ -658,7 +658,7 @@ describe("GMS2.3 Pipeline SDK", function () {
         }
       }
 
-      let importModulesOptions: ImportModuleOptions = {
+      let importModulesOptions: Gms2MergeCliOptions = {
         source: modulesRoot,
         ifFolderMatches: ["BscotchPack","AnotherModule"],
         targetProject: sandboxRoot

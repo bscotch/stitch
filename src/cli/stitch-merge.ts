@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import commander, { CommanderStatic } from "commander";
 import { oneline } from "@bscotch/utility";
-import importModules, { ImportModuleOptions } from './lib/merge';
+import merge, { Gms2MergeCliOptions } from './lib/merge';
 import options from "./lib/cli-options";
 import { Gms2ResourceArray } from "../lib/components/Gms2ResourceArray";
 
-const cli = commander as (ImportModuleOptions & CommanderStatic);
+const cli = commander as (Gms2MergeCliOptions & CommanderStatic);
 
 cli.description("Merge GameMaker Studio projects.")
   .option(...options.targetProject)
@@ -14,9 +14,16 @@ cli.description("Merge GameMaker Studio projects.")
   `)
   .option("-g --source-github <url>", oneline`
     Repo owner and name for a Gamemaker Studio 2 project
-    on GitHub in format "{owner}/{repo-name}@version".
-    The version suffix is optional, and
+    on GitHub in format "{owner}/{repo-name}@{revision}".
+    The revision suffix is optional, and
     can be a branch name, a tag, or a commit hash.
+    Alternatively, can use format "{owner}/{repo-name}?{tagPattern}"
+    where the tagPattern is compiled to a regex;
+    the most recent project tag matching the pattern
+    will be used. For example, pattern "^v(\\d+\\.){2}\\d+$" would
+    match standard semver tags, like "v1.0.0". If no revision or
+    tagPattern is provided, Stitch uses HEAD. To provide
+    credentials for private GitHub repos, see the README.
   `)
   .option("-u --source-url <url>", oneline`
     URL to a zipped GameMaker Studio 2 project.
@@ -75,4 +82,4 @@ cli.description("Merge GameMaker Studio projects.")
   .parse(process.argv);
 
 
-importModules(cli);
+merge(cli);

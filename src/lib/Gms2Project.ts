@@ -1,6 +1,6 @@
 import { StitchError, assert } from "./errors";
 import fs from "./files";
-import { oneline } from "@bscotch/utility";
+import { md5, oneline } from "@bscotch/utility";
 import paths from "./paths";
 import { YypComponents } from "../types/Yyp";
 import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
@@ -23,6 +23,8 @@ import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
 import { SpritelyBatch } from "@bscotch/spritely";
 import {snakeCase,camelCase,pascalCase} from "change-case";
 import { logInfo } from "./log";
+import { get, unzipRemote } from "./http";
+import { getGithubAccessToken } from "./env";
 
 export interface SpriteImportOptions {
   /** Optionally prefix sprite names on import */
@@ -248,17 +250,50 @@ export class Gms2Project {
     }
   }
 
+  async mergeFromUrl(url:string,options?:Gms2MergerOptions,headers?:{[header:string]:any}){
+    const unzipPath = paths.join(
+      paths.dirname(this.yypAbsolutePath),
+      `tmp-${md5(url)}`
+    );
+    const sourcePath = await unzipRemote(url,unzipPath,headers);
+    this.merge(sourcePath,options);
+    fs.emptyDirSync(unzipPath);
+    fs.removeSync(unzipPath);
+    return this;
+  }
+
+  async mergeFromGithub(repoOwner:string,repoName:string,options?:{revision?:string,tagPattern?:string}&Gms2MergerOptions){
+    // Figure out the revision based on options.
+    let revision = options?.revision || 'HEAD';
+    const token = getGithubAccessToken();
+    const headers = token
+      ? {authorization: `Bearer ${token}`}
+      : {};
+    const apiBase = `https://api.github.com/repos/${repoOwner}/${repoName}`;
+    if(options?.tagPattern){
+      // Then need to query the GitHub API.
+      const {tagPattern} = options;
+      const tags = (await get(`${apiBase}/tags`,headers)).data as {name:string}[];
+      const latestMatchingTag = tags.find(tag=>tag.name.match(new RegExp(tagPattern,'i')));
+      assert(latestMatchingTag,`No GitHub tag matches pattern ${tagPattern}`);
+      revision = latestMatchingTag.name;
+    }
+    const url = `https://github.com/${repoOwner}/${repoName}/archive/${revision}.zip`;
+    await this.mergeFromUrl(url,options,headers);
+    return this;
+  }
+
   /**
    * Import modules from one GMS2 project into this one.
    * @param fromProject A directory containing a single .yyp file somwhere,
    * or the path directly to a .yyp file.
-   * @param moduleNames An optional list of module names.
-   * If not provided, or an empty list, all source project
-   * root folders are used as module names (in other words,
-   * all assets are imported).
    */
   merge(fromProjectPath: string,options?:Gms2MergerOptions){
-    const fromProject = new Gms2Project({projectPath:fromProjectPath,readOnly:true});
+    const fromProject = new Gms2Project({
+      projectPath:fromProjectPath,
+      readOnly:true,
+      dangerouslyAllowDirtyWorkingDir:true
+    });
     new Gms2ProjectMerger(fromProject,this,options).merge();
     return this;
   }
