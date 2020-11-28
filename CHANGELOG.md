@@ -1,3 +1,12 @@
+# [2.2.0](https://github.com/bscotch/stitch/compare/v2.1.2...v2.2.0) (2020-11-28)
+
+
+### Features
+
+* Merging a GitHub repo now allows using the latest tagged commit, without requiring a pattern to match against. This dramatically simplifies the most common use case of wanting to merge the most recent release of something. ([ce0e1bf](https://github.com/bscotch/stitch/commit/ce0e1bf7e28f647ec93e48cadcd3e5f2effc2b9c))
+
+
+
 ## [2.1.2](https://github.com/bscotch/stitch/compare/v2.1.0...v2.1.2) (2020-11-28)
 
 
