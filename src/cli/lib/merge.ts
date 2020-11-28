@@ -11,6 +11,15 @@ export interface Gms2MergeCliOptions extends Gms2MergerOptions {
   force?: boolean,
 }
 
+export function parseGithubSourceString(source:string){
+  const match = source.match(/^(?<owner>[a-z0-9_.-]+)\/(?<name>[a-z0-9_.-]+)(?<revisionType>(@(?<revision>[a-z0-9_.-]+))|(\?(?<tagPattern>.+)?))?$/i)
+    ?.groups as unknown as {owner:string,name:string,revision?:string,tagPattern?:string,revisionType?:'@'|'?'};
+  if(match?.revisionType){
+    match.revisionType = match.revisionType?.[0] as '@'|'?';
+  }
+  return match;
+}
+
 export default async function(options: Gms2MergeCliOptions){
   options.targetProject ||= process.cwd();
   assertions.assertPathExists(options.targetProject);
@@ -20,14 +29,13 @@ export default async function(options: Gms2MergeCliOptions){
   });
   // GitHub source?
   if(options.sourceGithub){
-    const repo = options.sourceGithub
-      .match(/^(?<owner>[a-z0-9_.-]+)\/(?<name>[a-z0-9_.-]+)((@(?<revision>[a-z0-9_.-]+))|(\?(?<tagPattern>.+)))?$/i)
-      ?.groups as unknown as {owner:string,name:string,revision?:string,tagPattern?:string};
+    const repo = parseGithubSourceString(options.sourceGithub);
     assert(repo,'Could not parse repo source string.');
     await targetProject.mergeFromGithub(repo.owner,repo.name,{
       ...options,
       revision:repo.revision,
-      tagPattern:repo.tagPattern
+      tagPattern:repo.tagPattern,
+      revisionType: repo.revisionType
     });
   }
   // URL source?

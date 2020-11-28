@@ -8,7 +8,7 @@ import { differenceBy } from 'lodash';
 import { StitchError, StitchAssertionError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import cli_assert from '../cli/lib/cli-assert';
-import importModules, { Gms2MergeCliOptions } from '../cli/lib/merge';
+import importModules, { Gms2MergeCliOptions, parseGithubSourceString } from '../cli/lib/merge';
 import importSounds from '../cli/lib/add-sounds';
 import version, {VersionOptions} from '../cli/lib/version';
 import importFiles from '../cli/lib/add-files';
@@ -99,6 +99,37 @@ describe("GMS2.3 Pipeline SDK", function () {
       const {HELLO,GITHUB_PERSONAL_ACCESS_TOKEN} = loadEnvironmentVariables(varNames);
       expect(HELLO).to.equal('world');
       expect(GITHUB_PERSONAL_ACCESS_TOKEN).to.have.length.greaterThan(0);
+    });
+
+    it('can parse Github source strings', function(){
+      expect(parseGithubSourceString("gm-core/gdash")).to.eql({
+        owner: 'gm-core',
+        name: 'gdash',
+        revision: undefined,
+        tagPattern: undefined,
+        revisionType: undefined,
+      });
+      expect(parseGithubSourceString("gm-core/gdash?^(\\d+\\.){2}\\d+")).to.eql({
+        owner: 'gm-core',
+        name: 'gdash',
+        tagPattern: "^(\\d+\\.){2}\\d+",
+        revision: undefined,
+        revisionType: "?",
+      });
+      expect(parseGithubSourceString("gm-core/gdash?")).to.eql({
+        owner: 'gm-core',
+        name: 'gdash',
+        revisionType: "?",
+        revision: undefined,
+        tagPattern: undefined,
+      });
+      expect(parseGithubSourceString("gm-core/gdash@4.4.0")).to.eql({
+        owner: 'gm-core',
+        name: 'gdash',
+        revision: "4.4.0",
+        tagPattern: undefined,
+        revisionType: "@",
+      });
     });
 
     it('can fetch a text URL', async function(){

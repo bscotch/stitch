@@ -12,15 +12,16 @@ cli.description("Merge GameMaker Studio projects.")
   .option("-s --source <path>", oneline`
     Local path to the source GameMaker Studio 2 project.
   `)
-  .option("-g --source-github <url>", oneline`
+  .option("-g --source-github <repo>", oneline`
     Repo owner and name for a Gamemaker Studio 2 project
     on GitHub in format "{owner}/{repo-name}@{revision}".
     The revision suffix is optional, and
     can be a branch name, a tag, or a commit hash.
-    Alternatively, can use format "{owner}/{repo-name}?{tagPattern}"
-    where the tagPattern is compiled to a regex;
-    the most recent project tag matching the pattern
-    will be used. For example, pattern "^v(\\d+\\.){2}\\d+$" would
+    Alternatively, the format "{owner}/{repo-name}?" will
+    use the most recent tagged commit.
+    Finally, the format "{owner}/{repo-name}?{tagPattern}"
+    will use the most recent tagged commit where the tag matches
+    the pattern. For example, pattern "^v(\\d+\\.){2}\\d+$" would
     match standard semver tags, like "v1.0.0". If no revision or
     tagPattern is provided, Stitch uses HEAD. To provide
     credentials for private GitHub repos, see the README.

@@ -262,7 +262,7 @@ export class Gms2Project {
     return this;
   }
 
-  async mergeFromGithub(repoOwner:string,repoName:string,options?:{revision?:string,tagPattern?:string}&Gms2MergerOptions){
+  async mergeFromGithub(repoOwner:string,repoName:string,options?:{revision?:string,revisionType?:'@'|'?',tagPattern?:string}&Gms2MergerOptions){
     // Figure out the revision based on options.
     let revision = options?.revision || 'HEAD';
     const token = getGithubAccessToken();
@@ -270,11 +270,13 @@ export class Gms2Project {
       ? {authorization: `Bearer ${token}`}
       : {};
     const apiBase = `https://api.github.com/repos/${repoOwner}/${repoName}`;
-    if(options?.tagPattern){
+    if(options?.revisionType=='?'){
       // Then need to query the GitHub API.
       const {tagPattern} = options;
       const tags = (await get(`${apiBase}/tags`,headers)).data as {name:string}[];
-      const latestMatchingTag = tags.find(tag=>tag.name.match(new RegExp(tagPattern,'i')));
+      const latestMatchingTag = tagPattern
+        ? tags.find(tag=>tag.name.match(new RegExp(tagPattern,'i')))
+        : tags[0];
       assert(latestMatchingTag,`No GitHub tag matches pattern ${tagPattern}`);
       revision = latestMatchingTag.name;
     }

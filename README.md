@@ -170,11 +170,14 @@ stitch merge --source=source/path --if-name-matches=^sp_title_ --if-folder-match
 # Merge from a GitHub repo (latest commit)
 stitch merge --source-github=gm-core/gdash
 
-# Import scripts from a project on GitHub (from the commit tagged "v6.0.2")
-stitch merge --source-github=gm-core/gdash@v6.0.2 --types==scripts
+# Import scripts from a project on GitHub (from the commit tagged "6.0.2")
+stitch merge --source-github=gm-core/gdash@6.0.2 --types==scripts
 
 # Merge from a GitHub repo (latest commit on the master branch)
 stitch merge --source-github=gm-core/gdash@master
+
+# Merge from a GitHub repo (that most recent commit with any tag)
+stitch merge --source-github="gm-core/gdash?"
 
 # Merge from a GitHub repo (that most recent commit with a semver tag)
 stitch merge --source-github="gm-core/gdash?^v(\\d+\\.){2}\\d+$"
