@@ -1,3 +1,13 @@
+# [2.0.0](https://github.com/bscotch/stitch/compare/v1.5.0...v2.0.0) (2020-11-28)
+
+
+### Features
+
+* 'import' CLI commands are now called 'add' for clarity, and several CLI options have been shorted for better legibility and easier typing. BREAKING. ([d77369f](https://github.com/bscotch/stitch/commit/d77369f00d76c035647dac840c8773f19f5e455f))
+* The old 'module' concept has been removed and placed with more understandable 'project merge'. APIs, CLIs, and docs have all been updated to reflect the changes. BREAKING. ([c69c661](https://github.com/bscotch/stitch/commit/c69c661d4c2f51cc4f7c15fe27e98d8f7d9d97da))
+
+
+
 # [1.5.0](https://github.com/bscotch/stitch/compare/v1.4.0...v1.5.0) (2020-11-27)
 
 
