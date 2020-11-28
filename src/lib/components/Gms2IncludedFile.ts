@@ -15,6 +15,12 @@ export class Gms2IncludedFile {
   }
 
   get name(){ return this.data.name; }
+
+  /** The folder path name as seen in the IDE browser. */
+  get folder(){
+    return this.directoryRelative.replace(/^datafiles\//,'');
+  }
+
   /** The directory containing this file, relative to project root  */
   get directoryRelative(){ return this.data.filePath; }
   get directoryAbsolute(){ return paths.join(this.storage.yypDirAbsolute,this.directoryRelative);}
@@ -70,12 +76,6 @@ export class Gms2IncludedFile {
    */
   replaceWithFileContent(sourceFile:string){
     this.storage.copyFile(sourceFile,this.filePathAbsolute);
-  }
-
-  isInModule(moduleName:string){
-    return this.data.filePath.split('/')
-      .map(folder=>folder.toLocaleLowerCase())
-      .includes(moduleName.toLocaleLowerCase());
   }
 
   toJSON(): YypIncludedFile{

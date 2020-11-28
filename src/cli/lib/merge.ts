@@ -1,4 +1,4 @@
-import { Gms2ImportModulesOptions } from '../../lib/Gms2ProjectMerger';
+import { Gms2MergerOptions } from '../../lib/Gms2ProjectMerger';
 import { Gms2Project } from '../../lib/Gms2Project';
 import { unzipRemote } from '../../lib/http';
 import assertions from './cli-assert';
@@ -7,11 +7,10 @@ import path from "path";
 import fs from "fs-extra";
 import { assert, StitchError } from '../../lib/errors';
 
-export interface ImportModuleOptions extends Gms2ImportModulesOptions {
+export interface ImportModuleOptions extends Gms2MergerOptions {
   source?: string,
   sourceUrl?:string,
   sourceGithub?: string,
-  modules?: string[],
   targetProject ?: string,
   force?: boolean,
 }
@@ -58,7 +57,7 @@ export default async function(options: ImportModuleOptions){
     options.source = await unzipRemote(options.sourceUrl,unzipPath);
   }
   assertions.assertPathExists(options.source);
-  targetProject.importModules(options.source as string,options.modules,options);
+  targetProject.merge(options.source as string,options);
   if(unzipPath){
     fs.emptyDirSync(unzipPath);
     fs.removeSync(unzipPath);

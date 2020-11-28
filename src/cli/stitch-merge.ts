@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 import commander, { CommanderStatic } from "commander";
 import { oneline } from "@bscotch/utility";
-import importModules, { ImportModuleOptions } from './lib/import-modules';
+import importModules, { ImportModuleOptions } from './lib/merge';
 import options from "./lib/cli-options";
+import { Gms2ResourceArray } from "../lib/components/Gms2ResourceArray";
 
 const cli = commander as (ImportModuleOptions & CommanderStatic);
 
 cli.description("Merge GameMaker Studio projects.")
+  .option(...options.targetProject)
   .option("-s --source <path>", oneline`
     Local path to the source GameMaker Studio 2 project.
   `)
@@ -19,46 +21,56 @@ cli.description("Merge GameMaker Studio projects.")
   .option("-u --source-url <url>", oneline`
     URL to a zipped GameMaker Studio 2 project.
   `)
-  .option("--modules <names...>", oneline`
-    The names of the modules in the source project to import.
-    Can be a comma-separated list. Any resources whose folder
-    path in the source project resources tree include a provided
-    module name as a subdirectory will be imported. If not provided,
-    *all* assets are imported by treating root folders as modules.
-    In this case, the flags --do-not-move-conflicting and 
-    --skip-dependency-check are forced, and it's likely that you'll
-    want to set --on-clobber to either 'overwrite' or 'skip'.
+  .option("--if-folder-matches <pattern...>", oneline`
+    List of source folder patterns that, if matched,
+    should have all child assets imported (recursive).
+    Will be passed to \`new RegExp()\` and tested against
+    the parent folder of every source resource.
+    Independent from ifNameMatches. Case is ignored.
   `)
+  .option("--if-name-matches <pattern...>", oneline`
+    List of source resource name patterns that, if matched,
+    should have all child assets imported (recursive).
+    Will be passed to \`new RegExp()\` and tested against
+    the name of every source resource.
+    Independent from ifFolderMatches. Case is ignored.
+  `)
+  .option("--types <type...>", oneline`
+    All resource types are included by default. You can
+    optionally change to a whitelist pattern and only
+    include specific types. Types are:
+    ${Object.keys(Gms2ResourceArray.resourceClassMap).join(', ')}
+  `)
+  .option("--skip-included-files",oneline`
+    By default, "Included Files" are also merged if
+    they match filters. These can be skipped.
+  `)
+  .option("--move-conflicting", oneline`
+    The target project may have assets matching your
+    merge pattern, but that aren't in the source.
+    By default these are left alone, which can create some
+    confusion about which assets came from which projects.
+    Using this flag will cause conflicting target assets
+    to be moved into a folder called
+    MERGE_CONFLICTS for future reorganization. Only use
+    this flag if your source and target projects are using
+    unique folder names for their assets.
+  `)
+  .option("--on-clobber <error|skip|overwrite>", oneline`
+    If source assets match target assets by name,
+    but those matching assets are not matched by the merge
+    options, it's possible that the two assets are not
+    the same thing. By default Stitch overwrites anyway.
+    You can change the behavior to instead skip importing
+    those assets (keeping the target version) or throw an error.
+  `, 'overwrite')
   .option("--skip-dependency-check", oneline`
-    If an object in your source modules has dependencies
-    (parent objects or sprites) that are *not* in those modules,
+    If an object in your source has dependencies
+    (parent objects or sprites) that are *not* being merged,
     import will be blocked. This prevents accidentally importing
     broken assets. If you know that those missing dependencies
     will be found in the target project, you can skip this check.
   `)
-  .option("--do-not-move-conflicting", oneline`
-    If the target project already has the source module,
-    it may have assets in it that are *not* in the source
-    version of the module.
-    These are moved into a separate folder called
-    MODULE_CONFLICTS so
-    that source and target module assets directly match.
-    You can override this behavior to keep all target
-    assets where they are. You'll likely want to do this
-    when the source modules are not uniquely named.
-  `)
-  .option("--on-clobber <error|skip|overwrite>", oneline`
-    If source module assets match target assets by name,
-    but those matching assets are not in the same module
-    in the target, an error is raised. This is to prevent
-    accidental overwrite of assets that happen to have the
-    same name but aren't actually the same thing.
-    You can change the behavior to instead skip importing
-    those assets (keeping the target version) or overwrite
-    (deleting the target version and keeping the source
-    version)
-  `, 'error')
-  .option(...options.targetProject)
   .option(...options.force)
   .parse(process.argv);
 

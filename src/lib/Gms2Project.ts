@@ -17,7 +17,7 @@ import { Gms2ProjectConfig } from "./Gms2ProjectConfig";
 import { Gms2Sprite } from "./components/resources/Gms2Sprite";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
 import { Gms2FolderArray } from "./Gms2FolderArray";
-import { Gms2ImportModulesOptions, Gms2ModuleImporter } from "./Gms2ProjectMerger";
+import { Gms2MergerOptions, Gms2ProjectMerger } from "./Gms2ProjectMerger";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
 import { SpritelyBatch } from "@bscotch/spritely";
@@ -257,10 +257,9 @@ export class Gms2Project {
    * root folders are used as module names (in other words,
    * all assets are imported).
    */
-  importModules(fromProjectPath: string,moduleNames?:string[],options?:Gms2ImportModulesOptions){
+  merge(fromProjectPath: string,options?:Gms2MergerOptions){
     const fromProject = new Gms2Project({projectPath:fromProjectPath,readOnly:true});
-    const importer = new Gms2ModuleImporter(fromProject,this);
-    importer.importModules(moduleNames,options);
+    new Gms2ProjectMerger(fromProject,this,options).merge();
     return this;
   }
 
@@ -516,7 +515,7 @@ export class Gms2Project {
   private reload() {
     // Load the YYP file, store RAW (ensure field resourceType: "GMProject" exists)
     const yyp = Gms2Project.parseYypFile(this.storage.yypAbsolutePath);
-    
+
     fs.readJsonSync(this.storage.yypAbsolutePath) as YypComponents;
     assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
 

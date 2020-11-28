@@ -8,7 +8,7 @@ import { differenceBy } from 'lodash';
 import { StitchError, StitchAssertionError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import cli_assert from '../cli/lib/cli-assert';
-import importModules, { ImportModuleOptions } from '../cli/lib/import-modules';
+import importModules, { ImportModuleOptions } from '../cli/lib/merge';
 import importSounds from '../cli/lib/add-sounds';
 import version, {VersionOptions} from '../cli/lib/version';
 import importFiles from '../cli/lib/add-files';
@@ -509,20 +509,20 @@ describe("GMS2.3 Pipeline SDK", function () {
     });
 
     it("can import modules from one project into another", function(){
-      const sourceProject = getResetProject({readonly:true});
-      const modules = ["BscotchPack","AnotherModule"];
+      const targetProject = getResetProject({readonly:true});
+      const ifFolderMatches = ["BscotchPack","AnotherModule"];
 
       // Initial state
       const project = new Gms2Project(sandboxProjectYYPPath);
-      const resourcesToImport = sourceProject.resources.filter(resource=>{
-        return modules.some(module=>resource.isInModule(module));
+      const resourcesToImport = targetProject.resources.filter(resource=>{
+        return ifFolderMatches.some(match=>resource.folder.includes(match));
       }).map(resource=>resource.toJSON());
       expect(project.configs.findChild('BscotchPack'),
         'BscotchPack config should not exist before import'
       ).to.not.exist;
 
       // IMPORT
-      project.importModules(modulesRoot,modules);
+      project.merge(modulesRoot,{ifFolderMatches});
 
       // Check Resources
       const unexported = differenceBy(project.resources.toJSON(),resourcesToImport,'name');
@@ -541,14 +541,22 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(fs.existsSync(datafileDir), "The imported files should exist in the actual datafiles path");
     });
 
+    it("can whitelist asset types to import", function(){
+      const targetProject = getResetProject({readonly:true});
+      const sourceProject = new Gms2Project({readOnly:true,projectPath: modulesRoot});
+      const initialResources = targetProject.resources.all;
+      const sourceObjects = sourceProject.resources.objects;
+      const finalResources = targetProject.merge(modulesRoot,{types:['objects']}).resources.all;
+      const addedResources = differenceBy(finalResources,initialResources,'name');
+      expect(sourceObjects.map(o=>o.name)).to.eql(addedResources.map(o=>o.name));
+    });
+
     it("can import *all* assets from a project",function(){
-      // TODO: THIS IS JUST COPIED FROM PRIOR TEST
-      // TODO: IMPORT EVERYTHING AND MAKE SURE IT APPEARS
       getResetProject({readonly:true});
 
       // Initial state
       const project = new Gms2Project(sandboxProjectYYPPath);
-      project.importModules(modulesRoot);
+      project.merge(modulesRoot);
 
       // Check IncludedFiles
       expect(project.configs.findChild('BscotchPack'),
@@ -589,7 +597,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       resetSandbox();
       const importModulesOptions = {
         source: modulesRoot,
-        modules: ["MissingDependency"],
+        ifFolderMatches: ["MissingDependency"],
         targetProject: sandboxRoot
       };
       try{
@@ -601,7 +609,7 @@ describe("GMS2.3 Pipeline SDK", function () {
           throw err;
         }
       }
-      importModulesOptions.modules.push('BscotchPack');
+      importModulesOptions.ifFolderMatches.push('BscotchPack');
       await importModules(importModulesOptions); // will throw if it fails
     });
 
@@ -641,7 +649,7 @@ describe("GMS2.3 Pipeline SDK", function () {
 
       let importModulesOptions: ImportModuleOptions = {
         source: modulesRoot,
-        modules: ["BscotchPack","AnotherModule"],
+        ifFolderMatches: ["BscotchPack","AnotherModule"],
         targetProject: sandboxRoot
       };
       await importModules(importModulesOptions); // will throw if error
@@ -649,7 +657,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       resetSandbox();
       importModulesOptions = {
         source: modulesRoot,
-        modules: ["BscotchPack"],
+        ifFolderMatches: ["BscotchPack"],
         targetProject: sandboxRoot
       };
       await importModules(importModulesOptions);
@@ -658,8 +666,7 @@ describe("GMS2.3 Pipeline SDK", function () {
     it('can import modules from a remote repo', async function(){
       resetSandbox();
       await importModules({
-        doNotMoveConflicting:true,
-        modules:['scripts'],
+        types:['scripts'],
         sourceGithub:'gm-core/gdash@6.0.2',
         targetProject: sandboxRoot
       });

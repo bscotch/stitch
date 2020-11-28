@@ -9,10 +9,6 @@ export class Gms2IncludedFileArray extends Gms2ComponentArrayWithStorage<YypIncl
     super(data,Gms2IncludedFile,storage);
   }
 
-  filterByModule(moduleName:string){
-    return this.items.filter(item=>item.isInModule(moduleName));
-  }
-
   /**
    * Delete a file, if it exists.
    */

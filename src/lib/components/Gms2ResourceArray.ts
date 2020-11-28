@@ -58,7 +58,11 @@ export class  Gms2ResourceArray {
     return this;
   }
 
-  find<subclass extends Gms2ResourceSubclassType>(matchFunction: (item: Gms2ResourceSubclass)=>any, resourceClass: subclass){
+  find(matchFunction: (item: Gms2ResourceSubclass)=>any){
+    return this.items.find(item=>matchFunction(item));
+  }
+
+  findByClass<subclass extends Gms2ResourceSubclassType>(matchFunction: (item: Gms2ResourceSubclass)=>any, resourceClass: subclass){
     return this.filterByClass(resourceClass)
       .find(item=>matchFunction(item));
   }
@@ -72,7 +76,7 @@ export class  Gms2ResourceArray {
   }
 
   findByField<subclass extends Gms2ResourceSubclassType>(field:keyof Gms2ResourceSubclass,value:any, resourceClass: subclass){
-    return this.find(item=>item[field]==value,resourceClass);
+    return this.findByClass(item=>item[field]==value,resourceClass);
   }
 
   /** Find all resources in a given folder */
@@ -168,7 +172,7 @@ export class  Gms2ResourceArray {
     return this;
   }
 
-  static get _resourceClassMap() {
+  static get resourceClassMap() {
     const classMap = {
       animcurves: Gms2Animation,
       extensions: Gms2Extension,
@@ -192,7 +196,7 @@ export class  Gms2ResourceArray {
     const resourceType = data.id.path.split('/')[0] as Gms2ResourceType;
     // const subclass = Gms2Timeline;
     const subclass = Gms2ResourceArray
-      ._resourceClassMap[resourceType];
+      .resourceClassMap[resourceType];
     if (!subclass) {
       throw new StitchError(
         `No constructor for resource ${resourceType} exists.`
@@ -204,6 +208,6 @@ export class  Gms2ResourceArray {
   }
 }
 
-export type Gms2ResourceSubclassType = typeof Gms2ResourceArray._resourceClassMap[keyof typeof Gms2ResourceArray._resourceClassMap] | typeof Gms2ResourceBase;
+export type Gms2ResourceSubclassType = typeof Gms2ResourceArray.resourceClassMap[keyof typeof Gms2ResourceArray.resourceClassMap] | typeof Gms2ResourceBase;
 export type Gms2ResourceSubclass = InstanceType<Gms2ResourceSubclassType>;
-export type Gms2ResourceType = keyof typeof Gms2ResourceArray._resourceClassMap;
+export type Gms2ResourceType = keyof typeof Gms2ResourceArray.resourceClassMap;

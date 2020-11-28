@@ -1,7 +1,7 @@
 import { differenceBy } from "lodash";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2ResourceBase } from "./components/resources/Gms2ResourceBase";
-import { Gms2ResourceSubclass } from "./components/Gms2ResourceArray";
+import { Gms2ResourceSubclass, Gms2ResourceType } from "./components/Gms2ResourceArray";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
 import { Gms2Sprite } from "./components/resources/Gms2Sprite";
 import { assert, StitchError } from "./errors";
@@ -13,7 +13,33 @@ import { Gms2Object } from "./components/resources/Gms2Object";
 
 type ClobberAction = 'error'|'skip'|'overwrite';
 
-export interface Gms2ImportModulesOptions {
+export interface Gms2MergerOptions {
+  /**
+   * List of source folder patterns that, if matched,
+   * should have all child assets imported (recursive).
+   * Will be passed to `new RegExp()` and tested against
+   * the parent folder of every source resource.
+   * Independent from ifNameMatches.
+   */
+  ifFolderMatches?: string[],
+  /**
+   * List of source resource name patterns that, if matched,
+   * should have all child assets imported (recursive).
+   * Will be passed to `new RegExp()` and tested against
+   * the name of every source resource.
+   * Independent from ifFolderMatches.
+   */
+  ifNameMatches?: string[],
+  /**
+   * By default, Included Files are also tested against
+   * the merge patterns. Files can be excluded from merging.
+   */
+  skipIncludedFiles?: boolean,
+  /**
+   * Resource types whitelist. If not provided, all resource
+   * types are merged.
+   */
+  types?: Gms2ResourceType[],
   /**
    * Normally all dependencies (parent objects and sprites)
    * for the objects within the modules must also be in those
@@ -25,253 +51,250 @@ export interface Gms2ImportModulesOptions {
   /**
    * If the target project already has the source module,
    * it may have assets in it that are *not* in the source.
-   * By default these are moved into a separate folder so
-   * that source and target module assets directly match.
-   * You can override this behavior.
+   * This can create confusion about which assets come from
+   * which source. You can reduce this confusion by having
+   * conflicting target assets moved into a 'MERGE_CONFLICTS'
+   * folder for later re-organization.
    */
-  doNotMoveConflicting?:boolean,
+  moveConflicting?:boolean,
   /**
-   * If source module assets match target assets by name,
-   * but those matching assets are not in the same module
-   * in the target, an error is raised. This is to prevent
+   * If source assets match target assets by name,
+   * but have mismatched parent folders, an error is raised.
+   * This is to prevent
    * accidental overwrite of assets that happen to have the
    * same name but aren't actually the same thing.
    * You can change the behavior to instead skip importing
    * those assets (keeping the target version) or overwrite
    * (deleting the target version and keeping the source
-   * version)
+   * version). Note that assets of different type that have
+   * the same name will *always* raise an error.
    */
   onClobber?:ClobberAction,
 }
 
-export class Gms2ModuleImporter {
+export class Gms2ProjectMerger {
+  private options: Gms2MergerOptions;
 
-  constructor(private fromProject: Gms2Project, private toProject: Gms2Project){}
-
-  /**
-   * An empty or undefined list of module names is interpreted to
-   * mean import *all* assets, by using root folder names as
-   * module names. When importing all assets, the options
-   * defaults change to `{doNotMoveConflicting:true,onClobber:'overwrite'},
-   * which can be dangerous.`
-   */
-  importModules(moduleNames?:string[],options?:Gms2ImportModulesOptions){
-    options = options || {};
-    if(!moduleNames?.length){
-      // Then use root folders as modules and set options defaults
-      // to have the most likely intended outcome.
-      options.onClobber            ??= 'overwrite';
-      options.skipDependencyCheck  ??= true;
-      options.doNotMoveConflicting ??= true;
-      moduleNames = this.fromProject.folders
-        .filter(folder => !folder.path.includes('/'))
-        .map(folder => folder.name);
-    }
-
-    if(!options.skipDependencyCheck){
-      const sourceResources = moduleNames
-        .map(moduleName=>Gms2ModuleImporter.resourcesInModule(this.fromProject,moduleName)).flat(2);
-      for(const sourceResource of sourceResources){
-        if(sourceResource.type!='objects'){
-          continue;
-        }
-        const object = sourceResource as Gms2Object;
-        if(object.parentName){
-          const parentIsInModules = sourceResources
-            .find(resource=>resource.type=='objects' && resource.name==object.parentName);
-          assert(parentIsInModules,oneline`
-            Parent "${object.parentName}" for object "${object.name}" is not in the imported modules
-          `);
-        }
-        if(object.spriteName){
-          const spriteIsInModules = sourceResources
-            .find(resource=>resource.type=='sprites' && resource.name==object.spriteName);
-          assert(spriteIsInModules,oneline`
-            Sprite "${object.spriteName}" for object "${object.name}" is not in the imported modules
-          `);
-        }
-      }
-    }
-
-    for(const moduleName of moduleNames){
-      this.importModule(moduleName,options);
+  constructor(private sourceProject: Gms2Project, private targetProject: Gms2Project, options?: Gms2MergerOptions){
+    this.options = options || {};
+    this.options.onClobber ??= 'overwrite';
+    if(! this.options.ifFolderMatches && !this.options.ifNameMatches ){
+      // Then we aren't whitelisting.
+      this.options.ifFolderMatches = ['.*'];
     }
   }
 
-  static resourcesInModule(project:Gms2Project,moduleName:string){
-    return project.folders
-      .findModuleFolders(moduleName)
-      .map(folder=>project.resources.filterByFolder(folder.path)).flat(1);
-  }
+  merge(){
 
-  static moduleIncludedFiles(project:Gms2Project, moduleName:string){
-    return project.includedFiles.filterByModule(moduleName);
-  }
-
-  /**
-   * Move any target module assets into a folder called "MODULE_CONFLICTS"
-   * if they do not exist in the source module
-   */
-  private moveConflictingResources(moduleName:string){
-    const localModuleResources = Gms2ModuleImporter.resourcesInModule(this.toProject,moduleName);
-    const sourceModuleResources = Gms2ModuleImporter.resourcesInModule(this.fromProject,moduleName);
-    const alienResources = differenceBy(localModuleResources,sourceModuleResources,'name');
-    if(alienResources.length){
-      const conflictFolder = "MODULE_CONFLICTS";
-      this.toProject.addFolder(conflictFolder);
-      for(const resource of alienResources){
-        resource.folder=conflictFolder;
-        logInfo(`moved conflicting asset ${resource.name} into MODULE_CONFLICTS folder`);
-      }
-    }
-  }
-
-  private importResources(moduleName:string,onClobber:ClobberAction='error'){
-    // For each source asset:
-    //   + See if there exists an asset with the same name ANYWHERE in the project
-    const sourceModuleResources = Gms2ModuleImporter.resourcesInModule(this.fromProject,moduleName);
-    const sourceResourcesToAdd: Gms2ResourceSubclass[] = [];
-    /** {source:local} pairs */
-    const updatePairs: Map<Gms2ResourceBase, Gms2ResourceBase> = new Map();
-    for(const sourceModuleResource of sourceModuleResources){
-      const matchingLocalResource = this.toProject.resources
-        .findByField('name',sourceModuleResource.name,Gms2ResourceBase);
-      if(!matchingLocalResource){
-        sourceResourcesToAdd.push(sourceModuleResource);
-        continue;
-      }
-      // If this.target is NOT in the local module, throw an error.
-      if(! matchingLocalResource.isInModule(moduleName)){
-        const warningMessage = oneline`
-          Local asset ${matchingLocalResource.name} exists
-          but is not in the expected module ${moduleName}.
-        `;
-        const howToChangeMessage = oneline`
-          Rename the source or target asset, or set 'onClobber'
-          to 'overwrite' or 'error' to change this behavior.
-        `;
-        if(onClobber=='skip'){
-          logWarning(oneline`
-            ${warningMessage}
-            Import skipped (local version is unchanged).
-            ${howToChangeMessage}
-          `);
-          continue;
-        }
-        else if(onClobber=='error'){
-          throw new StitchError(oneline`
-            ${warningMessage} ${howToChangeMessage}
-          `);
-        }
-        else{
-          logWarning(oneline`
-            ${warningMessage}
-            Import will occur anyway (the local asset will be replaced).
-            ${howToChangeMessage}
-          `);
-        }
-      }
-      // If this.target is of a different type, throw an error.
-      if( matchingLocalResource.resourceType != sourceModuleResource.resourceType){
-        throw new StitchError(oneline`
-          Conflict: local asset ${matchingLocalResource.name} exists
-          but does not have the same resource type as the source.
-          Rename the local or source asset and try again.
-        `);
-      }
-      // Add to set as pair so that we can use the source as reference
-      // without having to search for it again.
-      updatePairs.set(sourceModuleResource,matchingLocalResource);
+    const toImport = this.sourceProject.resources.filter(resource=>this.resourceMatchesOptions(resource));
+    if(!this.options.skipDependencyCheck){
+      toImport.forEach(resource=>this.assertAllDependenciesFound(resource,toImport));
     }
 
-    // Add new resources
-    for(const sourceResource of sourceResourcesToAdd){
-      this.cloneResourceFiles(sourceResource);
-      this.toProject.resources.register(sourceResource.toJSON(),this.toProject.storage);
-    }
-    if(sourceResourcesToAdd.length){
-      logInfo(`added ${sourceResourcesToAdd.length} new resources`);
-    }
+    const targetResources = this.targetProject.resources.all;
 
-    // Update matching stuff
-    // (Note: we may need more nuance than simply overwriting,
-    //  so we can hold onto the localResource reference just in case)
-    for(const [sourceResource] of updatePairs){
-      this.cloneResourceFiles(sourceResource);
+    logInfo(`Merging...`);
+    // See which target resources match the options pattern but are not in the source
+    for(const targetResource of targetResources){
+      this.handleResourceConflict(targetResource,toImport);
     }
-    if(updatePairs.size){
-      logInfo(`updated ${updatePairs.size} resources`);
+    // Import all resources matching the pattern.
+    for(const sourceResource of toImport){
+      this.importResource(sourceResource);
     }
-
-    this.toProject.ensureResourceGroupAssignments();
+    if(!this.options.skipIncludedFiles){
+      this.importIncludedFiles();
+    }
 
     // Make sure any audio groups, texture pages, configs and other content referenced by new/updated
     // resources actually exist.
-    this.toProject.resources.forEach(resource=>{
+    this.targetProject.ensureResourceGroupAssignments();
+    this.targetProject.resources.forEach(resource=>{
       if(resource instanceof Gms2Sound){
-        this.toProject.addAudioGroup(resource.audioGroup);
+        this.targetProject.addAudioGroup(resource.audioGroup);
       }
       else if(resource instanceof Gms2Sprite){
-        this.toProject.addTextureGroup(resource.textureGroup);
+        this.targetProject.addTextureGroup(resource.textureGroup);
       }
       for(const configName of resource.configNames){
-        this.toProject.addConfig(configName);
+        this.targetProject.addConfig(configName);
       }
     });
+    this.targetProject.save();
+    logInfo(`Merge complete!`);
   }
 
-  private importIncludedFiles(moduleName:string,onClobber:ClobberAction='error',doNotMoveConflicting=true){
-    const sourceModuleFiles = Gms2ModuleImporter.moduleIncludedFiles(this.fromProject,moduleName);
+
+  private resourcesMatch(resource1:Gms2ResourceSubclass,resource2:Gms2ResourceSubclass,requireSameFolder=false){
+    return resource1.name == resource2.name &&
+      resource1.type == resource2.type &&
+      (!requireSameFolder || resource1.folder==resource2.folder);
+  }
+
+  private assertAllDependenciesFound(resource:Gms2ResourceSubclass,allResources:Gms2ResourceSubclass[]){
+    if(resource.type!='objects'){
+      return false;
+    }
+    const object = resource as Gms2Object;
+    if(object.parentName){
+      const parentIsInModules = allResources
+        .find(resource=>resource.type=='objects' && resource.name==object.parentName);
+      assert(parentIsInModules,oneline`
+        Parent "${object.parentName}" for object "${object.name}" is not in the imported modules
+      `);
+    }
+    if(object.spriteName){
+      const spriteIsInModules = allResources
+        .find(resource=>resource.type=='sprites' && resource.name==object.spriteName);
+      assert(spriteIsInModules,oneline`
+        Sprite "${object.spriteName}" for object "${object.name}" is not in the imported modules
+      `);
+    }
+  }
+
+  private resourceMatchesOptions(resource:Gms2ResourceSubclass|Gms2IncludedFile){
+    if(!(resource instanceof Gms2IncludedFile) && this.options.types?.length){
+      if(!this.options.types.includes(resource.type)){
+        return false;
+      }
+    }
+    for(const matcher of this.options.ifFolderMatches||[]){
+      if(resource.folder.match(new RegExp(matcher,'i'))){
+        return true;
+      }
+    }
+    for(const matcher of this.options.ifNameMatches||[]){
+      if(resource.name.match(new RegExp(matcher,'i'))){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Move any target module assets into a folder called "MERGE_CONFLICTS"
+   * if they do not exist in the source module (if desired).
+   */
+  private handleResourceConflict(targetResource: Gms2ResourceSubclass, toImport: Gms2ResourceSubclass[]){
+    const isExtra = this.resourceMatchesOptions(targetResource) && // Would be imported if in source
+      // But not in source
+      ! toImport.find(sourceResource=>this.resourcesMatch(sourceResource,targetResource));
+    if(isExtra && this.options.moveConflicting){
+      const conflictFolder = "MERGE_CONFLICTS";
+      this.targetProject.addFolder(conflictFolder);
+      targetResource.folder=conflictFolder;
+      logInfo(`Moved conflicting asset "${targetResource.name}" into ${conflictFolder} folder`);
+    }
+    else if(isExtra){
+      logWarning(oneline`
+        Target asset "${targetResource.name}" matches the merge pattern but is not in the source.
+        It was left alone. To have such resources moved, set the 'moveConflicting' option to 'true'.`
+      );
+    }
+  }
+
+  private importResource(sourceResource: Gms2ResourceSubclass){
+    // For each source asset:
+    //   + See if there exists an asset with the same name ANYWHERE in the project
+    const matchingTarget = this.targetProject.resources
+      .find(targetResource=>this.resourcesMatch(targetResource,sourceResource));
+    if(!matchingTarget){
+      this.cloneResourceFiles(sourceResource);
+      this.targetProject.resources.register(sourceResource.toJSON(),this.targetProject.storage);
+      logInfo(`Added new resource ${sourceResource.name}.`);
+      return;
+    }
+    // Else we're going to either overwrite or throw an error, depending on circumstances
+    // and options.
+    const warningMessage = oneline`
+      Local asset ${matchingTarget.name} exists but does not match merge pattern.
+    `;
+    const howToChangeMessage = oneline`
+      Rename the source or target asset, or set 'onClobber'
+      to 'overwrite' or 'error' to change this behavior.
+    `;
+
+    const matchesPattern = this.resourceMatchesOptions(matchingTarget);
+    if(matchesPattern){
+      this.cloneResourceFiles(sourceResource);
+    }
+    else if(this.options.onClobber=='skip'){
+      logWarning(oneline`
+        ${warningMessage}
+        Import skipped (local version is unchanged).
+        ${howToChangeMessage}
+      `);
+      return;
+    }
+    else if(this.options.onClobber=='error'){
+      throw new StitchError(oneline`
+        ${warningMessage} ${howToChangeMessage}
+      `);
+    }
+    else{
+      logWarning(oneline`
+        ${warningMessage}
+        Import will occur anyway (the local asset will be replaced).
+        ${howToChangeMessage}
+      `);
+      this.cloneResourceFiles(sourceResource);
+    }
+  }
+
+  private importIncludedFiles(){
+    const sourceModuleFiles = this.sourceProject.includedFiles
+      .filter(file=>this.resourceMatchesOptions(file));
 
     // Loop over the sourcefiles and see if we can simply replace them in the target
     for(const sourceModuleFile of sourceModuleFiles){
-      let matching = this.toProject.includedFiles
+      let matchingTarget = this.targetProject.includedFiles
         .findByField('name',sourceModuleFile.name);
-      if(!matching){
+      if(!matchingTarget){
         // Trim off the 'datafiles' parent folder
-        const subdir = sourceModuleFile.directoryRelative
-          .replace(/.*?datafiles[/\\]/g, "");
-        matching = this.toProject
+        const subdir = sourceModuleFile.folder;
+        matchingTarget = this.targetProject
           .addIncludedFiles(
             sourceModuleFile.filePathAbsolute,
             {subdirectory:subdir}
           )[0] as Gms2IncludedFile;
         // Check the Config status of the source and match it to the target
         // (including adding configs if they don't exist)
-        matching.config = sourceModuleFile.config;
-        for(const name of matching.configNames){
-          this.toProject.addConfig(name);
+        matchingTarget.config = sourceModuleFile.config;
+        for(const name of matchingTarget.configNames){
+          this.targetProject.addConfig(name);
         }
         continue;
       }
-      else if(matching.isInModule(moduleName)||onClobber=='overwrite'){
+      else if(this.resourceMatchesOptions(matchingTarget)||this.options.onClobber=='overwrite'){
         // Overwrite from source
-        matching.replaceWithFileContent(sourceModuleFile.filePathAbsolute);
-        if(onClobber=='overwrite'){
+        matchingTarget.replaceWithFileContent(sourceModuleFile.filePathAbsolute);
+        if( ! this.resourceMatchesOptions(matchingTarget)){
           logWarning(oneline`
-            File ${matching.name} will be overwritten by the source file,
-            even though they are in different modules. Prevent this by
+            File ${matchingTarget.name} will be overwritten by the source file,
+            even though it does not match the merge pattern. Prevent this by
             changing the filename in the source or target, or by setting
-            'onclobber' to 'error' or 'skip'.
+            'onClobber' to 'error' or 'skip'.
           `);
         }
         continue;
       }
-      else if(onClobber=='error'){
+      else if(this.options.onClobber=='error'){
         // Exists but not in module: CONFLICT
         throw new StitchError(oneline`
           Conflict: local asset ${sourceModuleFile.name} exists,
-          but is not in the ${moduleName} module. You can either skip
+          but does not match the merge pattern. You can either skip
           conflicting imports or allow them anyway by setting
           'onclobber' to 'skip' or 'overwrite'.
         `);
       }
+      // else we're skipping, so can proceed to the next loop turn
     }
-    if(!doNotMoveConflicting){
+    if(this.options.moveConflicting){
       // If there are any files in the target module that are NOT in the source module,
       // throw an error so the user can resolve this (it won't actually break anything,
       // but is likely to create confusion downstream if not addressed)
-      const localModuleFiles  = Gms2ModuleImporter.moduleIncludedFiles(this.toProject,moduleName);
+      const localModuleFiles  = this.targetProject.includedFiles
+        .filter(file=>this.resourceMatchesOptions(file));
       const extraFiles = differenceBy(localModuleFiles,sourceModuleFiles,'name');
       if(extraFiles.length){
         throw new StitchError(undent`
@@ -282,20 +305,9 @@ export class Gms2ModuleImporter {
     }
   }
 
-  importModule(moduleName:string,options?:Gms2ImportModulesOptions){
-    logInfo(`importing module: ${moduleName}`);
-    if(!options?.doNotMoveConflicting){
-      this.moveConflictingResources(moduleName);
-    }
-    this.importResources(moduleName,options?.onClobber);
-    this.importIncludedFiles(moduleName,options?.onClobber,options?.doNotMoveConflicting);
-    this.toProject.save();
-    logInfo(`${moduleName} module import complete`);
-  }
-
   private cloneResourceFiles(sourceResource:Gms2ResourceBase){
-    this.toProject.addFolder(sourceResource.folder);
-    const localYyDirAbsolute = paths.join(this.toProject.storage.yypDirAbsolute,sourceResource.yyDirRelative);
-    this.toProject.storage.copy(sourceResource.yyDirAbsolute,localYyDirAbsolute);
+    this.targetProject.addFolder(sourceResource.folder);
+    const localYyDirAbsolute = paths.join(this.targetProject.storage.yypDirAbsolute,sourceResource.yyDirRelative);
+    this.targetProject.storage.copy(sourceResource.yyDirAbsolute,localYyDirAbsolute);
   }
 }

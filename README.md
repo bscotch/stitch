@@ -146,26 +146,34 @@ Note that source projects must be from Stitch-compatible versions of GameMaker.
 
 ```sh
 # CLI
-stitch merge -h # Get help about importing modules
+stitch merge -h # Get help about merging
 
-# Import specific modules:
-stitch merge --source=path/to/your/modules-project --modules=my_module,my_other_module
+# Import everything
+stitch merge --source=source/path
 
-# Import everything:
-stitch merge --source=path/to/your/modules-project
+# Import all sprites in a folder matching "title"
+# -or- if the sprite name matches regex ^sp_title_
+stitch merge --source=source/path --if-name-matches=^sp_title_ --if-folder-matches=title --types=sprites
 
-# Import from GitHub
-stitch merge --source-github=gm-core/gdash@6.0.2 --modules=util
+# Import scripts from a project on GitHub
+stitch merge --source-github=gm-core/gdash@6.0.2 --types==scripts
 ```
 
 ```ts
 // Typescript
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
-// Import specific modules:
-myProject.importModules('path/to/your/modules-project',['my_module','my_other_module']);
 // Import everything:
-myProject.importModules('path/to/your/modules-project');
+myProject.merge('path/to/your/modules-project');
+// Import with options specified:
+myProject.merge('path/to/your/modules-project', {
+  ifNameMatches: string['^hello'],
+  types: ['objects'],
+  skipDependencyCheck: true,
+  moveConflicting: true,
+  onClobber: 'error'
+}
+});
 ```
 
 #### Avoiding name conflicts

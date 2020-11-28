@@ -143,19 +143,6 @@ export class Gms2ResourceBase {
     return false;
   }
 
-  /**
-   * Check to see if this resource is part of a module,
-   * meaning that the module name exists as one of the subdirs
-   * of its folder. For example, if this resource is in
-   * sprites/BscotchPack/myPackOfSprites/... and you checked
-   * for module "BscotchPack", you'd get TRUE.
-   */
-  isInModule(moduleName:string){
-    return this.folder.split('/')
-      .map(subdir=>subdir.toLocaleLowerCase())
-      .includes(moduleName.toLocaleLowerCase());
-  }
-
   /** Resources typically have one or more companion files
    * alongside their .yy file. They often have the same name
    * as the resource, but generally have different extension.
