@@ -6,3 +6,5 @@ sand\ box
 debug.log
 spritely.log
 node.error.log
+.env
+*.env

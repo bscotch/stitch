@@ -19,6 +19,7 @@ import { undent } from '@bscotch/utility';
 import { NumberFixed } from '../lib/NumberFixed';
 import { SoundChannel, SoundCompression } from '../types/YySound';
 import {get, unzipRemote} from "../lib/http";
+import {loadEnvironmentVariables} from "../lib/env";
 
 /*
 Can be used to inform Stitch components that we are in
@@ -89,6 +90,16 @@ describe("GMS2.3 Pipeline SDK", function () {
   });
 
   describe("Unit Tests", function () {
+
+    xit('can parse env files', function(){
+      // Requires creating local environment variables to test,
+      // since we want to keep those out of the git log. Unblock
+      // the test whenever work is being done on the parser.
+      const varNames = ['HELLO','GITHUB_PERSONAL_ACCESS_TOKEN'] as const;
+      const {HELLO,GITHUB_PERSONAL_ACCESS_TOKEN} = loadEnvironmentVariables(varNames);
+      expect(HELLO).to.equal('world');
+      expect(GITHUB_PERSONAL_ACCESS_TOKEN).to.have.length.greaterThan(0);
+    });
 
     it('can fetch a text URL', async function(){
       const page = await get('https://beta.bscotch.net/api/dummy/content-type/text');
