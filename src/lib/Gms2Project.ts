@@ -17,7 +17,7 @@ import { Gms2ProjectConfig } from "./Gms2ProjectConfig";
 import { Gms2Sprite } from "./components/resources/Gms2Sprite";
 import { Gms2Sound } from "./components/resources/Gms2Sound";
 import { Gms2FolderArray } from "./Gms2FolderArray";
-import { Gms2ImportModulesOptions, Gms2ModuleImporter } from "./Gms2ModuleImporter";
+import { Gms2ImportModulesOptions, Gms2ModuleImporter } from "./Gms2ProjectMerger";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
 import { SpritelyBatch } from "@bscotch/spritely";
@@ -356,20 +356,20 @@ export class Gms2Project {
 
   static get supportedSoundFileExtensions() { return ["mp3","ogg","wav","wma"]; }
 
-  private addSoundByFile(sourcePath:string){
-    const fileExt = paths.extname(sourcePath).slice(1);
+  private addSoundByFile(source:string){
+    const fileExt = paths.extname(source).slice(1);
     assert(Gms2Project.supportedSoundFileExtensions.includes(fileExt), oneline`
       Cannot import sound file with extension: ${fileExt}.
       Only supports: ${Gms2Project.supportedSoundFileExtensions.join(",")}
       `);
-    this.resources.addSound(sourcePath,this.storage);
+    this.resources.addSound(source,this.storage);
     return this.save();
   }
 
   /**
    * Add or update audio files from a file or a directory.
    * The name is taken from
-   * the sourcePath. If there already exists a sound asset
+   * the source. If there already exists a sound asset
    * with this name, its file will be replaced. Otherwise
    * the asset will be created and placed into folder "/NEW".
    * Support the following extensions:
@@ -377,25 +377,25 @@ export class Gms2Project {
    * 2. ogg
    * 3. wav
    * 4. wma
-   * @param {string[]} [allowExtensions] Only allow defined extensions.
+   * @param {string[]} [extensions] Only allow defined extensions.
    * If not defined, will allow all supported extensions.
    */
-  addSounds(sourcePath:string, allowExtensions?: string[]){
-    if (!allowExtensions || allowExtensions.length == 0){
-      allowExtensions = Gms2Project.supportedSoundFileExtensions;
+  addSounds(source:string, extensions?: string[]){
+    if (!extensions || extensions.length == 0){
+      extensions = Gms2Project.supportedSoundFileExtensions;
     }
-    for (const extension of allowExtensions){
+    for (const extension of extensions){
       assert(Gms2Project.supportedSoundFileExtensions.includes(extension), oneline`
       Cannot batch import sound file with extension: ${extension}.
       Only supports: ${Gms2Project.supportedSoundFileExtensions.join(",")}
       `);
     }
     let targetFiles:string[] = [];
-    if (fs.statSync(sourcePath).isFile()){
-      targetFiles.push(sourcePath);
+    if (fs.statSync(source).isFile()){
+      targetFiles.push(source);
     }
     else{
-      targetFiles = fs.listFilesByExtensionSync(sourcePath, allowExtensions, true);
+      targetFiles = fs.listFilesByExtensionSync(source, extensions, true);
     }
     for(const targetFile of targetFiles){
       this.addSoundByFile(targetFile);

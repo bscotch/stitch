@@ -8,7 +8,8 @@ export const cli = commander;
 // Kick it off
 cli.version(version, '-v, --version')
   .description('Stitch')
-  .command("import",  "Import various asset types into GameMaker Studio 2 projects.")
+  .command("merge", "Merge two GameMaker Studio 2 projects together.")
+  .command("add",  "Create assets (e.g. sprites) using external resources (e.g. images).")
   .command("set",  "Modify metadata in GameMaker Studio 2 projects.")
   .command("debork", oneline`
     Run Stitch on the project without making any changes,

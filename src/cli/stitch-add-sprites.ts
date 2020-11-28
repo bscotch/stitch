@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 import commander, { CommanderStatic } from "commander";
 import { oneline, undent } from "@bscotch/utility";
-import importSprites from "./lib/import-sprites";
-import { ImportBaseOptions } from "./lib/import-base-options";
+import importSprites from "./lib/add-sprites";
+import { ImportBaseOptions } from "./lib/add-base-options";
 import options from "./lib/cli-options";
 import { SpriteImportOptions } from "../lib/Gms2Project";
 
 const cli = commander;
 
 cli.description(undent`
-    Import sprite assets collection of images.
+    Create/update sprite assets collection of images.
     A 'sprite' source is any folder whose immediate children
     are all PNGs with identical dimensions. Sprites can be
     nested.
     If the asset does not already exists in the target project,
     it will be placed in the "NEW" folder.
     Otherwise, the asset will be replaced by the source asset.`)
-  .requiredOption("--source-path <path>", oneline`
+  .requiredOption("--source <path>", oneline`
     Path to the sprite folder or root folder containing multiple sprites.
   `)
-  .option(...options.targetProjectPath)
+  .option(...options.targetProject)
   .option(...options.force)
   .option('--prefix <prefix>',oneline`
     Prefix the source names when creating/updateing sprites

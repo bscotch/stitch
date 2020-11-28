@@ -16,7 +16,7 @@ cli.description(undent`
   .requiredOption("--group-name <name>", oneline`
     The name of the audio group. If it does not exist, it will be created.
   `)
-  .option(...options.targetProjectPath)
+  .option(...options.targetProject)
   .option(...options.force)
   .parse(process.argv);
 

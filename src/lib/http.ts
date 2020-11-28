@@ -5,7 +5,6 @@ import Url from 'url';
 import { StitchError } from './errors';
 import unzipper from "unzipper";
 import path from "path";
-import { zip } from 'lodash';
 
 interface GetResponse {
   contentType:string,

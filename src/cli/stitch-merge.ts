@@ -3,19 +3,18 @@ import commander, { CommanderStatic } from "commander";
 import { oneline } from "@bscotch/utility";
 import importModules, { ImportModuleOptions } from './lib/import-modules';
 import options from "./lib/cli-options";
-import { assert, StitchError } from "../lib/errors";
 
 const cli = commander as (ImportModuleOptions & CommanderStatic);
 
-cli.description("Import modules from a source GameMaker Studio 2 project into a target project.")
+cli.description("Merge GameMaker Studio projects.")
+  .option("-s --source <path>", oneline`
+    Local path to the source GameMaker Studio 2 project.
+  `)
   .option("-g --source-github <url>", oneline`
     Repo owner and name for a Gamemaker Studio 2 project
     on GitHub in format "{owner}/{repo-name}@version".
     The version suffix is optional, and
     can be a branch name, a tag, or a commit hash.
-  `)
-  .option("-s --source-project-path <path>", oneline`
-    Local path to the source GameMaker Studio 2 project.
   `)
   .option("-u --source-url <url>", oneline`
     URL to a zipped GameMaker Studio 2 project.
@@ -59,7 +58,7 @@ cli.description("Import modules from a source GameMaker Studio 2 project into a 
     (deleting the target version and keeping the source
     version)
   `, 'error')
-  .option(...options.targetProjectPath)
+  .option(...options.targetProject)
   .option(...options.force)
   .parse(process.argv);
 

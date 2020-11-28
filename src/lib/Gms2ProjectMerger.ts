@@ -10,8 +10,6 @@ import paths from "./paths";
 import { oneline, undent } from "@bscotch/utility";
 import { logInfo, logWarning } from "./log";
 import { Gms2Object } from "./components/resources/Gms2Object";
-import { option } from "commander";
-import { match } from "assert";
 
 type ClobberAction = 'error'|'skip'|'overwrite';
 

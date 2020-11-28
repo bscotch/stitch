@@ -8,8 +8,8 @@ export default {
       in a clean git state. Only use this option if you know what you're doing.
     `
   ],
-  targetProjectPath: [
-    "-t --target-project-path <path>",
+  targetProject: [
+    "-t --target-project <path>",
     oneline`
       Path to the target GameMaker Studio 2 project.
       If not set, will auto-search the current directory.

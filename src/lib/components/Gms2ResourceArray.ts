@@ -86,15 +86,15 @@ export class  Gms2ResourceArray {
       .filter(item=>(item instanceof resourceClass)) as InstanceType<subclass>[];
   }
 
-  addSound(sourcePath:string,storage:Gms2Storage){
-    const {name} = paths.parse(sourcePath);
+  addSound(source:string,storage:Gms2Storage){
+    const {name} = paths.parse(source);
     const existingSound = this.findByField('name',name,Gms2Sound);
     if(existingSound){
-      existingSound.replaceAudioFile(sourcePath);
+      existingSound.replaceAudioFile(source);
       logInfo(`updated sound ${name}`);
     }
     else{
-      this.push(Gms2Sound.create(sourcePath,storage));
+      this.push(Gms2Sound.create(source,storage));
       logInfo(`created sound ${name}`);
     }
     return this;

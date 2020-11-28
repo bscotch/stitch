@@ -111,55 +111,51 @@ To keep things stable and automatable, Stitch uses a configuration file (`stitch
 
 If you've installed Stitch globally, the Command Line Interface (CLI) is available as `stitch` in your terminal. If you've installed it locally and your terminal is in the same location, you can run it with `npx stitch`. (Global install is recommended for ease of use.)
 
-Up to date CLI documentation is available with the `--help` or `-h` flags of CLI commands. For example, run `stitch -h` to see all commands, `stitch import -h` to see the import subcommands, and so on.
+Up to date CLI documentation is available with the `--help` or `-h` flags of CLI commands. For example, run `stitch -h` to see all commands, `stitch merge -h` to see the merge subcommands/options, and so on.
 
 This README includes example CLI calls in the relevant sections, but should not be treated as the full CLI documentation.
 
 
 ## Features <a id="features"></a>
 
-### Module Import/Installation <a id="modules"></a>
+### Project Merging <a id="modules"></a>
 
 Importing assets from one GMS2 project into another is a painful process, especially
 when you want to re-import updated assets.
-Stitch uses a custom solution for this that we call "Modules".
-A "module" is a collection of assets that have a common folder name in their path.
-For example, for a module called "TitleScreen" and an asset hierarchy including:
+Stitch includes a merger that allows you to bring a subset of
+resources and included files from one GameMaker project into another.
 
-+ `sprites/TitleScreen/{module content}`
-+ `sounds/menus/TitleScreen/{module content}`
-+ `TitleScreen/` (new to GMS2.3+, since previously you could not mix assets types in folders)
+Project Merging use cases:
 
-Everything inside those three "groups", starting at the "TitleScreen" level and including any subfolders, is included as a "TitleScreen" asset and can be imported together into another GameMaker 2 project.
++ Creating a private library of code shared across multiple games.
++ Creating a public library of utility assets for other developers.
 
-This also works for Included Files.
+Since GameMaker does not have name-spacing, merging projects can be a complicated
+and dangerous process. The Stitch merger provides many options so that
+you can carefully control merge behavior, and will output warnings and errors
+when things go awry.
 
-You can also choose to import *everything* from a source project by omitting
-the module list during imports. Behind the scenes, Stitch treats each root-level
-folder as a Module.
+Stitch can use the following as source projects for merging:
 
-Stitch can use the following as source projects:
++ Another local project (on your machine)
++ A GitHub repo.
++ A URL hosting a zipped GMS project.
 
-+ Local projects (on your machine, CLI or scripting)
-+ Github repos (CLI only)
-+ URLs to zip files containing a GameMaker project (CLI only)
+Note that source projects must be from Stitch-compatible versions of GameMaker.
 
-Note that source projects must be from Stitch-compatible versions of GameMaker!
-
-Use case: At Bscotch, we have a separate GameMaker project for our shared asset library that includes our login system, a large script library, common objects, extensions for managing In-App Purchase, and more. We use the module system to import the required subsets of this shared library into each of our games as needed. This allows us to guarantee that all games have the same, up to date code, and allows us to test common features in a single project.
 
 ```sh
 # CLI
-stitch import modules -h # Get help about importing modules
+stitch merge -h # Get help about importing modules
 
 # Import specific modules:
-stitch import modules --source-project-path=path/to/your/modules-project --modules=my_module,my_other_module
+stitch merge --source=path/to/your/modules-project --modules=my_module,my_other_module
 
 # Import everything:
-stitch import modules --source-project-path=path/to/your/modules-project
+stitch merge --source=path/to/your/modules-project
 
 # Import from GitHub
-stitch import modules --source-github=gm-core/gdash@6.0.2 --modules=util
+stitch merge --source-github=gm-core/gdash@6.0.2 --modules=util
 ```
 
 ```ts
@@ -176,11 +172,11 @@ myProject.importModules('path/to/your/modules-project');
 
 **Imports are dangerous** because GameMaker Studio has no concept of name-spacing. This makes it
 easy to overwrite a resource that just happens to have the same name but is something different.
-The default Stitch import options err on the side of throwing errors when something looks like a conflict,
+The default Stitch merge options err on the side of throwing errors when something looks like a conflict,
 but there is no way to guarantee that you'll only replace things you intend to replace.
 
-If you are writing code that you want to be able to import into other projects,
-or want to be able to import code from other projects,
+If you are writing code that you want to be able to merge into other projects,
+or want to be able to merge code from other projects,
 follow these best practices to minimize the chances of a conflict:
 
 + Minimize the number of global identifiers (scripts, global functions, global variables, and all assets).
@@ -200,10 +196,10 @@ follow these best practices to minimize the chances of a conflict:
 + **All data is overwritten** in the target for module assets. Any changes you've made that aren't also in the source module will be lost forever. The exception to this is Texture and Audio Group membership when you use Stitch's system to manage those.
 + Only **resources** (e.g. sprites, objects, scripts, etc. -- the things in the IDE's resource tree) and **Included Files** are importable as modules.
 + Module assets in the target that are *not* in the source are moved to a folder called "MODULE_CONFLICTS". This prevents data loss. This behavior can be changed with the `doNotMoveConflicting` programmatic option or the `--do-not-move-conflicting` CLI flag.
-+ GameMaker Studio does not have a concept of *namespacing*, so it is easy to end up with conflicting asset names between the source and target. By default an error is thrown in this case (leading to an incomplete import) so that you can manually resolve the conflict. You can can this behavior using the `onClobber` programmatic option or the `--on-clobber` CLI option, setting the value to `overwrite` (to keep the source version) or `skip` (to keep the target version).
++ GameMaker Studio does not have a concept of *namespacing*, so it is easy to end up with conflicting asset names between the source and target. By default an error is thrown in this case (leading to an incomplete merge) so that you can manually resolve the conflict. You can can this behavior using the `onClobber` programmatic option or the `--on-clobber` CLI option, setting the value to `overwrite` (to keep the source version) or `skip` (to keep the target version).
 + Failed imports may result in broken projects. Failures result from conflicts between the source and target, in particular when a resource in each has the same name but different type, or is in a different module.
 
-### Import Assets <a id="import-asset"></a>
+### Create Assets <a id="import-asset"></a>
 
 Managing art, audio, and file assets can be quite painful. GMS2 does not provide any batch-import or other pipeline tooling for converting external assets (like images, sounds, and other files) into GameMaker assets. Stitch provides such mechanisms, so that you can build pipelines appropriate to your technology stack.
 
@@ -211,9 +207,9 @@ For example, if your audio team dumps their files into a shared Dropbox folder, 
 
 Same deal with sprites. Point the importer at a folder full of images to have them all automatically brought in as new or updated Sprites.
 
-At Bscotch, we use importers for our sound, art, build, and localization pipelines, so that our game programmers do not need to manually find, import, or name assets created by other team members, and so that we can modify scripts and other assets prior to creating builds.
+At Bscotch, we use pipelines for our sound, art, build, and localization pipelines, so that our game programmers do not need to manually find, import, or name assets created by other team members, and so that we can modify scripts and other assets prior to creating builds.
 
-#### Import Images as Sprites
+#### Create Sprites From Images
 
 You can convert collections of images into GameMaker Sprites by first organizing
 them into per-sprite folders, such that each folder contains a collection of images
@@ -225,8 +221,8 @@ original art file names onto standardized sprite names.
 
 ```sh
 # CLI
-stitch import sprites -h # Get help about importing sprites
-stitch import sprites --source-path=path/to/your/sprites
+stitch add sprites -h # Get help about importing sprites
+stitch add sprites --source=path/to/your/sprites
 ```
 
 ```ts
@@ -246,14 +242,14 @@ or frame order will be undone, and any layers you've added will be deleted. Othe
 sprite properties (those not in the frame editor) will be maintained between imports.
 
 
-#### Import Audio Files as Sounds
+#### Create Audio Files From Sound Files
 
-You can batch-import audio files into GameMaker as sound assets.
+You can batch-add audio files into GameMaker as sound assets.
 
 ```sh
 # CLI
-stitch import sounds -h # Get help about importing audio
-stitch import sounds --source-path=path/to/your/sounds
+stitch add sounds -h # Get help about importing audio
+stitch add sounds --source=path/to/your/sounds
 ```
 
 ```ts
@@ -263,9 +259,9 @@ const myProject = new Gms2Project();
 myProject.addSounds('path/to/your/sounds');
 ```
 
-#### Import Files as "Included Files"
+#### Create "Included Files"
 
-You can batch-import external files into your GameMaker project
+You can batch-add external files into your GameMaker project
 as Included Files. This is useful for managing things like
 localization data, or data that you want to add or remove
 prior to making production builds. During import you can
@@ -274,11 +270,11 @@ the fly when using Stitch programmatically.
 
 ```sh
 # CLI
-stitch import files -h # Get help about importing audio
+stitch add files -h # Get help about importing audio
 # Add all txt and json files found in a folder (recursively)
-stitch import files --source-path=path/to/your/files --allow-extensions=txt,json
+stitch add files --source=path/to/your/files --extensions=txt,json
 # Add a specific file
-stitch import files --source-path=path/to/your/file.txt
+stitch add files --source=path/to/your/file.txt
 ```
 
 ```ts
@@ -286,7 +282,7 @@ stitch import files --source-path=path/to/your/file.txt
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
 // Add all txt and json files found in a folder (recursively)
-myProject.addIncludedFiles('path/to/your/files',{allowExtensions:['txt','json']});
+myProject.addIncludedFiles('path/to/your/files',{extensions:['txt','json']});
 // Add a specific file
 myProject.addIncludedFiles('path/to/your/file.txt');
 // Create an included file on the fly

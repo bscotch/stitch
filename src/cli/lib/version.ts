@@ -3,20 +3,20 @@ import { Gms2Project } from '../../lib/Gms2Project';
 
 export type VersionOptions = {
   projectVersion: string,
-  targetProjectPath?: string,
+  targetProject?: string,
   force?: boolean,
 };
 
 export default function(options: VersionOptions){
   cli_assert.assert(options.projectVersion, "Must provide a valid version.");
-  if (options.targetProjectPath){
-    cli_assert.assertPathExists(options.targetProjectPath);
+  if (options.targetProject){
+    cli_assert.assertPathExists(options.targetProject);
   }
   else{
-    options.targetProjectPath = process.cwd();
+    options.targetProject = process.cwd();
   }
   const targetProject = new Gms2Project({
-    projectPath: options.targetProjectPath,
+    projectPath: options.targetProject,
     dangerouslyAllowDirtyWorkingDir: options.force
   });
   targetProject.version = options.projectVersion;

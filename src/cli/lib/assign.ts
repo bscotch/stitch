@@ -4,16 +4,16 @@ import { Gms2Project } from '../../lib/Gms2Project';
 export type AssignCliOptions = {
   folder: string,
   groupName: string,
-  targetProjectPath?: string,
+  targetProject?: string,
   force?: boolean,
 }
 
 function normalizeAssignOptions(options: AssignCliOptions){
-  if (options.targetProjectPath){
-    cli_assert.assertPathExists(options.targetProjectPath);
+  if (options.targetProject){
+    cli_assert.assertPathExists(options.targetProject);
   }
   else{
-    options.targetProjectPath = process.cwd();
+    options.targetProject = process.cwd();
   }
   return options;
 }
@@ -21,7 +21,7 @@ function normalizeAssignOptions(options: AssignCliOptions){
 export function assignTextureGroups (options: AssignCliOptions){
   options = normalizeAssignOptions(options);
   const targetProject = new Gms2Project({
-    projectPath: options.targetProjectPath,
+    projectPath: options.targetProject,
     dangerouslyAllowDirtyWorkingDir: options.force
   });
   targetProject.addTextureGroupAssignment(options.folder, options.groupName);
@@ -30,7 +30,7 @@ export function assignTextureGroups (options: AssignCliOptions){
 export function assignAudioGroups (options: AssignCliOptions){
   options = normalizeAssignOptions(options);
   const targetProject = new Gms2Project({
-    projectPath: options.targetProjectPath,
+    projectPath: options.targetProject,
     dangerouslyAllowDirtyWorkingDir: options.force
   });
   targetProject.addAudioGroupAssignment(options.folder, options.groupName);

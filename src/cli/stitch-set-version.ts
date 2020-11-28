@@ -17,7 +17,7 @@ cli.description(undent`
       + "0.0.0-rc.0" syntax (the 4th number will be the RC number)
       The four numbers will appear in all cases as the string "major.minor.patch.candidate"
   `)
-  .option(...options.targetProjectPath)
+  .option(...options.targetProject)
   .option(...options.force)
   .parse(process.argv);
 

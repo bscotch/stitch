@@ -93,10 +93,10 @@ export class Gms2Storage {
     return fs.statSync(path).isDirectory();
   }
 
-  copyFile(sourcePath:string,destinationPath:string){
-    assert(fs.existsSync(sourcePath),`copyFile: sourcePath ${sourcePath} does not exist`);
+  copyFile(source:string,destinationPath:string){
+    assert(fs.existsSync(source),`copyFile: source ${source} does not exist`);
     if(!this.isReadOnly){
-      fs.copyFileSync(sourcePath,destinationPath);
+      fs.copyFileSync(source,destinationPath);
       fs.ensureDirSync(paths.dirname(destinationPath));
     }
   }

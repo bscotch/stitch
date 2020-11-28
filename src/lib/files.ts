@@ -40,10 +40,10 @@ function writeFileSync(filePath:string,stuff:string|Buffer){
   fs.writeFileSync(filePath,stuff);
 }
 
-function copyFileSync(sourcePath:string,targetPath:string){
+function copyFileSync(source:string,targetPath:string){
   ensureDirSync(path.dirname(targetPath));
   assert(!isDir(targetPath),`${targetPath} is a directory; it cannot have a file written over it`);
-  fs.copyFileSync(sourcePath,targetPath);
+  fs.copyFileSync(source,targetPath);
 }
 
 /**

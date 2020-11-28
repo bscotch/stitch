@@ -9,9 +9,9 @@ import { StitchError, StitchAssertionError } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import cli_assert from '../cli/lib/cli-assert';
 import importModules, { ImportModuleOptions } from '../cli/lib/import-modules';
-import importSounds from '../cli/lib/import-sounds';
+import importSounds from '../cli/lib/add-sounds';
 import version, {VersionOptions} from '../cli/lib/version';
-import importFiles from '../cli/lib/import-files';
+import importFiles from '../cli/lib/add-files';
 import {assignAudioGroups, assignTextureGroups, AssignCliOptions} from '../cli/lib/assign';
 import { Gms2Object } from '../lib/components/resources/Gms2Object';
 import {jsonify as stringify} from "../lib/jsonify";
@@ -588,9 +588,9 @@ describe("GMS2.3 Pipeline SDK", function () {
     it('cannot import modules missing dependencies',async function(){
       resetSandbox();
       const importModulesOptions = {
-        sourceProjectPath: modulesRoot,
+        source: modulesRoot,
         modules: ["MissingDependency"],
-        targetProjectPath: sandboxRoot
+        targetProject: sandboxRoot
       };
       try{
         await importModules(importModulesOptions);
@@ -609,14 +609,14 @@ describe("GMS2.3 Pipeline SDK", function () {
     it('can import modules', async function(){
       resetSandbox();
       let incorrectImportModulesOtions = {
-        sourceProjectPath: "fake_source_project_path",
+        source: "fake_source_project_path",
         modules: ["BscotchPack","AnotherModule"],
-        targetProjectPath: sandboxRoot
+        targetProject: sandboxRoot
       };
 
       try{
         await importModules(incorrectImportModulesOtions);
-        throw new Error('Should fail when sourceProjectPath does not exists');
+        throw new Error('Should fail when source does not exists');
       }
       catch(err){
         if(! (err instanceof cli_assert.Gms2PipelineCliAssertionError)){
@@ -625,13 +625,13 @@ describe("GMS2.3 Pipeline SDK", function () {
       }
 
       incorrectImportModulesOtions = {
-        sourceProjectPath: modulesRoot,
+        source: modulesRoot,
         modules: ["BscotchPack","AnotherModule"],
-        targetProjectPath: "fake_target_project_path"
+        targetProject: "fake_target_project_path"
       };
       try{
         await importModules(incorrectImportModulesOtions);
-        throw new Error('Should fail when targetProjectPath is entered but does not exists');
+        throw new Error('Should fail when targetProject is entered but does not exists');
       }
       catch(err){
         if(! (err instanceof cli_assert.Gms2PipelineCliAssertionError)){
@@ -640,17 +640,17 @@ describe("GMS2.3 Pipeline SDK", function () {
       }
 
       let importModulesOptions: ImportModuleOptions = {
-        sourceProjectPath: modulesRoot,
+        source: modulesRoot,
         modules: ["BscotchPack","AnotherModule"],
-        targetProjectPath: sandboxRoot
+        targetProject: sandboxRoot
       };
       await importModules(importModulesOptions); // will throw if error
 
       resetSandbox();
       importModulesOptions = {
-        sourceProjectPath: modulesRoot,
+        source: modulesRoot,
         modules: ["BscotchPack"],
-        targetProjectPath: sandboxRoot
+        targetProject: sandboxRoot
       };
       await importModules(importModulesOptions);
     });
@@ -661,7 +661,7 @@ describe("GMS2.3 Pipeline SDK", function () {
         doNotMoveConflicting:true,
         modules:['scripts'],
         sourceGithub:'gm-core/gdash@6.0.2',
-        targetProjectPath: sandboxRoot
+        targetProject: sandboxRoot
       });
       const project = new Gms2Project({projectPath:sandboxRoot,readOnly:true});
       expect(project.resources.findByName('_reverse')).to.exist;
@@ -671,30 +671,30 @@ describe("GMS2.3 Pipeline SDK", function () {
     it('can import sounds',function(){
       resetSandbox();
       const invalidOptions = {
-        sourcePath: soundSampleRoot,
-        allowExtensions: [""],
-        targetProjectPath: sandboxRoot
+        source: soundSampleRoot,
+        extensions: [""],
+        targetProject: sandboxRoot
       };
       expect(()=>importSounds(invalidOptions), "Should fail when providing no valid extensions.").to.throw(cli_assert.Gms2PipelineCliAssertionError);
 
       const fileOptions = {
-        sourcePath: soundSample,
-        targetProjectPath: sandboxRoot
+        source: soundSample,
+        targetProject: sandboxRoot
       };
       expect(()=>importSounds(fileOptions), "Should succeed when source path points to a valid file").to.not.throw();
 
       resetSandbox();
       const folderOptions = {
-        sourcePath: soundSampleRoot,
-        targetProjectPath: sandboxRoot
+        source: soundSampleRoot,
+        targetProject: sandboxRoot
       };
       expect(()=>importSounds(folderOptions), "Should succeed when source path points to a valid folder").to.not.throw();
 
       resetSandbox();
       const filteredOptions = {
-        sourcePath: soundSampleRoot,
-        allowExtensions: ["wav"],
-        targetProjectPath: sandboxRoot
+        source: soundSampleRoot,
+        extensions: ["wav"],
+        targetProject: sandboxRoot
       };
       expect(()=>importSounds(filteredOptions), "Should succeed when source path points to a valid folder and importing only a subset of extensions.").to.not.throw();
     });
@@ -702,8 +702,8 @@ describe("GMS2.3 Pipeline SDK", function () {
     it('can import files', function(){
       resetSandbox();
       const options = {
-        sourcePath: paths.join(assetSampleRoot, "includedFiles", "files"),
-        targetProjectPath: sandboxRoot
+        source: paths.join(assetSampleRoot, "includedFiles", "files"),
+        targetProject: sandboxRoot
       };
       expect(()=>importFiles(options), "Should succeed when source path points to a valid folder").to.not.throw();
     });
@@ -712,7 +712,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       const project = getResetProject();
       const versionOptions: VersionOptions = {
         projectVersion: "100.5.6-rc.11",
-        targetProjectPath: sandboxRoot
+        targetProject: sandboxRoot
       };
       expect(()=>version(versionOptions), "Should succeed when version is valid").to.not.throw();
       expect(project.versionOnPlatform("windows")).to.equal('100.5.6.11');
@@ -725,7 +725,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       const assignTextureOptions: AssignCliOptions = {
         folder: sprite.folder,
         groupName: newTextureGroupName,
-        targetProjectPath: sandboxRoot
+        targetProject: sandboxRoot
       };
       expect(()=>assignTextureGroups(assignTextureOptions), "Should succeed when the arguments are correct").to.not.throw();
 
@@ -748,7 +748,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       const assignAudioOptions: AssignCliOptions = {
         folder: sound.folder,
         groupName: newAudioGroupName,
-        targetProjectPath: sandboxRoot
+        targetProject: sandboxRoot
       };
       expect(sound.audioGroup,
         'sound should not be in target audio group'

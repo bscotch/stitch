@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 import commander, { CommanderStatic } from "commander";
 import { oneline, undent } from "@bscotch/utility";
-import importSounds from "./lib/import-sounds";
-import { ImportBaseOptions } from "./lib/import-base-options";
+import importSounds from "./lib/add-sounds";
+import { ImportBaseOptions } from "./lib/add-base-options";
 import options from "./lib/cli-options";
 
 const cli = commander;
 
 cli.description(undent`
-    Import sound assets from a file or a path.
+    Create/update sound assets from a file or a path.
     If the asset does not already exists in the target project, it will be placed in the "NEW" folder.
     Otherwise, the asset will be replaced by the source asset.`)
-  .requiredOption("--source-path <path>", oneline`
+  .requiredOption("--source <path>", oneline`
     Path to the sound file or the folder containing the sounds files.
   `)
-  .option("--allow-extensions <extensions...>", oneline`
+  .option("--extensions <extensions...>", oneline`
     input one or more of the supported extensions: mp3, wav, ogg, wma. 
     If not set, Will attempt to import all supported extensions.
   `)
-  .option(...options.targetProjectPath)
+  .option(...options.targetProject)
   .option(...options.force)
   .parse(process.argv);
 
