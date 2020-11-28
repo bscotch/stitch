@@ -11,7 +11,7 @@ interface GetResponse {
   data:any
 }
 
-export async function get(url:string):Promise<GetResponse>{
+export async function get(url:string,headers?:{[key:string]:string}):Promise<GetResponse>{
   const {protocol} = Url.parse(url);
   const httpType = protocol?.match(/^(https?):$/)?.[1] as 'http'|'https'|null;
   if( !httpType ){
@@ -19,7 +19,8 @@ export async function get(url:string):Promise<GetResponse>{
   }
   return new Promise((resolve,reject)=>{
     const getter = {http,https}[httpType];
-    getter.get(url,res=>{
+    const options = {headers: headers||{}};
+    getter.get(url,options,res=>{
       const chunks: Buffer[] = [];
       res.on('data',chunk=>{
         chunks.push(chunk);
