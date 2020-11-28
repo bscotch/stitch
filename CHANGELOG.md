@@ -1,3 +1,12 @@
+## [2.1.1](https://github.com/bscotch/stitch/compare/v2.1.0...v2.1.1) (2020-11-28)
+
+
+### Bug Fixes
+
+* GitHub revision and tagPatterns are no longer being ignored. ([de7e121](https://github.com/bscotch/stitch/commit/de7e121e08544f98c1347491f3ca372d5de5721d))
+
+
+
 # [2.1.0](https://github.com/bscotch/stitch/compare/v2.0.0...v2.1.0) (2020-11-28)
 
 

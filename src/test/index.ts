@@ -177,7 +177,7 @@ describe("GMS2.3 Pipeline SDK", function () {
 
   describe("Gms2 Project Class", function () {
 
-    it.only("can delete a resource", function(){
+    it("can delete a resource", function(){
       const project = getResetProject({readonly:true});
       const name = project.resources.all[0].name;
       expect(project.resources.findByName(name)).to.exist;
