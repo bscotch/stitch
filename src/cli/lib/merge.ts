@@ -24,7 +24,11 @@ export default async function(options: Gms2MergeCliOptions){
       .match(/^(?<owner>[a-z0-9_.-]+)\/(?<name>[a-z0-9_.-]+)((@(?<revision>[a-z0-9_.-]+))|(\?(?<tagPattern>.+)))?$/i)
       ?.groups as unknown as {owner:string,name:string,revision?:string,tagPattern?:string};
     assert(repo,'Could not parse repo source string.');
-    await targetProject.mergeFromGithub(repo.owner,repo.name,options);
+    await targetProject.mergeFromGithub(repo.owner,repo.name,{
+      ...options,
+      revision:repo.revision,
+      tagPattern:repo.tagPattern
+    });
   }
   // URL source?
   else if(options.sourceUrl){
