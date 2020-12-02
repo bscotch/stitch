@@ -16,6 +16,7 @@ import {
   listFoldersSync,
   listFilesSync,
   listFilesByExtensionSync,
+  md5,
 } from "@bscotch/utility";
 
 /** Return `true` if the path exists and is a directory */
@@ -24,6 +25,18 @@ function isDir(filePath:string){
     return true;
   }
   return false;
+}
+
+function isFile(filePath:string){
+  if(fs.existsSync(filePath) && fs.statSync(filePath).isFile()){
+    return true;
+  }
+  return false;
+}
+
+function checksum(filePath:string){
+  assert(isFile(filePath),`${filePath} is not a file; cannot compute checksum.`);
+  return md5(fs.readFileSync(filePath),'hex');
 }
 
 function ensureDirSync(dir:string){
@@ -89,6 +102,7 @@ export default {
   removeSync: fs.removeSync,
   ensureDirSync,
   copyFileSync,
+  checksum,
   copySync: fs.copySync,
   emptyDirSync: fs.emptyDirSync,
   readFileSync: fs.readFileSync,
@@ -99,6 +113,8 @@ export default {
   listFoldersSync,
   listFilesSync,
   listFilesByExtensionSync,
-  convertGms2FilesToJson
+  convertGms2FilesToJson,
+  isFile,
+  isDir,
 };
 

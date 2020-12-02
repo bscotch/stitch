@@ -581,6 +581,9 @@ describe("GMS2.3 Pipeline SDK", function () {
       }
       const datafileDir = paths.join(sandboxRoot, resourceData.toJSON().filePath);
       expect(fs.existsSync(datafileDir), "The imported files should exist in the actual datafiles path");
+
+      // IMPORT AGAIN to trigger no-overwrite-if-same checks
+      project.merge(modulesRoot,{ifFolderMatches});
     });
 
     it("can whitelist asset types to import", function(){

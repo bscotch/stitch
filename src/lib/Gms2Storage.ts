@@ -3,6 +3,7 @@ import { assert, StitchError } from "./errors";
 import fs from "./files";
 import child_process from "child_process";
 import { oneline } from "@bscotch/utility";
+import { difference } from "lodash";
 
 export class Gms2Storage {
 
@@ -76,9 +77,41 @@ export class Gms2Storage {
     return fs.listPathsSync(dir,recursive);
   }
 
-  /** Copy a file or recursively copy a directory */
+  /**
+   * Copy a file or recursively copy a directory.
+   * Files are only overwritten if there is a change.
+   */
   copy(from:string,to:string){
-    return fs.copySync(from,to,{overwrite:true});
+    assert(fs.existsSync(from),`Cannot copy from ${from}, path does not exist.`);
+    if(fs.isFile(from)){
+      if(!fs.existsSync(to) || fs.checksum(from) != fs.checksum(to)){
+        fs.copySync(from,to,{overwrite:true});
+      }
+      return;
+    }
+    // If destination doesn't exist we can just copy over.
+    if(!fs.existsSync(to) || !fs.listPathsSync(to,true).length){
+      return fs.copySync(from,to,{overwrite:true});
+    }
+    // Else we need to diff the source and destination,
+    // remove any extra files from destination, and write
+    // new/updated files.
+    const fromFiles = fs.listFilesSync(from,true)
+      .map(p=>paths.relative(from,p));
+    const toFiles   = fs.listFilesSync(to,true)
+      .map(p=>paths.relative(to,p));
+    // Delete extra files in destination
+    difference(toFiles,fromFiles)
+      .forEach(toDelete=>fs.removeSync(paths.join(to,toDelete)));
+    // Copy files that have changed or are new
+    fromFiles.forEach(fromFileRelative=>{
+      const fromAbs = paths.join(from,fromFileRelative);
+      const toAbs   = paths.join(to,fromFileRelative);
+      fs.ensureDirSync(paths.dirname(toAbs));
+      if(!fs.existsSync(toAbs) || fs.checksum(toAbs) != fs.checksum(fromAbs)){
+        fs.copySync(fromAbs,toAbs,{overwrite:true});
+      }
+    });
   }
 
   exists(path:string){
