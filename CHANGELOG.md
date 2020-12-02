@@ -1,3 +1,12 @@
+## [2.2.1](https://github.com/bscotch/stitch/compare/v2.2.0...v2.2.1) (2020-12-02)
+
+
+### Bug Fixes
+
+* On merge, Stitch no longer overwrites files that are unchanged. This should reduce GameMaker crashes during merges. ([caa5b37](https://github.com/bscotch/stitch/commit/caa5b37453f6d88a84eebfd16145fdbf837c5a95)), closes [#20](https://github.com/bscotch/stitch/issues/20)
+
+
+
 # [2.2.0](https://github.com/bscotch/stitch/compare/v2.1.2...v2.2.0) (2020-11-28)
 
 
