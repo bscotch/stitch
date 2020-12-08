@@ -5,6 +5,7 @@ import type { Gms2Project } from "../Gms2Project";
 import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";
 import { oneline } from "@bscotch/utility";
+import { logWarning } from "../log";
 
 export class Gms2IncludedFile {
 
@@ -118,21 +119,22 @@ export class Gms2IncludedFile {
     }
     const fileName = paths.parse(path).base;
     // (Ensure POSIX-style seps)
-    const directoryRelative = `datafiles/${paths.asPosixPath(subdirectory||'NEW')}`;
+    let directoryRelative = `datafiles`;
+    if (subdirectory){
+      directoryRelative += `/${paths.asPosixPath(subdirectory)}`;
+    }
 
     // See if something already exists with project name
     const matchingFile = project.includedFiles.findByField('name',fileName);
     if(matchingFile){
       // If the file is in the SAME PLACE, then just replace the file contents
       // If it's in a different subdir, assume that something unintended is going on
-      if(matchingFile.directoryRelative == directoryRelative){
-        matchingFile.setContent(content);
-      }
-      else{
-        throw new StitchError(oneline`
-          CONFLICT: A file by name ${fileName} already exists in a different subdirectory.
-          If they are the same file, ensure they have the same subdirectory.
-          If they are different files, rename one of them.
+
+      matchingFile.setContent(content);
+      if(matchingFile.directoryRelative != directoryRelative){
+        logWarning(oneline`
+          A file by name ${fileName} already exists in a different subdirectory.
+          Check to make sure that it is the file that you intend to change!
         `);
       }
       return matchingFile;
