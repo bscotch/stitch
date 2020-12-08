@@ -1,3 +1,12 @@
+# [2.3.0](https://github.com/bscotch/stitch/compare/v2.2.1...v2.3.0) (2020-12-08)
+
+
+### Bug Fixes
+
+* Included file import now serves warning instead of error when the ([df68d6a](https://github.com/bscotch/stitch/commit/df68d6a3ca7417cf99b911447ff302f71db666f8))
+
+
+
 ## [2.2.1](https://github.com/bscotch/stitch/compare/v2.2.0...v2.2.1) (2020-12-02)
 
 
