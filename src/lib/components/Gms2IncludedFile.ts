@@ -134,7 +134,7 @@ export class Gms2IncludedFile {
       if(matchingFile.directoryRelative != directoryRelative){
         logWarning(oneline`
           A file by name ${fileName} already exists in a different subdirectory.
-          Check to make sure that it is the file that you intend to change!
+          Check to make sure that it is the file that you intended to change!
         `);
       }
       return matchingFile;
