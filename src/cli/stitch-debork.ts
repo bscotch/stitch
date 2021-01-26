@@ -1,8 +1,11 @@
 #!/usr/bin/env node
-import commander from "commander";
+import commander, { CommanderStatic } from "commander";
 import { Gms2Project } from "../lib/Gms2Project";
 import options from "./lib/cli-options";
-const cli = commander;
+const cli: CommanderStatic & {
+  targetProject?: string,
+  force?: boolean
+} = commander;
 
 cli.description("Fix and normalize common issues in a GameMaker Studio 2.3+ Project.")
   .option(...options.targetProject)
