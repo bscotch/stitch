@@ -20,7 +20,7 @@ import { Gms2FolderArray } from "./Gms2FolderArray";
 import { Gms2MergerOptions, Gms2ProjectMerger } from "./Gms2ProjectMerger";
 import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
-import { SpritelyBatch } from "@bscotch/spritely";
+import { Spritely, SpritelyBatch } from "@bscotch/spritely";
 import {snakeCase,camelCase,pascalCase} from "change-case";
 import { logInfo } from "./log";
 import { get, unzipRemote } from "./http";
@@ -39,7 +39,11 @@ export interface SpriteImportOptions {
    * for `root/my/sprite/image.png` the flattened name would
    * be `my_sprite` (if using snake case).
    */
-  flatten?: boolean
+  flatten?: boolean,
+  /**
+   * Any sprite names matching the pattern will *not* be imported.
+   */
+  exclude?: RegExp | string,
 }
 
 export interface Gms2ProjectOptions {
@@ -472,7 +476,16 @@ export class Gms2Project {
    */
   addSprites(sourceFolder:string, options?: SpriteImportOptions){
     const spriteBatch = new SpritelyBatch(sourceFolder);
-    const sprites = spriteBatch.sprites;
+    const sprites: Spritely[] = [];
+    for(const sprite of spriteBatch.sprites){
+      if(options?.exclude){
+        const excludeRegex = new RegExp(options?.exclude);
+        if(sprite.name.match(excludeRegex)){
+          continue;
+        }
+      }
+      sprites.push(sprite);
+    }
     assert(sprites.length,`No sprites found in ${sourceFolder}`);
     for(const sprite of sprites){
       let name = options?.flatten

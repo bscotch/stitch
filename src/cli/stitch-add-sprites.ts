@@ -38,6 +38,11 @@ cli.description(undent`
     sprite's name (e.g. 'root/my/sprite' will be called 'my_sprite'
     if using snake case).
   `)
+  .option('--exclude <pattern>',oneline`
+    The provided pattern will be converted to a RegEx using
+    JavaScript's \`new RegExp()\` function. Any sprites whose
+    *original* names match the pattern will not be imported.
+  `)
   .parse(process.argv);
 
 importSprites(cli.opts() as ImportBaseOptions & SpriteImportOptions);

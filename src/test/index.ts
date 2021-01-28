@@ -539,6 +539,14 @@ describe("GMS2.3 Pipeline SDK", function () {
       ).to.not.exist;
       project.addSprites(spriteSampleRoot,{case:'camel'});
       expect(project.resources.findByName('mySprite')).to.exist;
+      expect(project.resources.findByName('excludedSprite')).to.exist;
+    });
+
+    it("can exclude imported sprites by pattern", function(){
+      const project = getResetProject();
+      project.addSprites(spriteSampleRoot,{case:'camel',exclude:/^my/});
+      expect(project.resources.findByName('mySprite')).not.to.exist;
+      expect(project.resources.findByName('excludedSprite')).to.exist;
     });
 
     it("can import sprites while prefixing and flattening names",async function(){
