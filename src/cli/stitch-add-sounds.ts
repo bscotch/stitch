@@ -22,4 +22,4 @@ cli.description(undent`
   .option(...options.force)
   .parse(process.argv);
 
-importSounds(cli as ImportBaseOptions & CommanderStatic);
+importSounds(cli.opts() as ImportBaseOptions);

@@ -20,4 +20,4 @@ cli.description(undent`
   .option(...options.force)
   .parse(process.argv);
 
-assignAudioGroups(cli as AssignCliOptions & CommanderStatic);
+assignAudioGroups(cli.opts() as AssignCliOptions);

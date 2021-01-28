@@ -16,6 +16,8 @@ cli.version(version, '-v, --version')
     which will clean up some common issues and normalize the file content.
   `);
 
+// @shichen85 Does this do anything?
+
 //Trim the input and filter out empty space inputs such as " "
 const args = process.argv.map(arg=>arg.trim());
 

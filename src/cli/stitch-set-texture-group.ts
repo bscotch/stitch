@@ -20,4 +20,4 @@ cli.description(undent`
   .option(...options.force)
   .parse(process.argv);
 
-assignTextureGroups(cli as AssignCliOptions & CommanderStatic);
+assignTextureGroups(cli.opts() as AssignCliOptions);

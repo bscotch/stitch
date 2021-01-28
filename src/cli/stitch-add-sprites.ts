@@ -40,4 +40,4 @@ cli.description(undent`
   `)
   .parse(process.argv);
 
-importSprites(cli as ImportBaseOptions & SpriteImportOptions & CommanderStatic);
+importSprites(cli.opts() as ImportBaseOptions & SpriteImportOptions);

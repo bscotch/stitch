@@ -22,4 +22,4 @@ cli.description(undent`
   .option(...options.force)
   .parse(process.argv);
 
-importFiles(cli as ImportBaseOptions & CommanderStatic);
+importFiles(cli.opts() as ImportBaseOptions);

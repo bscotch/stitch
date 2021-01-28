@@ -21,4 +21,4 @@ cli.description(undent`
   .option(...options.force)
   .parse(process.argv);
 
-version(cli as VersionOptions & CommanderStatic);
+version(cli.opts() as VersionOptions);

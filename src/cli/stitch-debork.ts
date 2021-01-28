@@ -12,4 +12,5 @@ cli.description("Fix and normalize common issues in a GameMaker Studio 2.3+ Proj
   .option(...options.force)
   .parse(process.argv);
 
-(new Gms2Project({projectPath:cli.targetProject,dangerouslyAllowDirtyWorkingDir:cli.force})).save();
+const opts = cli.opts();
+(new Gms2Project({projectPath:opts.targetProject,dangerouslyAllowDirtyWorkingDir:opts.force})).save();

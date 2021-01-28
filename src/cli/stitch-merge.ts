@@ -1,11 +1,9 @@
 #!/usr/bin/env node
-import commander, { CommanderStatic } from "commander";
+import {default as cli } from "commander";
 import { oneline } from "@bscotch/utility";
 import merge, { Gms2MergeCliOptions } from './lib/merge';
 import options from "./lib/cli-options";
 import { Gms2ResourceArray } from "../lib/components/Gms2ResourceArray";
-
-const cli = commander as (Gms2MergeCliOptions & CommanderStatic);
 
 cli.description("Merge GameMaker Studio projects.")
   .option(...options.targetProject)
@@ -83,4 +81,4 @@ cli.description("Merge GameMaker Studio projects.")
   .parse(process.argv);
 
 
-merge(cli);
+merge(cli.opts() as Gms2MergeCliOptions);
