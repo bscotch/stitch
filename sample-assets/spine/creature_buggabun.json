@@ -1,0 +1,397 @@
+{
+    "skeleton": {
+        "hash": "e37NvhXW30bBkVAO/1ymlHcgddg",
+        "spine": "3.7.94",
+        "width": 104,
+        "height": 155,
+        "fps": 60,
+        "images": "",
+        "audio": "./"
+    },
+    "bones": [
+        {
+            "name": "root"
+        },
+        {
+            "name": "body",
+            "parent": "root"
+        }
+    ],
+    "slots": [
+        {
+            "name": "buggabun",
+            "bone": "body",
+            "attachment": "stationary"
+        }
+    ],
+    "skins": {
+        "default": {
+            "buggabun": {
+                "attack_charge": {
+                    "x": 9.12,
+                    "y": 84.84,
+                    "width": 114,
+                    "height": 194
+                },
+                "attack_hit": {
+                    "x": 1.12,
+                    "y": 72.04,
+                    "width": 234,
+                    "height": 220
+                },
+                "attack_recover": {
+                    "x": -1.44,
+                    "y": 81.96,
+                    "width": 132,
+                    "height": 207
+                },
+                "eat": {
+                    "x": 8.16,
+                    "y": 48.04,
+                    "width": 118,
+                    "height": 128
+                },
+                "eat2": {
+                    "x": 10.24,
+                    "y": 48.04,
+                    "width": 122,
+                    "height": 128
+                },
+                "scream": {
+                    "x": -12,
+                    "y": 96.04,
+                    "width": 192,
+                    "height": 224
+                },
+                "sleep": {
+                    "x": 26.72,
+                    "y": 46.76,
+                    "width": 212,
+                    "height": 117
+                },
+                "spit_charge": {
+                    "x": -4.96,
+                    "y": 60.84,
+                    "width": 126,
+                    "height": 152
+                },
+                "spit_hit": {
+                    "x": 9.76,
+                    "y": 112.68,
+                    "width": 107,
+                    "height": 248
+                },
+                "stationary": {
+                    "x": -1.12,
+                    "y": 59.24,
+                    "width": 104,
+                    "height": 155
+                },
+                "take_hit": {
+                    "x": -12.32,
+                    "y": 51.56,
+                    "width": 237,
+                    "height": 208
+                }
+            }
+        }
+    },
+    "events": {
+        "hold": {},
+        "snd_buggabun_eat": {
+            "audio": "zapsplat_animals_cow_eat_grass_or_foliage_001_23735.mp3"
+        },
+        "snd_buggabun_pinch": {
+            "audio": "zapsplat_animals_insect_caterpillar_bite_eat_leaf_001_18470.mp3"
+        }
+    },
+    "animations": {
+        "attack": {
+            "slots": {
+                "buggabun": {
+                    "attachment": [
+                        {
+                            "time": 0.05,
+                            "name": "attack_charge"
+                        },
+                        {
+                            "time": 0.3167,
+                            "name": "attack_hit"
+                        },
+                        {
+                            "time": 0.3667,
+                            "name": "attack_recover"
+                        }
+                    ]
+                }
+            },
+            "bones": {
+                "body": {
+                    "translate": [
+                        {
+                            "time": 0.6,
+                            "x": 0,
+                            "y": 0
+                        }
+                    ],
+                    "scale": [
+                        {
+                            "time": 0,
+                            "x": 1,
+                            "y": 1
+                        },
+                        {
+                            "time": 0.0167,
+                            "x": 1.218,
+                            "y": 0.635
+                        },
+                        {
+                            "time": 0.0333,
+                            "x": 0.921,
+                            "y": 1.33
+                        },
+                        {
+                            "time": 0.05,
+                            "x": 0.821,
+                            "y": 1.323
+                        },
+                        {
+                            "time": 0.0833,
+                            "x": 1,
+                            "y": 1,
+                            "curve": [
+                                0.25,
+                                0,
+                                1,
+                                -0.18
+                            ]
+                        },
+                        {
+                            "time": 0.3,
+                            "x": 0.787,
+                            "y": 1.375,
+                            "curve": "stepped"
+                        },
+                        {
+                            "time": 0.3333,
+                            "x": 1.066,
+                            "y": 0.931,
+                            "curve": "stepped"
+                        },
+                        {
+                            "time": 0.3667,
+                            "x": 1,
+                            "y": 1
+                        }
+                    ]
+                }
+            },
+            "events": [
+                {
+                    "time": 0.0667,
+                    "name": "hold"
+                },
+                {
+                    "time": 0.3,
+                    "name": "snd_buggabun_pinch"
+                }
+            ]
+        },
+        "eat": {
+            "slots": {
+                "buggabun": {
+                    "attachment": [
+                        {
+                            "time": 0,
+                            "name": "eat"
+                        },
+                        {
+                            "time": 0.0667,
+                            "name": "eat2"
+                        },
+                        {
+                            "time": 0.15,
+                            "name": "eat"
+                        },
+                        {
+                            "time": 0.1833,
+                            "name": "eat2"
+                        },
+                        {
+                            "time": 0.25,
+                            "name": "eat"
+                        },
+                        {
+                            "time": 0.3333,
+                            "name": "eat2"
+                        }
+                    ]
+                }
+            },
+            "bones": {
+                "body": {
+                    "scale": [
+                        {
+                            "time": 0,
+                            "x": 1,
+                            "y": 1,
+                            "curve": [
+                                0.39,
+                                0.03,
+                                0.62,
+                                1.04
+                            ]
+                        },
+                        {
+                            "time": 0.0667,
+                            "x": 1.081,
+                            "y": 0.87,
+                            "curve": [
+                                0.39,
+                                0.03,
+                                0.62,
+                                1.04
+                            ]
+                        },
+                        {
+                            "time": 0.15,
+                            "x": 0.891,
+                            "y": 1.032,
+                            "curve": [
+                                0.39,
+                                0.03,
+                                0.62,
+                                1.04
+                            ]
+                        },
+                        {
+                            "time": 0.1833,
+                            "x": 1.081,
+                            "y": 0.87,
+                            "curve": [
+                                0.39,
+                                0.03,
+                                0.62,
+                                1.04
+                            ]
+                        },
+                        {
+                            "time": 0.25,
+                            "x": 0.891,
+                            "y": 1.032,
+                            "curve": [
+                                0.39,
+                                0.03,
+                                0.62,
+                                1.04
+                            ]
+                        },
+                        {
+                            "time": 0.3333,
+                            "x": 1.081,
+                            "y": 0.87,
+                            "curve": [
+                                0.39,
+                                0.03,
+                                0.62,
+                                1.04
+                            ]
+                        },
+                        {
+                            "time": 0.4,
+                            "x": 1,
+                            "y": 1
+                        }
+                    ]
+                }
+            },
+            "events": [
+                {
+                    "time": 0,
+                    "name": "snd_buggabun_eat"
+                }
+            ]
+        },
+        "idle": {
+            "bones": {
+                "body": {
+                    "scale": [
+                        {
+                            "time": 0,
+                            "x": 1,
+                            "y": 1
+                        },
+                        {
+                            "time": 0.3333,
+                            "x": 0.978,
+                            "y": 1.035,
+                            "curve": [
+                                0.25,
+                                0,
+                                0.75,
+                                1
+                            ]
+                        },
+                        {
+                            "time": 0.6667,
+                            "x": 1.062,
+                            "y": 0.934,
+                            "curve": [
+                                0.25,
+                                0,
+                                0.75,
+                                1
+                            ]
+                        },
+                        {
+                            "time": 1,
+                            "x": 1,
+                            "y": 1
+                        }
+                    ]
+                }
+            }
+        },
+        "take_hit": {
+            "slots": {
+                "buggabun": {
+                    "attachment": [
+                        {
+                            "time": 0,
+                            "name": "take_hit"
+                        }
+                    ]
+                }
+            },
+            "bones": {
+                "body": {
+                    "scale": [
+                        {
+                            "time": 0,
+                            "x": 1.442,
+                            "y": 1,
+                            "curve": "stepped"
+                        },
+                        {
+                            "time": 0.0667,
+                            "x": 1.003,
+                            "y": 1,
+                            "curve": "stepped"
+                        },
+                        {
+                            "time": 0.1,
+                            "x": 1,
+                            "y": 1
+                        }
+                    ]
+                }
+            },
+            "events": [
+                {
+                    "time": 0,
+                    "name": "hold"
+                }
+            ]
+        }
+    }
+}
