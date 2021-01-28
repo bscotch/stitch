@@ -250,3 +250,37 @@ track references to sprite frames in any way, and any change
 that causes a specific image to have a different index will
 cause all references to that image to be referencing a different
 image now.
+
+### Sprites created in Spine
+
+For each sprite created in spine there should be 3 exported
+files. For a sprite named `mySprite`:
+
++ `mySprite.png` The file containing all sprite frames.
++ `mySprite.json` The JSON file describing the bones and animations.
++ `mySprite.atlas` A YAML-like file describing where the frames are in the Atlas.
+
+*(When importing manually via the GMS2 IDE, you will only see the PNG
+and JSON files in the file chooser. However, if the `.atlas` file is
+missing, then import will fail.)*
+
+The core of a Spine sprite is the same as a regular sprite.
+There are a few simple differences:
+
++ The original `.png` is copied *as-is* into the root of the sprite's
+  resource folder.
++ The main image is a preview, somehow cropped from the source `.png`.
+  (Presumably this is only used in the IDE to hint at the sprite.)
+
+GameMaker 2.3 does not support current versions of Spine. The Spine
+JSON file export for the supported version is typed in
+[types/Spine.ts](../src/types/Spine.ts).
+
+ISSUES
+
++ The `skeleton.audio` appears
+  to serve as the base directory for audio file locations, with
+  relative paths specified in `events.{eventName}.audio`. These are
+  unchanged in the JSON file on import into GMS2. However,
+  GameMaker does not import the audio files during Spine import!
+
