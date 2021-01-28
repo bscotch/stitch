@@ -1,3 +1,17 @@
+# [2.4.0](https://github.com/bscotch/stitch/compare/v2.3.0...v2.4.0) (2021-01-28)
+
+
+### Bug Fixes
+
+* All CLI calls are broken due to breaking change in underlying 'commander' dependency. ([7b37f08](https://github.com/bscotch/stitch/commit/7b37f08350ce83b60d73a209637a93325747c485))
+
+
+### Features
+
+* Sprite batch-imports now allow for excluding by sprite name, using a regex pattern. This is useful when the sprite source contains images that are not intended to be imported as sprites. ([ea05dd8](https://github.com/bscotch/stitch/commit/ea05dd8c3b11d70aad4911f186e6aead77f0cf2d))
+
+
+
 # [2.3.0](https://github.com/bscotch/stitch/compare/v2.2.1...v2.3.0) (2020-12-08)
 
 
