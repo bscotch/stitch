@@ -500,7 +500,7 @@ export class Gms2Project {
       // Check for a pattern indicating that this sprite is
       // from Spine
       const isSpine = this.storage
-        .exists(sprite.paths[0].replace('png','atlas'));
+        .exists(paths.changeExtension(sprite.paths[0],'atlas'));
       if(isSpine){
         assert(sprite.paths.length==1, oneline`
           Found atlas file for sprite ${sprite.name},
@@ -525,7 +525,7 @@ export class Gms2Project {
         '';
       assert(casedName,`could not convert ${name} to ${casing} case`);
       if(spritesThatAreSpine.includes(sprite)){
-        this.addSpineSprite(sprite.paths[0],`${options?.prefix||''}${casedName}`);
+        this.addSpineSprite(paths.changeExtension(sprite.paths[0],'json'),`${options?.prefix||''}${casedName}`);
       }
       else{
         this.addSprite(sprite.path,`${options?.prefix||''}${casedName}`);

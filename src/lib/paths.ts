@@ -62,11 +62,16 @@ export function subfolderName(directoryPath:string){
   return nodePath.parse(trimTrailingSlash(directoryPath)).base;
 }
 
+function changeExtension(path:string,newExtension:string){
+  return path.replace(/\.[^.]+$/,`.${newExtension}`);
+}
+
 export default {
   ...nodePath,
   pathSpecificitySort,
   heirarchy,
   asPosixPath,
   trimTrailingSlash,
-  subfolderName
+  subfolderName,
+  changeExtension
 };

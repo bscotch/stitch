@@ -140,7 +140,7 @@ export class  Gms2ResourceArray {
     const name = nameOverride || sourceSpineName;
 
     const defaultSpriteImagePath = paths
-      .join(__dirname,"..","..","..","assets","sprite-default.png");
+      .join(__dirname,"..","..","..","assets","sprite-default","subimage.png");
 
     // Make sure the JSON file is a valid export.
     try{
@@ -206,7 +206,7 @@ export class  Gms2ResourceArray {
       [spriteSheetSourcePath, spriteSheetDestPath],
       [defaultSpriteImagePath, thumbnailDestPath]
     ];
-    copyPaths.forEach(storage.copyFile);
+    copyPaths.forEach(ps=>storage.copyFile(...ps));
 
     logInfo(`updated spine sprite ${name}`);
     return this;

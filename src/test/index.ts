@@ -540,6 +540,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       project.addSprites(spriteSampleRoot,{case:'camel'});
       expect(project.resources.findByName('mySprite')).to.exist;
       expect(project.resources.findByName('excludedSprite')).to.exist;
+      expect(project.resources.findByName('spine')).to.exist;
     });
 
     it("can exclude imported sprites by pattern", function(){
