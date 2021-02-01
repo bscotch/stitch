@@ -2,11 +2,13 @@
 
 # Stitch: The GameMaker Studio 2 Pipeline Development Kit
 
-GameMaker Studio 2 (<abbr title="GameMaker Studio 2">GMS2</abbr>) is a powerful game-making tool, but it does not generally have features for automating development or build tasks, or for creating asset pipelines. <dfn>Stitch</dfn> is a Pipeline Development Kit providing a collection of command-line tools and a Node.JS API for automating GMS2 project management by directly manipulating its project files.
+GameMaker Studio 2 (<abbr title="GameMaker Studio 2">GMS2</abbr>) is a powerful game-making tool, but it does not generally have features for automating development or build tasks, or for creating asset pipelines.
+
+<dfn>Stitch</dfn> (this project) is our Pipeline Development Kit that provides a collection of command-line tools and a Node.JS API for automating GMS2 project management via direct manipulation of its project files. For example, you can use stitch to import assets from one GMS2 project into another, to batch-import sprites (including sprites exported from Spine), or to programmatically add included files.
 
 Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
-*GameMaker Studio 2&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans and Stitch are not affiliated with Yoyo Games.*
+*GameMaker Studio 2&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&reg; and Stitch are not affiliated with Yoyo Games.*
 
 **⚠WARNING⚠ Use at your own risk.** Stitch could completely break your GameMaker project. To help keep you safe, Stitch will not run unless your project is in a git repo with a clean working directory, but you must also know how to use git to recover in case something goes wrong.
 
@@ -233,15 +235,26 @@ Same deal with sprites. Point the importer at a folder full of images to have th
 
 At Bscotch, we use pipelines for our sound, art, build, and localization pipelines, so that our game programmers do not need to manually find, import, or name assets created by other team members, and so that we can modify scripts and other assets prior to creating builds.
 
-#### Create Sprites From Images
+#### Create Sprites From Images and Spine exports
 
-You can convert collections of images into GameMaker Sprites by first organizing
-them into per-sprite folders, such that each folder contains a collection of images
+You can convert collections of images and Spine exports
+into GameMaker Sprites by first organizing
+them into per-sprite folders.
+
+For image-based sprites, each
+folder must contain a collection of images
 that all have the exact same dimensions and that when sorted alphabetically are
-in the order you want them in-game. You can then point Stitch at the root folder
+in the order you want them in-game.
+
+For Spine-based sprites,
+each folder must contain the exactly one PNG file, an atlas file,
+and a JSON file.
+
+Point Stitch at the root folder
 containing all those sprite folders to automatically update/create in-game sprite
 assets for each folder. During import, you can specify several options to map the
-original art file names onto standardized sprite names.
+original art file names onto standardized sprite names. Stitch automatically
+detects Spine-based sprites and handles them at the same time.
 
 ```sh
 # CLI
