@@ -1,3 +1,12 @@
+# [2.5.0](https://github.com/bscotch/stitch/compare/v2.4.0...v2.5.0) (2021-02-01)
+
+
+### Bug Fixes
+
+* Test requests to the Bscotch website are no longer failing after a change to the server started blocking certain kinds of requests. ([e69c61d](https://github.com/bscotch/stitch/commit/e69c61d1b33be20f5f344b01c0de20a15072e6cd))
+
+
+
 # [2.4.0](https://github.com/bscotch/stitch/compare/v2.3.0...v2.4.0) (2021-01-28)
 
 
