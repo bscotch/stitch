@@ -20,7 +20,8 @@ export async function get(url:string,headers?:{[key:string]:string|undefined}):P
   }
   return new Promise((resolve,reject)=>{
     const getter = {http,https}[httpType];
-    const options = {headers: headers||{}};
+    const options: https.RequestOptions & {headers:{[key:string]:any}} = {headers: headers||{}};
+    options.headers['User-Agent'] = "Bscotch Stitch";
     getter.get(url,options,res=>{
       const chunks: Buffer[] = [];
       res.on('data',chunk=>{
