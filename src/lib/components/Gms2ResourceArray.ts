@@ -2,7 +2,7 @@ import { dehydrateArray } from "../hydrate";
 import { Gms2ResourceBase } from "./resources/Gms2ResourceBase";
 import { Gms2Sound } from "../components/resources/Gms2Sound";
 import { YypResource } from "../../types/Yyp";
-import { StitchError } from "../errors";
+import { assert, StitchError } from "../errors";
 import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";
 import { Gms2Sprite } from "./resources/Gms2Sprite";
@@ -20,6 +20,10 @@ import { Gms2Sequence } from "./resources/Gms2Sequence";
 import { Gms2Shader } from "./resources/Gms2Shader";
 import { Gms2Tileset } from "./resources/Gms2Tileset";
 import { Gms2Timeline } from "./resources/Gms2Timeline";
+import { Spine } from "../../types/Spine";
+import { oneline } from "@bscotch/utility";
+import { uuidV4 } from "../uuid";
+import { copyFile } from "fs-extra";
 
 export class  Gms2ResourceArray {
 
@@ -128,6 +132,83 @@ export class  Gms2ResourceArray {
       this.push(Gms2Sprite.create(sourceFolder,storage,name));
       logInfo(`created sprite ${name}`);
     }
+    return this;
+  }
+
+  addSpineSprite(jsonSourcePath:string,storage:Gms2Storage,nameOverride?:string){
+    const sourceSpineName = paths.parse(jsonSourcePath).name;
+    const name = nameOverride || sourceSpineName;
+
+    const defaultSpriteImagePath = paths
+      .join(__dirname,"..","..","..","assets","sprite-default.png");
+
+    // Make sure the JSON file is a valid export.
+    try{
+      const jsonContent: Spine = storage.readJson(jsonSourcePath);
+      assert(jsonContent.skeleton.spine,"The target JSON file is not from Spine.");
+      assert(jsonContent.skeleton.spine.startsWith('3.7.'),
+        "GameMaker Studio 2.3 is only compatible with Spine 3.7.X");
+    }
+    catch(err){
+      throw err instanceof StitchError
+        ? err
+        : new StitchError(`There is no valid Spine JSON file at ${jsonSourcePath}.`);
+    }
+
+    // Make sure we have image and atlas files
+    const sourcePathWithoutExt = paths.join(paths.dirname(jsonSourcePath),sourceSpineName);
+    for(const ext of ['png','atlas']){
+      const expectedSpineFilePath = `${sourcePathWithoutExt}.${ext}`;
+      assert(storage.exists(expectedSpineFilePath),
+        `File ${expectedSpineFilePath} does not exist.`);
+    }
+
+    let spineId = uuidV4(); // Will need one if sprite doesn't exist
+    let sprite = this.findByField('name',name,Gms2Sprite);
+    if(!sprite){
+      // Use the default sprite from the shipped assets.
+      // It doesn't actually matter what this asset is,
+      // as GameMaker requires a regular sprite in order
+      // to make use of the Spine files.
+      const defaultSpritePath = paths.dirname(defaultSpriteImagePath);
+      sprite = Gms2Sprite.create(defaultSpritePath,storage,name) as Gms2Sprite;
+      this.push(sprite);
+    }
+    else{
+      // Get the spine ID (if one exists). The only place it lives is in the
+      // names of the files! Check the .atlas file.
+      const atlasFile = sprite.filePathsRelative
+        .find(file=>file.endsWith('.atlas'));
+      spineId = atlasFile ? paths.parse(atlasFile).name : spineId;
+    }
+
+    // Whether we are creating or updating the outcome is the same.
+    // We need to write/clobber to appropriate filenames, and since
+    // Spine assets are not referenced in any Gamemaker project files
+    // that's all that has to happen!
+    const createDestPath = (name:string,ext:string)=>{
+      return paths.join((sprite as Gms2Sprite).yyDirAbsolute,`${name}.${ext}`);
+    };
+
+    const atlasSourcePath = `${sourcePathWithoutExt}.atlas`;
+    const spriteSheetSourcePath = `${sourcePathWithoutExt}.png`;
+
+    const atlasDestPath = createDestPath(spineId,'atlas');
+    const jsonDestPath  = createDestPath(spineId,'json');
+    const spriteSheetDestPath = createDestPath(sourceSpineName,'png');
+
+    // Also need a thumbnail. Just use the template image.
+    const thumbnailDestPath = createDestPath(spineId,'png');
+
+    const copyPaths: [string,string][] = [
+      [atlasSourcePath, atlasDestPath],
+      [jsonSourcePath, jsonDestPath],
+      [spriteSheetSourcePath, spriteSheetDestPath],
+      [defaultSpriteImagePath, thumbnailDestPath]
+    ];
+    copyPaths.forEach(storage.copyFile);
+
+    logInfo(`updated spine sprite ${name}`);
     return this;
   }
 

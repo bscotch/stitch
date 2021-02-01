@@ -265,22 +265,33 @@ and JSON files in the file chooser. However, if the `.atlas` file is
 missing, then import will fail.)*
 
 The core of a Spine sprite is the same as a regular sprite.
-There are a few simple differences:
+There are a few differences:
 
++ A layer is created as usual, with a random `layerId`
+  + The root composite image named with the `layerId` is just a blank
+  square (the default image when you use the GMS2 sprite editor).
+  These assets are required, despite not being used by GameMaker.
++ The spine asset is given a random GUID that we'll call `spineId`
+  + The atlas and JSON files are stored in the root, with names
+    changed to the `spineId` (keeping their extensions)
+  + There is a PNG also named after the `spineId`, however it is
+    a composite that GameMaker uses to display to the user in
+    the Sprite editor and sprite thumbnail.
 + The original `.png` is copied *as-is* into the root of the sprite's
-  resource folder.
-+ The main image is a preview, somehow cropped from the source `.png`.
-  (Presumably this is only used in the IDE to hint at the sprite.)
+  resource folder, without changing its name.
 
 GameMaker 2.3 does not support current versions of Spine. The Spine
 JSON file export for the supported version is typed in
 [types/Spine.ts](../src/types/Spine.ts).
 
-ISSUES
+Note that GameMaker completely ignores audio files associated with
+a Spine file, so sounds need to be separately managed.
 
-+ The `skeleton.audio` appears
-  to serve as the base directory for audio file locations, with
-  relative paths specified in `events.{eventName}.audio`. These are
-  unchanged in the JSON file on import into GMS2. However,
-  GameMaker does not import the audio files during Spine import!
+All we have to do to *create* a sprite resource from Spine exports is:
 
+1.  Create a new sprite as usual. Defaults are all totally fine. Can
+    use the same 64x64 blank image that GameMaker uses.
+2.  Copy the spritesheet into the sprite's root without changing the name.
+3.  Create a `spineId`
+3.  Copy the .atlas and .json files over to the root, renaming them with
+    the `spineId`

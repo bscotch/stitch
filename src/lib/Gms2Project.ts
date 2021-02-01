@@ -465,6 +465,17 @@ export class Gms2Project {
   }
 
   /**
+   * Add or update a sprite resource using a Spine export. Pass
+   * in the path to the JSON file -- the appropriate .png and .atlas
+   * files must also exist in the same directory with the same
+   * name.The Spine version must be compatible with GameMaker Studio.
+   */
+  private addSpineSprite(spriteJsonPath:string,nameOverride?:string){
+    this.resources.addSpineSprite(spriteJsonPath,this.storage,nameOverride);
+    this.save();
+  }
+
+  /**
    * Given a source folder that is either a sprite or a
    * a folder containing sprites (where a 'sprite' is a folder
    * containing one or more immediate child PNGs that are

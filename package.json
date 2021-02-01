@@ -10,7 +10,8 @@
     "build/cli/**/*",
     "build/lib/**/*",
     "build/index.*",
-    "build/types/**/*"
+    "build/types/**/*",
+    "assets/**/*"
   ],
   "bin": {
     "stitch": "./build/cli/stitch.js"
