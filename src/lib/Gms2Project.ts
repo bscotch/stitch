@@ -488,16 +488,29 @@ export class Gms2Project {
   addSprites(sourceFolder:string, options?: SpriteImportOptions){
     const spriteBatch = new SpritelyBatch(sourceFolder);
     const sprites: Spritely[] = [];
+    const spritesThatAreSpine: Spritely[] = []; // Clunky, but works
     for(const sprite of spriteBatch.sprites){
+      // Check against the exclusion pattern
       if(options?.exclude){
         const excludeRegex = new RegExp(options?.exclude);
         if(sprite.name.match(excludeRegex)){
           continue;
         }
       }
+      // Check for a pattern indicating that this sprite is
+      // from Spine
+      const isSpine = this.storage
+        .exists(sprite.paths[0].replace('png','atlas'));
+      if(isSpine){
+        assert(sprite.paths.length==1, oneline`
+          Found atlas file for sprite ${sprite.name},
+          implying it is a Spine export, but the
+          folder has more than one PNG file.`);
+        spritesThatAreSpine.push(sprite);
+      }
       sprites.push(sprite);
     }
-    assert(sprites.length,`No sprites found in ${sourceFolder}`);
+    assert(sprites.length, `No sprites found in ${sourceFolder}`);
     for(const sprite of sprites){
       let name = options?.flatten
         ? paths.relative(sourceFolder,sprite.path)
@@ -511,7 +524,12 @@ export class Gms2Project {
         (casing=='pascal' && pascalCase(name)) ||
         '';
       assert(casedName,`could not convert ${name} to ${casing} case`);
-      this.addSprite(sprite.path,`${options?.prefix||''}${casedName}`);
+      if(spritesThatAreSpine.includes(sprite)){
+        this.addSpineSprite(sprite.paths[0],`${options?.prefix||''}${casedName}`);
+      }
+      else{
+        this.addSprite(sprite.path,`${options?.prefix||''}${casedName}`);
+      }
     }
     return this;
   }
