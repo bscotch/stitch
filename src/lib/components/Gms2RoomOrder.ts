@@ -1,14 +1,14 @@
-import { YypRoomOrder } from "../../types/Yyp";
+import { YypRoomOrder,YypRoomOrderNode } from "../../types/Yyp";
 
-export class Gms2RoomOrder {
+export class Gms2RoomOrder<RoomOrderVersion extends YypRoomOrder|YypRoomOrderNode> {
 
-  #data: YypRoomOrder;
+  #data: RoomOrderVersion;
 
-  constructor(option:YypRoomOrder){
+  constructor(option:RoomOrderVersion){
     this.#data = {...option};
   }
 
-  toJSON(): YypRoomOrder{
+  toJSON(): RoomOrderVersion{
     return {...this.#data};
   }
 }

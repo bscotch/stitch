@@ -2,7 +2,10 @@ import { StitchError, assert } from "./errors";
 import fs from "./files";
 import { md5, oneline } from "@bscotch/utility";
 import paths from "./paths";
-import { YypComponents } from "../types/Yyp";
+import {
+  YypComponents,
+  YypComponentsLegacy
+} from "../types/Yyp";
 import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
 import { Gms2Option } from "./components/Gms2Option";
 import { Gms2Config } from "./components/Gms2Config";
@@ -25,6 +28,8 @@ import {snakeCase,camelCase,pascalCase} from "change-case";
 import { logInfo } from "./log";
 import { get, unzipRemote } from "./http";
 import { getGithubAccessToken } from "./env";
+
+type YypComponentsVersion = YypComponents|YypComponentsLegacy;
 
 export interface SpriteImportOptions {
   /** Optionally prefix sprite names on import */
@@ -595,15 +600,28 @@ export class Gms2Project {
     // Load the YYP file, store RAW (ensure field resourceType: "GMProject" exists)
     const yyp = Gms2Project.parseYypFile(this.storage.yypAbsolutePath);
 
-    fs.readJsonSync(this.storage.yypAbsolutePath) as YypComponents;
+    fs.readJsonSync(this.storage.yypAbsolutePath) as YypComponentsVersion;
     assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
 
+    // The most recent versions of GMS2 use a RoomOrderNodes field
+    // with a different data structure than the older RoomOrder field.
+    // Since we're currently not doing anything with that field, we
+    // can just allow either.
+    const roomOrderField = 'RoomOrder' in yyp ? "RoomOrder" : "RoomOrderNodes";
+    const roomOrderList = 'RoomOrder' in yyp
+      ? new Gms2ComponentArray(yyp.RoomOrder, Gms2RoomOrder)
+      : new Gms2ComponentArray(yyp.RoomOrderNodes, Gms2RoomOrder);
+
+    // TODO: Figure out how to safely manage different typings due
+    // TODO: to changes in the YYP (and potentially YY) files with
+    // TODO: different IDE versions.
+    // @ts-ignore
     this.components = {
       ...yyp,
       Options: new Gms2ComponentArray(yyp.Options, Gms2Option),
       configs: new Gms2Config(yyp.configs),
       Folders: new Gms2FolderArray(yyp.Folders),
-      RoomOrder: new Gms2ComponentArray(yyp.RoomOrder, Gms2RoomOrder),
+      [roomOrderField]: roomOrderList,
       TextureGroups: new Gms2ComponentArray(yyp.TextureGroups, Gms2TextureGroup),
       AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
       IncludedFiles: new Gms2IncludedFileArray(yyp.IncludedFiles,this.storage),
@@ -622,9 +640,9 @@ export class Gms2Project {
    * A deep copy of the project's YYP content with everything as plain primitives (no custom class instances).
    * Perfect for writing to JSON.
    */
-  toJSON(): YypComponents {
-    const fields = Object.keys(this.components) as (keyof YypComponents)[];
-    const asObject: Partial<YypComponents> = {};
+  toJSON(): YypComponentsVersion {
+    const fields = Object.keys(this.components) as (keyof YypComponentsVersion)[];
+    const asObject: Partial<YypComponentsVersion> = {};
     for (const field of fields) {
       const components = this.components[field];
       if( components instanceof Gms2ComponentArray ||
@@ -638,7 +656,7 @@ export class Gms2Project {
         asObject[field] = component?.toJSON?.() ?? component;
       }
     }
-    return asObject as YypComponents;
+    return asObject as YypComponentsVersion;
   }
 
   static get platforms(){
@@ -662,7 +680,7 @@ export class Gms2Project {
    * Check a YYP file for version comaptibility with Stitch.
    */
   private static parseYypFile(yypFilepath:string){
-    const yyp = fs.readJsonSync(yypFilepath) as YypComponents;
+    const yyp = fs.readJsonSync(yypFilepath) as YypComponentsVersion;
     assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
     return yyp;
   }

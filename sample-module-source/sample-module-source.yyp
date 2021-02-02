@@ -31,7 +31,7 @@
       {"name":"BscotchPack","children":[],},
     ],
   },
-  "RoomOrder": [
+  "RoomOrderNodes": [
     {"name":"anotherModuleRoom","path":"rooms/anotherModuleRoom/anotherModuleRoom.yy",},
   ],
   "Folders": [

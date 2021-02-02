@@ -33,6 +33,14 @@ export interface YypRoomOrder {
   path: string
 }
 
+export interface YypRoomOrderNode {
+  roomId:{
+    name:string,
+    /** rooms/{name}/{name}.yy */
+    path:string
+  }
+}
+
 export interface YypFolder {
   name: string,
   tags: string[],
@@ -100,8 +108,8 @@ export interface YypIncludedFile {
   resourceVersion: "1.0",
 }
 
-/** Raw YYP Content as plain objects (read directly from file and JSON parsed) */
-export interface YypComponents {
+/** The YYP content that has not changed across GMS2.3 subversions */
+interface YypComponentsStable{
   name: string,
   resourceType: "GMProject",
   resources: YypResource[],
@@ -113,7 +121,6 @@ export interface YypComponents {
     name: 'Default',
     children: YypConfig[]
   },
-  RoomOrder: YypRoomOrder[],
   Folders: YypFolder[],
   AudioGroups: YypAudioGroup[],
   TextureGroups: YypTextureGroup[],
@@ -123,4 +130,13 @@ export interface YypComponents {
   }
   resourceVersion: string,
   tags: string[],
+}
+
+export interface YypComponentsLegacy extends YypComponentsStable{
+  RoomOrder: YypRoomOrder[]
+}
+
+/** Raw YYP Content from most recent supported IDE */
+export interface YypComponents extends YypComponentsStable{
+  RoomOrderNodes: YypRoomOrderNode[]
 }

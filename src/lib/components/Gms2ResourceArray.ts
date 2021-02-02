@@ -21,9 +21,7 @@ import { Gms2Shader } from "./resources/Gms2Shader";
 import { Gms2Tileset } from "./resources/Gms2Tileset";
 import { Gms2Timeline } from "./resources/Gms2Timeline";
 import { Spine } from "../../types/Spine";
-import { oneline } from "@bscotch/utility";
 import { uuidV4 } from "../uuid";
-import { copyFile } from "fs-extra";
 
 export class  Gms2ResourceArray {
 

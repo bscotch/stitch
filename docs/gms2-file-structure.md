@@ -96,7 +96,7 @@ The root contents of the GMS2.3 `yyp` file are these:
 }
 ```
 
-+ `RoomOrder`: `[{"name":"the_room","path":"rooms/the_room/the_room.yy",}]`
++ `RoomOrderNodes`: `[{"name":"the_room","path":"rooms/the_room/the_room.yy",}]`
 + `Folders`: `{"folderPath":"folders/sample_resources/level2/level3.yy","order":1,"resourceVersion":"1.0","name":"level3","tags":[],"resourceType":"GMFolder",}`
   + (resourceType is always GMFolder)
   + (resourceVersion is always "1.0")
