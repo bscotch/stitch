@@ -1,3 +1,20 @@
+# [2.6.0](https://github.com/bscotch/stitch/compare/v2.5.1...v2.6.0) (2021-02-02)
+
+
+### Bug Fixes
+
+* Import of spine sprites no longer throws errors. ([d150267](https://github.com/bscotch/stitch/commit/d150267298843fed79206203c181f67d88d60488))
+* The latest IDE changed the YYP 'RoomOrder' field to 'RoomOrderNodes' with a different data structure. The types no longer scream at you as a consequence, but this will need a more general solution for long-term stability. ([ad13be8](https://github.com/bscotch/stitch/commit/ad13be8a7a4f41fa415609a00f86aa71fb9d938a))
+
+
+### Features
+
+* Batch sprite imports now detect if sprites are Spine exports and imports them as well. ([6542288](https://github.com/bscotch/stitch/commit/65422885b8e40116bc73acbb2dc2a1cb8dd3a7c3))
+* Sample Spine resources are now included for developing spine imports. ([cb0a8bf](https://github.com/bscotch/stitch/commit/cb0a8bf10d990cb0715dac8b379699473d684106))
+* The Project class now includes a private method for importing Spine sprites. ([0f3e6fe](https://github.com/bscotch/stitch/commit/0f3e6fecb0f81c0ebfdf81c2d9ca0d1b64bb9812))
+
+
+
 ## [2.5.1](https://github.com/bscotch/stitch/compare/v2.5.0...v2.5.1) (2021-02-01)
 
 
