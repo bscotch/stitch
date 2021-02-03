@@ -42,11 +42,15 @@ export class Gms2Sprite extends Gms2ResourceBase {
   get textureGroup(){
     return this.yyData.textureGroupId.name;
   }
-
   set textureGroup(name:string){
     this.yyData.textureGroupId.name = name;
     this.yyData.textureGroupId.path = `texturegroups/${name}`;
     this.save();
+  }
+
+  /** Get the array of current frameIds, in their frame order. */
+  get frameIds(){
+    return this.yyData.frames.map(frame=>frame.name);
   }
 
   protected createYyFile(){
@@ -130,12 +134,15 @@ export class Gms2Sprite extends Gms2ResourceBase {
     this.setDims(sprite.width as number,sprite.height as number);
     // Replace all the frames
 
-    // Clear out the current files (except the yy file)
+    // TODO: Replace all frames, but keep the existing IDs and ID
+    // TODO: order where possible. (Minimizes useless git history changes.)
     const layersRoot = paths.join(this.yyDirAbsolute,'layers');
     this.storage.ensureDir(layersRoot);
     this.storage.emptyDir(layersRoot);
-    const currentFrames = this.storage.listFiles(this.yyDirAbsolute,false,['png']);
-    for(const frame of currentFrames){
+    const oldFrameIds = this.frameIds;
+    const oldFrames = this.storage
+      .listFiles(this.yyDirAbsolute,false,['png']);
+    for(const frame of oldFrames){
       this.storage.deleteFile(frame);
     }
 
@@ -145,8 +152,8 @@ export class Gms2Sprite extends Gms2ResourceBase {
     const keyFrames = this.yyData.sequence.tracks[0].keyframes.Keyframes;
     this.yyData.sequence.length = new NumberFixed(0);
     const layerId = this.yyData.layers[0].name;
-    for(const subimagePath of sprite.paths){
-      const frameGuid = uuidV4();
+    for(const [i,subimagePath] of sprite.paths.entries()){
+      const frameGuid = oldFrameIds[i] || uuidV4();
       const framePath = paths.join(this.yyDirAbsolute,`${frameGuid}.png`);
       const frameLayerFolder = paths.join(this.yyDirAbsolute,'layers',frameGuid);
       const frameLayerImagePath = paths.join(frameLayerFolder,`${layerId}.png`);

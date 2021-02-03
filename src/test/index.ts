@@ -20,6 +20,7 @@ import { NumberFixed } from '../lib/NumberFixed';
 import { SoundChannel, SoundCompression } from '../types/YySound';
 import {get, unzipRemote} from "../lib/http";
 import {loadEnvironmentVariables} from "../lib/env";
+import { Gms2Sprite } from '../lib/components/resources/Gms2Sprite';
 
 /*
 Can be used to inform Stitch components that we are in
@@ -541,6 +542,21 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(project.resources.findByName('mySprite')).to.exist;
       expect(project.resources.findByName('excludedSprite')).to.exist;
       expect(project.resources.findByName('spine')).to.exist;
+    });
+
+    it("can re-import sprites", function(){
+      const project = getResetProject();
+      expect(project.resources.findByName('mySprite'),
+        'sprite should not exist before being added'
+      ).to.not.exist;
+      project.addSprites(spriteSampleRoot,{case:'camel'});
+      const importedSprite = project.resources.findByName('mySprite') as Gms2Sprite;
+      const spriteFrameIds = importedSprite.frameIds;
+      // Re-import
+      project.addSprites(spriteSampleRoot,{case:'camel'});
+      const reImportedSprite = project.resources.findByName('mySprite') as Gms2Sprite;
+      const reImportedSpriteFrameIds = reImportedSprite.frameIds;
+      expect(spriteFrameIds).to.eql(reImportedSpriteFrameIds);
     });
 
     it("can exclude imported sprites by pattern", function(){
