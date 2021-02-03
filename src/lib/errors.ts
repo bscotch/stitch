@@ -1,3 +1,4 @@
+import "source-map-support/register";
 
 export class StitchError extends Error {
   constructor(message: string) {
