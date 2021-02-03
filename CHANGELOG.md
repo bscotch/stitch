@@ -1,3 +1,13 @@
+## [2.6.1](https://github.com/bscotch/stitch/compare/v2.6.0...v2.6.1) (2021-02-03)
+
+
+### Features
+
+* Thrown errors will now use the Typescript source maps for their traces. ([e29f67a](https://github.com/bscotch/stitch/commit/e29f67a4521c75c60ad610244da70a1960577a16))
+* When importing over an existing sprite, Spritely will recycle the existing frameIds to reduce the clutter in git commit history. ([d124f07](https://github.com/bscotch/stitch/commit/d124f075ecce6a689c3275e08897ca38fb4173db))
+
+
+
 # [2.6.0](https://github.com/bscotch/stitch/compare/v2.5.1...v2.6.0) (2021-02-02)
 
 
