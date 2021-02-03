@@ -18,7 +18,6 @@ const toSingleDecimalNumber = (number:number|undefined)=>{
 export class Gms2Sprite extends Gms2ResourceBase {
 
   protected yyData!: YySprite; // Happens in the super() constructor
-  // In sprite .yy under the "sequence" section:
 
   constructor(...setup: Gms2ResourceBaseParameters) {
     super("sprites",...setup);
@@ -37,6 +36,12 @@ export class Gms2Sprite extends Gms2ResourceBase {
       'sequence.tracks.*.keyframes.Keyframes.*.Length': toSingleDecimalNumber,
       'layers.*.opacity': toSingleDecimalNumber,
     };
+  }
+
+  get isSpine(){
+    const frameId   = this.frameIds[0];
+    const atlasPath = paths.join(this.yyDirAbsolute,`${frameId}.atlas`);
+    return this.storage.exists(atlasPath);
   }
 
   get textureGroup(){
@@ -127,15 +132,90 @@ export class Gms2Sprite extends Gms2ResourceBase {
     return this;
   }
 
-  /** Force the frames of this sprite to match the images within a folder (non-recursive)  */
+  addFrame(imagePath:string,frameGuid:string){
+    const keyFrames = this.yyData.sequence.tracks[0].keyframes.Keyframes;
+    this.yyData.sequence.length = new NumberFixed(0);
+    const framePath = paths.join(this.yyDirAbsolute,`${frameGuid}.png`);
+    const frameLayerFolder = paths.join(this.yyDirAbsolute,'layers',frameGuid);
+    const layerId = this.yyData.layers[0].name;
+    const frameLayerImagePath = paths.join(frameLayerFolder,`${layerId}.png`);
+    this.storage.ensureDir(frameLayerFolder);
+    this.storage.copyFile(imagePath,framePath);
+    this.storage.copyFile(imagePath,frameLayerImagePath);
+    this.yyData.frames.push({
+      compositeImage: {
+        FrameId:{
+          name: frameGuid,
+          path: this.id.path
+        },
+        LayerId:null,
+        resourceVersion:"1.0",
+        name:"",
+        tags: [],
+        resourceType:"GMSpriteBitmap"
+      },
+      images: [{
+        FrameId:{
+          name: frameGuid,
+          path: this.id.path
+        },
+        LayerId:{
+          name: layerId,
+          path: this.id.path
+        },
+        resourceVersion:"1.0",
+        name:"",
+        tags: [],
+        resourceType:"GMSpriteBitmap"
+      }],
+      name: frameGuid,
+      parent:this.id,
+      resourceVersion:"1.0",
+      tags:[],
+      resourceType:"GMSpriteFrame"
+    });
+    keyFrames.push({
+      id: uuidV4(),
+      Key: new NumberFixed(this.yyData.sequence.length),
+      Length: new NumberFixed(1),
+      Stretch: false,
+      Disabled: false,
+      IsCreationKey: false,
+      Channels:{
+        '0':{
+          Id:{
+            name: frameGuid,
+            path: this.id.path
+          },
+          resourceVersion:"1.0",
+          resourceType:"SpriteFrameKeyframe"
+        }
+      },
+      resourceVersion:"1.0",
+      resourceType:"Keyframe<SpriteFrameKeyframe>"
+    });
+    this.yyData.sequence.length = new NumberFixed(Number(this.yyData.sequence.length) + 1);
+    return this.save();
+  }
+
+  clearFrames(){
+    this.yyData.frames = [];
+    this.yyData.sequence.tracks[0].keyframes.Keyframes = [];
+    return this.save();
+  }
+
+  /**
+   * Force the frames of this sprite to match the images
+   * within a folder (non-recursive)
+   */
   replaceFrames(spriteDirectory:string){
     const sprite = new Spritely(spriteDirectory);
     // Ensure that the sizes match
     this.setDims(sprite.width as number,sprite.height as number);
     // Replace all the frames
 
-    // TODO: Replace all frames, but keep the existing IDs and ID
-    // TODO: order where possible. (Minimizes useless git history changes.)
+    // Replace all frames, but keep the existing IDs and ID
+    // order where possible. (Minimizes useless git history changes.)
     const layersRoot = paths.join(this.yyDirAbsolute,'layers');
     this.storage.ensureDir(layersRoot);
     this.storage.emptyDir(layersRoot);
@@ -146,75 +226,12 @@ export class Gms2Sprite extends Gms2ResourceBase {
       this.storage.deleteFile(frame);
     }
 
+    this.clearFrames();
     // Add each new frame, updating the yyData as we go.
-    this.yyData.frames = [];
-    this.yyData.sequence.tracks[0].keyframes.Keyframes = [];
-    const keyFrames = this.yyData.sequence.tracks[0].keyframes.Keyframes;
-    this.yyData.sequence.length = new NumberFixed(0);
-    const layerId = this.yyData.layers[0].name;
     for(const [i,subimagePath] of sprite.paths.entries()){
-      const frameGuid = oldFrameIds[i] || uuidV4();
-      const framePath = paths.join(this.yyDirAbsolute,`${frameGuid}.png`);
-      const frameLayerFolder = paths.join(this.yyDirAbsolute,'layers',frameGuid);
-      const frameLayerImagePath = paths.join(frameLayerFolder,`${layerId}.png`);
-      this.storage.ensureDir(frameLayerFolder);
-      this.storage.copyFile(subimagePath,framePath);
-      this.storage.copyFile(subimagePath,frameLayerImagePath);
-      this.yyData.frames.push({
-        compositeImage: {
-          FrameId:{
-            name: frameGuid,
-            path: this.id.path
-          },
-          LayerId:null,
-          resourceVersion:"1.0",
-          name:"",
-          tags: [],
-          resourceType:"GMSpriteBitmap"
-        },
-        images: [{
-          FrameId:{
-            name: frameGuid,
-            path: this.id.path
-          },
-          LayerId:{
-            name: layerId,
-            path: this.id.path
-          },
-          resourceVersion:"1.0",
-          name:"",
-          tags: [],
-          resourceType:"GMSpriteBitmap"
-        }],
-        name: frameGuid,
-        parent:this.id,
-        resourceVersion:"1.0",
-        tags:[],
-        resourceType:"GMSpriteFrame"
-      });
-      keyFrames.push({
-        id: uuidV4(),
-        Key: new NumberFixed(this.yyData.sequence.length),
-        Length: new NumberFixed(1),
-        Stretch: false,
-        Disabled: false,
-        IsCreationKey: false,
-        Channels:{
-          '0':{
-            Id:{
-              name: frameGuid,
-              path: this.id.path
-            },
-            resourceVersion:"1.0",
-            resourceType:"SpriteFrameKeyframe"
-          }
-        },
-        resourceVersion:"1.0",
-        resourceType:"Keyframe<SpriteFrameKeyframe>"
-      });
-      this.yyData.sequence.length = new NumberFixed(Number(this.yyData.sequence.length) + 1);
+      this.addFrame(subimagePath,oldFrameIds[i] || uuidV4());
     }
-    return this.save();
+    return this;
   }
 
   static get textureGroupIdDefault(){
