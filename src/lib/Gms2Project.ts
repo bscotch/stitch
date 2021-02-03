@@ -34,6 +34,8 @@ type YypComponentsVersion = YypComponents|YypComponentsLegacy;
 export interface SpriteImportOptions {
   /** Optionally prefix sprite names on import */
   prefix?: string,
+  /** Optionall postfix sprite names on import */
+  postfix?: string,
   /** Enforce casing standards. Defaults to 'snake'. */
   case?: 'snake'|'camel'|'pascal',
   /**
@@ -529,11 +531,12 @@ export class Gms2Project {
         (casing=='pascal' && pascalCase(name)) ||
         '';
       assert(casedName,`could not convert ${name} to ${casing} case`);
+      const fullName = `${options?.prefix||''}${casedName}${options?.postfix||''}`;
       if(spritesThatAreSpine.includes(sprite)){
-        this.addSpineSprite(paths.changeExtension(sprite.paths[0],'json'),`${options?.prefix||''}${casedName}`);
+        this.addSpineSprite(paths.changeExtension(sprite.paths[0],'json'),fullName);
       }
       else{
-        this.addSprite(sprite.path,`${options?.prefix||''}${casedName}`);
+        this.addSprite(sprite.path,fullName);
       }
     }
     return this;

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import commander, { CommanderStatic } from "commander";
+import commander from "commander";
 import { oneline, undent } from "@bscotch/utility";
 import importSprites from "./lib/add-sprites";
 import { ImportBaseOptions } from "./lib/add-base-options";
@@ -24,6 +24,11 @@ cli.description(undent`
   .option('--prefix <prefix>',oneline`
     Prefix the source names when creating/updateing sprites
     based on the source folders. Prefixing is performed after
+    casing, so it will be used as-is.
+  `)
+  .option('--postfix <postfix>',oneline`
+    Postfix the source names when creating/updateing sprites
+    based on the source folders. Postfixing is performed after
     casing, so it will be used as-is.
   `)
   .option('--case <snake|camel|pascal>',oneline`
