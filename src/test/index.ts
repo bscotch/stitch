@@ -542,7 +542,9 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(project.resources.findByName('mySprite'),'mySprite should exist').to.exist;
       expect(project.resources.findByName('excludedSprite'),'excludedSprite should exist').to.exist;
       expect(project.resources.findByName('spine'),'spine should exist').to.exist;
-      process.exit();
+
+      // Add the sprites to objects so that we can see them.
+      process.exit(1);
     });
 
     it("can re-import sprites", function(){

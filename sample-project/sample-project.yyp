@@ -11,6 +11,7 @@
     {"id":{"name":"the_tileset","path":"tilesets/the_tileset/the_tileset.yy",},"order":13,},
     {"id":{"name":"path_straight","path":"paths/path_straight/path_straight.yy",},"order":6,},
     {"id":{"name":"path_smooth","path":"paths/path_smooth/path_smooth.yy",},"order":5,},
+    {"id":{"name":"main","path":"rooms/main/main.yy",},"order":18,},
     {"id":{"name":"the_room","path":"rooms/the_room/the_room.yy",},"order":7,},
     {"id":{"name":"the_shader","path":"shaders/the_shader/the_shader.yy",},"order":10,},
     {"id":{"name":"preimport","path":"scripts/preimport/preimport.yy",},"order":0,},
@@ -46,6 +47,7 @@
   },
   "RoomOrderNodes": [
     {"roomId":{"name":"the_room","path":"rooms/the_room/the_room.yy",},},
+    {"roomId":{"name":"main","path":"rooms/main/main.yy",},},
   ],
   "Folders": [
     {"folderPath":"folders/Sprites.yy","order":1,"resourceVersion":"1.0","name":"Sprites","tags":[],"resourceType":"GMFolder",},
