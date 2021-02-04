@@ -35,7 +35,7 @@ interface YyRoomView {
   objectId: null
 }
 
-interface YyRoomInstance<InstanceName extends string> {
+export interface YyRoomInstance {
   /**
    * *Unique* instance name. Can be any string. Needed to allow multiple
    * instances of the same object to be added to a room via the editor.
@@ -48,9 +48,9 @@ interface YyRoomInstance<InstanceName extends string> {
   /** The type of the object being instanced */
   objectId: {
     /** Object name */
-    name: InstanceName,
+    name: string,
     /** Object resource path, e.g. "objects/{name}/{name}.yy" */
-    path: `objects/${InstanceName}/${InstanceName}.yy`
+    path: `objects/${string}/${string}.yy`
   },
   /** Defaults to false */
   inheritCode: boolean,
@@ -81,12 +81,12 @@ interface YyRoomInstance<InstanceName extends string> {
   /** Initial y-coords of the instance */
   y: NumberFixed,
   resourceVersion:"1.0",
-  tags:[],
+  tags: EmptyArray,
   resourceType:"GMRInstance"
 }
 
-interface YyRoomInstanceLayer<InstanceName extends string> {
-  instances: YyRoomInstance<InstanceName>[],
+export interface YyRoomInstanceLayer {
+  instances: YyRoomInstance[],
   visible:true,
   depth:0,
   userdefinedDepth:false,
@@ -98,7 +98,7 @@ interface YyRoomInstanceLayer<InstanceName extends string> {
   hierarchyFrozen:false,
   resourceVersion:"1.0",
   name:"Instances",
-  tags:[],
+  tags:EmptyArray,
   resourceType:"GMRInstanceLayer"
 }
 
@@ -126,27 +126,27 @@ interface YyRoomBackgroundLayer {
   hierarchyFrozen:false,
   resourceVersion:"1.0",
   name:"Background",
-  tags:[],
+  tags:EmptyArray,
   resourceType:"GMRBackgroundLayer"
 }
 
-interface YyRoomInstanceCreationOrderEntry<InstanceName extends string> {
+interface YyRoomInstanceCreationOrderEntry {
   /**
    * The *instance name*, which can be custom.
    * Must match one of the YyRoomInstance names.
    */
-  name: InstanceName,
+  name: string,
   /** The room's path */
-  path: string
+  path: `rooms/${string}/${string}.yy`
 }
 
 /**
  * The data structure of a room's YyFile.
  * **NOTE:** Type genericization is incomplete!
  */
-export interface YyRoom<InstanceNames extends string[]> extends YyBase{
-  layers: (YyRoomInstanceLayer<InstanceNames[number]>|YyRoomBackgroundLayer)[],
-  instanceCreationOrder: YyRoomInstanceCreationOrderEntry<InstanceNames[number]>[],
+export interface YyRoom extends YyBase{
+  layers: (YyRoomInstanceLayer|YyRoomBackgroundLayer)[],
+  instanceCreationOrder: YyRoomInstanceCreationOrderEntry[],
   roomSettings: {
     inheritRoomSettings: false,
     Width: 1366,
@@ -182,7 +182,7 @@ export interface YyRoom<InstanceNames extends string[]> extends YyBase{
 }
 
 export const yyRoomInstanceDefaults = {
-  properties: [],
+  properties: [] as EmptyArray,
   isDnd: false,
   inheritCode: false,
   hasCreationCode: false,
@@ -206,6 +206,6 @@ export const yyRoomInstanceDefaults = {
   /** Defaults to false */
   inheritItemSettings: false,
   resourceVersion:"1.0",
-  tags:[],
+  tags: [] as EmptyArray,
   resourceType:"GMRInstance"
 } as const;

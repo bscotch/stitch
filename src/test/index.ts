@@ -5,7 +5,7 @@ import { Gms2Project } from '../lib/Gms2Project';
 import {loadFromFileSync} from "../lib/json";
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound';
 import { differenceBy } from 'lodash';
-import { StitchError, StitchAssertionError } from '../lib/errors';
+import { StitchError, StitchAssertionError, assert } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import cli_assert from '../cli/lib/cli-assert';
 import importModules, { Gms2MergeCliOptions, parseGithubSourceString } from '../cli/lib/merge';
@@ -21,6 +21,7 @@ import { SoundChannel, SoundCompression } from '../types/YySound';
 import {get, unzipRemote} from "../lib/http";
 import {loadEnvironmentVariables} from "../lib/env";
 import { Gms2Sprite } from '../lib/components/resources/Gms2Sprite';
+import { Gms2Room } from '../lib/components/resources/Gms2Room';
 
 /*
 Can be used to inform Stitch components that we are in
@@ -539,11 +540,22 @@ describe("GMS2.3 Pipeline SDK", function () {
         'sprite should not exist before being added'
       ).to.not.exist;
       project.addSprites(spriteSampleRoot,{case:'camel'});
-      expect(project.resources.findByName('mySprite'),'mySprite should exist').to.exist;
-      expect(project.resources.findByName('excludedSprite'),'excludedSprite should exist').to.exist;
-      expect(project.resources.findByName('spine'),'spine should exist').to.exist;
+      const spriteNames = ['mySprite','excludedSprite','spine'];
+      for(const spriteName of spriteNames){
+        expect(project.resources.findByName(spriteName),`${spriteName} mySprite should exist`).to.exist;
+      }
 
       // Add the sprites to objects so that we can see them.
+      const room = project.resources.findByName('the_room',Gms2Room);
+      assert(room, `Room ${'the_room'} must exist.`);
+      spriteNames.forEach((spriteName,i)=>{
+        const object = project.addObject(`obj_${spriteName}`);
+        object.spriteName = spriteName;
+        // Put these objects into the room.
+        const x = 200+i*100; // Need to put them SOMEWHERE, but non-overlapping
+        room.addObjectInstance(object, x, x);
+        return object;
+      });
       process.exit(1);
     });
 

@@ -69,7 +69,10 @@ export class  Gms2ResourceArray {
       .find(item=>matchFunction(item));
   }
 
-  findByName<subclass extends Gms2ResourceSubclassType>(name:any, resourceClass?: subclass){
+  findByName<subclass extends Gms2ResourceSubclassType>(name:string, resourceClass: subclass): InstanceType<subclass>|void;
+  findByName<subclass extends Gms2ResourceSubclassType>(name:string): InstanceType<subclass>|void;
+  findByName(name:any): Gms2ResourceSubclass|void;
+  findByName<subclass extends Gms2ResourceSubclassType>(name:string, resourceClass?: subclass):  any {
     const item = this.items.find(i=>i.name==name);
     if(item && resourceClass && !(item instanceof resourceClass)){
       return;
@@ -215,15 +218,16 @@ export class  Gms2ResourceArray {
   }
 
   addObject(name:string,storage:Gms2Storage){
-    const object = this.findByField('name',name,Gms2Object);
+    let object = this.findByField('name',name,Gms2Object);
     if(!object){
-      this.push(Gms2Object.create(name,storage));
+      object = Gms2Object.create(name,storage);
+      this.push(object);
       logInfo(`created object ${name}`);
     }
     else{
       logInfo(`object ${name} already exists`);
     }
-    return this;
+    return object;
   }
 
   /**
