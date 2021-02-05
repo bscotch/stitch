@@ -31,6 +31,8 @@ import { getGithubAccessToken } from "./env";
 
 type YypComponentsVersion = YypComponents|YypComponentsLegacy;
 
+type ProjectPlatformVersion = `option_${Gms2TargetPlatform}_version`|'option_xbone_version';
+
 export interface SpriteImportOptions {
   /** Optionally prefix sprite names on import */
   prefix?: string,
@@ -194,7 +196,7 @@ export class Gms2Project {
   }
 
   //Xbox key name follows a different pattern, hence the special treatment
-  private xboxVersionKey = "option_xbone_version";
+  private xboxVersionKey = "option_xbone_version" as const;
 
   /**
    * Set the project version in all options files.
@@ -222,7 +224,7 @@ export class Gms2Project {
         const content = this.storage.readJson(file);
         const platform = paths.basename(paths.dirname(file)) as Gms2TargetPlatform;
         if(Gms2Project.platforms.includes(platform)){
-          let versionKey = `option_${platform}_version`;
+          let versionKey: ProjectPlatformVersion = `option_${platform}_version`;
           if (platform == "xboxone"){
             versionKey = this.xboxVersionKey;
           }
@@ -244,7 +246,7 @@ export class Gms2Project {
     const optionsDir = paths.join(this.storage.yypDirAbsolute,'options');
     if (platform != "switch"){
       const optionsFile = paths.join(optionsDir,platform,`options_${platform}.yy`);
-      let versionKey = `option_${platform}_version`;
+      let versionKey: ProjectPlatformVersion = `option_${platform}_version`;
       if (platform == "xboxone"){
         versionKey = this.xboxVersionKey;
       }
