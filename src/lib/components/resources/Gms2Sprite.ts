@@ -11,6 +11,7 @@ import { Gms2ResourceBase, Gms2ResourceBaseParameters } from "./Gms2ResourceBase
 import {Spritely} from "@bscotch/spritely";
 import {uuidV4} from "../../uuid";
 import { NumberFixed } from "../../NumberFixed";
+import { assert } from "../../errors";
 
 const toSingleDecimalNumber = (number:number|undefined)=>{
   return new NumberFixed(number||0,1);
@@ -130,6 +131,13 @@ export class Gms2Sprite extends Gms2ResourceBase {
       this.yyData.sequence.yorigin = Math.floor(oldOriginY/oldHeight * height);
     }
     return this;
+  }
+
+  /** Force a layerId. Only updates the YY file, and only if there is only 1 layer. */
+  setLayerId(layerId:string){
+    assert(this.yyData.layers.length===1,"Cannot force the layerId if only one layer present.");
+    this.yyData.layers[0].name = layerId;
+    return this.save();
   }
 
   addFrame(imagePath:string,frameGuid:string){

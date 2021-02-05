@@ -52,9 +52,12 @@ export class Gms2Storage {
   }
 
   /** Delete all files and folders (recursively) inside this directory. */
-  emptyDir(dir:string){
+  emptyDir(dir:string,includeStartingDir=false){
     if(!this.isReadOnly){
       fs.emptyDirSync(dir);
+      if(includeStartingDir){
+        fs.removeSync(dir);
+      }
     }
   }
 

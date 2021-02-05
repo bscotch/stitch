@@ -205,7 +205,18 @@ export class  Gms2ResourceArray {
     if(!spriteAlreadyExists){
       this.push(sprite);
     }
+    const oldFrameIds = sprite.frameIds;
+    for(const fid of oldFrameIds){
+      // Purge the old crap
+      const layerFolderPath = paths.join(sprite.yyDirAbsolute,'layers',fid);
+      const compositeImagePath = paths.join(sprite.yyDirAbsolute,`${fid}.png`);
+      storage.emptyDir(layerFolderPath,true);
+      console.log(compositeImagePath);
+      storage.deleteFile(compositeImagePath);
+    }
     sprite.clearFrames();
+    // Create a new layerId that doesn't point to anything
+    sprite.setLayerId(uuidV4());
     sprite.addFrame(defaultSpriteImagePath,frameId); // Adds the thumbnail PNG
 
     for(const ext of ['atlas','json']){
