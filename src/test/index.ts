@@ -534,7 +534,7 @@ describe("GMS2.3 Pipeline SDK", function () {
       expect(project.addIncludedFiles('json',{content:jsonExample})[0].contentParsedAsJson).to.eql(jsonExample);
     });
 
-    it.only("can import sprites", function(){
+    it("can import sprites", function(){
       const project = getResetProject();
       expect(project.resources.findByName('mySprite'),
         'sprite should not exist before being added'
@@ -556,7 +556,6 @@ describe("GMS2.3 Pipeline SDK", function () {
         room.addObjectInstance(object, x, x);
         return object;
       });
-      process.exit(1);
     });
 
     it("can re-import sprites", function(){

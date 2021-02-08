@@ -22,6 +22,7 @@ import { Gms2Tileset } from "./resources/Gms2Tileset";
 import { Gms2Timeline } from "./resources/Gms2Timeline";
 import { Spine } from "../../types/Spine";
 import { uuidV4 } from "../uuid";
+import { SpriteType } from "../../types/YySprite";
 
 export class  Gms2ResourceArray {
 
@@ -218,6 +219,7 @@ export class  Gms2ResourceArray {
     // Create a new layerId that doesn't point to anything
     sprite.setLayerId(uuidV4());
     sprite.addFrame(defaultSpriteImagePath,frameId); // Adds the thumbnail PNG
+    sprite.spriteType = SpriteType.Spine;
 
     for(const ext of ['atlas','json']){
       storage.copyFile(createSourcePath(ext),createDestPath(sprite,frameId,ext));

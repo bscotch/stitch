@@ -4,6 +4,7 @@ import {
   yyDataLayerDefaults,
   yyDataSequenceDefaults,
   yyDataSequenceTrackDefaults,
+  SpriteType,
 } from "../../../types/YySprite";
 import { Gms2Storage } from "../../Gms2Storage";
 import paths from "../../paths";
@@ -57,6 +58,11 @@ export class Gms2Sprite extends Gms2ResourceBase {
   /** Get the array of current frameIds, in their frame order. */
   get frameIds(){
     return this.yyData.frames.map(frame=>frame.name);
+  }
+
+  set spriteType(type:SpriteType){
+    this.yyData.type = type;
+    this.save();
   }
 
   protected createYyFile(){

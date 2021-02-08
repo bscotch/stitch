@@ -232,6 +232,11 @@ interface SpriteSequence {
   resourceType: "GMSequence",
 }
 
+export enum SpriteType {
+  Default=0,
+  Spine=2
+}
+
 // In sprite .yy under the "sequence" section:
 
 // In "layers:
@@ -248,8 +253,8 @@ interface SpriteSequence {
 export interface YySprite extends YyBase {
   bboxMode: SpriteBoundingBoxMode,
   collisionKind: SpriteCollisionKind,
-  /** (What is this?) */
-  type: 0,
+  /** The sprite type */
+  type: SpriteType,
   origin: SpriteOrigin,
   /** (Default true.) */
   preMultiplyAlpha: boolean,
