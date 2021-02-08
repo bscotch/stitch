@@ -1,3 +1,12 @@
+## [2.7.3](https://github.com/bscotch/stitch/compare/v2.7.2...v2.7.3) (2021-02-08)
+
+
+### Bug Fixes
+
+* The 'Key' field in sprites' yy file is now incrementing as expected. ([95b4ce3](https://github.com/bscotch/stitch/commit/95b4ce3806edbc84b6427274d8795957cd1e0521))
+
+
+
 ## [2.7.2](https://github.com/bscotch/stitch/compare/v2.7.1...v2.7.2) (2021-02-08)
 
 
