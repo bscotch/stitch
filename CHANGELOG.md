@@ -1,3 +1,21 @@
+## [2.7.1](https://github.com/bscotch/stitch/compare/v2.7.0...v2.7.1) (2021-02-08)
+
+
+### Bug Fixes
+
+* Spine sprite imports now fully clean up after themselves. ([23deada](https://github.com/bscotch/stitch/commit/23deadab558be602243aa81d053a97b2bf3bcdfa))
+* Spine sprites are now *actually imported correctly*. The previous claims were all lies. ([240e2e8](https://github.com/bscotch/stitch/commit/240e2e85ce254426d6bcfce36310e415055e3238))
+* Spine sprites are now being correctly imported. Spine imports were ([159d7e7](https://github.com/bscotch/stitch/commit/159d7e71f8fd305c4c5788f5b5260db1ef2b44d0))
+* The config key names for platform versions no longer throw an error with the latest Typescript version. ([6254520](https://github.com/bscotch/stitch/commit/62545205333e673d008262c18d6d61620fcd909d))
+
+
+### Features
+
+* Room assets are now typed, paving the way for manipulating rooms ([9e00a22](https://github.com/bscotch/stitch/commit/9e00a224447291dcb78c98af055957d41fbe13fa))
+* Stitch can now be used to add object instances to existing rooms. ([b1f2397](https://github.com/bscotch/stitch/commit/b1f2397b4387382a3dbac89dcdc89eddc89dee81))
+
+
+
 # [2.7.0](https://github.com/bscotch/stitch/compare/v2.6.1...v2.7.0) (2021-02-03)
 
 
