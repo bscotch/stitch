@@ -13,6 +13,7 @@ import {Spritely} from "@bscotch/spritely";
 import {uuidV4} from "../../uuid";
 import { NumberFixed } from "../../NumberFixed";
 import { assert } from "../../errors";
+import { logDebug } from "../../log";
 
 const toSingleDecimalNumber = (number:number|undefined)=>{
   return new NumberFixed(number||0,1);
@@ -213,6 +214,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
   }
 
   clearFrames(){
+    logDebug(`clearing frames for sprite ${this.name}`);
     this.yyData.frames = [];
     this.yyData.sequence.tracks[0].keyframes.Keyframes = [];
     return this.save();
@@ -223,6 +225,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
    * within a folder (non-recursive)
    */
   replaceFrames(spriteDirectory:string){
+    logDebug(`replacing frames from source ${spriteDirectory}`);
     const sprite = new Spritely(spriteDirectory);
     // Ensure that the sizes match
     this.setDims(sprite.width as number,sprite.height as number);
@@ -234,16 +237,20 @@ export class Gms2Sprite extends Gms2ResourceBase {
     this.storage.ensureDir(layersRoot);
     this.storage.emptyDir(layersRoot);
     const oldFrameIds = this.frameIds;
+    logDebug(`old frameIds: ${oldFrameIds.join(', ')}`);
     const oldFrames = this.storage
       .listFiles(this.yyDirAbsolute,false,['png']);
     for(const frame of oldFrames){
       this.storage.deleteFile(frame);
+      logDebug(`deleted old frame ${frame}`);
     }
 
     this.clearFrames();
     // Add each new frame, updating the yyData as we go.
     for(const [i,subimagePath] of sprite.paths.entries()){
-      this.addFrame(subimagePath,oldFrameIds[i] || uuidV4());
+      const frameId = oldFrameIds[i] || uuidV4();
+      logDebug(`adding frame ${i} using id ${frameId} from image at ${subimagePath}`);
+      this.addFrame(subimagePath,frameId);
     }
     return this;
   }

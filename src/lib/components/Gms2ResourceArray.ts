@@ -7,7 +7,7 @@ import { Gms2Storage } from "../Gms2Storage";
 import paths from "../paths";
 import { Gms2Sprite } from "./resources/Gms2Sprite";
 import { difference, uniqBy } from "lodash";
-import { logInfo } from "../log";
+import { logInfo, logDebug } from "../log";
 import { Gms2Script } from "./resources/Gms2Script";
 import { Gms2Animation } from "./resources/Gms2Animation";
 import { Gms2Extension } from "./resources/Gms2Extension";
@@ -125,6 +125,7 @@ export class  Gms2ResourceArray {
 
   addSprite(sourceFolder:string,storage:Gms2Storage,nameOverride?:string){
     const name = nameOverride || paths.basename(sourceFolder);
+    logDebug(`adding sprite from ${sourceFolder} as name ${name}`);
     const sprite = this.findByField('name',name,Gms2Sprite);
     if(sprite){
       sprite.replaceFrames(sourceFolder);
@@ -142,6 +143,8 @@ export class  Gms2ResourceArray {
     const sourceSpineName = paths.parse(jsonSourcePath).name;
     const sourcePathWithoutExt = paths.join(paths.dirname(jsonSourcePath),sourceSpineName);
     const name = nameOverride || sourceSpineName;
+
+    logDebug(`adding spine sprite from ${jsonSourcePath} as name ${name}`);
 
     const createDestPath = (sprite:Gms2Sprite,name:string,ext:string)=>{
       return paths.join(sprite.yyDirAbsolute,`${name}.${ext}`);

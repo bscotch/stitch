@@ -13,3 +13,9 @@ export function logInfo(message:string){
 export function logWarning(message:string){
   console.log(chalk.gray(PREFIX),chalk.bold.yellow("WARNING"),message);
 }
+
+export function logDebug(message:string){
+  if(process.env.DEBUG=='true'){
+    console.log(chalk.gray(PREFIX),chalk.bold.green("DEBUG"),message);
+  }
+}
