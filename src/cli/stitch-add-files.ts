@@ -4,6 +4,7 @@ import { oneline, undent } from "@bscotch/utility";
 import { ImportBaseOptions } from "./lib/add-base-options";
 import importFiles from "./lib/add-files";
 import options from "./lib/cli-options";
+import { addDebugOptions } from "./lib/addDebugOption";
 
 const cli = commander;
 
@@ -19,7 +20,8 @@ cli.description(undent`
     If not set, Will attempt to import all files.
   `)
   .option(...options.targetProject)
-  .option(...options.force)
+  .option(...options.force);
+addDebugOptions(cli)
   .parse(process.argv);
 
 importFiles(cli.opts() as ImportBaseOptions);

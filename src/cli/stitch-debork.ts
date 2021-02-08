@@ -6,10 +6,12 @@ const cli: CommanderStatic & {
   targetProject?: string,
   force?: boolean
 } = commander;
+import { addDebugOptions } from "./lib/addDebugOption";
 
 cli.description("Fix and normalize common issues in a GameMaker Studio 2.3+ Project.")
   .option(...options.targetProject)
-  .option(...options.force)
+  .option(...options.force);
+addDebugOptions(cli)
   .parse(process.argv);
 
 const opts = cli.opts();

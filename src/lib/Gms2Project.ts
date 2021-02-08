@@ -25,7 +25,7 @@ import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
 import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
 import { Spritely, SpritelyBatch } from "@bscotch/spritely";
 import {snakeCase,camelCase,pascalCase} from "change-case";
-import { logInfo } from "./log";
+import { logDebug, logError, logInfo } from "./log";
 import { get, unzipRemote } from "./http";
 import { getGithubAccessToken } from "./env";
 
@@ -100,52 +100,65 @@ export class Gms2Project {
    * look in the current directory and all children.
    */
   constructor(options?: Gms2ProjectOptions | string) {
-    // Normalize options
-    options = {
-      projectPath: typeof options == 'string'
-        ? options
-        : options?.projectPath || process.cwd(),
-      readOnly:
-        (typeof options != 'string' && options?.readOnly) || false,
-      dangerouslyAllowDirtyWorkingDir:
-        (typeof options != 'string' && options?.dangerouslyAllowDirtyWorkingDir) || false,
-    };
+    try{
+      // Normalize options
+      logDebug(`loading project with options: ${JSON.stringify(options,null,2)}`);
+      options = {
+        projectPath: typeof options == 'string'
+          ? options
+          : options?.projectPath || process.cwd(),
+        readOnly:
+          (typeof options != 'string' && options?.readOnly) || false,
+        dangerouslyAllowDirtyWorkingDir:
+          (typeof options != 'string' && options?.dangerouslyAllowDirtyWorkingDir) || false,
+      };
+      logDebug(`parsed options: ${JSON.stringify(options,null,2)}`);
 
-    // Find the yyp filepath
-    let yypPath = options.projectPath as string;
-    if (!yypPath.endsWith(".yyp")) {
-      const yypParentPath = yypPath;
-      const yypPaths = fs.listFilesByExtensionSync(yypParentPath, 'yyp', true)
-        .filter(yyp=>{
-          try{
-            Gms2Project.parseYypFile(yyp);
-            return true;
-          }
-          catch{ return false; }
-        });
-      if (yypPaths.length == 0) {
-        throw new StitchError(
-          `Couldn't find a Stitch-compatible .yyp file in "${yypParentPath}"`
-        );
+      // Find the yyp filepath
+      let yypPath = options.projectPath as string;
+      if (!yypPath.endsWith(".yyp")) {
+        logDebug(`project path is not a yyp file, need to search for one`);
+        const yypParentPath = yypPath;
+        const yypPaths = fs.listFilesByExtensionSync(yypParentPath, 'yyp', true)
+          .filter(yyp=>{
+            try{
+              Gms2Project.parseYypFile(yyp);
+              return true;
+            }
+            catch{ return false; }
+          });
+        logDebug(`found yyp files:\n\t${yypPaths.join("\n\t")}`);
+        if (yypPaths.length == 0) {
+          throw new StitchError(
+            `Couldn't find a Stitch-compatible .yyp file in "${yypParentPath}"`
+          );
+        }
+        if (yypPaths.length > 1) {
+          throw new StitchError(oneline`
+            Found multiple Stitch-compatible .yyp files in "${yypParentPath}".
+          `);
+        }
+        yypPath = yypPaths[0];
       }
-      if (yypPaths.length > 1) {
-        throw new StitchError(oneline`
-          Found multiple Stitch-compatible .yyp files in "${yypParentPath}".
-        `);
-      }
-      yypPath = yypPaths[0];
+      // Ensure the YYP file actually exists
+      assert(fs.existsSync(yypPath), `YYP file does not exist: ${yypPath}`);
+
+      // Load up all the project files into class instances for manipulation
+      this.storage = new Gms2Storage(
+        paths.resolve(yypPath),
+        options.readOnly as boolean,
+        options.dangerouslyAllowDirtyWorkingDir as boolean
+      );
+      this.config = new Gms2ProjectConfig(this.storage);
+      this.reload();
     }
-    // Ensure the YYP file actually exists
-    assert(fs.existsSync(yypPath), `YYP file does not exist: ${yypPath}`);
-
-    // Load up all the project files into class instances for manipulation
-    this.storage = new Gms2Storage(
-      paths.resolve(yypPath),
-      options.readOnly as boolean,
-      options.dangerouslyAllowDirtyWorkingDir as boolean
-    );
-    this.config = new Gms2ProjectConfig(this.storage);
-    this.reload();
+    catch(err){
+      // If one of OUR errors, just show a log. Else throw.
+      if(err instanceof StitchError){
+        logError(err.message);
+      }
+      throw err;
+    }
   }
 
   get yypAbsolutePath(){
@@ -639,7 +652,6 @@ export class Gms2Project {
 
     // DEBORK
     // TODO: Ensure that parent groups (folders) for all subgroups exist as separate entities.
-    // TODO: Remove duplicate datafile entries (these dupe on every boot)
   }
 
   /**

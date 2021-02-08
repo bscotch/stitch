@@ -14,12 +14,4 @@ cli.version(version, '-v, --version')
   .command("debork", oneline`
     Run Stitch on the project without making any changes,
     which will clean up some common issues and normalize the file content.
-  `);
-
-// @shichen85 Does this do anything?
-
-//Trim the input and filter out empty space inputs such as " "
-const args = process.argv.map(arg=>arg.trim());
-
-// Do the work!
-cli.parse(args);
+  `).parse();

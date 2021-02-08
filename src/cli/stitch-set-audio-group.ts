@@ -3,6 +3,7 @@ import commander, { CommanderStatic } from "commander";
 import { oneline, undent } from "@bscotch/utility";
 import {assignAudioGroups, AssignCliOptions} from './lib/assign';
 import options from "./lib/cli-options";
+import { addDebugOptions } from "./lib/addDebugOption";
 
 const cli = commander;
 
@@ -17,7 +18,8 @@ cli.description(undent`
     The name of the audio group. If it does not exist, it will be created.
   `)
   .option(...options.targetProject)
-  .option(...options.force)
+  .option(...options.force);
+addDebugOptions(cli)
   .parse(process.argv);
 
 assignAudioGroups(cli.opts() as AssignCliOptions);

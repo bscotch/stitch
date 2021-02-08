@@ -5,6 +5,7 @@ import importSprites from "./lib/add-sprites";
 import { ImportBaseOptions } from "./lib/add-base-options";
 import options from "./lib/cli-options";
 import { SpriteImportOptions } from "../lib/Gms2Project";
+import { addDebugOptions } from "./lib/addDebugOption";
 
 const cli = commander;
 
@@ -47,7 +48,8 @@ cli.description(undent`
     The provided pattern will be converted to a RegEx using
     JavaScript's \`new RegExp()\` function. Any sprites whose
     *original* names match the pattern will not be imported.
-  `)
+  `);
+addDebugOptions(cli)
   .parse(process.argv);
 
 importSprites(cli.opts() as ImportBaseOptions & SpriteImportOptions);

@@ -4,6 +4,7 @@ import { oneline } from "@bscotch/utility";
 import merge, { Gms2MergeCliOptions } from './lib/merge';
 import options from "./lib/cli-options";
 import { Gms2ResourceArray } from "../lib/components/Gms2ResourceArray";
+import { addDebugOptions } from "./lib/addDebugOption";
 
 cli.description("Merge GameMaker Studio projects.")
   .option(...options.targetProject)
@@ -77,7 +78,8 @@ cli.description("Merge GameMaker Studio projects.")
     broken assets. If you know that those missing dependencies
     will be found in the target project, you can skip this check.
   `)
-  .option(...options.force)
+  .option(...options.force);
+addDebugOptions(cli)
   .parse(process.argv);
 
 

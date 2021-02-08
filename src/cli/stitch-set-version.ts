@@ -3,6 +3,7 @@ import commander, { CommanderStatic } from "commander";
 import { undent } from "@bscotch/utility";
 import version, {VersionOptions} from './lib/version';
 import options from "./lib/cli-options";
+import { addDebugOptions } from "./lib/addDebugOption";
 
 const cli = commander;
 
@@ -18,7 +19,8 @@ cli.description(undent`
       The four numbers will appear in all cases as the string "major.minor.patch.candidate"
   `)
   .option(...options.targetProject)
-  .option(...options.force)
+  .option(...options.force);
+addDebugOptions(cli)
   .parse(process.argv);
 
 version(cli.opts() as VersionOptions);
