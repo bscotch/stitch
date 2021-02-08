@@ -147,7 +147,9 @@ export class Gms2Sprite extends Gms2ResourceBase {
     return this.save();
   }
 
-  addFrame(imagePath:string,frameGuid:string){
+  addFrame(imagePath:string,frameGuid?:string,keyframeId?:string){
+    frameGuid ||= uuidV4();
+    keyframeId ||= uuidV4();
     const keyFrames = this.yyData.sequence.tracks[0].keyframes.Keyframes;
     this.yyData.sequence.length = new NumberFixed(0);
     const framePath = paths.join(this.yyDirAbsolute,`${frameGuid}.png`);
@@ -190,7 +192,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
       resourceType:"GMSpriteFrame"
     });
     keyFrames.push({
-      id: uuidV4(),
+      id: keyframeId,
       Key: new NumberFixed(this.yyData.frames.length-1),
       Length: new NumberFixed(1),
       Stretch: false,
@@ -237,6 +239,8 @@ export class Gms2Sprite extends Gms2ResourceBase {
     this.storage.ensureDir(layersRoot);
     this.storage.emptyDir(layersRoot);
     const oldFrameIds = this.frameIds;
+    const track = this.yyData.sequence.tracks[0];
+    const oldKeyframeIds = track.keyframes.Keyframes.map(frame=>frame.id);
     logDebug(`old frameIds: ${oldFrameIds.join(', ')}`);
     const oldFrames = this.storage
       .listFiles(this.yyDirAbsolute,false,['png']);
@@ -248,9 +252,10 @@ export class Gms2Sprite extends Gms2ResourceBase {
     this.clearFrames();
     // Add each new frame, updating the yyData as we go.
     for(const [i,subimagePath] of sprite.paths.entries()){
-      const frameId = oldFrameIds[i] || uuidV4();
+      const frameId = oldFrameIds[i];
+      const keyframeId = oldKeyframeIds[i];
       logDebug(`adding frame ${i} using id ${frameId} from image at ${subimagePath}`);
-      this.addFrame(subimagePath,frameId);
+      this.addFrame(subimagePath,frameId,keyframeId);
     }
     return this;
   }
