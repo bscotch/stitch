@@ -12,22 +12,45 @@ Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bsc
 
 **⚠WARNING⚠ Use at your own risk.** Stitch could completely break your GameMaker project. To help keep you safe, Stitch will not run unless your project is in a git repo with a clean working directory, but you must also know how to use git to recover in case something goes wrong.
 
-## GameMaker Studio Compatibility
+## Table of Contents
 
-This project will generally stay up to date with the most recent versions of GameMaker Studio 2. We typically use beta or even alpha versions of GMS2. We will not typically test new versions of Stitch against older versions of GameMaker Studio, and will make no effort to maintain backwards compatibility. We'll list any known compatibility issues here, and we welcome GitHub Issues for any compatibility problems you discover.
++ [Compatibility](#compatibility)
++ [Setup](#setup)
+  + [Requirements](#requirements)
+  + [Installation](#install)
+  + [Project Setup](#game-setup)
+  + [Stitch Config File](#config-file)
++ [How to Use Stitch](#usage)
+  + [Using the Command Line](#cli) (typical use-case)
+  + [Importing into Node.js](#usage-programming) (for custom pipelines)
++ [Features](#features)
+  + [Merging GMS2 Projects](#merging) (including remote GitHub repos)
+  + [Automatically Create and Update Assets](#import-asset)
+    + [Sprites (including Spine)](#import-sprites)
+    + [Sounds](#import-sounds)
+    + [Included Files](#import-files)
+    + [Objects](#import-objects)
+    + [Scripts](#import-scripts)
+  + [Manage Texture Groups](#texture-groups)
+  + [Manage Audio Groups](#audio-groups)
+
+
+## GameMaker Studio Compatibility <a id="compatibility"></a>
+
+This project will generally stay up to date with the bleeding-edge versions of GameMaker Studio 2. We typically use beta or even alpha versions of GMS2. We will not typically test new versions of Stitch against older versions of GameMaker Studio, and will make no effort to maintain backwards compatibility. We'll list any known compatibility issues here, and we welcome GitHub Issues for any compatibility problems you discover.
 
 + **GMS2 versions < 2.3.0.529** **will not work at all** with any version of Stitch.
 
 ## Setup <a id="setup">
 
-### Requirements
+### Requirements <a id="requirements"></a>
 
 + [Node.JS v14+](https://nodejs.org/)
 + [Git](https://git-scm.com/) (if your project is not in a git repo, or your working tree is not clean, <strong>Stitch will refuse to run</strong> unless you use the "force" options (which you shouldn't do))
 + [GameMaker Studio 2.3+](https://www.yoyogames.com/gamemaker) projects
 + Windows 10 (other operating systems may work but are untested)
 
-### Installation
+### Installation <a id="install"></a>
 
 Install/update globally with `npm install -g @bscotch/stitch@latest`. This will let you use the CLI commands anywhere on your system. To install a specific version of Stitch, replace `@latest` with `@x.y.z`, where `x.y.x` is the specific version.
 
@@ -62,7 +85,7 @@ there will be in how you import Stitch: instead of
 `const {Gms2Project} = require('@bscotch/stitch')`.
 
 
-### Preparing your GameMaker project for Stitch
+### Preparing your GameMaker project for Stitch <a id="game-setup"></a>
 
 <details>
 <summary><b>Example file structure</b></summary>
@@ -109,18 +132,67 @@ To keep things stable and automatable, Stitch uses a configuration file (`stitch
 
 </details>
 
-## Using the Command Line Interface <a id="cli"></a>
+## Usage <a id="usage"></a>
+
+### Command Line Interface (CLI) <a id="cli"></a>
 
 If you've installed Stitch globally, the Command Line Interface (CLI) is available as `stitch` in your terminal. If you've installed it locally and your terminal is in the same location, you can run it with `npx stitch`. (Global install is recommended for ease of use.)
 
 Up to date CLI documentation is available with the `--help` or `-h` flags of CLI commands. For example, run `stitch -h` to see all commands, `stitch merge -h` to see the merge subcommands/options, and so on.
 
-This README includes example CLI calls in the relevant sections, but should not be treated as the full CLI documentation.
+This README includes example CLI calls in [Features section](#features), but should not be treated as the full CLI documentation.
+
+### Scripting/Custom Pipelines in Node.js <a id="usage-programming"></a>
+
+Stitch grants access to the guts of GMS2 project assets, allowing you write
+scripts and pipelines that automate asset management in all kinds of ways.
+For example, you may want to replace a script with different content,
+set all sounds to have a different bitrate, and more.
+
+Some modification methods have available batch functions at the `Gms2Project`
+instance level, while others are available on instances representing
+specific resources. The best way to find all available options is to
+use a Typescript-aware IDE to view the documentation while creating a
+project, but some samples are below:
+
+```ts
+import {Gms2Project} from "@bscotch/stitch";
+
+// Load a project by searching starting in the current working directory
+const myProject = new Gms2Project();
+// Set the version in all options files
+myProject.version = "1.0.0";
+myProject.deleteResourceByName('myCrappySprite');
+myProject.deleteIncludedFileByName('secrets.txt');
+myProject.addConfig('develop');
+// Create new folders in the asset tree shown in the IDE
+myProject.addFolder('my/new/folder');
+
+// Manipulating existing resources my require first finding them.
+
+// For 
+const anObject = myProject.resources.findByName('myObject');
+// -or-
+const anObject = myProject.resources.objects.find(object=>object.name=='myObject');
+
+// Change the object's sprite
+anObject.spriteName = 'aDifferentSprite';
+
+// Change the bitRate of all sounds
+myProject.resources.sounds.forEach(sound=>{
+  sounds.bitRate = 64;
+})
+```
+
+**ⓘ Note:** We (Bscotch) add features only when we need them, so existing functionality
+will always be limited. However, the code is set up to make it relatively
+easy for someone familiar with Typescript to be able to add features: if
+you want to add new features, see [how you can contribute](CONTRIBUTING.md).
 
 
 ## Features <a id="features"></a>
 
-### Merging Projects <a id="modules"></a>
+### Merging Projects <a id="merging"></a>
 
 Importing assets from one GMS2 project into another is a painful process, especially
 when you want to re-import.
@@ -235,7 +307,7 @@ Same deal with sprites. Point the importer at a folder full of images to have th
 
 At Bscotch, we use pipelines for our sound, art, build, and localization pipelines, so that our game programmers do not need to manually find, import, or name assets created by other team members, and so that we can modify scripts and other assets prior to creating builds.
 
-#### Create Sprites From Images and Spine exports
+#### Create Sprites From Images and Spine exports <a id="import-sprites"></a>
 
 You can convert collections of images and Spine exports
 into GameMaker Sprites by first organizing
@@ -279,7 +351,7 @@ or frame order will be undone, and any layers you've added will be deleted. Othe
 sprite properties (those not in the frame editor) will be maintained between imports.
 
 
-#### Create Audio Files From Sound Files
+#### Create Audio Files From Sound Files <a id="import-sounds"></a>
 
 You can batch-add audio files into GameMaker as sound assets.
 
@@ -296,7 +368,7 @@ const myProject = new Gms2Project();
 myProject.addSounds('path/to/your/sounds');
 ```
 
-#### Create "Included Files"
+#### Create "Included Files" <a id="import-files"></a>
 
 You can batch-add external files into your GameMaker project
 as Included Files. This is useful for managing things like
@@ -326,7 +398,7 @@ myProject.addIncludedFiles('path/to/your/file.txt');
 myProject.addIncludedFiles('path/to/your/new-file.txt',{content:'Here is the file content.'});
 ```
 
-#### Create/Update Scripts
+#### Create/Update Scripts <a id="#import-scripts">
 
 You can create and update scripts programmatically:
 
@@ -337,7 +409,7 @@ myProject.addScript('your/script/name','// Just a placeholder now!');
 myProject.resources.findByName('name').code = 'function functionName(arg1){return arg1;}'
 ```
 
-#### Create Objects
+#### Create Objects <a id="#import-objects">
 
 You can create Objects programmatically:
 
@@ -347,7 +419,7 @@ const myProject = new Gms2Project();
 myProject.addObject('your/object/name');
 ```
 
-### Texture Group Management <a id="texture-pages"></a>
+### Texture Group Management <a id="texture-groups"></a>
 
 Texture group assignment of sprites via the GMS2 IDE is a fully manual, per-sprite process. Stitch allows you to map folders (in the GMS2 IDE resource tree) to Texture Groups, so that all sprites within a specified folder (recursing through subfolders) will be assigned to the same Texture Page. Folders with *higher specificity* take precedence.
 
@@ -403,51 +475,3 @@ myProject.addAudioGroup('nameOfYourAudioGroup');
 // (the Audio Group will be created if it doesn't already exist)
 myProject.addAudioGroupAssignment('folder/in/the/ide','nameOfYourAudioGroup');
 ```
-
-### Programmatically Modifying Your Project and Assets
-
-Stitch grants access to the guts of GMS2 project assets, allowing you write
-scripts and pipelines that automate asset management in all kinds of ways.
-For example, you may want to replace a script with different content,
-set all sounds to have a different bitrate, and more.
-
-Some modification methods have available batch functions at the `Gms2Project`
-instance level, while others are available on instances representing
-specific resources. The best way to find all available options is to
-use a Typescript-aware IDE to view the documentation while creating a
-project, but some samples are below:
-
-```ts
-import {Gms2Project} from "@bscotch/stitch";
-
-// Load a project by searching starting in the current working directory
-const myProject = new Gms2Project();
-// Set the version in all options files
-myProject.version = "1.0.0";
-myProject.deleteResourceByName('myCrappySprite');
-myProject.deleteIncludedFileByName('secrets.txt');
-myProject.addConfig('develop');
-// Create new folders in the asset tree shown in the IDE
-myProject.addFolder('my/new/folder');
-
-// Manipulating existing resources my require first finding them.
-
-// For 
-const anObject = myProject.resources.findByName('myObject');
-// -or-
-const anObject = myProject.resources.objects.find(object=>object.name=='myObject');
-
-// Change the object's sprite
-anObject.spriteName = 'aDifferentSprite';
-
-// Change the bitRate of all sounds
-myProject.resources.sounds.forEach(sound=>{
-  sounds.bitRate = 64;
-})
-```
-
-**ⓘ Note:** We (Bscotch) add features only when we need them, so existing functionality
-will always be limited. However, the code is set up to make it relatively
-easy for someone familiar with Typescript to be able to add features: if
-you want to add new features, see [how you can contribute](CONTRIBUTING.md).
-
