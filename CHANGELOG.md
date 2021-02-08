@@ -1,3 +1,12 @@
+## [2.7.6](https://github.com/bscotch/stitch/compare/v2.7.5...v2.7.6) (2021-02-08)
+
+
+### Bug Fixes
+
+* The KeyframeIds are now recycled when sprites are updated, keeping the Git history cleaner. ([0a3d99e](https://github.com/bscotch/stitch/commit/0a3d99efc63bb46605dbf85d47e9c3c747d358f4))
+
+
+
 ## [2.7.5](https://github.com/bscotch/stitch/compare/v2.7.4...v2.7.5) (2021-02-08)
 
 
