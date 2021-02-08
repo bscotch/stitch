@@ -190,7 +190,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
     });
     keyFrames.push({
       id: uuidV4(),
-      Key: new NumberFixed(this.yyData.sequence.length),
+      Key: new NumberFixed(this.yyData.frames.length),
       Length: new NumberFixed(1),
       Stretch: false,
       Disabled: false,
