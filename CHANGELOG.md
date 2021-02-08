@@ -1,3 +1,17 @@
+## [2.7.4](https://github.com/bscotch/stitch/compare/v2.7.3...v2.7.4) (2021-02-08)
+
+
+### Bug Fixes
+
+* The Key field in the sprite yy files now starts at 0 instead of 1. ([bb0ea4e](https://github.com/bscotch/stitch/commit/bb0ea4e39b6e881822306bdc72df70737f245ea1))
+
+
+### Features
+
+* All CLI commands now include a --debug option to add extra logging. ([c463a3a](https://github.com/bscotch/stitch/commit/c463a3a95c0ff22abcdedeac329c8e08d3842c8f))
+
+
+
 ## [2.7.3](https://github.com/bscotch/stitch/compare/v2.7.2...v2.7.3) (2021-02-08)
 
 
