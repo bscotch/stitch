@@ -1,3 +1,12 @@
+## [2.7.5](https://github.com/bscotch/stitch/compare/v2.7.4...v2.7.5) (2021-02-08)
+
+
+### Bug Fixes
+
+* Copying a file now ensures that the target path is clobbered if it already exists. ([d338404](https://github.com/bscotch/stitch/commit/d3384045f0f3f2b56fde7f670365116b3335a77b))
+
+
+
 ## [2.7.4](https://github.com/bscotch/stitch/compare/v2.7.3...v2.7.4) (2021-02-08)
 
 
