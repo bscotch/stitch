@@ -1,3 +1,7 @@
+## [2.7.8](https://github.com/bscotch/stitch/compare/v2.7.7...v2.7.8) (2021-02-09)
+
+
+
 ## [2.7.7](https://github.com/bscotch/stitch/compare/v2.7.6...v2.7.7) (2021-02-09)
 
 
