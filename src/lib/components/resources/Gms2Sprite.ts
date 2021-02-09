@@ -211,7 +211,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
       resourceVersion:"1.0",
       resourceType:"Keyframe<SpriteFrameKeyframe>"
     });
-    this.yyData.sequence.length = new NumberFixed(Number(this.yyData.sequence.length) + 1);
+    this.yyData.sequence.length = new NumberFixed(this.yyData.frames.length);
     return this.save();
   }
 
