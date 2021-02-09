@@ -20,11 +20,11 @@ Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bsc
   + [Installation](#install)
   + [Project Setup](#game-setup)
   + [Stitch Config File](#config-file)
-+ [How to Use Stitch](#usage)
++ [Ways to Use Stitch](#usage)
   + [Using the Command Line](#cli) (typical use-case)
-  + [Importing into Node.js](#usage-programming) (for custom pipelines)
-+ [Features](#features)
-  + [Merging GMS2 Projects](#merging) (including remote GitHub repos)
+  + [In Node.js apps](#usage-programming) (for custom pipelines)
++ [Things to do with Stitch](#features)
+  + [Merge GMS2 Projects](#merging) (treat GMS2 projects as modules)
   + [Automatically Create and Update Assets](#import-asset)
     + [Sprites (including Spine)](#import-sprites)
     + [Sounds](#import-sounds)
@@ -138,9 +138,9 @@ To keep things stable and automatable, Stitch uses a configuration file (`stitch
 
 If you've installed Stitch globally, the Command Line Interface (CLI) is available as `stitch` in your terminal. If you've installed it locally and your terminal is in the same location, you can run it with `npx stitch`. (Global install is recommended for ease of use.)
 
-Up to date CLI documentation is available with the `--help` or `-h` flags of CLI commands. For example, run `stitch -h` to see all commands, `stitch merge -h` to see the merge subcommands/options, and so on.
+Up-to-date CLI documentation is available with the `--help` or `-h` flags of CLI commands. For example, run `stitch -h` to see all commands, `stitch merge -h` to see the merge subcommands/options, and so on.
 
-This README includes example CLI calls in [Features section](#features), but should not be treated as the full CLI documentation.
+This README includes example CLI calls for each feature in the [Features section](#features).
 
 ### Scripting/Custom Pipelines in Node.js <a id="usage-programming"></a>
 
@@ -183,6 +183,8 @@ myProject.resources.sounds.forEach(sound=>{
   sounds.bitRate = 64;
 })
 ```
+
+This README includes additional code examples for each feature in the [Features section](#features).
 
 **ⓘ Note:** We (Bscotch) add features only when we need them, so existing functionality
 will always be limited. However, the code is set up to make it relatively
@@ -338,7 +340,18 @@ stitch add sprites --source=path/to/your/sprites
 // Typescript
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
-myProject.addSprites('path/to/your/sprites');
+const addSpriteOptions = {
+  prefix: 'sp_',
+  case: 'camel',
+  /**
+   * For example,
+   * for `root/my/sprite/` the flattened name would
+   * be `my_sprite` (if using snake case).
+   */
+  flatten: true,
+  exclude: /_draft$/,
+}
+myProject.addSprites('path/to/your/sprites',addSpriteOptions);
 ```
 
 We have another tool, [Spritely](https://github.com/bscotch/spritely), that you
