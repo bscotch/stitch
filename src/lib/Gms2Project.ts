@@ -662,17 +662,8 @@ export class Gms2Project {
     const fields = Object.keys(this.components) as (keyof YypComponentsVersion)[];
     const asObject: Partial<YypComponentsVersion> = {};
     for (const field of fields) {
-      const components = this.components[field];
-      if( components instanceof Gms2ComponentArray ||
-          components instanceof Gms2ResourceArray ||
-          components instanceof Gms2Option){
-        // @ts-ignore (Bonus points to anyone who can do this concisely without a ts-ignore!)
-        asObject[field] = components.toJSON();
-      }
-      else{
-        const component = this.components[field] as any;
-        asObject[field] = component?.toJSON?.() ?? component;
-      }
+      const component = this.components[field] as any;
+      asObject[field] = component?.toJSON?.() ?? component;
     }
     return asObject as YypComponentsVersion;
   }
