@@ -247,7 +247,7 @@ stitch merge --source=source/path --if-name-matches=^sp_title_ --if-folder-match
 stitch merge --source-github=gm-core/gdash
 
 # Import scripts from a project on GitHub (from the commit tagged "6.0.2")
-stitch merge --source-github=gm-core/gdash@6.0.2 --types==scripts
+stitch merge --source-github=gm-core/gdash@6.0.2 --types=scripts
 
 # Merge from a GitHub repo (latest commit on the master branch)
 stitch merge --source-github=gm-core/gdash@master
