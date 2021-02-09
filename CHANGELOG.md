@@ -1,3 +1,12 @@
+## [2.7.9](https://github.com/bscotch/stitch/compare/v2.7.8...v2.7.9) (2021-02-09)
+
+
+### Bug Fixes
+
+* Sequence 'length' is now properly updated to match the number of frames. This stopped getting updated at some point, causing GMS to think that the sprites had only one frame. ([2a6d59f](https://github.com/bscotch/stitch/commit/2a6d59fa100a437963d0fef23ef388bffe7cd5cf))
+
+
+
 ## [2.7.8](https://github.com/bscotch/stitch/compare/v2.7.7...v2.7.8) (2021-02-09)
 
 
