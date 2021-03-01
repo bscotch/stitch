@@ -1,3 +1,13 @@
+## [2.7.10](https://github.com/bscotch/stitch/compare/v2.7.9...v2.7.10) (2021-03-01)
+
+
+### Features
+
+* Reset thumbnail on Spine sprite update to trigger cache refresh. ([28873ff](https://github.com/bscotch/stitch/commit/28873ff999c36f4cd72c00856b47772e93b4f97e))
+* Update all dependencies. ([60896a1](https://github.com/bscotch/stitch/commit/60896a1208a66f5d337de85428c122226a41a570))
+
+
+
 ## [2.7.9](https://github.com/bscotch/stitch/compare/v2.7.8...v2.7.9) (2021-02-09)
 
 
