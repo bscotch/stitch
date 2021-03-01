@@ -1,22 +1,22 @@
 import {
   YySprite,
+  SpriteType,
   yyDataDefaults,
   yyDataLayerDefaults,
   yyDataSequenceDefaults,
   yyDataSequenceTrackDefaults,
-  SpriteType,
-} from "types/YySprite";
-import { Gms2Storage } from "stitch/Gms2Storage";
-import paths from "stitch/paths";
+} from "../../../types/YySprite";
+import { Gms2Storage } from "../../Gms2Storage";
+import paths from "../../paths";
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from "./Gms2ResourceBase";
 import { Spritely } from "@bscotch/spritely";
-import { uuidV4 } from "stitch/uuid";
-import { NumberFixed } from "stitch/NumberFixed";
-import { assert } from "stitch/errors";
-import { logDebug } from "stitch/log";
+import { uuidV4 } from "../../uuid";
+import { NumberFixed } from "../../NumberFixed";
+import { assert } from "../../errors";
+import { logDebug } from "../../log";
 
 const toSingleDecimalNumber = (number: number | undefined) => {
   return new NumberFixed(number || 0, 1);

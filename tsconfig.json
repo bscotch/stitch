@@ -17,12 +17,6 @@
       "./src/types"
     ] /* List of folders to include type definitions from. */,
     "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */,
-    "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,
-    "baseUrl": ".",
-    "paths": {
-      "types/*": ["src/types/*"],
-      "stitch/*": ["src/lib/*"],
-      "resources/*": ["src/lib/components/*", "src/lib/components/resources/*"]
-    }
+    "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */
   }
 }
