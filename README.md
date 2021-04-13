@@ -1,8 +1,10 @@
+
+<p align="center"><i><a href="https://www.bscotch.net">Butterscotch Shenanigans</a> Presents:</i></p>
+
+
 <p align="center">
   <img src="https://img.bscotch.net/fit-in/256x256/logos/stitch.png" alt="Stitch (GameMaker Studio 2 Pipeline Development Kit) Logo"/>
 </p>
-
-<p align="center"><i><a href="https://www.bscotch.net">Butterscotch Shenanigans</a> Presents:</i></p>
 
 <h1 align="center"> Stitch: The GameMaker Studio 2 Pipeline Development Kit</h1>
 
@@ -17,9 +19,10 @@
 
 Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
-*GameMaker Studio 2&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&reg; and Stitch are not affiliated with Yoyo Games.*
 
 **⚠WARNING⚠ Use at your own risk.** Stitch could completely break your GameMaker project. To help keep you safe, Stitch will not run unless your project is in a git repo with a clean working directory, but you must also know how to use git to recover in case something goes wrong.
+
+*GameMaker Studio 2&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&reg; and Stitch are not affiliated with Yoyo Games.*
 
 ## 🚀 Quick Start
 
