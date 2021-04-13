@@ -1,3 +1,17 @@
+## [2.7.11](https://github.com/bscotch/stitch/compare/v2.7.10...v2.7.11) (2021-04-13)
+
+
+### Bug Fixes
+
+* Installation instructions in the README refer to 'stitch' as 'gms2'. Closes [#24](https://github.com/bscotch/stitch/issues/24). ([394a0a7](https://github.com/bscotch/stitch/commit/394a0a7fca49d0f29cf38b6b1934de96770b784c))
+
+
+### Features
+
+* Update all dependencies. ([4c0d233](https://github.com/bscotch/stitch/commit/4c0d23361293b061f4bd7e89db9ece433e28a261))
+
+
+
 ## [2.7.10](https://github.com/bscotch/stitch/compare/v2.7.9...v2.7.10) (2021-03-01)
 
 

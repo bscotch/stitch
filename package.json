@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/stitch",
-  "version": "2.7.10",
+  "version": "2.7.11",
   "description": "Stitch: The GameMaker Studio 2 Asset Pipeline Development Kit.",
   "engines": {
     "node": ">=14.0.0"
@@ -14,7 +14,7 @@
     "assets/**/*"
   ],
   "bin": {
-    "stitch": "./build/cli/stitch.js"
+    "stitch": "build/cli/stitch.js"
   },
   "scripts": {
     "test": "npm run build && mocha --inspect --require source-map-support/register --bail ./build/test/index.js",
