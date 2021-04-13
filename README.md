@@ -2,15 +2,42 @@
 
 # Stitch: The GameMaker Studio 2 Pipeline Development Kit
 
-GameMaker Studio 2 (<abbr title="GameMaker Studio 2">GMS2</abbr>) is a powerful game-making tool, but it does not generally have features for automating development or build tasks, or for creating asset pipelines.
+<dfn>Stitch</dfn> (this project) is a Pipeline Development Kit for GameMaker Studio 2 (<abbr title="GameMaker Studio 2">GMS2</abbr>).
 
-<dfn>Stitch</dfn> (this project) is our Pipeline Development Kit that provides a collection of command-line tools and a Node.JS API for automating GMS2 project management via direct manipulation of its project files. For example, you can use stitch to import assets from one GMS2 project into another, to batch-import sprites (including sprites exported from Spine), or to programmatically add included files.
++ 🤖 Batch-add and update sprites (from PNG images and Spine exports)
++ 🔊 Batch-add and update sounds
++ 🔃 Safely import (and re-import) any assets from one project into another (even directly from GitHub!)
++ 💻 Use the Command Line Interface (CLI) for instant Pipeline
++ 📁 Batch-manage audio and texture groups based on folder structure
++ ⌨ Programmatically generate and modify resources with the Stitch Node.js API
 
 Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
 *GameMaker Studio 2&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&reg; and Stitch are not affiliated with Yoyo Games.*
 
 **⚠WARNING⚠ Use at your own risk.** Stitch could completely break your GameMaker project. To help keep you safe, Stitch will not run unless your project is in a git repo with a clean working directory, but you must also know how to use git to recover in case something goes wrong.
+
+## 🚀 Quick Start
+
++ Install [Node.JS v14+](https://nodejs.org/)
++ Ensure your GMS2 project is in a Git repo.
+
+### 💻 CLI:
+
++ In the terminal, navigate to the root folder of your GameMaker project
++ Globally install Stitch: `npm install --global @bscotch/stitch`
++ Find the CLI command you want: `stitch --help`
++ Learn about that command's options: `stitch the-command-you-chose --help`
+
+### ⌨ Programmatic:
+
++ In the terminal, navigate to your Node.js project
++ Locally install Stitch: `npm install --global @bscotch/stitch`
++ In your code, import the `Gms2Project` class from Stitch
+  + ESM style: `import {Gms2Project} from "@bscotch/stitch"`
+  + CommonJS style: `const {Gms2Project} = require('@bscotch/stitch')`
++ In your code, load a GameMaker project by creating a `Gms2Project` instance: `const myProject = new Gms2Project('my/project/folder');`
++ Use the Intellisense features of your editor (e.g. Visual Studio Code) to explore the API of the class instance.
 
 ## Table of Contents
 
@@ -37,7 +64,7 @@ Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bsc
 
 ## GameMaker Studio Compatibility <a id="compatibility"></a>
 
-This project will generally stay up to date with the bleeding-edge versions of GameMaker Studio 2. We typically use beta or even alpha versions of GMS2. We will not typically test new versions of Stitch against older versions of GameMaker Studio, and will make no effort to maintain backwards compatibility. We'll list any known compatibility issues here, and we welcome GitHub Issues for any compatibility problems you discover.
+This project will generally stay up to date with the bleeding-edge versions of GameMaker Studio 2. We typically use beta or even alpha versions of GMS2. We will not test new versions of Stitch against older versions of GameMaker Studio, and will make no effort to maintain backwards compatibility. We'll list any known compatibility issues here, and we welcome GitHub Issues for any compatibility problems you discover.
 
 + **GMS2 versions < 2.3.0.529** **will not work at all** with any version of Stitch.
 
