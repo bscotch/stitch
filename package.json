@@ -17,9 +17,9 @@
     "stitch": "./build/cli/stitch.js"
   },
   "scripts": {
-    "test": "mocha --inspect --require source-map-support/register --bail ./build/test/index.js",
+    "test": "npm run build && mocha --inspect --require source-map-support/register --bail ./build/test/index.js",
     "build": "rm -rf build && npx tsc",
-    "preversion": "git checkout develop && npm run build && npm test",
+    "preversion": "git checkout develop && npm test",
     "version": "npx conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && git add -A",
     "postversion": "git push origin develop && git checkout master && git merge develop && git push origin master --follow-tags && npm publish && git checkout develop",
     "tsc-live": "npx tsc -w"
