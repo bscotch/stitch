@@ -45,7 +45,7 @@
   "homepage": "https://github.com/bscotch/stitch",
   "dependencies": {
     "@bscotch/spritely": "^1.6.7",
-    "@bscotch/utility": "^0.11.1",
+    "@bscotch/utility": "^1.0.0",
     "chalk": "^4.1.0",
     "change-case": "^4.1.2",
     "commander": "^7.1.0",
