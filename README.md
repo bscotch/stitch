@@ -1,13 +1,17 @@
-![Stitch (GameMaker Studio 2 Pipeline Development Kit) Logo](https://img.bscotch.net/fit-in/256x256/logos/stitch.png)
+<p align="center">
+  <img src="https://img.bscotch.net/fit-in/256x256/logos/stitch.png" alt="Stitch (GameMaker Studio 2 Pipeline Development Kit) Logo"/>
+</p>
 
-# Stitch: The GameMaker Studio 2 Pipeline Development Kit
+<p align="center"><i><a href="https://www.bscotch.net">Butterscotch Shenanigans</a> Presents:</i></p>
 
-<dfn>Stitch</dfn> (this project) is a Pipeline Development Kit for GameMaker Studio 2 (<abbr title="GameMaker Studio 2">GMS2</abbr>).
+<h1 align="center"> Stitch: The GameMaker Studio 2 Pipeline Development Kit</h1>
+
+<dfn>Stitch</dfn> is a powerful Pipeline Development Kit for GameMaker Studio 2 (<abbr title="GameMaker Studio 2">GMS2</abbr>).
 
 + 🤖 Batch-add and update sprites (from PNG images and Spine exports)
 + 🔊 Batch-add and update sounds
 + 🔃 Safely import (and re-import) any assets from one project into another (even directly from GitHub!)
-+ 💻 Use the Command Line Interface (CLI) for instant Pipeline
++ 💻 Use the Command Line Interface (CLI) for instant pipelines
 + 📁 Batch-manage audio and texture groups based on folder structure
 + ⌨ Programmatically generate and modify resources with the Stitch Node.js API
 
