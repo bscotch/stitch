@@ -107,8 +107,8 @@ To start using Stitch with one of your GMS2 projects, do the following:
 
 1. Open a terminal in your project's root (e.g. via Git Bash or PowerShell)
   + On Windows 10 with Git installed, you can open the folder in File Explorer, right-click somewhere, and then click "Git Bash here". Alternatively, open the terminal anywhere and `cd` to the root of your project.
-1. Run `npm install -g @bscotch/gms2` for a *global* install of Stitch, allowing you to install it just once and use it for all projects. This causes the `gms2 ...` commands to become available in the terminal.
-1. Run `gms2 --help` to see all the things you can do.
+1. Run `npm install -g @bscotch/stitch` for a *global* install of Stitch, allowing you to install it just once and use it for all projects. This causes the `stitch ...` commands to become available in the terminal.
+1. Run `stitch --help` to see all the things you can do.
 
 ### Stitch Configuration File <a id="config-file"></a>
 
