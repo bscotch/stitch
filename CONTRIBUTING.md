@@ -39,7 +39,7 @@ figure out where to make your changes:
 + `src/lib/` is the bulk of where all functionality is coded
 + `src/cli` is where CLI-specific code lives
 + `src/lib/Gms2Project.ts` exports the main class shown in this documentation, that is used to create a manipulatable model of GameMaker projects. Project-level and batch-resource operations are exposed by this `Gms2Project` class. You should be able to find your way to any other existing feature of this project by starting with this part of the code.
-+ `src/lib/components/` contains classes for modeling the components that appear in a project's .yyp file.
++ `src/lib/components/` contains classes for modeling the components that appear in a project's `.yyp` file.
 + `src/lib/components/resources/` contains classes for each type of GMS2 resource (e.g. Sprites, Scripts, etc). This is where most core functionality is coded up. At base these classes do nothing but load and save `.yy` files -- functionality is added to them as needed. When adding new functionality, use existing functionality (perhaps from other resource types) as a reference.
 
 ## Setting up your development environment
@@ -62,7 +62,7 @@ Console.
 
 In the debugger dropdown you'll see two options:
 
-1. "Stitch Tests (via ts-node)" will directly run
+1. "Stitch Tests (via `ts-node`)" will directly run
    the Typescript code. This is the easiest way to
    ensure you're testing the code that you see.
 2. "Stitch Tests (requires compile)" runs the compiled

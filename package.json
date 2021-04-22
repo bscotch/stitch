@@ -44,11 +44,11 @@
   "license": "MIT",
   "homepage": "https://github.com/bscotch/stitch",
   "dependencies": {
-    "@bscotch/spritely": "^1.6.7",
-    "@bscotch/utility": "^1.0.0",
-    "chalk": "^4.1.0",
+    "@bscotch/spritely": "^1.6.11",
+    "@bscotch/utility": "^1.1.1",
+    "chalk": "^4.1.1",
     "change-case": "^4.1.2",
-    "commander": "^7.1.0",
+    "commander": "^7.2.0",
     "fs-extra": "^9.1.0",
     "json-bigint": "^1.0.0",
     "lodash": "^4.17.21",
@@ -57,22 +57,22 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.15",
-    "@types/fs-extra": "^9.0.8",
+    "@types/chai": "^4.2.16",
+    "@types/fs-extra": "^9.0.11",
     "@types/lodash": "^4.14.168",
-    "@types/mocha": "^8.2.1",
-    "@types/node": "^14.14.31",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^14.14.41",
     "@types/object-path": "^0.11.0",
     "@types/unzipper": "^0.10.3",
     "@types/uuid": "^8.3.0",
-    "@typescript-eslint/eslint-plugin": "^4.16.0",
-    "@typescript-eslint/parser": "^4.16.0",
-    "chai": "^4.3.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "chai": "^4.3.4",
     "conventional-changelog-cli": "^2.1.1",
-    "eslint": "^7.21.0",
-    "mocha": "^8.3.0",
+    "eslint": "^7.24.0",
+    "mocha": "^8.3.2",
     "prettier": "^2.2.1",
     "ts-node": "^9.1.1",
-    "typescript": "^4.2.2"
+    "typescript": "^4.2.4"
   }
 }
