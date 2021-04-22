@@ -31,7 +31,7 @@ export class Gms2Script extends Gms2ResourceBase {
   }
 
   set code(code: string) {
-    this.storage.writeBlob(this.codeFilePathAbsolute, code);
+    this.storage.writeBlob(this.codeFilePathAbsolute, code, '\r\n');
   }
 
   get code() {
