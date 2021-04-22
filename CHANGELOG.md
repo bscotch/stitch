@@ -1,3 +1,19 @@
+# [2.8.0](https://github.com/bscotch/stitch/compare/v2.7.13...v2.8.0) (2021-04-22)
+
+
+### Bug Fixes
+
+* Stitch's GMS2-style JSON format uses LF instead of CRLF for newlines, creating some annoying version diffing problems. ([edf1b19](https://github.com/bscotch/stitch/commit/edf1b19071f85a1f7cab1fa25eab3811fff9212f))
+
+
+### Features
+
+* Allow the centralized file-writer to force EOL style. ([988e9be](https://github.com/bscotch/stitch/commit/988e9be0763c5ce321f267982f9c1a2fef748166))
+* Have script GML written to file with Windows-style EOL. ([34a7746](https://github.com/bscotch/stitch/commit/34a7746ca2acc1a644c6ee6328662664142c80d2))
+* Update all dependencies to latest. ([c079929](https://github.com/bscotch/stitch/commit/c079929642c75e8933e8805207c8e6f403538a92))
+
+
+
 ## [2.7.13](https://github.com/bscotch/stitch/compare/v2.7.12...v2.7.13) (2021-04-13)
 
 
