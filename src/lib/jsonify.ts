@@ -13,6 +13,8 @@ const meta = {
   '\\': '\\\\',
 };
 
+const eol = `\r\n`; // GMS2 writes Windows-style line endings.
+
 function quote(string: string) {
   // If the string contains no control characters, no quote characters, and no
   // backslash characters, then we can safely slap some quotes around it.
@@ -110,10 +112,10 @@ export function jsonify(something: any) {
           const v =
             jsonifiedValues.length === 0
               ? '[]'
-              : '[\n' +
+              : `[${eol}` +
                 gap +
-                jsonifiedValues.join(',\n' + gap) +
-                ',\n' +
+                jsonifiedValues.join(`,${eol}` + gap) +
+                `,${eol}` +
                 mind +
                 ']';
           gap = mind;
@@ -138,7 +140,12 @@ export function jsonify(something: any) {
           partial.length === 0
             ? '{}'
             : includeGaps
-            ? '{\n' + gap + partial.join(',\n' + gap) + ',\n' + mind + '}'
+            ? `{${eol}` +
+              gap +
+              partial.join(`,${eol}` + gap) +
+              `,${eol}` +
+              mind +
+              '}'
             : '{' + partial.join(',') + ',}';
         gap = mind;
         level = startingLevel;

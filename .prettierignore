@@ -6,3 +6,4 @@ sample-project/
 node_modules/
 docs/
 assets/
+package-lock.json

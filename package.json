@@ -18,9 +18,9 @@
   },
   "scripts": {
     "test": "npm run build && mocha --inspect --require source-map-support/register --bail ./build/test/index.js",
-    "build": "rm -rf build && prettier src/ -w && npx tsc",
+    "build": "rm -rf build && npx tsc",
     "preversion": "git checkout develop && npm test",
-    "version": "npx conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && git add -A",
+    "version": "npx conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && prettier src/ -w && git add -A",
     "postversion": "git push origin develop && git checkout master && git merge develop && git push origin master --follow-tags && npm publish && git checkout develop",
     "tsc-live": "npx tsc -w"
   },

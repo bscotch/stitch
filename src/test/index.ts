@@ -213,7 +213,8 @@ describe('GMS2.3 Pipeline SDK', function () {
           parent: { child: ['10', '20'] },
           array: [{ name: 'child1', field: true }, { name: 'child2' }],
         }),
-      ).to.equal(undent`
+      ).to.equal(
+        undent`
         {
           "hello": "world",
           "parent": {
@@ -227,7 +228,8 @@ describe('GMS2.3 Pipeline SDK', function () {
             {"name":"child2",},
           ],
         }
-      `);
+      `.replace(/\r?\n/gm, '\r\n'),
+      );
     });
   });
 
@@ -730,7 +732,7 @@ describe('GMS2.3 Pipeline SDK', function () {
       expect(project.resources.findByName('excludedSprite')).to.exist;
     });
 
-    it('can import sprites while prefixing and flattening names', async function () {
+    it('can import sprites while prefixing and flattening names', function () {
       const project = getResetProject();
       expect(
         project.resources.findByName('mySprite'),
