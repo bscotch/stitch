@@ -1,9 +1,9 @@
-import { YyBase } from "./Yy";
+import { YyBase } from './Yy';
 
 export enum SoundChannel {
   Mono,
   Stereo,
-  ThreeD
+  ThreeD,
 }
 
 export enum SoundCompression {
@@ -18,31 +18,31 @@ export type SoundCompressionAsString = keyof typeof SoundCompression;
 
 enum SoundBitDepth {
   Bit8,
-  Bit16
+  Bit16,
 }
 
 export type SoundSampleRate = 5512 | 11025 | 22050 | 32000 | 44100 | 48000;
 
 export interface YySound extends YyBase {
   /** Default 0. Compression level */
-  compression: SoundCompression,
+  compression: SoundCompression;
   /** Default 1. Number from 0-1 */
-  volume: number,
-  preload: boolean,
+  volume: number;
+  preload: boolean;
   /** Default 128. Starting from 8, increments of 8, max of 512 */
-  bitRate: number,
+  bitRate: number;
   /** Default 44100 */
-  sampleRate: SoundSampleRate,
+  sampleRate: SoundSampleRate;
   /** Mono/stereo/3d */
-  type: SoundChannel,
+  type: SoundChannel;
   /** Default 1 */
-  bitDepth: SoundBitDepth,
+  bitDepth: SoundBitDepth;
   audioGroupId: {
-    name: string,
-    path: string,
-  },
+    name: string;
+    path: string;
+  };
   /** `${name}.${ext} (e.g. mySound) */
-  soundFile: string,
+  soundFile: string;
   // duration: number, // This can be safely deleted, which is great since we don't want to compute it
-  resourceType: "GMSound",
+  resourceType: 'GMSound';
 }

@@ -1,18 +1,23 @@
 #!/usr/bin/env node
-import commander, { CommanderStatic } from "commander";
-import { Gms2Project } from "../lib/Gms2Project";
-import options from "./lib/cli-options";
+import commander, { CommanderStatic } from 'commander';
+import { Gms2Project } from '../lib/Gms2Project';
+import options from './lib/cli-options';
 const cli: CommanderStatic & {
-  targetProject?: string,
-  force?: boolean
+  targetProject?: string;
+  force?: boolean;
 } = commander;
-import { addDebugOptions } from "./lib/addDebugOption";
+import { addDebugOptions } from './lib/addDebugOption';
 
-cli.description("Fix and normalize common issues in a GameMaker Studio 2.3+ Project.")
+cli
+  .description(
+    'Fix and normalize common issues in a GameMaker Studio 2.3+ Project.',
+  )
   .option(...options.targetProject)
   .option(...options.force);
-addDebugOptions(cli)
-  .parse(process.argv);
+addDebugOptions(cli).parse(process.argv);
 
 const opts = cli.opts();
-(new Gms2Project({projectPath:opts.targetProject,dangerouslyAllowDirtyWorkingDir:opts.force})).save();
+new Gms2Project({
+  projectPath: opts.targetProject,
+  dangerouslyAllowDirtyWorkingDir: opts.force,
+}).save();

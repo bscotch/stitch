@@ -5,18 +5,18 @@ import {
   yyDataLayerDefaults,
   yyDataSequenceDefaults,
   yyDataSequenceTrackDefaults,
-} from "../../../types/YySprite";
-import { Gms2Storage } from "../../Gms2Storage";
-import paths from "../../paths";
+} from '../../../types/YySprite';
+import { Gms2Storage } from '../../Gms2Storage';
+import paths from '../../paths';
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
-} from "./Gms2ResourceBase";
-import { Spritely } from "@bscotch/spritely";
-import { uuidV4 } from "../../uuid";
-import { NumberFixed } from "../../NumberFixed";
-import { assert } from "../../errors";
-import { logDebug } from "../../log";
+} from './Gms2ResourceBase';
+import { Spritely } from '@bscotch/spritely';
+import { uuidV4 } from '../../uuid';
+import { NumberFixed } from '../../NumberFixed';
+import { assert } from '../../errors';
+import { logDebug } from '../../log';
 
 const toSingleDecimalNumber = (number: number | undefined) => {
   return new NumberFixed(number || 0, 1);
@@ -25,21 +25,21 @@ export class Gms2Sprite extends Gms2ResourceBase {
   protected yyData!: YySprite; // Happens in the super() constructor
 
   constructor(...setup: Gms2ResourceBaseParameters) {
-    super("sprites", ...setup);
+    super('sprites', ...setup);
   }
 
   protected get fieldConverters() {
     return {
-      "sequence.volume": toSingleDecimalNumber,
-      "sequence.playbackSpeed": toSingleDecimalNumber,
-      "sequence.length": toSingleDecimalNumber,
-      "sequence.visibleRange.x": toSingleDecimalNumber,
-      "sequence.visibleRange.y": toSingleDecimalNumber,
-      "sequence.backdropXOffset": toSingleDecimalNumber,
-      "sequence.backdropYOffset": toSingleDecimalNumber,
-      "sequence.tracks.*.keyframes.Keyframes.*.Key": toSingleDecimalNumber,
-      "sequence.tracks.*.keyframes.Keyframes.*.Length": toSingleDecimalNumber,
-      "layers.*.opacity": toSingleDecimalNumber,
+      'sequence.volume': toSingleDecimalNumber,
+      'sequence.playbackSpeed': toSingleDecimalNumber,
+      'sequence.length': toSingleDecimalNumber,
+      'sequence.visibleRange.x': toSingleDecimalNumber,
+      'sequence.visibleRange.y': toSingleDecimalNumber,
+      'sequence.backdropXOffset': toSingleDecimalNumber,
+      'sequence.backdropYOffset': toSingleDecimalNumber,
+      'sequence.tracks.*.keyframes.Keyframes.*.Key': toSingleDecimalNumber,
+      'sequence.tracks.*.keyframes.Keyframes.*.Length': toSingleDecimalNumber,
+      'layers.*.opacity': toSingleDecimalNumber,
     };
   }
 
@@ -98,8 +98,8 @@ export class Gms2Sprite extends Gms2ResourceBase {
             ...yyDataSequenceTrackDefaults,
             keyframes: {
               Keyframes: [], // Update once there are frames to add
-              resourceType: "KeyframeStore<SpriteFrameKeyframe>",
-              resourceVersion: "1.0",
+              resourceType: 'KeyframeStore<SpriteFrameKeyframe>',
+              resourceVersion: '1.0',
             },
           },
         ],
@@ -136,10 +136,10 @@ export class Gms2Sprite extends Gms2ResourceBase {
       this.yyData.sequence.yorigin = Math.floor(height / 2);
     } else if (dimsHaveChanged) {
       this.yyData.sequence.xorigin = Math.floor(
-        (oldOriginX / oldWidth) * width
+        (oldOriginX / oldWidth) * width,
       );
       this.yyData.sequence.yorigin = Math.floor(
-        (oldOriginY / oldHeight) * height
+        (oldOriginY / oldHeight) * height,
       );
     }
     return this;
@@ -149,7 +149,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
   setLayerId(layerId: string) {
     assert(
       this.yyData.layers.length === 1,
-      "Cannot force the layerId if only one layer present."
+      'Cannot force the layerId if only one layer present.',
     );
     this.yyData.layers[0].name = layerId;
     return this.save();
@@ -163,8 +163,8 @@ export class Gms2Sprite extends Gms2ResourceBase {
     const framePath = paths.join(this.yyDirAbsolute, `${frameGuid}.png`);
     const frameLayerFolder = paths.join(
       this.yyDirAbsolute,
-      "layers",
-      frameGuid
+      'layers',
+      frameGuid,
     );
     const layerId = this.yyData.layers[0].name;
     const frameLayerImagePath = paths.join(frameLayerFolder, `${layerId}.png`);
@@ -178,10 +178,10 @@ export class Gms2Sprite extends Gms2ResourceBase {
           path: this.id.path,
         },
         LayerId: null,
-        resourceVersion: "1.0",
-        name: "",
+        resourceVersion: '1.0',
+        name: '',
         tags: [],
-        resourceType: "GMSpriteBitmap",
+        resourceType: 'GMSpriteBitmap',
       },
       images: [
         {
@@ -193,17 +193,17 @@ export class Gms2Sprite extends Gms2ResourceBase {
             name: layerId,
             path: this.id.path,
           },
-          resourceVersion: "1.0",
-          name: "",
+          resourceVersion: '1.0',
+          name: '',
           tags: [],
-          resourceType: "GMSpriteBitmap",
+          resourceType: 'GMSpriteBitmap',
         },
       ],
       name: frameGuid,
       parent: this.id,
-      resourceVersion: "1.0",
+      resourceVersion: '1.0',
       tags: [],
-      resourceType: "GMSpriteFrame",
+      resourceType: 'GMSpriteFrame',
     });
     keyFrames.push({
       id: keyframeId,
@@ -213,17 +213,17 @@ export class Gms2Sprite extends Gms2ResourceBase {
       Disabled: false,
       IsCreationKey: false,
       Channels: {
-        "0": {
+        '0': {
           Id: {
             name: frameGuid,
             path: this.id.path,
           },
-          resourceVersion: "1.0",
-          resourceType: "SpriteFrameKeyframe",
+          resourceVersion: '1.0',
+          resourceType: 'SpriteFrameKeyframe',
         },
       },
-      resourceVersion: "1.0",
-      resourceType: "Keyframe<SpriteFrameKeyframe>",
+      resourceVersion: '1.0',
+      resourceType: 'Keyframe<SpriteFrameKeyframe>',
     });
     this.yyData.sequence.length = new NumberFixed(this.yyData.frames.length);
     return this.save();
@@ -249,15 +249,15 @@ export class Gms2Sprite extends Gms2ResourceBase {
 
     // Replace all frames, but keep the existing IDs and ID
     // order where possible. (Minimizes useless git history changes.)
-    const layersRoot = paths.join(this.yyDirAbsolute, "layers");
+    const layersRoot = paths.join(this.yyDirAbsolute, 'layers');
     this.storage.ensureDir(layersRoot);
     this.storage.emptyDir(layersRoot);
     const oldFrameIds = this.frameIds;
     const track = this.yyData.sequence.tracks[0];
     const oldKeyframeIds = track.keyframes.Keyframes.map((frame) => frame.id);
-    logDebug(`old frameIds: ${oldFrameIds.join(", ")}`);
+    logDebug(`old frameIds: ${oldFrameIds.join(', ')}`);
     const oldFrames = this.storage.listFiles(this.yyDirAbsolute, false, [
-      "png",
+      'png',
     ]);
     for (const frame of oldFrames) {
       this.storage.deleteFile(frame);
@@ -270,7 +270,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
       const frameId = oldFrameIds[i];
       const keyframeId = oldKeyframeIds[i];
       logDebug(
-        `adding frame ${i} using id ${frameId} from image at ${subimagePath}`
+        `adding frame ${i} using id ${frameId} from image at ${subimagePath}`,
       );
       this.addFrame(subimagePath, frameId, keyframeId);
     }
@@ -279,8 +279,8 @@ export class Gms2Sprite extends Gms2ResourceBase {
 
   static get textureGroupIdDefault() {
     return {
-      name: "Default",
-      path: "texturegroups/Default",
+      name: 'Default',
+      path: 'texturegroups/Default',
     };
   }
 
@@ -294,12 +294,12 @@ export class Gms2Sprite extends Gms2ResourceBase {
   static create(
     subimageDirectory: string,
     storage: Gms2Storage,
-    spriteName?: string
+    spriteName?: string,
   ) {
     return new Gms2Sprite(
       spriteName || paths.subfolderName(subimageDirectory),
       storage,
-      true
+      true,
     ).replaceFrames(subimageDirectory);
   }
 }

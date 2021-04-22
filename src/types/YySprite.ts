@@ -1,6 +1,6 @@
-import { NumberFixed } from "../lib/NumberFixed";
-import { EmptyArray } from "./Utility";
-import { YyBase } from "./Yy";
+import { NumberFixed } from '../lib/NumberFixed';
+import { EmptyArray } from './Utility';
+import { YyBase } from './Yy';
 
 export enum SpriteCollisionKind {
   Precise,
@@ -28,7 +28,7 @@ export enum SpriteOrigin {
   BottomLeft,
   BottomCenter,
   BottomRight,
-  Custom
+  Custom,
 }
 
 export enum SpritePlaybackSpeedType {
@@ -37,43 +37,43 @@ export enum SpritePlaybackSpeedType {
 }
 
 interface SpriteImage {
-  FrameId:{
-    name: string,
+  FrameId: {
+    name: string;
     /** Path to the sprite's .yy file */
-    path:string
-  },
-  LayerId:{
+    path: string;
+  };
+  LayerId: {
     /**
      * Name of the layer. Corresponds to an image in each layer folder,
      * and should be found in once in *each frame*. Must be found in the
      * sprite's root "layers" list.
      */
-    name:string,
+    name: string;
     /** Path to the sprite's .yy file */
-    path:string
-  },
-  resourceVersion:"1.0",
-  name:"",
+    path: string;
+  };
+  resourceVersion: '1.0';
+  name: '';
   /** An empty array (there seems to be no way to add tags to frames) */
-  tags: EmptyArray,
-  resourceType:"GMSpriteBitmap"
+  tags: EmptyArray;
+  resourceType: 'GMSpriteBitmap';
 }
 
-interface SpriteCompositeImage extends Omit<SpriteImage,'LayerId'> {
-  LayerId:null,
+interface SpriteCompositeImage extends Omit<SpriteImage, 'LayerId'> {
+  LayerId: null;
 }
 
 interface SpriteFrame {
   /** Image created by flattening layers. */
-  compositeImage: SpriteCompositeImage,
+  compositeImage: SpriteCompositeImage;
   /** One image per layer. */
-  images: SpriteImage[],
+  images: SpriteImage[];
   /** The parent sprite, same as the sprite's ID from the YYP. */
-  parent:{
-    name:string,
-    path:string
-  },
-  resourceVersion:"1.0",
+  parent: {
+    name: string;
+    path: string;
+  };
+  resourceVersion: '1.0';
   /**
    * Unique GUID. Matches the name of an image file (+'.png')
    * that sits alongside the .yy file. Also matches a corresponding
@@ -81,9 +81,9 @@ interface SpriteFrame {
    * and each one listed in 'images' all have the same value here
    * for their "FrameId.name" field.
    */
-  name:string,
-  tags:EmptyArray,
-  resourceType:"GMSpriteFrame"
+  name: string;
+  tags: EmptyArray;
+  resourceType: 'GMSpriteFrame';
 }
 
 export enum SpriteLayerBlendMode {
@@ -95,146 +95,146 @@ export enum SpriteLayerBlendMode {
 
 interface SpriteLayer {
   /** (Default true) */
-  visible:boolean,
+  visible: boolean;
   /** (Default false) */
-  isLocked:boolean,
+  isLocked: boolean;
   /** Default 0 */
-  blendMode:SpriteLayerBlendMode,
+  blendMode: SpriteLayerBlendMode;
   /** Range from 0-100 */
-  opacity:NumberFixed,
+  opacity: NumberFixed;
   /** ("default" for the base layer) */
-  displayName:string,
-  resourceVersion:"1.0",
+  displayName: string;
+  resourceVersion: '1.0';
   /** The unique GUID for this layer, used by Frames in their LayerId field. */
-  name:string,
+  name: string;
   /** Seems to be unused -- always an empty array. */
-  tags:EmptyArray,
-  resourceType:"GMImageLayer"
+  tags: EmptyArray;
+  resourceType: 'GMImageLayer';
 }
 
 interface SpriteSequenceTrackKeyframe {
-  id:string,
+  id: string;
   /** Appears to be the index position within the keyframes array */
-  Key: NumberFixed,
+  Key: NumberFixed;
   /** Appears to always be 1 for sprites */
-  Length: NumberFixed,
+  Length: NumberFixed;
   /** Default false */
-  Stretch:boolean,
+  Stretch: boolean;
   /** Default false */
-  Disabled:boolean,
+  Disabled: boolean;
   /** Default false */
-  IsCreationKey:boolean,
-  Channels:{
-    [channel:string]:{
-      Id:{
+  IsCreationKey: boolean;
+  Channels: {
+    [channel: string]: {
+      Id: {
         /** Frame/subimage GUID */
-        name: string,
+        name: string;
         /** Sprite .yy file (e.g. sprites/sprites/thisSprite.yy) */
-        path: string
-      },
-      resourceVersion:"1.0",
-      resourceType:"SpriteFrameKeyframe"
-    }
-  },
-  resourceVersion:"1.0",
-  resourceType:"Keyframe<SpriteFrameKeyframe>"
+        path: string;
+      };
+      resourceVersion: '1.0';
+      resourceType: 'SpriteFrameKeyframe';
+    };
+  };
+  resourceVersion: '1.0';
+  resourceType: 'Keyframe<SpriteFrameKeyframe>';
 }
 
 interface SpriteSequenceTrack {
-  name:"frames",
-  spriteId:null,
-  keyframes:{
-    Keyframes: SpriteSequenceTrackKeyframe[],
-    resourceVersion:"1.0",
-    resourceType:"KeyframeStore<SpriteFrameKeyframe>"
-  },
-  trackColour:0,
-  inheritsTrackColour:true,
-  builtinName:0,
-  traits:0,
-  interpolation:1,
-  tracks:EmptyArray,
-  events:EmptyArray,
-  modifiers:EmptyArray,
-  isCreationTrack:false,
-  resourceVersion:"1.0",
-  tags:EmptyArray,
-  resourceType:"GMSpriteFramesTrack"
+  name: 'frames';
+  spriteId: null;
+  keyframes: {
+    Keyframes: SpriteSequenceTrackKeyframe[];
+    resourceVersion: '1.0';
+    resourceType: 'KeyframeStore<SpriteFrameKeyframe>';
+  };
+  trackColour: 0;
+  inheritsTrackColour: true;
+  builtinName: 0;
+  traits: 0;
+  interpolation: 1;
+  tracks: EmptyArray;
+  events: EmptyArray;
+  modifiers: EmptyArray;
+  isCreationTrack: false;
+  resourceVersion: '1.0';
+  tags: EmptyArray;
+  resourceType: 'GMSpriteFramesTrack';
 }
 
 interface SpriteSequence {
   /** Matches the YYP resource's 'id' value */
   spriteId: {
-    name:string,
-    path:string
-  },
+    name: string;
+    path: string;
+  };
   /** (Default 1) What is this? */
-  timeUnits: 1,
+  timeUnits: 1;
   /** (Default 1) What is this? */
-  playback: 1,
+  playback: 1;
   /** FPS (probably 30, 45, or 60), set via the editor */
-  playbackSpeed: NumberFixed,
+  playbackSpeed: NumberFixed;
   /** FPS type, set via the editor */
-  playbackSpeedType: SpritePlaybackSpeedType,
+  playbackSpeedType: SpritePlaybackSpeedType;
   /** (Default true) What is this? */
-  autoRecord: true,
+  autoRecord: true;
   /** (Default 1) What is this? */
-  volume: NumberFixed,
+  volume: NumberFixed;
   /** Number of frames */
-  length: NumberFixed,
+  length: NumberFixed;
   events: {
-    Keyframes:EmptyArray,
-    resourceVersion:"1.0",
-    resourceType:"KeyframeStore<MessageEventKeyframe>"
-  },
+    Keyframes: EmptyArray;
+    resourceVersion: '1.0';
+    resourceType: 'KeyframeStore<MessageEventKeyframe>';
+  };
   moments: {
-    Keyframes:EmptyArray,
-    resourceVersion:"1.0",
-    resourceType:"KeyframeStore<MomentsEventKeyframe>"
-  },
-  tracks: SpriteSequenceTrack[],
+    Keyframes: EmptyArray;
+    resourceVersion: '1.0';
+    resourceType: 'KeyframeStore<MomentsEventKeyframe>';
+  };
+  tracks: SpriteSequenceTrack[];
   /** Appears to be constant for sprites */
-  visibleRange: null|{x:NumberFixed,y:NumberFixed},
+  visibleRange: null | { x: NumberFixed; y: NumberFixed };
   /** Appears to be constant for sprites */
-  lockOrigin: false,
+  lockOrigin: false;
   /** Appears to be constant for sprites */
-  showBackdrop: true,
+  showBackdrop: true;
   /** Appears to be constant for sprites */
-  showBackdropImage: false,
+  showBackdropImage: false;
   /** Appears to be constant for sprites */
-  backdropImagePath: "",
+  backdropImagePath: '';
   /** Appears to be constant for sprites */
-  backdropImageOpacity: 0.5,
+  backdropImageOpacity: 0.5;
   /** Appears to be constant for sprites */
-  backdropWidth: 1366,
+  backdropWidth: 1366;
   /** Appears to be constant for sprites */
-  backdropHeight: 768,
+  backdropHeight: 768;
   /** Appears to be constant for sprites (0) */
-  backdropXOffset: NumberFixed,
+  backdropXOffset: NumberFixed;
   /** Appears to be constant for sprites (0) */
-  backdropYOffset: NumberFixed,
+  backdropYOffset: NumberFixed;
   /** The sprite's origin (x-coord) */
-  xorigin: number,
+  xorigin: number;
   /** The sprite's origin (y-coord) */
-  yorigin: number,
-  eventToFunction: {},
-  eventStubScript: null,
+  yorigin: number;
+  eventToFunction: {};
+  eventStubScript: null;
   parent: {
     /** The sprite's name */
-    name:string,
+    name: string;
     /** The sprite's relative yy path */
-    path:string
-  },
-  resourceVersion: "1.3",
+    path: string;
+  };
+  resourceVersion: '1.3';
   /** The sprite's name */
-  name: string,
-  tags: EmptyArray,
-  resourceType: "GMSequence",
+  name: string;
+  tags: EmptyArray;
+  resourceType: 'GMSequence';
 }
 
 export enum SpriteType {
-  Default=0,
-  Spine=2
+  Default = 0,
+  Spine = 2,
 }
 
 // In sprite .yy under the "sequence" section:
@@ -251,48 +251,48 @@ export enum SpriteType {
  * as needed for editing existing sprites.
  */
 export interface YySprite extends YyBase {
-  bboxMode: SpriteBoundingBoxMode,
-  collisionKind: SpriteCollisionKind,
+  bboxMode: SpriteBoundingBoxMode;
+  collisionKind: SpriteCollisionKind;
   /** The sprite type */
-  type: SpriteType,
-  origin: SpriteOrigin,
+  type: SpriteType;
+  origin: SpriteOrigin;
   /** (Default true.) */
-  preMultiplyAlpha: boolean,
+  preMultiplyAlpha: boolean;
   /** (Default true.) */
-  edgeFiltering: boolean,
+  edgeFiltering: boolean;
   /** 0-255. Only meaningful if collision type is "Precise". */
-  collisionTolerance: number,
+  collisionTolerance: number;
   /** (What is this?) */
-  swfPrecision: 2.525,
-  bbox_left: number,
-  bbox_right: number,
-  bbox_top: number,
-  bbox_bottom: number,
+  swfPrecision: 2.525;
+  bbox_left: number;
+  bbox_right: number;
+  bbox_top: number;
+  bbox_bottom: number;
   /** (Default false.) Horizontally tiled */
-  HTile: boolean,
+  HTile: boolean;
   /** (Default false.) Vertically tiled */
-  VTile: boolean,
+  VTile: boolean;
   /** (Default false.) Used for 3d (not sure how set...) */
-  For3D: boolean,
-  width: number,
-  height: number,
+  For3D: boolean;
+  width: number;
+  height: number;
   /** Matches the texture's id from the YYP file */
   textureGroupId: {
     /** the name of the Texture Group */
-    name: string,
+    name: string;
     /** seems to just be `texturegroups/${name}` */
-    path: string,
-  },
+    path: string;
+  };
   /** (What is this?) */
-  swatchColours: null,
+  swatchColours: null;
   /** (What is this?) */
-  gridX: 0,
+  gridX: 0;
   /** (What is this?) */
-  gridY: 0,
-  frames: SpriteFrame[],
-  sequence: SpriteSequence,
-  layers: SpriteLayer[],
-  resourceType: "GMSprite"
+  gridY: 0;
+  frames: SpriteFrame[];
+  sequence: SpriteSequence;
+  layers: SpriteLayer[];
+  resourceType: 'GMSprite';
 }
 
 export const yyDataDefaults = {
@@ -302,8 +302,8 @@ export const yyDataDefaults = {
   type: 0,
   gridX: 0,
   gridY: 0,
-  resourceType: "GMSprite",
-  resourceVersion: "1.0",
+  resourceType: 'GMSprite',
+  resourceVersion: '1.0',
   swatchColours: null,
   swfPrecision: 2.525,
   bboxMode: SpriteBoundingBoxMode.Automatic,
@@ -317,19 +317,19 @@ export const yyDataDefaults = {
 } as const;
 export const yyDataLayerDefaults = {
   blendMode: SpriteLayerBlendMode.Normal,
-  displayName: "default",
+  displayName: 'default',
   opacity: new NumberFixed(100),
   isLocked: false,
   visible: true,
-  resourceType: "GMImageLayer",
-  resourceVersion: "1.0",
-  tags:[]
+  resourceType: 'GMImageLayer',
+  resourceVersion: '1.0',
+  tags: [],
 } as const;
 export const yyDataSequenceDefaults = {
   autoRecord: true,
   backdropHeight: 768,
   backdropImageOpacity: 0.5,
-  backdropImagePath: "",
+  backdropImagePath: '',
   backdropWidth: 1366,
   backdropXOffset: new NumberFixed(0),
   backdropYOffset: new NumberFixed(0),
@@ -337,18 +337,18 @@ export const yyDataSequenceDefaults = {
   eventToFunction: {},
   events: {
     Keyframes: [],
-    resourceType: "KeyframeStore<MessageEventKeyframe>",
-    resourceVersion: "1.0"
+    resourceType: 'KeyframeStore<MessageEventKeyframe>',
+    resourceVersion: '1.0',
   },
   lockOrigin: false,
   moments: {
     Keyframes: [],
-    resourceType: "KeyframeStore<MomentsEventKeyframe>",
-    resourceVersion: "1.0"
+    resourceType: 'KeyframeStore<MomentsEventKeyframe>',
+    resourceVersion: '1.0',
   },
   playback: 1,
-  resourceType: "GMSequence",
-  resourceVersion: "1.3",
+  resourceType: 'GMSequence',
+  resourceVersion: '1.3',
   showBackdrop: true,
   showBackdropImage: false,
   tags: [],
@@ -366,9 +366,9 @@ export const yyDataSequenceTrackDefaults = {
   interpolation: 1,
   isCreationTrack: false,
   modifiers: [],
-  name: "frames",
-  resourceType: "GMSpriteFramesTrack",
-  resourceVersion: "1.0",
+  name: 'frames',
+  resourceType: 'GMSpriteFramesTrack',
+  resourceVersion: '1.0',
   spriteId: null,
   tags: [],
   tracks: [],

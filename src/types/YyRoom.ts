@@ -1,38 +1,38 @@
-import { NumberFixed } from "../lib/NumberFixed";
-import { EmptyArray } from "./Utility";
-import { YyBase } from "./Yy";
+import { NumberFixed } from '../lib/NumberFixed';
+import { EmptyArray } from './Utility';
+import { YyBase } from './Yy';
 
 interface YyRoomView {
   /** Defaults to false */
-  inherit: boolean,
+  inherit: boolean;
   /** Defaults to false */
-  visible: boolean,
+  visible: boolean;
   /** Defaults to 0 */
-  xview: number,
+  xview: number;
   /** Defaults to 0 */
-  yview: number,
+  yview: number;
   /** Defaults to 1366 */
-  wview: number,
+  wview: number;
   /** Defaults to 768 */
-  hview: number,
+  hview: number;
   /** Defaults to 0 */
-  xport: number,
+  xport: number;
   /** Defaults to 0 */
-  yport: number,
+  yport: number;
   /** Defaults to 1366 */
-  wport: number,
+  wport: number;
   /** Defaults to 768 */
-  hport: number,
+  hport: number;
   /** Defaults to 32 */
-  hborder: number,
+  hborder: number;
   /** Defaults to 32 */
-  vborder: number,
+  vborder: number;
   /** Defaults to -1 */
-  hspeed: number,
+  hspeed: number;
   /** Defaults to -1 */
-  vspeed: number,
+  vspeed: number;
   /** The object being followed */
-  objectId: null
+  objectId: null;
 }
 
 export interface YyRoomInstance {
@@ -40,94 +40,94 @@ export interface YyRoomInstance {
    * *Unique* instance name. Can be any string. Needed to allow multiple
    * instances of the same object to be added to a room via the editor.
    */
-  name: string,
+  name: string;
   /** (Uknown data structure, starts empty) */
-  properties: EmptyArray,
+  properties: EmptyArray;
   /** Defaults to false */
-  isDnd: boolean,
+  isDnd: boolean;
   /** The type of the object being instanced */
   objectId: {
     /** Object name */
-    name: string,
+    name: string;
     /** Object resource path, e.g. "objects/{name}/{name}.yy" */
-    path: `objects/${string}/${string}.yy`
-  },
+    path: `objects/${string}/${string}.yy`;
+  };
   /** Defaults to false */
-  inheritCode: boolean,
+  inheritCode: boolean;
   /** Defaults to false */
-  hasCreationCode: false,
+  hasCreationCode: false;
   /** Defaults to 4294967295 */
-  colour: BigInt,
+  colour: BigInt;
   /** Defaults to 0.0 */
-  rotation: NumberFixed,
+  rotation: NumberFixed;
   /** Defaults to 1.0 */
-  scaleX: NumberFixed,
+  scaleX: NumberFixed;
   /** Defaults to 1.0 */
-  scaleY: NumberFixed,
+  scaleY: NumberFixed;
   /** Defaults to 0 */
-  imageIndex: number,
+  imageIndex: number;
   /** Defaults to 1.0 */
-  imageSpeed: NumberFixed,
+  imageSpeed: NumberFixed;
   /** Defaults to null */
-  inheritedItemId: null,
+  inheritedItemId: null;
   /** Defaults to false */
-  frozen: boolean,
+  frozen: boolean;
   /** Defaults to false */
-  ignore: boolean,
+  ignore: boolean;
   /** Defaults to false */
-  inheritItemSettings: boolean,
+  inheritItemSettings: boolean;
   /** Initial x-coords of the instance */
-  x: NumberFixed,
+  x: NumberFixed;
   /** Initial y-coords of the instance */
-  y: NumberFixed,
-  resourceVersion:"1.0",
-  tags: EmptyArray,
-  resourceType:"GMRInstance"
+  y: NumberFixed;
+  resourceVersion: '1.0';
+  tags: EmptyArray;
+  resourceType: 'GMRInstance';
 }
 
 export interface YyRoomInstanceLayer {
-  instances: YyRoomInstance[],
-  visible:true,
-  depth:0,
-  userdefinedDepth:false,
-  inheritLayerDepth:false,
-  inheritLayerSettings:false,
-  gridX:32,
-  gridY:32,
-  layers:[],
-  hierarchyFrozen:false,
-  resourceVersion:"1.0",
-  name:"Instances",
-  tags:EmptyArray,
-  resourceType:"GMRInstanceLayer"
+  instances: YyRoomInstance[];
+  visible: true;
+  depth: 0;
+  userdefinedDepth: false;
+  inheritLayerDepth: false;
+  inheritLayerSettings: false;
+  gridX: 32;
+  gridY: 32;
+  layers: [];
+  hierarchyFrozen: false;
+  resourceVersion: '1.0';
+  name: 'Instances';
+  tags: EmptyArray;
+  resourceType: 'GMRInstanceLayer';
 }
 
 interface YyRoomBackgroundLayer {
-  spriteId:null,
-  colour:4278190080,
-  x:0,
-  y:0,
-  htiled:false,
-  vtiled:false,
-  hspeed:0.0,
-  vspeed:0.0,
-  stretch:false,
-  animationFPS:15.0,
-  animationSpeedType:0,
-  userdefinedAnimFPS:false,
-  visible:true,
-  depth:100,
-  userdefinedDepth:false,
-  inheritLayerDepth:false,
-  inheritLayerSettings:false,
-  gridX:32,
-  gridY:32,
-  layers:[],
-  hierarchyFrozen:false,
-  resourceVersion:"1.0",
-  name:"Background",
-  tags:EmptyArray,
-  resourceType:"GMRBackgroundLayer"
+  spriteId: null;
+  colour: 4278190080;
+  x: 0;
+  y: 0;
+  htiled: false;
+  vtiled: false;
+  hspeed: 0.0;
+  vspeed: 0.0;
+  stretch: false;
+  animationFPS: 15.0;
+  animationSpeedType: 0;
+  userdefinedAnimFPS: false;
+  visible: true;
+  depth: 100;
+  userdefinedDepth: false;
+  inheritLayerDepth: false;
+  inheritLayerSettings: false;
+  gridX: 32;
+  gridY: 32;
+  layers: [];
+  hierarchyFrozen: false;
+  resourceVersion: '1.0';
+  name: 'Background';
+  tags: EmptyArray;
+  resourceType: 'GMRBackgroundLayer';
 }
 
 interface YyRoomInstanceCreationOrderEntry {
@@ -135,50 +135,50 @@ interface YyRoomInstanceCreationOrderEntry {
    * The *instance name*, which can be custom.
    * Must match one of the YyRoomInstance names.
    */
-  name: string,
+  name: string;
   /** The room's path */
-  path: `rooms/${string}/${string}.yy`
+  path: `rooms/${string}/${string}.yy`;
 }
 
 /**
  * The data structure of a room's YyFile.
  * **NOTE:** Type genericization is incomplete!
  */
-export interface YyRoom extends YyBase{
-  layers: (YyRoomInstanceLayer|YyRoomBackgroundLayer)[],
-  instanceCreationOrder: YyRoomInstanceCreationOrderEntry[],
+export interface YyRoom extends YyBase {
+  layers: (YyRoomInstanceLayer | YyRoomBackgroundLayer)[];
+  instanceCreationOrder: YyRoomInstanceCreationOrderEntry[];
   roomSettings: {
-    inheritRoomSettings: false,
-    Width: 1366,
-    Height: 768,
-    persistent: false,
-  },
+    inheritRoomSettings: false;
+    Width: 1366;
+    Height: 768;
+    persistent: false;
+  };
   viewSettings: {
-    inheritViewSettings: false,
-    enableViews: false,
-    clearViewBackground: false,
-    clearDisplayBuffer: true,
-  },
+    inheritViewSettings: false;
+    enableViews: false;
+    clearViewBackground: false;
+    clearDisplayBuffer: true;
+  };
   physicsSettings: {
-    inheritPhysicsSettings: false,
-    PhysicsWorld: false,
-    PhysicsWorldGravityX: 0.0,
-    PhysicsWorldGravityY: 10.0,
-    PhysicsWorldPixToMetres: 0.1,
-  },
-  isDnd: boolean,
+    inheritPhysicsSettings: false;
+    PhysicsWorld: false;
+    PhysicsWorldGravityX: 0.0;
+    PhysicsWorldGravityY: 10.0;
+    PhysicsWorldPixToMetres: 0.1;
+  };
+  isDnd: boolean;
   /** 0-1 */
-  volume: number,
+  volume: number;
   /** Incomplete -- having parent likely changes value */
-  parentRoom: null,
+  parentRoom: null;
   /** 8 identical 'views' are created by default. */
-  views: YyRoomView[],
-  inheritLayers: false,
-  creationCodeFile: "",
-  inheritCode: false,
-  inheritCreationOrder: false,
-  sequenceId: null,
-  resourceType: "GMRoom"
+  views: YyRoomView[];
+  inheritLayers: false;
+  creationCodeFile: '';
+  inheritCode: false;
+  inheritCreationOrder: false;
+  sequenceId: null;
+  resourceType: 'GMRoom';
 }
 
 export const yyRoomInstanceDefaults = {
@@ -205,7 +205,7 @@ export const yyRoomInstanceDefaults = {
   ignore: false,
   /** Defaults to false */
   inheritItemSettings: false,
-  resourceVersion:"1.0",
+  resourceVersion: '1.0',
   tags: [] as EmptyArray,
-  resourceType:"GMRInstance"
+  resourceType: 'GMRInstance',
 } as const;

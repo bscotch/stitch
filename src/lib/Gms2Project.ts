@@ -1,36 +1,36 @@
-import { StitchError, assert } from "./errors";
-import fs from "./files";
-import { md5, oneline } from "@bscotch/utility";
-import paths from "./paths";
-import { YypComponents, YypComponentsLegacy } from "../types/Yyp";
-import { Gms2ProjectComponents } from "../types/Gms2ProjectComponents";
-import { Gms2Option } from "./components/Gms2Option";
-import { Gms2Config } from "./components/Gms2Config";
-import { Gms2Folder } from "./components/Gms2Folder";
-import { Gms2RoomOrder } from "./components/Gms2RoomOrder";
-import { Gms2TextureGroup } from "./components/Gms2TextureGroup";
-import { Gms2AudioGroup } from "./components/Gms2AudioGroup";
-import { Gms2ComponentArray } from "./components/Gms2ComponentArray";
-import { Gms2ResourceArray } from "./components/Gms2ResourceArray";
-import { Gms2Storage } from "./Gms2Storage";
-import { Gms2ProjectConfig } from "./Gms2ProjectConfig";
-import { Gms2Sprite } from "./components/resources/Gms2Sprite";
-import { Gms2Sound } from "./components/resources/Gms2Sound";
-import { Gms2FolderArray } from "./Gms2FolderArray";
-import { Gms2MergerOptions, Gms2ProjectMerger } from "./Gms2ProjectMerger";
-import { Gms2IncludedFile } from "./components/Gms2IncludedFile";
-import { Gms2IncludedFileArray } from "./components/Gms2IncludedFileArray";
-import { Spritely, SpritelyBatch } from "@bscotch/spritely";
-import { snakeCase, camelCase, pascalCase } from "change-case";
-import { logDebug, logError, logInfo } from "./log";
-import { get, unzipRemote } from "./http";
-import { getGithubAccessToken } from "./env";
+import { StitchError, assert } from './errors';
+import fs from './files';
+import { md5, oneline } from '@bscotch/utility';
+import paths from './paths';
+import { YypComponents, YypComponentsLegacy } from '../types/Yyp';
+import { Gms2ProjectComponents } from '../types/Gms2ProjectComponents';
+import { Gms2Option } from './components/Gms2Option';
+import { Gms2Config } from './components/Gms2Config';
+import { Gms2Folder } from './components/Gms2Folder';
+import { Gms2RoomOrder } from './components/Gms2RoomOrder';
+import { Gms2TextureGroup } from './components/Gms2TextureGroup';
+import { Gms2AudioGroup } from './components/Gms2AudioGroup';
+import { Gms2ComponentArray } from './components/Gms2ComponentArray';
+import { Gms2ResourceArray } from './components/Gms2ResourceArray';
+import { Gms2Storage } from './Gms2Storage';
+import { Gms2ProjectConfig } from './Gms2ProjectConfig';
+import { Gms2Sprite } from './components/resources/Gms2Sprite';
+import { Gms2Sound } from './components/resources/Gms2Sound';
+import { Gms2FolderArray } from './Gms2FolderArray';
+import { Gms2MergerOptions, Gms2ProjectMerger } from './Gms2ProjectMerger';
+import { Gms2IncludedFile } from './components/Gms2IncludedFile';
+import { Gms2IncludedFileArray } from './components/Gms2IncludedFileArray';
+import { Spritely, SpritelyBatch } from '@bscotch/spritely';
+import { snakeCase, camelCase, pascalCase } from 'change-case';
+import { logDebug, logError, logInfo } from './log';
+import { get, unzipRemote } from './http';
+import { getGithubAccessToken } from './env';
 
 type YypComponentsVersion = YypComponents | YypComponentsLegacy;
 
 type ProjectPlatformVersion =
   | `option_${Gms2TargetPlatform}_version`
-  | "option_xbone_version";
+  | 'option_xbone_version';
 
 export interface SpriteImportOptions {
   /** Optionally prefix sprite names on import */
@@ -38,7 +38,7 @@ export interface SpriteImportOptions {
   /** Optionall postfix sprite names on import */
   postfix?: string;
   /** Enforce casing standards. Defaults to 'snake'. */
-  case?: "snake" | "camel" | "pascal";
+  case?: 'snake' | 'camel' | 'pascal';
   /**
    * Normally only the immediate parent folder containing
    * images is used as the sprite name. Optionally "flatten"
@@ -101,16 +101,16 @@ export class Gms2Project {
     try {
       // Normalize options
       logDebug(
-        `loading project with options: ${JSON.stringify(options, null, 2)}`
+        `loading project with options: ${JSON.stringify(options, null, 2)}`,
       );
       options = {
         projectPath:
-          typeof options == "string"
+          typeof options == 'string'
             ? options
             : options?.projectPath || process.cwd(),
-        readOnly: (typeof options != "string" && options?.readOnly) || false,
+        readOnly: (typeof options != 'string' && options?.readOnly) || false,
         dangerouslyAllowDirtyWorkingDir:
-          (typeof options != "string" &&
+          (typeof options != 'string' &&
             options?.dangerouslyAllowDirtyWorkingDir) ||
           false,
       };
@@ -118,11 +118,11 @@ export class Gms2Project {
 
       // Find the yyp filepath
       let yypPath = options.projectPath as string;
-      if (!yypPath.endsWith(".yyp")) {
+      if (!yypPath.endsWith('.yyp')) {
         logDebug(`project path is not a yyp file, need to search for one`);
         const yypParentPath = yypPath;
         const yypPaths = fs
-          .listFilesByExtensionSync(yypParentPath, "yyp", true)
+          .listFilesByExtensionSync(yypParentPath, 'yyp', true)
           .filter((yyp) => {
             try {
               Gms2Project.parseYypFile(yyp);
@@ -131,10 +131,10 @@ export class Gms2Project {
               return false;
             }
           });
-        logDebug(`found yyp files:\n\t${yypPaths.join("\n\t")}`);
+        logDebug(`found yyp files:\n\t${yypPaths.join('\n\t')}`);
         if (yypPaths.length == 0) {
           throw new StitchError(
-            `Couldn't find a Stitch-compatible .yyp file in "${yypParentPath}"`
+            `Couldn't find a Stitch-compatible .yyp file in "${yypParentPath}"`,
           );
         }
         if (yypPaths.length > 1) {
@@ -151,7 +151,7 @@ export class Gms2Project {
       this.storage = new Gms2Storage(
         paths.resolve(yypPath),
         options.readOnly as boolean,
-        options.dangerouslyAllowDirtyWorkingDir as boolean
+        options.dangerouslyAllowDirtyWorkingDir as boolean,
       );
       this.config = new Gms2ProjectConfig(this.storage);
       this.reload();
@@ -193,14 +193,14 @@ export class Gms2Project {
   }
 
   private switchSearchRegex = new RegExp(
-    `(?<pre><DisplayVersion>)(?<versionString>.*)(?<post></DisplayVersion>)`
+    `(?<pre><DisplayVersion>)(?<versionString>.*)(?<post></DisplayVersion>)`,
   );
 
   private setSwitchVersion(normalizedVersionString: string, fileName: string) {
     const oldContent = this.storage.readBlob(fileName).toString();
     const newContent = oldContent.replace(
       this.switchSearchRegex,
-      `$1${normalizedVersionString}$3`
+      `$1${normalizedVersionString}$3`,
     );
     this.storage.writeBlob(fileName, newContent);
   }
@@ -209,16 +209,16 @@ export class Gms2Project {
     const content = this.storage.readBlob(fileName).toString();
     const newContent = content.match(this.switchSearchRegex)?.groups;
     if (newContent) {
-      return newContent["versionString"];
+      return newContent['versionString'];
     } else {
       throw new StitchError(
-        `Cannot parse the Switch *.nmeta file to obtain the version`
+        `Cannot parse the Switch *.nmeta file to obtain the version`,
       );
     }
   }
 
   //Xbox key name follows a different pattern, hence the special treatment
-  private xboxVersionKey = "option_xbone_version" as const;
+  private xboxVersionKey = 'option_xbone_version' as const;
 
   /**
    * Set the project version in all options files.
@@ -232,11 +232,11 @@ export class Gms2Project {
    */
   set version(versionString: string) {
     const parts = versionString.match(
-      /^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)((\.(?<revision>\d+))|(-rc.(?<candidate>\d+)))?$/
+      /^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)((\.(?<revision>\d+))|(-rc.(?<candidate>\d+)))?$/,
     );
     if (!parts) {
       throw new StitchError(
-        `Version string ${versionString} is not a valid format.`
+        `Version string ${versionString} is not a valid format.`,
       );
     }
     const { major, minor, patch, revision, candidate } = parts.groups as {
@@ -246,23 +246,23 @@ export class Gms2Project {
       major,
       minor,
       patch,
-      candidate || revision || "0",
-    ].join(".");
-    const optionsDir = paths.join(this.storage.yypDirAbsolute, "options");
+      candidate || revision || '0',
+    ].join('.');
+    const optionsDir = paths.join(this.storage.yypDirAbsolute, 'options');
     const optionsFiles = this.storage.listFiles(optionsDir, true, [
-      "yy",
-      "nmeta",
+      'yy',
+      'nmeta',
     ]);
     for (const file of optionsFiles) {
       // Load it, change the version, and save
-      if (paths.extname(file) == ".yy") {
+      if (paths.extname(file) == '.yy') {
         const content = this.storage.readJson(file);
         const platform = paths.basename(
-          paths.dirname(file)
+          paths.dirname(file),
         ) as Gms2TargetPlatform;
         if (Gms2Project.platforms.includes(platform)) {
           let versionKey = `option_${platform}_version` as ProjectPlatformVersion;
-          if (platform == "xboxone") {
+          if (platform == 'xboxone') {
             versionKey = this.xboxVersionKey;
           }
           content[versionKey] = normalizedVersionString;
@@ -270,38 +270,38 @@ export class Gms2Project {
         }
       }
       // Switch *.nmeta file needs special treatment
-      else if (paths.extname(file) == ".nmeta") {
+      else if (paths.extname(file) == '.nmeta') {
         this.setSwitchVersion(normalizedVersionString, file);
       } else {
         throw new StitchError(
-          `Found unsupported file format in the options dir: ${file}`
+          `Found unsupported file format in the options dir: ${file}`,
         );
       }
     }
   }
 
   versionOnPlatform(platform: Gms2TargetPlatform) {
-    const optionsDir = paths.join(this.storage.yypDirAbsolute, "options");
-    if (platform != "switch") {
+    const optionsDir = paths.join(this.storage.yypDirAbsolute, 'options');
+    if (platform != 'switch') {
       const optionsFile = paths.join(
         optionsDir,
         platform,
-        `options_${platform}.yy`
+        `options_${platform}.yy`,
       );
       let versionKey = `option_${platform}_version` as ProjectPlatformVersion;
-      if (platform == "xboxone") {
+      if (platform == 'xboxone') {
         versionKey = this.xboxVersionKey;
       }
       return this.storage.readJson(optionsFile)[versionKey] as string;
     } else {
       const optionsFile = this.storage.listFiles(optionsDir, true, [
-        "nmeta",
+        'nmeta',
       ])?.[0];
       if (optionsFile) {
         return this.getSwitchVersion(optionsFile);
       } else {
         throw new StitchError(
-          `The project does not contain a valid *.nmeta file with version info.`
+          `The project does not contain a valid *.nmeta file with version info.`,
         );
       }
     }
@@ -310,11 +310,11 @@ export class Gms2Project {
   async mergeFromUrl(
     url: string,
     options?: Gms2MergerOptions,
-    headers?: { [header: string]: any }
+    headers?: { [header: string]: any },
   ) {
     const unzipPath = paths.join(
       paths.dirname(this.yypAbsolutePath),
-      `tmp-${md5(url)}`
+      `tmp-${md5(url)}`,
     );
     const sourcePath = await unzipRemote(url, unzipPath, headers);
     this.merge(sourcePath, options);
@@ -328,23 +328,23 @@ export class Gms2Project {
     repoName: string,
     options?: {
       revision?: string;
-      revisionType?: "@" | "?";
+      revisionType?: '@' | '?';
       tagPattern?: string;
-    } & Gms2MergerOptions
+    } & Gms2MergerOptions,
   ) {
     // Figure out the revision based on options.
-    let revision = options?.revision || "HEAD";
+    let revision = options?.revision || 'HEAD';
     const token = getGithubAccessToken();
     const headers = token ? { authorization: `Bearer ${token}` } : {};
     const apiBase = `https://api.github.com/repos/${repoOwner}/${repoName}`;
-    if (options?.revisionType == "?") {
+    if (options?.revisionType == '?') {
       // Then need to query the GitHub API.
       const { tagPattern } = options;
       const tags = (await get(`${apiBase}/tags`, headers)).data as {
         name: string;
       }[];
       const latestMatchingTag = tagPattern
-        ? tags.find((tag) => tag.name.match(new RegExp(tagPattern, "i")))
+        ? tags.find((tag) => tag.name.match(new RegExp(tagPattern, 'i')))
         : tags[0];
       assert(latestMatchingTag, `No GitHub tag matches pattern ${tagPattern}`);
       revision = latestMatchingTag.name;
@@ -376,8 +376,8 @@ export class Gms2Project {
         ...Gms2TextureGroup.defaultDataValues,
         name: textureGroupName,
       },
-      "name",
-      textureGroupName
+      'name',
+      textureGroupName,
     ) && this.save(); // So only save if changed
     return this;
   }
@@ -405,7 +405,7 @@ export class Gms2Project {
         .filterByClassAndFolder(Gms2Sprite, folder)
         .forEach(
           (sprite) =>
-            (sprite.textureGroup = this.config.textureGroupAssignments[folder])
+            (sprite.textureGroup = this.config.textureGroupAssignments[folder]),
         );
     }
     return this;
@@ -418,8 +418,8 @@ export class Gms2Project {
         ...Gms2AudioGroup.defaultDataValues,
         name: audioGroupName,
       },
-      "name",
-      audioGroupName
+      'name',
+      audioGroupName,
     ) && this.save(); // So only save if changed
     return this;
   }
@@ -446,7 +446,7 @@ export class Gms2Project {
         .filterByClassAndFolder(Gms2Sound, folder)
         .forEach(
           (sprite) =>
-            (sprite.audioGroup = this.config.audioGroupAssignments[folder])
+            (sprite.audioGroup = this.config.audioGroupAssignments[folder]),
         );
     }
     return this;
@@ -458,9 +458,9 @@ export class Gms2Project {
   addFolder(path: string, tags?: string[]) {
     // Clean up messy seperators
     path = path
-      .replace(/[/\\]+/, "/")
-      .replace(/^\//, "")
-      .replace(/\/$/, "");
+      .replace(/[/\\]+/, '/')
+      .replace(/^\//, '')
+      .replace(/\/$/, '');
     // Get all subpaths
     const heirarchy = paths.heirarchy(path);
     for (const subPath of heirarchy) {
@@ -471,8 +471,8 @@ export class Gms2Project {
           folderPath: Gms2Folder.folderPathFromPath(subPath),
           tags: tags || [],
         },
-        "path",
-        subPath
+        'path',
+        subPath,
       );
     }
     this.save();
@@ -480,7 +480,7 @@ export class Gms2Project {
   }
 
   static get supportedSoundFileExtensions() {
-    return ["mp3", "ogg", "wav", "wma"];
+    return ['mp3', 'ogg', 'wav', 'wma'];
   }
 
   private addSoundByFile(source: string) {
@@ -489,8 +489,8 @@ export class Gms2Project {
       Gms2Project.supportedSoundFileExtensions.includes(fileExt),
       oneline`
       Cannot import sound file with extension: ${fileExt}.
-      Only supports: ${Gms2Project.supportedSoundFileExtensions.join(",")}
-      `
+      Only supports: ${Gms2Project.supportedSoundFileExtensions.join(',')}
+      `,
     );
     this.resources.addSound(source, this.storage);
     return this.save();
@@ -519,8 +519,8 @@ export class Gms2Project {
         Gms2Project.supportedSoundFileExtensions.includes(extension),
         oneline`
       Cannot batch import sound file with extension: ${extension}.
-      Only supports: ${Gms2Project.supportedSoundFileExtensions.join(",")}
-      `
+      Only supports: ${Gms2Project.supportedSoundFileExtensions.join(',')}
+      `,
       );
     }
     let targetFiles: string[] = [];
@@ -592,7 +592,7 @@ export class Gms2Project {
       // Check for a pattern indicating that this sprite is
       // from Spine
       const isSpine = this.storage.exists(
-        paths.changeExtension(sprite.paths[0], "atlas")
+        paths.changeExtension(sprite.paths[0], 'atlas'),
       );
       if (isSpine) {
         assert(
@@ -600,7 +600,7 @@ export class Gms2Project {
           oneline`
           Found atlas file for sprite ${sprite.name},
           implying it is a Spine export, but the
-          folder has more than one PNG file.`
+          folder has more than one PNG file.`,
         );
         spritesThatAreSpine.push(sprite);
       }
@@ -612,23 +612,23 @@ export class Gms2Project {
         ? paths.relative(sourceFolder, sprite.path)
         : paths.subfolderName(sprite.path);
       name = name
-        .replace(/[.\\/]/g, " ")
-        .replace(/\s+/, " ")
+        .replace(/[.\\/]/g, ' ')
+        .replace(/\s+/, ' ')
         .trim();
-      const casing = options?.case || "snake";
+      const casing = options?.case || 'snake';
       const casedName =
-        (casing == "snake" && snakeCase(name)) ||
-        (casing == "camel" && camelCase(name)) ||
-        (casing == "pascal" && pascalCase(name)) ||
-        "";
+        (casing == 'snake' && snakeCase(name)) ||
+        (casing == 'camel' && camelCase(name)) ||
+        (casing == 'pascal' && pascalCase(name)) ||
+        '';
       assert(casedName, `could not convert ${name} to ${casing} case`);
-      const fullName = `${options?.prefix || ""}${casedName}${
-        options?.postfix || ""
+      const fullName = `${options?.prefix || ''}${casedName}${
+        options?.postfix || ''
       }`;
       if (spritesThatAreSpine.includes(sprite)) {
         this.addSpineSprite(
-          paths.changeExtension(sprite.paths[0], "json"),
-          fullName
+          paths.changeExtension(sprite.paths[0], 'json'),
+          fullName,
         );
       } else {
         this.addSprite(sprite.path, fullName);
@@ -672,14 +672,14 @@ export class Gms2Project {
       content?: any;
       subdirectory?: string;
       allowedExtensions?: string[];
-    }
+    },
   ) {
     const file = Gms2IncludedFile.import(
       this,
       path,
       options?.content,
       options?.subdirectory,
-      options?.allowedExtensions
+      options?.allowedExtensions,
     );
     logInfo(`upserted file ${path}`);
     return file;
@@ -712,15 +712,15 @@ export class Gms2Project {
     const yyp = Gms2Project.parseYypFile(this.storage.yypAbsolutePath);
 
     fs.readJsonSync(this.storage.yypAbsolutePath) as YypComponentsVersion;
-    assert(yyp.resourceType == "GMProject", "This is not a GMS2.3+ project.");
+    assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
 
     // The most recent versions of GMS2 use a RoomOrderNodes field
     // with a different data structure than the older RoomOrder field.
     // Since we're currently not doing anything with that field, we
     // can just allow either.
-    const roomOrderField = "RoomOrder" in yyp ? "RoomOrder" : "RoomOrderNodes";
+    const roomOrderField = 'RoomOrder' in yyp ? 'RoomOrder' : 'RoomOrderNodes';
     const roomOrderList =
-      "RoomOrder" in yyp
+      'RoomOrder' in yyp
         ? new Gms2ComponentArray(yyp.RoomOrder, Gms2RoomOrder)
         : new Gms2ComponentArray(yyp.RoomOrderNodes, Gms2RoomOrder);
 
@@ -736,14 +736,14 @@ export class Gms2Project {
       [roomOrderField]: roomOrderList,
       TextureGroups: new Gms2ComponentArray(
         yyp.TextureGroups,
-        Gms2TextureGroup
+        Gms2TextureGroup,
       ),
       AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
       IncludedFiles: new Gms2IncludedFileArray(yyp.IncludedFiles, this.storage),
       resources: new Gms2ResourceArray(yyp.resources, this.storage),
     };
 
-    this.ensureResourceGroupAssignments().addFolder("NEW"); // Imported assets should go into a NEW folder.
+    this.ensureResourceGroupAssignments().addFolder('NEW'); // Imported assets should go into a NEW folder.
 
     // DEBORK
     // TODO: Ensure that parent groups (folders) for all subgroups exist as separate entities.
@@ -755,7 +755,7 @@ export class Gms2Project {
    */
   toJSON(): YypComponentsVersion {
     const fields = Object.keys(
-      this.components
+      this.components,
     ) as (keyof YypComponentsVersion)[];
     const asObject: Partial<YypComponentsVersion> = {};
     for (const field of fields) {
@@ -767,18 +767,18 @@ export class Gms2Project {
 
   static get platforms() {
     return [
-      "amazonfire",
-      "android",
-      "html5",
-      "ios",
-      "linux",
-      "mac",
-      "ps4",
-      "switch",
-      "tvos",
-      "windows",
-      "windowsuap",
-      "xboxone",
+      'amazonfire',
+      'android',
+      'html5',
+      'ios',
+      'linux',
+      'mac',
+      'ps4',
+      'switch',
+      'tvos',
+      'windows',
+      'windowsuap',
+      'xboxone',
     ] as const;
   }
 
@@ -787,7 +787,7 @@ export class Gms2Project {
    */
   private static parseYypFile(yypFilepath: string) {
     const yyp = fs.readJsonSync(yypFilepath) as YypComponentsVersion;
-    assert(yyp.resourceType == "GMProject", "This is not a GMS2.3+ project.");
+    assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
     return yyp;
   }
 }

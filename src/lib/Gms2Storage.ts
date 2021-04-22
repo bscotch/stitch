@@ -1,172 +1,196 @@
-import paths from "./paths";
-import { assert, StitchError } from "./errors";
-import fs from "./files";
-import child_process from "child_process";
-import { oneline } from "@bscotch/utility";
-import { difference } from "lodash";
+import paths from './paths';
+import { assert, StitchError } from './errors';
+import fs from './files';
+import child_process from 'child_process';
+import { oneline } from '@bscotch/utility';
+import { difference } from 'lodash';
 
 export class Gms2Storage {
-
-  constructor(readonly yypAbsolutePath:string, readonly isReadOnly=false, readonly bypassGitRequirement=false){
-    if(!bypassGitRequirement && process.env.GMS2PDK_DEV != 'true' && !this.workingDirIsClean){
+  constructor(
+    readonly yypAbsolutePath: string,
+    readonly isReadOnly = false,
+    readonly bypassGitRequirement = false,
+  ) {
+    if (
+      !bypassGitRequirement &&
+      process.env.GMS2PDK_DEV != 'true' &&
+      !this.workingDirIsClean
+    ) {
       throw new StitchError(oneline`
-        Working directory for ${paths.basename(yypAbsolutePath)} is not clean. Commit or stash your work!
+        Working directory for ${paths.basename(
+          yypAbsolutePath,
+        )} is not clean. Commit or stash your work!
       `);
     }
   }
 
-  get yypDirAbsolute(){
+  get yypDirAbsolute() {
     return paths.dirname(this.yypAbsolutePath);
   }
 
-  get workingDirIsClean(){
-    const gitProcessHandle = child_process
-      .spawnSync(`git status`,{cwd:this.yypDirAbsolute,shell:true});
-    if (gitProcessHandle.status != 0){
+  get workingDirIsClean() {
+    const gitProcessHandle = child_process.spawnSync(`git status`, {
+      cwd: this.yypDirAbsolute,
+      shell: true,
+    });
+    if (gitProcessHandle.status != 0) {
       throw new StitchError(gitProcessHandle.stderr.toString());
-    }
-    else{
-      const isClean = gitProcessHandle.stdout.toString().includes('working tree clean');
+    } else {
+      const isClean = gitProcessHandle.stdout
+        .toString()
+        .includes('working tree clean');
       return isClean;
     }
   }
 
-  get gitWorkingTreeRoot(){
-    const gitProcessHandle = child_process
-      .spawnSync(`git worktree list`,{cwd:this.yypDirAbsolute,shell:true});
-    if (gitProcessHandle.status != 0){
+  get gitWorkingTreeRoot() {
+    const gitProcessHandle = child_process.spawnSync(`git worktree list`, {
+      cwd: this.yypDirAbsolute,
+      shell: true,
+    });
+    if (gitProcessHandle.status != 0) {
       throw new StitchError(gitProcessHandle.stderr.toString());
     }
-    return gitProcessHandle.stdout.toString()
-      .split(/\s+/g)[0];
+    return gitProcessHandle.stdout.toString().split(/\s+/g)[0];
   }
 
-  toAbsolutePath(pathRelativeToYypDir:string){
-    return paths.join(this.yypDirAbsolute,pathRelativeToYypDir);
+  toAbsolutePath(pathRelativeToYypDir: string) {
+    return paths.join(this.yypDirAbsolute, pathRelativeToYypDir);
   }
 
-  ensureDir(dir:string){
-    if(!this.isReadOnly){
+  ensureDir(dir: string) {
+    if (!this.isReadOnly) {
       fs.ensureDirSync(dir);
     }
   }
 
   /** Delete all files and folders (recursively) inside this directory. */
-  emptyDir(dir:string,includeStartingDir=false){
-    if(!this.isReadOnly){
+  emptyDir(dir: string, includeStartingDir = false) {
+    if (!this.isReadOnly) {
       fs.emptyDirSync(dir);
-      if(includeStartingDir){
+      if (includeStartingDir) {
         fs.removeSync(dir);
       }
     }
   }
 
-  deleteFile(path:string){
-    if(!this.isReadOnly){
+  deleteFile(path: string) {
+    if (!this.isReadOnly) {
       fs.removeSync(path);
     }
   }
 
-  listFiles(dir:string,recursive?:boolean,allowedExtension?:string[]){
-    if (allowedExtension && allowedExtension.length > 0){
+  listFiles(dir: string, recursive?: boolean, allowedExtension?: string[]) {
+    if (allowedExtension && allowedExtension.length > 0) {
       return fs.listFilesByExtensionSync(dir, allowedExtension, recursive);
-    }
-    else{
-      return fs.listFilesSync(dir,recursive);
+    } else {
+      return fs.listFilesSync(dir, recursive);
     }
   }
 
-  listPaths(dir:string,recursive?:boolean){
-    return fs.listPathsSync(dir,recursive);
+  listPaths(dir: string, recursive?: boolean) {
+    return fs.listPathsSync(dir, recursive);
   }
 
   /**
    * Copy a file or recursively copy a directory.
    * Files are only overwritten if there is a change.
    */
-  copy(from:string,to:string){
-    assert(fs.existsSync(from),`Cannot copy from ${from}, path does not exist.`);
-    if(fs.isFile(from)){
-      if(!fs.existsSync(to) || fs.checksum(from) != fs.checksum(to)){
-        fs.copySync(from,to,{overwrite:true});
+  copy(from: string, to: string) {
+    assert(
+      fs.existsSync(from),
+      `Cannot copy from ${from}, path does not exist.`,
+    );
+    if (fs.isFile(from)) {
+      if (!fs.existsSync(to) || fs.checksum(from) != fs.checksum(to)) {
+        fs.copySync(from, to, { overwrite: true });
       }
       return;
     }
     // If destination doesn't exist we can just copy over.
-    if(!fs.existsSync(to) || !fs.listPathsSync(to,true).length){
-      return fs.copySync(from,to,{overwrite:true});
+    if (!fs.existsSync(to) || !fs.listPathsSync(to, true).length) {
+      return fs.copySync(from, to, { overwrite: true });
     }
     // Else we need to diff the source and destination,
     // remove any extra files from destination, and write
     // new/updated files.
-    const fromFiles = fs.listFilesSync(from,true)
-      .map(p=>paths.relative(from,p));
-    const toFiles   = fs.listFilesSync(to,true)
-      .map(p=>paths.relative(to,p));
+    const fromFiles = fs
+      .listFilesSync(from, true)
+      .map((p) => paths.relative(from, p));
+    const toFiles = fs
+      .listFilesSync(to, true)
+      .map((p) => paths.relative(to, p));
     // Delete extra files in destination
-    difference(toFiles,fromFiles)
-      .forEach(toDelete=>fs.removeSync(paths.join(to,toDelete)));
+    difference(toFiles, fromFiles).forEach((toDelete) =>
+      fs.removeSync(paths.join(to, toDelete)),
+    );
     // Copy files that have changed or are new
-    fromFiles.forEach(fromFileRelative=>{
-      const fromAbs = paths.join(from,fromFileRelative);
-      const toAbs   = paths.join(to,fromFileRelative);
+    fromFiles.forEach((fromFileRelative) => {
+      const fromAbs = paths.join(from, fromFileRelative);
+      const toAbs = paths.join(to, fromFileRelative);
       fs.ensureDirSync(paths.dirname(toAbs));
-      if(!fs.existsSync(toAbs) || fs.checksum(toAbs) != fs.checksum(fromAbs)){
-        fs.copySync(fromAbs,toAbs,{overwrite:true});
+      if (!fs.existsSync(toAbs) || fs.checksum(toAbs) != fs.checksum(fromAbs)) {
+        fs.copySync(fromAbs, toAbs, { overwrite: true });
       }
     });
   }
 
-  exists(path:string){
+  exists(path: string) {
     return fs.existsSync(path);
   }
 
-  isFile(path:string){
+  isFile(path: string) {
     return fs.statSync(path).isFile();
   }
 
-  isDirectory(path:string){
+  isDirectory(path: string) {
     return fs.statSync(path).isDirectory();
   }
 
-  copyFile(paths:[source:string,dest:string]):void;
-  copyFile(source:string,destinationPath:string):void;
-  copyFile(sourceOrPaths:string|[source:string,dest:string],destinationPath?:string){
-    if(typeof sourceOrPaths != 'string'){
-      ([sourceOrPaths,destinationPath] = sourceOrPaths);
+  copyFile(paths: [source: string, dest: string]): void;
+  copyFile(source: string, destinationPath: string): void;
+  copyFile(
+    sourceOrPaths: string | [source: string, dest: string],
+    destinationPath?: string,
+  ) {
+    if (typeof sourceOrPaths != 'string') {
+      [sourceOrPaths, destinationPath] = sourceOrPaths;
     }
-    assert(fs.existsSync(sourceOrPaths),`copyFile: source ${sourceOrPaths} does not exist`);
-    if(!this.isReadOnly){
+    assert(
+      fs.existsSync(sourceOrPaths),
+      `copyFile: source ${sourceOrPaths} does not exist`,
+    );
+    if (!this.isReadOnly) {
       fs.ensureDirSync(paths.dirname(destinationPath as string));
       fs.removeSync(destinationPath as string);
-      fs.copyFileSync(sourceOrPaths,destinationPath as string);
+      fs.copyFileSync(sourceOrPaths, destinationPath as string);
     }
   }
 
-  asPosixPath(path:string){
+  asPosixPath(path: string) {
     return paths.asPosixPath(path);
   }
 
-  writeBlob(filePath:string,data:string|Buffer){
-    if(!this.isReadOnly){
-      fs.writeFileSync(filePath,data);
+  writeBlob(filePath: string, data: string | Buffer) {
+    if (!this.isReadOnly) {
+      fs.writeFileSync(filePath, data);
     }
   }
 
   /** Write data as JSON, defaulting to GMS2.3-style JSON
    * @param {boolean} [plain] Use regular JSON instead of GMS2.3-style.
    */
-  writeJson(filePath:string,data:any,plain=false){
-    if(!this.isReadOnly){
-      fs.writeJsonSync(filePath,data,plain);
+  writeJson(filePath: string, data: any, plain = false) {
+    if (!this.isReadOnly) {
+      fs.writeJsonSync(filePath, data, plain);
     }
   }
 
-  readBlob(filePath:string){
+  readBlob(filePath: string) {
     return fs.readFileSync(filePath);
   }
 
-  readJson(filePath:string){
+  readJson(filePath: string) {
     return fs.readJsonSync(filePath);
   }
 }

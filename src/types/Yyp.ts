@@ -7,50 +7,50 @@
  */
 
 export interface YypResourceId {
-  name: string,
-  path: string
+  name: string;
+  path: string;
 }
 
 /** A 'Resource' is a an asset like a sprite, object, script, and so on. */
 export interface YypResource {
-  id: YypResourceId,
-  order: number
+  id: YypResourceId;
+  order: number;
 }
 
 export interface YypOption {
-  ConfigValues?:{[configName:string]:{[field:string]:string}},
-  name: string,
-  path: string
+  ConfigValues?: { [configName: string]: { [field: string]: string } };
+  name: string;
+  path: string;
 }
 
 export interface YypConfig {
-  name: string,
-  children: YypConfig[]
+  name: string;
+  children: YypConfig[];
 }
 
 export interface YypRoomOrder {
-  name: string,
-  path: string
+  name: string;
+  path: string;
 }
 
 export interface YypRoomOrderNode {
-  roomId:{
-    name:string,
+  roomId: {
+    name: string;
     /** rooms/{name}/{name}.yy */
-    path:string
-  }
+    path: string;
+  };
 }
 
 export interface YypFolder {
-  name: string,
-  tags: string[],
-  folderPath: string,
-  order: number,
-  resourceType: "GMFolder"
-  resourceVersion: "1.0",
+  name: string;
+  tags: string[];
+  folderPath: string;
+  order: number;
+  resourceType: 'GMFolder';
+  resourceVersion: '1.0';
 }
 
-type StringifiedValues<AnObject> = { [key in keyof AnObject]: string }
+type StringifiedValues<AnObject> = { [key in keyof AnObject]: string };
 
 /**
  * Can be used in:
@@ -64,32 +64,31 @@ type StringifiedValues<AnObject> = { [key in keyof AnObject]: string }
  *  TODO: GMSprite and GMSound has more limited keys. Should we create a separate interface?
  */
 export interface ConfigValue<Component> {
-  [configName: string]: Partial<StringifiedValues<Component>>
+  [configName: string]: Partial<StringifiedValues<Component>>;
 }
 
 export interface YypAudioGroup {
-  ConfigValues?:{[configName:string]:{[field:string]:string}},
-  name: string,
-  targets: BigInt,
-  resourceType: "GMAudioGroup",
-  resourceVersion: "1.0",
+  ConfigValues?: { [configName: string]: { [field: string]: string } };
+  name: string;
+  targets: BigInt;
+  resourceType: 'GMAudioGroup';
+  resourceVersion: '1.0';
 }
 
-
 export interface YypTextureGroup {
-  ConfigValues?:{[configName:string]:{[field:string]:string}},
-  name: string,
+  ConfigValues?: { [configName: string]: { [field: string]: string } };
+  name: string;
   groupParent?: {
-    name: string,
-    path: string
-  },
-  isScaled: boolean,
-  autocrop: boolean,
-  border: number,
-  mipsToGenerate: number,
-  targets: BigInt,
-  resourceType: "GMTextureGroup",
-  resourceVersion: "1.0",
+    name: string;
+    path: string;
+  };
+  isScaled: boolean;
+  autocrop: boolean;
+  border: number;
+  mipsToGenerate: number;
+  targets: BigInt;
+  resourceType: 'GMTextureGroup';
+  resourceVersion: '1.0';
 }
 
 enum IncludedFileMask {
@@ -98,45 +97,45 @@ enum IncludedFileMask {
 }
 
 export interface YypIncludedFile {
-  ConfigValues?:{[configName:string]:{CopyToMask:string}},
+  ConfigValues?: { [configName: string]: { CopyToMask: string } };
   /** The name of the file, including extension, without the path */
-  name: string,
-  CopyToMask: IncludedFileMask | number,
+  name: string;
+  CopyToMask: IncludedFileMask | number;
   /** `datafiles/${subdir}` */
-  filePath: string,
-  resourceType: "GMIncludedFile",
-  resourceVersion: "1.0",
+  filePath: string;
+  resourceType: 'GMIncludedFile';
+  resourceVersion: '1.0';
 }
 
 /** The YYP content that has not changed across GMS2.3 subversions */
-interface YypComponentsStable{
-  name: string,
-  resourceType: "GMProject",
-  resources: YypResource[],
-  Options: YypOption[],
-  isDnDProject: boolean,
-  isEcma: boolean,
-  tutorialPath: string,
+interface YypComponentsStable {
+  name: string;
+  resourceType: 'GMProject';
+  resources: YypResource[];
+  Options: YypOption[];
+  isDnDProject: boolean;
+  isEcma: boolean;
+  tutorialPath: string;
   configs: {
-    name: 'Default',
-    children: YypConfig[]
-  },
-  Folders: YypFolder[],
-  AudioGroups: YypAudioGroup[],
-  TextureGroups: YypTextureGroup[],
-  IncludedFiles: YypIncludedFile[],
+    name: 'Default';
+    children: YypConfig[];
+  };
+  Folders: YypFolder[];
+  AudioGroups: YypAudioGroup[];
+  TextureGroups: YypTextureGroup[];
+  IncludedFiles: YypIncludedFile[];
   MetaData: {
-    IDEVersion: string
-  }
-  resourceVersion: string,
-  tags: string[],
+    IDEVersion: string;
+  };
+  resourceVersion: string;
+  tags: string[];
 }
 
-export interface YypComponentsLegacy extends YypComponentsStable{
-  RoomOrder: YypRoomOrder[]
+export interface YypComponentsLegacy extends YypComponentsStable {
+  RoomOrder: YypRoomOrder[];
 }
 
 /** Raw YYP Content from most recent supported IDE */
-export interface YypComponents extends YypComponentsStable{
-  RoomOrderNodes: YypRoomOrderNode[]
+export interface YypComponents extends YypComponentsStable {
+  RoomOrderNodes: YypRoomOrderNode[];
 }

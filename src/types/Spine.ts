@@ -1,49 +1,48 @@
-
 /**
  * Structure of Spine 3.7.94 JSON file exports.
  */
 export interface Spine {
   skeleton: {
-    hash: string,
+    hash: string;
     /** Spine version */
-    spine: string,
+    spine: string;
     /** Width of...? Not the atlas. Maybe canvas? */
-    width: number,
+    width: number;
     /** Height of...? Not the atlas. Maybe canvas? */
-    height: number,
-    fps: number,
+    height: number;
+    fps: number;
     /** Path that image paths in rest of doc are relative to */
-    images: string,
+    images: string;
     /** Path that autdio paths in rest of doc are relative to */
-    audio: string
-  },
+    audio: string;
+  };
   bones: {
-    name: string,
-    parent?: string
-  }[],
+    name: string;
+    parent?: string;
+  }[];
   slots: {
-    name: "string",
-    bone: "string",
-    attachment: "string"
-  }[],
+    name: 'string';
+    bone: 'string';
+    attachment: 'string';
+  }[];
   skins: {
-    [name:string]:{
-      [slot:string]:{
-        [animationName:string]:{
-          x: number,
-          y: number,
-          width: number,
-          height: number
-        }
-      }
-    }
-  },
-  events:{
-    [eventName:string]:{
+    [name: string]: {
+      [slot: string]: {
+        [animationName: string]: {
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+        };
+      };
+    };
+  };
+  events: {
+    [eventName: string]: {
       /** Path to audio, relative to root skeleton.audio */
-      audio?: string
-    }
-  },
+      audio?: string;
+    };
+  };
   /** [NOT TYPED] */
-  animations: any
+  animations: any;
 }

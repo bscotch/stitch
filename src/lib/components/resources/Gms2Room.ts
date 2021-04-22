@@ -1,32 +1,32 @@
-import { camelCase } from "change-case";
+import { camelCase } from 'change-case';
 import {
   YyRoom,
   YyRoomInstance,
   YyRoomInstanceLayer,
   yyRoomInstanceDefaults,
-} from "../../../types/YyRoom";
-import { assert } from "../../errors";
-import { logInfo } from "../../log";
-import { NumberFixed } from "../../NumberFixed";
-import { uuidV4 } from "../../uuid";
-import type { Gms2Object } from "./Gms2Object";
+} from '../../../types/YyRoom';
+import { assert } from '../../errors';
+import { logInfo } from '../../log';
+import { NumberFixed } from '../../NumberFixed';
+import { uuidV4 } from '../../uuid';
+import type { Gms2Object } from './Gms2Object';
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
-} from "./Gms2ResourceBase";
+} from './Gms2ResourceBase';
 
 export class Gms2Room extends Gms2ResourceBase {
   protected yyData!: YyRoom; // Happens in the super() constructor
 
   constructor(...setup: Gms2ResourceBaseParameters) {
-    super("rooms", ...setup);
+    super('rooms', ...setup);
   }
 
   get instanceLayers() {
     const layers = this.yyData.layers;
     const instanceLayers: YyRoomInstanceLayer[] = [];
     for (const layer of layers) {
-      if ("instances" in layer) {
+      if ('instances' in layer) {
         instanceLayers.push(layer);
       }
     }

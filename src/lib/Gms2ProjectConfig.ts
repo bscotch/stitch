@@ -1,45 +1,45 @@
-import { assert } from "./errors";
-import { Gms2Storage } from "./Gms2Storage";
-import paths from "./paths";
+import { assert } from './errors';
+import { Gms2Storage } from './Gms2Storage';
+import paths from './paths';
 
 interface Gms2ProjectConfigFile {
-  textureGroupAssignments:{
-    [folder:string]:string
-  },
-  audioGroupAssignments:{
-    [folder:string]:string
-  }
+  textureGroupAssignments: {
+    [folder: string]: string;
+  };
+  audioGroupAssignments: {
+    [folder: string]: string;
+  };
 }
 
-type Gms2ProjectConfigAssignmentField = 'textureGroupAssignments'|'audioGroupAssignments';
+type Gms2ProjectConfigAssignmentField =
+  | 'textureGroupAssignments'
+  | 'audioGroupAssignments';
 
 /** The Project Config lives alongside the .yyp file */
 export class Gms2ProjectConfig {
-
   private data!: Gms2ProjectConfigFile;
 
-  constructor (readonly storage: Gms2Storage){
-    if(!storage.exists(this.filePathAbsolute)){
+  constructor(readonly storage: Gms2Storage) {
+    if (!storage.exists(this.filePathAbsolute)) {
       this.data = Gms2ProjectConfig.defaultContent;
       this.save();
     }
     this.load();
   }
 
-  get name(){
+  get name() {
     return 'stitch.config.json';
   }
 
-  get filePathAbsolute(){
+  get filePathAbsolute() {
     return this.storage.toAbsolutePath(this.name);
   }
 
-
-  get textureGroupAssignments(){
-    return {...this.data.textureGroupAssignments};
+  get textureGroupAssignments() {
+    return { ...this.data.textureGroupAssignments };
   }
 
-  get textureGroupsWithAssignedFolders(){
+  get textureGroupsWithAssignedFolders() {
     return Object.values(this.textureGroupAssignments);
   }
 
@@ -49,15 +49,15 @@ export class Gms2ProjectConfig {
    * texture groups of contained sprites to be assigned
    * in order).
    */
-  get foldersWithAssignedTextureGroups(){
+  get foldersWithAssignedTextureGroups() {
     return Gms2ProjectConfig.sortedKeys(this.textureGroupAssignments);
   }
 
-  get audioGroupAssignments(){
-    return {...this.data.audioGroupAssignments};
+  get audioGroupAssignments() {
+    return { ...this.data.audioGroupAssignments };
   }
 
-  get audioGroupsWithAssignedFolders(){
+  get audioGroupsWithAssignedFolders() {
     return Object.values(this.audioGroupAssignments);
   }
 
@@ -67,64 +67,82 @@ export class Gms2ProjectConfig {
    * texture groups of contained sprites to be assigned
    * in order).
    */
-  get foldersWithAssignedAudioGroups(){
+  get foldersWithAssignedAudioGroups() {
     return Gms2ProjectConfig.sortedKeys(this.audioGroupAssignments);
   }
 
-  private addGroupAssignement(type:Gms2ProjectConfigAssignmentField,folder:string,group:string){
-    assert(!['','/','\\'].includes(folder),
-      `Cannot assign groups to the root level. Use default groups for that.`);
+  private addGroupAssignement(
+    type: Gms2ProjectConfigAssignmentField,
+    folder: string,
+    group: string,
+  ) {
+    assert(
+      !['', '/', '\\'].includes(folder),
+      `Cannot assign groups to the root level. Use default groups for that.`,
+    );
     this.data[type][folder] = group;
     return this.save();
   }
 
-  private deleteGroupAssignment(type:Gms2ProjectConfigAssignmentField,folder:string){
-    Reflect.deleteProperty(this.data[type],folder);
+  private deleteGroupAssignment(
+    type: Gms2ProjectConfigAssignmentField,
+    folder: string,
+  ) {
+    Reflect.deleteProperty(this.data[type], folder);
     return this.save();
   }
 
-  addTextureGroupAssignment(folder:string,textureGroup:string){
-    return this.addGroupAssignement('textureGroupAssignments',folder,textureGroup);
+  addTextureGroupAssignment(folder: string, textureGroup: string) {
+    return this.addGroupAssignement(
+      'textureGroupAssignments',
+      folder,
+      textureGroup,
+    );
   }
 
-  deleteTextureGroupAssignment(folder:string){
-    return this.deleteGroupAssignment('textureGroupAssignments',folder);
+  deleteTextureGroupAssignment(folder: string) {
+    return this.deleteGroupAssignment('textureGroupAssignments', folder);
   }
 
-  addAudioGroupAssignment(folder:string,textureGroup:string){
-    return this.addGroupAssignement('audioGroupAssignments',folder,textureGroup);
+  addAudioGroupAssignment(folder: string, textureGroup: string) {
+    return this.addGroupAssignement(
+      'audioGroupAssignments',
+      folder,
+      textureGroup,
+    );
   }
 
-  deleteAudioGroupAssignment(folder:string){
-    return this.deleteGroupAssignment('audioGroupAssignments',folder);
+  deleteAudioGroupAssignment(folder: string) {
+    return this.deleteGroupAssignment('audioGroupAssignments', folder);
   }
 
-  private load(){
+  private load() {
     this.data = Gms2ProjectConfig.defaultContent;
-    try{
-      Object.assign(this.data,this.storage.readJson(this.filePathAbsolute));
-    }
-    catch(err){
-      if( ! this.storage.isReadOnly){ throw err; }
+    try {
+      Object.assign(this.data, this.storage.readJson(this.filePathAbsolute));
+    } catch (err) {
+      if (!this.storage.isReadOnly) {
+        throw err;
+      }
     }
     return this;
   }
 
-  private save(){
-    this.storage.writeJson(this.filePathAbsolute,this.data,true);
+  private save() {
+    this.storage.writeJson(this.filePathAbsolute, this.data, true);
     return this;
   }
 
-  static sortedKeys(object:{[key:string]:any}){
+  static sortedKeys(object: { [key: string]: any }) {
     const keys = Object.keys(object);
     keys.sort(paths.pathSpecificitySort);
     return keys;
   }
 
-  static get defaultContent(){
+  static get defaultContent() {
     return {
-      textureGroupAssignments:{},
-      audioGroupAssignments:{}
+      textureGroupAssignments: {},
+      audioGroupAssignments: {},
     };
   }
 }

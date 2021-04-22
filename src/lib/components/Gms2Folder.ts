@@ -1,35 +1,32 @@
-import { YypFolder } from "../../types/Yyp";
-import paths from "../paths";
+import { YypFolder } from '../../types/Yyp';
+import paths from '../paths';
 
 export class Gms2Folder {
+  #data: YypFolder;
 
-  #data:YypFolder;
-
-  constructor(folder:YypFolder){
-    this.#data = {...folder};
+  constructor(folder: YypFolder) {
+    this.#data = { ...folder };
   }
 
   /** The path as seen by a user in the IDE. */
-  get path(){
+  get path() {
     // e.g. folders/sample_resources/group with spaces and !$@#%()*&.yy
-    return this.#data.folderPath
-      .replace(/^folders\//,'')
-      .replace(/.yy$/,'');
+    return this.#data.folderPath.replace(/^folders\//, '').replace(/.yy$/, '');
   }
 
-  get name(){
+  get name() {
     return this.#data.name;
   }
 
-  toJSON(): YypFolder{
-    return {...this.#data};
+  toJSON(): YypFolder {
+    return { ...this.#data };
   }
 
   /**
    * Given a path as seen in the IDE,
    * get the 'folderPath' field value used in the .yyp and .yy files
    */
-  static folderPathFromPath(path:string){
+  static folderPathFromPath(path: string) {
     return `folders/${path}.yy`;
   }
 
@@ -37,16 +34,19 @@ export class Gms2Folder {
    * Given a path as seen in the IDE,
    * get the 'name' field value used in the .yyp and .yy files
    */
-  static nameFromPath(path:string){
+  static nameFromPath(path: string) {
     return paths.parse(path).name;
   }
 
-  static get defaultDataValues(): Pick<YypFolder,'tags'|'order'|'resourceType'|'resourceVersion'>{
+  static get defaultDataValues(): Pick<
+    YypFolder,
+    'tags' | 'order' | 'resourceType' | 'resourceVersion'
+  > {
     return {
       tags: [],
       order: 1, // This value doesn't seem to do anything...
-      resourceType: "GMFolder",
-      resourceVersion: "1.0",
+      resourceType: 'GMFolder',
+      resourceVersion: '1.0',
     };
   }
 }

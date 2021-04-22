@@ -1,9 +1,9 @@
-import "source-map-support/register";
+import 'source-map-support/register';
 
 export class StitchError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "StitchError";
+    this.name = 'StitchError';
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -11,7 +11,7 @@ export class StitchError extends Error {
 export class StitchAssertionError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "StitchAssertionError";
+    this.name = 'StitchAssertionError';
     Error.captureStackTrace(this, this.constructor);
   }
 }

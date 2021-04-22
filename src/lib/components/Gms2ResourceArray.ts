@@ -1,42 +1,42 @@
-import { dehydrateArray } from "../hydrate";
-import { Gms2ResourceBase } from "./resources/Gms2ResourceBase";
-import { Gms2Sound } from "../components/resources/Gms2Sound";
-import { YypResource } from "../../types/Yyp";
-import { assert, StitchError } from "../errors";
-import { Gms2Storage } from "../Gms2Storage";
-import paths from "../paths";
-import { Gms2Sprite } from "./resources/Gms2Sprite";
-import { difference, uniqBy } from "lodash";
-import { logInfo, logDebug } from "../log";
-import { Gms2Script } from "./resources/Gms2Script";
-import { Gms2Animation } from "./resources/Gms2Animation";
-import { Gms2Extension } from "./resources/Gms2Extension";
-import { Gms2Font } from "./resources/Gms2Font";
-import { Gms2Note } from "./resources/Gms2Note";
-import { Gms2Object } from "./resources/Gms2Object";
-import { Gms2Path } from "./resources/Gms2Path";
-import { Gms2Room } from "./resources/Gms2Room";
-import { Gms2Sequence } from "./resources/Gms2Sequence";
-import { Gms2Shader } from "./resources/Gms2Shader";
-import { Gms2Tileset } from "./resources/Gms2Tileset";
-import { Gms2Timeline } from "./resources/Gms2Timeline";
-import { Spine } from "../../types/Spine";
-import { uuidV4 } from "../uuid";
-import { SpriteType } from "../../types/YySprite";
+import { dehydrateArray } from '../hydrate';
+import { Gms2ResourceBase } from './resources/Gms2ResourceBase';
+import { Gms2Sound } from '../components/resources/Gms2Sound';
+import { YypResource } from '../../types/Yyp';
+import { assert, StitchError } from '../errors';
+import { Gms2Storage } from '../Gms2Storage';
+import paths from '../paths';
+import { Gms2Sprite } from './resources/Gms2Sprite';
+import { difference, uniqBy } from 'lodash';
+import { logInfo, logDebug } from '../log';
+import { Gms2Script } from './resources/Gms2Script';
+import { Gms2Animation } from './resources/Gms2Animation';
+import { Gms2Extension } from './resources/Gms2Extension';
+import { Gms2Font } from './resources/Gms2Font';
+import { Gms2Note } from './resources/Gms2Note';
+import { Gms2Object } from './resources/Gms2Object';
+import { Gms2Path } from './resources/Gms2Path';
+import { Gms2Room } from './resources/Gms2Room';
+import { Gms2Sequence } from './resources/Gms2Sequence';
+import { Gms2Shader } from './resources/Gms2Shader';
+import { Gms2Tileset } from './resources/Gms2Tileset';
+import { Gms2Timeline } from './resources/Gms2Timeline';
+import { Spine } from '../../types/Spine';
+import { uuidV4 } from '../uuid';
+import { SpriteType } from '../../types/YySprite';
 
 export class Gms2ResourceArray {
   private items: Gms2ResourceSubclass[];
 
   constructor(data: YypResource[], private storage: Gms2Storage) {
-    const uniqueData = uniqBy(data, "id.name");
+    const uniqueData = uniqBy(data, 'id.name');
     const removedItems = difference(data, uniqueData);
     if (removedItems.length) {
       logInfo(
-        `Duplicate resources found: ${removedItems.length} duplicates removed`
+        `Duplicate resources found: ${removedItems.length} duplicates removed`,
       );
     }
     this.items = data.map((item) =>
-      Gms2ResourceArray.hydrateResource(item, storage)
+      Gms2ResourceArray.hydrateResource(item, storage),
     );
   }
 
@@ -61,10 +61,10 @@ export class Gms2ResourceArray {
   }
 
   filterByClass<subclass extends Gms2ResourceSubclassType>(
-    resourceClass: subclass
+    resourceClass: subclass,
   ) {
     return this.items.filter(
-      (item) => item instanceof resourceClass
+      (item) => item instanceof resourceClass,
     ) as InstanceType<subclass>[];
   }
 
@@ -83,24 +83,24 @@ export class Gms2ResourceArray {
 
   findByClass<subclass extends Gms2ResourceSubclassType>(
     matchFunction: (item: Gms2ResourceSubclass) => any,
-    resourceClass: subclass
+    resourceClass: subclass,
   ) {
     return this.filterByClass(resourceClass).find((item) =>
-      matchFunction(item)
+      matchFunction(item),
     );
   }
 
   findByName<subclass extends Gms2ResourceSubclassType>(
     name: string,
-    resourceClass: subclass
+    resourceClass: subclass,
   ): InstanceType<subclass> | void;
   findByName<subclass extends Gms2ResourceSubclassType>(
-    name: string
+    name: string,
   ): InstanceType<subclass> | void;
   findByName(name: any): Gms2ResourceSubclass | void;
   findByName<subclass extends Gms2ResourceSubclassType>(
     name: string,
-    resourceClass?: subclass
+    resourceClass?: subclass,
   ): any {
     const item = this.items.find((i) => i.name == name);
     if (item && resourceClass && !(item instanceof resourceClass)) {
@@ -112,7 +112,7 @@ export class Gms2ResourceArray {
   findByField<subclass extends Gms2ResourceSubclassType>(
     field: keyof Gms2ResourceSubclass,
     value: any,
-    resourceClass: subclass
+    resourceClass: subclass,
   ) {
     return this.findByClass((item) => item[field] == value, resourceClass);
   }
@@ -126,16 +126,16 @@ export class Gms2ResourceArray {
   filterByClassAndFolder<subclass extends Gms2ResourceSubclassType>(
     resourceClass: subclass,
     folder: string,
-    recursive = true
+    recursive = true,
   ) {
     return this.filterByFolder(folder, recursive).filter(
-      (item) => item instanceof resourceClass
+      (item) => item instanceof resourceClass,
     ) as InstanceType<subclass>[];
   }
 
   addSound(source: string, storage: Gms2Storage) {
     const { name } = paths.parse(source);
-    const existingSound = this.findByField("name", name, Gms2Sound);
+    const existingSound = this.findByField('name', name, Gms2Sound);
     if (existingSound) {
       existingSound.replaceAudioFile(source);
       logInfo(`updated sound ${name}`);
@@ -147,7 +147,7 @@ export class Gms2ResourceArray {
   }
 
   addScript(name: string, code: string, storage: Gms2Storage) {
-    const script = this.findByField("name", name, Gms2Script);
+    const script = this.findByField('name', name, Gms2Script);
     if (script) {
       script.code = code;
       logInfo(`updated script ${name}`);
@@ -161,7 +161,7 @@ export class Gms2ResourceArray {
   addSprite(sourceFolder: string, storage: Gms2Storage, nameOverride?: string) {
     const name = nameOverride || paths.basename(sourceFolder);
     logDebug(`adding sprite from ${sourceFolder} as name ${name}`);
-    const sprite = this.findByField("name", name, Gms2Sprite);
+    const sprite = this.findByField('name', name, Gms2Sprite);
     if (sprite) {
       sprite.replaceFrames(sourceFolder);
       logInfo(`updated sprite ${name}`);
@@ -175,12 +175,12 @@ export class Gms2ResourceArray {
   addSpineSprite(
     jsonSourcePath: string,
     storage: Gms2Storage,
-    nameOverride?: string
+    nameOverride?: string,
   ) {
     const sourceSpineName = paths.parse(jsonSourcePath).name;
     const sourcePathWithoutExt = paths.join(
       paths.dirname(jsonSourcePath),
-      sourceSpineName
+      sourceSpineName,
     );
     const name = nameOverride || sourceSpineName;
 
@@ -194,19 +194,19 @@ export class Gms2ResourceArray {
     };
     const copySpriteSheet = (sprite: Gms2Sprite) => {
       storage.copyFile(
-        createSourcePath("png"),
-        createDestPath(sprite, sourceSpineName, "png")
+        createSourcePath('png'),
+        createDestPath(sprite, sourceSpineName, 'png'),
       );
     };
 
     const defaultSpriteImagePath = paths.join(
       __dirname,
-      "..",
-      "..",
-      "..",
-      "assets",
-      "sprite-default",
-      "subimage.png"
+      '..',
+      '..',
+      '..',
+      'assets',
+      'sprite-default',
+      'subimage.png',
     );
 
     // Make sure the JSON file is a valid export.
@@ -214,49 +214,49 @@ export class Gms2ResourceArray {
       const jsonContent: Spine = storage.readJson(jsonSourcePath);
       assert(
         jsonContent.skeleton.spine,
-        "The target JSON file is not from Spine."
+        'The target JSON file is not from Spine.',
       );
       assert(
-        jsonContent.skeleton.spine.startsWith("3.7."),
-        "GameMaker Studio 2.3 is only compatible with Spine 3.7.X"
+        jsonContent.skeleton.spine.startsWith('3.7.'),
+        'GameMaker Studio 2.3 is only compatible with Spine 3.7.X',
       );
     } catch (err) {
       throw err instanceof StitchError
         ? err
         : new StitchError(
-            `There is no valid Spine JSON file at ${jsonSourcePath}.`
+            `There is no valid Spine JSON file at ${jsonSourcePath}.`,
           );
     }
 
     // Make sure we have image and atlas files
-    for (const ext of ["png", "atlas"]) {
+    for (const ext of ['png', 'atlas']) {
       assert(
         storage.exists(createSourcePath(ext)),
-        `Expected Spine file ${createSourcePath(ext)} does not exist.`
+        `Expected Spine file ${createSourcePath(ext)} does not exist.`,
       );
     }
 
-    let sprite = this.findByField("name", name, Gms2Sprite);
+    let sprite = this.findByField('name', name, Gms2Sprite);
 
     // If the sprite already exists, and is a Spine sprite,
     // just replace the existing Spine files and keep the
     // name as the existing frameId
     const existingSpineFrameId = paths.parse(
-      sprite?.filePathsRelative.find((x) => x.endsWith(".atlas")) || ""
+      sprite?.filePathsRelative.find((x) => x.endsWith('.atlas')) || '',
     ).name;
     if (sprite && existingSpineFrameId) {
       // Copy the atlas and JSON files, renaming in the process
-      for (const ext of ["atlas", "json"]) {
+      for (const ext of ['atlas', 'json']) {
         storage.copyFile(
           createSourcePath(ext),
-          createDestPath(sprite, existingSpineFrameId, ext)
+          createDestPath(sprite, existingSpineFrameId, ext),
         );
       }
       // Directly copy over the spritesheet
       // (must keep its name, which is sourceSpineName, since the atlas file references it)
       copySpriteSheet(sprite);
       // Attempt to trigger a GameMaker cache reset by rewriting the thumbnail
-      const thumbnailPath = createDestPath(sprite, existingSpineFrameId, "png");
+      const thumbnailPath = createDestPath(sprite, existingSpineFrameId, 'png');
       this.storage.deleteFile(thumbnailPath);
       this.storage.copyFile(defaultSpriteImagePath, thumbnailPath);
       logInfo(`updated spine sprite ${name}`);
@@ -278,7 +278,7 @@ export class Gms2ResourceArray {
     const oldFrameIds = sprite.frameIds;
     for (const fid of oldFrameIds) {
       // Purge the old crap
-      const layerFolderPath = paths.join(sprite.yyDirAbsolute, "layers", fid);
+      const layerFolderPath = paths.join(sprite.yyDirAbsolute, 'layers', fid);
       const compositeImagePath = paths.join(sprite.yyDirAbsolute, `${fid}.png`);
       storage.emptyDir(layerFolderPath, true);
       console.log(compositeImagePath);
@@ -290,10 +290,10 @@ export class Gms2ResourceArray {
     sprite.addFrame(defaultSpriteImagePath, frameId); // Adds the thumbnail PNG
     sprite.spriteType = SpriteType.Spine;
 
-    for (const ext of ["atlas", "json"]) {
+    for (const ext of ['atlas', 'json']) {
       storage.copyFile(
         createSourcePath(ext),
-        createDestPath(sprite, frameId, ext)
+        createDestPath(sprite, frameId, ext),
       );
     }
     // Copy over the spritesheet.
@@ -303,7 +303,7 @@ export class Gms2ResourceArray {
   }
 
   addObject(name: string, storage: Gms2Storage) {
-    let object = this.findByField("name", name, Gms2Object);
+    let object = this.findByField('name', name, Gms2Object);
     if (!object) {
       object = Gms2Object.create(name, storage);
       this.push(object);
@@ -364,12 +364,12 @@ export class Gms2ResourceArray {
   }
 
   static hydrateResource(data: YypResource, storage: Gms2Storage) {
-    const resourceType = data.id.path.split("/")[0] as Gms2ResourceType;
+    const resourceType = data.id.path.split('/')[0] as Gms2ResourceType;
     // const subclass = Gms2Timeline;
     const subclass = Gms2ResourceArray.resourceClassMap[resourceType];
     if (!subclass) {
       throw new StitchError(
-        `No constructor for resource ${resourceType} exists.`
+        `No constructor for resource ${resourceType} exists.`,
       );
     }
     const resource = new subclass(data, storage) as Gms2ResourceSubclass;
