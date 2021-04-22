@@ -171,9 +171,16 @@ export class Gms2Storage {
     return paths.asPosixPath(path);
   }
 
-  writeBlob(filePath: string, data: string | Buffer) {
+  /** Write a buffer to file */
+  writeBlob(filePath: string, data: string | Buffer): void;
+  /** Write a string to file, optionally forcing EOL */
+  writeBlob(filePath: string, data: string, eol: '\r\n' | '\n'): void;
+  writeBlob(filePath: string, data: string | Buffer, eol?: '\r\n' | '\n') {
     if (!this.isReadOnly) {
-      fs.writeFileSync(filePath, data);
+      fs.writeFileSync(
+        filePath,
+        eol && typeof data == 'string' ? data.replace(/\r?\n/gm, eol) : data,
+      );
     }
   }
 
