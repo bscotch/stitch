@@ -1,0 +1,8 @@
+build/
+sandbox/
+sample-assets/
+sample-module-source/
+sample-project/
+node_modules/
+docs/
+assets/
