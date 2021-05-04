@@ -17,12 +17,12 @@
     "stitch": "build/cli/stitch.js"
   },
   "scripts": {
-    "test": "npm run build && mocha --inspect --require source-map-support/register --bail ./build/test/index.js",
-    "build": "rm -rf build && npx tsc",
+    "test": "npm run build && mocha -r source-map-support/register --bail -S ./build/test/",
+    "build": "rm -rf build && tsc && tsc-alias",
+    "watch": "tsc -w && tsc-alias -w",
     "preversion": "git checkout develop && npm test",
-    "version": "npx conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && prettier src/ -w && git add -A",
-    "postversion": "git push origin develop && git checkout master && git merge develop && git push origin master --follow-tags && npm publish && git checkout develop",
-    "tsc-live": "npx tsc -w"
+    "version": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && prettier src/ -w && git add -A",
+    "postversion": "git push origin develop && git checkout master && git merge develop && git push origin master --follow-tags && npm publish && git checkout develop"
   },
   "repository": {
     "type": "git",
@@ -74,6 +74,7 @@
     "mocha": "^8.3.2",
     "prettier": "^2.2.1",
     "ts-node": "^9.1.1",
+    "tsc-alias": "^1.2.10",
     "typescript": "^4.2.4"
   }
 }

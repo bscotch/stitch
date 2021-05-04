@@ -8,10 +8,7 @@ import { differenceBy } from 'lodash';
 import { StitchError, StitchAssertionError, assert } from '../lib/errors';
 import { Gms2Script } from '../lib/components/resources/Gms2Script';
 import cli_assert from '../cli/lib/cli-assert';
-import importModules, {
-  Gms2MergeCliOptions,
-  parseGithubSourceString,
-} from '../cli/lib/merge';
+import importModules, { Gms2MergeCliOptions } from '../cli/lib/merge';
 import importSounds from '../cli/lib/add-sounds';
 import version, { VersionOptions } from '../cli/lib/version';
 import importFiles from '../cli/lib/add-files';
@@ -21,15 +18,9 @@ import {
   AssignCliOptions,
 } from '../cli/lib/assign';
 import { Gms2Object } from '../lib/components/resources/Gms2Object';
-import { jsonify as stringify } from '../lib/jsonify';
-import { undent } from '@bscotch/utility';
-import { NumberFixed } from '../lib/NumberFixed';
 import { SoundChannel, SoundCompression } from '../types/YySound';
-import { get, unzipRemote } from '../lib/http';
-import { loadEnvironmentVariables } from '../lib/env';
 import { Gms2Sprite } from '../lib/components/resources/Gms2Sprite';
 import { Gms2Room } from '../lib/components/resources/Gms2Room';
-import { findFunctionReferences, getFunctionNames } from '../lib/codeParser';
 
 /*
 Can be used to inform Stitch components that we are in
@@ -98,191 +89,6 @@ function getResetProject(options?: { readonly?: boolean }) {
 describe('GMS2.3 Pipeline SDK', function () {
   beforeEach(function () {
     resetSandbox();
-  });
-
-  describe('Unit Tests', function () {
-    xit('can parse env files', function () {
-      // Requires creating local environment variables to test,
-      // since we want to keep those out of the git log. Unblock
-      // the test whenever work is being done on the parser.
-      const varNames = ['HELLO', 'GITHUB_PERSONAL_ACCESS_TOKEN'] as const;
-      const { HELLO, GITHUB_PERSONAL_ACCESS_TOKEN } = loadEnvironmentVariables(
-        varNames,
-      );
-      expect(HELLO).to.equal('world');
-      expect(GITHUB_PERSONAL_ACCESS_TOKEN).to.have.length.greaterThan(0);
-    });
-
-    it.only('can parse functions from GML', function () {
-      const sampleScriptGml = undent`
-        function firstOuter(world){
-          echo("in outer");
-          function inner(f){
-            echo("in inner");
-          }
-        }
-
-          function anotherOuter(hi,hello,third){}
-
-        var this = "that";
-
-        var localAnonFunc = function(){};
-
-        lessLocalAnonFunc = function(here,are,args){
-          echo ("weirdly scoped");
-        }; function badFormatting(arg1){
-          echo("etc");
-        }
-      `;
-      expect(getFunctionNames(sampleScriptGml)).to.eql([
-        'firstOuter',
-        'anotherOuter',
-        'badFormatting',
-      ]);
-    });
-
-    it.only('can find function references in gml', function () {
-      const funcName = 'myFunc';
-      const secondFuncSuffix = `_v2`;
-      const secondFuncFullName = `${funcName}${secondFuncSuffix}`;
-      const sampleGml = undent`
-        var someOutput = ${funcName} (someInput);
-
-        var moreOutput = ${secondFuncFullName}( someInput ) ;
-      `;
-      const refs = findFunctionReferences(sampleGml, funcName, '(_v\\d+)?');
-      expect(refs.length).to.equal(2);
-      expect(refs[0].fullName).to.equal(funcName);
-      expect(refs[1].fullName).to.equal(secondFuncFullName);
-      expect(refs[0].line).to.equal(0);
-      expect(refs[1].line).to.equal(2);
-      expect(refs[0].suffix).to.equal('');
-      expect(refs[1].suffix).to.equal(secondFuncSuffix);
-      for (const ref of refs) {
-        expect(ref.column).to.equal(17);
-        expect(ref.name).to.equal(funcName);
-      }
-    });
-
-    it('can parse Github source strings', function () {
-      expect(parseGithubSourceString('gm-core/gdash')).to.eql({
-        owner: 'gm-core',
-        name: 'gdash',
-        revision: undefined,
-        tagPattern: undefined,
-        revisionType: undefined,
-      });
-      expect(parseGithubSourceString('gm-core/gdash?^(\\d+\\.){2}\\d+')).to.eql(
-        {
-          owner: 'gm-core',
-          name: 'gdash',
-          tagPattern: '^(\\d+\\.){2}\\d+',
-          revision: undefined,
-          revisionType: '?',
-        },
-      );
-      expect(parseGithubSourceString('gm-core/gdash?')).to.eql({
-        owner: 'gm-core',
-        name: 'gdash',
-        revisionType: '?',
-        revision: undefined,
-        tagPattern: undefined,
-      });
-      expect(parseGithubSourceString('gm-core/gdash@4.4.0')).to.eql({
-        owner: 'gm-core',
-        name: 'gdash',
-        revision: '4.4.0',
-        tagPattern: undefined,
-        revisionType: '@',
-      });
-    });
-
-    it('can fetch a text URL', async function () {
-      const page = await get(
-        'https://beta.bscotch.net/api/dummy/content-type/text',
-      );
-      expect(page.contentType.startsWith('text/plain')).to.be.true;
-      expect(page.data).to.equal('Hello World');
-    });
-
-    it('can fetch a binary URL', async function () {
-      const page = await get(
-        'https://beta.bscotch.net/api/dummy/content-type/binary',
-      );
-      expect(page.contentType.startsWith('application/octet-stream')).to.be
-        .true;
-      expect(Buffer.isBuffer(page.data)).to.be.true;
-      expect(page.data.toString()).to.equal('Hello World');
-    });
-
-    it('can fetch a JSON URL', async function () {
-      const page = await get(
-        'https://beta.bscotch.net/api/dummy/content-type/json',
-      );
-      expect(page.contentType.startsWith('application/json')).to.be.true;
-      expect(page.data.Hello).to.equal('World');
-    });
-
-    it('can download and unzip an archive', async function () {
-      const dir = 'zip-download';
-      const smallRepo =
-        'https://github.com/bscotch/node-util/archive/d1264e78319521c9667206330a9aaa36fa82e1a5.zip?ignore=this';
-      const downloadedTo = await unzipRemote(smallRepo, dir);
-      expect(downloadedTo).to.match(
-        /node-util-d1264e78319521c9667206330a9aaa36fa82e1a5/,
-      );
-      fs.emptyDirSync(dir);
-      fs.removeSync(dir);
-    });
-
-    it('can create fixed-decimal numbers', function () {
-      expect(`${Number(15.1234134)}`).to.equal('15.1234134');
-      expect(`${new NumberFixed(15.1234134, 1)}`).to.equal('15.1');
-      expect(`${new NumberFixed(15.1234134, 3)}`).to.equal('15.123');
-    });
-
-    it('can sort paths by specificity', function () {
-      const pathList = [
-        'hello/world',
-        'hello',
-        'h/another',
-        'hello/world/goodbye',
-      ];
-      const expectedOrder = [
-        'hello',
-        'h/another',
-        'hello/world',
-        'hello/world/goodbye',
-      ];
-      pathList.sort(paths.pathSpecificitySort);
-      expect(pathList).to.eql(expectedOrder);
-    });
-
-    it('can create GMS2-style JSON', function () {
-      expect(
-        stringify({
-          hello: 'world',
-          parent: { child: ['10', '20'] },
-          array: [{ name: 'child1', field: true }, { name: 'child2' }],
-        }),
-      ).to.equal(
-        undent`
-        {
-          "hello": "world",
-          "parent": {
-            "child": [
-              "10",
-              "20",
-            ],
-          },
-          "array": [
-            {"name":"child1","field":true,},
-            {"name":"child2",},
-          ],
-        }
-      `.replace(/\r?\n/gm, '\r\n'),
-      );
-    });
   });
 
   describe('Gms2 Project Class', function () {
@@ -367,12 +173,16 @@ describe('GMS2.3 Pipeline SDK', function () {
     it('can add an object', function () {
       const project = getResetProject();
       const name = 'myRandomObject';
+
+      // Ensure the object we're going to add doesn't already exist
       let object = project.resources.findByField('name', name, Gms2Object);
       expect(object, 'object should not exist before being added').to.not.exist;
 
       // Get a parent object and sprite to add later
       const sprite = project.resources.sprites[0];
       const parent = project.resources.objects[0];
+      expect(sprite, 'sprite should exist').to.exist;
+      expect(parent, 'parent object should exist').to.exist;
 
       project.addObject(name);
       object = project.resources.findByField('name', name, Gms2Object);
@@ -1004,6 +814,7 @@ describe('GMS2.3 Pipeline SDK', function () {
     });
 
     it('can import modules from a remote repo', async function () {
+      this.timeout(10000);
       resetSandbox();
       await importModules({
         types: ['scripts'],

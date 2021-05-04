@@ -7,7 +7,7 @@ import XRegExp from 'xregexp';
 
 const functionNameRegex = /\bfunction\s*(?<name>[a-zA-Z_][a-zA-Z0-9_]+)/;
 
-interface GmlFunctionReference {
+export interface GmlFunctionReference {
   name: string;
   fullName: string;
   suffix?: string;
@@ -16,7 +16,15 @@ interface GmlFunctionReference {
   column: number;
 }
 
-export function getFunctionNames(gml: string) {
+export interface GmlFunction {
+  name: string;
+}
+
+/**
+ * Find all functions defined in the outer scope for
+ * some chunk of GML.
+ */
+export function findOuterFunctions(gml: string): GmlFunction[] {
   let strippedGml = gml;
   const innerScopes = XRegExp.matchRecursive(gml, '{', '}', 'igms').filter(
     (x) => x,
@@ -26,7 +34,10 @@ export function getFunctionNames(gml: string) {
   }
 
   return (strippedGml.match(new RegExp(functionNameRegex, 'g')) || []).map(
-    (match) => match.match(functionNameRegex)!.groups!.name,
+    (match) => {
+      const name = match.match(functionNameRegex)!.groups!.name;
+      return { name };
+    },
   );
 }
 

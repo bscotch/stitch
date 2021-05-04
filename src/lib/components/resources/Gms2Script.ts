@@ -1,6 +1,7 @@
-import { YyScript } from '../../../types/Yy';
-import { Gms2Storage } from '../../Gms2Storage';
-import paths from '../../paths';
+import { findOuterFunctions } from '@/codeParser';
+import { YyScript } from 'types/Yy';
+import { Gms2Storage } from '@/Gms2Storage';
+import paths from '@/paths';
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
@@ -36,6 +37,14 @@ export class Gms2Script extends Gms2ResourceBase {
 
   get code() {
     return this.storage.readBlob(this.codeFilePathAbsolute).toString();
+  }
+
+  /**
+   * Get all functions defined in this script that will be globally available.
+   * (Only returns outer-scope named functions.)
+   */
+  get globalFunctions() {
+    return findOuterFunctions(this.code);
   }
 
   static create(name: string, code: string, storage: Gms2Storage) {

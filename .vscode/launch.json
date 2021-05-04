@@ -10,10 +10,12 @@
             "name": "Stitch Tests (via ts-node)",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
-                "--require", "ts-node/register",
-                "--timeout", "999999",
+                "--require",
+                "ts-node/register",
+                "--timeout",
+                "999999",
                 "--colors",
-                "${workspaceFolder}/src/test/index.ts"
+                "${workspaceFolder}/src/test/"
             ],
             "console": "internalConsole",
             "internalConsoleOptions": "neverOpen",
@@ -25,10 +27,12 @@
             "name": "Stitch Tests (requires compile)",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
-                "--require", "source-map-support/register",
-                "--timeout", "999999",
+                "--require",
+                "source-map-support/register",
+                "--timeout",
+                "999999",
                 "--colors",
-                "${workspaceFolder}/build/test/index.js"
+                "${workspaceFolder}/build/test/"
             ],
             "console": "internalConsole",
             "internalConsoleOptions": "neverOpen",
