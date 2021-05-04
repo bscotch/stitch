@@ -54,7 +54,8 @@
     "lodash": "^4.17.21",
     "source-map-support": "^0.5.19",
     "unzipper": "^0.10.11",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "xregexp": "^5.0.2"
   },
   "devDependencies": {
     "@types/chai": "^4.2.17",

@@ -29,6 +29,7 @@ import { get, unzipRemote } from '../lib/http';
 import { loadEnvironmentVariables } from '../lib/env';
 import { Gms2Sprite } from '../lib/components/resources/Gms2Sprite';
 import { Gms2Room } from '../lib/components/resources/Gms2Room';
+import { findFunctionReferences, getFunctionNames } from '../lib/codeParser';
 
 /*
 Can be used to inform Stitch components that we are in
@@ -110,6 +111,57 @@ describe('GMS2.3 Pipeline SDK', function () {
       );
       expect(HELLO).to.equal('world');
       expect(GITHUB_PERSONAL_ACCESS_TOKEN).to.have.length.greaterThan(0);
+    });
+
+    it.only('can parse functions from GML', function () {
+      const sampleScriptGml = undent`
+        function firstOuter(world){
+          echo("in outer");
+          function inner(f){
+            echo("in inner");
+          }
+        }
+
+          function anotherOuter(hi,hello,third){}
+
+        var this = "that";
+
+        var localAnonFunc = function(){};
+
+        lessLocalAnonFunc = function(here,are,args){
+          echo ("weirdly scoped");
+        }; function badFormatting(arg1){
+          echo("etc");
+        }
+      `;
+      expect(getFunctionNames(sampleScriptGml)).to.eql([
+        'firstOuter',
+        'anotherOuter',
+        'badFormatting',
+      ]);
+    });
+
+    it.only('can find function references in gml', function () {
+      const funcName = 'myFunc';
+      const secondFuncSuffix = `_v2`;
+      const secondFuncFullName = `${funcName}${secondFuncSuffix}`;
+      const sampleGml = undent`
+        var someOutput = ${funcName} (someInput);
+
+        var moreOutput = ${secondFuncFullName}( someInput ) ;
+      `;
+      const refs = findFunctionReferences(sampleGml, funcName, '(_v\\d+)?');
+      expect(refs.length).to.equal(2);
+      expect(refs[0].fullName).to.equal(funcName);
+      expect(refs[1].fullName).to.equal(secondFuncFullName);
+      expect(refs[0].line).to.equal(0);
+      expect(refs[1].line).to.equal(2);
+      expect(refs[0].suffix).to.equal('');
+      expect(refs[1].suffix).to.equal(secondFuncSuffix);
+      for (const ref of refs) {
+        expect(ref.column).to.equal(17);
+        expect(ref.name).to.equal(funcName);
+      }
     });
 
     it('can parse Github source strings', function () {

@@ -16,6 +16,7 @@
 + 💻 Use the Command Line Interface (CLI) for instant pipelines
 + 📁 Batch-manage audio and texture groups based on folder structure
 + ⌨ Programmatically generate and modify resources with the Stitch Node.js API
++ 🐛 Identify code issues through static code analysis
 
 Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
@@ -67,7 +68,7 @@ Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bsc
     + [Scripts](#import-scripts)
   + [Manage Texture Groups](#texture-groups)
   + [Manage Audio Groups](#audio-groups)
-
+  + [Identify Code Issues](#linter)
 
 ## GameMaker Studio Compatibility <a id="compatibility"></a>
 
@@ -522,3 +523,39 @@ myProject.addAudioGroup('nameOfYourAudioGroup');
 // (the Audio Group will be created if it doesn't already exist)
 myProject.addAudioGroupAssignment('folder/in/the/ide','nameOfYourAudioGroup');
 ```
+
+
+### Linter <a id="linter"></a>
+
+The GMS2 IDE has limited Intellisense, does not do type-checking, and has a noisy syntax error log that does not allow easy differentiation of types of issues (nor ignoring things that are actually fine). Collectively this makes it difficult to have confidence that the code will run successfully, especially since code issues may not be discovered until run-time. Runtime errors are expensive to discover and fix, because they can easily slip through QA unnoticed and are likely to have hard-to-trace consequences.
+
+Stitch provides limited linter capabilities to help with some of the short-comings of the build-in GMS2 error detection systems.
+
+
+```sh
+# Run via the commandline to get a linter report
+# and write it to a file (by default will write to STDOUT)
+stitch lint > issues.json
+```
+
+```ts
+// Typescript: Using the linter programmatically
+import {Gms2Project} from "@bscotch/stitch";
+const myProject = new Gms2Project();
+myProject.lint(); // Returns an Issues object
+```
+
+#### Global Function Versioning
+
+Because GMS2 does not have strict typing for function signatures, when a function changes its signature there is no way to know if usage of that function follows the new signature. To combat this, we use a simple approach to API versioning, where we post-fix function names with `_v1` when its behavior has changed (incrementing the version number with each breaking change). This essentially breaks existing uses of that function because they are using a name that no longer exists, making it easy to create a list of function references that have not been updated to reflect the changes to the function signature.
+
+The GMS2 IDE does list these cases among the syntax errors, but there is no way to specifically identify these cases amongst the others. Therefore there is no way to be certain that all references to the old function have been updated.
+
+Stitch includes functionality to identify these cases, so that one can retrieve and exhaustive list of these issues and then check again after refactoring to ensure that that list has become empty.
+
++ Identify all functions
+  + Allow filtering using a pattern
++ For each function:
+  + Allow converting function name to pattern and find all instances of pattern-matching function calls
+  + Identify all locations it is used.
+    + (Later) check the signature/types against the definition
