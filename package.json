@@ -37,9 +37,9 @@
     "gml",
     "pipeline"
   ],
-  "author": "Adam Coster (https://www.bscotch.net/about)",
+  "author": "Adam Coster (https://www.bscotch.net/about#adam-coster)",
   "contributors": [
-    "Shi Chen (https://www.bscotch.net/about)"
+    "Shi Chen (https://www.bscotch.net/about#shi-chen)"
   ],
   "license": "MIT",
   "homepage": "https://github.com/bscotch/stitch",
@@ -49,7 +49,7 @@
     "chalk": "^4.1.1",
     "change-case": "^4.1.2",
     "commander": "^7.2.0",
-    "fs-extra": "^9.1.0",
+    "fs-extra": "^10.0.0",
     "json-bigint": "^1.0.0",
     "lodash": "^4.17.21",
     "source-map-support": "^0.5.19",
@@ -57,19 +57,19 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.16",
+    "@types/chai": "^4.2.17",
     "@types/fs-extra": "^9.0.11",
     "@types/lodash": "^4.14.168",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^14.14.41",
+    "@types/node": "^14.14.43",
     "@types/object-path": "^0.11.0",
     "@types/unzipper": "^0.10.3",
     "@types/uuid": "^8.3.0",
-    "@typescript-eslint/eslint-plugin": "^4.22.0",
-    "@typescript-eslint/parser": "^4.22.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.1",
+    "@typescript-eslint/parser": "^4.22.1",
     "chai": "^4.3.4",
     "conventional-changelog-cli": "^2.1.1",
-    "eslint": "^7.24.0",
+    "eslint": "^7.25.0",
     "mocha": "^8.3.2",
     "prettier": "^2.2.1",
     "ts-node": "^9.1.1",
