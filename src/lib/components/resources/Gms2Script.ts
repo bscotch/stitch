@@ -1,4 +1,4 @@
-import { findOuterFunctions } from '@/codeParser';
+import { findOuterFunctions, GmlFunction } from '@/codeParser';
 import { YyScript } from 'types/Yy';
 import { Gms2Storage } from '@/Gms2Storage';
 import paths from '@/paths';
@@ -6,6 +6,7 @@ import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase';
+import { RequiredBy } from '@bscotch/utility';
 
 export class Gms2Script extends Gms2ResourceBase {
   protected yyData!: YyScript; // Happens in the super() constructor
@@ -49,7 +50,14 @@ export class Gms2Script extends Gms2ResourceBase {
    * (Only returns outer-scope named functions.)
    */
   get globalFunctions() {
-    return findOuterFunctions(this.code);
+    const funcs = findOuterFunctions(this.code);
+    funcs.forEach((f) => {
+      f.location.resource = {
+        name: this.name,
+        type: 'scripts',
+      };
+    });
+    return funcs;
   }
 
   static create(name: string, code: string, storage: Gms2Storage) {
