@@ -59,7 +59,7 @@ describe('Unit Tests', function () {
 
       var moreOutput = ${secondFuncFullName}( someInput ) ;
     `;
-    const refs = findFunctionReferences(sampleGml, funcName, '(_v\\d+)?');
+    let refs = findFunctionReferences(sampleGml, funcName, '(_v\\d+)?');
     expect(refs.length).to.equal(2);
     expect(refs[0].fullName).to.equal(funcName);
     expect(refs[1].fullName).to.equal(secondFuncFullName);
@@ -71,6 +71,10 @@ describe('Unit Tests', function () {
       expect(ref.column).to.equal(17);
       expect(ref.name).to.equal(funcName);
     }
+
+    // Try it again with the suffix
+    refs = findFunctionReferences(sampleGml, secondFuncFullName, '(_v\\d+)?');
+    expect(refs.length).to.equal(2);
   });
 
   it('can parse Github source strings', function () {

@@ -46,8 +46,19 @@ export function findFunctionReferences(
   functionName: string,
   suffixPattern?: string,
 ) {
+  // The function might already have the suffix. If so, need
+  // to get the basename.
+  let basename = functionName;
+  if (suffixPattern) {
+    const suffixMatch = functionName.match(
+      new RegExp(`^(.*?)${suffixPattern}$`),
+    );
+    if (suffixMatch) {
+      basename = suffixMatch[1];
+    }
+  }
   const functionRegex = new RegExp(
-    `\\b(?<fullName>${functionName}(?<suffix>${suffixPattern || ''}))\\b`,
+    `\\b(?<fullName>${basename}(?<suffix>${suffixPattern || ''}))\\b`,
     'g',
   );
   const refs: GmlFunctionReference[] = [];
