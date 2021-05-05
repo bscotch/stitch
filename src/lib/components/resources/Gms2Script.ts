@@ -9,6 +9,7 @@ import {
 
 export class Gms2Script extends Gms2ResourceBase {
   protected yyData!: YyScript; // Happens in the super() constructor
+  private codeCache: string | undefined;
 
   constructor(...setup: Gms2ResourceBaseParameters) {
     super('scripts', ...setup);
@@ -32,11 +33,15 @@ export class Gms2Script extends Gms2ResourceBase {
   }
 
   set code(code: string) {
-    this.storage.writeBlob(this.codeFilePathAbsolute, code, '\r\n');
+    this.codeCache = code;
+    this.storage.writeBlob(this.codeFilePathAbsolute, this.codeCache, '\r\n');
   }
 
   get code() {
-    return this.storage.readBlob(this.codeFilePathAbsolute).toString();
+    this.codeCache ??= this.storage
+      .readBlob(this.codeFilePathAbsolute)
+      .toString();
+    return this.codeCache;
   }
 
   /**
