@@ -43,11 +43,22 @@ describe('Unit Tests', function () {
         echo("etc");
       }
     `;
-    expect(findOuterFunctions(sampleScriptGml)).to.eql([
-      { name: 'firstOuter' },
-      { name: 'anotherOuter' },
-      { name: 'badFormatting' },
-    ]);
+    const expectedResult = [
+      { name: 'firstOuter', location: { position: 9, line: 0, column: 9 } },
+      {
+        name: 'anotherOuter',
+        location: { position: 109, line: 7, column: 11 },
+      },
+      {
+        name: 'badFormatting',
+        location: { position: 280, line: 15, column: 12 },
+      },
+    ];
+    expect(findOuterFunctions(sampleScriptGml)).to.eql(expectedResult);
+    // A reference search of the same file should uncover the tokens at the same locations
+    const refs = findFunctionReferences(sampleScriptGml, 'badFormatting');
+    expect(refs).to.have.length(1);
+    expect(refs[0].location).to.eql(expectedResult[2].location);
   });
 
   it('can find function references in gml', function () {
@@ -61,14 +72,16 @@ describe('Unit Tests', function () {
     `;
     let refs = findFunctionReferences(sampleGml, funcName, '(_v\\d+)?');
     expect(refs.length).to.equal(2);
-    expect(refs[0].fullName).to.equal(funcName);
-    expect(refs[1].fullName).to.equal(secondFuncFullName);
-    expect(refs[0].line).to.equal(0);
-    expect(refs[1].line).to.equal(2);
+    expect(refs[0].name).to.equal(funcName);
+    expect(refs[1].name).to.equal(secondFuncFullName);
+    expect(!!refs[0].unexpectedVersion).to.be.false;
+    expect(refs[1].unexpectedVersion).to.be.true;
+    expect(refs[0].location.line).to.equal(0);
+    expect(refs[1].location.line).to.equal(2);
     expect(refs[0].suffix).to.equal('');
     expect(refs[1].suffix).to.equal(secondFuncSuffix);
     for (const ref of refs) {
-      expect(ref.column).to.equal(17);
+      expect(ref.location.column).to.equal(17);
       expect(ref.name).to.equal(funcName);
     }
 

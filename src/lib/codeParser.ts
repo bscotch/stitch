@@ -4,21 +4,49 @@
  */
 
 import XRegExp from 'xregexp';
+import { Gms2ResourceType } from './components/Gms2ResourceArray';
 
 const functionNameRegex = /\bfunction\s*(?<name>[a-zA-Z_][a-zA-Z0-9_]+)/;
 
-export interface GmlFunctionReference {
-  name: string;
-  fullName: string;
-  suffix?: string;
-  position: number;
-  line: number;
-  column: number;
+function countMatches(source: string, pattern: RegExp) {
+  return source.match(new RegExp(pattern, 'g'))?.length || 0;
 }
 
-export interface GmlFunction {
-  name: string;
+function locationOfMatch(source: string, match: RegExpMatchArray) {
+  const lines = source.slice(0, match.index as number).split(/\r?\n/g);
+  return {
+    position: match.index as number,
+    line: lines.length - 1,
+    column: lines[lines.length - 1].length,
+  };
 }
+
+export interface GmlToken {
+  name: string;
+  location: {
+    resource?: {
+      type: Gms2ResourceType;
+      name: string;
+    };
+    position: number;
+    line: number;
+    column: number;
+  };
+}
+
+export interface GmlFunctionReference extends GmlToken {
+  /** If doing a versioned-function search, the exact name we had expected to find */
+  expectedName?: string;
+  /** If doing a versioned-function search, the version-suffix pattern */
+  suffix?: string;
+  /**
+   * If doing a versions-function search, and the version we found does not match
+   * the exact one searched for.
+   */
+  unexpectedVersion?: boolean;
+}
+
+export type GmlFunction = GmlToken; // Once we have features to add, extend this for functions
 
 /**
  * Find all functions defined in the outer scope for
@@ -30,15 +58,34 @@ export function findOuterFunctions(gml: string): GmlFunction[] {
     (x) => x,
   );
   for (const innerScope of innerScopes) {
-    strippedGml = strippedGml.replace(innerScope, '');
+    // Create a filler with the same string lengh and number of newlines
+    const totalNewlines = countMatches(innerScope, /\n/);
+    const filler = `${' '.repeat(
+      innerScope.length - totalNewlines,
+    )}${'\n'.repeat(totalNewlines)}`;
+    strippedGml = strippedGml.replace(innerScope, filler);
   }
 
-  return (strippedGml.match(new RegExp(functionNameRegex, 'g')) || []).map(
-    (match) => {
-      const name = match.match(functionNameRegex)!.groups!.name;
-      return { name };
-    },
-  );
+  const foundFuncs: GmlFunction[] = [];
+  let match: RegExpMatchArray | null;
+  const functionNameRegexGlobal = new RegExp(functionNameRegex, 'g');
+  while (true) {
+    match = functionNameRegexGlobal.exec(strippedGml);
+    if (!match) {
+      break;
+    }
+    // The location is actually where the `function` token starts,
+    // we want to have the position & column where the *name* starts
+    const location = locationOfMatch(strippedGml, match);
+    const tokenOffset = match[0].match(/^(function\s+)/)![1].length;
+    location.column += tokenOffset;
+    location.position += tokenOffset;
+    foundFuncs.push({
+      name: match!.groups!.name,
+      location,
+    });
+  }
+  return foundFuncs;
 }
 
 export function findFunctionReferences(
@@ -68,14 +115,13 @@ export function findFunctionReferences(
     if (!match) {
       break;
     }
-    const lines = gml.slice(0, match.index as number).split(/\r?\n/g);
+    const name = match.groups!.fullName;
     const ref: GmlFunctionReference = {
-      name: functionName,
-      fullName: match.groups!.fullName,
+      name,
+      location: locationOfMatch(gml, match),
+      expectedName: functionName,
       suffix: match.groups!.suffix,
-      position: match.index as number,
-      line: lines.length - 1,
-      column: lines[lines.length - 1].length,
+      unexpectedVersion: Boolean(suffixPattern && name != functionName),
     };
     refs.push(ref);
   }
