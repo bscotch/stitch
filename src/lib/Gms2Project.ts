@@ -25,7 +25,9 @@ import { snakeCase, camelCase, pascalCase } from 'change-case';
 import { logDebug, logError, logInfo } from './log';
 import { get, unzipRemote } from './http';
 import { getGithubAccessToken } from './env';
-import { GmlToken } from './codeParser';
+import { GmlTokenVersioned } from './parser/GmlTokenVersioned';
+import { GmlToken } from './parser/GmlToken';
+import { GmlTokenSummary } from './parser/GmlTokenSummary';
 
 type YypComponentsVersion = YypComponents | YypComponentsLegacy;
 
@@ -393,14 +395,14 @@ export class Gms2Project {
       functions.length,
       `No function names provided or found in the project.`,
     );
+    const summaries: GmlTokenSummary[] = [];
     for (const func of functions) {
-      const summary = {
-        references: [] as GmlToken[],
-      };
-      // this.resources.scripts.forEach((script) => {});
-      // TODO: Check all scripts and objects for matches
-      // TODO: Create summary of matches
+      const summary = new GmlTokenSummary(func, this, {
+        versionSuffix: options?.versionSuffix,
+      });
+      summaries.push(summary);
     }
+    return summaries;
   }
 
   /** Ensure that a texture group exists in the project. */

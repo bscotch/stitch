@@ -10,9 +10,11 @@ import { loadEnvironmentVariables } from '../lib/env';
 import {
   findTokenReferences,
   findOuterFunctions,
-  GmlTokenLocation,
-  GmlToken,
-} from '../lib/codeParser';
+  stripCommentsAndStringsFromGml,
+} from '../lib/parser/codeParser';
+import { GmlToken } from '../lib/parser/GmlToken';
+import { GmlTokenLocation } from '../lib/parser/GmlTokenLocation';
+import { readTestData } from './lib/util';
 
 describe('Unit Tests', function () {
   xit('can parse env files', function () {
@@ -25,6 +27,30 @@ describe('Unit Tests', function () {
     );
     expect(HELLO).to.equal('world');
     expect(GITHUB_PERSONAL_ACCESS_TOKEN).to.have.length.greaterThan(0);
+  });
+
+  it('can strip single-line comments from GML', function () {
+    const gml = readTestData(`single-line-comments.gml`);
+    const expected = readTestData(`single-line-comments-stripped.gml`);
+    const stripped = stripCommentsAndStringsFromGml(gml);
+    expect(gml.length).to.equal(stripped.stripped.length);
+    expect(stripped.stripped).to.equal(expected);
+  });
+
+  it('can strip multi-line comments from GML', function () {
+    const gml = readTestData(`multi-line-comments.gml`);
+    const expected = readTestData(`multi-line-comments-stripped.gml`);
+    const stripped = stripCommentsAndStringsFromGml(gml);
+    expect(gml.length).to.equal(stripped.stripped.length);
+    expect(stripped.stripped).to.equal(expected);
+  });
+
+  it('can pull strings and comments from GML even when intermixed', function () {
+    const gml = readTestData(`comments-and-strings.gml`);
+    const expected = readTestData(`comments-and-strings-stripped.gml`);
+    const stripped = stripCommentsAndStringsFromGml(gml);
+    expect(gml.length).to.equal(stripped.stripped.length);
+    expect(stripped.stripped).to.equal(expected);
   });
 
   it('can parse functions from GML', function () {

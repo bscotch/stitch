@@ -1,8 +1,5 @@
-import {
-  findOuterFunctions,
-  findTokenReferences,
-  GmlToken,
-} from '@/codeParser';
+import { findOuterFunctions, findTokenReferences } from '@/parser/codeParser';
+import { GmlToken } from '@/parser/GmlToken';
 import { YyScript } from 'types/Yy';
 import { Gms2Storage } from '@/Gms2Storage';
 import paths from '@/paths';
@@ -15,6 +12,7 @@ import { assert } from '@/errors';
 export class Gms2Script extends Gms2ResourceBase {
   protected yyData!: YyScript; // Happens in the super() constructor
   private codeCache: string | undefined;
+  private globalFunctionCache?: GmlToken[];
 
   constructor(...setup: Gms2ResourceBaseParameters) {
     super('scripts', ...setup);
@@ -53,18 +51,18 @@ export class Gms2Script extends Gms2ResourceBase {
    * Get all functions defined in this script that will be globally available.
    * (Only returns outer-scope named functions.)
    */
-  getGlobalFunctions() {
-    return findOuterFunctions(this.code, this);
+  get globalFunctions() {
+    this.globalFunctionCache ||= findOuterFunctions(this.code, this);
+    return this.globalFunctionCache;
   }
 
   /**
    * Find all references to a token. ⚠ WARNING: does not consider scope or type!
    */
-  getTokenReferences(
+  findTokenReferences(
     token: GmlToken,
     options?: { suffix?: string; includeSelf?: boolean },
   ) {
-    // TODO: Get all the refs!
     const refs = findTokenReferences(
       this.code,
       token.name,

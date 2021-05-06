@@ -368,7 +368,7 @@ export class Gms2ResourceArray {
    * (does not include built-ins).
    */
   getGlobalFunctions() {
-    return this.scripts.map((script) => script.getGlobalFunctions()).flat(2);
+    return this.scripts.map((script) => script.globalFunctions).flat(2);
   }
 
   static hydrateResource(data: YypResource, storage: Gms2Storage) {

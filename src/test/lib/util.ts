@@ -29,6 +29,8 @@ export const spriteSampleRoot = paths.join(assetSampleRoot, 'sprites');
 export const soundSample = paths.join(soundSampleRoot, 'mus_intro_jingle.wav');
 export const testWorkingDir = process.cwd();
 
+export const testDataRoot = './src/test/data/';
+
 /**
  * To allow Typescript to infer that something exists,
  * we often need to wrap an (if(!exists){throw Error})
@@ -36,6 +38,10 @@ export const testWorkingDir = process.cwd();
  */
 export function throwNever(): never {
   throw new Error('this should never happen');
+}
+
+export function readTestData(filePath: string) {
+  return fs.readFileSync(`${testDataRoot}${filePath}`, 'utf-8');
 }
 
 /**

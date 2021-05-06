@@ -5,4 +5,7 @@ function Script1(something){
 	return something + whatever;
 }
 
-function Script2(){}
+function Script2(){
+	// Call Script1 so that we can test our ability to discover it as a function
+	return Script1("whatever");
+}
