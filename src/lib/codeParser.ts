@@ -30,12 +30,24 @@ export class GmlTokenLocation<
   }
 
   isSameLocation(otherLocation: GmlTokenLocation) {
-    if (!this.resource || !otherLocation.resource) {
-      // Then one's location is undefined.
-      return false;
-    }
-    return (['position', 'column', 'line'] as const).every(
-      (posField) => this[posField] == otherLocation[posField],
+    return (
+      this.hasSamePosition(otherLocation) &&
+      this.isFromSameResource(otherLocation)
+    );
+  }
+
+  hasSamePosition(otherLocation: GmlTokenLocation) {
+    return (['position', 'column', 'line'] as const).every((posField) => {
+      console.log(this[posField], otherLocation[posField]);
+      return this[posField] == otherLocation[posField];
+    });
+  }
+
+  isFromSameResource(otherLocation: GmlTokenLocation) {
+    return (
+      this.resource &&
+      otherLocation.resource &&
+      this.resource.name == otherLocation.resource.name
     );
   }
 
@@ -56,6 +68,12 @@ export class GmlTokenLocation<
 
 export class GmlToken {
   constructor(readonly name: string, readonly location: GmlTokenLocation) {}
+  isTheSameToken(otherToken: GmlToken) {
+    return (
+      this.name == otherToken.name &&
+      this.location.isSameLocation(otherToken.location)
+    );
+  }
 }
 
 /**

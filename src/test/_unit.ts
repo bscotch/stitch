@@ -11,6 +11,7 @@ import {
   findTokenReferences,
   findOuterFunctions,
   GmlTokenLocation,
+  GmlToken,
 } from '../lib/codeParser';
 
 describe('Unit Tests', function () {
@@ -50,23 +51,24 @@ describe('Unit Tests', function () {
     // TODO: Add equality-checking mechanisms to the instances themselves
     // to make this more robust.
     const expectedResult = [
-      { name: 'firstOuter', location: new GmlTokenLocation(9, 0, 9) },
-      {
-        name: 'anotherOuter',
-        location: new GmlTokenLocation(109, 7, 11),
-      },
-      {
-        name: 'badFormatting',
-        location: new GmlTokenLocation(280, 15, 12),
-      },
+      new GmlToken('firstOuter', new GmlTokenLocation(9, 0, 9)),
+      new GmlToken('anotherOuter', new GmlTokenLocation(109, 7, 11)),
+      new GmlToken('badFormatting', new GmlTokenLocation(280, 15, 12)),
     ];
-    expect(findOuterFunctions(sampleScriptGml)).to.eql(expectedResult);
+    const outerFunctions = findOuterFunctions(sampleScriptGml);
+    for (const index in outerFunctions) {
+      expect(outerFunctions[index].name).to.equal(expectedResult[index].name);
+      expect(
+        outerFunctions[index].location.hasSamePosition(
+          expectedResult[index].location,
+        ),
+      ).to.be.true;
+    }
+
     // A reference search of the same file should uncover the tokens at the same locations
     const refs = findTokenReferences(sampleScriptGml, 'badFormatting');
     expect(refs).to.have.length(1);
-    expect(refs[0].location.isSameLocation(expectedResult[2].location)).to.eql(
-      expectedResult[2].location,
-    );
+    expect(refs[0].location.hasSamePosition(expectedResult[2].location));
   });
 
   it('can find function references in gml', function () {
