@@ -25,6 +25,7 @@ import { snakeCase, camelCase, pascalCase } from 'change-case';
 import { logDebug, logError, logInfo } from './log';
 import { get, unzipRemote } from './http';
 import { getGithubAccessToken } from './env';
+import { GmlToken } from './codeParser';
 
 type YypComponentsVersion = YypComponents | YypComponentsLegacy;
 
@@ -190,6 +191,10 @@ export class Gms2Project {
 
   get configs() {
     return this.components.configs;
+  }
+
+  getGlobalFunctions() {
+    return this.resources.getGlobalFunctions();
   }
 
   private switchSearchRegex = new RegExp(
@@ -367,6 +372,35 @@ export class Gms2Project {
     });
     new Gms2ProjectMerger(fromProject, this, options).merge();
     return this;
+  }
+
+  /**
+   * Get all references to global functions.
+   */
+  findGlobalFunctionReferences(options?: {
+    /**
+     * A regex pattern (as a string) that, if provided,
+     * will be used to identify references to patterns
+     * matching function names with this suffix attached.
+     *
+     * @example
+     * const versionSuffix = '(_v\d+)?';
+     */
+    versionSuffix?: string;
+  }) {
+    const functions = this.getGlobalFunctions();
+    assert(
+      functions.length,
+      `No function names provided or found in the project.`,
+    );
+    for (const func of functions) {
+      const summary = {
+        references: [] as GmlToken[],
+      };
+      // this.resources.scripts.forEach((script) => {});
+      // TODO: Check all scripts and objects for matches
+      // TODO: Create summary of matches
+    }
   }
 
   /** Ensure that a texture group exists in the project. */

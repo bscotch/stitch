@@ -1,4 +1,8 @@
-import { findOuterFunctions, GmlFunction } from '@/codeParser';
+import {
+  findOuterFunctions,
+  findTokenReferences,
+  GmlToken,
+} from '@/codeParser';
 import { YyScript } from 'types/Yy';
 import { Gms2Storage } from '@/Gms2Storage';
 import paths from '@/paths';
@@ -6,7 +10,7 @@ import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase';
-import { RequiredBy } from '@bscotch/utility';
+import { assert } from '@/errors';
 
 export class Gms2Script extends Gms2ResourceBase {
   protected yyData!: YyScript; // Happens in the super() constructor
@@ -49,15 +53,36 @@ export class Gms2Script extends Gms2ResourceBase {
    * Get all functions defined in this script that will be globally available.
    * (Only returns outer-scope named functions.)
    */
-  get globalFunctions() {
-    const funcs = findOuterFunctions(this.code);
-    funcs.forEach((f) => {
-      f.location.resource = {
-        name: this.name,
-        type: 'scripts',
-      };
-    });
-    return funcs;
+  getGlobalFunctions() {
+    return findOuterFunctions(this.code, this);
+  }
+
+  /**
+   * Find all references to a token. ⚠ WARNING: does not consider scope or type!
+   */
+  getTokenReferences(
+    token: GmlToken,
+    options?: { suffix?: string; includeSelf?: boolean },
+  ) {
+    // TODO: Get all the refs!
+    const refs = findTokenReferences(
+      this.code,
+      token.name,
+      this,
+      options?.suffix,
+    );
+    if (!options?.includeSelf && token.location.resource?.name == this.name) {
+      // If the token is from *this* script, then remove it from the found references
+      const selfRef = refs.findIndex((ref) =>
+        ref.location.isSameLocation(token.location),
+      );
+      assert(
+        selfRef > -1,
+        `Token ${token.name} should have had a reference in ${this.name} because that is where it was found.`,
+      );
+      refs.splice(selfRef, 1);
+    }
+    return refs;
   }
 
   static create(name: string, code: string, storage: Gms2Storage) {

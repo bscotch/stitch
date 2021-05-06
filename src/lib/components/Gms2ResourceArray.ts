@@ -363,6 +363,14 @@ export class Gms2ResourceArray {
     return classMap;
   }
 
+  /**
+   * Get all global functions defined across all Scripts
+   * (does not include built-ins).
+   */
+  getGlobalFunctions() {
+    return this.scripts.map((script) => script.getGlobalFunctions()).flat(2);
+  }
+
   static hydrateResource(data: YypResource, storage: Gms2Storage) {
     const resourceType = data.id.path.split('/')[0] as Gms2ResourceType;
     // const subclass = Gms2Timeline;

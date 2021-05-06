@@ -7,7 +7,11 @@ import { undent } from '@bscotch/utility';
 import { NumberFixed } from '../lib/NumberFixed';
 import { get, unzipRemote } from '../lib/http';
 import { loadEnvironmentVariables } from '../lib/env';
-import { findFunctionReferences, findOuterFunctions } from '../lib/codeParser';
+import {
+  findTokenReferences,
+  findOuterFunctions,
+  GmlTokenLocation,
+} from '../lib/codeParser';
 
 describe('Unit Tests', function () {
   xit('can parse env files', function () {
@@ -43,22 +47,26 @@ describe('Unit Tests', function () {
         echo("etc");
       }
     `;
+    // TODO: Add equality-checking mechanisms to the instances themselves
+    // to make this more robust.
     const expectedResult = [
-      { name: 'firstOuter', location: { position: 9, line: 0, column: 9 } },
+      { name: 'firstOuter', location: new GmlTokenLocation(9, 0, 9) },
       {
         name: 'anotherOuter',
-        location: { position: 109, line: 7, column: 11 },
+        location: new GmlTokenLocation(109, 7, 11),
       },
       {
         name: 'badFormatting',
-        location: { position: 280, line: 15, column: 12 },
+        location: new GmlTokenLocation(280, 15, 12),
       },
     ];
     expect(findOuterFunctions(sampleScriptGml)).to.eql(expectedResult);
     // A reference search of the same file should uncover the tokens at the same locations
-    const refs = findFunctionReferences(sampleScriptGml, 'badFormatting');
+    const refs = findTokenReferences(sampleScriptGml, 'badFormatting');
     expect(refs).to.have.length(1);
-    expect(refs[0].location).to.eql(expectedResult[2].location);
+    expect(refs[0].location.isSameLocation(expectedResult[2].location)).to.eql(
+      expectedResult[2].location,
+    );
   });
 
   it('can find function references in gml', function () {
@@ -70,23 +78,26 @@ describe('Unit Tests', function () {
 
       var moreOutput = ${secondFuncFullName}( someInput ) ;
     `;
-    let refs = findFunctionReferences(sampleGml, funcName, '(_v\\d+)?');
+    let refs = findTokenReferences(sampleGml, funcName, undefined, '(_v\\d+)?');
     expect(refs.length).to.equal(2);
     expect(refs[0].name).to.equal(funcName);
     expect(refs[1].name).to.equal(secondFuncFullName);
-    expect(!!refs[0].unexpectedVersion).to.be.false;
-    expect(refs[1].unexpectedVersion).to.be.true;
+    expect(!!refs[0].isCorrectVersion).to.be.true;
+    expect(refs[1].isCorrectVersion).to.be.false;
     expect(refs[0].location.line).to.equal(0);
     expect(refs[1].location.line).to.equal(2);
-    expect(refs[0].suffix).to.equal('');
-    expect(refs[1].suffix).to.equal(secondFuncSuffix);
     for (const ref of refs) {
       expect(ref.location.column).to.equal(17);
       expect(ref.name).to.equal(funcName);
     }
 
     // Try it again with the suffix
-    refs = findFunctionReferences(sampleGml, secondFuncFullName, '(_v\\d+)?');
+    refs = findTokenReferences(
+      sampleGml,
+      secondFuncFullName,
+      undefined,
+      '(_v\\d+)?',
+    );
     expect(refs.length).to.equal(2);
   });
 
