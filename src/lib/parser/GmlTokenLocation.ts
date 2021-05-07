@@ -1,4 +1,6 @@
+import { assert } from '@/errors';
 import type { Gms2ResourceBase } from '../components/resources/Gms2ResourceBase';
+import path from '@/paths';
 
 export class GmlTokenLocation<
   Resource extends Gms2ResourceBase = Gms2ResourceBase
@@ -16,6 +18,16 @@ export class GmlTokenLocation<
   }
   get resource() {
     return this._resource;
+  }
+  get filename() {
+    assert(this.resource, 'Location is not associated witha resource');
+    return `${this.subresource || this.resource.name}.gml`;
+  }
+  get filepathRelative() {
+    return path.join(this.resource!.yyDirRelative, this.filename);
+  }
+  get filepathAbsolute() {
+    return path.join(this.resource!.yyDirAbsolute, this.filename);
   }
 
   /**

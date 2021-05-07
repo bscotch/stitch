@@ -142,6 +142,22 @@ describe('Gms2 Project Class', function () {
     expect(preimportRefs.length).to.equal(0);
   });
 
+  it.only('can lint a project', function () {
+    // Add some references to the preimport script
+    const project = getResetProject();
+    const script = project.resources.findByName('preimport', Gms2Script);
+    const outdatedReference = 'Script2_v3';
+    assert(script);
+    script.code += `\n\nScript1();\n\n${outdatedReference}();`;
+    const lintResults = project.lint({ versionSuffix: '(_v\\d+)?' });
+    const results = lintResults.report;
+    expect(results.nonreferencedFunctions![0].name).to.equal('preimport');
+    expect(results.outdatedFunctionReferences![0].name).to.equal(
+      outdatedReference,
+    );
+    console.log(lintResults.reportString);
+  });
+
   it('can create new folders', function () {
     const project = getResetProject();
     const newFolders = ['hello/world', 'deeply/nested/folder/structure'];

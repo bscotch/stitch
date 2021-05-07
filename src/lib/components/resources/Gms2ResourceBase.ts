@@ -1,10 +1,8 @@
-import { YyBase } from '../../../types/Yy';
-
-import { YypResource } from '../../../types/Yyp';
-import { assert, StitchError } from '../../errors';
-import { Gms2Storage } from '../../Gms2Storage';
-import paths from '../../paths';
-import path from '../../paths';
+import { YyBase } from 'types/Yy';
+import { YypResource } from 'types/Yyp';
+import { assert, StitchError } from '@/errors';
+import { Gms2Storage } from '@/Gms2Storage';
+import path from '@/paths';
 import type { Gms2ResourceType } from '../Gms2ResourceArray';
 import { transformValueByPath } from '@bscotch/utility';
 
@@ -140,7 +138,7 @@ export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
 
   get filePathsRelative() {
     return this.filePathsAbsolute.map((filePath) =>
-      paths.relative(paths.join(this.yyDirAbsolute, '..', '..'), filePath),
+      path.relative(path.join(this.yyDirAbsolute, '..', '..'), filePath),
     );
   }
 

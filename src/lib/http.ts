@@ -12,7 +12,7 @@ interface GetResponse {
   data: any;
 }
 
-export async function get(
+export function get(
   url: string,
   headers?: { [key: string]: string | undefined },
 ): Promise<GetResponse> {

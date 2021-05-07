@@ -217,7 +217,7 @@ interface SpriteSequence {
   xorigin: number;
   /** The sprite's origin (y-coord) */
   yorigin: number;
-  eventToFunction: {};
+  eventToFunction: Record<string, never>;
   eventStubScript: null;
   parent: {
     /** The sprite's name */

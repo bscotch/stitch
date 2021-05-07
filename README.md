@@ -533,17 +533,34 @@ Stitch provides limited linter capabilities to help with some of the short-comin
 
 
 ```sh
-# Run via the commandline to get a linter report
-# and write it to a file (by default will write to STDOUT)
-stitch lint > issues.json
+# Run via the commandline to get a linter report.
+# Use flags and options to control what gets checked. 
+stitch lint -h # See options
 ```
 
 ```ts
-// Typescript: Using the linter programmatically
+// Typescript: Using the linter and underlying functionality programmatically
 import {Gms2Project} from "@bscotch/stitch";
 const myProject = new Gms2Project();
-myProject.lint(); // Returns an Issues object
+
+// Get linter output. Runs any available checks by default.
+// An options object creates an allowlist of what gets checked instead.
+const linterResults = myProject.lint();
 ```
+
+#### Non-referenced Global Functions
+
+Identify global functions (any function defined in a script using the standard named-function syntax)
+that are not references in the project. This is useful for finding legacy functions that can be
+removed.
+
+** ⚠ Only the following are checked for references:**
+
++ Scripts
++ Object events
+
+(Room code and any other GML sources are not currently checked.)
+
 
 #### Global Function Versioning
 
@@ -553,9 +570,28 @@ The GMS2 IDE does list these cases among the syntax errors, but there is no way 
 
 Stitch includes functionality to identify these cases, so that one can retrieve and exhaustive list of these issues and then check again after refactoring to ensure that that list has become empty.
 
-+ Identify all functions
-  + Allow filtering using a pattern
-+ For each function:
-  + Allow converting function name to pattern and find all instances of pattern-matching function calls
-  + Identify all locations it is used.
-    + (Later) check the signature/types against the definition
+** ⚠ Only the following are checked for references:**
+
++ Scripts
++ Object events
+
+(Room code and any other GML sources are not currently checked.)
+
+```ts
+// Typescript: Using the linter and underlying functionality programmatically
+import {Gms2Project} from "@bscotch/stitch";
+const myProject = new Gms2Project();
+
+// Find all function references, returned as complex objects
+// for further parsing and analysis. In this case, fuzzy matching
+// will be used to find references that match a function name even
+// if they have a different "version suffix"
+// (e.g. `myFunc_v1` would show as a reference to function `myFunc` or `myFunc_v10`,
+// but the field `isCorrectVersion` would be `false` in the returned reference objects.)
+const nonreferencedFunctions = myProject
+  .findGlobalFunctionReferences({versionSuffix:'(_v\\d+)?'})
+  .filter(r=>!r.references.length);
+
+// Alternatively, use the linter method
+const linterResults = myProject.lint({versionSuffix:'(_v\\d+)?'})
+```

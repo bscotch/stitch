@@ -1,6 +1,6 @@
 import { StitchError, assert } from './errors';
 import fs from './files';
-import { explode, md5, oneline, wrapIfNotArray } from '@bscotch/utility';
+import { explode, md5, oneline } from '@bscotch/utility';
 import paths from './paths';
 import { YypComponents, YypComponentsLegacy } from '../types/Yyp';
 import { Gms2ProjectComponents } from '../types/Gms2ProjectComponents';
@@ -25,9 +25,9 @@ import { snakeCase, camelCase, pascalCase } from 'change-case';
 import { logDebug, logError, logInfo } from './log';
 import { get, unzipRemote } from './http';
 import { getGithubAccessToken } from './env';
-import { GmlTokenVersioned } from './parser/GmlTokenVersioned';
-import { GmlToken } from './parser/GmlToken';
 import { GmlTokenSummary } from './parser/GmlTokenSummary';
+import { LinterReport } from 'types/Linter';
+import { Linter, LinterOptions, LinterReportFormat } from './Linter';
 
 type YypComponentsVersion = YypComponents | YypComponentsLegacy;
 
@@ -387,17 +387,16 @@ export class Gms2Project {
     functions?: string | string[];
     /**
      * Allowlist functions matching some pattern.
-     * Takes precedence over `excludePattern`.
      * Will be converted to regex using
      * JavaScript new RegExp(excludePattern) without flags.
      */
-    allowPattern?: string;
+    allowNamePattern?: string;
     /**
      * Blocklist functions matching some pattern.
      * Will be converted to regex using
      * JavaScript new RegExp(excludePattern) without flags.
      */
-    excludePattern?: string;
+    excludeNamePattern?: string;
     /**
      * A regex pattern (as a string) that, if provided,
      * will be used to identify references to patterns
@@ -416,11 +415,12 @@ export class Gms2Project {
     const functions = this.getGlobalFunctions().filter((func) => {
       if (onlyFunctions) {
         return onlyFunctions.includes(func.name);
-      } else if (options?.allowPattern) {
-        return new RegExp(options.allowPattern).test(func.name);
-      } else if (options?.excludePattern) {
-        return !new RegExp(options.excludePattern).test(func.name);
+      } else if (options?.allowNamePattern) {
+        return new RegExp(options.allowNamePattern).test(func.name);
+      } else if (options?.excludeNamePattern) {
+        return !new RegExp(options.excludeNamePattern).test(func.name);
       }
+      return true;
     });
     assert(
       functions.length,
@@ -434,6 +434,11 @@ export class Gms2Project {
       summaries.push(summary);
     }
     return summaries;
+  }
+
+  /** Lint this project, resulting in a report of potential issues. */
+  lint(options?: LinterOptions & { format?: LinterReportFormat }) {
+    return new Linter(this, options);
   }
 
   /** Ensure that a texture group exists in the project. */
