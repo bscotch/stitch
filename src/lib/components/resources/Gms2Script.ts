@@ -36,6 +36,7 @@ export class Gms2Script extends Gms2ResourceBase {
   }
 
   set code(code: string) {
+    this.purgeCaches();
     this.codeCache = code;
     this.storage.writeBlob(this.codeFilePathAbsolute, this.codeCache, '\r\n');
   }
@@ -63,24 +64,16 @@ export class Gms2Script extends Gms2ResourceBase {
     token: GmlToken,
     options?: { suffix?: string; includeSelf?: boolean },
   ) {
-    const refs = findTokenReferences(
-      this.code,
-      token.name,
-      this,
-      options?.suffix,
-    );
-    if (!options?.includeSelf && token.location.resource?.name == this.name) {
-      // If the token is from *this* script, then remove it from the found references
-      const selfRef = refs.findIndex((ref) =>
-        ref.location.isSameLocation(token.location),
-      );
-      assert(
-        selfRef > -1,
-        `Token ${token.name} should have had a reference in ${this.name} because that is where it was found.`,
-      );
-      refs.splice(selfRef, 1);
-    }
-    return refs;
+    return findTokenReferences(this.code, token, {
+      resource: this,
+      suffixPattern: options?.suffix,
+      includeSelf: options?.includeSelf,
+    });
+  }
+
+  private purgeCaches() {
+    this.codeCache = undefined;
+    this.globalFunctionCache = undefined;
   }
 
   static create(name: string, code: string, storage: Gms2Storage) {

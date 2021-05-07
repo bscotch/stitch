@@ -16,8 +16,8 @@ export class StitchAssertionError extends Error {
   }
 }
 
-export function assert(claim: any, message: string): asserts claim {
+export function assert(claim: any, message?: string): asserts claim {
   if (!claim) {
-    throw new StitchAssertionError(message);
+    throw new StitchAssertionError(message || 'Claim is falsey');
   }
 }

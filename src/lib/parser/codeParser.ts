@@ -149,9 +149,12 @@ export function findOuterFunctions<
   Resource extends Gms2ResourceBase = Gms2ResourceBase
 >(gml: string, resource?: Resource) {
   let strippedGml = stripCommentsAndStringsFromGml(gml).stripped;
-  const innerScopes = XRegExp.matchRecursive(gml, '{', '}', 'igms').filter(
-    (x) => x,
-  );
+  const innerScopes = XRegExp.matchRecursive(
+    strippedGml,
+    '{',
+    '}',
+    'igms',
+  ).filter((x) => x);
   for (const innerScope of innerScopes) {
     // Create a filler with the same string lengh and number of newlines
     const totalNewlines = countMatches(innerScope, /\n/);
@@ -171,12 +174,10 @@ export function findOuterFunctions<
     }
     // The location is actually where the `function` token starts,
     // we want to have the position & column where the *name* starts
-    const tokenOffset = match[0].match(/^(function\s+)/)![1].length;
-    const location = GmlTokenLocation.createFromMatch(
-      strippedGml,
-      match,
-      tokenOffset,
-    );
+    const offsetPosition = match[0].match(/^(function\s+)/)![1].length;
+    const location = GmlTokenLocation.createFromMatch(strippedGml, match, {
+      offsetPosition,
+    });
     location.resource = resource;
     foundFuncs.push(new GmlToken(match!.groups!.name, location));
   }
@@ -185,19 +186,44 @@ export function findOuterFunctions<
 
 export function findTokenReferences<
   Resource extends Gms2ResourceBase = Gms2ResourceBase
->(gml: string, name: string, resource?: Resource, suffixPattern?: string) {
+>(
+  gml: string,
+  token: string | GmlToken,
+  options?: {
+    /**
+     * The resource this GML comes from. If not provided,
+     * this information will not be attached to the resulting
+     * token data.
+     */
+    resource?: Resource;
+    suffixPattern?: string;
+    /**
+     * By default, discovered references that are the *same* references
+     * as the search token are ignored.
+     */
+    includeSelf?: boolean;
+    /**
+     * If the source GML comes from a resource with multiple GML files,
+     * the sublocation should be used to differentiate.
+     */
+    sublocation?: string;
+  },
+) {
   // The function might already have the suffix. If so, need
   // to get the basename.
   const strippedGml = stripCommentsAndStringsFromGml(gml).stripped;
-  let basename = name;
-  if (suffixPattern) {
-    const suffixMatch = name.match(new RegExp(`^(.*?)${suffixPattern}$`));
+  const expectedName = typeof token == 'string' ? token : token.name;
+  let basename = expectedName;
+  if (options?.suffixPattern) {
+    const suffixMatch = basename.match(
+      new RegExp(`^(.*?)${options.suffixPattern}$`),
+    );
     if (suffixMatch) {
       basename = suffixMatch[1];
     }
   }
   const functionRegex = new RegExp(
-    `\\b(?<token>${basename}(?<suffix>${suffixPattern || ''}))\\b`,
+    `\\b(?<token>${basename}(?<suffix>${options?.suffixPattern || ''}))\\b`,
     'g',
   );
   const refs: GmlTokenVersioned[] = [];
@@ -207,10 +233,21 @@ export function findTokenReferences<
     if (!match) {
       break;
     }
-    const token = match.groups!.token;
-    const location = GmlTokenLocation.createFromMatch(strippedGml, match);
-    location.resource = resource;
-    const ref = new GmlTokenVersioned(token, location, name);
+    const tokenMatch = match.groups!.token;
+    const location = GmlTokenLocation.createFromMatch(strippedGml, match, {
+      sublocation: options?.sublocation,
+    });
+    location.resource = options?.resource;
+    const ref = new GmlTokenVersioned(tokenMatch, location, expectedName);
+
+    // Skip if matches search token and excluding self
+    if (
+      typeof token != 'string' &&
+      !options?.includeSelf &&
+      token.isTheSameToken(ref)
+    ) {
+      continue;
+    }
     refs.push(ref);
   }
   return refs;

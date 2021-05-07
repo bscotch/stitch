@@ -1,2 +1,3 @@
-/// @description Insert description here
-// You can write your code in this editor
+// "Run" another function
+
+Script2("OOOOH");

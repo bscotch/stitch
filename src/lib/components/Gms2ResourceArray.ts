@@ -281,7 +281,6 @@ export class Gms2ResourceArray {
       const layerFolderPath = paths.join(sprite.yyDirAbsolute, 'layers', fid);
       const compositeImagePath = paths.join(sprite.yyDirAbsolute, `${fid}.png`);
       storage.emptyDir(layerFolderPath, true);
-      console.log(compositeImagePath);
       storage.deleteFile(compositeImagePath);
     }
     sprite.clearFrames();

@@ -19,12 +19,19 @@ export class GmlTokenVersioned extends GmlToken {
   constructor(
     name: string,
     location: GmlTokenLocation,
-    private expectedName?: string,
+    readonly expectedName?: string,
   ) {
     super(name, location);
   }
 
   get isCorrectVersion() {
     return this.expectedName == this.name;
+  }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      invalidVersion: !this.isCorrectVersion,
+    };
   }
 }

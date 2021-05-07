@@ -85,7 +85,7 @@ describe('Unit Tests', function () {
     for (const index in outerFunctions) {
       expect(outerFunctions[index].name).to.equal(expectedResult[index].name);
       expect(
-        outerFunctions[index].location.hasSamePosition(
+        outerFunctions[index].location.isSamePosition(
           expectedResult[index].location,
         ),
       ).to.be.true;
@@ -94,7 +94,7 @@ describe('Unit Tests', function () {
     // A reference search of the same file should uncover the tokens at the same locations
     const refs = findTokenReferences(sampleScriptGml, 'badFormatting');
     expect(refs).to.have.length(1);
-    expect(refs[0].location.hasSamePosition(expectedResult[2].location));
+    expect(refs[0].location.isSamePosition(expectedResult[2].location));
   });
 
   it('can find function references in gml', function () {
@@ -106,7 +106,9 @@ describe('Unit Tests', function () {
 
       var moreOutput = ${secondFuncFullName}( someInput ) ;
     `;
-    let refs = findTokenReferences(sampleGml, funcName, undefined, '(_v\\d+)?');
+    let refs = findTokenReferences(sampleGml, funcName, {
+      suffixPattern: '(_v\\d+)?',
+    });
     expect(refs.length).to.equal(2);
     expect(refs[0].name).to.equal(funcName);
     expect(refs[1].name).to.equal(secondFuncFullName);
@@ -116,16 +118,12 @@ describe('Unit Tests', function () {
     expect(refs[1].location.line).to.equal(2);
     for (const ref of refs) {
       expect(ref.location.column).to.equal(17);
-      expect(ref.name).to.equal(funcName);
+      expect(ref.expectedName).to.equal(funcName);
     }
-
     // Try it again with the suffix
-    refs = findTokenReferences(
-      sampleGml,
-      secondFuncFullName,
-      undefined,
-      '(_v\\d+)?',
-    );
+    refs = findTokenReferences(sampleGml, secondFuncFullName, {
+      suffixPattern: '(_v\\d+)?',
+    });
     expect(refs.length).to.equal(2);
   });
 

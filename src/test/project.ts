@@ -23,6 +23,8 @@ import {
   throwNever,
 } from './lib/util';
 
+const globalFunctionNames = ['Script1', 'Script2', 'preimport'];
+
 describe('Gms2 Project Class', function () {
   it('can delete a resource', function () {
     const project = getResetProject({ readonly: true });
@@ -78,6 +80,66 @@ describe('Gms2 Project Class', function () {
     expect(rawKeys, 'dehydrated projects should have the same keys').to.eql(
       dehydratedKeys,
     );
+  });
+
+  it('can find global functions', function () {
+    const project = getResetProject();
+    const funcs = project.getGlobalFunctions();
+    expect(funcs.length).to.equal(3);
+    expect(funcs.map((f) => f.name)).to.eql(globalFunctionNames);
+  });
+
+  it('can find global function references', function () {
+    // Add some references to the preimport script
+    const project = getResetProject();
+    const script = project.resources.findByName('preimport', Gms2Script);
+    assert(script);
+    script.code += `\n\nScript1();\n\nScript2_v3();`;
+
+    const funcs = project.findGlobalFunctionReferences({
+      versionSuffix: '(_v\\d+)?',
+    });
+    expect(funcs.length).to.equal(3);
+    expect(funcs.map((func) => func.token.name)).to.eql(globalFunctionNames);
+    // We expect Script1 to appear in:
+    //  + the Create_0 event of 'object'
+    //  + the 'the_script' script (called by Script2)
+    //  + the 'preimport' script (added in this test)
+    // We expect Script2 to appear in:
+    //  + the Draw_0 event of 'object'
+    //  + the 'preimport' script (added in this test) with a DIFFERENT VERSION
+    // We expect preimport to appear in:
+    //  + NOWHERE (TODO: maybe it's in room code)
+
+    // Script1
+    const script1Refs = funcs[0].references;
+    expect(script1Refs.length).to.equal(3);
+    expect(script1Refs.every((r) => r.isCorrectVersion)).to.be.true;
+    expect(
+      script1Refs.find((r) => r.location.resource!.name == 'object')!.location
+        .subresource,
+    ).to.equal('Create_0');
+    expect(script1Refs.find((r) => r.location.resource!.name == 'the_script'))
+      .to.exist;
+    expect(script1Refs.find((r) => r.location.resource!.name == 'preimport')).to
+      .exist;
+
+    // Script2
+    const script2Refs = funcs[1].references;
+    expect(script2Refs.length).to.equal(2);
+    expect(script2Refs.every((r) => r.isCorrectVersion)).to.be.false;
+    expect(
+      script2Refs.find((r) => r.location.resource!.name == 'object')!.location
+        .subresource,
+    ).to.equal('Draw_0');
+    expect(
+      script2Refs.find((r) => r.location.resource!.name == 'preimport')!
+        .isCorrectVersion,
+    ).to.equal(false);
+
+    // preimport
+    const preimportRefs = funcs[2].references;
+    expect(preimportRefs.length).to.equal(0);
   });
 
   it('can create new folders', function () {

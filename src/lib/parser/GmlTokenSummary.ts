@@ -35,6 +35,20 @@ export class GmlTokenSummary<Token extends GmlToken = GmlToken> {
 
   private findRefsInObjects(options?: GmlTokenReferenceOptions) {
     const refs: GmlTokenVersioned[] = [];
+    this.project.resources.objects.forEach((object) => {
+      refs.push(
+        ...object.findTokenReferences(this.token, {
+          suffix: options?.versionSuffix,
+        }),
+      );
+    });
     return refs;
+  }
+
+  toJSON() {
+    return {
+      token: this.token,
+      references: this.references,
+    };
   }
 }

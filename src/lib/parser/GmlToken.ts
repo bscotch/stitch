@@ -8,4 +8,11 @@ export class GmlToken {
       this.location.isSameLocation(otherToken.location)
     );
   }
+
+  toJSON() {
+    return {
+      name: this.name,
+      location: this.location,
+    };
+  }
 }

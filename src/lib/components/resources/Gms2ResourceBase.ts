@@ -14,9 +14,9 @@ export type Gms2ResourceBaseParameters = [
   ensureYyFile?: boolean,
 ];
 
-export class Gms2ResourceBase {
+export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
   protected data: YypResource;
-  protected yyData: YyBase;
+  protected yyData: YyData;
 
   /**
    *  Create a resource using either the direct YYP-sourced object
