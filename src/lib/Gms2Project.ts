@@ -1,6 +1,6 @@
 import { StitchError, assert } from './errors';
 import fs from './files';
-import { md5, oneline } from '@bscotch/utility';
+import { explode, md5, oneline, wrapIfNotArray } from '@bscotch/utility';
 import paths from './paths';
 import { YypComponents, YypComponentsLegacy } from '../types/Yyp';
 import { Gms2ProjectComponents } from '../types/Gms2ProjectComponents';
@@ -381,6 +381,24 @@ export class Gms2Project {
    */
   findGlobalFunctionReferences(options?: {
     /**
+     * List of functions (either as CSV string or string array)
+     * to check. Takes precedence over allow/excludePattern.
+     */
+    functions?: string | string[];
+    /**
+     * Allowlist functions matching some pattern.
+     * Takes precedence over `excludePattern`.
+     * Will be converted to regex using
+     * JavaScript new RegExp(excludePattern) without flags.
+     */
+    allowPattern?: string;
+    /**
+     * Blocklist functions matching some pattern.
+     * Will be converted to regex using
+     * JavaScript new RegExp(excludePattern) without flags.
+     */
+    excludePattern?: string;
+    /**
      * A regex pattern (as a string) that, if provided,
      * will be used to identify references to patterns
      * matching function names with this suffix attached.
@@ -390,7 +408,20 @@ export class Gms2Project {
      */
     versionSuffix?: string;
   }) {
-    const functions = this.getGlobalFunctions();
+    const onlyFunctions = options?.functions
+      ? typeof options.functions == 'string'
+        ? explode(options.functions)
+        : options.functions
+      : null;
+    const functions = this.getGlobalFunctions().filter((func) => {
+      if (onlyFunctions) {
+        return onlyFunctions.includes(func.name);
+      } else if (options?.allowPattern) {
+        return new RegExp(options.allowPattern).test(func.name);
+      } else if (options?.excludePattern) {
+        return !new RegExp(options.excludePattern).test(func.name);
+      }
+    });
     assert(
       functions.length,
       `No function names provided or found in the project.`,
