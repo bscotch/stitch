@@ -59,7 +59,7 @@ export function stripCommentsAndStringsFromGml(gml: string) {
   ] as const;
   const leftDelimiterRegex = /((?<commentMulti>(?<!\/)\/\*)|(?<commentSingle>\/\/.*)|(?<quoteMulti>@["'])|(?<quoteSingle>"))/g;
 
-  const findRightPosition = (endRegex: RegExp, startFrom: number) => {
+  const _findRightPosition = (endRegex: RegExp, startFrom: number) => {
     assert(endRegex.global, 'End-regex must be global');
     endRegex.lastIndex = startFrom;
     const rightMatch = endRegex.exec(stripped);
@@ -68,15 +68,15 @@ export function stripCommentsAndStringsFromGml(gml: string) {
       : stripped.length;
   };
 
-  const removed: {
-    code: string;
-    type: 'comment' | 'string';
-    position: number;
-  }[] = [];
+  const found: {
+    [type in 'strings' | 'comments']: { code: string; position: number }[];
+  } = {
+    strings: [],
+    comments: [],
+  };
 
-  let leftDelimiterMatch: RegExpMatchArray | null;
   while (true) {
-    leftDelimiterMatch = leftDelimiterRegex.exec(stripped);
+    const leftDelimiterMatch = leftDelimiterRegex.exec(stripped);
     if (!leftDelimiterMatch) {
       break;
     }
@@ -86,7 +86,7 @@ export function stripCommentsAndStringsFromGml(gml: string) {
     const left = leftDelimiterMatch.index as number;
     const leftText = leftDelimiterMatch[1];
     let right = left + leftText.length;
-    let type!: typeof removed[number]['type'];
+    let type: 'strings' | 'comments' = 'strings';
     let replaceLeftOffset = 0;
     let replaceRightOffset = 0;
 
@@ -99,35 +99,32 @@ export function stripCommentsAndStringsFromGml(gml: string) {
       // Based on the delimiter find the index of the end of what it controls
       if (delimiterName == 'commentSingle') {
         // Then we already have it (goes to end of line)!
-        type = 'comment';
+        type = 'comments';
       } else if (delimiterName == 'quoteSingle') {
         // Move the start point to AFTER the quote, and end to BEFORE endquote
         // Need to get the end quote but skip ESCAPED quotes
         const endRegex = /(?<!\\)"/g;
-        right = findRightPosition(endRegex, right);
+        right = _findRightPosition(endRegex, right);
         replaceLeftOffset += 1;
         replaceRightOffset -= 1;
-        type = 'string';
       } else if (delimiterName == 'commentMulti') {
         // Find the end delimiter
         const endRegex = /\*\//g;
-        right = findRightPosition(endRegex, right);
-        type = 'comment';
+        right = _findRightPosition(endRegex, right);
+        type = 'comments';
       } else if (delimiterName == 'quoteMulti') {
         // Find the end. Could be either a ' or " delimiter
         const endRegex = leftText.includes('"') ? /"/g : /'/g;
-        right = findRightPosition(endRegex, right);
+        right = _findRightPosition(endRegex, right);
         replaceLeftOffset += 2;
         replaceRightOffset -= 1;
-        type = 'string';
       } else {
         throw new StitchError('Somehow matched a non-existent delimiter');
       }
       break;
     }
     leftDelimiterRegex.lastIndex = right;
-
-    removed.push({ code: stripped.slice(left, right), position: left, type });
+    found[type].push({ code: stripped.slice(left, right), position: left });
     stripped = stringReplaceSegment(
       stripped,
       left + replaceLeftOffset,
@@ -137,7 +134,7 @@ export function stripCommentsAndStringsFromGml(gml: string) {
   return {
     input: gml,
     stripped,
-    removed,
+    ...found,
   };
 }
 
