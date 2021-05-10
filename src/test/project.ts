@@ -150,12 +150,12 @@ describe('Gms2 Project Class', function () {
     assert(script);
     script.code += `\n\nScript1();\n\n${outdatedReference}();`;
     const lintResults = project.lint({ versionSuffix: '(_v\\d+)?' });
-    const results = lintResults.report;
+    const results = lintResults.getReport();
     expect(results.nonreferencedFunctions![0].name).to.equal('preimport');
     expect(results.outdatedFunctionReferences![0].name).to.equal(
       outdatedReference,
     );
-    console.log(lintResults.reportString);
+    console.log(lintResults.getReportString());
   });
 
   it('can create new folders', function () {

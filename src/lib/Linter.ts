@@ -25,30 +25,27 @@ export class Linter {
   }
 
   /** Shallow clone of the raw report. */
-  get report() {
+  getReport() {
     return { ...this._report };
   }
 
   /** Console-friendly report */
-  get reportString() {
-    const clickablePath = (token: GmlToken) => {
-      return paths.join(
-        '.',
-        paths.relative(process.cwd(), token.location.filepathAbsolute),
-      );
+  getReportString() {
+    const _clickablePath = (token: GmlToken) => {
+      return paths.relative(process.cwd(), token.location.filepathAbsolute);
     };
 
     const report = [];
     if (this._report.nonreferencedFunctions) {
       report.push('', chalk.yellow('Nonreferenced Functions'));
       for (const func of this._report.nonreferencedFunctions) {
-        report.push(clickablePath(func));
+        report.push(_clickablePath(func));
       }
     }
     if (this._report.outdatedFunctionReferences) {
       report.push('', chalk.red('Outdated Function Version References'));
       for (const func of this._report.outdatedFunctionReferences) {
-        report.push(clickablePath(func));
+        report.push(_clickablePath(func));
       }
     }
     return report.join('\n');
@@ -69,6 +66,7 @@ export class Linter {
         .map((f) => f.references.filter((r) => !r.isCorrectVersion))
         .flat(1);
     }
+    this._report = report;
     return report;
   }
 }
