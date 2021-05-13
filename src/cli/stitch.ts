@@ -22,4 +22,5 @@ cli
     which will clean up some common issues and normalize the file content.
   `,
   )
+  .command('lint', 'Generate a lint report for a GameMaker Studio 2 project.')
   .parse();
