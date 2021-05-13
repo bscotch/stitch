@@ -142,7 +142,7 @@ describe('Gms2 Project Class', function () {
     expect(preimportRefs.length).to.equal(0);
   });
 
-  it.only('can lint a project', function () {
+  it('can lint a project', function () {
     // Add some references to the preimport script
     const project = getResetProject();
     const script = project.resources.findByName('preimport', Gms2Script);

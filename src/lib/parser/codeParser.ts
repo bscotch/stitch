@@ -103,8 +103,28 @@ export function stripCommentsAndStringsFromGml(gml: string) {
       } else if (delimiterName == 'quoteSingle') {
         // Move the start point to AFTER the quote, and end to BEFORE endquote
         // Need to get the end quote but skip ESCAPED quotes
-        const endRegex = /(?<!\\)"/g;
-        right = _findRightPosition(endRegex, right);
+        const endRegex = /"/g;
+        endRegex.lastIndex = right;
+
+        while (true) {
+          const match = endRegex.exec(stripped);
+          assert(match, 'Found a left quote without a matching right quote.');
+          right = match.index + 1;
+          //We have found a right quote, but we don't know if it is escaped by having an odd number of forward slashes in front of it
+          let consecutivePreviousSlashCount = 0;
+          for (let position = match.index - 1; position > left; position--) {
+            if (stripped[position] == '\\') {
+              consecutivePreviousSlashCount++;
+            } else {
+              break;
+            }
+          }
+          if (consecutivePreviousSlashCount % 2 == 1) {
+            continue;
+          } else {
+            break;
+          }
+        }
         replaceLeftOffset += 1;
         replaceRightOffset -= 1;
       } else if (delimiterName == 'commentMulti') {
@@ -146,6 +166,7 @@ export function findOuterFunctions<
   Resource extends Gms2ResourceBase = Gms2ResourceBase
 >(gml: string, resource?: Resource) {
   let strippedGml = stripCommentsAndStringsFromGml(gml).stripped;
+
   const innerScopes = XRegExp.matchRecursive(
     strippedGml,
     '{',

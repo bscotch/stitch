@@ -53,8 +53,15 @@ export class Gms2Script extends Gms2ResourceBase {
    * (Only returns outer-scope named functions.)
    */
   get globalFunctions() {
-    this.globalFunctionCache ||= findOuterFunctions(this.code, this);
-    return this.globalFunctionCache;
+    try {
+      this.globalFunctionCache ||= findOuterFunctions(this.code, this);
+      return this.globalFunctionCache;
+    } catch (err) {
+      console.log(
+        `Failed to lint the gml code in this script resource: ${this.name}`,
+      );
+      throw err;
+    }
   }
 
   /**

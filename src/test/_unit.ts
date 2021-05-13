@@ -29,6 +29,14 @@ describe('Unit Tests', function () {
     expect(GITHUB_PERSONAL_ACCESS_TOKEN).to.have.length.greaterThan(0);
   });
 
+  it.only('can strip single-line comments from GML', function () {
+    const gml = readTestData(`jsdoc-comments-and-strings.gml`);
+    const expected = readTestData(`jsdoc-comments-and-strings-stripped.gml`);
+    const stripped = stripCommentsAndStringsFromGml(gml);
+    expect(gml.length).to.equal(stripped.stripped.length);
+    expect(stripped.stripped).to.equal(expected);
+  });
+
   it('can strip single-line comments from GML', function () {
     const gml = readTestData(`single-line-comments.gml`);
     const expected = readTestData(`single-line-comments-stripped.gml`);

@@ -18,4 +18,22 @@ const project = new Gms2Project({
 });
 
 const lintResults = project.lint({ versionSuffix: opts.suffix });
-console.log(lintResults.getReportString());
+const {
+  outdatedFunctionReferences,
+  nonreferencedFunctions,
+} = lintResults.getReport();
+outdatedFunctionReferences?.forEach((outdatedRef) => {
+  console.log(outdatedRef.name);
+  console.log(outdatedRef.location.line);
+  console.log(
+    `Outdated reference at: ${outdatedRef.name}, line ${outdatedRef.location.line}, column ${outdatedRef.location.column}`,
+  );
+});
+
+nonreferencedFunctions?.forEach((ref) => {
+  console.log(ref.name);
+  console.log(ref.location.line);
+  console.log(
+    `Non-referenced function at: ${ref.name}, line ${ref.location.line}, column ${ref.location.column}`,
+  );
+});
