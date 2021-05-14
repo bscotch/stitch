@@ -63,7 +63,7 @@ export class Gms2Object extends Gms2ResourceBase<YyObject> {
     const gmlFiles = listFilesByExtensionSync(this.yyDirAbsolute, 'gml');
     for (const gmlFile of gmlFiles) {
       const name = gmlFile.match(/([^/\\]+)\.gml$/)![1];
-      const [, type, num] = name.match(/(.*)_(\d+)/) as string[];
+      const [type, num] = name.match(/((.*)_(\d+))|(Collision_.*)/) as string[];
       const code = this.storage.readBlob(gmlFile).toString();
       this.eventsCache.push({
         name,
