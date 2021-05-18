@@ -5,18 +5,18 @@ import {
   yyDataLayerDefaults,
   yyDataSequenceDefaults,
   yyDataSequenceTrackDefaults,
-} from '../../../types/YySprite';
-import { Gms2Storage } from '../../Gms2Storage';
-import paths from '../../paths';
+} from 'types/YySprite';
+import { Gms2Storage } from '@/Gms2Storage';
+import paths from '@/paths';
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase';
 import { Spritely } from '@bscotch/spritely';
-import { uuidV4 } from '../../uuid';
-import { NumberFixed } from '../../NumberFixed';
-import { assert } from '../../errors';
-import { logDebug } from '../../log';
+import { uuidV4 } from '@/uuid';
+import { NumberFixed } from '@/NumberFixed';
+import { assert } from '@/errors';
+import { logDebug } from '@/log';
 
 const toSingleDecimalNumber = (number: number | undefined) => {
   return new NumberFixed(number || 0, 1);
@@ -199,9 +199,9 @@ export class Gms2Sprite extends Gms2ResourceBase {
           resourceType: 'GMSpriteBitmap',
         },
       ],
-      name: frameGuid,
       parent: this.id,
       resourceVersion: '1.0',
+      name: frameGuid,
       tags: [],
       resourceType: 'GMSpriteFrame',
     });
