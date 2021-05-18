@@ -306,7 +306,7 @@ export const yyDataDefaults = {
   resourceVersion: '1.0',
   swatchColours: null,
   swfPrecision: 2.525,
-  bboxMode: SpriteBoundingBoxMode.Automatic,
+  bboxMode: SpriteBoundingBoxMode.Manual,
   bbox_left: 0,
   bbox_top: 0,
   collisionKind: SpriteCollisionKind.Rectangle,

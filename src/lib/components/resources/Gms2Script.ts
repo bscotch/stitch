@@ -7,7 +7,6 @@ import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase';
-import { assert } from '@/errors';
 
 export class Gms2Script extends Gms2ResourceBase {
   protected yyData!: YyScript; // Happens in the super() constructor
