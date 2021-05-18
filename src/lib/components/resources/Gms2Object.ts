@@ -15,8 +15,11 @@ export class Gms2Object extends Gms2ResourceBase<YyObject> {
     name: string;
     /** The type (e.g. Draw, Create) */
     type: string;
-    /** The index (e.g. 0 from Create_0 or 5 from Alarm_5) */
-    index: number;
+    /**
+     * Object event files typically end with _\d or another pattern.
+     * We're calling this the event "subtype".
+     */
+    subtype: string;
     code: string;
   }[];
 
@@ -63,12 +66,14 @@ export class Gms2Object extends Gms2ResourceBase<YyObject> {
     const gmlFiles = listFilesByExtensionSync(this.yyDirAbsolute, 'gml');
     for (const gmlFile of gmlFiles) {
       const name = gmlFile.match(/([^/\\]+)\.gml$/)![1];
-      const [type, num] = name.match(/((.*)_(\d+))|(Collision_.*)/) as string[];
+      const [type, subtype] = name.match(
+        /^((.*)_(\d+))|(Collision_.*)$/,
+      ) as string[];
       const code = this.storage.readBlob(gmlFile).toString();
       this.eventsCache.push({
         name,
         type,
-        index: Number(num),
+        subtype,
         code,
       });
     }

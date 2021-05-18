@@ -29,7 +29,7 @@ describe('Unit Tests', function () {
     expect(GITHUB_PERSONAL_ACCESS_TOKEN).to.have.length.greaterThan(0);
   });
 
-  it.only('can strip single-line comments from GML', function () {
+  it('can strip single-line comments from GML', function () {
     const gml = readTestData(`jsdoc-comments-and-strings.gml`);
     const expected = readTestData(`jsdoc-comments-and-strings-stripped.gml`);
     const stripped = stripCommentsAndStringsFromGml(gml);

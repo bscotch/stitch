@@ -527,6 +527,8 @@ myProject.addAudioGroupAssignment('folder/in/the/ide','nameOfYourAudioGroup');
 
 ### Linter <a id="linter"></a>
 
+** ⚠ This is a new feature that is both incomplete and likely to change substanially! ⚠ **
+
 The GMS2 IDE has limited Intellisense, does not do type-checking, and has a noisy syntax error log that does not allow easy differentiation of types of issues (nor ignoring things that are actually fine). Collectively this makes it difficult to have confidence that the code will run successfully, especially since code issues may not be discovered until run-time. Runtime errors are expensive to discover and fix, because they can easily slip through QA unnoticed and are likely to have hard-to-trace consequences.
 
 Stitch provides limited linter capabilities to help with some of the short-comings of the build-in GMS2 error detection systems.
