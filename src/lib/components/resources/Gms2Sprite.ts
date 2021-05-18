@@ -3,6 +3,7 @@ import {
   SpriteType,
   yyDataDefaults,
   yyDataLayerDefaults,
+  SpriteBoundingBoxMode,
   yyDataSequenceDefaults,
   yyDataSequenceTrackDefaults,
 } from 'types/YySprite';
@@ -17,6 +18,7 @@ import { uuidV4 } from '@/uuid';
 import { NumberFixed } from '@/NumberFixed';
 import { assert } from '@/errors';
 import { logDebug } from '@/log';
+import pick from 'lodash/pick';
 
 const toSingleDecimalNumber = (number: number | undefined) => {
   return new NumberFixed(number || 0, 1);
@@ -123,11 +125,21 @@ export class Gms2Sprite extends Gms2ResourceBase {
     const oldOriginY = this.yyData.sequence.yorigin;
     const oldHeight = this.yyData.height;
     const oldWidth = this.yyData.width;
+    const oldBbox = pick(this.yyData, [
+      'bbox_bottom',
+      'bbox_right',
+      'bbox_top',
+      'bbox_left',
+    ] as const);
 
     this.yyData.height = height;
     this.yyData.width = width;
-    this.yyData.bbox_bottom = height;
-    this.yyData.bbox_right = width;
+    this.yyData.bbox_bottom ||= height;
+    this.yyData.bbox_right ||= width;
+
+    const _scaleCoord = (oldPos: number, oldMax: number, newMax: number) => {
+      return Math.floor((oldPos / oldMax) * newMax);
+    };
 
     const originIsUnset = oldHeight == 0 || oldWidth == 0;
     const dimsHaveChanged = width != oldWidth || height != oldHeight;
@@ -135,12 +147,41 @@ export class Gms2Sprite extends Gms2ResourceBase {
       this.yyData.sequence.xorigin = Math.floor(width / 2);
       this.yyData.sequence.yorigin = Math.floor(height / 2);
     } else if (dimsHaveChanged) {
-      this.yyData.sequence.xorigin = Math.floor(
-        (oldOriginX / oldWidth) * width,
-      );
-      this.yyData.sequence.yorigin = Math.floor(
-        (oldOriginY / oldHeight) * height,
-      );
+      this.yyData.sequence.xorigin = _scaleCoord(oldOriginX, oldWidth, width);
+      this.yyData.sequence.yorigin = _scaleCoord(oldOriginY, oldHeight, height);
+    }
+    if (
+      dimsHaveChanged &&
+      this.yyData.bboxMode == SpriteBoundingBoxMode.FullImage
+    ) {
+      // Adjust to dims
+      this.yyData.bbox_left = 0;
+      this.yyData.bbox_top = 0;
+      this.yyData.bbox_right = width;
+      this.yyData.bbox_bottom = height;
+    } else if (dimsHaveChanged) {
+      // Adjust *relatively*
+      const bboxScaleInfo = [
+        {
+          oldMax: oldWidth,
+          max: width,
+          fields: ['bbox_right', 'bbox_left'] as const,
+        },
+        {
+          oldMax: oldHeight,
+          max: height,
+          fields: ['bbox_top', 'bbox_bottom'] as const,
+        },
+      ];
+      for (const bbox of bboxScaleInfo) {
+        for (const field of bbox.fields) {
+          this.yyData[field] = _scaleCoord(
+            oldBbox[field],
+            bbox.oldMax,
+            bbox.max,
+          );
+        }
+      }
     }
     return this;
   }
