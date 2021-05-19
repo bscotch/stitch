@@ -6,6 +6,7 @@ import { ImportBaseOptions } from './lib/add-base-options';
 import options from './lib/cli-options';
 import { SpriteImportOptions } from '../lib/Gms2Project';
 import { addDebugOptions } from './lib/addDebugOption';
+import { runOrWatch } from './watch';
 
 const cli = commander;
 
@@ -27,7 +28,6 @@ cli
   `,
   )
   .option(...options.targetProject)
-  .option(...options.force)
   .option(
     '--prefix <prefix>',
     oneline`
@@ -70,7 +70,15 @@ cli
     JavaScript's \`new RegExp()\` function. Any sprites whose
     *original* names match the pattern will not be imported.
   `,
-  );
+  )
+  .option(...options.force)
+  .option(...options.watch);
 addDebugOptions(cli).parse(process.argv);
 
-importSprites(cli.opts() as ImportBaseOptions & SpriteImportOptions);
+const opts = cli.opts();
+runOrWatch(
+  opts,
+  () => importSprites(opts as ImportBaseOptions & SpriteImportOptions),
+  opts.source,
+  'png',
+);

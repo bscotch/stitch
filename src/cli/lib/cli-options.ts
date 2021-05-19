@@ -15,4 +15,12 @@ export default {
       If not set, will auto-search the current directory.
     `,
   ],
+  watch: [
+    '--watch',
+    oneline`
+      Run the command with a watcher, so that it will re-run
+      any time there is a change to the source files that might
+      warrant a re-run.
+    `,
+  ],
 } as const;
