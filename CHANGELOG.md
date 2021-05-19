@@ -1,3 +1,35 @@
+# [2.9.0](https://github.com/bscotch/stitch/compare/v2.8.0...v2.9.0) (2021-05-19)
+
+
+### Bug Fixes
+
+* Can now accomodate the object collision event, which deviates from the normal naming convention. ([cad43f7](https://github.com/bscotch/stitch/commit/cad43f72cec301d4d8291de0edb7cd1f563cf6f2))
+* Object event files don't always have a name pattern ending in a digit, so it doesn't make sense to represent them with data structures that expect that. ([d10c1b7](https://github.com/bscotch/stitch/commit/d10c1b77d7ee4493156a28756f8de24f5f972e82))
+* The 'name' field of frame data in Sprite yy files has a new position in the latest GMS2 IDE. This means that Stitch makes noisy Git histories by making file changes that aren't strictly necessary (note that fixing this will *add* noise for older IDEs). ([cf902ba](https://github.com/bscotch/stitch/commit/cf902ba41b0910703e2783551adde27406f4d156))
+* The bounding box mode for new sprites is set to Automatic, which makes for unexpected outcomes when someone opens said sprite in GMS2 (since GMS2 may suddently change the bounding box). Manual is a better default. ([4d1cfcf](https://github.com/bscotch/stitch/commit/4d1cfcfa583dcdeb8311414b196cc5ca3fa8b023))
+* When new sprites are added, the right and bottom bbox values are always being set based on the image height/width. They should default to their current value and be auto adjusted if the image size has changed. ([93bd8a3](https://github.com/bscotch/stitch/commit/93bd8a3080bab3d987b61490d476ba7303022c60))
+* **Linter:** Parsing single quotes can now properly handle escaped quotes. ([6deb7b7](https://github.com/bscotch/stitch/commit/6deb7b744b183099f180320a6ed25f63cdaba113))
+* The function-reference finder should check for the suffix within the reference function name itself. ([07915e7](https://github.com/bscotch/stitch/commit/07915e7ccaaf8ebb96bd238a0c8f4e83f5655e7d))
+
+
+### Features
+
+* **CLI:** Add the lint command. ([0b66436](https://github.com/bscotch/stitch/commit/0b66436c67d9c78c079694e18aa82b707a7cd82a))
+* Add ability for Object resources to return their code (from all events), and for token searches to include that code. ([9732406](https://github.com/bscotch/stitch/commit/97324060cdd55c7019785f2a1b0a02e82d623b62))
+* Add caching to Script objects so that they only need to retrieve code from disk once. ([43cbaad](https://github.com/bscotch/stitch/commit/43cbaad155f5f799cb0894d1dc743fee671523f6))
+* Add function info getter to the Script class, allowing discovery ([ac7f696](https://github.com/bscotch/stitch/commit/ac7f696d0d3f9e9da3f88f9b7f057badd3c6f9ee))
+* Add Linter class to run linting methods and provide output format options. (Needs work.) ([312679c](https://github.com/bscotch/stitch/commit/312679c4a9b42b70f6f4a92977f5b0b8e03c7656))
+* Add options to the function-reference-finder to allow/blocklist functions by name. ([5574564](https://github.com/bscotch/stitch/commit/5574564d8f1a43f2aa0ab7f8b68da1ea210b081b))
+* Add utilily functions for parsing GML for function names and references. ([26097c0](https://github.com/bscotch/stitch/commit/26097c07175a6caac6bc2db44c69411589a9d041))
+* Extract the comparison of two token-locations' position to be a standalone API so that we can compare raw GMLs that are not hosted inside a resource. ([3e7560e](https://github.com/bscotch/stitch/commit/3e7560e9bcffd581f4bd01918b94113ac4e1ed88))
+* Have GML token objects use class instances instead to make downstream functionality easier. (Tests are broken.) ([f1bec07](https://github.com/bscotch/stitch/commit/f1bec0765ce6e3b2f951927f552d3f7a8d40e4c8))
+* Have Script instances add their name and type to the location info of their globalFunctions getter. ([c9b6f0f](https://github.com/bscotch/stitch/commit/c9b6f0f092ab36c9702a6bf3afda4ff37f5d8ea2))
+* Have the function-finder function include position of the function name token, allowing comparision with reference objects for exact matches by location. ([3e9f23b](https://github.com/bscotch/stitch/commit/3e9f23bb5cbead5408b60614c88c4ffda781eb1a))
+* Strip string content and comments out of GML prior to parsing for function names and matching tokens against code. ([3148907](https://github.com/bscotch/stitch/commit/31489073f5b1c3337bb5ca9b7882630c8ae8e372))
+* Update all deps. ([a8da8a4](https://github.com/bscotch/stitch/commit/a8da8a43bc6dbab5073de0cb4126f52f67c10529))
+
+
+
 # [2.8.0](https://github.com/bscotch/stitch/compare/v2.7.13...v2.8.0) (2021-04-22)
 
 
