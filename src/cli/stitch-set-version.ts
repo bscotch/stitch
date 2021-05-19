@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import commander, { CommanderStatic } from 'commander';
+import commander from 'commander';
 import { undent } from '@bscotch/utility';
 import version, { VersionOptions } from './lib/version';
 import options from './lib/cli-options';

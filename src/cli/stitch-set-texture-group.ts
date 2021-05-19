@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import commander, { CommanderStatic } from 'commander';
+import commander from 'commander';
 import { oneline, undent } from '@bscotch/utility';
 import { assignTextureGroups, AssignCliOptions } from './lib/assign';
 import options from './lib/cli-options';

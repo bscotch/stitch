@@ -12,25 +12,25 @@ enum YyObjectEventType {
   Cleanup = 12,
 }
 
-enum YyObjectDrawEventNum {
-  Draw,
-  DrawGui = 64,
-  WindowResize = 65,
-  DrawBegin = 72,
-  DrawEnd = 73,
-  DrawGuiBegin = 74,
-  DrawGuiEnd = 75,
-  PreDraw = 76,
-  PostDraw = 77,
-}
+// enum YyObjectDrawEventNum {
+//   Draw,
+//   DrawGui = 64,
+//   WindowResize = 65,
+//   DrawBegin = 72,
+//   DrawEnd = 73,
+//   DrawGuiBegin = 74,
+//   DrawGuiEnd = 75,
+//   PreDraw = 76,
+//   PostDraw = 77,
+// }
 
-enum YyObjectStepEventNum {
-  Step,
-  BeginStep,
-  EndStep,
-}
+// enum YyObjectStepEventNum {
+//   Step,
+//   BeginStep,
+//   EndStep,
+// }
 
-type YyObjectAlarmEventNum = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+// type YyObjectAlarmEventNum = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
 interface YyObjectEvent {
   isDnD: false;
@@ -46,32 +46,32 @@ interface YyObjectEvent {
   resourceType: 'GMEvent';
 }
 
-interface YyObjectCreateEvent extends YyObjectEvent {
-  eventNum: YyObjectEventType.Create;
-}
+// interface YyObjectCreateEvent extends YyObjectEvent {
+//   eventNum: YyObjectEventType.Create;
+// }
 
-interface YyObjectDestroyEvent extends YyObjectEvent {
-  eventNum: YyObjectEventType.Destroy;
-}
+// interface YyObjectDestroyEvent extends YyObjectEvent {
+//   eventNum: YyObjectEventType.Destroy;
+// }
 
-interface YyObjectCleanupEvent extends YyObjectEvent {
-  eventNum: YyObjectEventType.Cleanup;
-}
+// interface YyObjectCleanupEvent extends YyObjectEvent {
+//   eventNum: YyObjectEventType.Cleanup;
+// }
 
-interface YyObjectStepEvent extends YyObjectEvent {
-  eventNum: YyObjectEventType.Step;
-  eventType: YyObjectStepEventNum;
-}
+// interface YyObjectStepEvent extends YyObjectEvent {
+//   eventNum: YyObjectEventType.Step;
+//   eventType: YyObjectStepEventNum;
+// }
 
-interface YyObjectAlarmEvent extends YyObjectEvent {
-  eventNum: YyObjectEventType.Alarm;
-  eventType: YyObjectAlarmEventNum;
-}
+// interface YyObjectAlarmEvent extends YyObjectEvent {
+//   eventNum: YyObjectEventType.Alarm;
+//   eventType: YyObjectAlarmEventNum;
+// }
 
-interface YyObjectDrawEvent extends YyObjectEvent {
-  eventNum: YyObjectEventType.Draw;
-  eventType: YyObjectDrawEventNum;
-}
+// interface YyObjectDrawEvent extends YyObjectEvent {
+//   eventNum: YyObjectEventType.Draw;
+//   eventType: YyObjectDrawEventNum;
+// }
 
 // TODO: ... there are MANY MORE events to plug in here. May want to approach this differently.
 

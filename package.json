@@ -21,7 +21,7 @@
     "build": "rm -rf build && tsc && tsc-alias",
     "watch": "tsc -w && tsc-alias -w",
     "preversion": "git checkout develop && npm test",
-    "version": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && prettier src/ -w && git add -A",
+    "version": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && prettier src -w && git add -A",
     "postversion": "git push origin develop && git checkout master && git merge develop && git push origin master --follow-tags && npm publish && git checkout develop"
   },
   "repository": {

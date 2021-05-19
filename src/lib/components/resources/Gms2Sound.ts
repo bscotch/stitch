@@ -12,7 +12,7 @@ import {
 } from './Gms2ResourceBase';
 import paths from '../../paths';
 import { Gms2Storage } from '../../Gms2Storage';
-import { assert, StitchError } from '../../errors';
+import { assert } from '../../errors';
 
 export class Gms2Sound extends Gms2ResourceBase {
   protected yyData!: YySound; // Happens in the super() constructor

@@ -26,7 +26,6 @@ import { logDebug, logError, logInfo } from './log';
 import { get, unzipRemote } from './http';
 import { getGithubAccessToken } from './env';
 import { GmlTokenSummary } from './parser/GmlTokenSummary';
-import { LinterReport } from 'types/Linter';
 import { Linter, LinterOptions, LinterReportFormat } from './Linter';
 
 type YypComponentsVersion = YypComponents | YypComponentsLegacy;
