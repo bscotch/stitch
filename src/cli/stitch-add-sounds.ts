@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-import commander, { CommanderStatic } from 'commander';
+import commander from 'commander';
 import { oneline, undent } from '@bscotch/utility';
 import importSounds from './lib/add-sounds';
 import { ImportBaseOptions } from './lib/add-base-options';
 import options from './lib/cli-options';
 import { addDebugOptions } from './lib/addDebugOption';
+import { runOrWatch } from './watch';
+import { Gms2Project } from '../lib/Gms2Project';
 
 const cli = commander;
 
@@ -29,7 +31,16 @@ cli
   `,
   )
   .option(...options.targetProject)
-  .option(...options.force);
+  .option(...options.force)
+  .option(...options.watch);
 addDebugOptions(cli).parse(process.argv);
 
-importSounds(cli.opts() as ImportBaseOptions);
+const opts = cli.opts() as ImportBaseOptions & { extensions?: string };
+runOrWatch(
+  opts,
+  () => importSounds(opts),
+  opts.source,
+  opts.extensions
+    ? opts.extensions.split(',')
+    : Gms2Project.supportedSoundFileExtensions,
+);

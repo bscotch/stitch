@@ -5,6 +5,7 @@ export type ImportBaseOptions = {
   extensions?: string[];
   targetProject?: string;
   force?: boolean;
+  watch?: boolean;
 };
 
 export function normalizeOptions(options: ImportBaseOptions) {

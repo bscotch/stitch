@@ -6,7 +6,7 @@
 
 import { logDebug, logError, logWarning } from '@/log';
 import paths from '@/paths';
-import { AnyFunction, Nullish, undent } from '@bscotch/utility';
+import { AnyFunction, Nullish, undent, wrapIfNotArray } from '@bscotch/utility';
 import chokidar from 'chokidar';
 
 export function runOrWatch(
@@ -23,7 +23,7 @@ export async function onDebouncedChange(
   /**
    * E.g. 'png'
    */
-  watchFileExtension: string,
+  watchFileExtension: string | string[],
   options?: {
     /**
      * Seconds to wait for additional changes before running
@@ -32,12 +32,15 @@ export async function onDebouncedChange(
     debounceWaitSeconds?: number;
   },
 ) {
+  const extensions = wrapIfNotArray(watchFileExtension);
+  const watchGlobs = extensions.map((ext) =>
+    paths
+      .join(watchFolder, '**', `*.${ext}`)
+      .split(paths.sep)
+      .join(paths.posix.sep),
+  );
   let debounceTimeout: NodeJS.Timeout | null = null;
-  const pattern = paths
-    .join(watchFolder, '**', `*.${watchFileExtension}`)
-    .split(paths.sep)
-    .join(paths.posix.sep);
-  const watcher = chokidar.watch(pattern, {
+  const watcher = chokidar.watch(watchGlobs, {
     awaitWriteFinish: {
       stabilityThreshold: 500,
       pollInterval: 100,
