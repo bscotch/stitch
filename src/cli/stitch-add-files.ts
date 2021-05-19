@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-import commander, { CommanderStatic } from 'commander';
+import commander from 'commander';
 import { oneline, undent } from '@bscotch/utility';
 import { ImportBaseOptions } from './lib/add-base-options';
 import importFiles from './lib/add-files';
 import options from './lib/cli-options';
 import { addDebugOptions } from './lib/addDebugOption';
+import { runOrWatch } from './watch';
 
 const cli = commander;
 
@@ -32,4 +33,5 @@ cli
   .option(...options.force);
 addDebugOptions(cli).parse(process.argv);
 
-importFiles(cli.opts() as ImportBaseOptions);
+const opts = cli.opts() as ImportBaseOptions & { extensions?: string };
+runOrWatch(opts, () => importFiles(opts), opts.source, opts.extensions);

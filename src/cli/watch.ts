@@ -23,7 +23,7 @@ export async function onDebouncedChange(
   /**
    * E.g. 'png'
    */
-  watchFileExtension: string | string[],
+  watchFileExtension: string | string[] | Nullish,
   options?: {
     /**
      * Seconds to wait for additional changes before running
@@ -32,13 +32,12 @@ export async function onDebouncedChange(
     debounceWaitSeconds?: number;
   },
 ) {
-  const extensions = wrapIfNotArray(watchFileExtension);
-  const watchGlobs = extensions.map((ext) =>
-    paths
-      .join(watchFolder, '**', `*.${ext}`)
-      .split(paths.sep)
-      .join(paths.posix.sep),
-  );
+  const extensions = wrapIfNotArray(watchFileExtension || null); // 'undefined' results in an empty array
+  const watchGlobs = extensions.map((ext: string | Nullish) => {
+    const base = paths.join(watchFolder, '**');
+    const path = ext ? paths.join(base, `*.${ext}`) : base;
+    return path.split(paths.sep).join(paths.posix.sep);
+  });
   let debounceTimeout: NodeJS.Timeout | null = null;
   const watcher = chokidar.watch(watchGlobs, {
     awaitWriteFinish: {

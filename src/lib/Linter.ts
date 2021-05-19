@@ -31,7 +31,11 @@ export class Linter {
   /** Console-friendly report */
   getReportString() {
     const _clickablePath = (token: GmlToken) => {
-      return paths.relative(process.cwd(), token.location.filepathAbsolute);
+      const path = paths.relative(
+        process.cwd(),
+        token.location.filepathAbsolute,
+      );
+      return path.includes(' ') ? `"${path}"` : path;
     };
 
     const report = [];

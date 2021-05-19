@@ -753,7 +753,7 @@ export class Gms2Project {
       options?.subdirectory,
       options?.allowedExtensions,
     );
-    logInfo(`upserted file ${path}`);
+    logInfo(`upserted file "${path}"`);
     return file;
   }
 
