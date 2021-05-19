@@ -8,3 +8,4 @@ spritely.log
 node.error.log
 .env
 *.env
+package-lock.json
