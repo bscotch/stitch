@@ -6,7 +6,7 @@ import {
   yyRoomInstanceDefaults,
 } from '../../../types/YyRoom';
 import { assert } from '../../errors';
-import { logInfo } from '../../log';
+import { info } from '../../log';
 import { NumberFixed } from '../../NumberFixed';
 import { uuidV4 } from '../../uuid';
 import type { Gms2Object } from './Gms2Object';
@@ -56,7 +56,7 @@ export class Gms2Room extends Gms2ResourceBase {
       name: instanceName,
       path: `rooms/${this.name}/${this.name}.yy` as const,
     });
-    logInfo(`Added object ${object.name} instance to room ${this.name}`);
+    info(`Added object ${object.name} instance to room ${this.name}`);
     return this.save();
   }
 }

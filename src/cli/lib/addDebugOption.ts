@@ -1,5 +1,5 @@
 import { CommanderStatic } from 'commander';
-import { logDebug } from '../../lib/log';
+import { debug } from '../../lib/log';
 
 export function addDebugOptions(cli: CommanderStatic) {
   return cli
@@ -10,7 +10,7 @@ export function addDebugOptions(cli: CommanderStatic) {
     .action(function (options) {
       if (options.debug) {
         process.env.DEBUG = 'true';
-        logDebug('Running in debug mode.');
+        debug('Running in debug mode.');
       }
     });
 }

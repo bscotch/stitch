@@ -17,7 +17,7 @@ import { Spritely } from '@bscotch/spritely';
 import { uuidV4 } from '@/uuid';
 import { NumberFixed } from '@/NumberFixed';
 import { assert } from '@/errors';
-import { logDebug } from '@/log';
+import { debug } from '@/log';
 import pick from 'lodash/pick';
 
 const toSingleDecimalNumber = (number: number | undefined) => {
@@ -271,7 +271,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
   }
 
   clearFrames() {
-    logDebug(`clearing frames for sprite ${this.name}`);
+    debug(`clearing frames for sprite ${this.name}`);
     this.yyData.frames = [];
     this.yyData.sequence.tracks[0].keyframes.Keyframes = [];
     return this.save();
@@ -282,7 +282,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
    * within a folder (non-recursive)
    */
   replaceFrames(spriteDirectory: string) {
-    logDebug(`replacing frames from source ${spriteDirectory}`);
+    debug(`replacing frames from source ${spriteDirectory}`);
     const sprite = new Spritely(spriteDirectory);
     // Ensure that the sizes match
     this.setDims(sprite.width as number, sprite.height as number);
@@ -296,13 +296,13 @@ export class Gms2Sprite extends Gms2ResourceBase {
     const oldFrameIds = this.frameIds;
     const track = this.yyData.sequence.tracks[0];
     const oldKeyframeIds = track.keyframes.Keyframes.map((frame) => frame.id);
-    logDebug(`old frameIds: ${oldFrameIds.join(', ')}`);
+    debug(`old frameIds: ${oldFrameIds.join(', ')}`);
     const oldFrames = this.storage.listFiles(this.yyDirAbsolute, false, [
       'png',
     ]);
     for (const frame of oldFrames) {
       this.storage.deleteFile(frame);
-      logDebug(`deleted old frame ${frame}`);
+      debug(`deleted old frame ${frame}`);
     }
 
     this.clearFrames();
@@ -310,7 +310,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
     for (const [i, subimagePath] of sprite.paths.entries()) {
       const frameId = oldFrameIds[i];
       const keyframeId = oldKeyframeIds[i];
-      logDebug(
+      debug(
         `adding frame ${i} using id ${frameId} from image at ${subimagePath}`,
       );
       this.addFrame(subimagePath, frameId, keyframeId);

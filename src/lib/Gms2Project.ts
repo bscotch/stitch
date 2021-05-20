@@ -22,7 +22,7 @@ import { Gms2IncludedFile } from './components/Gms2IncludedFile';
 import { Gms2IncludedFileArray } from './components/Gms2IncludedFileArray';
 import { Spritely, SpritelyBatch } from '@bscotch/spritely';
 import { snakeCase, camelCase, pascalCase } from 'change-case';
-import { logDebug, logError, logInfo } from './log';
+import { debug, error, info } from './log';
 import { get, unzipRemote } from './http';
 import { getGithubAccessToken } from './env';
 import { GmlTokenSummary } from './parser/GmlTokenSummary';
@@ -102,7 +102,7 @@ export class Gms2Project {
   constructor(options?: Gms2ProjectOptions | string) {
     try {
       // Normalize options
-      logDebug(
+      debug(
         `loading project with options: ${JSON.stringify(options, null, 2)}`,
       );
       options = {
@@ -116,12 +116,12 @@ export class Gms2Project {
             options?.dangerouslyAllowDirtyWorkingDir) ||
           false,
       };
-      logDebug(`parsed options: ${JSON.stringify(options, null, 2)}`);
+      debug(`parsed options: ${JSON.stringify(options, null, 2)}`);
 
       // Find the yyp filepath
       let yypPath = options.projectPath as string;
       if (!yypPath.endsWith('.yyp')) {
-        logDebug(`project path is not a yyp file, need to search for one`);
+        debug(`project path is not a yyp file, need to search for one`);
         const yypParentPath = yypPath;
         const yypPaths = fs
           .listFilesByExtensionSync(yypParentPath, 'yyp', true)
@@ -133,7 +133,7 @@ export class Gms2Project {
               return false;
             }
           });
-        logDebug(`found yyp files:\n\t${yypPaths.join('\n\t')}`);
+        debug(`found yyp files:\n\t${yypPaths.join('\n\t')}`);
         if (yypPaths.length == 0) {
           throw new StitchError(
             `Couldn't find a Stitch-compatible .yyp file in "${yypParentPath}"`,
@@ -160,7 +160,7 @@ export class Gms2Project {
     } catch (err) {
       // If one of OUR errors, just show a log. Else throw.
       if (err instanceof StitchError) {
-        logError(err.message);
+        error(err.message);
       }
       throw err;
     }
@@ -267,8 +267,7 @@ export class Gms2Project {
           paths.dirname(file),
         ) as Gms2TargetPlatform;
         if (Gms2Project.platforms.includes(platform)) {
-          let versionKey =
-            `option_${platform}_version` as ProjectPlatformVersion;
+          let versionKey = `option_${platform}_version` as ProjectPlatformVersion;
           if (platform == 'xboxone') {
             versionKey = this.xboxVersionKey;
           }
@@ -753,7 +752,7 @@ export class Gms2Project {
       options?.subdirectory,
       options?.allowedExtensions,
     );
-    logInfo(`upserted file "${path}"`);
+    info(`upserted file "${path}"`);
     return file;
   }
 

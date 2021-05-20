@@ -4,10 +4,15 @@
  * target files change.
  */
 
-import { logDebug, logError, logInfo, logWarning } from '@/log';
+import { debug, error, info, warning } from '@/log';
 import paths from '@/paths';
 import { AnyFunction, Nullish, undent, wrapIfNotArray } from '@bscotch/utility';
 import chokidar from 'chokidar';
+
+process.on('unhandledRejection', (err) => {
+  console.log(err);
+  process.exit(1);
+});
 
 export function runOrWatch(
   cliOpts: { watch?: boolean | Nullish },
@@ -17,7 +22,7 @@ export function runOrWatch(
 }
 
 /** Prepare and run sprite fixers, include setting up watchers if needed. */
-export async function onDebouncedChange(
+export function onDebouncedChange(
   onChange: AnyFunction,
   watchFolder: string,
   /**
@@ -32,7 +37,7 @@ export async function onDebouncedChange(
     debounceWaitSeconds?: number;
   },
 ) {
-  logInfo('Running in watch mode...');
+  info('Running in watch mode...');
   const extensions = wrapIfNotArray(watchFileExtension || null); // 'undefined' results in an empty array
   const watchGlobs = extensions.map((ext: string | Nullish) => {
     const base = paths.join(watchFolder, '**');
@@ -50,34 +55,47 @@ export async function onDebouncedChange(
   const run = async () => {
     // Prevent overlapping runs
     if (running) {
-      logDebug('Attempted to run while already running.');
+      debug('Attempted to run while already running.');
       return;
     }
-    logInfo('Re-running after detected changes...');
+    info('Running watcher command...');
+    console.log(onChange.toString());
     running = true;
     await onChange();
     running = false;
   };
   const debouncedRun = () => {
-    logDebug('Change detected, debouncing');
+    debug('Change detected, debouncing');
     clearTimeout(debounceTimeout!);
-    debounceTimeout = setTimeout(run, options?.debounceWaitSeconds || 1000);
+    debounceTimeout = setTimeout(
+      run,
+      (options?.debounceWaitSeconds || 1) * 1000,
+    );
   };
   // Set up the watcher
   // Glob patterns need to have posix separators
   watcher
     .on('error', async (err: Error & { code?: string }) => {
-      logWarning('Closing watcher due to error...');
+      warning('Closing watcher due to error...');
       await watcher.close();
       throw err;
     })
-    .on('add', debouncedRun)
-    .on('change', debouncedRun)
-    .on('unlink', debouncedRun)
+    .on('add', (f) => {
+      console.log('add', f);
+      debouncedRun();
+    })
+    .on('change', (f) => {
+      console.log('change', f);
+      debouncedRun();
+    })
+    .on('unlink', (f) => {
+      console.log('unlink', f);
+      debouncedRun();
+    })
     .on('unlinkDir', (dir) => {
       // If the root directory gets unlinked, close the watcher.
       if (paths.resolve(dir) == paths.resolve(watchFolder)) {
-        logError(
+        error(
           undent`
             Watched root directory deleted: "${watchFolder}"
             Requires manual restart once the directory exists again.`,
@@ -85,5 +103,6 @@ export async function onDebouncedChange(
         process.exit(1);
       }
     });
-  await run();
+  // Don't need to call the function right out of the gate,
+  // because the watcher triggers 'add' events when it loads.
 }

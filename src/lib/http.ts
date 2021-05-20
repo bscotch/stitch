@@ -5,7 +5,7 @@ import Url from 'url';
 import { StitchError } from './errors';
 import unzipper from 'unzipper';
 import path from 'path';
-import { logInfo } from './log';
+import { info } from './log';
 
 interface GetResponse {
   contentType: string;
@@ -99,16 +99,16 @@ export async function unzipRemote(
   if (fs.readdirSync(toDir).length > 0) {
     throw new StitchError(`Output directory ${toDir} is not empty.`);
   }
-  logInfo('Downloading...');
+  info('Downloading...');
   const response = await get(url, headers);
   if (!response.contentType.includes('zip')) {
     throw new StitchError(
       `Expected downloaded content-type to included 'zip', got ${response.contentType}.`,
     );
   }
-  logInfo('Unzipping...');
+  info('Unzipping...');
   const zipDir = await unzipper.Open.buffer(response.data);
   await zipDir.extract({ concurrency: 10, path: toDir });
-  logInfo('Unzipped!');
+  info('Unzipped!');
   return path.join(toDir, zipDir.files[0].path);
 }

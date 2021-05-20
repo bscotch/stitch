@@ -11,7 +11,7 @@ import { assert, StitchError } from './errors';
 import type { Gms2Project } from './Gms2Project';
 import paths from './paths';
 import { oneline, undent } from '@bscotch/utility';
-import { logInfo, logWarning } from './log';
+import { info, warning } from './log';
 import { Gms2Object } from './components/resources/Gms2Object';
 
 type ClobberAction = 'error' | 'skip' | 'overwrite';
@@ -103,7 +103,7 @@ export class Gms2ProjectMerger {
 
     const targetResources = this.targetProject.resources.all;
 
-    logInfo(`Merging...`);
+    info(`Merging...`);
     // See which target resources match the options pattern but are not in the source
     for (const targetResource of targetResources) {
       this.handleResourceConflict(targetResource, toImport);
@@ -130,7 +130,7 @@ export class Gms2ProjectMerger {
       }
     });
     this.targetProject.save();
-    logInfo(`Merge complete!`);
+    info(`Merge complete!`);
   }
 
   private resourcesMatch(
@@ -218,11 +218,11 @@ export class Gms2ProjectMerger {
       const conflictFolder = 'MERGE_CONFLICTS';
       this.targetProject.addFolder(conflictFolder);
       targetResource.folder = conflictFolder;
-      logInfo(
+      info(
         `Moved conflicting asset "${targetResource.name}" into ${conflictFolder} folder`,
       );
     } else if (isExtra) {
-      logWarning(oneline`
+      warning(oneline`
         Target asset "${targetResource.name}" matches the merge pattern but is not in the source.
         It was left alone. To have such resources moved, set the 'moveConflicting' option to 'true'.`);
     }
@@ -240,7 +240,7 @@ export class Gms2ProjectMerger {
         sourceResource.toJSON(),
         this.targetProject.storage,
       );
-      logInfo(`Added new resource ${sourceResource.name}.`);
+      info(`Added new resource ${sourceResource.name}.`);
       return;
     }
     // Else we're going to either overwrite or throw an error, depending on circumstances
@@ -257,7 +257,7 @@ export class Gms2ProjectMerger {
     if (matchesPattern) {
       this.cloneResourceFiles(sourceResource);
     } else if (this.options.onClobber == 'skip') {
-      logWarning(oneline`
+      warning(oneline`
         ${warningMessage}
         Import skipped (local version is unchanged).
         ${howToChangeMessage}
@@ -268,7 +268,7 @@ export class Gms2ProjectMerger {
         ${warningMessage} ${howToChangeMessage}
       `);
     } else {
-      logWarning(oneline`
+      warning(oneline`
         ${warningMessage}
         Import will occur anyway (the local asset will be replaced).
         ${howToChangeMessage}
@@ -311,7 +311,7 @@ export class Gms2ProjectMerger {
           sourceModuleFile.filePathAbsolute,
         );
         if (!this.resourceMatchesOptions(matchingTarget)) {
-          logWarning(oneline`
+          warning(oneline`
             File ${matchingTarget.name} will be overwritten by the source file,
             even though it does not match the merge pattern. Prevent this by
             changing the filename in the source or target, or by setting

@@ -5,7 +5,7 @@ import type { Gms2Project } from '../Gms2Project';
 import { Gms2Storage } from '../Gms2Storage';
 import paths from '../paths';
 import { oneline } from '@bscotch/utility';
-import { logWarning } from '../log';
+import { warning } from '../log';
 
 export class Gms2IncludedFile {
   private data: YypIncludedFile;
@@ -163,7 +163,7 @@ export class Gms2IncludedFile {
 
       matchingFile.setContent(content);
       if (matchingFile.directoryRelative != directoryRelative) {
-        logWarning(oneline`
+        warning(oneline`
           A file by name ${fileName} already exists in a different subdirectory.
           Check to make sure that it is the file that you intended to change!
         `);

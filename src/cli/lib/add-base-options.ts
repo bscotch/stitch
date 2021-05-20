@@ -9,6 +9,8 @@ export type ImportBaseOptions = {
 };
 
 export function normalizeOptions(options: ImportBaseOptions) {
+  // Clone to prevent side effects
+  options = { ...options };
   cli_assert.assertPathExists(options.source);
   if (options.extensions) {
     cli_assert.assertAtLeastOneTruthy(options.extensions);

@@ -7,7 +7,7 @@ import { Gms2Storage } from '../Gms2Storage';
 import paths from '../paths';
 import { Gms2Sprite } from './resources/Gms2Sprite';
 import { difference, uniqBy } from 'lodash';
-import { logInfo, logDebug } from '../log';
+import { info, debug } from '../log';
 import { Gms2Script } from './resources/Gms2Script';
 import { Gms2Animation } from './resources/Gms2Animation';
 import { Gms2Extension } from './resources/Gms2Extension';
@@ -31,7 +31,7 @@ export class Gms2ResourceArray {
     const uniqueData = uniqBy(data, 'id.name');
     const removedItems = difference(data, uniqueData);
     if (removedItems.length) {
-      logInfo(
+      info(
         `Duplicate resources found: ${removedItems.length} duplicates removed`,
       );
     }
@@ -138,10 +138,10 @@ export class Gms2ResourceArray {
     const existingSound = this.findByField('name', name, Gms2Sound);
     if (existingSound) {
       existingSound.replaceAudioFile(source);
-      logInfo(`updated sound ${name}`);
+      info(`updated sound ${name}`);
     } else {
       this.push(Gms2Sound.create(source, storage));
-      logInfo(`created sound ${name}`);
+      info(`created sound ${name}`);
     }
     return this;
   }
@@ -150,24 +150,24 @@ export class Gms2ResourceArray {
     const script = this.findByField('name', name, Gms2Script);
     if (script) {
       script.code = code;
-      logInfo(`updated script ${name}`);
+      info(`updated script ${name}`);
     } else {
       this.push(Gms2Script.create(name, code, storage));
-      logInfo(`created script ${name}`);
+      info(`created script ${name}`);
     }
     return this;
   }
 
   addSprite(sourceFolder: string, storage: Gms2Storage, nameOverride?: string) {
     const name = nameOverride || paths.basename(sourceFolder);
-    logDebug(`adding sprite from ${sourceFolder} as name ${name}`);
+    debug(`adding sprite from ${sourceFolder} as name ${name}`);
     const sprite = this.findByField('name', name, Gms2Sprite);
     if (sprite) {
       sprite.replaceFrames(sourceFolder);
-      logInfo(`updated sprite ${name}`);
+      info(`updated sprite ${name}`);
     } else {
       this.push(Gms2Sprite.create(sourceFolder, storage, name));
-      logInfo(`created sprite ${name}`);
+      info(`created sprite ${name}`);
     }
     return this;
   }
@@ -184,7 +184,7 @@ export class Gms2ResourceArray {
     );
     const name = nameOverride || sourceSpineName;
 
-    logDebug(`adding spine sprite from ${jsonSourcePath} as name ${name}`);
+    debug(`adding spine sprite from ${jsonSourcePath} as name ${name}`);
 
     const createDestPath = (sprite: Gms2Sprite, name: string, ext: string) => {
       return paths.join(sprite.yyDirAbsolute, `${name}.${ext}`);
@@ -259,7 +259,7 @@ export class Gms2ResourceArray {
       const thumbnailPath = createDestPath(sprite, existingSpineFrameId, 'png');
       this.storage.deleteFile(thumbnailPath);
       this.storage.copyFile(defaultSpriteImagePath, thumbnailPath);
-      logInfo(`updated spine sprite ${name}`);
+      info(`updated spine sprite ${name}`);
       return this;
     }
 
@@ -297,7 +297,7 @@ export class Gms2ResourceArray {
     }
     // Copy over the spritesheet.
     copySpriteSheet(sprite);
-    logInfo(`created spine sprite ${name}`);
+    info(`created spine sprite ${name}`);
     return this;
   }
 
@@ -306,9 +306,9 @@ export class Gms2ResourceArray {
     if (!object) {
       object = Gms2Object.create(name, storage);
       this.push(object);
-      logInfo(`created object ${name}`);
+      info(`created object ${name}`);
     } else {
-      logInfo(`object ${name} already exists`);
+      info(`object ${name} already exists`);
     }
     return object;
   }

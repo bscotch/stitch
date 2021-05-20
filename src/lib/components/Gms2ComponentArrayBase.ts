@@ -2,7 +2,7 @@ import { difference, uniqBy } from 'lodash';
 import { stringify } from '../../lib/json';
 import { Gms2Storage } from '../Gms2Storage';
 import { dehydrateArray } from '../hydrate';
-import { logInfo } from '../log';
+import { info } from '../log';
 
 export abstract class Gms2ComponentArrayBase<
   YypData,
@@ -13,7 +13,7 @@ export abstract class Gms2ComponentArrayBase<
     | (new (
         object: YypData,
         storage: Gms2Storage,
-      ) => InstanceType<ComponentClass> & { toJSON: () => YypData }),
+      ) => InstanceType<ComponentClass> & { toJSON: () => YypData })
 > {
   protected items: InstanceType<ComponentClass>[] = [];
 
@@ -69,7 +69,7 @@ export abstract class Gms2ComponentArrayBase<
     const uniqueData = uniqBy(data, stringify);
     const removedItems = difference(data, uniqueData);
     if (removedItems.length) {
-      logInfo(
+      info(
         `Duplicate entries found: ${removedItems.length} duplicates removed`,
       );
     }
