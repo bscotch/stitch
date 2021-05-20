@@ -1,3 +1,12 @@
+## [2.10.2](https://github.com/bscotch/stitch/compare/v2.10.1...v2.10.2) (2021-05-20)
+
+
+### Bug Fixes
+
+* The add-sprite watcher does not appear to be triggering on source change. ([df83fba](https://github.com/bscotch/stitch/commit/df83fba443b99ebd93f6d6e95a54e2c1bb7d5d44))
+
+
+
 ## [2.10.1](https://github.com/bscotch/stitch/compare/v2.10.0...v2.10.1) (2021-05-20)
 
 

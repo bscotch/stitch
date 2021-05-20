@@ -267,7 +267,8 @@ export class Gms2Project {
           paths.dirname(file),
         ) as Gms2TargetPlatform;
         if (Gms2Project.platforms.includes(platform)) {
-          let versionKey = `option_${platform}_version` as ProjectPlatformVersion;
+          let versionKey =
+            `option_${platform}_version` as ProjectPlatformVersion;
           if (platform == 'xboxone') {
             versionKey = this.xboxVersionKey;
           }
