@@ -4,7 +4,7 @@
  * target files change.
  */
 
-import { logDebug, logError, logWarning } from '@/log';
+import { logDebug, logError, logInfo, logWarning } from '@/log';
 import paths from '@/paths';
 import { AnyFunction, Nullish, undent, wrapIfNotArray } from '@bscotch/utility';
 import chokidar from 'chokidar';
@@ -32,6 +32,7 @@ export async function onDebouncedChange(
     debounceWaitSeconds?: number;
   },
 ) {
+  logInfo('Running in watch mode...');
   const extensions = wrapIfNotArray(watchFileExtension || null); // 'undefined' results in an empty array
   const watchGlobs = extensions.map((ext: string | Nullish) => {
     const base = paths.join(watchFolder, '**');
@@ -52,6 +53,7 @@ export async function onDebouncedChange(
       logDebug('Attempted to run while already running.');
       return;
     }
+    logInfo('Re-running after detected changes...');
     running = true;
     await onChange();
     running = false;
