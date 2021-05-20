@@ -1,3 +1,12 @@
+## [2.10.3](https://github.com/bscotch/stitch/compare/v2.10.2...v2.10.3) (2021-05-20)
+
+
+### Features
+
+* Add more debug logs to the watcher to help diagnose issues. ([06f44de](https://github.com/bscotch/stitch/commit/06f44de8a24cda27f806ad604e935c86f4a058a6))
+
+
+
 ## [2.10.2](https://github.com/bscotch/stitch/compare/v2.10.1...v2.10.2) (2021-05-20)
 
 
