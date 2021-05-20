@@ -1,3 +1,12 @@
+## [2.10.4](https://github.com/bscotch/stitch/compare/v2.10.3...v2.10.4) (2021-05-20)
+
+
+### Bug Fixes
+
+* The watcher is not ignoring permission errors, which may be causing problems with Drobpox. ([c694e32](https://github.com/bscotch/stitch/commit/c694e326ef9cbd8901299086283624f813d710fe))
+
+
+
 ## [2.10.3](https://github.com/bscotch/stitch/compare/v2.10.2...v2.10.3) (2021-05-20)
 
 
