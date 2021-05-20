@@ -47,6 +47,7 @@ export function onDebouncedChange(
   debug(`Watching patterns "${watchGlobs.join('","')}"`);
   let debounceTimeout: NodeJS.Timeout | null = null;
   const watcher = chokidar.watch(watchGlobs, {
+    ignorePermissionErrors: true,
     awaitWriteFinish: {
       stabilityThreshold: 500,
       pollInterval: 100,
