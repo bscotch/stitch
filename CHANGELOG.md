@@ -1,3 +1,12 @@
+## [2.10.1](https://github.com/bscotch/stitch/compare/v2.10.0...v2.10.1) (2021-05-20)
+
+
+### Features
+
+* Add timestamps to logging functions and add log output to watchers. ([0df0fde](https://github.com/bscotch/stitch/commit/0df0fde9ce831b81c2e252a8bbd9fc5884af686e))
+
+
+
 # [2.10.0](https://github.com/bscotch/stitch/compare/v2.9.0...v2.10.0) (2021-05-20)
 
 
