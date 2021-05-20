@@ -7,7 +7,7 @@ export class Gms2ComponentArrayWithStorage<
   ComponentClass extends new (
     object: YypData,
     storage: Gms2Storage,
-  ) => InstanceType<ComponentClass> & { toJSON(): YypData }
+  ) => InstanceType<ComponentClass> & { toJSON(): YypData },
 > extends Gms2ComponentArrayBase<YypData, ComponentClass> {
   constructor(
     data: YypData[],

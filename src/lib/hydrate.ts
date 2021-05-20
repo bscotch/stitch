@@ -3,7 +3,7 @@ export function hydrate<
   TargetClass extends new (
     object: PlainObject,
     ...args: any
-  ) => InstanceType<TargetClass>
+  ) => InstanceType<TargetClass>,
 >(
   plainObject: PlainObject,
   targetClass: TargetClass,
@@ -17,7 +17,7 @@ export function hydrateArray<
   TargetClass extends new (
     object: PlainObject,
     ...args: any
-  ) => InstanceType<TargetClass>
+  ) => InstanceType<TargetClass>,
 >(
   plainObjects: PlainObject[],
   targetClass: TargetClass,
@@ -32,14 +32,14 @@ export function hydrateArray<
 
 export function dehydrate<
   PlainObject,
-  FancyObject extends { toJSON: () => PlainObject }
+  FancyObject extends { toJSON: () => PlainObject },
 >(fancyObject: FancyObject) {
   return fancyObject.toJSON();
 }
 
 export function dehydrateArray<
   PlainObject,
-  FancyObject extends { toJSON: () => PlainObject }
+  FancyObject extends { toJSON: () => PlainObject },
 >(fancyObjects: FancyObject[]) {
   return fancyObjects.map((object) =>
     dehydrate<PlainObject, FancyObject>(object),

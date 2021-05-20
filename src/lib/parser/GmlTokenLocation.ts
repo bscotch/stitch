@@ -3,7 +3,7 @@ import type { Gms2ResourceBase } from '../components/resources/Gms2ResourceBase'
 import path from '@/paths';
 
 export class GmlTokenLocation<
-  Resource extends Gms2ResourceBase = Gms2ResourceBase
+  Resource extends Gms2ResourceBase = Gms2ResourceBase,
 > {
   private _resource?: Resource;
   constructor(

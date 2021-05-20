@@ -1,3 +1,21 @@
+# [2.10.0](https://github.com/bscotch/stitch/compare/v2.9.0...v2.10.0) (2021-05-20)
+
+
+### Bug Fixes
+
+* Remove misc unused references. ([3b8cfa8](https://github.com/bscotch/stitch/commit/3b8cfa86792782e82a550bdf2e435a58e60d2b1c))
+
+
+### Features
+
+* Add watch option to CLI command 'stitch add files'. ([d47246b](https://github.com/bscotch/stitch/commit/d47246bf5fe1b0d81058ed4e709de02614965620))
+* Add watch option to CLI command 'stitch add sounds'. ([58c9c0c](https://github.com/bscotch/stitch/commit/58c9c0c80fef43eb84acf539dcad2f0497ce7539))
+* Add watcher methods for easily converting CLI calls into ones that repeat when files change. ([f3c4bef](https://github.com/bscotch/stitch/commit/f3c4bef46918a90dbd68c0ffad539999dffcbef4))
+* Add watcher option to CLI command 'stitch add sprites'. ([82ad243](https://github.com/bscotch/stitch/commit/82ad243d6d6be97e156329103dd245102d579c7b))
+* Update all deps. ([281c2b7](https://github.com/bscotch/stitch/commit/281c2b77d82db954beffa2df4412dbafc32c2738))
+
+
+
 # [2.9.0](https://github.com/bscotch/stitch/compare/v2.8.0...v2.9.0) (2021-05-19)
 
 

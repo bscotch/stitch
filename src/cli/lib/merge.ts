@@ -12,9 +12,9 @@ export interface Gms2MergeCliOptions extends Gms2MergerOptions {
 }
 
 export function parseGithubSourceString(source: string) {
-  const match = (source.match(
+  const match = source.match(
     /^(?<owner>[a-z0-9_.-]+)\/(?<name>[a-z0-9_.-]+)(?<revisionType>(@(?<revision>[a-z0-9_.-]+))|(\?(?<tagPattern>.+)?))?$/i,
-  )?.groups as unknown) as {
+  )?.groups as unknown as {
     owner: string;
     name: string;
     revision?: string;

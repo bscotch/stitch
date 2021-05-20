@@ -1,7 +1,7 @@
 import { YypRoomOrder, YypRoomOrderNode } from '../../types/Yyp';
 
 export class Gms2RoomOrder<
-  RoomOrderVersion extends YypRoomOrder | YypRoomOrderNode
+  RoomOrderVersion extends YypRoomOrder | YypRoomOrderNode,
 > {
   #data: RoomOrderVersion;
 

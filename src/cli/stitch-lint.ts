@@ -18,10 +18,8 @@ const project = new Gms2Project({
 });
 
 const lintResults = project.lint({ versionSuffix: opts.suffix });
-const {
-  outdatedFunctionReferences,
-  nonreferencedFunctions,
-} = lintResults.getReport();
+const { outdatedFunctionReferences, nonreferencedFunctions } =
+  lintResults.getReport();
 outdatedFunctionReferences?.forEach((outdatedRef) => {
   console.log(outdatedRef.name);
   console.log(outdatedRef.location.line);

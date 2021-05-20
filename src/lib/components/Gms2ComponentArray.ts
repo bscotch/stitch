@@ -5,7 +5,7 @@ export class Gms2ComponentArray<
   YypData,
   ComponentClass extends new (
     object: YypData,
-  ) => InstanceType<ComponentClass> & { toJSON: () => YypData }
+  ) => InstanceType<ComponentClass> & { toJSON: () => YypData },
 > extends Gms2ComponentArrayBase<YypData, ComponentClass> {
   constructor(data: YypData[], private componentClass: ComponentClass) {
     super();

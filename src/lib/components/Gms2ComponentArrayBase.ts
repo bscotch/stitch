@@ -13,7 +13,7 @@ export abstract class Gms2ComponentArrayBase<
     | (new (
         object: YypData,
         storage: Gms2Storage,
-      ) => InstanceType<ComponentClass> & { toJSON: () => YypData })
+      ) => InstanceType<ComponentClass> & { toJSON: () => YypData }),
 > {
   protected items: InstanceType<ComponentClass>[] = [];
 

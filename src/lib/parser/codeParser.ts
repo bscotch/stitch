@@ -57,7 +57,8 @@ export function stripCommentsAndStringsFromGml(gml: string) {
     'quoteMulti',
     'quoteSingle',
   ] as const;
-  const leftDelimiterRegex = /((?<commentMulti>(?<!\/)\/\*)|(?<commentSingle>\/\/.*)|(?<quoteMulti>@["'])|(?<quoteSingle>"))/g;
+  const leftDelimiterRegex =
+    /((?<commentMulti>(?<!\/)\/\*)|(?<commentSingle>\/\/.*)|(?<quoteMulti>@["'])|(?<quoteSingle>"))/g;
 
   const _findRightPosition = (endRegex: RegExp, startFrom: number) => {
     assert(endRegex.global, 'End-regex must be global');
@@ -163,7 +164,7 @@ export function stripCommentsAndStringsFromGml(gml: string) {
  * some chunk of GML.
  */
 export function findOuterFunctions<
-  Resource extends Gms2ResourceBase = Gms2ResourceBase
+  Resource extends Gms2ResourceBase = Gms2ResourceBase,
 >(gml: string, resource?: Resource) {
   let strippedGml = stripCommentsAndStringsFromGml(gml).stripped;
 
@@ -203,7 +204,7 @@ export function findOuterFunctions<
 }
 
 export function findTokenReferences<
-  Resource extends Gms2ResourceBase = Gms2ResourceBase
+  Resource extends Gms2ResourceBase = Gms2ResourceBase,
 >(
   gml: string,
   token: string | GmlToken,

@@ -22,9 +22,8 @@ describe('Unit Tests', function () {
     // since we want to keep those out of the git log. Unblock
     // the test whenever work is being done on the parser.
     const varNames = ['HELLO', 'GITHUB_PERSONAL_ACCESS_TOKEN'] as const;
-    const { HELLO, GITHUB_PERSONAL_ACCESS_TOKEN } = loadEnvironmentVariables(
-      varNames,
-    );
+    const { HELLO, GITHUB_PERSONAL_ACCESS_TOKEN } =
+      loadEnvironmentVariables(varNames);
     expect(HELLO).to.equal('world');
     expect(GITHUB_PERSONAL_ACCESS_TOKEN).to.have.length.greaterThan(0);
   });
