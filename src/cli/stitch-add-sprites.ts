@@ -76,6 +76,7 @@ cli
 addDebugOptions(cli).parse(process.argv);
 
 const opts = cli.opts();
+
 runOrWatch(
   opts,
   () => importSprites(opts as ImportBaseOptions & SpriteImportOptions),

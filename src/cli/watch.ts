@@ -37,13 +37,14 @@ export function onDebouncedChange(
     debounceWaitSeconds?: number;
   },
 ) {
-  info('Running in watch mode...');
+  info(`Running in watch mode from "${process.cwd()}"`);
   const extensions = wrapIfNotArray(watchFileExtension || null); // 'undefined' results in an empty array
   const watchGlobs = extensions.map((ext: string | Nullish) => {
     const base = paths.join(watchFolder, '**');
     const path = ext ? paths.join(base, `*.${ext}`) : base;
-    return path.split(paths.sep).join(paths.posix.sep);
+    return path.split(paths.win32.sep).join(paths.posix.sep);
   });
+  debug(`Watching patterns "${watchGlobs.join('","')}"`);
   let debounceTimeout: NodeJS.Timeout | null = null;
   const watcher = chokidar.watch(watchGlobs, {
     awaitWriteFinish: {
@@ -59,7 +60,6 @@ export function onDebouncedChange(
       return;
     }
     info('Running watcher command...');
-    console.log(onChange.toString());
     running = true;
     await onChange();
     running = false;
@@ -81,15 +81,15 @@ export function onDebouncedChange(
       throw err;
     })
     .on('add', (f) => {
-      console.log('add', f);
+      debug(`Detected added file "${f}"`);
       debouncedRun();
     })
     .on('change', (f) => {
-      console.log('change', f);
+      debug(`Detected changed file "${f}"`);
       debouncedRun();
     })
     .on('unlink', (f) => {
-      console.log('unlink', f);
+      debug(`Detected deleted file "${f}"`);
       debouncedRun();
     })
     .on('unlinkDir', (dir) => {
@@ -105,4 +105,5 @@ export function onDebouncedChange(
     });
   // Don't need to call the function right out of the gate,
   // because the watcher triggers 'add' events when it loads.
+  debouncedRun();
 }
