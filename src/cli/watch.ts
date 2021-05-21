@@ -8,6 +8,7 @@ import { debug, error, info, warning } from '@/log';
 import paths from '@/paths';
 import { AnyFunction, Nullish, undent, wrapIfNotArray } from '@bscotch/utility';
 import chokidar from 'chokidar';
+import type { Stats } from 'fs';
 
 process.on('unhandledRejection', (err) => {
   console.log(err);
@@ -39,19 +40,26 @@ export function onDebouncedChange(
 ) {
   info(`Running in watch mode from "${process.cwd()}"`);
   const extensions = wrapIfNotArray(watchFileExtension || null); // 'undefined' results in an empty array
-  const watchGlobs = extensions.map((ext: string | Nullish) => {
-    const base = paths.join(watchFolder, '**');
-    const path = ext ? paths.join(base, `*.${ext}`) : base;
-    return path.split(paths.win32.sep).join(paths.posix.sep);
-  });
-  debug(`Watching patterns "${watchGlobs.join('","')}"`);
+  debug(`Watching folder "${watchFolder}"`);
   const debounceWaitMillis = (options?.debounceWaitSeconds || 1) * 1000;
   let debounceTimeout: NodeJS.Timeout | null = null;
-  const watcher = chokidar.watch(watchGlobs, {
+  const watcher = chokidar.watch(watchFolder, {
     // polling seems to be a lot more reliable (if also a lot less efficient)
     usePolling: true,
     interval: debounceWaitMillis,
     binaryInterval: debounceWaitMillis,
+    disableGlobbing: true,
+    ignored: (path: string, stat: Stats) => {
+      if (stat) {
+        if (stat.isDirectory()) {
+          return false;
+        }
+        const matchesExtension =
+          !extensions[0] || extensions.some((ext) => path.endsWith(`.${ext}`));
+        return !matchesExtension;
+      }
+      return false;
+    },
     awaitWriteFinish: {
       stabilityThreshold: debounceWaitMillis / 2,
       pollInterval: debounceWaitMillis / 5,
