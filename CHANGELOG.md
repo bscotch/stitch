@@ -1,3 +1,12 @@
+## [2.10.5](https://github.com/bscotch/stitch/compare/v2.10.4...v2.10.5) (2021-05-21)
+
+
+### Bug Fixes
+
+* Switch watcher to use polling since the native method does not appear to work with Dropbox. ([025e5ac](https://github.com/bscotch/stitch/commit/025e5acbc7fef9ab06d0934d7877635aa1c801c6))
+
+
+
 ## [2.10.4](https://github.com/bscotch/stitch/compare/v2.10.3...v2.10.4) (2021-05-20)
 
 
