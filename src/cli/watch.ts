@@ -45,12 +45,16 @@ export function onDebouncedChange(
     return path.split(paths.win32.sep).join(paths.posix.sep);
   });
   debug(`Watching patterns "${watchGlobs.join('","')}"`);
+  const debounceWaitMillis = (options?.debounceWaitSeconds || 1) * 1000;
   let debounceTimeout: NodeJS.Timeout | null = null;
   const watcher = chokidar.watch(watchGlobs, {
-    ignorePermissionErrors: true,
+    // polling seems to be a lot more reliable (if also a lot less efficient)
+    usePolling: true,
+    interval: debounceWaitMillis,
+    binaryInterval: debounceWaitMillis,
     awaitWriteFinish: {
-      stabilityThreshold: 500,
-      pollInterval: 100,
+      stabilityThreshold: debounceWaitMillis / 2,
+      pollInterval: debounceWaitMillis / 5,
     },
   });
   let running = false;
@@ -68,10 +72,7 @@ export function onDebouncedChange(
   const debouncedRun = () => {
     debug('Change detected, debouncing');
     clearTimeout(debounceTimeout!);
-    debounceTimeout = setTimeout(
-      run,
-      (options?.debounceWaitSeconds || 1) * 1000,
-    );
+    debounceTimeout = setTimeout(run, debounceWaitMillis);
   };
   // Set up the watcher
   // Glob patterns need to have posix separators
@@ -106,5 +107,4 @@ export function onDebouncedChange(
     });
   // Don't need to call the function right out of the gate,
   // because the watcher triggers 'add' events when it loads.
-  debouncedRun();
 }
