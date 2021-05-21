@@ -1,3 +1,12 @@
+## [2.10.6](https://github.com/bscotch/stitch/compare/v2.10.5...v2.10.6) (2021-05-21)
+
+
+### Bug Fixes
+
+* Chokidar (the file watcher utility) chokes on paths that have parens in them. Normally we would just say... don't put parens in paths, but Dropbox forces this upon users. Switch from using globs to watching folders with an ignore filter based on filetype extension. ([e11c8b1](https://github.com/bscotch/stitch/commit/e11c8b11d549d93fc6c3b57b43ed9add4be546ff))
+
+
+
 ## [2.10.5](https://github.com/bscotch/stitch/compare/v2.10.4...v2.10.5) (2021-05-21)
 
 
