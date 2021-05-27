@@ -1,3 +1,12 @@
+## [2.10.7](https://github.com/bscotch/stitch/compare/v2.10.6...v2.10.7) (2021-05-27)
+
+
+### Features
+
+* Replace watcher mechanism with new one from generic debounce-watcher. ([b0c7bfe](https://github.com/bscotch/stitch/commit/b0c7bfee72bf9f9606bdf3c2eca2b53f1e046870))
+
+
+
 ## [2.10.6](https://github.com/bscotch/stitch/compare/v2.10.5...v2.10.6) (2021-05-21)
 
 
