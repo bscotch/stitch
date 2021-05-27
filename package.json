@@ -45,6 +45,7 @@
   "license": "MIT",
   "homepage": "https://github.com/bscotch/stitch",
   "dependencies": {
+    "@bscotch/debounce-watch": "^0.3.0",
     "@bscotch/spritely": "^1.7.0",
     "@bscotch/utility": "^1.1.2",
     "chalk": "^4.1.1",
