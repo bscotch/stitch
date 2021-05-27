@@ -62,15 +62,12 @@ Console.
 
 In the debugger dropdown you'll see two options:
 
-1. "Stitch Tests (via `ts-node`)" will directly run
-   the Typescript code. This is the easiest way to
-   ensure you're testing the code that you see.
-2. "Stitch Tests (requires compile)" runs the compiled
+1. "Stitch Tests" runs the compiled
    JavaScript. This is the same behavior as running
    `npm test` from the command line. If you are using
    this option, make sure you first compile the code
    so that you guarantee you're testing your actual changes.
-3. For manual tests, you'll need to make sure you're
+2. For manual tests, you'll need to make sure you're
    importing from the `build` directory instead of `src`.
 
 To compile the code into JavaScript, you'll need to run
