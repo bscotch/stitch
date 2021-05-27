@@ -1,3 +1,12 @@
+## [2.10.8](https://github.com/bscotch/stitch/compare/v2.10.7...v2.10.8) (2021-05-27)
+
+
+### Features
+
+* Update all deps. ([2a1890e](https://github.com/bscotch/stitch/commit/2a1890e73e8112772339f99e70313798480498ca))
+
+
+
 ## [2.10.7](https://github.com/bscotch/stitch/compare/v2.10.6...v2.10.7) (2021-05-27)
 
 
