@@ -21,3 +21,13 @@ export function assert(claim: any, message?: string): asserts claim {
     throw new StitchAssertionError(message || 'Claim is falsey');
   }
 }
+
+export function isNumber(value:any): value is number {
+  return typeof value == 'number';
+}
+
+export function assertIsNumber(claim:any,message?:string): asserts claim is number {
+  if(!isNumber(claim)){
+    throw new StitchAssertionError(message || `${claim} is not a number`);
+  }
+}
