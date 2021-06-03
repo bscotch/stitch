@@ -22,12 +22,15 @@ export function assert(claim: any, message?: string): asserts claim {
   }
 }
 
-export function isNumber(value:any): value is number {
+export function isNumber(value: any): value is number {
   return typeof value == 'number';
 }
 
-export function assertIsNumber(claim:any,message?:string): asserts claim is number {
-  if(!isNumber(claim)){
+export function assertIsNumber(
+  claim: any,
+  message?: string,
+): asserts claim is number {
+  if (!isNumber(claim)) {
     throw new StitchAssertionError(message || `${claim} is not a number`);
   }
 }

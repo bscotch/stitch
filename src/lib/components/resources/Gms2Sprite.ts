@@ -120,12 +120,12 @@ export class Gms2Sprite extends Gms2ResourceBase {
    * Adjust origin if the size has changed.
    */
   protected setDims(width: number, height: number) {
-    for (const dim of ['width','height'] as const) {
-      const value = {width,height}[dim];
-      assertIsNumber(value,`${dim} is not a number: ${value}`);
-      assert(value > 0,`${dim} must be > 0: ${value}`)
+    for (const dim of ['width', 'height'] as const) {
+      const value = { width, height }[dim];
+      assertIsNumber(value, `${dim} is not a number: ${value}`);
+      assert(value > 0, `${dim} must be > 0: ${value}`);
     }
-    
+
     // Get the old height/width and origin for reference
     const oldOriginX = this.yyData.sequence.xorigin;
     const oldOriginY = this.yyData.sequence.yorigin;
@@ -146,14 +146,15 @@ export class Gms2Sprite extends Gms2ResourceBase {
     this.yyData.bbox_right ||= width;
 
     const _scaleCoord = (oldPos: number, oldMax: number, newMax: number) => {
-      if([oldPos,oldMax,newMax].some(val=>val==0)){
+      if ([oldPos, oldMax, newMax].some((val) => val == 0)) {
         return 0;
       }
       return Math.floor((oldPos / oldMax) * newMax);
     };
 
     const isNew = oldHeight == 0 || oldWidth == 0;
-    const dimsHaveChanged = !isNew && ( width != oldWidth || height != oldHeight);
+    const dimsHaveChanged =
+      !isNew && (width != oldWidth || height != oldHeight);
     if (isNew) {
       this.yyData.sequence.xorigin = Math.floor(width / 2);
       this.yyData.sequence.yorigin = Math.floor(height / 2);

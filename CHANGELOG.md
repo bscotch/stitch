@@ -1,3 +1,17 @@
+## [2.10.9](https://github.com/bscotch/stitch/compare/v2.10.8...v2.10.9) (2021-06-03)
+
+
+### Bug Fixes
+
+* New sprites end up with 'null' as their bounding box values. ([01364e3](https://github.com/bscotch/stitch/commit/01364e3a07298ae4183bc0ec7a73fc4744e13c28))
+
+
+### Features
+
+* Add number assertion and typeguard. ([518ecc7](https://github.com/bscotch/stitch/commit/518ecc7c8776a7624f31059ae17dbb03b8d02657))
+
+
+
 ## [2.10.8](https://github.com/bscotch/stitch/compare/v2.10.7...v2.10.8) (2021-05-27)
 
 
