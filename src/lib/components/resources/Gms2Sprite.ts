@@ -16,7 +16,7 @@ import {
 import { Spritely } from '@bscotch/spritely';
 import { uuidV4 } from '@/uuid';
 import { NumberFixed } from '@/NumberFixed';
-import { assert } from '@/errors';
+import { assert, assertIsNumber } from '@/errors';
 import { debug } from '@/log';
 import pick from 'lodash/pick';
 
@@ -120,11 +120,19 @@ export class Gms2Sprite extends Gms2ResourceBase {
    * Adjust origin if the size has changed.
    */
   protected setDims(width: number, height: number) {
+    for (const dim of ['width','height'] as const) {
+      const value = {width,height}[dim];
+      assertIsNumber(value,`${dim} is not a number: ${value}`);
+      assert(value > 0,`${dim} must be > 0: ${value}`)
+    }
+    
     // Get the old height/width and origin for reference
     const oldOriginX = this.yyData.sequence.xorigin;
     const oldOriginY = this.yyData.sequence.yorigin;
     const oldHeight = this.yyData.height;
     const oldWidth = this.yyData.width;
+    // If this is new, then the bbox right/bottom will be at zero
+
     const oldBbox = pick(this.yyData, [
       'bbox_bottom',
       'bbox_right',
@@ -138,12 +146,15 @@ export class Gms2Sprite extends Gms2ResourceBase {
     this.yyData.bbox_right ||= width;
 
     const _scaleCoord = (oldPos: number, oldMax: number, newMax: number) => {
+      if([oldPos,oldMax,newMax].some(val=>val==0)){
+        return 0;
+      }
       return Math.floor((oldPos / oldMax) * newMax);
     };
 
-    const originIsUnset = oldHeight == 0 || oldWidth == 0;
-    const dimsHaveChanged = width != oldWidth || height != oldHeight;
-    if (originIsUnset) {
+    const isNew = oldHeight == 0 || oldWidth == 0;
+    const dimsHaveChanged = !isNew && ( width != oldWidth || height != oldHeight);
+    if (isNew) {
       this.yyData.sequence.xorigin = Math.floor(width / 2);
       this.yyData.sequence.yorigin = Math.floor(height / 2);
     } else if (dimsHaveChanged) {
