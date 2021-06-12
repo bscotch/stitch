@@ -40,7 +40,7 @@ Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bsc
 ### ⌨ Programmatic:
 
 + In the terminal, navigate to your Node.js project
-+ Locally install Stitch: `npm install --global @bscotch/stitch`
++ Locally install Stitch: `npm install @bscotch/stitch`
 + In your code, import the `Gms2Project` class from Stitch
   + ESM style: `import {Gms2Project} from "@bscotch/stitch"`
   + CommonJS style: `const {Gms2Project} = require('@bscotch/stitch')`
