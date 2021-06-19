@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+# Ensure a pull request passes tests, is prettified,
+# and otherwise likely to be merge-able upon review.
+
+name: Validate Pull Request
+
+on:
+  # https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+  contents: write
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-20.04
+    # env:
+    #   token: ${{secrets.GITHUB_TOKEN}}
+    
+    steps:
+      - name: Load source
+        uses: actions/checkout@v2
+      - name: Install Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - run: npm i
+      - run: npm run test
