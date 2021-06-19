@@ -9,6 +9,8 @@ on:
   # https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request
   pull_request:
     types: [opened, synchronize, reopened]
+    branches:
+      - develop
 
 permissions:
   pull-requests: read
@@ -23,6 +25,10 @@ jobs:
     steps:
       - name: Load source
         uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Get files from LFS
+        run: git lfs checkout
       - name: Install Node
         uses: actions/setup-node@v2
         with:
