@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+# On merge from a pull request, bump the version and publish
+
+name: Publish
+
+on:
+  # https://docs.github.com/en/actions/reference/events-that-trigger-workflows#push
+  push
+  # push:
+  #   branches:
+  #     - develop
+
+permissions:
+  pull-requests: read
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-20.04
+    env:
+      NPM_TOKEN: ${{secrets.NPM_AUTO_ADAM}}
+    
+    steps:
+      - name: Load source
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Get files from LFS
+        run: git lfs checkout
+      - name: Install Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - run: npm i
+      - run: npm run test
+
+      # Bump version
+      - name: Find out what version bump is needed
+        id: version-bump-type
+        uses: actions/github-script@v4
+        with:
+          result-encoding: string
+          script: |
+            const bumpTypes = {
+              minor: ['feat','feature','deps','dependency','dependencies'],
+              patch: ['fix','bugfix','perf','performance']
+            };
+            const allBumpingTypes = [...bumpTypes.major, ...bumpTypes.minor];
+            console.log({commits: context.payload.commits});
+            const messages = context.payload.commits.map(c=>c.message);
+            console.log({messages});
+            // based on the commit types, choose the appropriate bump
+            const hasBreaking = messages.some(m=>m.match(/\bBREAK(ING|S)?\b/)) ||
+              messages.come(m=>m.match(new RegExp(`^(${allBumpingTypes.join('|')})!:`)));
+            // work down from major -> patch, with early returns
+            if(hasBreaking){ return 'major'; }
+            const types = messages.map(m=>m.match(/^(.+?):/)?.[1]).filter(x=>x);
+            if(types.some(type=>bumpTypes.minor.includes(type))){
+              return 'minor'
+            }
+            if(types.some(type=>bumpTypes.patch.includes(type))){
+              return 'patch'
+            }
+      - name: TEST (FAKE) BUMP
+        if: ${{contains(['major','minor','patch'],steps.version-bump-type.outputs.result)}}
+        run: echo "BUMPED! ${{steps.version-bump-type.outputs.result}}"
+
+      # - name: Bump the version
+      #   if: ${{contains(['major','minor','patch'],steps.version-bump-type.outputs.result)}}
+      #   run: ${{steps.version-bump-type.outputs.result}}
+      # # Publish
+      # - name: Create npm config file to allow robo-token publishing
+      #   run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+      # - name: Publish package to npm
+      #   run: npm run publish
