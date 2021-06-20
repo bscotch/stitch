@@ -62,8 +62,9 @@ jobs:
             if(types.some(type=>bumpTypes.patch.includes(type))){
               return 'patch'
             }
+            return 'skip'
       - name: TEST (FAKE) BUMP
-        if: ${{contains(['major','minor','patch'],steps.version-bump-type.outputs.result)}}
+        if: ${{steps.version-bump-type.outputs.result != 'skip'}}
         run: echo "BUMPED! ${{steps.version-bump-type.outputs.result}}"
 
       # - name: Bump the version
