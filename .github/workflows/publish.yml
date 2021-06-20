@@ -19,6 +19,9 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       NPM_TOKEN: ${{secrets.NPM_AUTO_ADAM}}
+    defaults:
+      run:
+        shell: bash
     
     steps:
       - name: Load source
