@@ -35,7 +35,10 @@ jobs:
         with:
           node-version: 14.x
       - run: npm i
+
+      # Always run tests, no matter the source of the push
       - run: npm run test
+
       # Parse pushed commit messages
       - name: Find out what version bump is needed
         id: version-bump-type
@@ -80,6 +83,6 @@ jobs:
         if: ${{ env.BUMP != 'skip'}}
         run: "npm version $BUMP"
 
-      - name: Test publish credentials
+      - name: Publish to NPM
         if: ${{ env.BUMP != 'skip'}}
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc && npm whoami
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc && npm publish
