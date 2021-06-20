@@ -55,7 +55,10 @@ jobs:
               messages.come(m=>m.match(new RegExp(`^(${allBumpingTypes.join('|')})!:`)));
             // work down from major -> patch, with early returns
             if(hasBreaking){ return 'major'; }
-            const types = messages.map(m=>m.match(/^(.+?):/)?.[1]).filter(x=>x);
+            const types = messages.map(m=>{
+              const match = m.match(/^(.+?):/);
+              return match && match[1];
+            }).filter(x=>x);
             if(types.some(type=>bumpTypes.minor.includes(type))){
               return 'minor'
             }
