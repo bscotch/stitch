@@ -6,10 +6,9 @@ name: Publish
 
 on:
   # https://docs.github.com/en/actions/reference/events-that-trigger-workflows#push
-  push
-  # push:
-  #   branches:
-  #     - develop
+  push:
+    branches:
+      - develop
 
 permissions:
   pull-requests: read
@@ -40,6 +39,8 @@ jobs:
         uses: actions/github-script@v4
         with:
           result-encoding: string
+          # TODO: Create as full action with separated out code.
+          # TODO: Allow commits to specify a bump with e.g. BUMPS?: (major|minor|patch)
           script: |
             const bumpTypes = {
               minor: ['feat','feature','deps','dependency','dependencies'],
