@@ -52,7 +52,7 @@ jobs:
             console.log({messages});
             // based on the commit types, choose the appropriate bump
             const hasBreaking = messages.some(m=>m.match(/\bBREAK(ING|S)?\b/)) ||
-              messages.come(m=>m.match(new RegExp(`^(${allBumpTypes.join('|')})!:`)));
+              messages.some(m=>m.match(new RegExp(`^(${allBumpTypes.join('|')})!:`)));
             // work down from major -> patch, with early returns
             if(hasBreaking){ return 'major'; }
             const types = messages.map(m=>{
