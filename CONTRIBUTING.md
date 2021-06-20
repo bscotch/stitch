@@ -2,6 +2,24 @@
 
 We would love to get your contributions to Stitch! This section details our expectations and requirements if you do want to contribute.
 
+## Commit conventions
+
+All of your commits must follow the conventions below.
+We recommend squashing your commits into one commit per
+feature/bugfix, but that isn't required.
+
+We follow the conventional-changelog Angular convention for commit messages,
+namely formatting them as `<type>: <subject>` where `type` is one of:
+
++ deps: Dependency update
++ feat: A new feature
++ fix: A bug fix
++ refactor: A code change that neither fixes a bug nor adds a feature
++ test: Adding missing or correcting existing tests
++ docs: Documentation only changes
++ perf: A code change that improves performance
++ chore: Changes to the build process or auxiliary tools and libraries such as documentation generation
+
 ## Issues and Suggestions
 
 If you discover bugs or missing features, please post them as GitHub issues. Be extremely detailed and thorough in your explanation of the issue/suggestion and why it's important to address it.
@@ -74,20 +92,3 @@ To compile the code into JavaScript, you'll need to run
 `npm run build`. Alternatively, you can run the Typescript
 compiler in watch mode to re-compile the code every time
 you save a change, using `npx tsc -w`.
-
-## Commit conventions
-
-All of your commits must follow the conventions below.
-We recommend squashing your commits into one commit per
-feature/bugfix, but that isn't required.
-
-We follow the conventional-changelog Angular convention for commit messages,
-namely formatting them as `<type>: <subject>` where `type` is one of:
-
-+ feat: A new feature
-+ fix: A bug fix
-+ refactor: A code change that neither fixes a bug nor adds a feature
-+ test: Adding missing or correcting existing tests
-+ docs: Documentation only changes
-+ perf: A code change that improves performance
-+ chore: Changes to the build process or auxiliary tools and libraries such as documentation generation
