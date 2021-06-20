@@ -73,8 +73,8 @@ jobs:
       - name: Store bump version type as env var BUMP
         run: echo "BUMP=${{steps.version-bump-type.outputs.result}}" >> $GITHUB_ENV
       
-      - name: "Prep GitHub with the actor's info"
-        run: git config user.email "${{github.event.pusher.email}}; git config user.name "${{github.event.pusher.name}}; "
+      - name: Prep GitHub with the actor's info
+        run: git config user.email "${{github.event.pusher.email}}"; git config user.name "${{github.event.pusher.name}}";
 
       - name: Bump the version & push the version commit
         if: ${{ env.BUMP != 'skip'}}
