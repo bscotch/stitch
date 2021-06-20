@@ -34,8 +34,7 @@ jobs:
           node-version: 14.x
       - run: npm i
       - run: npm run test
-
-      # Bump version
+      # Parse pushed commit messages
       - name: Find out what version bump is needed
         id: version-bump-type
         uses: actions/github-script@v4
@@ -44,7 +43,7 @@ jobs:
           script: |
             const bumpTypes = {
               minor: ['feat','feature','deps','dependency','dependencies'],
-              patch: ['fix','bugfix','perf','performance']
+              patch: ['fix','bugfix','perf','performance','docs']
             };
             const allBumpTypes = [...bumpTypes.minor, ...bumpTypes.patch];
             console.log({commits: context.payload.commits});
@@ -66,9 +65,21 @@ jobs:
               return 'patch'
             }
             return 'skip'
+
+      - name: Store bump version type as env var BUMP
+        run: echo "BUMP=${{steps.version-bump-type.outputs.result}}" >> $GITHUB_ENV
+      
+      # Version
+      - name: Bump the version, pushing a version commit
+        if: ${{ env.BUMP != 'skip'}}
+        run: "npm version $BUMP"
+
+      # TODO: Publish!
+
       - name: TEST (FAKE) BUMP
-        if: ${{steps.version-bump-type.outputs.result != 'skip'}}
-        run: echo "BUMPED! ${{steps.version-bump-type.outputs.result}}"
+        if: ${{ env.BUMP != 'skip'}}
+        run: echo "BUMPED! $BUMP"
+
 
       # - name: Bump the version
       #   if: ${{contains(['major','minor','patch'],steps.version-bump-type.outputs.result)}}
