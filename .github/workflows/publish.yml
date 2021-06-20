@@ -46,13 +46,13 @@ jobs:
               minor: ['feat','feature','deps','dependency','dependencies'],
               patch: ['fix','bugfix','perf','performance']
             };
-            const allBumpingTypes = [...bumpTypes.major, ...bumpTypes.minor];
+            const allBumpTypes = [...bumpTypes.minor, ...bumpTypes.patch];
             console.log({commits: context.payload.commits});
             const messages = context.payload.commits.map(c=>c.message);
             console.log({messages});
             // based on the commit types, choose the appropriate bump
             const hasBreaking = messages.some(m=>m.match(/\bBREAK(ING|S)?\b/)) ||
-              messages.come(m=>m.match(new RegExp(`^(${allBumpingTypes.join('|')})!:`)));
+              messages.come(m=>m.match(new RegExp(`^(${allBumpTypes.join('|')})!:`)));
             // work down from major -> patch, with early returns
             if(hasBreaking){ return 'major'; }
             const types = messages.map(m=>{
