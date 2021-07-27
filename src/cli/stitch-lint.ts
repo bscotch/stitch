@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import { Gms2Project } from '@/Gms2Project';
-import commander from 'commander';
+import { program as cli } from 'commander';
 import cliOptions from './lib/cli-options';
-const cli = commander;
 
 cli
   .description('Generate a lint report.')

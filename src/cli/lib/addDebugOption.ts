@@ -1,7 +1,7 @@
-import { CommanderStatic } from 'commander';
+import type { Command } from 'commander';
 import { debug } from '../../lib/log';
 
-export function addDebugOptions(cli: CommanderStatic) {
+export function addDebugOptions(cli: Command) {
   return cli
     .option(
       '--debug',

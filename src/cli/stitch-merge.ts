@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { default as cli } from 'commander';
+import { program as cli } from 'commander';
 import { oneline } from '@bscotch/utility';
 import merge, { Gms2MergeCliOptions } from './lib/merge';
 import options from './lib/cli-options';

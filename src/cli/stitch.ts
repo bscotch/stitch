@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 import { oneline } from '@bscotch/utility';
-import commander from 'commander';
 import version from './lib/package-version';
-
-export const cli = commander;
+import { program as cli } from 'commander';
 
 // Kick it off
 cli

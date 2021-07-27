@@ -1,11 +1,7 @@
 #!/usr/bin/env node
-import commander, { CommanderStatic } from 'commander';
+import { program as cli } from 'commander';
 import { Gms2Project } from '../lib/Gms2Project';
 import options from './lib/cli-options';
-const cli: CommanderStatic & {
-  targetProject?: string;
-  force?: boolean;
-} = commander;
 import { addDebugOptions } from './lib/addDebugOption';
 
 cli

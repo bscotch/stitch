@@ -1,11 +1,9 @@
 #!/usr/bin/env node
-import commander from 'commander';
+import { program as cli } from 'commander';
 import { oneline, undent } from '@bscotch/utility';
 import { assignAudioGroups, AssignCliOptions } from './lib/assign';
 import options from './lib/cli-options';
 import { addDebugOptions } from './lib/addDebugOption';
-
-const cli = commander;
 
 cli
   .description(

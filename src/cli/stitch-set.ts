@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-import commander from 'commander';
-const cli = commander;
+import { program as cli } from 'commander';
 
 cli
   .description('Modify metadata in GameMaker Studio 2 projects.')
