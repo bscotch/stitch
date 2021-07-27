@@ -19,8 +19,8 @@ function getTimestamp() {
 
 function log(level: LogLevel, ...stuff: any[]) {
   const message = stuff.reduce((msg, item) => {
-    let itemAsString: string | undefined;
-    typeof item == 'object' ? JSON.stringify(item) : `${item}`;
+    let itemAsString: string | undefined =
+      typeof item == 'object' ? JSON.stringify(item) : `${item}`;
     if (item instanceof Error) {
       itemAsString = `${item.message}${
         level == 'debug' ? `\n${item.stack}` : ''

@@ -48,19 +48,21 @@ export function writeFileSync(filePath: string, stuff: any, plain = false) {
   const stringifiedStuff = plain
     ? JSON.stringify(stuff, null, 2)
     : jsonify(stuff);
+  let existing: string | undefined;
   try {
-    const existing = fs.readFileSync(filePath, 'utf8');
+    existing = fs.readFileSync(filePath, 'utf8');
     if (existing == stringifiedStuff) {
-      debug(`"${filePath}" has not changed`);
+      debug(`write skipped (no change): ${filePath}`);
       return;
     }
   } catch (err) {
-    debug('writeFileSync error', err);
+    debug(`write error: ${filePath}`, err);
     if (!['ENOENT'].includes(err?.code)) {
       throw err;
     }
   }
   // The GameMaker IDE may better handle live file changes
   // when files are deleted and replaced instead of written over.
+  debug(`writing: ${filePath}`);
   fs.writeFileSync(filePath, stringifiedStuff); // Swap back to this if untrue
 }
