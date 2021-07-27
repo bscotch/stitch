@@ -1,13 +1,11 @@
 #!/usr/bin/env node
-import commander from 'commander';
+import { program as cli } from 'commander';
 import { oneline, undent } from '@bscotch/utility';
 import { ImportBaseOptions } from './lib/add-base-options';
 import importFiles from './lib/add-files';
 import options from './lib/cli-options';
 import { addDebugOptions } from './lib/addDebugOption';
 import { runOrWatch } from './watch';
-
-const cli = commander;
 
 cli
   .description(

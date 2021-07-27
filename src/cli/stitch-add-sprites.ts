@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import commander from 'commander';
+import { program } from 'commander';
 import { oneline, undent } from '@bscotch/utility';
 import importSprites from './lib/add-sprites';
 import { ImportBaseOptions } from './lib/add-base-options';
@@ -8,9 +8,7 @@ import { SpriteImportOptions } from '../lib/Gms2Project';
 import { addDebugOptions } from './lib/addDebugOption';
 import { runOrWatch } from './watch';
 
-const cli = commander;
-
-cli
+program
   .description(
     undent`
     Create/update sprite assets collection of images.
@@ -73,9 +71,9 @@ cli
   )
   .option(...options.force)
   .option(...options.watch);
-addDebugOptions(cli).parse(process.argv);
+addDebugOptions(program).parse(process.argv);
 
-const opts = cli.opts();
+const opts = program.opts();
 
 runOrWatch(
   opts,

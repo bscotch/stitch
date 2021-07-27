@@ -471,14 +471,23 @@ export class Gms2Project {
       .textureGroupsWithAssignedFolders) {
       this.addTextureGroup(textureGroupName);
     }
-    // Ensure sprites are assigned to correct config texture groups
-    for (const folder of this.config.foldersWithAssignedTextureGroups) {
+    // Ensure sprites are assigned to correct config texture groups.
+    // This can be done by iterating backwards over the assignments,
+    // since they get sorted by specificity (lowest first) and we only
+    // want the most specific ones (those that match LAST unless reverse-sorted).
+    const folders = this.config.foldersWithAssignedTextureGroups.reverse();
+    const alreadyAssigned: Set<Gms2Sprite> = new Set();
+    for (const folder of folders) {
       this.components.resources
         .filterByClassAndFolder(Gms2Sprite, folder)
-        .forEach(
-          (sprite) =>
-            (sprite.textureGroup = this.config.textureGroupAssignments[folder]),
-        );
+        .forEach((sprite) => {
+          if (alreadyAssigned.has(sprite)) {
+            // Then should already have been assigned with the highest specificity possible.
+            return;
+          }
+          sprite.textureGroup = this.config.textureGroupAssignments[folder];
+          alreadyAssigned.add(sprite);
+        });
     }
     return this;
   }
@@ -513,13 +522,21 @@ export class Gms2Project {
       this.addAudioGroup(audioGroupName);
     }
     // Ensure sounds are assigned to correct config audio groups
-    for (const folder of this.config.foldersWithAssignedAudioGroups) {
+    // This can be done by iterating backwards over the assignments,
+    // since they get sorted by specificity (lowest first) and we only
+    // want the most specific ones (those that match LAST unless reverse-sorted).
+    const folders = this.config.foldersWithAssignedAudioGroups.reverse();
+    const alreadyAssigned: Set<Gms2Sound> = new Set();
+    for (const folder of folders) {
       this.components.resources
         .filterByClassAndFolder(Gms2Sound, folder)
-        .forEach(
-          (sprite) =>
-            (sprite.audioGroup = this.config.audioGroupAssignments[folder]),
-        );
+        .forEach((sound) => {
+          if (alreadyAssigned.has(sound)) {
+            return;
+          }
+          sound.audioGroup = this.config.audioGroupAssignments[folder];
+          alreadyAssigned.add(sound);
+        });
     }
     return this;
   }
