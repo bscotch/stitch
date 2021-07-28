@@ -65,10 +65,17 @@ jobs:
               const match = m.match(/^(.+?):/);
               return match && match[1];
             }).filter(x=>x);
-            if(types.some(type=>bumpTypes.minor.includes(type))){
+            const explicit = messages.map(m=>{
+              const bumpMatch = m.match(/\bbumps?: ?(major|minor|patch)\b/i);
+              return bumpMatch && bumpMatch[1];
+            }).filter(x=>x);
+            if(explicit.include('major')){
+              return 'major';
+            }
+            if(types.some(type=>bumpTypes.minor.includes(type)) || explicit.include('minor')){
               return 'minor'
             }
-            if(types.some(type=>bumpTypes.patch.includes(type))){
+            if(types.some(type=>bumpTypes.patch.includes(type)) || explicit.include('patch')){
               return 'patch'
             }
             return 'skip'

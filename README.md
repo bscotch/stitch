@@ -93,6 +93,7 @@ Install/update globally with `npm install -g @bscotch/stitch@latest`. This will 
 
 If you are creating a pipeline in Node.JS, you may want to install locally (same as above, but without the `-g`) and import directly into your code. Using Stitch programmatically will look something like this:
 
+
 ```ts
 // @file Some component of your Typescript pipeline
 import {Gms2Project} from "@bscotch/stitch";
