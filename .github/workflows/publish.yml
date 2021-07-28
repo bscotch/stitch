@@ -72,10 +72,10 @@ jobs:
             if(explicit.includes('major')){
               return 'major';
             }
-            if(types.some(type=>bumpTypes.minor.includes(type)) || explicit.include('minor')){
+            if(types.some(type=>bumpTypes.minor.includes(type)) || explicit.includes('minor')){
               return 'minor'
             }
-            if(types.some(type=>bumpTypes.patch.includes(type)) || explicit.include('patch')){
+            if(types.some(type=>bumpTypes.patch.includes(type)) || explicit.includes('patch')){
               return 'patch'
             }
             return 'skip'
