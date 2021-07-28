@@ -69,7 +69,7 @@ jobs:
               const bumpMatch = m.match(/\bbumps?: ?(major|minor|patch)\b/i);
               return bumpMatch && bumpMatch[1];
             }).filter(x=>x);
-            if(explicit.include('major')){
+            if(explicit.includes('major')){
               return 'major';
             }
             if(types.some(type=>bumpTypes.minor.includes(type)) || explicit.include('minor')){
