@@ -24,6 +24,7 @@
     "preversion": "npm run can-publish",
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && prettier src -w && git add -A",
     "postversion": "git push origin develop --follow-tags",
+    "pr": "git push && gh pr create --fill && gh pr review --approve",
     "cli-watch-test": "npm run build && node build/test/lib/runResetSandbox.js && node build/cli/stitch-add-sprites.js --force --watch --source sample-assets/sprites -t \"sand box\"",
     "can-publish": "npm run _require-develop && npm run _require-ci",
     "_require-develop": "[ \"$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)\" = \"develop\" ] || exit 1",
