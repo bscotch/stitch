@@ -92,6 +92,27 @@ export class Gms2ProjectConfig {
     return this.save();
   }
 
+  private getGroupAssignmentForPath(
+    type: Gms2ProjectConfigAssignmentField,
+    path: string,
+  ) {
+    const assignments = this.data[type];
+    const assignmentPaths = Object.keys(assignments);
+    // Find the closest path
+    const closestAssignmentPath = paths.findClosestParent(
+      assignmentPaths,
+      path,
+    );
+    if (closestAssignmentPath) {
+      return assignments[closestAssignmentPath];
+    }
+    return;
+  }
+
+  findTextureGroupForPath(path: string) {
+    return this.getGroupAssignmentForPath('textureGroupAssignments', path);
+  }
+
   addTextureGroupAssignment(folder: string, textureGroup: string) {
     return this.addGroupAssignement(
       'textureGroupAssignments',
@@ -110,6 +131,10 @@ export class Gms2ProjectConfig {
       folder,
       textureGroup,
     );
+  }
+
+  findAudioGroupForPath(path: string) {
+    return this.getGroupAssignmentForPath('audioGroupAssignments', path);
   }
 
   deleteAudioGroupAssignment(folder: string) {
