@@ -308,14 +308,6 @@ export class Gms2Sprite extends Gms2ResourceBase {
     const track = this.yyData.sequence.tracks[0];
     const oldKeyframeIds = track.keyframes.Keyframes.map((frame) => frame.id);
     debug(`old frameIds: ${oldFrameIds.join(', ')}`);
-    const oldFrames = this.storage.listFiles(this.yyDirAbsolute, false, [
-      'png',
-    ]);
-    for (const frame of oldFrames) {
-      this.storage.deleteFile(frame);
-      debug(`deleted old frame ${frame}`);
-    }
-
     this.clearFrames();
     // Add each new frame, updating the yyData as we go.
     for (const [i, subimagePath] of sprite.paths.entries()) {
@@ -326,7 +318,28 @@ export class Gms2Sprite extends Gms2ResourceBase {
       );
       this.addFrame(subimagePath, frameId, keyframeId);
     }
+    this.deleteExtraneousFrames();
+
     return this.save();
+  }
+
+  /** Delete frames that are not in the sprite. */
+  private deleteExtraneousFrames() {
+    // Clear any frames that are not in the sprite
+    const oldFrames = this.storage.listFiles(this.yyDirAbsolute, false, [
+      'png',
+    ]);
+    for (const frame of oldFrames) {
+      // Since frameIds are GUIDs, we can just check for it as
+      // a substring without worrying about exactly where it appears
+      // in the path.
+      if (this.frameIds.some((frameId) => frame.includes(frameId))) {
+        continue;
+      }
+      this.storage.deleteFile(frame);
+      debug(`deleted old frame ${frame}`);
+    }
+    return this;
   }
 
   static get textureGroupIdDefault() {
