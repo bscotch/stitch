@@ -162,7 +162,11 @@ export class Gms2Storage {
     );
     if (!this.isReadOnly) {
       fs.ensureDirSync(paths.dirname(destinationPath as string));
-      fs.removeSync(destinationPath as string);
+      // // Not sure why the file was being deleted first, since
+      // // it gets clobered by the copy anyway. The extra file operation
+      // // with the delete could trigger unwanted side effects via the
+      // // GMS2 file watcher.
+      // fs.removeSync(destinationPath as string);
       fs.copyFileSync(sourceOrPaths, destinationPath as string);
     }
   }
