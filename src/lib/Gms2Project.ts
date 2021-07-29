@@ -572,6 +572,7 @@ export class Gms2Project {
     return ['mp3', 'ogg', 'wav', 'wma'];
   }
 
+  /** Does not save the project. */
   private addSoundByFile(source: string) {
     const fileExt = paths.extname(source).slice(1);
     assert(
@@ -582,7 +583,7 @@ export class Gms2Project {
       `,
     );
     this.resources.addSound(source, this.storage);
-    return this.save();
+    return this;
   }
 
   /**
@@ -621,7 +622,7 @@ export class Gms2Project {
     for (const targetFile of targetFiles) {
       this.addSoundByFile(targetFile);
     }
-    return this;
+    return targetFiles.length ? this.save() : this;
   }
 
   /**
