@@ -643,7 +643,7 @@ export class Gms2Project {
    */
   private addSprite(sourceFolder: string, nameOverride?: string) {
     this.resources.addSprite(sourceFolder, this.storage, nameOverride);
-    return this.save();
+    return this;
   }
 
   /**
@@ -654,7 +654,7 @@ export class Gms2Project {
    */
   private addSpineSprite(spriteJsonPath: string, nameOverride?: string) {
     this.resources.addSpineSprite(spriteJsonPath, this.storage, nameOverride);
-    this.save();
+    return this;
   }
 
   /**
@@ -724,7 +724,7 @@ export class Gms2Project {
         this.addSprite(sprite.path, fullName);
       }
     }
-    return this;
+    return this.save();
   }
 
   addObject(name: string) {
