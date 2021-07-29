@@ -5,14 +5,14 @@ import {
   SoundCompression,
   SoundCompressionAsString,
   SoundChannelAsString,
-} from '../../../types/YySound';
+} from 'types/YySound';
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase';
-import paths from '../../paths';
-import { Gms2Storage } from '../../Gms2Storage';
-import { assert } from '../../errors';
+import paths from '@/paths';
+import { Gms2Storage } from '@/Gms2Storage';
+import { assert } from '@/errors';
 
 export class Gms2Sound extends Gms2ResourceBase {
   protected yyData!: YySound; // Happens in the super() constructor

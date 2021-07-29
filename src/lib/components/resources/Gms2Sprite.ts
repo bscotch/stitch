@@ -67,7 +67,6 @@ export class Gms2Sprite extends Gms2ResourceBase {
 
   set spriteType(type: SpriteType) {
     this.yyData.type = type;
-    this.save();
   }
 
   protected createYyFile() {
@@ -205,7 +204,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
       'Cannot force the layerId if only one layer present.',
     );
     this.yyData.layers[0].name = layerId;
-    return this.save();
+    return this;
   }
 
   addFrame(imagePath: string, frameGuid?: string, keyframeId?: string) {
@@ -279,14 +278,14 @@ export class Gms2Sprite extends Gms2ResourceBase {
       resourceType: 'Keyframe<SpriteFrameKeyframe>',
     });
     this.yyData.sequence.length = new NumberFixed(this.yyData.frames.length);
-    return this.save();
+    return this;
   }
 
   clearFrames() {
     debug(`clearing frames for sprite ${this.name}`);
     this.yyData.frames = [];
     this.yyData.sequence.tracks[0].keyframes.Keyframes = [];
-    return this.save();
+    return this;
   }
 
   /**
@@ -327,7 +326,7 @@ export class Gms2Sprite extends Gms2ResourceBase {
       );
       this.addFrame(subimagePath, frameId, keyframeId);
     }
-    return this;
+    return this.save();
   }
 
   static get textureGroupIdDefault() {

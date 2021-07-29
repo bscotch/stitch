@@ -170,7 +170,7 @@ export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
     return path.join(this.yyDirAbsolute, basename);
   }
 
-  protected save() {
+  save() {
     // Save the YY data
     this.storage.writeJson(this.yyPathAbsolute, this.yyData);
     return this;

@@ -288,6 +288,7 @@ export class Gms2ResourceArray {
     sprite.setLayerId(uuidV4());
     sprite.addFrame(defaultSpriteImagePath, frameId); // Adds the thumbnail PNG
     sprite.spriteType = SpriteType.Spine;
+    sprite.save();
 
     for (const ext of ['atlas', 'json']) {
       storage.copyFile(
