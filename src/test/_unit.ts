@@ -206,6 +206,14 @@ describe('Unit Tests', function () {
     expect(`${Number(15.1234134)}`).to.equal('15.1234134');
     expect(`${new NumberFixed(15.1234134, 1)}`).to.equal('15.1');
     expect(`${new NumberFixed(15.1234134, 3)}`).to.equal('15.123');
+    const variableFixedFunction = (x: number) => ([0, 1].includes(x) ? 1 : 2);
+    const fromNumberGenerator = NumberFixed.fromNumberGenerator(
+      variableFixedFunction,
+    );
+    expect(`${fromNumberGenerator(0)}`).to.equal('0.0');
+    expect(`${fromNumberGenerator(1)}`).to.equal('1.0');
+    expect(`${fromNumberGenerator(0.5)}`).to.equal('0.50');
+    expect(`${fromNumberGenerator(0.555)}`).to.equal('0.56');
   });
 
   it('can sort paths by specificity', function () {
