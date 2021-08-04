@@ -13,12 +13,25 @@ import {
 import paths from '@/paths';
 import { Gms2Storage } from '@/Gms2Storage';
 import { assert } from '@/errors';
+import { NumberFixed } from '@/NumberFixed.js';
+
+/** Sounds require some numbers to end with one decimal if 0 || 1, else 2 decimals */
+const toDefinedDecimalNumber = NumberFixed.fromNumberGenerator((x: number) =>
+  x === 0 || x === 1 ? 1 : 2,
+);
 
 export class Gms2Sound extends Gms2ResourceBase {
   protected yyData!: YySound; // Happens in the super() constructor
 
   constructor(...setup: Gms2ResourceBaseParameters) {
     super('sounds', ...setup);
+  }
+
+  protected get fieldConverters() {
+    return {
+      volume: toDefinedDecimalNumber,
+      duration: toDefinedDecimalNumber,
+    };
   }
 
   protected createYyFile() {

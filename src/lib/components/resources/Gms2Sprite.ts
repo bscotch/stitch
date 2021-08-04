@@ -23,6 +23,7 @@ import pick from 'lodash/pick';
 const toSingleDecimalNumber = (number: number | undefined) => {
   return new NumberFixed(number || 0, 1);
 };
+
 export class Gms2Sprite extends Gms2ResourceBase {
   protected yyData!: YySprite; // Happens in the super() constructor
 
