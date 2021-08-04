@@ -1,9 +1,9 @@
-# 2.11.0 (2021-07-29)
+# 2.12.0 (2021-08-04)
 
 
-### Features
+### Bug Fixes
 
-* Only delete Sprite frames if they are extraneous (instead of deleting prior to copying). ([f1a0f5d](https://github.com/bscotch/stitch/commit/f1a0f5d0e5b48cd94ca3fe6e61e66a83328e1913))
+* Sound asset .yy files have their volume and duration fields saved with the wrong number of decimals. ([9c23421](https://github.com/bscotch/stitch/commit/9c234218b0443daaff17d7942324b43a91b6d2d1))
 
 
 
