@@ -1,9 +1,9 @@
-# 2.12.0 (2021-08-04)
+## 2.12.1 (2021-08-05)
 
 
 ### Bug Fixes
 
-* Sound asset .yy files have their volume and duration fields saved with the wrong number of decimals. ([9c23421](https://github.com/bscotch/stitch/commit/9c234218b0443daaff17d7942324b43a91b6d2d1))
+* Loading sound files throws an error when the duration or volume fields are absent. ([5de3454](https://github.com/bscotch/stitch/commit/5de345498600149087f10c95eea850d9e99003a0))
 
 
 
