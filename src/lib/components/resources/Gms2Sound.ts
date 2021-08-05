@@ -16,9 +16,11 @@ import { assert } from '@/errors';
 import { NumberFixed } from '@/NumberFixed.js';
 
 /** Sounds require some numbers to end with one decimal if 0 || 1, else 2 decimals */
-const toDefinedDecimalNumber = NumberFixed.fromNumberGenerator((x: number) =>
-  x === 0 || x === 1 ? 1 : 2,
-);
+const toDefinedDecimalNumber = (number: number | undefined) => {
+  return new NumberFixed(number || 0, (x: number) =>
+    x === 0 || x === 1 ? 1 : 2,
+  );
+};
 
 export class Gms2Sound extends Gms2ResourceBase {
   protected yyData!: YySound; // Happens in the super() constructor
@@ -38,10 +40,11 @@ export class Gms2Sound extends Gms2ResourceBase {
     const yyData: YySound = {
       name: this.name,
       soundFile: this.name,
+      duration: toDefinedDecimalNumber(0),
       tags: [],
       parent: Gms2Sound.parentDefault,
       compression: 0,
-      volume: 1,
+      volume: toDefinedDecimalNumber(1),
       preload: false,
       bitRate: 128,
       sampleRate: 44100,

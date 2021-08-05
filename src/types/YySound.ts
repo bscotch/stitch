@@ -1,4 +1,5 @@
-import { YyBase } from './Yy';
+import type { NumberFixed } from '@/NumberFixed.js';
+import type { YyBase } from './Yy';
 
 export enum SoundChannel {
   Mono,
@@ -27,7 +28,7 @@ export interface YySound extends YyBase {
   /** Default 0. Compression level */
   compression: SoundCompression;
   /** Default 1. Number from 0-1 */
-  volume: number;
+  volume: NumberFixed;
   preload: boolean;
   /** Default 128. Starting from 8, increments of 8, max of 512 */
   bitRate: number;
@@ -43,6 +44,6 @@ export interface YySound extends YyBase {
   };
   /** `${name}.${ext} (e.g. mySound) */
   soundFile: string;
-  // duration: number, // This can be safely deleted, which is great since we don't want to compute it
+  duration: NumberFixed; // This can be safely deleted, which is great since we don't want to compute it
   resourceType: 'GMSound';
 }
