@@ -55,7 +55,7 @@ export function writeFileSync(filePath: string, stuff: any, plain = false) {
       debug(`write skipped (no change): ${filePath}`);
       return;
     }
-  } catch (err) {
+  } catch (err: any) {
     debug(`write error: ${filePath}`, err);
     if (!['ENOENT'].includes(err?.code)) {
       throw err;

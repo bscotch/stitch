@@ -54,7 +54,7 @@ describe('CLI', function () {
     try {
       await importModules(incorrectImportModulesOtions);
       throw new Error('Should fail when source does not exists');
-    } catch (err) {
+    } catch (err: any) {
       if (err?.code != 'ENOENT') {
         throw err;
       }

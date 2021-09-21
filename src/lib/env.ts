@@ -35,7 +35,7 @@ export function loadEnvironmentVariables<T extends Readonly<string[]>>(
             env[varName] = value;
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         if (err?.code != 'ENOENT') {
           console.log(err);
         }
