@@ -1,9 +1,9 @@
-## 2.12.1 (2021-08-05)
+# 2.13.0 (2021-09-21)
 
 
-### Bug Fixes
+### Features
 
-* Loading sound files throws an error when the duration or volume fields are absent. ([5de3454](https://github.com/bscotch/stitch/commit/5de345498600149087f10c95eea850d9e99003a0))
+* Update dependencies. ([699ca5b](https://github.com/bscotch/stitch/commit/699ca5be5c515d27eab198a21971f92500b4c646))
 
 
 
