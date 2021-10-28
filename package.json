@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/stitch",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Stitch: The GameMaker Studio 2 Asset Pipeline Development Kit.",
   "engines": {
     "node": ">=14.0.0"
