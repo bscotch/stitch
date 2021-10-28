@@ -85,28 +85,39 @@ export class Gms2ResourceArray {
     matchFunction: (item: Gms2ResourceSubclass) => any,
     resourceClass: subclass,
   ) {
-    return this.filterByClass(resourceClass).find((item) =>
-      matchFunction(item),
-    );
+    return this.find((item) => {
+      if (item instanceof resourceClass) {
+        return matchFunction(item);
+      }
+      return false;
+    }) as InstanceType<subclass> | undefined;
   }
 
   findByName<subclass extends Gms2ResourceSubclassType>(
     name: string,
     resourceClass: subclass,
-  ): InstanceType<subclass> | void;
+  ): InstanceType<subclass> | undefined;
   findByName<subclass extends Gms2ResourceSubclassType>(
     name: string,
-  ): InstanceType<subclass> | void;
-  findByName(name: any): Gms2ResourceSubclass | void;
+  ): InstanceType<subclass> | undefined;
+  findByName(name: any): Gms2ResourceSubclass | undefined;
   findByName<subclass extends Gms2ResourceSubclassType>(
     name: string,
     resourceClass?: subclass,
-  ): any {
-    const item = this.items.find((i) => i.name == name);
-    if (item && resourceClass && !(item instanceof resourceClass)) {
-      return;
-    }
-    return item;
+  ): InstanceType<subclass> | undefined {
+    const item = this.items.find((i) => {
+      if (resourceClass && !(i instanceof resourceClass)) {
+        return false;
+      }
+      const isMatch = i.isNamed(name);
+      if (isMatch && !isMatch.isExactMatch) {
+        throw new StitchError(
+          `Resource names must always match case: found ${i.name} when looking for ${name}`,
+        );
+      }
+      return isMatch;
+    });
+    return item as InstanceType<subclass> | undefined;
   }
 
   findByField<subclass extends Gms2ResourceSubclassType>(
@@ -135,7 +146,7 @@ export class Gms2ResourceArray {
 
   addSound(source: string, storage: Gms2Storage) {
     const { name } = paths.parse(source);
-    const existingSound = this.findByField('name', name, Gms2Sound);
+    const existingSound = this.findByName(name, Gms2Sound);
     if (existingSound) {
       existingSound.replaceAudioFile(source);
       info(`updated sound ${name}`);
@@ -147,7 +158,7 @@ export class Gms2ResourceArray {
   }
 
   addScript(name: string, code: string, storage: Gms2Storage) {
-    const script = this.findByField('name', name, Gms2Script);
+    const script = this.findByName(name, Gms2Script);
     if (script) {
       script.code = code;
       info(`updated script ${name}`);
@@ -161,7 +172,7 @@ export class Gms2ResourceArray {
   addSprite(sourceFolder: string, storage: Gms2Storage, nameOverride?: string) {
     const name = nameOverride || paths.basename(sourceFolder);
     debug(`adding sprite from ${sourceFolder} as name ${name}`);
-    const sprite = this.findByField('name', name, Gms2Sprite);
+    const sprite = this.findByName(name, Gms2Sprite);
     if (sprite) {
       sprite.replaceFrames(sourceFolder);
       info(`updated sprite ${name}`);
@@ -236,7 +247,7 @@ export class Gms2ResourceArray {
       );
     }
 
-    let sprite = this.findByField('name', name, Gms2Sprite);
+    let sprite = this.findByName(name, Gms2Sprite);
 
     // If the sprite already exists, and is a Spine sprite,
     // just replace the existing Spine files and keep the
@@ -303,7 +314,7 @@ export class Gms2ResourceArray {
   }
 
   addObject(name: string, storage: Gms2Storage) {
-    let object = this.findByField('name', name, Gms2Object);
+    let object = this.findByName(name, Gms2Object);
     if (!object) {
       object = Gms2Object.create(name, storage);
       this.push(object);

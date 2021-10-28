@@ -143,6 +143,28 @@ export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
   }
 
   /**
+   * Check the name of this Resource against a known name.
+   * **Important**: The check is *case-insensitive*, returning
+   * `false` if the name is a complete mismatch and an object
+   * with the type of match if it at least matches insensitively.
+   *
+   * In other words, if the result is *truthy* it's at least a
+   * case-insensitive match.
+   */
+  isNamed(name: string): false | { isMatch: true; isExactMatch: boolean } {
+    const isMatch = this.name.toLowerCase() === name.toLowerCase();
+    if (!isMatch) {
+      return false;
+    }
+    return {
+      /** Matches at least case-insensitively. */
+      isMatch,
+      /** Exactly matches, including case. */
+      isExactMatch: this.name === name,
+    };
+  }
+
+  /**
    * Check to see if this resource is in a given folder (recursively).
    * For example, for sprite 'sprites/menu/title/logo' both
    * 'sprites' and 'sprites/menu' would return `true`.
