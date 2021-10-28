@@ -39,8 +39,14 @@ export interface SpriteImportOptions {
   prefix?: string;
   /** Optionall postfix sprite names on import */
   postfix?: string;
-  /** Enforce casing standards. Defaults to 'snake'. */
-  case?: 'snake' | 'camel' | 'pascal';
+  /** Enforce casing standards. Defaults to 'keep'. */
+  case?: 'keep' | 'snake' | 'camel' | 'pascal';
+  /**
+   * Convert path separator characters into some other
+   * value. If `case` is not 'keep', this is ignored.
+   * Defaults to '_'.
+   */
+  pathSeparator?: string;
   /**
    * Normally only the immediate parent folder containing
    * images is used as the sprite name. Optionally "flatten"
@@ -697,21 +703,21 @@ export class Gms2Project {
       sprites.push(sprite);
     }
     assert(sprites.length, `No sprites found in ${sourceFolder}`);
+    const casing = options?.case || 'keep';
+    const pathSep = casing == 'keep' ? options?.pathSeparator || '_' : ' ';
     for (const sprite of sprites) {
       let name = options?.flatten
         ? paths.relative(sourceFolder, sprite.path)
         : paths.subfolderName(sprite.path);
       name = name
-        .replace(/[.\\/]/g, ' ')
-        .replace(/\s+/, ' ')
+        .replace(/[.\\/]/g, pathSep)
+        .replace(/\s+/, pathSep)
         .trim();
-      const casing = options?.case || 'snake';
       const casedName =
         (casing == 'snake' && snakeCase(name)) ||
         (casing == 'camel' && camelCase(name)) ||
         (casing == 'pascal' && pascalCase(name)) ||
-        '';
-      assert(casedName, `could not convert ${name} to ${casing} case`);
+        name;
       const fullName = `${options?.prefix || ''}${casedName}${
         options?.postfix || ''
       }`;
