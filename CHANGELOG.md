@@ -1,9 +1,9 @@
-# 2.13.0 (2021-09-21)
+# 3.0.0 (2021-10-28)
 
 
 ### Features
 
-* Update dependencies. ([699ca5b](https://github.com/bscotch/stitch/commit/699ca5be5c515d27eab198a21971f92500b4c646))
+* Add 'keep' option f for casing conversion when importing sprites. Change to the default. BREAKING. ([59bf580](https://github.com/bscotch/stitch/commit/59bf5800e610deb54eeca25daa827d226d0f91fb))
 
 
 
