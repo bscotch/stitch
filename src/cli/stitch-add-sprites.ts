@@ -43,13 +43,13 @@ program
   `,
   )
   .option(
-    '--case <snake|camel|pascal>',
+    '--case <keep|snake|camel|pascal>',
     oneline`
     Normalize the casing upon import. This ensures consistent
     casing of assets even if the source is either inconsistent
     or uses a different casing than intended in the game project.
   `,
-    'snake',
+    'keep',
   )
   .option(
     '--flatten',
