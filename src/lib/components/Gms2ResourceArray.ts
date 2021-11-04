@@ -2,7 +2,7 @@ import { dehydrateArray } from '../hydrate';
 import { Gms2ResourceBase } from './resources/Gms2ResourceBase';
 import { Gms2Sound } from '../components/resources/Gms2Sound';
 import { YypResource } from '../../types/Yyp';
-import { assert, StitchError } from '../errors';
+import { assert, StitchAssertionError, StitchError } from '../errors';
 import { Gms2Storage } from '../Gms2Storage';
 import paths from '../paths';
 import { Gms2Sprite } from './resources/Gms2Sprite';
@@ -227,12 +227,8 @@ export class Gms2ResourceArray {
         jsonContent.skeleton.spine,
         'The target JSON file is not from Spine.',
       );
-      assert(
-        jsonContent.skeleton.spine.startsWith('3.7.'),
-        'GameMaker Studio 2.3 is only compatible with Spine 3.7.X',
-      );
     } catch (err) {
-      throw err instanceof StitchError
+      throw err instanceof StitchAssertionError
         ? err
         : new StitchError(
             `There is no valid Spine JSON file at ${jsonSourcePath}.`,
