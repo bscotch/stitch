@@ -1,9 +1,9 @@
-# 5.0.0 (2021-10-29)
+# 5.1.0 (2021-11-04)
 
 
-### Bug Fixes
+### Features
 
-* The CLI command for importing sprites still uses 'snake' as the default case and does not provide 'keep' as an option. Should change to 'keep' as the default. BREAKING ([06ef362](https://github.com/bscotch/stitch/commit/06ef36209597e45495e1e3afc8d107c6bc646b2f))
+* Latest GMS2 betas use Spine 4, so Stitch should stop requiring Spine 3. ([7b95918](https://github.com/bscotch/stitch/commit/7b9591882c92718d4f518f8646b04f18a1716870))
 
 
 
