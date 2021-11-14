@@ -3,7 +3,6 @@ import { Gms2ResourceBase } from './resources/Gms2ResourceBase';
 import { Gms2Sound } from '../components/resources/Gms2Sound';
 import { YypResource } from '../../types/Yyp';
 import { assert, StitchAssertionError, StitchError } from '../errors';
-import { Gms2Storage } from '../Gms2Storage';
 import paths from '../paths';
 import { Gms2Sprite } from './resources/Gms2Sprite';
 import { difference, uniqBy } from 'lodash';
@@ -28,7 +27,7 @@ import { Gms2ProjectComms } from '@/Gms2Project.js';
 export class Gms2ResourceArray {
   private items: Gms2ResourceSubclass[];
 
-  constructor(data: YypResource[], private storage: Gms2Storage) {
+  constructor(data: YypResource[], private comms: Gms2ProjectComms) {
     const uniqueData = uniqBy(data, 'id.name');
     const removedItems = difference(data, uniqueData);
     if (removedItems.length) {
@@ -37,7 +36,7 @@ export class Gms2ResourceArray {
       );
     }
     this.items = data.map((item) =>
-      Gms2ResourceArray.hydrateResource(item, storage),
+      Gms2ResourceArray.hydrateResource(item, comms),
     );
   }
 
@@ -269,8 +268,8 @@ export class Gms2ResourceArray {
       copySpriteSheet(sprite);
       // Attempt to trigger a GameMaker cache reset by rewriting the thumbnail
       const thumbnailPath = createDestPath(sprite, existingSpineFrameId, 'png');
-      this.storage.deleteFile(thumbnailPath);
-      this.storage.copyFile(defaultSpriteImagePath, thumbnailPath);
+      comms.storage.deleteFile(thumbnailPath);
+      comms.storage.copyFile(defaultSpriteImagePath, thumbnailPath);
       info(`updated spine sprite ${name}`);
       return this;
     }
@@ -337,7 +336,7 @@ export class Gms2ResourceArray {
       return this;
     }
     const [resource] = this.items.splice(resourceIdx, 1);
-    this.storage.emptyDir(resource.yyDirAbsolute);
+    this.comms.storage.emptyDir(resource.yyDirAbsolute);
     return this;
   }
 
@@ -346,8 +345,8 @@ export class Gms2ResourceArray {
    * but that **does have .yy and associated files**, add hydrate the object
    * and add it to the Yyp.
    */
-  register(data: YypResource, storage: Gms2Storage) {
-    this.items.push(Gms2ResourceArray.hydrateResource(data, storage));
+  register(data: YypResource, comms: Gms2ProjectComms) {
+    this.items.push(Gms2ResourceArray.hydrateResource(data, comms));
   }
 
   private push(newResource: Gms2ResourceBase) {
@@ -383,7 +382,7 @@ export class Gms2ResourceArray {
     return this.scripts.map((script) => script.globalFunctions).flat(2);
   }
 
-  static hydrateResource(data: YypResource, storage: Gms2Storage) {
+  static hydrateResource(data: YypResource, comms: Gms2ProjectComms) {
     const resourceType = data.id.path.split('/')[0] as Gms2ResourceType;
     // const subclass = Gms2Timeline;
     const subclass = Gms2ResourceArray.resourceClassMap[resourceType];
@@ -392,7 +391,7 @@ export class Gms2ResourceArray {
         `No constructor for resource ${resourceType} exists.`,
       );
     }
-    const resource = new subclass(data, { storage }) as Gms2ResourceSubclass;
+    const resource = new subclass(data, comms) as Gms2ResourceSubclass;
     return resource;
   }
 }

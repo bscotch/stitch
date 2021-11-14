@@ -54,7 +54,7 @@ export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
         transformValueByPath(this.yyData, path, this.fieldConverters[path]);
       }
     }
-    this.io.onChange?.('created', this);
+    this.io.listener?.('create', this);
   }
 
   /** Create a generic Yy file, given YypData (must be implemented by each specifific resource.) */

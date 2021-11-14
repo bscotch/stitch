@@ -44,8 +44,8 @@ type ProjectPlatformVersion =
  * maintain a reference tracker, or to run a transpile
  * step, etc.
  */
-type Gms2ResourceChangeListener = (
-  changeType: 'created' | 'updated' | 'removed',
+export type Gms2ResourceChangeListener = (
+  changeType: 'create', // | 'update' | 'remove',
   resource: Gms2ResourceSubclass,
 ) => void;
 
@@ -62,7 +62,7 @@ export interface Gms2ProjectComms {
    * Centralized file I/O
    */
   storage: Gms2Storage;
-  onChange?: Gms2ResourceChangeListener;
+  listener?: Gms2ResourceChangeListener;
 }
 
 export interface SpriteImportOptions {
@@ -134,7 +134,7 @@ export interface Gms2ProjectOptions {
    * the Gms2Project class so that it can live-track project
    * changes will pair nicely with this!
    */
-  onChange?: Gms2ResourceChangeListener;
+  listener?: Gms2ResourceChangeListener;
 }
 
 /**
@@ -149,7 +149,7 @@ export class Gms2Project {
    */
   private components!: Gms2ProjectComponents;
   private config: Gms2ProjectConfig;
-  private onChange: Gms2ResourceChangeListener | undefined;
+  private listener: Gms2ResourceChangeListener | undefined;
   readonly storage: Gms2Storage;
 
   /**
@@ -172,7 +172,7 @@ export class Gms2Project {
       };
       debug(`parsed options: ${JSON.stringify(options, null, 2)}`);
 
-      this.onChange = options.onChange;
+      this.listener = options.listener;
 
       // Find the yyp filepath
       let yypPath = options.projectPath as string;
@@ -223,10 +223,11 @@ export class Gms2Project {
   }
 
   get comms(): Gms2ProjectComms {
-    return Object.freeze({
+    const comms: Gms2ProjectComms = {
       storage: this.storage,
-      onChange: this.onChange,
-    });
+      listener: this.listener,
+    };
+    return Object.freeze(comms);
   }
 
   get yypAbsolutePath() {
@@ -874,6 +875,8 @@ export class Gms2Project {
         ? new Gms2ComponentArray(yyp.RoomOrder, Gms2RoomOrder)
         : new Gms2ComponentArray(yyp.RoomOrderNodes, Gms2RoomOrder);
 
+    const comms = this.comms; // Get one shallow copy
+
     // TODO: Figure out how to safely manage different typings due
     // TODO: to changes in the YYP (and potentially YY) files with
     // TODO: different IDE versions.
@@ -890,7 +893,7 @@ export class Gms2Project {
       ),
       AudioGroups: new Gms2ComponentArray(yyp.AudioGroups, Gms2AudioGroup),
       IncludedFiles: new Gms2IncludedFileArray(yyp.IncludedFiles, this.storage),
-      resources: new Gms2ResourceArray(yyp.resources, this.storage),
+      resources: new Gms2ResourceArray(yyp.resources, comms),
     };
 
     this.ensureResourceGroupAssignments().addFolder('NEW'); // Imported assets should go into a NEW folder.

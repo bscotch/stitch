@@ -238,7 +238,7 @@ export class Gms2ProjectMerger {
       this.cloneResourceFiles(sourceResource);
       this.targetProject.resources.register(
         sourceResource.toJSON(),
-        this.targetProject.storage,
+        this.targetProject.comms,
       );
       info(`Added new resource ${sourceResource.name}.`);
       return;
