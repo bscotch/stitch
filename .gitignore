@@ -9,3 +9,5 @@ node.error.log
 .env
 *.env
 package-lock.json
+docs/html
+helpdocs_keywords.json

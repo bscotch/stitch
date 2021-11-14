@@ -111,16 +111,12 @@ export class Gms2Project {
       debug(
         `loading project with options: ${JSON.stringify(options, null, 2)}`,
       );
+      options = typeof options == 'string' ? { projectPath: options } : options;
       options = {
-        projectPath:
-          typeof options == 'string'
-            ? options
-            : options?.projectPath || process.cwd(),
-        readOnly: (typeof options != 'string' && options?.readOnly) || false,
-        dangerouslyAllowDirtyWorkingDir:
-          (typeof options != 'string' &&
-            options?.dangerouslyAllowDirtyWorkingDir) ||
-          false,
+        // Defaults
+        projectPath: process.cwd(),
+        // Overrides
+        ...options,
       };
       debug(`parsed options: ${JSON.stringify(options, null, 2)}`);
 
@@ -807,9 +803,6 @@ export class Gms2Project {
     // Load the YYP file, store RAW (ensure field resourceType: "GMProject" exists)
     const yyp = Gms2Project.parseYypFile(this.storage.yypAbsolutePath);
 
-    fs.readJsonSync(this.storage.yypAbsolutePath) as YypComponentsVersion;
-    assert(yyp.resourceType == 'GMProject', 'This is not a GMS2.3+ project.');
-
     // The most recent versions of GMS2 use a RoomOrderNodes field
     // with a different data structure than the older RoomOrder field.
     // Since we're currently not doing anything with that field, we
@@ -879,7 +872,7 @@ export class Gms2Project {
   }
 
   /**
-   * Check a YYP file for version comaptibility with Stitch.
+   * Attempt to parse a YYP file.
    */
   private static parseYypFile(yypFilepath: string) {
     const yyp = fs.readJsonSync(yypFilepath) as YypComponentsVersion;
