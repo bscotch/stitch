@@ -1,20 +1,22 @@
-import { YyBase } from 'types/Yy';
-import { YypResource } from 'types/Yyp';
-import { assert, StitchError } from '@/errors';
-import { Gms2Storage } from '@/Gms2Storage';
-import path from '@/paths';
-import type { Gms2ResourceType } from '../Gms2ResourceArray';
+import { YyBase } from 'types/Yy.js';
+import { YypResource } from 'types/Yyp.js';
+import { assert, StitchError } from '@/errors.js';
+import path from '@/paths.js';
 import { transformValueByPath } from '@bscotch/utility';
+import type { Gms2Storage } from '@/Gms2Storage.js';
+import type { Gms2ResourceType } from '../Gms2ResourceArray.js';
+import type { Gms2ProjectComms } from '@/Gms2Project.js';
 
 export type Gms2ResourceBaseParameters = [
   data: YypResource | string,
-  storage: Gms2Storage,
+  io: Gms2ProjectComms,
   ensureYyFile?: boolean,
 ];
 
 export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
   protected data: YypResource;
   protected yyData: YyData;
+  protected storage: Gms2Storage;
 
   /**
    *  Create a resource using either the direct YYP-sourced object
@@ -23,9 +25,10 @@ export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
   constructor(
     protected resourceRoot: Gms2ResourceType,
     data: YypResource | string,
-    protected storage: Gms2Storage,
+    protected io: Gms2ProjectComms,
     ensureYyFile = false,
   ) {
+    this.storage = io.storage;
     if (typeof data == 'string') {
       const name = data;
       this.data = {
@@ -51,6 +54,7 @@ export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
         transformValueByPath(this.yyData, path, this.fieldConverters[path]);
       }
     }
+    this.io.onChange?.('created', this);
   }
 
   /** Create a generic Yy file, given YypData (must be implemented by each specifific resource.) */
@@ -187,7 +191,7 @@ export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
    * as the resource, but generally have different extension.
    * @param name If not provided, defaults to the resource's name
    */
-  protected dataFilePathAbsolute(extension: string, name?: string) {
+  dataFilePathAbsolute(extension: string, name?: string) {
     const basename = `${name || this.name}.${extension}`;
     return path.join(this.yyDirAbsolute, basename);
   }

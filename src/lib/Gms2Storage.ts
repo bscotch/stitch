@@ -5,6 +5,11 @@ import child_process from 'child_process';
 import { oneline } from '@bscotch/utility';
 import { difference } from 'lodash';
 
+/**
+ * A class for centralizing file system i/o on GMS2
+ * projects, so that we can more easily run in read-only
+ * mode, attach hooks to file i/o events, etc.
+ */
 export class Gms2Storage {
   constructor(
     readonly yypAbsolutePath: string,

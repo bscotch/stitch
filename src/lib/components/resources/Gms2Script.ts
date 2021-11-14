@@ -1,12 +1,12 @@
 import { findOuterFunctions, findTokenReferences } from '@/parser/codeParser';
 import { GmlToken } from '@/parser/GmlToken';
-import { YyScript } from 'types/Yy';
-import { Gms2Storage } from '@/Gms2Storage';
+import type { YyScript } from 'types/Yy';
 import paths from '@/paths';
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase';
+import type { Gms2ProjectComms } from '@/Gms2Project.js';
 
 export class Gms2Script extends Gms2ResourceBase {
   protected yyData!: YyScript; // Happens in the super() constructor
@@ -82,8 +82,8 @@ export class Gms2Script extends Gms2ResourceBase {
     this.globalFunctionCache = undefined;
   }
 
-  static create(name: string, code: string, storage: Gms2Storage) {
-    const script = new Gms2Script(name, storage, true);
+  static create(name: string, code: string, comms: Gms2ProjectComms) {
+    const script = new Gms2Script(name, comms, true);
     script.code = code;
     return script;
   }

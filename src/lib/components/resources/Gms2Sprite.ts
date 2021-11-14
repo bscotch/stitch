@@ -7,7 +7,6 @@ import {
   yyDataSequenceDefaults,
   yyDataSequenceTrackDefaults,
 } from 'types/YySprite';
-import { Gms2Storage } from '@/Gms2Storage';
 import paths from '@/paths';
 import {
   Gms2ResourceBase,
@@ -19,6 +18,7 @@ import { NumberFixed } from '@/NumberFixed';
 import { assert, assertIsNumber } from '@/errors';
 import { debug } from '@/log';
 import pick from 'lodash/pick';
+import type { Gms2ProjectComms } from '@/Gms2Project.js';
 
 const toSingleDecimalNumber = (number: number | undefined) => {
   return new NumberFixed(number || 0, 1);
@@ -359,12 +359,12 @@ export class Gms2Sprite extends Gms2ResourceBase {
    */
   static create(
     subimageDirectory: string,
-    storage: Gms2Storage,
+    comms: Gms2ProjectComms,
     spriteName?: string,
   ) {
     return new Gms2Sprite(
       spriteName || paths.subfolderName(subimageDirectory),
-      storage,
+      comms,
       true,
     ).replaceFrames(subimageDirectory);
   }

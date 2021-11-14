@@ -11,9 +11,9 @@ import {
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase';
 import paths from '@/paths';
-import { Gms2Storage } from '@/Gms2Storage';
 import { assert } from '@/errors';
 import { NumberFixed } from '@/NumberFixed.js';
+import type { Gms2ProjectComms } from '@/Gms2Project.js';
 
 /** Sounds require some numbers to end with one decimal if 0 || 1, else 2 decimals */
 const toDefinedDecimalNumber = (number: number | undefined) => {
@@ -140,10 +140,10 @@ export class Gms2Sound extends Gms2ResourceBase {
    */
   static create(
     externalAudioFilePath: string,
-    storage: Gms2Storage,
+    comms: Gms2ProjectComms,
   ): Gms2Sound {
     const { name } = paths.parse(externalAudioFilePath);
-    return new Gms2Sound(name, storage, true).replaceAudioFile(
+    return new Gms2Sound(name, comms, true).replaceAudioFile(
       externalAudioFilePath,
     );
   }

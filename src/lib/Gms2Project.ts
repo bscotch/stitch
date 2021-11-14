@@ -11,7 +11,10 @@ import { Gms2RoomOrder } from './components/Gms2RoomOrder';
 import { Gms2TextureGroup } from './components/Gms2TextureGroup';
 import { Gms2AudioGroup } from './components/Gms2AudioGroup';
 import { Gms2ComponentArray } from './components/Gms2ComponentArray';
-import { Gms2ResourceArray } from './components/Gms2ResourceArray';
+import {
+  Gms2ResourceArray,
+  Gms2ResourceSubclass,
+} from './components/Gms2ResourceArray';
 import { Gms2Storage } from './Gms2Storage';
 import { Gms2ProjectConfig } from './Gms2ProjectConfig';
 import { Gms2Sprite } from './components/resources/Gms2Sprite';
@@ -33,6 +36,34 @@ type YypComponentsVersion = YypComponents | YypComponentsLegacy;
 type ProjectPlatformVersion =
   | `option_${Gms2TargetPlatform}_version`
   | 'option_xbone_version';
+
+/**
+ * Resources will call this event when they are
+ * changed in some way. This can be used to, for example,
+ * maintain an up-to-date list of changes, or to
+ * maintain a reference tracker, or to run a transpile
+ * step, etc.
+ */
+type Gms2ResourceChangeListener = (
+  changeType: 'created' | 'updated' | 'removed',
+  resource: Gms2ResourceSubclass,
+) => void;
+
+/**
+ * Projects are represented by a complex collection of
+ * class instances of various types. To enable them to
+ * communicate with each other, the parent Project instance,
+ * the file I/O system, and (someday) local networks, all
+ * instances need to have access to the same, centralized
+ * communications mechanisms.
+ */
+export interface Gms2ProjectComms {
+  /**
+   * Centralized file I/O
+   */
+  storage: Gms2Storage;
+  onChange?: Gms2ResourceChangeListener;
+}
 
 export interface SpriteImportOptions {
   /** Optionally prefix sprite names on import */
@@ -84,6 +115,26 @@ export interface Gms2ProjectOptions {
    * doing!
    */
   dangerouslyAllowDirtyWorkingDir?: boolean;
+  /**
+   * @alpha
+   *
+   * **WARNING**: This is an experimental feature.
+   * It currently only supports calling on each resource
+   * during project load (only the "created" event).
+   *
+   * Register a listener for when a resource is "changed"
+   * (on initial load, the "created" event is always fired).
+   *
+   * This is experimental, intended to be used as a hook
+   * for performing actions (logging, transpiling,
+   * language server events, etc).
+   *
+   * @note
+   * A future update to add a watcher option directly to
+   * the Gms2Project class so that it can live-track project
+   * changes will pair nicely with this!
+   */
+  onChange?: Gms2ResourceChangeListener;
 }
 
 /**
@@ -98,6 +149,7 @@ export class Gms2Project {
    */
   private components!: Gms2ProjectComponents;
   private config: Gms2ProjectConfig;
+  private onChange: Gms2ResourceChangeListener | undefined;
   readonly storage: Gms2Storage;
 
   /**
@@ -119,6 +171,8 @@ export class Gms2Project {
         ...options,
       };
       debug(`parsed options: ${JSON.stringify(options, null, 2)}`);
+
+      this.onChange = options.onChange;
 
       // Find the yyp filepath
       let yypPath = options.projectPath as string;
@@ -166,6 +220,13 @@ export class Gms2Project {
       }
       throw err;
     }
+  }
+
+  get comms(): Gms2ProjectComms {
+    return Object.freeze({
+      storage: this.storage,
+      onChange: this.onChange,
+    });
   }
 
   get yypAbsolutePath() {
@@ -584,7 +645,7 @@ export class Gms2Project {
       Only supports: ${Gms2Project.supportedSoundFileExtensions.join(',')}
       `,
     );
-    this.resources.addSound(source, this.storage);
+    this.resources.addSound(source, this.comms);
     return this;
   }
 
@@ -632,7 +693,7 @@ export class Gms2Project {
    * global variables, your code should be wrapped in a function!
    */
   addScript(name: string, code: string) {
-    this.resources.addScript(name, code, this.storage);
+    this.resources.addScript(name, code, this.comms);
     return this.save();
   }
 
@@ -644,7 +705,7 @@ export class Gms2Project {
    * by source name.
    */
   private addSprite(sourceFolder: string, nameOverride?: string) {
-    this.resources.addSprite(sourceFolder, this.storage, nameOverride);
+    this.resources.addSprite(sourceFolder, this.comms, nameOverride);
     return this;
   }
 
@@ -655,7 +716,7 @@ export class Gms2Project {
    * name.The Spine version must be compatible with GameMaker Studio.
    */
   private addSpineSprite(spriteJsonPath: string, nameOverride?: string) {
-    this.resources.addSpineSprite(spriteJsonPath, this.storage, nameOverride);
+    this.resources.addSpineSprite(spriteJsonPath, this.comms, nameOverride);
     return this;
   }
 
@@ -730,7 +791,7 @@ export class Gms2Project {
   }
 
   addObject(name: string) {
-    const object = this.resources.addObject(name, this.storage);
+    const object = this.resources.addObject(name, this.comms);
     this.save();
     return object;
   }

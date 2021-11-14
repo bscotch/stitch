@@ -1,9 +1,9 @@
+import type { Gms2ProjectComms } from '@/Gms2Project.js';
 import { findTokenReferences } from '@/parser/codeParser';
 import { GmlToken } from '@/parser/GmlToken';
 import { GmlTokenVersioned } from '@/parser/GmlTokenVersioned';
 import { Defined, listFilesByExtensionSync } from '@bscotch/utility';
 import { YyObject, yyDataDefaults } from '../../../types/YyObject';
-import { Gms2Storage } from '../../Gms2Storage';
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
@@ -118,7 +118,7 @@ export class Gms2Object extends Gms2ResourceBase<YyObject> {
    *                          search for png images within that directory
    *                          and sort them alphabetically.
    */
-  static create(name: string, storage: Gms2Storage) {
-    return new Gms2Object(name, storage, true);
+  static create(name: string, comms: Gms2ProjectComms) {
+    return new Gms2Object(name, comms, true);
   }
 }

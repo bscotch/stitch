@@ -7,7 +7,7 @@ import { Gms2Storage } from '../Gms2Storage';
 import paths from '../paths';
 import { Gms2Sprite } from './resources/Gms2Sprite';
 import { difference, uniqBy } from 'lodash';
-import { info, debug } from '../log';
+import { info, debug, warning } from '../log';
 import { Gms2Script } from './resources/Gms2Script';
 import { Gms2Animation } from './resources/Gms2Animation';
 import { Gms2Extension } from './resources/Gms2Extension';
@@ -23,6 +23,7 @@ import { Gms2Timeline } from './resources/Gms2Timeline';
 import { Spine } from '../../types/Spine';
 import { uuidV4 } from '../uuid';
 import { SpriteType } from '../../types/YySprite';
+import { Gms2ProjectComms } from '@/Gms2Project.js';
 
 export class Gms2ResourceArray {
   private items: Gms2ResourceSubclass[];
@@ -31,7 +32,7 @@ export class Gms2ResourceArray {
     const uniqueData = uniqBy(data, 'id.name');
     const removedItems = difference(data, uniqueData);
     if (removedItems.length) {
-      info(
+      warning(
         `Duplicate resources found: ${removedItems.length} duplicates removed`,
       );
     }
@@ -144,32 +145,36 @@ export class Gms2ResourceArray {
     ) as InstanceType<subclass>[];
   }
 
-  addSound(source: string, storage: Gms2Storage) {
+  addSound(source: string, comms: Gms2ProjectComms) {
     const { name } = paths.parse(source);
     const existingSound = this.findByName(name, Gms2Sound);
     if (existingSound) {
       existingSound.replaceAudioFile(source);
       info(`updated sound ${name}`);
     } else {
-      this.push(Gms2Sound.create(source, storage));
+      this.push(Gms2Sound.create(source, comms));
       info(`created sound ${name}`);
     }
     return this;
   }
 
-  addScript(name: string, code: string, storage: Gms2Storage) {
+  addScript(name: string, code: string, comms: Gms2ProjectComms) {
     const script = this.findByName(name, Gms2Script);
     if (script) {
       script.code = code;
       info(`updated script ${name}`);
     } else {
-      this.push(Gms2Script.create(name, code, storage));
+      this.push(Gms2Script.create(name, code, comms));
       info(`created script ${name}`);
     }
     return this;
   }
 
-  addSprite(sourceFolder: string, storage: Gms2Storage, nameOverride?: string) {
+  addSprite(
+    sourceFolder: string,
+    comms: Gms2ProjectComms,
+    nameOverride?: string,
+  ) {
     const name = nameOverride || paths.basename(sourceFolder);
     debug(`adding sprite from ${sourceFolder} as name ${name}`);
     const sprite = this.findByName(name, Gms2Sprite);
@@ -177,7 +182,7 @@ export class Gms2ResourceArray {
       sprite.replaceFrames(sourceFolder);
       info(`updated sprite ${name}`);
     } else {
-      this.push(Gms2Sprite.create(sourceFolder, storage, name));
+      this.push(Gms2Sprite.create(sourceFolder, comms, name));
       info(`created sprite ${name}`);
     }
     return this;
@@ -185,7 +190,7 @@ export class Gms2ResourceArray {
 
   addSpineSprite(
     jsonSourcePath: string,
-    storage: Gms2Storage,
+    comms: Gms2ProjectComms,
     nameOverride?: string,
   ) {
     const sourceSpineName = paths.parse(jsonSourcePath).name;
@@ -204,7 +209,7 @@ export class Gms2ResourceArray {
       return `${sourcePathWithoutExt}.${ext}`;
     };
     const copySpriteSheet = (sprite: Gms2Sprite) => {
-      storage.copyFile(
+      comms.storage.copyFile(
         createSourcePath('png'),
         createDestPath(sprite, sourceSpineName, 'png'),
       );
@@ -222,7 +227,7 @@ export class Gms2ResourceArray {
 
     // Make sure the JSON file is a valid export.
     try {
-      const jsonContent: Spine = storage.readJson(jsonSourcePath);
+      const jsonContent: Spine = comms.storage.readJson(jsonSourcePath);
       assert(
         jsonContent.skeleton.spine,
         'The target JSON file is not from Spine.',
@@ -238,7 +243,7 @@ export class Gms2ResourceArray {
     // Make sure we have image and atlas files
     for (const ext of ['png', 'atlas']) {
       assert(
-        storage.exists(createSourcePath(ext)),
+        comms.storage.exists(createSourcePath(ext)),
         `Expected Spine file ${createSourcePath(ext)} does not exist.`,
       );
     }
@@ -254,7 +259,7 @@ export class Gms2ResourceArray {
     if (sprite && existingSpineFrameId) {
       // Copy the atlas and JSON files, renaming in the process
       for (const ext of ['atlas', 'json']) {
-        storage.copyFile(
+        comms.storage.copyFile(
           createSourcePath(ext),
           createDestPath(sprite, existingSpineFrameId, ext),
         );
@@ -278,7 +283,7 @@ export class Gms2ResourceArray {
     const frameId = uuidV4();
     sprite =
       sprite ||
-      Gms2Sprite.create(paths.dirname(defaultSpriteImagePath), storage, name);
+      Gms2Sprite.create(paths.dirname(defaultSpriteImagePath), comms, name);
     if (!spriteAlreadyExists) {
       this.push(sprite);
     }
@@ -287,8 +292,8 @@ export class Gms2ResourceArray {
       // Purge the old crap
       const layerFolderPath = paths.join(sprite.yyDirAbsolute, 'layers', fid);
       const compositeImagePath = paths.join(sprite.yyDirAbsolute, `${fid}.png`);
-      storage.emptyDir(layerFolderPath, true);
-      storage.deleteFile(compositeImagePath);
+      comms.storage.emptyDir(layerFolderPath, true);
+      comms.storage.deleteFile(compositeImagePath);
     }
     sprite.clearFrames();
     // Create a new layerId that doesn't point to anything
@@ -298,7 +303,7 @@ export class Gms2ResourceArray {
     sprite.save();
 
     for (const ext of ['atlas', 'json']) {
-      storage.copyFile(
+      comms.storage.copyFile(
         createSourcePath(ext),
         createDestPath(sprite, frameId, ext),
       );
@@ -309,10 +314,10 @@ export class Gms2ResourceArray {
     return this;
   }
 
-  addObject(name: string, storage: Gms2Storage) {
+  addObject(name: string, comms: Gms2ProjectComms) {
     let object = this.findByName(name, Gms2Object);
     if (!object) {
-      object = Gms2Object.create(name, storage);
+      object = Gms2Object.create(name, comms);
       this.push(object);
       info(`created object ${name}`);
     } else {
@@ -387,7 +392,7 @@ export class Gms2ResourceArray {
         `No constructor for resource ${resourceType} exists.`,
       );
     }
-    const resource = new subclass(data, storage) as Gms2ResourceSubclass;
+    const resource = new subclass(data, { storage }) as Gms2ResourceSubclass;
     return resource;
   }
 }
