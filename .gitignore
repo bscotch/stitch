@@ -1,6 +1,6 @@
 node_modules
 sample.json
-build
+/build
 sandbox
 sand\ box
 debug.log

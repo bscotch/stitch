@@ -31,4 +31,12 @@ module.exports = {
     'no-redeclare': 'off',
     '@typescript-eslint/no-redeclare': ['error'],
   },
+  overrides: [
+    {
+      files: ['*.js'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+  ],
 };
