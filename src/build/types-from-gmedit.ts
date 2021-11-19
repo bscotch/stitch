@@ -72,6 +72,7 @@ function addType(theType: string, sample?: string) {
       union.forEach((t) => addType(t, sample));
       return;
     }
+    theType = theType.replace(/=.*/g, '');
     if(theType.match(/\bT\d?\b/)){
       return;
     }
@@ -149,18 +150,32 @@ for (const patchFile of config.patchFiles) {
       const generics = (
         funcParts.generics ? funcParts.generics.split(/\s*,\s*/) : []
       ).map((g) => {
-        const [name, type] = g.split(':');
-        addType(type);
-        return { name, type };
+        let [name, type] = g.split(':');
+        name = name?.replace(/;/g,',');
+        addType(type?.trim());
+        return { name:name?.trim(), type:type?.trim() };
       });
 
-      const params = funcParts.params.split(',').map((p) => {
+      const params = funcParts.params.split(',').map((p,i) => {
         let [name, type] = p.split(/\s*:\s*/);
+        name = name.trim();
+        type = type?.trim().replace(/;/g,',');
         addType(type);
         if(name.startsWith('...')){
           type += '[]';
         }
-        return { name, type };
+        let optional;
+        if(name.startsWith('?')){
+          name = name.substring(1);
+          optional = true;
+        }
+        // Some params are provided only as their *generic* name,
+        // instead of as a name and type. Fix that to prevent downstream issues.
+        if(name.match(/^[KVT]/)){
+          type = name;
+          name = `arg${i}`
+        }
+        return { name, type, optional };
       }).filter((p) => p.name);
 
       // const func = (line.includes('->') ? line.replace("->",":") : `${line}:any`).trim();
@@ -169,7 +184,7 @@ for (const patchFile of config.patchFiles) {
         name: funcParts.name,
         generics: generics.length ? generics : undefined,
         params,
-        returnType: funcParts.returnType?.trim(),
+        returnType: funcParts.returnType?.trim().replace(/;/g,','),
       });
       continue;
     }
@@ -179,8 +194,6 @@ for (const patchFile of config.patchFiles) {
 }
 
 // TODO:
-// - Handle default and optional params
-// - Handle generics
 // - Capture all types and figure out how to declare them
 const outPath = path.join(exportDir, 'exported-types.json');
 console.log({ outPath });
