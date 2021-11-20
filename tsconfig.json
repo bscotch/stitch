@@ -26,5 +26,10 @@
       "types/*": ["./src/types/*"],
       "root/*": ["./src/*"]
     }
-  }
+  },
+  "references": [
+    {
+      "path": "./gml-types/"
+    }
+  ]
 }

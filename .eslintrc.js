@@ -19,6 +19,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'error',
     'comma-dangle': ['error', 'only-multiline'],
     'space-before-function-paren': 'off',
+    '@typescript-eslint/triple-slash-reference': 'off',
     'key-spacing': 'off',
     quotes: 'off',
     eqeqeq: 'off',

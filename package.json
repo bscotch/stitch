@@ -11,7 +11,7 @@
     "build/lib/**/*",
     "build/index.*",
     "build/types/**/*",
-    "assets/**/*"
+    "assets/sprite-default/**/*"
   ],
   "bin": {
     "stitch": "build/cli/stitch.js"
