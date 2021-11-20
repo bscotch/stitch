@@ -23,7 +23,7 @@ const gmeditDir = process.argv[2];
 const gmeditResourceDir = path.join(gmeditDir, 'resources', 'app', 'api');
 const gmeditConfigDir = path.join(gmeditResourceDir, 'v23');
 const gmeditConfigFile = path.join(gmeditConfigDir, 'config.json');
-const exportRawDir = 'assets';
+const exportRawDir = 'gml-types';
 // const exportTypesDir = 'src/build';
 
 assert(existsSync(gmeditDir), `GMEdit directory ${gmeditDir} does not exist`);
@@ -64,7 +64,7 @@ const globals = {
   functions: [] as Gms2Function[],
 };
 
-const alreadyMatchingTypesAndConstants = [
+const skipTokens = [
   'NaN',
   'any',
   'undefined',
@@ -78,6 +78,33 @@ const alreadyMatchingTypesAndConstants = [
   'instanceof',
   'typeof',
 ];
+
+/**
+ * GMEdit types that have a Typescript equivalent and can just take
+ * a rename.
+ */
+ const typeReplacements = {
+  bool: 'boolean',
+  object: 'obj',
+  array: 'Array',
+};
+
+
+function toUsableType(type: string | undefined) {
+  const funcTypeMatch = type?.match(/\bfunction\s*<([^>]+)>/);
+  if (funcTypeMatch) {
+    // just lists types without arg names, which doesn't work in typescript
+    const params = funcTypeMatch[1]
+      .split(',')
+      .map((t, i) => `arg${i}:${t}`)
+      .join(',');
+    type = type!.replace(funcTypeMatch[0], `((${params})=>any)`);
+  }
+  type = type?.replace(/\bobject\b/g, 'obj');
+  type = type?.replace(/\barray\b/g, 'Array');
+  // @ts-expect-error
+  return type ? typeReplacements[type] || type : 'any';
+}
 
 function addType(theType: string, sample?: string) {
   if (!theType) {
@@ -96,7 +123,7 @@ function addType(theType: string, sample?: string) {
     return;
   }
   theType = theType.replace(/[<>]/g, '');
-  if (alreadyMatchingTypesAndConstants.includes(theType)) {
+  if (skipTokens.includes(theType)) {
     return;
   }
   globals.types[theType] ||= [];
@@ -146,7 +173,7 @@ for (const patchFile of config.patchFiles) {
       if (alreadyFound) {
         continue;
       }
-      if (alreadyMatchingTypesAndConstants.includes(parts.name)) {
+      if (skipTokens.includes(parts.name)) {
         continue;
       }
       addType(parts.type, parts.name);
@@ -204,6 +231,7 @@ for (const patchFile of config.patchFiles) {
             name = `arg${i}`;
           }
           name = name == 'default' ? 'fallback' : name;
+          type = toUsableType(type);
           return { name: name.replace(/\*/g, ''), type, optional };
         })
         .filter((p) => p.name);
@@ -228,93 +256,46 @@ writeJSONSync(outPath, globals, { spaces: 2 });
 // Write to declaration file
 const declarationPath = path.join(exportRawDir, 'gml-types.d.ts');
 
-const typeReplacements = {
-  bool: 'boolean',
-  object: 'obj',
-  array: 'Array',
-};
 
+/**
+ * These will need to be populated by the assets found
+ * *in the project*.
+ *
+ * // TODO: These need to get dumped into a file to
+ * // be replaced by the actual project assets.
+ */
+const assetTypes = [
+  'font',
+  'obj',
+  'path',
+  'room',
+  'script',
+  'sequence',
+  'shader',
+  'sound',
+  'sprite',
+  'tileset',
+  'timeline',
+];
+
+/**
+ * Types to enable GML concepts that don't exist in Typescript to work, and to prevent other kinds of wonkiness.  */
 const shims = {
   struct: 'type struct = Record<string,any>',
   int: 'type int = number',
   ds_list: 'type ds_list<T> = {private _: T[]}',
   ds_map: 'type ds_map<K extends string,V> = {private _: Record<K,V>}',
-  'gml_constant_numeric': 'type gml_constant_numeric = Number<unknown>;'
 };
 
-// /**
-//  * YAL calls these "dumb types" and uses a type called
-//  * 'uncomparable'. The constants that have this type
-//  * can only be used in function arguments.
-//  */
-// const weirdTypes = [
-//   "timezone_type",
-//   "gamespeed_type",
-//   "path_endaction",
-//   "event_type",
-//   "event_number",
-//   "mouse_button",
-//   "bbox_mode",
-//   "bbox_kind",
-//   "horizontal_alignment",
-//   "vertical_alignment",
-//   "primitive_type",
-//   "blendmode",
-//   "blendmode_ext",
-//   "texture_mip_filter",
-//   "texture_mip_state",
-//   "audio_falloff_model",
-//   "audio_sound_channel",
-//   "display_orientation",
-//   "window_cursor",
-//   "buffer_kind",
-//   "buffer_type",
-//   "sprite_speed_type",
-//   "asset_type",
-//   "buffer_auto_type",
-//   "file_attribute",
-//   "particle_shape",
-//   "particle_distribution",
-//   "particle_region_shape",
-//   "effect_kind",
-//   "matrix_type",
-//   "os_type",
-//   "browser_type",
-//   "device_type",
-//   "openfeint_challenge",
-//   "achievement_leaderboard_filter",
-//   "achievement_challenge_type",
-//   "achievement_async_id",
-//   "achievement_show_type",
-//   "iap_system_status",
-//   "iap_order_status",
-//   "iap_async_id",
-//   "iap_async_storeload",
-//   "gamepad_button",
-//   "physics_debug_flag",
-//   "physics_joint_value",
-//   "physics_particle_flag",
-//   "physics_particle_data_flag",
-//   "physics_particle_group_flag",
-//   "network_type",
-//   "network_config",
-//   "network_async_id",
-//   "buffer_seek_base",
-//   "steam_overlay_page",
-//   "steam_leaderboard_sort_type",
-//   "steam_leaderboard_display_type",
-//   "steam_ugc_type",
-//   "steam_ugc_async_result",
-//   "steam_ugc_visibility",
-//   "steam_ugc_query_type",
-//   "steam_ugc_query_list_type",
-//   "steam_ugc_query_match_type",
-//   "steam_ugc_query_sort_order",
-//   "vertex_type",
-//   "vertex_usage",
-//   "layer_element_type",
-
-// ]
+const replacementConstants = {
+  mask_index: 'let mask_index: sprite',
+  cursor_sprite: 'let cursor_sprite: sprite',
+  sprite_index: 'let sprite_index: sprite',
+  timeline_index: 'let timeline_index: timeline',
+  room_first: 'let room_first: room',
+  room_last: 'let room_last: room',
+  path_index: 'let path_index: path',
+};
 
 /**
  * Some of the types that are made up of a bunch
@@ -332,33 +313,28 @@ const varTypes: string[] = [];
 
 const funcTypes: string[] = [];
 
-function toUsableType(type: string | undefined) {
-  const funcTypeMatch = type?.match(/\bfunction\s*<([^>]+)>/);
-  if (funcTypeMatch) {
-    // just lists types without arg names, which doesn't work in typescript
-    const params = funcTypeMatch[1]
-      .split(',')
-      .map((t, i) => `arg${i}:${t}`)
-      .join(',');
-    type = type!.replace(funcTypeMatch[0], `((${params})=>any)`);
-  }
-
-  // @ts-expect-error
-  return type ? typeReplacements[type] || type : 'any';
-}
 
 for (const typeName of Object.keys(globals.types)) {
-  // @ts-expect-error
-  if (typeReplacements[typeName] || shims[typeName]) {
+  if (
+    // @ts-expect-error
+    typeReplacements[typeName] ||
+    // @ts-expect-error
+    shims[typeName] ||
+    // @ts-expect-error
+    replacementConstants[typeName]
+  ) {
     continue;
   }
+  if (assetTypes.includes(typeName)) {
+    continue;
+  }
+
   // If it's a nested type, need to add all of the constants
   // first to reference as a union. If the typeName shows up
   // in its own list, then it should be declared as a const
   // instead of a type.
   const definedBy = globals.types[typeName].filter((t) => t != typeName);
   if (definedBy.length) {
-
     // const rootType = nestedTypes[typeName];
     const isConstant = globals.types[typeName].length > definedBy.length;
 
@@ -372,36 +348,32 @@ for (const typeName of Object.keys(globals.types)) {
       } ${definedBy.join('| ')};`,
     );
   } else {
-    baseTypes.push(`declare type ${typeName};`);
+    baseTypes.push(`declare type ${typeName} = unknown;`);
   }
 }
 
-// for (const variable of globals.variables) {
-//   if (alreadyMatchingTypesAndConstants.includes(variable.name)) {
-//     continue;
-//   }
-//   // @ts-expect-error
-//   if(variable.type && nestedTypes[variable.type]) {
-//     continue;
-//   }
-//   varTypes.push(
-//     `declare ${variable.isReadOnly ? 'const' : 'var'} ${
-//       variable.name
-//     }: ${toUsableType(variable.type)};`,
-//   );
-// }
+for (const variable of Object.keys(replacementConstants)) {
+  if (skipTokens.includes(variable)) {
+    continue;
+  }
+  varTypes.push(
+    // @ts-expect-error
+    `declare ${replacementConstants[variable]};`,
+  );
+}
 
 for (const func of globals.functions) {
-  if (alreadyMatchingTypesAndConstants.includes(func.name)) {
+  if (skipTokens.includes(func.name)) {
     continue;
   }
   let funcString = `function ${func.name}`;
   // Generics
   if (func.generics) {
     funcString += `<${func.generics
-      .map(
-        (g) => `${g.name}${g.type ? ` extends ${toUsableType(g.type)}` : ''}`,
-      )
+      .map((g) => {
+        const type = toUsableType(g.type);
+        return `${g.name}${type ? ` extends ${toUsableType(type)}` : ''}`;
+      })
       .join(', ')}>`;
   }
   // Params
@@ -416,6 +388,13 @@ for (const func of globals.functions) {
   funcTypes.push(`declare ${funcString};`);
 }
 
+// Write a temp file for project assets
+writeFileSync(
+  path.join(exportRawDir, 'gml-project-assets.d.ts'),
+  assetTypes.map((t) => `declare type ${t} = unknown;`).join('\n'),
+);
+
+// Write to declaration file
 writeFileSync(
   declarationPath,
   [
