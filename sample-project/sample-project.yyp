@@ -34,6 +34,7 @@
     {"name":"Windows","path":"options/windows/options_windows.yy",},
     {"name":"Windows UWP","path":"options/windowsuap/options_windowsuap.yy",},
     {"name":"Xbox One","path":"options/xboxone/options_xboxone.yy",},
+    {"name":"operagx","path":"options/operagx/options_operagx.yy",},
   ],
   "isDnDProject": false,
   "isEcma": false,
@@ -83,7 +84,7 @@
     {"CopyToMask":-1,"filePath":"datafiles/shared","resourceVersion":"1.0","name":"shared.txt","resourceType":"GMIncludedFile",},
   ],
   "MetaData": {
-    "IDEVersion": "23.1.1.244",
+    "IDEVersion": "23.1.1.424",
   },
   "resourceVersion": "1.4",
   "name": "sample-project",

@@ -1,5 +1,5 @@
 {
-  "option_switch_project_nmeta": "application.nmeta",
+  "option_switch_project_nmeta": "${options_dir}/switch/application.nmeta",
   "option_switch_enable_nex_libraries": false,
   "option_switch_interpolate_pixels": true,
   "option_switch_scale": 0,
