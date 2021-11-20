@@ -3,12 +3,12 @@
  * so storing all parsing functionality as an independent library is helpful.
  */
 
-import { assert, StitchError } from '@/errors';
+import { assert, StitchError } from '../errors.js';
 import XRegExp from 'xregexp';
-import { Gms2ResourceBase } from '../components/resources/Gms2ResourceBase';
-import { GmlToken } from './GmlToken';
-import { GmlTokenLocation } from './GmlTokenLocation';
-import { GmlTokenVersioned } from './GmlTokenVersioned';
+import { Gms2ResourceBase } from '../components/resources/Gms2ResourceBase.js';
+import { GmlToken } from './GmlToken.js';
+import { GmlTokenLocation } from './GmlTokenLocation.js';
+import { GmlTokenVersioned } from './GmlTokenVersioned.js';
 
 export interface GmlTokenReferenceOptions {
   versionSuffix?: string;

@@ -1,4 +1,4 @@
-import type { NumberFixed } from '@/NumberFixed.js';
+import type { NumberFixed } from '../lib/NumberFixed.js';
 import type { YyBase } from './Yy';
 
 export enum SoundChannel {

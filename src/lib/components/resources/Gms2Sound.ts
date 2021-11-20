@@ -5,15 +5,15 @@ import {
   SoundCompression,
   SoundCompressionAsString,
   SoundChannelAsString,
-} from 'types/YySound';
+} from '../../../types/YySound';
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase';
-import paths from '@/paths';
-import { assert } from '@/errors';
-import { NumberFixed } from '@/NumberFixed.js';
-import type { Gms2ProjectComms } from '@/Gms2Project.js';
+import paths from '../../paths';
+import { assert } from '../../errors';
+import { NumberFixed } from '../../NumberFixed.js';
+import type { Gms2ProjectComms } from '../../Gms2Project.js';
 
 /** Sounds require some numbers to end with one decimal if 0 || 1, else 2 decimals */
 const toDefinedDecimalNumber = (number: number | undefined) => {

@@ -4,7 +4,7 @@
  * target files change.
  */
 
-import { debug, error, info, warning } from '@/log';
+import { debug, error, info, warning } from '../lib/log';
 import { Nullish } from '@bscotch/utility';
 import { debounceWatch, DebounceWatchOptions } from '@bscotch/debounce-watch';
 

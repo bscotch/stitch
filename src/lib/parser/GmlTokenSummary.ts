@@ -1,4 +1,4 @@
-import type { Gms2Project } from '@/Gms2Project';
+import type { Gms2Project } from '../Gms2Project';
 import { GmlTokenReferenceOptions } from './codeParser';
 import type { GmlToken } from './GmlToken';
 import { GmlTokenVersioned } from './GmlTokenVersioned';

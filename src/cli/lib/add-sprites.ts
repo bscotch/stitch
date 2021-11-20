@@ -1,4 +1,4 @@
-import { Gms2Project, SpriteImportOptions } from '@/Gms2Project';
+import { Gms2Project, SpriteImportOptions } from '../../lib/Gms2Project';
 import { ImportBaseOptions, normalizeOptions } from './add-base-options';
 
 export default function (options: ImportBaseOptions & SpriteImportOptions) {

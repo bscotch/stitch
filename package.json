@@ -18,8 +18,8 @@
   },
   "scripts": {
     "test": "npm run build && mocha -r source-map-support/register --bail -S ./build/test/",
-    "build": "rm -rf build && tsc && tsc-alias",
-    "watch": "tsc -w && tsc-alias -w",
+    "build": "rm -rf build && tsc -b",
+    "watch": "tsc -b -w",
     "prepublishOnly": "npm run can-publish",
     "preversion": "npm run can-publish",
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && prettier src -w && git add -A",
@@ -81,7 +81,6 @@
     "eslint": "^7.32.0",
     "mocha": "^9.1.1",
     "prettier": "^2.4.1",
-    "tsc-alias": "^1.4.1",
     "typescript": "^4.5.2"
   }
 }

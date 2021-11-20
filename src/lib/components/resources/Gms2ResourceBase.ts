@@ -1,11 +1,11 @@
-import { YyBase } from 'types/Yy.js';
+import { YyBase } from '../../../types/Yy.js';
 import { YypResource } from 'types/Yyp.js';
-import { assert, StitchError } from '@/errors.js';
-import path from '@/paths.js';
+import { assert, StitchError } from '../../errors.js';
+import path from '../../paths.js';
 import { transformValueByPath } from '@bscotch/utility';
-import type { Gms2Storage } from '@/Gms2Storage.js';
+import type { Gms2Storage } from '../../Gms2Storage.js';
 import type { Gms2ResourceType } from '../Gms2ResourceArray.js';
-import type { Gms2ProjectComms } from '@/Gms2Project.js';
+import type { Gms2ProjectComms } from '../../Gms2Project.js';
 
 export type Gms2ResourceBaseParameters = [
   data: YypResource | string,

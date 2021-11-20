@@ -1,4 +1,4 @@
-import type { GmlToken } from '@/parser/GmlToken';
+import type { GmlToken } from '../lib/parser/GmlToken';
 
 /**
  * Report from the linter functionality. If a field is **missing**

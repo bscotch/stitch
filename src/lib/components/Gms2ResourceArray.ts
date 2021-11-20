@@ -22,7 +22,7 @@ import { Gms2Timeline } from './resources/Gms2Timeline';
 import { Spine } from '../../types/Spine';
 import { uuidV4 } from '../uuid';
 import { SpriteType } from '../../types/YySprite';
-import { Gms2ProjectComms } from '@/Gms2Project.js';
+import { Gms2ProjectComms } from '../Gms2Project.js';
 
 export class Gms2ResourceArray {
   private items: Gms2ResourceSubclass[];
@@ -372,6 +372,13 @@ export class Gms2ResourceArray {
       timelines: Gms2Timeline,
     } as const;
     return classMap;
+  }
+
+  /**
+   * Get a new array listing the names of all resource types.
+   */
+  static get resourceTypeNames() {
+    return Object.keys(this.resourceClassMap) as Gms2ResourceType[];
   }
 
   /**

@@ -1,4 +1,4 @@
-import { Gms2AsTypescript } from '@/Gms2AsTypescript.js';
+import { Gms2AsTypescript } from '../lib/Gms2AsTypescript.js';
 import { expect } from 'chai';
 import { sandboxRoot, resetSandbox } from './lib/util';
 

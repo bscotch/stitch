@@ -1,12 +1,15 @@
-import { findOuterFunctions, findTokenReferences } from '@/parser/codeParser';
-import { GmlToken } from '@/parser/GmlToken';
+import {
+  findOuterFunctions,
+  findTokenReferences,
+} from '../../parser/codeParser';
+import { GmlToken } from '../../parser/GmlToken';
 import type { YyScript } from 'types/Yy';
-import paths from '@/paths';
+import paths from '../../paths';
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase';
-import type { Gms2ProjectComms } from '@/Gms2Project.js';
+import type { Gms2ProjectComms } from '../../Gms2Project.js';
 
 export class Gms2Script extends Gms2ResourceBase {
   protected yyData!: YyScript; // Happens in the super() constructor

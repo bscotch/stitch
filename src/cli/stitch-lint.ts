@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Gms2Project } from '@/Gms2Project';
+import { Gms2Project } from '../lib/Gms2Project';
 import { program as cli } from 'commander';
 import cliOptions from './lib/cli-options';
 

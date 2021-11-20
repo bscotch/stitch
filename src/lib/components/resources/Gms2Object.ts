@@ -1,7 +1,7 @@
-import type { Gms2ProjectComms } from '@/Gms2Project.js';
-import { findTokenReferences } from '@/parser/codeParser';
-import { GmlToken } from '@/parser/GmlToken';
-import { GmlTokenVersioned } from '@/parser/GmlTokenVersioned';
+import type { Gms2ProjectComms } from '../../Gms2Project.js';
+import { findTokenReferences } from '../../parser/codeParser';
+import { GmlToken } from '../../parser/GmlToken';
+import { GmlTokenVersioned } from '../../parser/GmlTokenVersioned';
 import { Defined, listFilesByExtensionSync } from '@bscotch/utility';
 import { YyObject, yyDataDefaults } from '../../../types/YyObject';
 import {

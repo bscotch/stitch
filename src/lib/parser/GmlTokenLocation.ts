@@ -1,6 +1,6 @@
-import { assert } from '@/errors';
+import { assert } from '../errors';
 import type { Gms2ResourceBase } from '../components/resources/Gms2ResourceBase';
-import path from '@/paths';
+import path from '../paths';
 
 export class GmlTokenLocation<
   Resource extends Gms2ResourceBase = Gms2ResourceBase,

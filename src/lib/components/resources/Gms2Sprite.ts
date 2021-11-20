@@ -7,18 +7,18 @@ import {
   yyDataSequenceDefaults,
   yyDataSequenceTrackDefaults,
 } from 'types/YySprite';
-import paths from '@/paths';
+import paths from '../../paths';
 import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase';
 import { Spritely } from '@bscotch/spritely';
-import { uuidV4 } from '@/uuid';
-import { NumberFixed } from '@/NumberFixed';
-import { assert, assertIsNumber } from '@/errors';
-import { debug } from '@/log';
+import { uuidV4 } from '../../uuid';
+import { NumberFixed } from '../../NumberFixed';
+import { assert, assertIsNumber } from '../../errors';
+import { debug } from '../../log';
 import pick from 'lodash/pick';
-import type { Gms2ProjectComms } from '@/Gms2Project.js';
+import type { Gms2ProjectComms } from '../../Gms2Project.js';
 
 const toSingleDecimalNumber = (number: number | undefined) => {
   return new NumberFixed(number || 0, 1);

@@ -1,6 +1,6 @@
-import paths from '@/paths';
-import fs from '@/files';
-import { Gms2Project } from '@/Gms2Project';
+import paths from '../../lib/paths';
+import fs from '../../lib/files';
+import { Gms2Project } from '../../lib/Gms2Project';
 
 /*
 Tests require manipulating gamemaker project files.
