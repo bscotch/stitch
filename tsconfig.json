@@ -1,15 +1,18 @@
 {
   "include": [],
   "exclude": ["node_modules"],
+  "typeAcquisition": { "enable": false },
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "typeRoots": [],
+    "types": []
   },
   "references": [
     {
       "path": "./src/"
     },
     {
-      "path": "./gml-types/"
+      "path": "./gml/"
     }
   ]
 }

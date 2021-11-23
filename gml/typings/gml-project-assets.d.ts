@@ -1,0 +1,11 @@
+declare type font = unknown;
+declare type obj = unknown;
+declare type path = unknown;
+declare type room = unknown;
+declare type script = unknown;
+declare type sequence = unknown;
+declare type shader = unknown;
+declare type sound = unknown;
+declare type sprite = unknown;
+declare type tileset = unknown;
+declare type timeline = unknown;
