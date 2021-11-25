@@ -11,3 +11,4 @@ node.error.log
 package-lock.json
 docs/html
 helpdocs_keywords.json
+tsconfig.tsbuildinfo
