@@ -5,6 +5,8 @@
  * **⚠ This is experimental! **
  */
 
+import { listFilesByExtensionSync } from '@bscotch/utility';
+import path from 'path';
 import Gms2Project, { Gms2ResourceChangeListener } from '../index.js';
 import type { Gms2ResourceSubclass } from './components/Gms2ResourceArray.js';
 import { StitchError } from './errors.js';
@@ -58,11 +60,38 @@ export class Gms2AsTypescript {
 
   constructor(options?: Gms2AsTypescriptOptions) {
     const listener = this.on.bind(this);
+    // Loading is SYNCHRONOUS
     this.project = new Gms2Project({
       ...options,
       listener,
     });
     this.loaded = true;
+
+    // For now can just iterate through and try to rewrite everything...
+    this.copyRawTypeFiles();
+
+    // TODO: TEST-TRANSFORM -- see if magic-stringing will do anything for us *at all*
+    // TODO: Convert each Sprite to an instance of a shim class, write to file (same file name as original with .ts extension)
+    // TODO: Prepare for magic-stringing with a VERY FEW basics:
+    //  - Convert "globalvar" declarations to plain declarations
+    //  - Convert #region to //#region etc
+    //  - Convert macros to global variables (will need to get much fancier later)
+    //  - Convert struct contructors to classes
+    // TODO: For Objects we need the *actual code*. The OG code is broken over files, but ideally we can shove them all into one in the magically-changed file.
+    // TODO: Convert each script to a .ts file.
+  }
+
+  get typesDir() {
+    return path.join(this.project.storage.yypDirAbsolute, 'types', 'gml');
+  }
+
+  private copyRawTypeFiles() {
+    this.project.storage.ensureDir(this.typesDir);
+    this.getGmlTypesFilePaths().forEach((filePath) => {
+      const targetPath = path.join(this.typesDir, path.basename(filePath));
+      console.log({ filePath, targetPath });
+      this.project.storage.copyFile(filePath, targetPath);
+    });
   }
 
   /**
@@ -83,7 +112,18 @@ export class Gms2AsTypescript {
 
   onCreated(resource: Gms2ResourceSubclass) {
     console.log(`Created ${resource.type}: ${resource.name}`);
+
+    // Store it!
+
     // Most resources need to have their names loaded into the global scope
     // so that they can be referenced by other resources.
+  }
+
+  getGmlTypesFilePaths(): string[] {
+    return listFilesByExtensionSync(
+      path.join(__dirname, '..', '..', 'gml'),
+      'ts',
+      true,
+    );
   }
 }

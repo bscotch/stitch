@@ -3,7 +3,7 @@ import {
   findTokenReferences,
 } from '../../parser/codeParser';
 import { GmlToken } from '../../parser/GmlToken';
-import type { YyScript } from 'types/Yy';
+import type { YyScript } from '../../../types/Yy';
 import paths from '../../paths';
 import {
   Gms2ResourceBase,

@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { LinterReport } from 'types/Linter';
+import { LinterReport } from '../types/Linter';
 import type { Gms2Project } from './Gms2Project';
 import { GmlToken } from './parser/GmlToken';
 import paths from './paths';

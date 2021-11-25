@@ -6,7 +6,7 @@ import {
   SpriteBoundingBoxMode,
   yyDataSequenceDefaults,
   yyDataSequenceTrackDefaults,
-} from 'types/YySprite';
+} from '../../../types/YySprite';
 import paths from '../../paths';
 import {
   Gms2ResourceBase,

@@ -5,7 +5,7 @@ declare type int = number;
 declare type ds_list<T> = { _: T[] };
 declare type ds_map<K extends string, V> = { _: Record<K, V> };
 
-declare class GmlObjectInstance {
+declare class GmlObject {
   /** This read-only variable holds the unique identifying number for the instance. Every instance that you create is given a number that is used internally to identify this instance and this variable is what you can use to reference it. The id is also returned (and can be stored in a variable) when an instance is created using instance_create_layer.
    */
   public readonly id: number;
@@ -65,7 +65,7 @@ declare class GmlObjectInstance {
   public readonly bbox_top: number;
   public readonly bbox_bottom: number;
 
-  public readonly alarm: ((this: GmlObjectInstance) => void)[];
+  public readonly alarm: ((this: instance) => void)[];
   public timeline_index: timeline;
   public timeline_position: number;
   public timeline_speed: number;
@@ -102,7 +102,8 @@ declare class GmlObjectInstance {
   public readonly phy_position_yprevious: number;
 }
 
-declare type objects = typeof GmlObjectInstance;
+declare type objects = typeof GmlObject;
+declare type instance = GmlObject;
 
 ////#endregion
 
@@ -917,7 +918,7 @@ declare function weak_ref_any_alive(
   length?: int,
 ): bool;
 declare function method<T extends function>(
-  context: GmlObjectInstance | struct | undefined,
+  context: instance | struct | undefined,
   func: T,
 ): T;
 declare function method_get_index(method: any): any;
@@ -1107,12 +1108,10 @@ declare function gc_target_frame_time(time: int): void;
 declare function gc_get_target_frame_time(): int;
 declare function is_nan(val: any): bool;
 declare function is_infinity(val: any): bool;
-declare function variable_instance_get_names<T extends GmlObjectInstance>(
+declare function variable_instance_get_names<T extends instance>(
   id: T,
 ): string[];
-declare function variable_instance_names_count<T extends GmlObjectInstance>(
-  id: T,
-): int;
+declare function variable_instance_names_count<T extends instance>(id: T): int;
 declare function string_hash_to_newline(str: string): string;
 declare function game_set_speed(value: number, type: gamespeed_type): void;
 declare function game_get_speed(type: gamespeed_type): number;
@@ -1981,15 +1980,15 @@ declare function is_bool(val: any): bool;
 declare function variable_global_exists(name: string): bool;
 declare function variable_global_get(name: string): any;
 declare function variable_global_set(name: string, val: any): void;
-declare function variable_instance_exists<T extends GmlObjectInstance>(
+declare function variable_instance_exists<T extends instance>(
   id: T,
   name: string,
 ): bool;
-declare function variable_instance_get<T extends GmlObjectInstance>(
+declare function variable_instance_get<T extends instance>(
   id: T,
   name: string,
 ): any;
-declare function variable_instance_set<T extends GmlObjectInstance>(
+declare function variable_instance_set<T extends instance>(
   id: T,
   name: string,
   val: any,
@@ -2222,12 +2221,12 @@ declare function date_get_timezone(): timezone_type;
 declare function motion_set(dir: number, speed: number): void;
 declare function motion_add(dir: number, speed: number): void;
 declare function place_free(x: number, y: number): bool;
-declare function place_empty<T extends objects | GmlObjectInstance>(
+declare function place_empty<T extends objects | instance>(
   x: number,
   y: number,
   obj: T,
 ): bool;
-declare function place_meeting<T extends objects | GmlObjectInstance>(
+declare function place_meeting<T extends objects | instance>(
   x: number,
   y: number,
   obj: T,
@@ -2244,11 +2243,11 @@ declare function move_bounce_solid(advanced: boolean): void;
 declare function move_bounce_all(advanced: boolean): void;
 declare function move_wrap(hor: number, vert: number, margin: number): void;
 declare function distance_to_point(x: number, y: number): number;
-declare function distance_to_object<T extends objects | GmlObjectInstance>(
+declare function distance_to_object<T extends objects | instance>(
   obj: T,
 ): number;
 declare function position_empty(x: number, y: number): bool;
-declare function position_meeting<T extends objects | GmlObjectInstance>(
+declare function position_meeting<T extends objects | instance>(
   x: number,
   y: number,
   obj: T,
@@ -2272,15 +2271,18 @@ declare function mp_potential_step(
   speed: number,
   checkall: boolean,
 ): bool;
-declare function mp_linear_step_object<T extends objects | GmlObjectInstance>(
+declare function mp_linear_step_object<T extends objects | instance>(
   x: number,
   y: number,
   speed: number,
   obj: T,
 ): bool;
-declare function mp_potential_step_object<
-  T extends objects | GmlObjectInstance,
->(x: number, y: number, speed: number, obj: T): bool;
+declare function mp_potential_step_object<T extends objects | instance>(
+  x: number,
+  y: number,
+  speed: number,
+  obj: T,
+): bool;
 declare function mp_potential_settings(
   maxrot: number,
   rotstep: number,
@@ -2302,16 +2304,14 @@ declare function mp_potential_path(
   factor: int,
   checkall: boolean,
 ): bool;
-declare function mp_linear_path_object<T extends objects | GmlObjectInstance>(
+declare function mp_linear_path_object<T extends objects | instance>(
   path: paths,
   xg: number,
   yg: number,
   stepsize: number,
   obj: T,
 ): bool;
-declare function mp_potential_path_object<
-  T extends objects | GmlObjectInstance,
->(
+declare function mp_potential_path_object<T extends objects | instance>(
   path: paths,
   xg: number,
   yg: number,
@@ -2346,7 +2346,7 @@ declare function mp_grid_add_rectangle(
   right: int,
   bottom: int,
 ): void;
-declare function mp_grid_add_instances<T extends objects | GmlObjectInstance>(
+declare function mp_grid_add_instances<T extends objects | instance>(
   id: mp_grid,
   obj: T,
   prec: boolean,
@@ -2362,14 +2362,14 @@ declare function mp_grid_path(
 ): bool;
 declare function mp_grid_draw(id: mp_grid): void;
 declare function mp_grid_to_ds_grid(src: mp_grid, dest: ds_grid<number>): bool;
-declare function collision_point<T extends objects | GmlObjectInstance>(
+declare function collision_point<T extends objects | instance>(
   x: number,
   y: number,
   obj: T,
   prec: boolean,
   notme: boolean,
 ): T;
-declare function collision_rectangle<T extends objects | GmlObjectInstance>(
+declare function collision_rectangle<T extends objects | instance>(
   x1: number,
   y1: number,
   x2: number,
@@ -2378,7 +2378,7 @@ declare function collision_rectangle<T extends objects | GmlObjectInstance>(
   prec: boolean,
   notme: boolean,
 ): T;
-declare function collision_circle<T extends objects | GmlObjectInstance>(
+declare function collision_circle<T extends objects | instance>(
   x1: number,
   y1: number,
   radius: number,
@@ -2386,7 +2386,7 @@ declare function collision_circle<T extends objects | GmlObjectInstance>(
   prec: boolean,
   notme: boolean,
 ): T;
-declare function collision_ellipse<T extends objects | GmlObjectInstance>(
+declare function collision_ellipse<T extends objects | instance>(
   x1: number,
   y1: number,
   x2: number,
@@ -2395,7 +2395,7 @@ declare function collision_ellipse<T extends objects | GmlObjectInstance>(
   prec: boolean,
   notme: boolean,
 ): T;
-declare function collision_line<T extends objects | GmlObjectInstance>(
+declare function collision_line<T extends objects | instance>(
   x1: number,
   y1: number,
   x2: number,
@@ -2460,27 +2460,25 @@ declare function rectangle_in_circle(
   cy: number,
   rad: number,
 ): bool;
-declare function instance_find<T extends objects>(obj: T, n: int): T;
-declare function instance_exists<T extends objects | GmlObjectInstance>(
-  obj: T,
-): bool;
+declare function instance_find<T extends objects>(obj: T, n: int): int;
+declare function instance_exists<T extends objects | instance>(obj: T): bool;
 declare function instance_number<T extends objects>(obj: T): bool;
-declare function instance_position<T extends objects | GmlObjectInstance>(
+declare function instance_position<T extends objects | instance>(
   x: number,
   y: number,
   obj: T,
 ): T;
-declare function instance_nearest<T extends objects | GmlObjectInstance>(
+declare function instance_nearest<T extends objects | instance>(
   x: number,
   y: number,
   obj: T,
 ): T;
-declare function instance_furthest<T extends objects | GmlObjectInstance>(
+declare function instance_furthest<T extends objects | instance>(
   x: number,
   y: number,
   obj: T,
 ): T;
-declare function instance_place<T extends objects | GmlObjectInstance>(
+declare function instance_place<T extends objects | instance>(
   x: number,
   y: number,
   obj: T,
@@ -2498,11 +2496,11 @@ declare function instance_create_layer<T extends objects>(
   obj: T,
 ): T;
 declare function instance_copy(performevent: any): any;
-declare function instance_change<T extends objects | GmlObjectInstance>(
+declare function instance_change<T extends objects | instance>(
   obj: T,
   performevents: boolean,
 ): void;
-declare function instance_destroy<T extends objects | GmlObjectInstance>(
+declare function instance_destroy<T extends objects | instance>(
   id?: T,
   execute_event_flag?: boolean,
 ): void;
@@ -2515,9 +2513,9 @@ declare function position_change<T extends objects>(
 ): void;
 declare function instance_id_get(index: int): any;
 declare function instance_deactivate_all(notme: boolean): void;
-declare function instance_deactivate_object<
-  T extends objects | GmlObjectInstance,
->(obj: T): void;
+declare function instance_deactivate_object<T extends objects | instance>(
+  obj: T,
+): void;
 declare function instance_deactivate_region(
   left: number,
   top: number,
@@ -2527,9 +2525,9 @@ declare function instance_deactivate_region(
   notme: boolean,
 ): void;
 declare function instance_activate_all(): void;
-declare function instance_activate_object<
-  T extends objects | GmlObjectInstance,
->(obj: T): void;
+declare function instance_activate_object<T extends objects | instance>(
+  obj: T,
+): void;
 declare function instance_activate_region(
   left: number,
   top: number,
@@ -4982,13 +4980,16 @@ declare function physics_fixture_add_point(
   local_x: number,
   local_y: number,
 ): void;
-declare function physics_fixture_bind<T extends GmlObjectInstance | objects>(
+declare function physics_fixture_bind<T extends instance | objects>(
   fixture: physics_fixture,
   obj: T,
 ): physics_fixture;
-declare function physics_fixture_bind_ext<
-  T extends GmlObjectInstance | objects,
->(fixture: physics_fixture, obj: T, xo: number, yo: number): physics_fixture;
+declare function physics_fixture_bind_ext<T extends instance | objects>(
+  fixture: physics_fixture,
+  obj: T,
+  xo: number,
+  yo: number,
+): physics_fixture;
 declare function physics_fixture_delete(fixture: physics_fixture): void;
 declare function physics_apply_force(
   xpos: number,
@@ -5023,7 +5024,7 @@ declare function physics_mass_properties(
   inertia: number,
 ): void;
 declare function physics_draw_debug(): void;
-declare function physics_test_overlap<T extends GmlObjectInstance | objects>(
+declare function physics_test_overlap<T extends instance | objects>(
   x: number,
   y: number,
   angle: number,
@@ -5049,8 +5050,8 @@ declare function physics_get_friction(fixture: physics_fixture): number;
 declare function physics_get_density(fixture: physics_fixture): number;
 declare function physics_get_restitution(fixture: physics_fixture): number;
 declare function physics_joint_distance_create<
-  T0 extends GmlObjectInstance,
-  T1 extends GmlObjectInstance,
+  T0 extends instance,
+  T1 extends instance,
 >(
   inst1: T0,
   inst2: T1,
@@ -5061,8 +5062,8 @@ declare function physics_joint_distance_create<
   collideInstances: boolean,
 ): physics_joint;
 declare function physics_joint_rope_create<
-  T0 extends GmlObjectInstance,
-  T1 extends GmlObjectInstance,
+  T0 extends instance,
+  T1 extends instance,
 >(
   inst1: T0,
   inst2: T1,
@@ -5074,8 +5075,8 @@ declare function physics_joint_rope_create<
   collideInstances: boolean,
 ): physics_joint;
 declare function physics_joint_revolute_create<
-  T0 extends GmlObjectInstance,
-  T1 extends GmlObjectInstance,
+  T0 extends instance,
+  T1 extends instance,
 >(
   inst1: T0,
   inst2: T1,
@@ -5090,8 +5091,8 @@ declare function physics_joint_revolute_create<
   collideInstances: boolean,
 ): physics_joint;
 declare function physics_joint_prismatic_create<
-  T0 extends GmlObjectInstance,
-  T1 extends GmlObjectInstance,
+  T0 extends instance,
+  T1 extends instance,
 >(
   inst1: T0,
   inst2: T1,
@@ -5108,8 +5109,8 @@ declare function physics_joint_prismatic_create<
   collideInstances: boolean,
 ): physics_joint;
 declare function physics_joint_pulley_create<
-  T0 extends GmlObjectInstance,
-  T1 extends GmlObjectInstance,
+  T0 extends instance,
+  T1 extends instance,
 >(
   inst1: T0,
   inst2: T1,
@@ -5125,8 +5126,8 @@ declare function physics_joint_pulley_create<
   collideInstances: boolean,
 ): physics_joint;
 declare function physics_joint_wheel_create<
-  T0 extends GmlObjectInstance,
-  T1 extends GmlObjectInstance,
+  T0 extends instance,
+  T1 extends instance,
 >(
   inst1: T0,
   inst2: T1,
@@ -5142,8 +5143,8 @@ declare function physics_joint_wheel_create<
   collideInstances: boolean,
 ): physics_joint;
 declare function physics_joint_weld_create<
-  T0 extends GmlObjectInstance,
-  T1 extends GmlObjectInstance,
+  T0 extends instance,
+  T1 extends instance,
 >(
   inst1: T0,
   inst2: T1,
@@ -5155,8 +5156,8 @@ declare function physics_joint_weld_create<
   collideInstances: boolean,
 ): physics_joint;
 declare function physics_joint_friction_create<
-  T0 extends GmlObjectInstance,
-  T1 extends GmlObjectInstance,
+  T0 extends instance,
+  T1 extends instance,
 >(
   inst1: T0,
   inst2: T1,
@@ -5167,8 +5168,8 @@ declare function physics_joint_friction_create<
   collideInstances: boolean,
 ): physics_joint;
 declare function physics_joint_gear_create<
-  T0 extends GmlObjectInstance,
-  T1 extends GmlObjectInstance,
+  T0 extends instance,
+  T1 extends instance,
 >(
   inst1: T0,
   inst2: T1,

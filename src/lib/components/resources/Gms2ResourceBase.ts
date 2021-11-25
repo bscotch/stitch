@@ -1,5 +1,5 @@
 import { YyBase } from '../../../types/Yy.js';
-import { YypResource } from 'types/Yyp.js';
+import { YypResource } from '../../../types/Yyp.js';
 import { assert, StitchError } from '../../errors.js';
 import path from '../../paths.js';
 import { transformValueByPath } from '@bscotch/utility';
