@@ -9,7 +9,7 @@ function getResetProjectAsTypescript() {
   });
 }
 
-describe.only('Typscript Transpiler', () => {
+xdescribe('Typescript Transpiler', () => {
   it('can load', () => {
     const mirror = getResetProjectAsTypescript();
   });
