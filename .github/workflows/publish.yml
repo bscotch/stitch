@@ -27,6 +27,7 @@ jobs:
       - name: Load source
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           lfs: true
       - name: Get files from LFS
         run: git lfs checkout
