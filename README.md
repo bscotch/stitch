@@ -1,3 +1,10 @@
+## 📢 Public Announcement
+
+**TL;DR:** This repo is deprecated. New versions of Stitch will still be available [via npm](https://www.npmjs.com/package/@bscotch/stitch).
+
+The longer story is that we are switching to a monorepo setup at Bscotch, and that's where we'll continue to work on Stitch. Because some of our code has to remain private that entire monorepo has to be kept private, and so Stitch's source code will no longer be available via GitHub. You will still be able to view and extend the code downloaded from npm, however.
+
+We'd like to make Stitch's source publicly available again, someday, we just have to figure out how to make that work when we're starting from a private monorepo!
 
 <p align="center"><i><a href="https://www.bscotch.net">Butterscotch Shenanigans</a> Presents:</i></p>
 
@@ -19,7 +26,6 @@
 + 🐛 Identify code issues through static code analysis
 
 Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
-
 
 **⚠WARNING⚠ Use at your own risk.** Stitch could completely break your GameMaker project. To help keep you safe, Stitch will not run unless your project is in a git repo with a clean working directory, but you must also know how to use git to recover in case something goes wrong.
 
