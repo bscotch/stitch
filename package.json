@@ -1,5 +1,6 @@
 {
   "name": "@local/stitch-monorepo",
+  "license": "SEE LICENSE IN LICENSE.md",
   "private": true,
   "version": "0.0.0",
   "type": "module",
