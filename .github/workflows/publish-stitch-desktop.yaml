@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   publish:
     runs-on: windows-latest
@@ -21,7 +25,7 @@ jobs:
           node-version: 18
       - run: corepack enable
       - run: pnpm install --filter=stitch-desktop...
-      - run: ls packages/yy/node_modules/
+      - run: pwd
 
       # BUILD
       - name: Build
