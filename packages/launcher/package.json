@@ -16,6 +16,7 @@
     "downloader",
     "download"
   ],
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/launcher#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/bscotch/stitch.git",

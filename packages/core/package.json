@@ -17,6 +17,7 @@
     "import",
     "pipeline"
   ],
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/core#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/bscotch/stitch.git",

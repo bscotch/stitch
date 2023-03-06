@@ -7,6 +7,7 @@
     "url": "https://github.com/bscotch/stitch.git",
     "directory": "packages/yy"
   },
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/yy#readme",
   "keywords": [
     "yy",
     "yyp",

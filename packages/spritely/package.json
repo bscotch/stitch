@@ -2,6 +2,7 @@
   "name": "@bscotch/spritely",
   "version": "3.3.3",
   "description": "Spritely: Image correction and cleanup for 2D video game sprites",
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/spritely#readme",
   "keywords": [
     "sprite",
     "texture page",
