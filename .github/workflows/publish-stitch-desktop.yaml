@@ -2,8 +2,6 @@ name: Publish Stitch Desktop
 
 on:
   push:
-    branches:
-      - "develop"
     tags:
       - "stitch-desktop@*"
 
@@ -32,7 +30,7 @@ jobs:
         run: pnpm turbo run build --only --filter=stitch-desktop...
       - name: Set release version
         # This script adds the env var `RELEASE_VERSION`
-        run: node scripts/set-release-version.mjs
+        run: node scripts/set-release-version.mjs packages/desktop
 
       # PUBLISH
       - name: Create New Release
