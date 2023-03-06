@@ -24,7 +24,7 @@ jobs:
           cache: pnpm
           node-version: 18
       - run: corepack enable
-      - run: pnpm install
+      - run: pnpm install --filter=@bscotch/gamemaker-releases...
 
       - name: Cache Notes
         id: cache-notes
