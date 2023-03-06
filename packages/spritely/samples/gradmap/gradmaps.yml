@@ -1,0 +1,30 @@
+skins:
+  flux:
+    # Here's a comment!
+    0: 100D5D
+    7: 100D5D
+    34: 6E38A1
+    41: 9949B2
+    47: B150BF
+    64: DD5DD7
+    65: 5F1D15
+    72: CF651E
+    86: E9BB24
+    94: F4DC25
+    100: FFFFFF
+
+  copperhead:
+    0: 100D5D
+    7: 100D5D
+    34: 2E67A2
+    41: 3E97AD
+    47: 3CADB1
+    64: 69D8D8
+    65: 5F1D15
+    66: 761C5E
+    68: A11746
+    70: C01434
+    76: D76A39
+    84: D96F3C
+    96: F1C85C
+    100: FFFFFF

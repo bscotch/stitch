@@ -1,0 +1,62 @@
+{
+  "name": "@bscotch/spritely",
+  "version": "3.3.2",
+  "description": "Spritely: Image correction and cleanup for 2D video game sprites",
+  "keywords": [
+    "sprite",
+    "texture page",
+    "sprite sheet",
+    "image",
+    "2D",
+    "game engine",
+    "art",
+    "art asset",
+    "pipeline",
+    "gamemaker"
+  ],
+  "license": "MIT",
+  "author": "Adam Coster (https://www.bscotch.net/about)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.js"
+    }
+  },
+  "main": "./build/index.js",
+  "bin": "./spritely.mjs",
+  "scripts": {
+    "build": "tsc-x --build",
+    "clean": "rimraf build dist *.tsbuildinfo **/*.tsbuildinfo",
+    "test": "mocha --config ../../config/.mocharc.cjs",
+    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
+    "watch": "tsc-x --build --watch"
+  },
+  "dependencies": {
+    "@bscotch/debounce-watch": "workspace:*",
+    "@bscotch/pathy": "workspace:*",
+    "@bscotch/utility": "workspace:*",
+    "commander": "10.0.0",
+    "fs-extra": "11.1.0",
+    "image-js": "0.35.2",
+    "image-size": "1.0.2",
+    "tslib": "^2.4.1",
+    "yaml": "2.2.1"
+  },
+  "devDependencies": {
+    "@local/helpers": "workspace:*",
+    "@types/chai": "^4.3.4",
+    "@types/fs-extra": "^11.0.1",
+    "@types/mocha": "^10.0.1",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "rimraf": "^4.1.0",
+    "typescript": "4.9.4"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
