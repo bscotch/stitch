@@ -1,0 +1,11 @@
+{
+  "include": ["src/**/*.ts"],
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "mocha", "chai"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": "src",
+    "moduleResolution": "nodenext"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@bscotch/gml-parser",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "mocha --config ../../config/.mocharc.cjs",
+    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
+    "watch": "tsc --build --watch"
+  },
+  "devDependencies": {
+    "@bscotch/utility": "6.8.0",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "typescript": "5.0.1-rc"
+  }
+}
