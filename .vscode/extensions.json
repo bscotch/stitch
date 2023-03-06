@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "svelte.svelte-vscode",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "streetsidesoftware.code-spell-checker",
+    "ecmel.vscode-html-css",
+    "bierner.jsdoc-markdown-highlighting",
+    "mrmlnc.vscode-json5",
+    "yzhang.markdown-all-in-one",
+    "shd101wyy.markdown-preview-enhanced",
+    "redhat.vscode-commons",
+    "redhat.vscode-yaml"
+  ]
+}

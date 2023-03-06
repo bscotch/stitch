@@ -1,11 +1,55 @@
 {
-    "git.ignoreLimitWarning": true,
-    "eslint.validate": [
-        "javascript",
-        "typescript"
-    ],
-    "files.exclude": {
-        "**/.git/hooks/": false
-    },
-    "typescript.tsdk": "node_modules\\typescript\\lib"
+  "files.associations": {
+    "turbo.json": "jsonc"
+  },
+  "search.exclude": {
+    "tmp/": true,
+    "**/.turbo": true,
+    "**/package-lock.json": true,
+    "**/pnpm-lock.yaml": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.svelte-kit": true,
+    "**/build": true,
+    "**/playwright*": true
+  },
+  "explorer.fileNesting.patterns": {
+    "*.js": "$(capture).*",
+    "*.ts": "$(capture).*",
+    "*.mjs": "$(capture).*",
+    "*.cjs": "$(capture).*",
+    "*rc": "$(capture)ignore",
+    "package.json": "workspace.json, lerna.*, readme.md, executors.json, generators.json, nx.json, package-lock.json,.gitignore, .*, tsconfig.*, turbo.json, pnpm-lock.yaml, pnpm-workspace.yaml, *.config.js, *.config.ts",
+    "tsconfig.json": "tsconfig.*.json",
+    "readme.md": "todo*, changelog*, license*, contributing*"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.organizeImports": false,
+    "source.fixAll": true,
+    "source.addMissingImports": true
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "debug.javascript.terminalOptions": {
+    "skipFiles": ["<node_internals>/**"],
+    "sourceMaps": true,
+    "remoteRoot": null
+  },
+  "svelte.enable-ts-plugin": true,
+  "svelte.plugin.svelte.defaultScriptLanguage": "ts",
+  "svelte.plugin.css.globals": "**/global.css",
+  "css.styleSheets": ["global.css"],
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "javascript.preferences.importModuleSpecifierEnding": "js",
+  "cSpell.useGitignore": true,
+  "cSpell.files": ["**/*.md", "**/src/**/*"]
 }
