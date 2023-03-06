@@ -2,6 +2,8 @@ name: Update GameMaker Releases Summary
 
 on:
   push:
+    paths:
+      - '.github/workflows/publish-stitch-desktop.yaml'
     tags:
       - "stitch-desktop@*"
 
