@@ -1,10 +1,25 @@
-build/
-sandbox/
-sample-assets/
-sample-module-source/
-sample-project/
-node_modules/
-docs/
-assets/
+# Add files here to ignore them from prettier formatting
+/dist
+/coverage
+node_modules
 package-lock.json
-build/
+.husky
+.github
+*.yy
+**/*.yy
+*.yyp
+**/*.yyp
+pnpm-lock.yaml
+.DS_Store
+node_modules
+/build
+/.svelte-kit
+/package
+.env
+.env.*
+!.env.example
+
+# Ignore files for PNPM, NPM and YARN
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

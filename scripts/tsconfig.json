@@ -1,0 +1,11 @@
+{
+  "extends": "../config/tsconfig.base.json",
+  "include": ["**/*.js", "**/*.mjs", "**/*.cjs"],
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "lib": ["esnext"],
+    "types": ["node"]
+  }
+}

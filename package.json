@@ -1,86 +1,49 @@
 {
-  "name": "@bscotch/stitch",
-  "version": "6.0.0",
-  "description": "Stitch: The GameMaker Studio 2 Asset Pipeline Development Kit.",
-  "engines": {
-    "node": ">=14.0.0"
-  },
-  "main": "./build/index.js",
-  "files": [
-    "build/cli/**/*",
-    "build/lib/**/*",
-    "build/index.*",
-    "build/types/**/*",
-    "assets/sprite-default/**/*"
-  ],
-  "bin": {
-    "stitch": "build/cli/stitch.js"
-  },
+  "name": "@local/stitch-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "test": "npm run build && mocha -r source-map-support/register --bail -S ./build/test/",
-    "build": "rm -rf build && tsc -b",
-    "watch": "tsc -b -w",
-    "prepublishOnly": "npm run can-publish",
-    "preversion": "npm run can-publish",
-    "version": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && prettier src -w && git add -A",
-    "postversion": "git push origin develop --follow-tags",
-    "pr": "git push && gh pr create --fill",
-    "cli-watch-test": "npm run build && node build/test/lib/runResetSandbox.js && node build/cli/stitch-add-sprites.js --force --watch --source sample-assets/sprites -t \"sand box\"",
-    "can-publish": "npm run _require-develop && npm run _require-ci",
-    "_require-develop": "[ \"$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)\" = \"develop\" ] || exit 1",
-    "_require-ci": "[ \"${GITHUB_ACTIONS}\" = \"true\" ] || exit 1"
+    "build:all": "turbo run build --force",
+    "clean:artifacts": "node ./scripts/nuke-builds.mjs",
+    "clean:deps": "node ./scripts/nuke-deps.mjs",
+    "fix:deps": "syncpack fix-mismatches && treb fix --allProjects --packageJson",
+    "watch": "turbo run watch --parallel"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com:bscotch/stitch.git"
-  },
-  "keywords": [
-    "gamemaker",
-    "yyp",
-    "gms2",
-    "gms",
-    "yy",
-    "gml",
-    "pipeline"
-  ],
-  "author": "Adam Coster (https://www.bscotch.net/about#adam-coster)",
-  "contributors": [
-    "Shi Chen (https://www.bscotch.net/about#shi-chen)"
-  ],
-  "license": "MIT",
-  "homepage": "https://github.com/bscotch/stitch",
   "dependencies": {
-    "@bscotch/debounce-watch": "^0.3.0",
-    "@bscotch/spritely": "^2.0.2",
-    "@bscotch/utility": "^2.1.0",
-    "chalk": "^4.1.2",
-    "change-case": "^4.1.2",
-    "commander": "^8.3.0",
-    "fs-extra": "^10.0.0",
-    "json-bigint": "^1.0.0",
-    "lodash": "^4.17.21",
-    "magic-string": "^0.25.7",
-    "source-map-support": "^0.5.20",
-    "unzipper": "^0.10.11",
-    "uuid": "^8.3.2",
-    "xregexp": "^5.1.0"
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "~5.48.2",
+    "@typescript-eslint/parser": "~5.48.2",
+    "@typescript-eslint/utils": "^5.48.2",
+    "del": "7.0.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint": "^8.32.0",
+    "mocha": "^10.2.0",
+    "prettier": "^2.8.3",
+    "syncpack": "^8.4.11",
+    "turbo": "^1.7.0",
+    "typescript": "4.9.4",
+    "zx": "^7.1.1"
   },
-  "devDependencies": {
-    "@types/chai": "^4.2.22",
-    "@types/fs-extra": "^9.0.13",
-    "@types/lodash": "^4.14.177",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^16.11.8",
-    "@types/object-path": "^0.11.1",
-    "@types/unzipper": "^0.10.4",
-    "@types/uuid": "^8.3.3",
-    "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.33.0",
-    "chai": "^4.3.4",
-    "conventional-changelog-cli": "^2.1.1",
-    "eslint": "^7.32.0",
-    "mocha": "^9.1.1",
-    "prettier": "^2.4.1",
-    "typescript": "^4.5.2"
-  }
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=7"
+  },
+  "syncpack": {
+    "workspace": false,
+    "source": [
+      "package.json",
+      "packages/*/package.json"
+    ]
+  },
+  "trebuchet": {
+    "npmScope": "@bscotch",
+    "vscodeWorkspaceConfigPath": false
+  },
+  "packageManager": "pnpm@7.28.0",
+  "workspaces": [
+    "packages/*"
+  ]
 }

@@ -1,0 +1,11 @@
+*.json
+*.yaml
+*.yml
+*.md
+*.txt
+*.html
+node_modules
+build
+dist
+app
+.svelte-kit
