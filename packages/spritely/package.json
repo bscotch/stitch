@@ -31,32 +31,31 @@
   "main": "./build/index.js",
   "bin": "./spritely.mjs",
   "scripts": {
-    "build": "tsc-x --build",
+    "build": "tsc --build",
     "clean": "rimraf build dist *.tsbuildinfo **/*.tsbuildinfo",
     "test": "mocha --config ../../config/.mocharc.cjs",
     "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
-    "watch": "tsc-x --build --watch"
+    "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/debounce-watch": "workspace:*",
-    "@bscotch/pathy": "workspace:*",
-    "@bscotch/utility": "workspace:*",
+    "@bscotch/debounce-watch": "^1.0.15",
+    "@bscotch/pathy": "^2.6.0",
+    "@bscotch/utility": "^6.8.0",
     "commander": "10.0.0",
     "fs-extra": "11.1.0",
-    "image-js": "0.35.2",
+    "image-js": "0.35.3",
     "image-size": "1.0.2",
-    "tslib": "^2.4.1",
+    "tslib": "^2.5.0",
     "yaml": "2.2.1"
   },
   "devDependencies": {
-    "@local/helpers": "workspace:*",
     "@types/chai": "^4.3.4",
     "@types/fs-extra": "^11.0.1",
     "@types/mocha": "^10.0.1",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
-    "rimraf": "^4.1.0",
-    "typescript": "4.9.4"
+    "rimraf": "^4.3.1",
+    "typescript": "5.0.1-rc"
   },
   "engines": {
     "node": ">=14.0.0"

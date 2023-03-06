@@ -8,25 +8,24 @@
     "build:all": "turbo run build --force",
     "clean:artifacts": "node ./scripts/nuke-builds.mjs",
     "clean:deps": "node ./scripts/nuke-deps.mjs",
-    "fix:deps": "syncpack fix-mismatches && treb fix --allProjects --packageJson",
+    "fix:deps": "syncpack fix-mismatches",
     "watch": "turbo run watch --parallel"
   },
   "dependencies": {
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^18.11.18",
-    "@typescript-eslint/eslint-plugin": "~5.48.2",
-    "@typescript-eslint/parser": "~5.48.2",
-    "@typescript-eslint/utils": "^5.48.2",
+    "@types/node": "^18.14.6",
+    "@typescript-eslint/eslint-plugin": "~5.54.1",
+    "@typescript-eslint/parser": "~5.54.1",
+    "@typescript-eslint/utils": "^5.54.1",
     "del": "7.0.0",
-    "eslint-config-prettier": "^8.6.0",
-    "eslint": "^8.32.0",
+    "eslint": "^8.35.0",
+    "eslint-config-prettier": "^8.7.0",
     "mocha": "^10.2.0",
-    "prettier": "^2.8.3",
-    "syncpack": "^8.4.11",
-    "turbo": "^1.7.0",
-    "typescript": "4.9.4",
-    "zx": "^7.1.1"
+    "prettier": "^2.8.4",
+    "syncpack": "^9.8.4",
+    "turbo": "^1.8.3",
+    "zx": "^7.2.0"
   },
   "engines": {
     "node": ">=18",
@@ -46,5 +45,8 @@
   "packageManager": "pnpm@7.28.0",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "typescript": "5.0.1-rc"
+  }
 }

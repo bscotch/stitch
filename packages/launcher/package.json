@@ -47,23 +47,22 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/gamemaker-releases": "^0.3.1",
-    "@bscotch/pathy": "workspace:*",
-    "@bscotch/utility": "workspace:*",
-    "axios": "^1.3.2",
+    "@bscotch/gamemaker-releases": "0.4.1",
+    "@bscotch/pathy": "^2.6.0",
+    "@bscotch/utility": "^6.8.0",
+    "axios": "^1.3.4",
     "tslib": "^2.5.0",
-    "zod": "^3.20.5"
+    "zod": "^3.21.2"
   },
   "devDependencies": {
-    "@local/helpers": "workspace:*",
     "@types/chai": "^4.3.4",
     "@types/inquirer": "^9.0.3",
     "@types/mocha": "^10.0.1",
     "chai": "^4.3.7",
     "inquirer": "9.1.4",
     "mocha": "^10.2.0",
-    "rimraf": "^4.1.2",
-    "typescript": "4.9.5"
+    "rimraf": "^4.3.1",
+    "typescript": "5.0.1-rc"
   },
   "publishConfig": {
     "access": "public"
