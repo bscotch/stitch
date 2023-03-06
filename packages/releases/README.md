@@ -4,7 +4,7 @@
 
 This package centralizes all of the official GameMaker information (for Windows versions) into a single structured document. It is used by [Butterscotch Shenanigans](https://www.bscotch.net) to keep an up-to-date, centralized history of releases. These are uploaded [as GitHub releases](https://github.com/bscotch/gamemaker-info/releases).
 
-Latest releases document: https://github.com/bscotch/gamemaker-info/releases/latest/download/releases-summary.json
+Latest releases document: https://github.com/bscotch/stitch/releases/latest/download/releases-summary.json
 
 ## Requirements
 
