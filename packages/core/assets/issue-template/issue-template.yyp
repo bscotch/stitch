@@ -1,0 +1,79 @@
+{
+  "resources": [
+    {
+      "id": { "name": "o_entry", "path": "objects/o_entry/o_entry.yy" },
+      "order": 4
+    },
+    { "id": { "name": "util", "path": "scripts/util/util.yy" }, "order": 2 },
+    {
+      "id": { "name": "rm_entry", "path": "rooms/rm_entry/rm_entry.yy" },
+      "order": 3
+    }
+  ],
+  "Options": [
+    {
+      "name": "Amazon Fire",
+      "path": "options/amazonfire/options_amazonfire.yy"
+    },
+    { "name": "Android", "path": "options/android/options_android.yy" },
+    { "name": "iOS", "path": "options/ios/options_ios.yy" },
+    { "name": "Linux", "path": "options/linux/options_linux.yy" },
+    { "name": "macOS", "path": "options/mac/options_mac.yy" },
+    { "name": "Main", "path": "options/main/options_main.yy" },
+    { "name": "tvOS", "path": "options/tvos/options_tvos.yy" },
+    { "name": "Windows", "path": "options/windows/options_windows.yy" },
+    { "name": "HTML5", "path": "options/html5/options_html5.yy" },
+    { "name": "PlayStation 4", "path": "options/ps4/options_ps4.yy" },
+    { "name": "Switch", "path": "options/switch/options_switch.yy" },
+    {
+      "name": "Windows UWP",
+      "path": "options/windowsuap/options_windowsuap.yy"
+    },
+    { "name": "Xbox One", "path": "options/xboxone/options_xboxone.yy" },
+    {
+      "name": "Xbox Series XS",
+      "path": "options/xboxseriesxs/options_xboxseriesxs.yy"
+    },
+    { "name": "operagx", "path": "options/operagx/options_operagx.yy" }
+  ],
+  "defaultScriptType": 1,
+  "isEcma": false,
+  "configs": {
+    "name": "Default",
+    "children": []
+  },
+  "RoomOrderNodes": [
+    { "roomId": { "name": "rm_entry", "path": "rooms/rm_entry/rm_entry.yy" } }
+  ],
+  "Folders": [],
+  "AudioGroups": [
+    {
+      "targets": -1,
+      "resourceVersion": "1.3",
+      "name": "audiogroup_default",
+      "resourceType": "GMAudioGroup"
+    }
+  ],
+  "TextureGroups": [
+    {
+      "isScaled": true,
+      "compressFormat": "bz2",
+      "autocrop": true,
+      "border": 2,
+      "mipsToGenerate": 0,
+      "groupParent": null,
+      "targets": -1,
+      "resourceVersion": "1.3",
+      "name": "Default",
+      "resourceType": "GMTextureGroup"
+    }
+  ],
+  "IncludedFiles": [],
+  "MetaData": {
+    "IDEVersion": "2022.500.0.116"
+  },
+  "resourceVersion": "1.5",
+  "name": "issue-template",
+  "tags": [],
+  "resourceType": "GMProject"
+}

@@ -1,0 +1,6 @@
+*
+!stitch.mjs
+!assets/**/*
+!dist/**/*
+dist/test/**/*
+dist/**/*.test.*

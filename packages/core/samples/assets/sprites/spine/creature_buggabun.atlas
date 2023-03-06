@@ -1,0 +1,83 @@
+
+creature_buggabun.png
+size: 2048,256
+format: RGBA8888
+filter: MipMapNearestNearest,MipMapNearestNearest
+repeat: none
+attack_charge
+  rotate: true
+  xy: 1378, 121
+  size: 112, 192
+  orig: 114, 194
+  offset: 1, 1
+  index: -1
+attack_hit
+  rotate: false
+  xy: 4, 15
+  size: 232, 218
+  orig: 234, 220
+  offset: 1, 1
+  index: -1
+attack_recover
+  rotate: true
+  xy: 1169, 103
+  size: 130, 205
+  orig: 132, 207
+  offset: 1, 1
+  index: -1
+eat
+  rotate: true
+  xy: 1885, 117
+  size: 116, 126
+  orig: 118, 128
+  offset: 1, 1
+  index: -1
+eat2
+  rotate: true
+  xy: 705, 4
+  size: 120, 126
+  orig: 122, 128
+  offset: 1, 1
+  index: -1
+scream
+  rotate: true
+  xy: 479, 43
+  size: 190, 222
+  orig: 192, 224
+  offset: 1, 1
+  index: -1
+sleep
+  rotate: false
+  xy: 955, 118
+  size: 210, 115
+  orig: 212, 117
+  offset: 1, 1
+  index: -1
+spit_charge
+  rotate: true
+  xy: 1574, 109
+  size: 124, 150
+  orig: 126, 152
+  offset: 1, 1
+  index: -1
+spit_hit
+  rotate: true
+  xy: 705, 128
+  size: 105, 246
+  orig: 107, 248
+  offset: 1, 1
+  index: -1
+stationary
+  rotate: true
+  xy: 1728, 131
+  size: 102, 153
+  orig: 104, 155
+  offset: 1, 1
+  index: -1
+take_hit
+  rotate: false
+  xy: 240, 27
+  size: 235, 206
+  orig: 237, 208
+  offset: 1, 1
+  index: -1

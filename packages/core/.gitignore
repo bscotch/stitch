@@ -1,0 +1,7 @@
+sand box
+tmp
+samples/project/stitch.config.json
+samples/project/logs
+samples/*.diff.json
+zip-download
+samples/assets/**/stitch.src.json
