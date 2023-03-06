@@ -1,9 +1,8 @@
 name: Update GameMaker Releases Summary
 
 on:
+  workflow_dispatch:
   push:
-    paths:
-      - '.github/workflows/update-releases-summary.yaml'
     tags:
       - "@bscotch/gamemaker-releases@*"
   schedule:

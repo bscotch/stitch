@@ -1,6 +1,7 @@
 name: Publish Stitch Desktop
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "stitch-desktop@*"
