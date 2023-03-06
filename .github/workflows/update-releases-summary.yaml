@@ -5,7 +5,6 @@ on:
     paths:
       - 'packages/releases/**/*'
       - '.github/workflows/update-releases-summary.yaml'
-      - '*'
   schedule:
     # https://crontab.guru/#22_13,17,20,22_*_*_1-5
     - cron: '22 13,17,20,22 * * 1-5'

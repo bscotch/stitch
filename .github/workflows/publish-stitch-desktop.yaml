@@ -1,0 +1,36 @@
+name: Update GameMaker Releases Summary
+
+on:
+  push:
+    tags:
+      - "stitch-desktop@*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish Stitch Desktop
+    runs-on: windows-latest
+    steps:
+      # SETUP
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: corepack enable
+      - run: pnpm install --filter=stitch-desktop...
+
+      # BUILD
+      - name: Build
+        run: pnpm turbo run build --only --filter=stitch-desktop...
+      - name: Set release version
+        # This script adds the env var `RELEASE_VERSION`
+        run: node scripts/set-release-version.mjs
+
+      # PUBLISH
+      - name: Create New Release
+        run: gh release create --title "Stitch Desktop v${{env.RELEASE_VERSION}}" stitch-desktop@${{env.RELEASE_VERSION}} packages/desktop/bundle/out/make/squirrel.windows/x64/RELEASES packages/desktop/bundle/out/make/squirrel.windows/x64/Stitch-{{env.RELEASE_VERSION}}-full.npkg#Nupkg packages/desktop/bundle/out/make/squirrel.windows/x64/StitchSetup.exe#Installer
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
