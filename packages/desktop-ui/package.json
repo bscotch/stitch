@@ -22,7 +22,7 @@
     "watch": "svelte-kit sync && vite build --watch"
   },
   "devDependencies": {
-    "@bscotch/gamemaker-releases": "0.4.1",
+    "@bscotch/gamemaker-releases": "workspace:*",
     "@bscotch/stitch-server": "workspace:*",
     "@sveltejs/adapter-node": "1.2.1",
     "@sveltejs/kit": "1.10.0",

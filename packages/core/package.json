@@ -57,7 +57,7 @@
     "@bscotch/debounce-watch": "^1.0.15",
     "@bscotch/pathy": "^2.6.0",
     "@bscotch/spritely": "workspace:*",
-    "@bscotch/stitch-launcher": "1.0.1",
+    "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/stringify": "^0.2.1",
     "@bscotch/utility": "^6.8.0",
     "@bscotch/validation": "^0.2.3",

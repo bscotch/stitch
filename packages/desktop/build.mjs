@@ -7,11 +7,14 @@ await $`mkdir -p bundle/code`;
 await $`mkdir -p bundle/node_modules/@bscotch`;
 await $`cp -rf assets bundle/assets`;
 
-for (const dep of Object.keys(manifest.devDependencies)) {
-  if (manifest.devDependencies[dep].startsWith('workspace:')) {
-    Reflect.deleteProperty(manifest.devDependencies, dep);
+for (const depType of ['dependencies', 'devDependencies']) {
+  for (const dep of Object.keys(manifest[depType])) {
+    if (manifest[depType][dep].startsWith('workspace:')) {
+      Reflect.deleteProperty(manifest[depType], dep);
+    }
   }
 }
+
 // @ts-expect-error
 manifest.dependencies = {
   '@bscotch/stitch-ui': 'file:./stitch-ui.tgz',

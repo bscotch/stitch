@@ -16,10 +16,12 @@
     "watch": "nodemon --delay 0.5 -e ts,cts,mts --watch src --watch tsconfig.json --exec \"pnpm build\"",
     "watch:deps": "cd ../.. && pnpm turbo run watch --only --parallel --filter=stitch-desktop..."
   },
+  "dependencies": {
+    "@bscotch/stitch-server": "workspace:*",
+    "@bscotch/stitch-ui": "workspace:*"
+  },
   "devDependencies": {
     "@bscotch/pathy": "^2.6.0",
-    "@bscotch/stitch-server": "workspace:*",
-    "@bscotch/stitch-ui": "workspace:*",
     "@bscotch/utility": "^6.8.0",
     "@electron-forge/cli": "6.0.5",
     "@electron-forge/maker-squirrel": "^6.0.5",
