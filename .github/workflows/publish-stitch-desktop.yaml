@@ -22,6 +22,7 @@ jobs:
           node-version: 18
       - run: corepack enable
       - run: pnpm install --filter=stitch-desktop...
+      - run: ls packages/yy/node_modules/
 
       # BUILD
       - name: Build
