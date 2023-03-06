@@ -1,0 +1,320 @@
+{
+  "type": "object",
+  "properties": {
+    "ConfigValues": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "resourceType": {
+      "type": "string",
+      "const": "GMObject",
+      "default": "GMObject"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "parent": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "path"
+      ],
+      "additionalProperties": false,
+      "default": {
+        "name": "NEW",
+        "path": "folders/NEW.yy"
+      }
+    },
+    "resourceVersion": {
+      "type": "string",
+      "default": "1.0"
+    },
+    "spriteId": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "path"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "solid": {
+      "type": "boolean",
+      "default": false
+    },
+    "visible": {
+      "type": "boolean",
+      "default": true
+    },
+    "spriteMaskId": {
+      "anyOf": [
+        {
+          "$ref": "#/properties/spriteId/anyOf/0"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "persistent": {
+      "type": "boolean",
+      "default": false
+    },
+    "parentObjectId": {
+      "anyOf": [
+        {
+          "$ref": "#/properties/spriteId/anyOf/0"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "physicsObject": {
+      "type": "boolean",
+      "default": false
+    },
+    "physicsSensor": {
+      "type": "boolean",
+      "default": false
+    },
+    "physicsShape": {
+      "type": "number",
+      "default": 1
+    },
+    "physicsGroup": {
+      "type": "number",
+      "default": 1
+    },
+    "physicsDensity": {
+      "type": "number",
+      "default": 0
+    },
+    "physicsRestitution": {
+      "type": "number",
+      "default": 0
+    },
+    "physicsLinearDamping": {
+      "type": "number",
+      "default": 0
+    },
+    "physicsAngularDamping": {
+      "type": "number",
+      "default": 0
+    },
+    "physicsFriction": {
+      "type": "number",
+      "default": 0
+    },
+    "physicsStartAwake": {
+      "type": "boolean",
+      "default": true
+    },
+    "physicsKinematic": {
+      "type": "boolean",
+      "default": false
+    },
+    "physicsShapePoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ],
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "eventList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "isDnD": {
+            "type": "boolean",
+            "default": false
+          },
+          "eventNum": {
+            "type": "number",
+            "default": 0
+          },
+          "eventType": {
+            "type": "number"
+          },
+          "collisionObjectId": {
+            "anyOf": [
+              {
+                "$ref": "#/properties/spriteId/anyOf/0"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "name": {
+            "type": "string",
+            "default": ""
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "resourceVersion": {
+            "type": "string",
+            "const": "1.0",
+            "default": "1.0"
+          },
+          "resourceType": {
+            "type": "string",
+            "const": "GMEvent",
+            "default": "GMEvent"
+          }
+        },
+        "required": [
+          "eventType"
+        ],
+        "additionalProperties": {}
+      },
+      "default": []
+    },
+    "properties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "varType": {
+            "type": "number",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          "value": {
+            "type": "string"
+          },
+          "rangeEnabled": {
+            "type": "boolean",
+            "default": false
+          },
+          "rangeMin": {
+            "type": "number"
+          },
+          "rangeMax": {
+            "type": "number"
+          },
+          "listItems": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "multiselect": {
+            "type": "boolean",
+            "default": false
+          },
+          "filters": {
+            "type": "array",
+            "items": {},
+            "default": []
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "resourceVersion": {
+            "type": "string",
+            "const": "1.0",
+            "default": "1.0"
+          },
+          "resourceType": {
+            "type": "string",
+            "const": "GMObjectProperty",
+            "default": "GMObjectProperty"
+          }
+        },
+        "required": [
+          "name",
+          "varType",
+          "value",
+          "rangeMin",
+          "rangeMax"
+        ],
+        "additionalProperties": {}
+      },
+      "default": []
+    },
+    "overriddenProperties": {
+      "type": "array",
+      "items": {},
+      "default": []
+    },
+    "managed": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "additionalProperties": {},
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

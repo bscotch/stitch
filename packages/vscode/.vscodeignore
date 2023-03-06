@@ -1,0 +1,7 @@
+**/*
+!dist/
+!images/
+!syntaxes/
+!schemas/
+!language-configuration.json
+!LICENSE.md
