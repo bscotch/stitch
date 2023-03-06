@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+      @layer reset, global, basic;
+
+      .material-symbols-sharp {
+        font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' -25, 'opsz' 48;
+      }
+
+      /* Global variables */
+      :root {
+        /* FONT */
+        --font-family: 'Ubuntu', sans-serif;
+        --font-family-mono: 'Ubuntu Mono', monospace;
+        --font-weight-light: 300;
+        --font-weight-regular: 400;
+        --font-weight-bold: 500;
+        --font-weight-boldest: 700;
+
+        /* Colors */
+        --color-text: white;
+        --color-text-subtle: rgb(169, 169, 169);
+        --color-text-danger: rgb(255, 44, 101);
+        --color-background: #0e0e0e;
+        --color-link: rgb(57 156 199);
+        --color-link-hover: rgb(83 207 207);
+        --color-link-underline: var(--color-link);
+        --color-gold: rgb(255, 215, 0);
+        --color-logo-purple: #9c61ce;
+        --color-logo-yellow: #dbc596;
+        --color-logo-background: #081f2e;
+
+        --color-channel-lts: #ff8652;
+        --color-channel-stable: #ae89ff;
+        --color-channel-beta: #569cff;
+        --color-channel-unstable: var(--color-text-subtle);
+
+        /* SIZES */
+        --u: 1.1em; /* Normal font size, basically */
+        --u-10: calc(var(--u) * 0.1);
+        --u-20: calc(var(--u) * 0.2);
+        --u-30: calc(var(--u) * 0.3);
+        --u-40: calc(var(--u) * 0.4);
+        --u-50: calc(var(--u) * 0.5);
+        --u-60: calc(var(--u) * 0.6);
+        --u-70: calc(var(--u) * 0.7);
+        --u-80: calc(var(--u) * 0.8);
+        --u-90: calc(var(--u) * 0.9);
+        --u-100: var(--u);
+        --u-110: calc(var(--u) * 1.1);
+        --u-120: calc(var(--u) * 1.2);
+        --u-130: calc(var(--u) * 1.3);
+        --u-140: calc(var(--u) * 1.4);
+        --u-150: calc(var(--u) * 1.5);
+        --u-160: calc(var(--u) * 1.6);
+        --u-170: calc(var(--u) * 1.7);
+        --u-180: calc(var(--u) * 1.8);
+        --u-190: calc(var(--u) * 1.9);
+        --u-200: calc(var(--u) * 2);
+        --u-300: calc(var(--u) * 3);
+
+        --content-max-width: 1920px;
+        --editor-widget-gap: var(--u-150);
+      }
+
+      @layer reset {
+        /*
+    Modified from Josh's Custom CSS Reset
+    https://www.joshwcomeau.com/css/custom-css-reset/
+  */
+        *,
+        *::before,
+        *::after {
+          box-sizing: border-box;
+        }
+
+        * {
+          margin: 0;
+        }
+
+        html,
+        body {
+          font-size: var(--u);
+          overflow: hidden;
+          font-weight: var(--font-weight-regular);
+          height: 100vh;
+          line-height: 1.5;
+          background-color: black;
+        }
+
+        img,
+        picture,
+        video,
+        canvas {
+          display: block;
+          max-width: 100%;
+        }
+
+        svg {
+          display: inline-block;
+        }
+
+        input,
+        button,
+        textarea,
+        select {
+          font: inherit;
+        }
+
+        p,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+          overflow-wrap: break-word;
+        }
+
+        #root,
+        #__next {
+          isolation: isolate;
+        }
+      }
+
+      @layer global {
+        /* Essential global styles */
+
+        body {
+          margin: auto;
+          max-width: var(--content-max-width);
+          max-height: 100vh;
+          font-family: var(--font-family);
+          overflow-wrap: break-word;
+          color: lightgray;
+        }
+      }
+
+      @layer basic {
+        /* Some sensible defaults for easy overriding in specific components */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+          font-weight: var(--font-weight-bold);
+        }
+
+        a {
+          color: var(--color-link);
+          text-decoration: none;
+        }
+
+        a:hover,
+        a:focus {
+          color: var(--color-link-hover);
+        }
+
+        a,
+        a:hover,
+        a:focus {
+          text-decoration: underline;
+          cursor: pointer;
+          text-decoration-color: var(--color-link-underline);
+          text-decoration-thickness: calc(var(--u) * 0.1);
+          text-underline-offset: calc(var(--u) * 0.1);
+        }
+
+        pre,
+        code {
+          font-family: var(--font-family-mono);
+        }
+
+        [role='button'] {
+          cursor: pointer;
+          user-select: none;
+        }
+
+        /* Add some default margin between common semantic flow items */
+        :where(
+            p,
+            img,
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6,
+            ul,
+            ol,
+            header,
+            table,
+            nav,
+            section
+          )
+          + :where(
+            p,
+            img,
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6,
+            ul,
+            ol,
+            table,
+            nav,
+            section
+          ) {
+          margin-top: 0.5em;
+        }
+      }
+
+      /* UTILITY CLASSES */
+      .reset:where(ul, ol, menu) {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .reset:where(a) {
+        text-decoration: none;
+      }
+
+      :where(button) {
+        font-size: 1em;
+        font-style: bold;
+        color: var(--color, inherit);
+        text-align: center;
+        border-style: solid;
+        border-radius: 0.5em;
+        border-color: currentColor;
+        border-width: 0;
+        margin: 0;
+        padding: 0;
+        background: none;
+        user-select: none;
+        cursor: pointer;
+      }
+      :where(button):hover {
+        color: var(
+          --color-highlight,
+          var(--color-text-highlight, var(--color-link-hover))
+        );
+      }
+
+      .pad-tight {
+        padding: 0.1em 0.7em 0.2em 0.7em;
+      }
+
+      .select-none {
+        user-select: none;
+      }
+
+      .select-all {
+        user-select: all;
+      }
+
+      .select-this {
+        user-select: contain;
+      }
+
+      .monospace {
+        font-family: var(--font-family-mono);
+      }
+
+      .sr-only:not(:focus):not(:active) {
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        height: 1px;
+        overflow: hidden;
+        position: absolute;
+        white-space: nowrap;
+        width: 1px;
+      }
+
+      .no-scroll {
+        overflow: hidden;
+      }
+
+      .scroller {
+        overflow-y: auto;
+        --scrollbar-width: 0.4em;
+        --scrollbar-radius: calc(var(--scrollbar-width) * 0.5);
+      }
+      /* Scrolling */
+      .scroller::-webkit-scrollbar {
+        width: var(--scrollbar-width);
+        height: var(--scrollbar-width);
+      }
+      .scroller::-webkit-scrollbar-thumb {
+        /* foreground color */
+        background: var(--color-text-subtle);
+        border-radius: var(--scrollbar-radius);
+      }
+      .scroller::-webkit-scrollbar-track {
+        /* background color */
+        background: var(--color-background);
+        border-radius: var(--scrollbar-radius);
+      }
+      .scroller.boxed {
+        --color-border: var(--color-border, var(--color-text-subtle));
+        border-radius: 0.75em var(--scrollbar-radius) var(--scrollbar-radius)
+          var(--scrollbar-radius);
+        border: 0.1em solid var(--color-border);
+        box-shadow: inset 0 0 0.2em var(--color-border);
+        padding-top: 0.3em;
+      }
+
+      .append-animated-ellipsis:after {
+        overflow: hidden;
+        display: inline-block;
+        vertical-align: bottom;
+        animation: ellipsis steps(1, end) 2s infinite;
+        content: '';
+        width: 1em;
+      }
+
+      @keyframes ellipsis {
+        0% {
+          content: '';
+        }
+        25% {
+          content: '.';
+        }
+        50% {
+          content: '..';
+        }
+        75% {
+          content: '...';
+        }
+        100% {
+          content: '';
+        }
+      }
+    </style>
+    %sveltekit.head%
+  </head>
+  <body>
+    %sveltekit.body%
+  </body>
+</html>
