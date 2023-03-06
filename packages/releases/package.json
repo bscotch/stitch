@@ -1,0 +1,68 @@
+{
+  "name": "@bscotch/gamemaker-releases",
+  "version": "0.4.1",
+  "description": "Utility for combining GameMaker release data into a single feed.",
+  "keywords": [
+    "gamemaker",
+    "game-maker",
+    "release",
+    "release-notes",
+    "patchnotes",
+    "patch-notes",
+    "changelog",
+    "yoyo",
+    "bscotch",
+    "stitch",
+    "rss",
+    "feed"
+  ],
+  "homepage": "https://github.com/bscotch/gamemaker-info/blob/develop/packages/releases/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/gamemaker-info.git",
+    "directory": "packages/releases"
+  },
+  "license": "MIT",
+  "author": "Butterscotch Shenanigans",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./browser": {
+      "import": "./dist/browser.js",
+      "types": "./dist/browser.d.ts"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "rimraf build dist",
+    "test": "mocha --config ../../config/.mocharc.cjs",
+    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
+    "watch": "tsc --build --watch"
+  },
+  "dependencies": {
+    "@bscotch/pathy": "^2.6.0",
+    "@bscotch/utility": "^6.8.0",
+    "entities": "^4.4.0",
+    "fast-xml-parser": "^4.1.2",
+    "node-fetch": "^3.3.0",
+    "tslib": "^2.5.0",
+    "zod": "^3.20.6"
+  },
+  "devDependencies": {
+    "@types/chai": "^4",
+    "@types/mocha": "^10.0.1",
+    "@types/rimraf": "^3",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "rimraf": "^4.1.2",
+    "typescript": "^4.9.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

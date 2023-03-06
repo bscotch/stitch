@@ -1,0 +1,58 @@
+name: Update GameMaker Releases Summary
+
+on:
+  push:
+    paths:
+      - 'packages/releases/**/*'
+      - '.github/workflows/update-releases-summary.yaml'
+      - '*'
+  schedule:
+    # https://crontab.guru/#22_13,17,20,22_*_*_1-5
+    - cron: '22 13,17,20,22 * * 1-5'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    name: Update Summary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          cache: pnpm
+          node-version: 18
+      - run: corepack enable
+      - run: pnpm install
+
+      - name: Cache Notes
+        id: cache-notes
+        uses: actions/cache@v3
+        with:
+          key: cached-notes
+          path: packages/releases/release-notes-cache.json
+      - name: Download Latest Summary
+        continue-on-error: true
+        run: gh release download --pattern packages/releases/release*.json --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Store Latest Summary Checksum
+        run: echo "OLD_SUMMARY_CHECKSUM=${{hashFiles('packages/releases/releases-summary.json')}}" >> $GITHUB_ENV
+
+      - name: Build
+        run: pnpm turbo run build --only --filter=gamemaker-releases...
+      - name: Compute New Summary
+        # This script adds the env var `LATEST_RELEASE`
+        run: node scripts/update-releases-summary.mjs
+      - name: Store New Summary Checksum
+        run: echo "NEW_SUMMARY_CHECKSUM=${{hashFiles('packages/releases/releases-summary.json')}}" >> $GITHUB_ENV
+      - name: Report
+        run: echo ${{env.LATEST_RELEASE}} ${{env.OLD_SUMMARY_CHECKSUM}} ${{ENV.NEW_SUMMARY_CHECKSUM}} && ls packages/releases/release*.json
+  
+      - name: Create New Release
+        if: ${{env.OLD_SUMMARY_CHECKSUM != env.NEW_SUMMARY_CHECKSUM}}
+        run: gh release create --title "GameMaker Releases Summary v${{env.LATEST_RELEASE}}" releases-summary@${{env.LATEST_RELEASE}} packages/releases/releases-summary.json#GameMakerReleases packages/releases/release-notes-cache.json#NotesCache
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
