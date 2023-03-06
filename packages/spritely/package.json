@@ -15,6 +15,11 @@
     "gamemaker"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/spritely"
+  },
   "author": "Adam Coster (https://www.bscotch.net/about)",
   "type": "module",
   "exports": {

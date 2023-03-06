@@ -16,6 +16,11 @@
     "downloader",
     "download"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/launcher"
+  },
   "license": "MIT",
   "type": "module",
   "exports": {

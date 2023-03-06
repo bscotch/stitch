@@ -2,6 +2,11 @@
   "name": "@bscotch/gml-parser",
   "version": "0.2.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/parser"
+  },
   "type": "module",
   "exports": {
     ".": {

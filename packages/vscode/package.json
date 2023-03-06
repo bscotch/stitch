@@ -10,6 +10,11 @@
     "gamemaker",
     "gml"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/vscode"
+  },
   "license": "SEE LICENSE IN LICENSE.md",
   "qna": false,
   "publisher": "bscotch",
@@ -17,9 +22,9 @@
   "scripts": {
     "build": "pnpm build:grammar && node scripts/build.mjs",
     "build:grammar": "node scripts/yaml-to-json.mjs syntaxes/gml.tmLanguage.yaml syntaxes/gml.tmLanguage.json",
-    "package": "vsce package --pre-release --no-dependencies --allow-missing-repository --githubBranch develop",
+    "package": "vsce package --pre-release --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
-    "vscode:publish": "vsce publish --pre-release --no-dependencies --allow-missing-repository --githubBranch develop",
+    "vscode:publish": "vsce publish --pre-release --no-dependencies --githubBranch develop",
     "watch": "nodemon -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --exec \"npm run build\"",
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
