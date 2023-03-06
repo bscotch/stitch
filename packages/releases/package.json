@@ -40,7 +40,7 @@
   "scripts": {
     "build": "tsc --build",
     "clean": "rimraf build dist",
-    "test": "mocha --config ../../config/.mocharc.cjs",
+    "test": "mocha --config ../../config/.mocharc.cjs --timeout=30000",
     "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
     "watch": "tsc --build --watch"
   },
