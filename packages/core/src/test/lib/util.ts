@@ -18,7 +18,7 @@ process.env.DISPLAY_CWD = '../..';
 export const root = pathy(getModuleDir(import.meta)).up(3);
 const samplePath = root.join('samples');
 const projectFolders = (await samplePath.listChildren()).filter((x) => {
-  return x.basename.match(/^\d+\.\d+\.\d+\.\d+$/);
+	return x.basename.match(/^\d+\.\d+\.\d+\.\d+$/);
 });
 
 // Sample assets
@@ -50,18 +50,18 @@ const tempDir = root.join('tmp');
  * around it. This simple method makes that non-verbose.
  */
 export function throwNever(): never {
-  throw new Error('this should never happen');
+	throw new Error('this should never happen');
 }
 
 export function readTestData(filePath: string) {
-  return fs.readFileSync(`${testDataRoot}/${filePath}`, 'utf-8');
+	return fs.readFileSync(`${testDataRoot}/${filePath}`, 'utf-8');
 }
 
 export async function resetTempDir(relativePath: string) {
-  const tmpDir = tempDir.join(relativePath);
-  await tmpDir.delete({ recursive: true, force: true });
-  await tmpDir.ensureDirectory();
-  return tmpDir;
+	const projectDir = tempDir.join(relativePath);
+	await projectDir.delete({ recursive: true, force: true });
+	await projectDir.ensureDirectory();
+	return projectDir;
 }
 
 /**
@@ -73,31 +73,31 @@ export async function resetTempDir(relativePath: string) {
  * Running this function will reset the target sandbox.
  */
 export async function loadCleanProject(
-  tempId: string,
-  options?: { readonly?: boolean },
+	tempId: string,
+	options?: { readonly?: boolean },
 ) {
-  const folder = await resetTempDir(tempId);
-  const sampleProject = choose(projectFolders);
-  await new Pathy(sampleProject).copy(folder);
-  return StitchProject.load({
-    projectPath: folder.absolute,
-    readOnly: options?.readonly,
-    dangerouslyAllowDirtyWorkingDir: true,
-  });
+	const folder = await resetTempDir(tempId);
+	const sampleProject = choose(projectFolders);
+	await new Pathy(sampleProject).copy(folder);
+	return await StitchProject.load({
+		projectPath: folder.absolute,
+		readOnly: options?.readonly,
+		dangerouslyAllowDirtyWorkingDir: true,
+	});
 }
 
 function choose<T>(items: T[]): T {
-  return items[Math.floor(Math.random() * items.length)];
+	return items[Math.floor(Math.random() * items.length)];
 }
 
 export async function expectToThrowAsync(
-  fn: () => Promise<any>,
-  message = 'Should throw an error.',
+	fn: () => Promise<any>,
+	message = 'Should throw an error.',
 ) {
-  try {
-    await fn();
-  } catch (err) {
-    return;
-  }
-  throw new Error(message);
+	try {
+		await fn();
+	} catch (err) {
+		return;
+	}
+	throw new Error(message);
 }

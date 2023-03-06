@@ -1,36 +1,36 @@
 {
-  "$schema": "https://turborepo.org/schema.json",
-  "pipeline": {
-    "clean": {},
-    "build": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "outputs": [
-        "dist/**",
-        "out/**",
-        "bundle/**",
-        "cdk.out/**",
-        "build/**",
-        "**/*.tsbuildinfo",
-        ".svelte-kit/**"
-      ]
-    },
-    "watch": {
-      "dependsOn": ["build"],
-      "inputs": ["package.json", "tsconfig.json", "*.config.*"],
-      "cache": false
-    },
-    "serve": {
-      "dependsOn": [],
-      "cache": false
-    },
-    "test": {
-      "dependsOn": ["build"],
-      "outputs": []
-    },
-    "build:dev": {
-      "dependsOn": ["^build", "^build:dev"],
-      "outputs": []
-    }
-  }
+	"$schema": "https://turborepo.org/schema.json",
+	"pipeline": {
+		"clean": {},
+		"build": {
+			"dependsOn": ["^build"],
+			"cache": true,
+			"outputs": [
+				"dist/**",
+				"out/**",
+				"bundle/**",
+				"cdk.out/**",
+				"build/**",
+				"**/*.tsbuildinfo",
+				".svelte-kit/**"
+			]
+		},
+		"watch": {
+			"dependsOn": ["build"],
+			"inputs": ["package.json", "tsconfig.json", "*.config.*"],
+			"cache": false
+		},
+		"serve": {
+			"dependsOn": [],
+			"cache": false
+		},
+		"test": {
+			"dependsOn": ["build"],
+			"outputs": []
+		},
+		"build:dev": {
+			"dependsOn": ["^build", "^build:dev"],
+			"outputs": []
+		}
+	}
 }

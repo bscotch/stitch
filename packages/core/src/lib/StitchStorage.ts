@@ -95,6 +95,9 @@ export class StitchStorage {
   /** Delete all files and folders (recursively) inside this directory. */
   emptyDirSync(dir: string, includeStartingDir = false) {
     if (!this.isReadOnly) {
+      if (!fs.existsSync(dir)) {
+        return;
+      }
       fs.emptyDirSync(dir);
       if (includeStartingDir) {
         fs.removeSync(dir);

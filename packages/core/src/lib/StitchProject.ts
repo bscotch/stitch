@@ -636,7 +636,7 @@ export class StitchProject extends StitchProjectStatic {
    * a subdirectory path. If an included file with this name already exists
    * in **ANY** subdirectory it will be overwritten. (Names must be unique due to
    * an iOS bug wherein all included files are effectively in a flat heirarchy.
-   * see {@link https://docs2.yoyogames.com/source/_build/3_scripting/4_gml_reference/sprites/sprite_add.html}
+   * {@see https://docs2.yoyogames.com/source/_build/3_scripting/4_gml_reference/sprites/sprite_add.html}
    * @param path Direct filepath or a directory from which all files (recursively) should be loaded
    * @param content If set, will create a new file instead of copying content from an existing one.
    *                If the content is a string or buffer it will be written as-is. All other cases are
