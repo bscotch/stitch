@@ -1,9 +1,9 @@
-name: Update GameMaker Releases Summary
+name: Publish Stitch Desktop
 
 on:
   push:
-    paths:
-      - '.github/workflows/publish-stitch-desktop.yaml'
+    branches:
+      - "develop"
     tags:
       - "stitch-desktop@*"
 
@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   publish:
-    name: Publish Stitch Desktop
     runs-on: windows-latest
     steps:
       # SETUP
