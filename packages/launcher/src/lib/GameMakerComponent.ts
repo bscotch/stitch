@@ -76,7 +76,10 @@ export class GameMakerComponent {
   async activeUser() {
     const userInfoFilePath = this.usersDirectory.join('um.json');
     return new GameMakerUser(
-      await userInfoFilePath.read({ schema: gameMakerUserDataSchema }),
+      await userInfoFilePath.read({
+        schema: gameMakerUserDataSchema,
+        fallback: {},
+      }),
     );
   }
 

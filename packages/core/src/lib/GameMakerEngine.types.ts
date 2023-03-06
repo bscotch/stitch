@@ -18,13 +18,13 @@ export interface GameMakerRuntimeConfig {
 }
 
 export interface GameMakerUserData {
-  deviceID: string;
+  deviceID?: string;
   /**
    * User email address. The 'name' part is
    * used as the local username.
    */
-  login: `${string}@${string}`;
-  userID: string;
+  login?: `${string}@${string}`;
+  userID?: string;
 }
 
 export type GameMakerSupportedArchitecture = 'x64' | 'arm' | 'arm64';

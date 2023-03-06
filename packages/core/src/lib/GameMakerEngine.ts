@@ -132,7 +132,9 @@ export class GameMakerEngine extends GameMakerEngineStatic {
    * user.
    */
   async userConfig() {
-    return await this.usersConfigFilePath.read<GameMakerUserData>();
+    return await this.usersConfigFilePath.read<GameMakerUserData, {}>({
+      fallback: {},
+    });
   }
 
   async runtimesConfig(): Promise<GameMakerRuntimeConfig> {

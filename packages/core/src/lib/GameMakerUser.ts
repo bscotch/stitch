@@ -12,7 +12,7 @@ export class GameMakerUser {
    * construct the local username and directory.
    */
   get userName() {
-    return this.userEmail.split('@')[0];
+    return this.userEmail?.split('@')[0];
   }
 
   get userId() {
