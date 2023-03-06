@@ -46,7 +46,7 @@ importers:
       '@bscotch/debounce-watch': ^1.0.15
       '@bscotch/pathy': ^2.6.0
       '@bscotch/spritely': workspace:*
-      '@bscotch/stitch-launcher': 1.0.1
+      '@bscotch/stitch-launcher': workspace:*
       '@bscotch/stringify': ^0.2.1
       '@bscotch/utility': ^6.8.0
       '@bscotch/validation': ^0.2.3
@@ -90,7 +90,7 @@ importers:
       '@bscotch/debounce-watch': 1.0.15
       '@bscotch/pathy': 2.6.0
       '@bscotch/spritely': link:../spritely
-      '@bscotch/stitch-launcher': 1.0.1_debug@4.3.4
+      '@bscotch/stitch-launcher': link:../launcher
       '@bscotch/stringify': 0.2.1
       '@bscotch/utility': 6.8.0
       '@bscotch/validation': 0.2.3
@@ -151,10 +151,11 @@ importers:
       turbo: ^1.8.3
       typescript: 5.0.1-rc
       zx: ^7.2.0
-    devDependencies:
-      '@bscotch/pathy': 2.6.0
+    dependencies:
       '@bscotch/stitch-server': link:../desktop-server
       '@bscotch/stitch-ui': link:../desktop-ui
+    devDependencies:
+      '@bscotch/pathy': 2.6.0
       '@bscotch/utility': 6.8.0
       '@electron-forge/cli': 6.0.5
       '@electron-forge/maker-squirrel': 6.0.5
@@ -172,10 +173,10 @@ importers:
 
   packages/desktop-server:
     specifiers:
-      '@bscotch/gamemaker-releases': 0.4.1
+      '@bscotch/gamemaker-releases': workspace:*
       '@bscotch/pathy': ^2.6.0
       '@bscotch/stitch': workspace:*
-      '@bscotch/stitch-launcher': 1.0.1
+      '@bscotch/stitch-launcher': workspace:*
       '@bscotch/utility': ^6.8.0
       '@bscotch/yy': 0.6.1
       '@trpc/server': 10.14.0
@@ -196,10 +197,10 @@ importers:
       zod: ^3.21.2
       zod-to-json-schema: 3.20.4
     dependencies:
-      '@bscotch/gamemaker-releases': 0.4.1
+      '@bscotch/gamemaker-releases': link:../releases
       '@bscotch/pathy': 2.6.0
       '@bscotch/stitch': link:../core
-      '@bscotch/stitch-launcher': 1.0.1
+      '@bscotch/stitch-launcher': link:../launcher
       '@bscotch/utility': 6.8.0
       '@bscotch/yy': 0.6.1
       '@trpc/server': 10.14.0
@@ -223,7 +224,7 @@ importers:
 
   packages/desktop-ui:
     specifiers:
-      '@bscotch/gamemaker-releases': 0.4.1
+      '@bscotch/gamemaker-releases': workspace:*
       '@bscotch/stitch-server': workspace:*
       '@sveltejs/adapter-node': 1.2.1
       '@sveltejs/kit': 1.10.0
@@ -249,7 +250,7 @@ importers:
       vite: 4.1.4
       xstate: 4.37.0
     devDependencies:
-      '@bscotch/gamemaker-releases': 0.4.1
+      '@bscotch/gamemaker-releases': link:../releases
       '@bscotch/stitch-server': link:../desktop-server
       '@sveltejs/adapter-node': 1.2.1_@sveltejs+kit@1.10.0
       '@sveltejs/kit': 1.10.0_svelte@3.55.1+vite@4.1.4
@@ -549,6 +550,7 @@ packages:
       zod: 3.21.2
     transitivePeerDependencies:
       - supports-color
+    dev: false
 
   /@bscotch/pathy/2.6.0:
     resolution: {integrity: sha512-JWrvTKUeIRixE4v2PhQb2b1gbysoKcsKVfPDGY2dlE3D8T8nI4D3mpSOJecDIlxoj9s7EvxDw+gpMnacqvEYVw==}
@@ -588,20 +590,6 @@ packages:
       '@bscotch/pathy': 2.6.0
       '@bscotch/utility': 6.8.0
       axios: 1.3.4
-      tslib: 2.5.0
-      zod: 3.21.2
-    transitivePeerDependencies:
-      - debug
-      - supports-color
-    dev: false
-
-  /@bscotch/stitch-launcher/1.0.1_debug@4.3.4:
-    resolution: {integrity: sha512-RMN5Lbb6xDBzunyXu6DsjtJV6x0PAirw28eWEz1IqgeC1yAt4AmDk88RbXbh4xz5kxqMEu4IQLikI3lgbTJcUw==}
-    dependencies:
-      '@bscotch/gamemaker-releases': 0.3.1
-      '@bscotch/pathy': 2.6.0
-      '@bscotch/utility': 6.8.0
-      axios: 1.3.4_debug@4.3.4
       tslib: 2.5.0
       zod: 3.21.2
     transitivePeerDependencies:
@@ -2342,16 +2330,6 @@ packages:
       - debug
     dev: false
 
-  /axios/1.3.4_debug@4.3.4:
-    resolution: {integrity: sha512-toYm+Bsyl6VC5wSkfkbbNB6ROv7KY93PEBBL6xyDczaIHasAiv4wPqQ/c4RjoQzipxRD2W5g21cOqQulZ7rHwQ==}
-    dependencies:
-      follow-redirects: 1.15.2_debug@4.3.4
-      form-data: 4.0.0
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
   /azure-devops-node-api/11.2.0:
     resolution: {integrity: sha512-XdiGPhrpaT5J8wdERRKs5g8E0Zy1pvOYTli7z9E8nmOn3YGp4FhtjhrOyFmX/8veWCwdI69mCHKJw6l+4J/bHA==}
     dependencies:
@@ -3832,6 +3810,7 @@ packages:
     hasBin: true
     dependencies:
       strnum: 1.0.5
+    dev: false
 
   /fastq/1.15.0:
     resolution: {integrity: sha512-wBrocU2LCXXa+lWBt8RoIRD89Fi8OdABODa/kEnyeyjS5aZO5/GNvI5sEINADqP/h8M29UHTHUb53sUu5Ihqdw==}
@@ -3978,18 +3957,6 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
-    dev: false
-
-  /follow-redirects/1.15.2_debug@4.3.4:
-    resolution: {integrity: sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-    dependencies:
-      debug: 4.3.4
     dev: false
 
   /form-data/4.0.0:
@@ -5776,6 +5743,7 @@ packages:
       data-uri-to-buffer: 4.0.1
       fetch-blob: 3.2.0
       formdata-polyfill: 4.0.10
+    dev: false
 
   /node-gyp-build/4.6.0:
     resolution: {integrity: sha512-NTZVKn9IylLwUzaKjkas1e4u2DLNcV4rdYagA4PWdPwW87Bi7z+BznyKSRwS/761tV/lzCGXplWsiaMjLqP2zQ==}
@@ -7167,6 +7135,7 @@ packages:
 
   /strnum/1.0.5:
     resolution: {integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==}
+    dev: false
 
   /strtok3/7.0.0:
     resolution: {integrity: sha512-pQ+V+nYQdC5H3Q7qBZAz/MO6lwGhoC2gOAjuouGf/VO0m7vQRh8QNMl2Uf6SwAtzZ9bOw3UIeBukEGNJl5dtXQ==}
