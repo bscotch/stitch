@@ -1,0 +1,13 @@
+{
+  "include": ["src/**/*.ts"],
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noErrorTruncation": true,
+    "types": ["node", "mocha", "chai"],
+    "moduleResolution": "NodeNext",
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": "src",
+    "esModuleInterop": true
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "name": "@bscotch/stitch-server",
+  "version": "0.5.3",
+  "private": true,
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/desktop-server"
+  },
+  "exports": {
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./dist/server.js": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "serve": "pnpm build && nodemon --delay 0.33 -e js,cjs,mjs,json --watch dist --watch project.json --watch tsconfig.json up.js 3111",
+    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
+    "watch": "tsc --build --watch"
+  },
+  "dependencies": {
+    "@bscotch/gamemaker-releases": "workspace:*",
+    "@bscotch/pathy": "workspace:*",
+    "@bscotch/stitch": "workspace:*",
+    "@bscotch/stitch-launcher": "workspace:*",
+    "@bscotch/utility": "workspace:*",
+    "@bscotch/yy": "workspace:*",
+    "@trpc/server": "10.10.0",
+    "express": "5.0.0-beta.1",
+    "image-size": "1.0.2",
+    "open": "^8.4.1",
+    "superjson": "1.12.2",
+    "tslib": "^2.5.0",
+    "uuid": "^9.0.0",
+    "ws": "8.12.0",
+    "zod": "^3.20.5",
+    "zod-to-json-schema": "3.20.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/uuid": "^9.0.0",
+    "@types/ws": "8.5.4",
+    "mocha": "^10.2.0",
+    "nodemon": "^2.0.20",
+    "rimraf": "^4.1.2",
+    "typescript": "4.9.5"
+  }
+}
