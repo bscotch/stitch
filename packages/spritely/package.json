@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/spritely",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "description": "Spritely: Image correction and cleanup for 2D video game sprites",
   "keywords": [
     "sprite",
@@ -14,12 +14,12 @@
     "pipeline",
     "gamemaker"
   ],
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/bscotch/stitch.git",
     "directory": "packages/spritely"
   },
+  "license": "MIT",
   "author": "Adam Coster (https://www.bscotch.net/about)",
   "type": "module",
   "exports": {
