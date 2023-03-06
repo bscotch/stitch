@@ -1,8 +1,7 @@
 {
   "name": "@bscotch/spritely",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "description": "Spritely: Image correction and cleanup for 2D video game sprites",
-  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/spritely#readme",
   "keywords": [
     "sprite",
     "texture page",
@@ -15,6 +14,7 @@
     "pipeline",
     "gamemaker"
   ],
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/spritely#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/bscotch/stitch.git",

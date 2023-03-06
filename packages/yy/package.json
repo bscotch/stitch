@@ -1,13 +1,7 @@
 {
   "name": "@bscotch/yy",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Stringify, parse, read, and write GameMaker yy and yyp files.",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bscotch/stitch.git",
-    "directory": "packages/yy"
-  },
-  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/yy#readme",
   "keywords": [
     "yy",
     "yyp",
@@ -21,6 +15,12 @@
     "read",
     "write"
   ],
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/yy#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/yy"
+  },
   "type": "module",
   "exports": {
     ".": {
