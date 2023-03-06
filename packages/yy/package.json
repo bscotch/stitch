@@ -1,0 +1,57 @@
+{
+  "name": "@bscotch/yy",
+  "version": "0.6.1",
+  "description": "Stringify, parse, read, and write GameMaker yy and yyp files.",
+  "keywords": [
+    "yy",
+    "yyp",
+    "game maker",
+    "gamemaker",
+    "yoyo",
+    "json",
+    "parse",
+    "stringify",
+    "file",
+    "read",
+    "write"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "yy": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc-x --build",
+    "clean": "rimraf build dist *.tsbuildinfo **/*.tsbuildinfo",
+    "test": "mocha --config ../../config/.mocharc.cjs",
+    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
+    "watch": "tsc-x --build --watch"
+  },
+  "dependencies": {
+    "@bscotch/utility": "workspace:*",
+    "tslib": "^2.4.1",
+    "type-fest": "^3.5.2",
+    "uuid": "^9.0.0",
+    "zod": "^3.20.2"
+  },
+  "devDependencies": {
+    "@local/helpers": "workspace:*",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/uuid": "^9.0.0",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "rimraf": "^4.1.0",
+    "typescript": "4.9.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

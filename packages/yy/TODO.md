@@ -1,0 +1,10 @@
+- test against samples of each type from our portfolio to get good coverage
+- Figure out how to create and update Sprites using schemas as extensively as possible
+  - NOTE: 'discriminator' is not in JSON Schema spec, but _is_ in OpenAPI spec, where it has requirements that we are currently not meeting.
+    - Must be a required field (so `undefined` is not a valid value)
+    - ❤️‍🔥 OPTION: Alias NEVER and create a new formatter -- hydrate as a non-enumerable property so that it doesn't get serialized but can still provide a unique identifier. Something like `undefinedDescriminator`
+    - OPTION: Replace the discriminator keyword in AJV. Since it has some built-in logic with `oneOf` this might also require replacing `oneOf`.
+    - OPTION: Fork AJV and add a new strict option allowing `undefined` as a valid value for discriminators. Looks like it wouldn't be that hard to add, and would open up the option to continue extending AJV itself over time, which may end up easier than
+- Add $data references for unique identifiers
+- Add dynamicDefaults for new unique identifiers
+- Do we need fully separate schemas, so we can choose by testing against existing data? Or can we somehow identify the specific
