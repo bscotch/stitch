@@ -1,6 +1,0 @@
-var here = "         ";                      
-                               
-                        
-function hello(){                
-             
-}
