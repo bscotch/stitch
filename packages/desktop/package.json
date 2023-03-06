@@ -1,0 +1,49 @@
+{
+	"name": "stitch-desktop",
+	"version": "0.10.8",
+	"private": true,
+	"description": "Desktop application for managing GameMaker projects.",
+	"license": "MIT",
+	"author": "Butterscotch Shenanigans",
+	"main": "code/index.cjs",
+	"types": "code/index.d.cts",
+	"scripts": {
+		"build": "tsc --build && node build.mjs",
+		"build:all": "cd ../.. && pnpm turbo run build --only --filter=stitch-desktop...",
+		"dev": "tsc --build && concurrently -n ⚛️,deps \"pnpm serve\" \"pnpm watch:deps\"",
+		"serve": "nodemon --delay 0.5 -e js,cjs,mjs --watch bundle --watch project.json --watch tsconfig.json --watch ../desktop-ui/build --exec \"pnpm electron .\"",
+		"start": "electron-forge start",
+		"watch": "nodemon --delay 0.5 -e ts,cts,mts --watch src --watch tsconfig.json --exec \"pnpm build\"",
+		"watch:deps": "cd ../.. && pnpm turbo run watch --only --parallel --filter=stitch-desktop..."
+	},
+	"devDependencies": {
+		"@bscotch/pathy": "^2.6.0",
+		"@bscotch/stitch-server": "workspace:*",
+		"@bscotch/stitch-ui": "workspace:*",
+		"@bscotch/utility": "^6.8.0",
+		"@electron-forge/cli": "6.0.5",
+		"@electron-forge/maker-squirrel": "^6.0.5",
+		"@electron-forge/shared-types": "^6.0.5",
+		"concurrently": "^7.6.0",
+		"electron": "^23.1.2",
+		"electron-packager": "^17.1.1",
+		"electron-squirrel-startup": "1.0.0",
+		"esbuild": "^0.17.11",
+		"nodemon": "^2.0.21",
+		"tslib": "^2.5.0",
+		"turbo": "^1.8.3",
+		"typescript": "5.0.1-rc",
+		"zx": "^7.2.0"
+	},
+	"productName": "Stitch",
+	"trebuchet": {
+		"keep": {
+			"devDependencies": [
+				"electron",
+				"electron-packager",
+				"electron-squirrel-startup",
+				"zx"
+			]
+		}
+	}
+}

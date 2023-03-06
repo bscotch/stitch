@@ -1,0 +1,14 @@
+{
+  "include": ["src/**/*.ts", "src/**/*.mts", "src/**/*.cts"],
+  "compilerOptions": {
+    "types": ["node", "mocha", "chai"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": "src",
+    "lib": ["esnext", "DOM"],
+    "moduleResolution": "NodeNext",
+    "module": "Node16",
+    "esModuleInterop": true
+  },
+  "extends": "../tsconfig.base.json"
+}

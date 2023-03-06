@@ -16,6 +16,7 @@ _Butterscotch Shenanigans&reg; and Stitch&trade; are not affiliated with GameMak
 
 Some of the projects listed here are available as compiled packages via [npm](https://npmjs.com) or other 3rd party repositories. Others are only used locally.
 
+- [**Stitch Desktop**](packages/desktop): A GUI application for managing GameMaker projects, including ensuring they are opened with a consistent GameMaker IDE version and management of audio source files.
 - [**Stitch Core**](packages/core): The core SDK for managing and manipulating GameMaker projects. It includes a programmatic API and a CLI. Available as `@bscotch/stitch` [via npm](https://www.npmjs.com/package/@bscotch/stitch).
 - [**Stitch YY**](packages/yy): Utilities for reading, validating, and writing `.yy` and `.yyp` files. Available as `@bscotch/yy` [via npm](https://www.npmjs.com/package/@bscotch/yy).
 - [**Stitch Launcher**](packages/launcher): Utilities for automatically installing the GameMaker IDE by version, and opening GameMaker projects with specific IDE versions.
