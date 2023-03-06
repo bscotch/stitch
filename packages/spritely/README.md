@@ -9,8 +9,6 @@ These subimages may represent frames of an animation, or collection of animation
 that the game can cycle through. Frames within a sprite can also be used to create
 alternate versions of a static asset, such as recolors or random variants.
 
-**📢 Announcement 📢** The deployed version of Spritely found [on npm](https://www.npmjs.com/package/@bscotch/spritely) is from an _internal_ fork of the [public repo](https://github.com/bscotch/spritely). The public repo will be archived. Non-Bscotch users should use the npm package for the most up-to-date version of Spritely.
-
 **WARNING** This tool permanently changes your image files. Only use it if your
 images are backed up somewhere. Take particular care when using recursive commands!
 

@@ -19,8 +19,6 @@
 
 Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
-**📢 Announcement 📢** The deployed version of Stitch found [on npm](https://www.npmjs.com/package/@bscotch/stitch) is from an _internal_ fork of the [public repo](https://github.com/bscotch/stitch). The public repo will be archived but kept public. Non-Bscotch users should use the npm package for the most up-to-date version of Stitch.
-
 **💀 WARNING 💀 Use at your own risk.** Stitch could completely break your GameMaker project. To help keep you safe, Stitch will not run unless your project is in a git repo with a clean working directory, but you must also know how to use git to recover in case something goes wrong.
 
 _GameMaker&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&reg; and Stitch are not affiliated with Yoyo Games._
@@ -49,28 +47,35 @@ _GameMaker&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&r
 
 ## Table of Contents
 
-- [Changelog](#changelog)
-- [Compatibility](#compatibility)
-- [Setup](#setup)
-  - [Requirements](#requirements)
-  - [Installation](#install)
-  - [Project Setup](#game-setup)
-  - [Stitch Config File](#config-file)
-- [Ways to Use Stitch](#usage)
-  - [Using the Command Line](#cli) (typical use-case)
-  - [In Node.js apps](#usage-programming) (for custom pipelines)
-- [Things to do with Stitch](#features)
-  - [Open Projects with Consistent GameMaker versions](#open)
-  - [Merge GameMaker Projects](#merging) (treat GameMaker projects as modules)
-  - [Automatically Create and Update Assets](#import-asset)
-    - [Sprites (including Spine)](#import-sprites)
-    - [Sounds](#import-sounds)
-    - [Included Files](#import-files)
-    - [Objects](#import-objects)
-    - [Scripts](#import-scripts)
-  - [Manage Texture Groups](#texture-groups)
-  - [Manage Audio Groups](#audio-groups)
-  - [Identify Code Issues](#linter)
+1. [🚀 Quick Start](#-quick-start)
+  1. [💻 Using the CLI](#-using-the-cli)
+  2. [⌨ Writing your own Code](#-writing-your-own-code)
+2. [Table of Contents](#table-of-contents)
+3. [Changelog ](#changelog-)
+4. [GameMaker Studio Compatibility ](#gamemaker-studio-compatibility-)
+5. [Setup ](#setup-)
+  1. [Requirements ](#requirements-)
+  2. [Installation ](#installation-)
+  3. [Preparing your GameMaker project for Stitch ](#preparing-your-gamemaker-project-for-stitch-)
+  4. [Stitch Configuration File ](#stitch-configuration-file-)
+6. [Usage ](#usage-)
+  1. [Command Line Interface (CLI) ](#command-line-interface-cli-)
+  2. [Scripting/Custom Pipelines in Node.js ](#scriptingcustom-pipelines-in-nodejs-)
+7. [Features ](#features-)
+  1. [Open Projects with Consistent GameMaker versions ](#open-projects-with-consistent-gamemaker-versions-)
+  2. [Merging Projects ](#merging-projects-)
+    1. [Avoid name conflicts ](#avoid-name-conflicts-)
+  3. [Create Assets ](#create-assets-)
+    1. [Create Sprites From Images and Spine exports ](#create-sprites-from-images-and-spine-exports-)
+    2. [Create Audio Files From Sound Files ](#create-audio-files-from-sound-files-)
+    3. [Create "Included Files" ](#create-included-files-)
+    4. [Create/Update Scripts ](#createupdate-scripts-)
+    5. [Create Objects ](#create-objects-)
+  4. [Texture Group Management ](#texture-group-management-)
+  5. [Audio Group Management ](#audio-group-management-)
+  6. [Linter ](#linter-)
+    1. [Non-referenced Global Functions](#non-referenced-global-functions)
+    2. [Global Function Versioning](#global-function-versioning)
 
 ## Changelog <a id="changelog"></a>
 
