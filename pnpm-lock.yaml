@@ -4,6 +4,7 @@ importers:
 
   .:
     specifiers:
+      '@bscotch/pathy': ^2.6.0
       '@types/chai': ^4.3.4
       '@types/mocha': ^10.0.1
       '@types/node': ^18.14.6
@@ -20,6 +21,7 @@ importers:
       typescript: 5.0.1-rc
       zx: ^7.2.0
     dependencies:
+      '@bscotch/pathy': 2.6.0
       '@types/chai': 4.3.4
       '@types/mocha': 10.0.1
       '@types/node': 18.14.6

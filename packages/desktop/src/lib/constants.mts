@@ -3,10 +3,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 export const name = {
-  long: 'Stitch Desktop',
-  short: 'Stitch',
+	long: 'Stitch Desktop',
+	short: 'Stitch',
 };
 export const bundleRoot = path.dirname(fileURLToPath(import.meta.url));
 export const stitchConfigDir = path.join(os.homedir(), '.stitch');
 export const uriProtocol = 'bscotch.stitch-desktop';
-export const updateFeed = 'https://stitch.bscotch.net/update';
+export const updateFeed = '';
