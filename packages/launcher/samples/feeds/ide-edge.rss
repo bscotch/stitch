@@ -1,0 +1,282 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Zeus Red Update Feed</title>
+    <link>
+    http://s3.amazonaws.com/yoyo-zeus/update-win-ZeusFeature.rss
+    </link>
+    <description>Most recent changes with links to updates.</description>
+    <language>en</language>
+    <!-- END yygames -->
+    <atom:link href="http://s3.amazonaws.com/yoyo-zeus/update-win-ZeusFeature.rss" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Version 2022.600.0.125</title>
+      <pubDate>Fri, 10 Jun 2022 17:30:09 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.125.exe" type="application/octet-stream" length="115542040" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.125.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.125.exe</link>
+      <guid isPermaLink="false">d5271a58-1f925c57c896ba5f0ad042d2880ede4c</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.126</title>
+      <pubDate>Mon, 13 Jun 2022 17:42:00 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.126.exe" type="application/octet-stream" length="115544104" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.126.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.126.exe</link>
+      <guid isPermaLink="false">43acadad-cb7c52ae7c589caa4655f64669977a3c</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.127</title>
+      <pubDate>Mon, 13 Jun 2022 19:07:51 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.127.exe" type="application/octet-stream" length="115562216" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.127.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.127.exe</link>
+      <guid isPermaLink="false">43acadad-cad819316da917a45f7af5102b7e5d5e</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.128</title>
+      <pubDate>Tue, 14 Jun 2022 10:06:32 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.128.exe" type="application/octet-stream" length="115553712" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.128.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.128.exe</link>
+      <guid isPermaLink="false">d181e9d0-36ea1d3176495d379855bf76f9e80afd</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.129</title>
+      <pubDate>Tue, 14 Jun 2022 13:50:33 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.129.exe" type="application/octet-stream" length="115536656" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.129.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.129.exe</link>
+      <guid isPermaLink="false">d181e9d0-ad64361641804d84bc23919e79ca7903</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.130</title>
+      <pubDate>Wed, 15 Jun 2022 11:02:10 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.130.exe" type="application/octet-stream" length="115545976" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.130.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.130.exe</link>
+      <guid isPermaLink="false">e4785ed6-dcb6e71f9bfd2515ec469c8a61935d11</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.131</title>
+      <pubDate>Thu, 16 Jun 2022 10:52:02 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.131.exe" type="application/octet-stream" length="115514784" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.131.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.131.exe</link>
+      <guid isPermaLink="false">2efe3194-35610062983e2ee38afdbc66703f4d7d</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.132</title>
+      <pubDate>Thu, 16 Jun 2022 18:43:50 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.132.exe" type="application/octet-stream" length="115518888" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.132.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.132.exe</link>
+      <guid isPermaLink="false">4b3a84d0-a1f8adc2dbb228e7cb950defe5d103d6</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.133</title>
+      <pubDate>Fri, 17 Jun 2022 10:25:58 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.133.exe" type="application/octet-stream" length="115525984" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.133.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.133.exe</link>
+      <guid isPermaLink="false">916fdae0-fb0a3f81be5dcdfca9d6ad02b765f01e</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.134</title>
+      <pubDate>Fri, 17 Jun 2022 12:44:34 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.134.exe" type="application/octet-stream" length="115513328" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.134.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.134.exe</link>
+      <guid isPermaLink="false">2a12532a-28e484809c99faf6afe4f10ed143f27e</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.136</title>
+      <pubDate>Mon, 20 Jun 2022 16:29:15 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.136.exe" type="application/octet-stream" length="115510088" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.136.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.136.exe</link>
+      <guid isPermaLink="false">9f9af5bb-fa6196ecad763bc64b27999b3e00ca5e</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.137</title>
+      <pubDate>Tue, 21 Jun 2022 17:24:01 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.137.exe" type="application/octet-stream" length="115524704" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.137.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.137.exe</link>
+      <guid isPermaLink="false">2048cb90-464b8de2b79918b69ce9a9c773f1ca87</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.138</title>
+      <pubDate>Wed, 22 Jun 2022 11:56:21 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.138.exe" type="application/octet-stream" length="115514944" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.138.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.138.exe</link>
+      <guid isPermaLink="false">1b17ea2d-6377eb90654faff924235e489978ca3f</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.139</title>
+      <pubDate>Thu, 23 Jun 2022 15:03:10 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.139.exe" type="application/octet-stream" length="115526920" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.139.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.139.exe</link>
+      <guid isPermaLink="false">7484bbd8-730d61431f6528ab5b17a89dac702907</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.140</title>
+      <pubDate>Fri, 24 Jun 2022 08:52:40 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.140.exe" type="application/octet-stream" length="115525744" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.140.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.140.exe</link>
+      <guid isPermaLink="false">bd52fbfc-af87031aaa137a6901ce6c302e4ac0e8</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.141</title>
+      <pubDate>Fri, 24 Jun 2022 12:58:29 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.141.exe" type="application/octet-stream" length="115528000" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.141.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.141.exe</link>
+      <guid isPermaLink="false">bd52fbfc-8f4f5533b0b590b3e9b629cfb3b66980</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.142</title>
+      <pubDate>Fri, 24 Jun 2022 16:41:42 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.142.exe" type="application/octet-stream" length="115517536" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.142.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.142.exe</link>
+      <guid isPermaLink="false">bd52fbfc-7984562123aa1d018c004bc1f30dd212</guid>
+    </item>
+    <item>
+      <title>Version 2022.600.0.143</title>
+      <pubDate>Mon, 27 Jun 2022 16:14:19 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.143.exe" type="application/octet-stream" length="115527424" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.600.0.143.json</comments>
+      <description>&lt;p&gt;This first June’s Beta introduces more functionality for extensions; lots of fixes for Feather and also the current Syntax Errors system; changes the Switch crash-reporter to be Nintendo’s own system; and brings microphone support to Opera GX. Alongside those new features, we have a large number of bug fixes already.&lt;/p&gt;
+
+&lt;p&gt;Lots more features will be coming in future Betas.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime-NuBeta.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.600.0.143.exe</link>
+      <guid isPermaLink="false">94a94e38-37680e44fbf2d16715737ec47eea8538</guid>
+    </item>
+  </channel>
+</rss>

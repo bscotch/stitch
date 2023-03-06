@@ -1,0 +1,915 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Zeus Red Update Feed</title>
+    <link>
+    http://s3.amazonaws.com/yoyo-zeus/update-win-ZeusGreen.rss
+    </link>
+    <description>Most recent changes with links to updates.</description>
+    <language>en</language>
+    <!--  END yygames  -->
+    <atom:link href="http://s3.amazonaws.com/yoyo-zeus/update-win-ZeusGreen.rss" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Version 2.0.1.8</title>
+      <pubDate>Tue, 18 Oct 2016 20:55:19 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.1.8.json</comments>
+      <description>Marketplace and tutorials have changed a lot in this version, and there are some new power saving settings for laptop users. Aside from this, hundreds of other bugs have been addressed - please let us know if you find any issues.
+</description>
+      <guid isPermaLink="false">5b88bd7-0bccdfa533b73565e21ac237c3fdf68f</guid>
+    </item>
+    <item>
+      <title>Version 2.0.1.9</title>
+      <pubDate>Wed, 19 Oct 2016 15:30:09 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.1.9.json</comments>
+      <description>Marketplace and tutorials have changed a lot in this version, and there are some new power saving settings for laptop users. Aside from this, hundreds of other bugs have been addressed - please let us know if you find any issues.
+</description>
+      <guid isPermaLink="false">e41332b-974ec5cc377482b113a99911cb616bb5</guid>
+    </item>
+    <item>
+      <title>Version 2.0.1.10</title>
+      <pubDate>Wed, 19 Oct 2016 17:37:33 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.1.10.json</comments>
+      <description>Marketplace and tutorials have changed a lot in this version, and there are some new power saving settings for laptop users. Aside from this, hundreds of other bugs have been addressed - please let us know if you find any issues.
+</description>
+      <guid isPermaLink="false">de17eb0-bd2d189ccd97c382f95d0e4e36d248d9</guid>
+    </item>
+    <item>
+      <title>Version 2.0.1.12</title>
+      <pubDate>Thu, 20 Oct 2016 09:19:09 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.1.12.json</comments>
+      <description>Marketplace and tutorials have changed a lot in this version, and there are some new power saving settings for laptop users. Aside from this, hundreds of other bugs have been addressed - please let us know if you find any issues.
+</description>
+      <guid isPermaLink="false">02ec0f2-97826274237ae1de670637b79a1662cc</guid>
+    </item>
+    <item>
+      <title>Version 2.0.1.16</title>
+      <pubDate>Fri, 21 Oct 2016 09:42:45 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.1.16.json</comments>
+      <description>Marketplace and tutorials have changed a lot in this version, and there are some new power saving settings for laptop users. Aside from this, hundreds of other bugs have been addressed - please let us know if you find any issues.
+</description>
+      <guid isPermaLink="false">526f2cc-22c866dda5c6e94adff0b18afc6a8444</guid>
+    </item>
+    <item>
+      <title>Version 2.0.1.22</title>
+      <pubDate>Tue, 25 Oct 2016 14:31:27 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.1.22.json</comments>
+      <description>Marketplace and tutorials have changed a lot in this version, and there are some new power saving settings for laptop users. Aside from this, hundreds of other bugs have been addressed - please let us know if you find any issues.
+</description>
+      <guid isPermaLink="false">695f13a-beccc67b60550c17579162b3dc7cffa3</guid>
+    </item>
+    <item>
+      <title>Version 2.0.1.32</title>
+      <pubDate>Mon, 31 Oct 2016 14:57:20 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.1.32.json</comments>
+      <description>Welcome to the brand new Beta of GameMaker Studio 2! &lt;br&gt;
+&lt;br&gt;
+This is a ground up rewrite of the IDE, but also includes many new runtime changes and features. We &lt;i&gt;highly&lt;/i&gt; recommend that you at least browse the new manual, watch the videos, and even try doing some of the new tutorials, as this will help you get to grips with the new editor and workflow.&lt;br&gt;
+There will no doubt be some issues that we will need to address early on, but we're also very interested in user feedback, as to how you find the new IDE, and any improvements you'd like to see. You are also encouraged to take part in discussions on the GameMaker Community (GMC) forums, and to get in touch with us through social media or the helpdesk if you're having any issues.&lt;br&gt;
+&lt;br&gt;
+Here are some useful links to get you started:&lt;ul&gt;
+&lt;li&gt; &lt;a href="http://www.yoyogames.com/gamemaker/studio2/"&gt;GameMaker Studio 2 Information&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="http://help.yoyogames.com/"&gt;Help desk&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="http://forums.yoyogames.com/"&gt;GameMaker Community Forums&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="https://www.youtube.com/watch?v=ubvrKQlI_1A"&gt;GameMaker Studio 2, Key Concepts Video&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="https://www.youtube.com/playlist?list=PLhIbBGhnxj5Jx3eGJsyparJ47BxlyUAub"&gt;GameMaker Studio 2, Feature Videos&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html"&gt;Runtime Release Notes&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+      <guid isPermaLink="false">da62590-6a4da5d2598b9861d808bc4d421b46ec</guid>
+    </item>
+    <item>
+      <title>Version 2.0.1.33</title>
+      <pubDate>Sat, 05 Nov 2016 11:50:43 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.1.33.json</comments>
+      <description>Welcome to the brand new Beta of GameMaker Studio 2! &lt;br&gt;
+&lt;br&gt;
+This is a ground up rewrite of the IDE, but also includes many new runtime changes and features. We &lt;i&gt;highly&lt;/i&gt; recommend that you at least browse the new manual, watch the videos, and even try doing some of the new tutorials, as this will help you get to grips with the new editor and workflow.&lt;br&gt;
+There will no doubt be some issues that we will need to address early on, but we're also very interested in user feedback, as to how you find the new IDE, and any improvements you'd like to see. You are also encouraged to take part in discussions on the GameMaker Community (GMC) forums, and to get in touch with us through social media or the helpdesk if you're having any issues.&lt;br&gt;
+&lt;br&gt;
+Here are some useful links to get you started:&lt;ul&gt;
+&lt;li&gt; &lt;a href="http://www.yoyogames.com/gamemaker/studio2/"&gt;GameMaker Studio 2 Information&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="http://help.yoyogames.com/"&gt;Help desk&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="http://forums.yoyogames.com/"&gt;GameMaker Community Forums&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="https://www.youtube.com/watch?v=ubvrKQlI_1A"&gt;GameMaker Studio 2, Key Concepts Video&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="https://www.youtube.com/playlist?list=PLhIbBGhnxj5Jx3eGJsyparJ47BxlyUAub"&gt;GameMaker Studio 2, Feature Videos&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html"&gt;Runtime Release Notes&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;br&gt;
+&lt;b&gt;UPDATE&lt;/b&gt;: Surveys have been disabled for the time being.&lt;br&gt;</description>
+      <guid isPermaLink="false">fe55940-e34c90dbe0c07105a22108e75d2624fb</guid>
+    </item>
+    <item>
+      <title>Version 2.0.2.44</title>
+      <pubDate>Fri, 18 Nov 2016 15:35:41 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.2.44.json</comments>
+      <description>This is the first update to the Beta of GameMaker Studio 2&lt;br&gt;
+&lt;br&gt; 
+There have been lots of general fixes in this version and a couple of UI items we've had feedback on have been implemented. We will continue to monitor the various forums and social media channels for suggestions, and add them to our backlog if we can do them.
+&lt;br&gt;
+&lt;br&gt;
+Here are some useful links to help get you started:&lt;ul&gt;
+&lt;li&gt; &lt;a href="http://www.yoyogames.com/gamemaker/studio2/"&gt;GMS2 website&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="http://help.yoyogames.com/"&gt;Helpdesk&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="http://forums.yoyogames.com/"&gt;GameMaker Community forum&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="https://www.youtube.com/watch?v=ubvrKQlI_1A"&gt;GMS2 "Key Concepts" video&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="https://www.youtube.com/playlist?list=PLhIbBGhnxj5Jx3eGJsyparJ47BxlyUAub"&gt;GMS2 feature videos&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt; &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html"&gt;Runtime Release Notes&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;br&gt;
+</description>
+      <guid isPermaLink="false">ab78c65-561e26a4368a23faadaa62d96a496abb</guid>
+    </item>
+    <item>
+      <title>Version 2.0.3.56</title>
+      <pubDate>Fri, 16 Dec 2016 16:07:38 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.3.56.json</comments>
+      <description>There are lots of new features in this version (see below), along with many bug fixes.
+&lt;br&gt;
+Extensions are now in and active, although we do expect some issues to arise as you use them for the first time - please bear with us as we address these. You can also now upload GMS2 assets to the Marketplace (you can also upload a GMS2 package alongside your existing GM:S assets, so you don't have to make duplicate assets). We now have an amazingly cool &lt;i&gt;&lt;b&gt;"LIVE PREVIEW"&lt;/b&gt;&lt;/i&gt; mode in DnDâ„¢ which lets you see the equivalent GML code as you build up your DnDâ„¢ script.
+&lt;br&gt;
+There is a new Ball Breaker demo for both &lt;a href="https://marketplace.yoyogames.com/assets/4744/yoyo-ball-breaker"&gt;GML&lt;/a&gt; and &lt;a href="https://marketplace.yoyogames.com/assets/4802/yoyo-ball-breaker-dnd"&gt;DnD&lt;/a&gt;.
+&lt;br&gt;
+&lt;br&gt;
+</description>
+      <guid isPermaLink="false">e17f30b-48b7fee1aa446bba8cfcc22edc9a5aa7</guid>
+    </item>
+    <item>
+      <title>Version 2.0.4.64</title>
+      <pubDate>Thu, 26 Jan 2017 13:35:58 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.4.64.json</comments>
+      <description>&lt;p&gt;This version opens up the iOS, Android, HTML5 and Windows UWP targets - which you can now purchase via your YoYo Account panel as the Mobile, Web and UWP products. While we have tested them heavily internally, there will inevitably be some lingering issues, so please report any you find. UWP supports desktop, mobile and XBox One, making it a very wide-ranging set of devices you can now target.&lt;/p&gt;
+
+&lt;p&gt;Git source control is now finally available, but please use with care in these inital weeks of release, as there may be some unexpected issues that crop up.&lt;/p&gt;
+
+&lt;p&gt;There is also a new PNG-to-tilemap tool built into the room editor. This will take images and generate tiles from them, recognising both normal tiles and mirrored, flipped and rotated versions. Not only does this allow you to import old maps, but it's also a great way of compressing a very large image, as it will remove both duplicates and spaces.&lt;/p&gt;
+</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.0.4.64.exe</link>
+      <guid isPermaLink="false">7bb093a-7bb42e6395426de770157e7dac45d06a</guid>
+    </item>
+    <item>
+      <title>Version 2.0.4.65</title>
+      <pubDate>Mon, 30 Jan 2017 17:05:23 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.4.65.json</comments>
+      <description>&lt;p&gt;This version opens up the iOS, Android, HTML5 and Windows UWP targets - which you can now purchase via your YoYo Account panel as the Mobile, Web and UWP products. While we have tested them heavily internally, there will inevitably be some lingering issues, so please report any you find. UWP supports desktop, mobile and XBox One, making it a very wide-ranging set of devices you can now target.&lt;/p&gt;
+
+&lt;p&gt;Git source control is now finally available, but please use with care in these inital weeks of release, as there may be some unexpected issues that crop up.&lt;/p&gt;
+
+&lt;p&gt;There is also a new PNG-to-tilemap tool built into the room editor. This will take images and generate tiles from them, recognising both normal tiles and mirrored, flipped and rotated versions. Not only does this allow you to import old maps, but it's also a great way of compressing a very large image, as it will remove both duplicates and spaces.&lt;/p&gt;
+</description>
+      <guid isPermaLink="false">71c1a9d-c48073a8c599bd971ef5bf0cbeb660bb</guid>
+    </item>
+    <item>
+      <title>Version 2.0.5.72</title>
+      <pubDate>Fri, 17 Feb 2017 16:32:10 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.5.72.json</comments>
+      <description>&lt;p&gt;This is mainly an IDE and exports stability release, fixing a number of the issues we've had reported.&lt;/p&gt;
+
+&lt;p&gt;However, we have also added new Gesture events to allow simple detection of taps, double-taps, drags and flicks, which vastly simplifies interaction on touch-screen devices. On desktop devices, the mouse will also act as the first finger, allowing you to test single-touch events.&lt;/p&gt;
+
+&lt;p&gt;There is also a new layer compositing system in the Image Editor, which allows for more accurate compositing and better layer effects in the future.&lt;/p&gt;
+</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.0.5.72.exe</link>
+      <guid isPermaLink="false">e52e4ac-cfc036eca3514b6e051a98e4a41ff370</guid>
+    </item>
+    <item>
+      <title>Version 2.0.5.74</title>
+      <pubDate>Fri, 24 Feb 2017 13:19:08 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.5.74.json</comments>
+      <description>&lt;p&gt;This is mainly an IDE and exports stability release, fixing a number of the issues we've had reported.&lt;/p&gt;
+
+&lt;p&gt;However, we have also added new Gesture events to allow simple detection of taps, double-taps, drags and flicks, which vastly simplifies interaction on touch-screen devices. On desktop devices, the mouse will also act as the first finger, allowing you to test single-touch events.&lt;/p&gt;
+
+&lt;p&gt;There is also a new layer compositing system in the Image Editor, which allows for more accurate compositing and better layer effects in the future.&lt;/p&gt;
+</description>
+      <guid isPermaLink="false">7967621-0cdf6cc07defd81044768bfcd1719a33</guid>
+    </item>
+    <item>
+      <title>Version 2.0.5.76</title>
+      <pubDate>Tue, 07 Mar 2017 15:35:52 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.5.76.json</comments>
+      <description>&lt;p&gt;This is mainly an IDE and exports stability release, fixing a number of the issues we've had reported.&lt;/p&gt;
+
+&lt;p&gt;However, we have also added new Gesture events to allow simple detection of taps, double-taps, drags and flicks, which vastly simplifies interaction on touch-screen devices. On desktop devices, the mouse will also act as the first finger, allowing you to test single-touch events.&lt;/p&gt;
+
+&lt;p&gt;There is also a new layer compositing system in the Image Editor, which allows for more accurate compositing and better layer effects in the future.&lt;/p&gt;
+</description>
+      <guid isPermaLink="false">7517f85-3ee0f62f934f60d0f424380c5b8c6cfd</guid>
+    </item>
+    <item>
+      <title>Version 2.0.5.77</title>
+      <pubDate>Fri, 10 Mar 2017 12:22:39 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.5.77.json</comments>
+      <description>&lt;p&gt;This is mainly an IDE and exports stability release, fixing a number of the issues we've had reported.&lt;/p&gt;
+
+&lt;p&gt;However, we have also added new Gesture events to allow simple detection of taps, double-taps, drags and flicks, which vastly simplifies interaction on touch-screen devices. On desktop devices, the mouse will also act as the first finger, allowing you to test single-touch events.&lt;/p&gt;
+
+&lt;p&gt;There is also a new layer compositing system in the Image Editor, which allows for more accurate compositing and better layer effects in the future.&lt;/p&gt;
+</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.0.5.77.exe</link>
+      <guid isPermaLink="false">555ba66-36a1bcc1a10396356f13762703cea200</guid>
+    </item>
+    <item>
+      <title>Version 2.0.6.136</title>
+      <pubDate>Tue, 09 May 2017 01:20:51 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.6.136.json</comments>
+      <description>&lt;p&gt;This is mainly a bug-fix release, with lots and lots of issues resolved across the entire product. However, we have also added Pinch and Rotate gesture events and the first few image editor tools: Trim, Reverse Frames, and Colour Remove.&lt;/p&gt;
+
+&lt;p&gt;The Mac IDE also now has an automated Mono download and install stage if Mono is not detected on your Mac. This is also the first parity version between Windows and Closed Beta Mac, so IDE feature-wise (not the targets) they should now be on par - if not, we'd like to know.&lt;/p&gt;
+
+&lt;p&gt;Please note there is a licensing fix in this version, and accordingly this release had to be made mandatory.&lt;/p&gt;
+
+</description>
+      <guid isPermaLink="false">8c7daed-383a9fe165dff5c196da3c534dad446c</guid>
+    </item>
+    <item>
+      <title>Version 2.0.6.146</title>
+      <pubDate>Tue, 16 May 2017 16:39:27 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.6.146.json</comments>
+      <description>&lt;p&gt;This is mainly a bug-fix release, with lots and lots of issues resolved across the entire product. However, we have also added Pinch and Rotate gesture events and the first few image editor tools: Trim, Reverse Frames, and Colour Remove.&lt;/p&gt;
+
+&lt;p&gt;The Mac IDE also now has an automated Mono download and install stage if Mono is not detected on your Mac. This is also the first parity version between Windows and Closed Beta Mac, so IDE feature-wise (not the targets) they should now be on par - if not, we'd like to know.&lt;/p&gt;
+
+&lt;p&gt;Please note there is a licensing fix in this version, and accordingly this release had to be made mandatory.&lt;/p&gt;
+
+</description>
+      <guid isPermaLink="false">6593786-81e3ba5ebce7d5ed3b89e5255dc6eb26</guid>
+    </item>
+    <item>
+      <title>Version 2.0.7.171</title>
+      <pubDate>Wed, 21 Jun 2017 16:55:12 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.0.7.171.json</comments>
+      <description>Several new IDE features: the start page has been rewritten to fix general performance and white screen issues; the start of the remote worker system; image editor Blur and Reverse Frames tools; and a new proxy server interface to provide authentication details. Another stack of in-game bug fixes, and we have now implemented lots of functions which previously did not exist in HTML5.
+</description>
+      <guid isPermaLink="false">8971f58-39aaa19ec3cdff407e40d59311bcaffc</guid>
+    </item>
+    <item>
+      <title>Version 2.1.0.204</title>
+      <pubDate>Wed, 23 Aug 2017 15:36:07 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.0.204.json</comments>
+      <description>&lt;p&gt;Welcome the brand new version of GameMaker Studio 2 - v2.1! This version is a major release of GMS2 and includes the first full version of the Mac IDE, along with several new components.&lt;/p&gt;
+</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.0.204.exe</link>
+      <guid isPermaLink="false">7cd1b85-f458df33836ad30d1a1de523ef918a3f</guid>
+    </item>
+    <item>
+      <title>Version 2.1.0.207</title>
+      <pubDate>Fri, 25 Aug 2017 12:07:21 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.0.207.json</comments>
+      <description>&lt;p&gt;Welcome the brand new version of GameMaker Studio 2 - v2.1! This version is a major release of GMS2 and includes the first full version of the Mac IDE, along with several new components.&lt;/p&gt;
+</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.0.207.exe</link>
+      <guid isPermaLink="false">fcad936-04084155855f7a8c561da6cc51d2b78b</guid>
+    </item>
+    <item>
+      <title>Version 2.1.0.212</title>
+      <pubDate>Tue, 29 Aug 2017 11:43:05 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.0.212.json</comments>
+      <description>&lt;p&gt;Welcome the brand new version of GameMaker Studio 2 - v2.1! This version is a major release of GMS2 and includes the first full version of the Mac IDE, along with several new components.&lt;/p&gt;
+</description>
+      <guid isPermaLink="false">45e1869-b1d31e8f235ade4e6472660afb61f3df</guid>
+    </item>
+    <item>
+      <title>Version 2.1.1.241</title>
+      <pubDate>Wed, 04 Oct 2017 08:37:57 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.1.241.json</comments>
+      <description>&lt;p&gt;This version of GameMaker Studio 2 is mainly a bug-fix release. See below for some of the fixes.&lt;/p&gt;
+</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.1.241.exe</link>
+      <guid isPermaLink="false">2cbc6d3-6879ff1a1168e6325ca8d174496a77b7</guid>
+    </item>
+    <item>
+      <title>Version 2.1.2.257</title>
+      <pubDate>Tue, 31 Oct 2017 15:23:42 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.2.257.json</comments>
+      <description>&lt;p&gt;2.1.2 is another stability release to fix various issues. Again, see the list below for the IDE headlines and you can see the &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;runtime changes here&lt;/a&gt;.&lt;/p&gt;
+
+ </description>
+      <guid isPermaLink="false">c55bbd0-572e00ac9dd2d938e0d45c5e3ee2b662</guid>
+    </item>
+    <item>
+      <title>Version 2.1.3.271</title>
+      <pubDate>Thu, 07 Dec 2017 14:17:50 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.3.271.json</comments>
+      <description>&lt;p&gt;In this release, along with lots of bug fixes, the object editor has gained a new section for defining the object's variables as well as showing inherited parent events in the Events window. We have also brought GMS2 in line with new/upcoming Mac and iOS submission requirements - please note, iOS project icons will have to be updated to match the new sizes.&lt;/p&gt;
+</description>
+      <guid isPermaLink="false">6af0192-1bd5afc318eb6a5541d1e1928103bf61</guid>
+    </item>
+    <item>
+      <title>Version 2.1.3.273</title>
+      <pubDate>Wed, 13 Dec 2017 14:52:35 Z</pubDate>
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.3.273.json</comments>
+      <description>&lt;p&gt;In this release, along with lots of bug fixes, the object editor has gained a new section for defining the object's variables as well as showing inherited parent events in the Events window. We have also brought GMS2 in line with new/upcoming Mac and iOS submission requirements - please note, iOS project icons will have to be updated to match the new sizes.&lt;/p&gt;
+</description>
+      <guid isPermaLink="false">c12c162-439cf7b2464c8b2aa4e1be2c4b44a807</guid>
+    </item>
+    <item>
+      <title>Version 2.1.4.285</title>
+      <pubDate>Wed, 04 Apr 2018 12:14:56 Z</pubDate>
+      <enclosure url="http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.4.285.exe" type="application/octet-stream" length="185389288" />
+      <author>gms2@yoyogames.com (gms2 mandatory)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.4.285.json</comments>
+      <description>&lt;p&gt;GMS2 now allows you to work with the IDE in French, German, or Spanish! Install using one of these languages and GMS2 will download the manual in that language also.&lt;/p&gt;
+
+&lt;p&gt;Stacks of bugs have been fixed, we've also made improvements to the initial startup sequence, increased performance when working on large projects, and the resource tree now has a visual helper when reordering items. There are also a few new runtime features, such as config support in #macro defines and support for IPv6 in the networking functions.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Please note this version is mandatory as we have fixed a licensing bug and are also preparing for General Data Protection Regulation changes. Accordingly, you will get "license is invalid" the first run after updating - please just login again once to fix.&lt;/b&gt;&lt;/p&gt;
+</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.4.285.exe</link>
+      <guid isPermaLink="false">d2660d3-d90513f33a6c23192950316b0fb4519f</guid>
+    </item>
+    <item>
+      <title>Version 2.1.4.288</title>
+      <pubDate>Tue, 10 Apr 2018 15:34:45 Z</pubDate>
+      <enclosure url="http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.4.288.exe" type="application/octet-stream" length="185390280" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.4.288.json</comments>
+      <description>&lt;p&gt;GMS2 now allows you to work with the IDE in French, German, or Spanish! Install using one of these languages and GMS2 will download the manual in that language also.&lt;/p&gt;
+
+&lt;p&gt;Stacks of bugs have been fixed, we've also made improvements to the initial startup sequence, increased performance when working on large projects, and the resource tree now has a visual helper when reordering items. There are also a few new runtime features, such as config support in #macro defines and support for IPv6 in the networking functions - see the &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html"&gt;Runtime release notes&lt;/a&gt; for more info.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Please note this version is mandatory as we have fixed a licensing bug and are also preparing for General Data Protection Regulation changes. Accordingly, you will get "license is invalid" the first run after updating - please just login again once to fix.&lt;/b&gt;&lt;/p&gt;
+</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.4.288.exe</link>
+      <guid isPermaLink="false">7453cc4-e07285b577b66703cc08e310cb7cdc3e</guid>
+    </item>
+    <item>
+      <title>Version 2.1.4.295</title>
+      <pubDate>Thu, 17 May 2018 17:25:23 Z</pubDate>
+      <enclosure url="http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.4.295.exe" type="application/octet-stream" length="185390584" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.4.295.json</comments>
+      <description>&lt;p&gt;GMS2 now allows you to work with the IDE in French, German, or Spanish! Install using one of these languages and GMS2 will download the manual in that language also.&lt;/p&gt;
+
+&lt;p&gt;Stacks of bugs have been fixed, we've also made improvements to the initial startup sequence, increased performance when working on large projects, and the resource tree now has a visual helper when reordering items. There are also a few new runtime features, such as config support in #macro defines and support for IPv6 in the networking functions - see the &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html"&gt;Runtime release notes&lt;/a&gt; for more info.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Please note 2.1.4 is mandatory as we have fixed a licensing bug and are also preparing for General Data Protection Regulation changes. Accordingly, you will get "license is invalid" the first run after updating from 2.1.3 - please just login again once to fix.&lt;/b&gt;&lt;/p&gt;
+</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.4.295.exe</link>
+      <guid isPermaLink="false">173b74e-ad083bf939bff02d7a6ffd5c2b4a53d1</guid>
+    </item>
+    <item>
+      <title>Version 2.1.5.322</title>
+      <pubDate>Mon, 30 Jul 2018 14:52:02 Z</pubDate>
+      <enclosure url="http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.5.322.exe" type="application/octet-stream" length="187681472" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.1.5.322.json</comments>
+      <description>&lt;p&gt;&lt;b&gt;Please note that whilst not mandatory, 2.1.5 is highly recommended. We have changed the licensing server to better protect against DDoS attacks and made several fixes to offline usage (especially for our Mac IDE users). If you get "license is invalid" the first run after updating - please just login again once to fix.&lt;/b&gt;&lt;/p&gt; &lt;p&gt;As well as a large number of fixes to the IDE and runtimes, we've added in this version:&lt;/b&gt; &lt;ul&gt; &lt;li&gt;Support for building to Android 64bit architectures&lt;/li&gt; &lt;li&gt;Collision functions which return a list of all colliders, not just the first&lt;/li&gt; &lt;li&gt;New collision type for sprites: Non-axis-aligned bounding box&lt;/li&gt; &lt;li&gt;Virtual keyboard functions for iOS, Android, and UWP&lt;/li&gt; &lt;/ul&gt; &lt;/p&gt; &lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.1.5.322.exe</link>
+      <guid isPermaLink="false">29b2851-9a4f35d2c1ad0667d73eceabc7bef37b</guid>
+    </item>
+    <item>
+      <title>Version 2.2.0.343</title>
+      <pubDate>Wed, 03 Oct 2018 10:34:33 Z</pubDate>
+      <enclosure url="http://gms.yoyogames.com/GameMakerStudio-Installer-2.2.0.343.exe" type="application/octet-stream" length="187695880" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.2.0.343.json</comments>
+      <description>&lt;p&gt;2.2.0 is the full launch of our new Nintendo Switch module (although some GMS2 games are already released on the Switch store, which is amazing!) and brings a number of important fixes.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.2.0.343.exe</link>
+      <guid isPermaLink="false">22e8291-4fe7b7d11df47881c924a7fee82fd6e5</guid>
+    </item>
+    <item>
+      <title>Version 2.2.1.375</title>
+      <pubDate>Wed, 05 Dec 2018 14:58:44 Z</pubDate>
+      <enclosure url="http://gms.yoyogames.com/GameMakerStudio-Installer-2.2.1.375.exe" type="application/octet-stream" length="190507256" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.2.1.375.json</comments>
+      <description>&lt;p&gt;2.2.1 is a massive bug-fix release, including some new systems to prevent file corruption in projects. It also introduces full Android adaptive icon support and our new beta channel for those users interested in testing new features in future releases.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.2.1.375.exe</link>
+      <guid isPermaLink="false">4e431ac-b2058de1d4469d675bf3ab53ce719c8c</guid>
+    </item>
+    <item>
+      <title>Version 2.2.2.413</title>
+      <pubDate>Mon, 25 Mar 2019 16:32:23 Z</pubDate>
+      <enclosure url="http://gms.yoyogames.com/GameMakerStudio-Installer-2.2.2.413.exe" type="application/octet-stream" length="190804040" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.2.2.413.json</comments>
+      <description>&lt;p&gt;2.2.2 sees a major update to our Spine support, an update to our font functionality, and changes to handling audio on HTML5 (especially iOS and Android browsers). Plus, more stability fixes and extra dialogs to better inform you of system issues.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.2.2.413.exe</link>
+      <guid isPermaLink="false">ea8d0edc47-690f26a2378fa5f8eab891c6998eab53</guid>
+    </item>
+    <item>
+      <title>Version 2.2.3.433</title>
+      <pubDate>Wed, 03 Jul 2019 15:22:44 Z</pubDate>
+      <enclosure url="http://gms.yoyogames.com/GameMakerStudio-Installer-2.2.3.433.exe" type="application/octet-stream" length="192220632" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.2.3.433.json</comments>
+      <description>&lt;p&gt;2.2.3 introduces tvOS as a new export target if you have the Mobile licence, the ability to add comments to your DnD projects (and lots of other DnD fixes), the option to turn off the file system sandboxing on Desktop platform, support for exporting asset packages locally so you can share with your team more easily, and better communication of when your licences are to expire. Plus, this release has a whole bunch of major stability fixes to stop startup crashes and various other issues whilst using the Windows IDE, and issues with keychain certificate trust settings and building for Ubuntu on the Mac IDE.&lt;/p&gt;
+
+&lt;p&gt;We have also changed the way we handle startup crash messages on Windows, so that now (should you even see issues after all the fixes in this release...) it's a one-click report submission tool which automatically gets all the info we require for us to fix your issue and sends it directly to us without you having to file a Helpdesk ticket.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.2.3.433.exe</link>
+      <guid isPermaLink="false">ba5d843a12-37ee75ba49a053bd948c5a8b49654fcb</guid>
+    </item>
+    <item>
+      <title>Version 2.2.3.436</title>
+      <pubDate>Tue, 09 Jul 2019 17:59:58 Z</pubDate>
+      <enclosure url="http://gms.yoyogames.com/GameMakerStudio-Installer-2.2.3.436.exe" type="application/octet-stream" length="192221048" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>http://gms.yoyogames.com/release-notes-win-2.2.3.436.json</comments>
+      <description>&lt;p&gt;2.2.3 introduces tvOS as a new export target if you have the Mobile licence, the ability to add comments to your DnD projects (and lots of other DnD fixes), the option to turn off the file system sandboxing on Desktop platform, support for exporting asset packages locally so you can share with your team more easily, and better communication of when your licences are to expire. Plus, this release has a whole bunch of major stability fixes to stop startup crashes and various other issues whilst using the Windows IDE, and issues with keychain certificate trust settings and building for Ubuntu on the Mac IDE.&lt;/p&gt;
+
+&lt;p&gt;We have also changed the way we handle startup crash messages on Windows, so that now (should you even see issues after all the fixes in this release...) it's a one-click report submission tool which automatically gets all the info we require for us to fix your issue and sends it directly to us without you having to file a Helpdesk ticket.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>http://gms.yoyogames.com/GameMakerStudio-Installer-2.2.3.436.exe</link>
+      <guid isPermaLink="false">817c59ba11-4bf62c1297c28129acaee998e9049408</guid>
+    </item>
+    <item>
+      <title>Version 2.2.4.458</title>
+      <pubDate>Tue, 08 Oct 2019 12:40:17 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.2.4.458.exe" type="application/octet-stream" length="192338040" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.2.4.458.json</comments>
+      <description>&lt;p&gt;2.2.4 introduces a big update of the build toolchain to match the requirements of Android 10 and also macOS/iOS/tvOS following Apple's recent announcements - please update to this version if you're using macOS Catalina. IAP support has been greatly updated - including subscriptions support and receipt verification functionality! Plus, there has been another big push on making HTML5 games work more closely to how they do on other platforms. There have also been some changes to how and when files are created and a clean-up of some redundant game options, which should result in less confusion when working on your projects.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="http://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.2.4.458.exe</link>
+      <guid isPermaLink="false">c94dd5c20e-3fd2ec67f319ca974794c44855765ff9</guid>
+    </item>
+    <item>
+      <title>Version 2.2.4.459</title>
+      <pubDate>Wed, 09 Oct 2019 10:51:17 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.2.4.459.exe" type="application/octet-stream" length="192338920" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.2.4.459.json</comments>
+      <description>&lt;p&gt;2.2.4 introduces a big update of the build toolchain to match the requirements of Android 10 and also macOS/iOS/tvOS following Apple's recent announcements - please update to this version if you're using macOS Catalina. IAP support has been greatly updated - including subscriptions support and receipt verification functionality! Plus, there has been another big push on making HTML5 games work more closely to how they do on other platforms. There have also been some changes to how and when files are created and a clean-up of some redundant game options, which should result in less confusion when working on your projects.&lt;/p&gt;
+
+&lt;p&gt;Please be aware there is a change to licensing, so GMS2 will say your licence format is invalid the first time you start the IDE. Simply okay this prompt and log-in again to re-validate your licence. You should only see this once.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.2.4.459.exe</link>
+      <guid isPermaLink="false">1a1d2166fa-bd128a14bfe6514344139b0b7eff72e1</guid>
+    </item>
+    <item>
+      <title>Version 2.2.4.464</title>
+      <pubDate>Thu, 17 Oct 2019 12:30:30 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.2.4.464.exe" type="application/octet-stream" length="192338168" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.2.4.464.json</comments>
+      <description>&lt;p&gt;2.2.4 introduces a big update of the build toolchain to match the requirements of Android 10 and also macOS/iOS/tvOS following Apple's recent announcements - please update to this version if you're using macOS Catalina. IAP support has been greatly updated - including subscriptions support and receipt verification functionality! Plus, there has been another big push on making HTML5 games work more closely to how they do on other platforms. There have also been some changes to how and when files are created and a clean-up of some redundant game options, which should result in less confusion when working on your projects.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Please be aware there is a change to licensing, so GMS2 will say your licence format is invalid the first time you start the IDE. Simply "Retry" this prompt and log-in again to re-validate your licence. You should only see this once.&lt;/b&gt;&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.2.4.464.exe</link>
+      <guid isPermaLink="false">e174456751-995305ea669580f73f543ce038e5b889</guid>
+    </item>
+    <item>
+      <title>Version 2.2.4.474</title>
+      <pubDate>Tue, 29 Oct 2019 11:18:03 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.2.4.474.exe" type="application/octet-stream" length="192341008" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.2.4.474.json</comments>
+      <description>&lt;p&gt;2.2.4 introduces a big update of the build toolchain to match the requirements of Android 10 and also macOS/iOS/tvOS following Apple's recent announcements - please update to this version if you're using macOS Catalina. IAP support has been greatly updated - including subscriptions support and receipt verification functionality! Plus, there has been another big push on making HTML5 games work more closely to how they do on other platforms. There have also been some changes to how and when files are created and a clean-up of some redundant game options, which should result in less confusion when working on your projects.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Please be aware there is a change to licensing, so GMS2 will say your licence format is invalid the first time you start the IDE. Simply "Retry" this prompt and log-in again to re-validate your licence. You should only see this once.&lt;/b&gt;&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.2.4.474.exe</link>
+      <guid isPermaLink="false">f5fa226b20-9451473ce2011abc6df7ea6f9276e05d</guid>
+    </item>
+    <item>
+      <title>Version 2.2.5.481</title>
+      <pubDate>Wed, 18 Dec 2019 10:56:59 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.2.5.481.exe" type="application/octet-stream" length="192365968" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.2.5.481.json</comments>
+      <description>&lt;p&gt;2.2.5 is a small but very important stability release, while we continue developing all the new features in 2.3.0.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.2.5.481.exe</link>
+      <guid isPermaLink="false">a0a923cd4b-d7e26d582da126052b2e649d6da7a9a2</guid>
+    </item>
+    <item>
+      <title>Version 2.3.0.529</title>
+      <pubDate>Fri, 14 Aug 2020 18:28:35 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.0.529.exe" type="application/octet-stream" length="254066664" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.0.529.json</comments>
+      <description>&lt;p&gt;2.3.0 is a huge new release which brings multiple new asset types and editors, significant quality-of-life changes and productivity gains to the existing editors, and a new project format to handle all these new additions. There is a &lt;b&gt;lot&lt;/b&gt; changed in this release, so please do read all the release notes carefully and follow the link to our detailed guide to changes in 2.3.0.&lt;/p&gt;
+
+&lt;p&gt;Please also be aware that opening an existing project in 2.3.0 the first time will ask you to convert the project and save it out again with a new name. This is because the project format has now been changed quite extensively. You will not be able to open newer-style projects in 2.2.5 or older, and similarly 2.3.0 does not allow you to set 2.2.5 or older runtimes as active.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.0.529.exe</link>
+      <guid isPermaLink="false">0985ad04d8-2271475ce78edcaf315bbde521ff8c8b</guid>
+    </item>
+    <item>
+      <title>Version 2.3.1.536</title>
+      <pubDate>Thu, 19 Nov 2020 17:51:08 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.1.536.exe" type="application/octet-stream" length="152317776" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.1.536.json</comments>
+      <description>&lt;p&gt;2.3.1 is an evolution of the new Sequences functionality introduced in 2.3.0 - we have added Bezier curve support as well as improved the dopesheet and curve editor workflows to allow you to more accurately control and develop your Sequences, introduced new functions to scale/rotate your sequence and to query information from your curves, and enabled broadcast messages in all Sprites so they can trigger events in-game. There are also a lot of very important fixes for project conversion/import, an updated version of Mono is now required by the macOS IDE to fix some issues with projects not building on some Macs, and multiple fixes for configs and extensions throughout the IDE and when building projects.&lt;/p&gt;
+
+&lt;p&gt;On the runtime side, as well as a large number of in-game bug fixes this release introduces Windows x64, Ubuntu ARMv7, UWP multiple-architectures-in-one-package, and Apple Silicon-compatible macOS output types. There are important fixes for garbage collection and configs support in-game, which fixes a number of issues with games crashing in 2.3.0. Please note that 2.3.1 also updates SDKs/external tools for some of the platforms, so you should be aware of this when updating and building projects.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.1.536.exe</link>
+      <guid isPermaLink="false">0ee8bfd3c4-84c5d20e3e4416d35ec432239b8ccd44</guid>
+    </item>
+    <item>
+      <title>Version 2.3.1.542</title>
+      <pubDate>Wed, 16 Dec 2020 15:21:09 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.1.542.exe" type="application/octet-stream" length="152323272" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.1.542.json</comments>
+      <description>&lt;p&gt;2.3.1 is an evolution of the new Sequences functionality introduced in 2.3.0 - we have added Bezier curve support as well as improved the dopesheet and curve editor workflows to allow you to more accurately control and develop your Sequences, introduced new functions to scale/rotate your sequence and to query information from your curves, and enabled broadcast messages in all Sprites so they can trigger events in-game. There are also a lot of very important fixes for project conversion/import, an updated version of Mono is now required by the macOS IDE to fix some issues with projects not building on some Macs, and multiple fixes for configs and extensions throughout the IDE and when building projects.&lt;/p&gt;
+
+&lt;p&gt;On the runtime side, as well as a large number of in-game bug fixes this release introduces Windows x64, Ubuntu ARMv7, UWP multiple-architectures-in-one-package, and Apple Silicon-compatible macOS output types. There are important fixes for garbage collection and configs support in-game, which fixes a number of issues with games crashing in 2.3.0. Please note that 2.3.1 also updates SDKs/external tools for some of the platforms, so you should be aware of this when updating and building projects.&lt;/p&gt;
+
+&lt;p&gt;See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.1.542.exe</link>
+      <guid isPermaLink="false">87c24c089a-d5c86b03e9c3bab320be32f335378007</guid>
+    </item>
+    <item>
+      <title>Version 2.3.2.556</title>
+      <pubDate>Tue, 30 Mar 2021 11:57:58 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.2.556.exe" type="application/octet-stream" length="111402216" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.2.556.json</comments>
+      <description>&lt;p&gt;2.3.2 is all about performance. It introduces new Nine Slice support for your sprites, allowing you to create nicer-looking menu screens and HUDs in a quick and easy way; adds the new animcurve library containing preset curves you can use to very quickly and easily apply common behaviours to your animations; offers new IDE and manual languages so you can work more quickly and easily in a language you prefer; changed the Tutorials button on the Start Page to now open our Learn website, so we can offer new tutorials, fixes, and more localised versions at a faster rate. It also removes a few memory/performance bugs in the IDE, reduces compile times (in the majority of cases), improves the garbage collector for a little more in-game performance and a lot more stability, and also smoothens FPS values when on Windows (particularly for those of you with high-refresh monitors). And if you want speed and ease when passing your macOS games around, try the new .dmg export for non-App Store builds.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of important bug fixes and a few changes, so please do review the whole of the release notes thoroughly and make yourself aware of these. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.2.556.exe</link>
+      <guid isPermaLink="false">d2d20ebe10-cf0f95fe05f7826d0722b5a0e6be412c</guid>
+    </item>
+    <item>
+      <title>Version 2.3.2.558</title>
+      <pubDate>Mon, 12 Apr 2021 17:44:38 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.2.558.exe" type="application/octet-stream" length="111399592" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.2.558.json</comments>
+      <description>&lt;p&gt;2.3.2 is all about performance. It introduces new Nine Slice support for your sprites, allowing you to create nicer-looking menu screens and HUDs in a quick and easy way; adds the new animcurve library containing preset curves you can use to very quickly and easily apply common behaviours to your animations; offers new IDE and manual languages so you can work more quickly and easily in a language you prefer; changed the Tutorials button on the Start Page to now open our Learn website, so we can offer new tutorials, fixes, and more localised versions at a faster rate. It also removes a few memory/performance bugs in the IDE, reduces compile times (in the majority of cases), improves the garbage collector for a little more in-game performance and a lot more stability, and also smoothens FPS values when on Windows (particularly for those of you with high-refresh monitors). And if you want speed and ease when passing your macOS games around, try the new .dmg export for non-App Store builds.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of important bug fixes and a few changes, so please do review the whole of the release notes thoroughly and make yourself aware of these. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.2.558.exe</link>
+      <guid isPermaLink="false">ce4ebeeb42-8968527b575724091a27576969c6757b</guid>
+    </item>
+    <item>
+      <title>Version 2.3.2.560</title>
+      <pubDate>Fri, 16 Apr 2021 13:02:35 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.2.560.exe" type="application/octet-stream" length="111386488" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.2.560.json</comments>
+      <description>&lt;p&gt;2.3.2 is all about performance. It introduces new Nine Slice support for your sprites, allowing you to create nicer-looking menu screens and HUDs in a quick and easy way; adds the new animcurve library containing preset curves you can use to very quickly and easily apply common behaviours to your animations; offers new IDE and manual languages so you can work more quickly and easily in a language you prefer; changed the Tutorials button on the Start Page to now open our Learn website, so we can offer new tutorials, fixes, and more localised versions at a faster rate. It also removes a few memory/performance bugs in the IDE, reduces compile times (in the majority of cases), improves the garbage collector for a little more in-game performance and a lot more stability, and also smoothens FPS values when on Windows (particularly for those of you with high-refresh monitors). And if you want speed and ease when passing your macOS games around, try the new .dmg export for non-App Store builds.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of important bug fixes and a few changes, so please do review the whole of the release notes thoroughly and make yourself aware of these. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.2.560.exe</link>
+      <guid isPermaLink="false">af927ba2cb-f136f383aac64be0bd95e602973c81ec</guid>
+    </item>
+    <item>
+      <title>Version 2.3.3.570</title>
+      <pubDate>Fri, 09 Jul 2021 15:39:39 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.3.570.exe" type="application/octet-stream" length="118622696" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.3.570.json</comments>
+      <description>&lt;p&gt;2.3.3 is an important stability release for a number of different features: changes to source control to resolve Github authentication issues; support for using Android NDK 22, Android Studio 4.2, and the latest Xcode on Big Sur; optimisations for the amount of work done by the IDE when displaying your projects, reducing CPU usage; and a number of performance fixes in-game also.&lt;/p&gt;
+
+&lt;p&gt;At the same time, it does introduce several new features, including: the Inspector has been greatly extended to support multiple additional editors; a big change to how undo/redo worked within the IDE, giving you more flexibility and a better experience; you can now declare default values for your functions' optional arguments; and in-game you can now support two mouse thumb buttons on Desktop platforms.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of important bug fixes, so please do read the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.3.570.exe</link>
+      <guid isPermaLink="false">988436b5b8-f6d6fa0df00aa2e4091c2aee900601e9</guid>
+    </item>
+    <item>
+      <title>Version 2.3.3.574</title>
+      <pubDate>Wed, 21 Jul 2021 13:22:19 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.3.574.exe" type="application/octet-stream" length="118638008" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.3.574.json</comments>
+      <description>&lt;p&gt;2.3.3 is an important stability release for a number of different features: changes to source control to resolve Github authentication issues; support for using Android NDK 22, Android Studio 4.2, and the latest Xcode on Big Sur; optimisations for the amount of work done by the IDE when displaying your projects, reducing CPU usage; and a number of performance fixes in-game also.&lt;/p&gt;
+
+&lt;p&gt;At the same time, it does introduce several new features, including: the Inspector has been greatly extended to support multiple additional editors; a big change to how undo/redo worked within the IDE, giving you more flexibility and a better experience; you can now declare default values for your functions' optional arguments; and in-game you can now support two mouse thumb buttons on Desktop platforms.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of important bug fixes, so please do read the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.3.574.exe</link>
+      <guid isPermaLink="false">90fdaf4380-da3fe81367baaa8a22ee3bfa3ae07894</guid>
+    </item>
+    <item>
+      <title>Version 2.3.4.577</title>
+      <pubDate>Mon, 06 Sep 2021 17:30:57 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.4.577.exe" type="application/octet-stream" length="130894520" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.4.577.json</comments>
+      <description>&lt;p&gt;2.3.4 changes a lot of the underlying systems for input/output and how the IDE is rendered, allowing us to fix some longstanding differences Windows IDE vs Mac IDE and also to better support modern input devices and new OSes going forward. You may not notice much change and this might look like a small release, but there have been a &lt;i&gt;lot&lt;/i&gt; of changes, fixes and improvements made throughout the IDE.&lt;/p&gt;
+
+&lt;p&gt;There is also an overhaul in the versions of Visual Studio now required. Almost all platforms which used VS2015 before now require Visual Studio 2019, so please ensure you install this if you haven't already and also check your GMS2 Preferences paths are now correct, otherwise you will have errors when building YYC platforms/UWP/consoles. More information and a link to the Required SDKs can be found further down this page or on the Help menu inside GMS2 itself.&lt;/p&gt;
+
+&lt;p&gt;We also squeezed in two new console exports - Microsoft Xbox Series X/S and Sony PlayStation 5! If you are already approved for consoles these will appear in Target Manager as normal.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of important bug fixes, so please do read the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.4.577.exe</link>
+      <guid isPermaLink="false">1aa25c1378-d65eeeeee216e6d32e0e4cacdd29d313</guid>
+    </item>
+    <item>
+      <title>Version 2.3.4.580</title>
+      <pubDate>Thu, 09 Sep 2021 15:52:32 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.4.580.exe" type="application/octet-stream" length="130892624" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.4.580.json</comments>
+      <description>&lt;p&gt;2.3.4 changes a lot of the underlying systems for input/output and how the IDE is rendered, allowing us to fix some longstanding differences Windows IDE vs Mac IDE and also to better support modern input devices and new OSes going forward. You may not notice much change and this might look like a small release, but there have been a &lt;i&gt;lot&lt;/i&gt; of changes, fixes and improvements made throughout the IDE.&lt;/p&gt;
+
+&lt;p&gt;There is also an overhaul in the versions of Visual Studio now required. Almost all platforms which used VS2015 before now require Visual Studio 2019, so please ensure you install this if you haven't already and also check your GMS2 Preferences paths are now correct, otherwise you will have errors when building YYC platforms/UWP/consoles. More information and a link to the Required SDKs can be found further down this page or on the Help menu inside GMS2 itself.&lt;/p&gt;
+
+&lt;p&gt;We also squeezed in two new console exports - Microsoft Xbox Series X/S and Sony PlayStation 5! If you are already approved for consoles these will appear in Target Manager as normal.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of important bug fixes, so please do read the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.4.580.exe</link>
+      <guid isPermaLink="false">c06f2113bc-e34a0699fdcedc28459d2cde90501f59</guid>
+    </item>
+    <item>
+      <title>Version 2.3.4.583</title>
+      <pubDate>Mon, 20 Sep 2021 14:42:34 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.4.583.exe" type="application/octet-stream" length="130946640" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.4.583.json</comments>
+      <description>&lt;p&gt;2.3.4 changes a lot of the underlying systems for input/output and how the IDE is rendered, allowing us to fix some longstanding differences Windows IDE vs Mac IDE and also to better support modern input devices and new OSes going forward. You may not notice much change and this might look like a small release, but there have been a &lt;i&gt;lot&lt;/i&gt; of changes, fixes and improvements made throughout the IDE.&lt;/p&gt;
+
+&lt;p&gt;There is also an overhaul in the versions of Visual Studio now required. Almost all platforms which used VS2015 before now require Visual Studio 2019, so please ensure you install this if you haven't already and also check your GMS2 Preferences paths are now correct, otherwise you will have errors when building YYC platforms/UWP/consoles. More information and a link to the Required SDKs can be found further down this page or on the Help menu inside GMS2 itself.&lt;/p&gt;
+
+&lt;p&gt;We also squeezed in two new console exports - Microsoft Xbox Series X/S and Sony PlayStation 5! If you are already approved for consoles these will appear in Target Manager as normal.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of important bug fixes, so please do read the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.4.583.exe</link>
+      <guid isPermaLink="false">e18bfd810b-a77a66027f3311edf1be61a8df5f8aa6</guid>
+    </item>
+    <item>
+      <title>Version 2.3.5.589</title>
+      <pubDate>Thu, 30 Sep 2021 11:02:33 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.5.589.exe" type="application/octet-stream" length="114964640" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.5.589.json</comments>
+      <description>&lt;p&gt;2.3.5 brings a lot of stability fixes and continues the improvements to the product enabled by the new renderer and input/output systems introduced in 2.3.4. However, we also enabled the Inspector within the Sprite Editor, added new UI in Preferences to allow you to redefine the hotkeys GMS2 uses throughout the product, and introduced several other small quality-of-life tweaks which you can read about below.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of important bug fixes, so please do read the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.5.589.exe</link>
+      <guid isPermaLink="false">890444ef53-58e37662d483c228253b6895ab79cd06</guid>
+    </item>
+    <item>
+      <title>Version 2.3.6.595</title>
+      <pubDate>Thu, 28 Oct 2021 10:54:30 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.6.595.exe" type="application/octet-stream" length="122539960" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.6.595.json</comments>
+      <description>&lt;p&gt;2.3.6 introduces a new design to the Start Page and the concept of Template projects (which you can turn your own projects into if you wish), plus support for a new Filters layer in the Room Editor which allows you to quickly and easily add special effects into your games! As well as the new things, it brings a lot of stability fixes (in the IDE and in-game), such as changing the default renderer on Windows to Direct3D and stopping a fair number of crashes throughout the IDE.&lt;/p&gt;
+
+&lt;p&gt;In-game, it fixes a number of issues with precise collisions (especially with scaled-up small sprites) on all targets and also resolves a number of issues with the new OperaGX target we released in 2.3.5, so now your OperaGX games can do more and will work better.&lt;/p&gt;
+
+&lt;p&gt;Please note there is also a bit of clean-up of old code and variable/event names, so please see the important changes section below in case any of this applies to you and so you now need to tweak your code slightly.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of important bug fixes, so of course do also read the rest of the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.6.595.exe</link>
+      <guid isPermaLink="false">1049610b50-3d04621dd6736bdcb6b4588a8a0f7ee3</guid>
+    </item>
+    <item>
+      <title>Version 2.3.7.603</title>
+      <pubDate>Wed, 24 Nov 2021 12:32:41 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.7.603.exe" type="application/octet-stream" length="123587560" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.7.603.json</comments>
+      <description>&lt;p&gt;2.3.7 brings the ability to sign in to GMS2 using an Opera single sign-on account if you wish, adds support for a new "nullish" operator in your code, and introduces three more filter layer types your can use in your rooms as well as enabling the Inspector for use in your rooms. This release also sees several performance increases (such as native Mac M1 architecture support for GMS2 itself) and some load time boosts for opening your projects and also for games starting at the end of builds.&lt;/p&gt;
+
+&lt;p&gt;This release also raises Spine support to require v4.0. Please be aware this updated Spine runtime will require you to re-export your Spine images using v4.0 before they will work again in GMS2!&lt;/p&gt;
+
+&lt;p&gt;The matching runtime version updates a number of the SDKs GMS2 requires during builds (so please see our setup guides if you have issues building projects) and fixes an issue with Android API 31+ with Android 12 devices.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of other changes and several important bug fixes, so of course do also read the rest of the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.7.603.exe</link>
+      <guid isPermaLink="false">dc63f4acc9-0e8ab6dd384f5f20b3d74bfeb24a0c12</guid>
+    </item>
+    <item>
+      <title>Version 2.3.7.606</title>
+      <pubDate>Wed, 08 Dec 2021 20:46:38 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.7.606.exe" type="application/octet-stream" length="123552312" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2.3.7.606.json</comments>
+      <description>&lt;p&gt;2.3.7 brings the ability to sign in to GMS2 using an Opera single sign-on account if you wish, adds support for a new "nullish" operator in your code, and introduces three more filter layer types your can use in your rooms as well as enabling the Inspector for use in your rooms. This release also sees several performance increases (such as native Mac M1 architecture support for GMS2 itself) and some load time boosts for opening your projects and also for games starting at the end of builds.&lt;/p&gt;
+
+&lt;p&gt;This release also raises Spine support to require v4.0. Please be aware this updated Spine runtime will require you to re-export your Spine images using v4.0 before they will work again in GMS2!&lt;/p&gt;
+
+&lt;p&gt;The matching runtime version updates a number of the SDKs GMS2 requires during builds (so please see our setup guides if you have issues building projects) and fixes an issue with Android API 31+ with Android 12 devices.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of other changes and several important bug fixes, so of course do also read the rest of the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2.3.7.606.exe</link>
+      <guid isPermaLink="false">743faa7d83-403273bee858a91d1503d374320ec792</guid>
+    </item>
+    <item>
+      <title>Version 2022.1.0.609</title>
+      <pubDate>Wed, 26 Jan 2022 17:59:27 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2022.1.0.609.exe" type="application/octet-stream" length="117812624" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.1.0.609.json</comments>
+      <description>&lt;p&gt;Welcome to 2022.1!  More on the reasons for the numbering change and a bit more on whatâ€™s in this release can be found on  
+&lt;a href="https://www.yoyogames.com/en/blog/release-2022-1" target="_blank"&gt;our accompanying release blog&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;This IDE fixes a number of stability or performance issues reported over the last couple of releases, plus a number of hotkey support issues in various editors. It also adds extra functionality into the Inspector, including the ability to apply a filter/effect target to a single specified layer in the Room Editor (also via new in-game functions), and a number of productivity improvements and misc UI tweaks to make editing your projects faster and easier.&lt;/p&gt;
+
+&lt;p&gt;Be aware that this release ends support for our Remote Worker tool and so this is not part of the installer any more. Going forward, please just use the Windows and Mac IDEs directly on your machines.&lt;/p&gt;
+
+&lt;p&gt;The matching runtime version changes the format of all images in-game to lower build times and package sizes, adds the ability to connect to secure websockets on almost all platforms, fixes a performance issue building large projects on the Mac IDE and enables simulator use on an M1-equipped Mac, as well as raising the version of Gradle used during Android builds and introducing support for the newest SDK/NDK versions.&lt;/p&gt;
+
+&lt;p&gt;Note that there is also quite a substantial change to collisions, as bounding box values are now floats rather than ints - this increases accuracy and fixes a number of long-standing bugs. You should test your games carefully, as you may need to make changes to your code in response to this fix; however, there is also a new compatibility mode in Game Options for if your existing projects need to maintain the old way. More information on this change can be found on &lt;a href="https://manual.yoyogames.com/#t=GameMaker_Language%2FGML_Reference%2FMovement_And_Collisions%2FCollisions%2FCollision_Compatibility_Mode.htm" target="_blank"&gt;its page in the manual&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of other changes and several important bug fixes, so of course do also read the rest of the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2022.1.0.609.exe</link>
+      <guid isPermaLink="false">93ff223a7d-c8b81f228de2318a9f6f8e7d475e3e4e</guid>
+    </item>
+    <item>
+      <title>Version 2022.1.1.610</title>
+      <pubDate>Fri, 04 Feb 2022 19:32:32 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2022.1.1.610.exe" type="application/octet-stream" length="117668208" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.1.1.610.json</comments>
+      <description>&lt;p&gt;Welcome to 2022.1!  More on the reasons for the numbering change and a bit more on whatâ€™s in this release can be found on  
+&lt;a href="https://www.yoyogames.com/en/blog/release-2022-1" target="_blank"&gt;our accompanying release blog&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;This IDE fixes a number of stability or performance issues reported over the last couple of releases, plus a number of hotkey support issues in various editors. It also adds extra functionality into the Inspector, including the ability to apply a filter/effect target to a single specified layer in the Room Editor (also via new in-game functions), and a number of productivity improvements and misc UI tweaks to make editing your projects faster and easier.&lt;/p&gt;
+
+&lt;p&gt;Be aware that this release ends support for our Remote Worker tool and so this is not part of the installer any more. Going forward, please just use the Windows and Mac IDEs directly on your machines.&lt;/p&gt;
+
+&lt;p&gt;The matching runtime version changes the format of all images in-game to lower build times and package sizes, adds the ability to connect to secure websockets on almost all platforms, fixes a performance issue building large projects on the Mac IDE and enables simulator use on an M1-equipped Mac, as well as raising the version of Gradle used during Android builds and introducing support for the newest SDK/NDK versions.&lt;/p&gt;
+
+&lt;p&gt;Note that there is also quite a substantial change to collisions, as bounding box values are now floats rather than ints - this increases accuracy and fixes a number of long-standing bugs. You should test your games carefully, as you may need to make changes to your code in response to this fix; however, there is also a new compatibility mode in Game Options for if your existing projects need to maintain the old way. More information on this change can be found on &lt;a href="https://manual.yoyogames.com/#t=GameMaker_Language%2FGML_Reference%2FMovement_And_Collisions%2FCollisions%2FCollision_Compatibility_Mode.htm" target="_blank"&gt;its page in the manual&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of other changes and several important bug fixes, so of course do also read the rest of the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2022.1.1.610.exe</link>
+      <guid isPermaLink="false">e6863dcd97-0c486f8fe3ee808ede1e4ff23c14eab4</guid>
+    </item>
+    <item>
+      <title>Version 2022.2.0.614</title>
+      <pubDate>Thu, 24 Feb 2022 12:24:49 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2022.2.0.614.exe" type="application/octet-stream" length="117940272" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.2.0.614.json</comments>
+      <description>&lt;p&gt;2022.2 introduces a new ability to create text tracks/instances and animate these within your sequences, then draw the text later in-game. It also changes a long-time GameMaker behaviour that arrays will make and edit a copy when you pass an array into a function, and so we have added an option to maintain the old way if you want. As well as these two important additions, there is the ability to send text to a secure websocket, to define colours in the code editor using CSS web standard values and for this to appear correctly in your game, and also a range of important bug fixes.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Please note that projects created or opened in this version and future versions are NOT backwards compatible with 2022.1 or older versions, due to the new Text-In-Sequences functionality.&lt;/b&gt; Any such projects will be flagged as "read-only" when loaded into an older IDE and you won't be able to work on them, so please make sure to create a backup of your projects before opening them in this version.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Steamworks users: Please also be aware that you now need to use our Steamworks extension from &lt;a href="https://www.google.com/url?q=https://marketplace.yoyogames.com/assets/10709/steamworks-ext&amp;sa=D&amp;source=docs&amp;ust=1645553377167843&amp;usg=AOvVaw15D9yqZnp3Nt7kddfBNDt-" target="_blank"&gt;its page on the Marketplace&lt;/a&gt; and include this inside your projects if you wish to publish games to Steam - the runner has been cleaned of all its old in-built functions and so there are no longer Game Options or most Preferences for Steam setup, as this is all now configured for your project within the extension once you have added it.&lt;/b&gt;&lt;/p&gt;
+
+&lt;p&gt;Beyond that important Steamworks change, the matching runtime version introduces a new game option for toggling whether games should copy arrays when writing to them, enables the text-in-sequences and CSS functionality already mentioned and fixes a number of headline 2022.1 issues.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of other changes and several important bug fixes, so of course do also read the rest of the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2022.2.0.614.exe</link>
+      <guid isPermaLink="false">469f6d3e4a-36cbc0b543364ad6c07ff656548091d0</guid>
+    </item>
+    <item>
+      <title>Version 2022.2.1.618</title>
+      <pubDate>Wed, 09 Mar 2022 15:24:05 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMakerStudio-Installer-2022.2.1.618.exe" type="application/octet-stream" length="117942640" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.2.1.618.json</comments>
+      <description>&lt;p&gt;2022.2 introduces a new ability to create text tracks/instances and animate these within your sequences, then draw the text later in-game. It also changes a long-time GameMaker behaviour that arrays will make and edit a copy when you pass an array into a function, and so we have added an option to maintain the old way if you want. As well as these two important additions, there is the ability to send text to a secure websocket, to define colours in the code editor using CSS web standard values and for this to appear correctly in your game, and also a range of important bug fixes.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Please note that projects created or opened in this version and future versions are NOT backwards compatible with 2022.1 or older versions, due to the new Text-In-Sequences functionality.&lt;/b&gt; Any such projects will be flagged as "read-only" when loaded into an older IDE and you won't be able to work on them, so please make sure to create a backup of your projects before opening them in this version.&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;Steamworks users: Please also be aware that you now need to use our Steamworks extension from &lt;a href="https://www.google.com/url?q=https://marketplace.yoyogames.com/assets/10709/steamworks-ext&amp;sa=D&amp;source=docs&amp;ust=1645553377167843&amp;usg=AOvVaw15D9yqZnp3Nt7kddfBNDt-" target="_blank"&gt;its page on the Marketplace&lt;/a&gt; and include this inside your projects if you wish to publish games to Steam - the runner has been cleaned of all its old in-built functions and so there are no longer Game Options or most Preferences for Steam setup, as this is all now configured for your project within the extension once you have added it.&lt;/b&gt;&lt;/p&gt;
+
+&lt;p&gt;Beyond that important Steamworks change, the matching runtime version introduces a new game option for toggling whether games should copy arrays when writing to them, enables the text-in-sequences and CSS functionality already mentioned and fixes a number of headline 2022.1 issues.&lt;/p&gt;
+
+&lt;p&gt;There are of course also a number of other changes and several important bug fixes, so of course do also read the rest of the release notes carefully. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMakerStudio-Installer-2022.2.1.618.exe</link>
+      <guid isPermaLink="false">2cd82967d5-76acdce517ff6be225fd30fb71ea8c72</guid>
+    </item>
+    <item>
+      <title>Version 2022.3.0.624</title>
+      <pubDate>Wed, 30 Mar 2022 16:19:37 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.3.0.624.exe" type="application/octet-stream" length="116435320" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.3.0.624.json</comments>
+      <description>&lt;p&gt;Say hello to GameMaker! (or indeed your pick of ã“ã‚“ã«ã¡ã¯ , ì•ˆë…•í•˜ì„¸ìš” , czeÅ›Ä‡, or ciao)&lt;/p&gt;
+
+&lt;p&gt;2022.3 IDE changes several branding names and does away with the concept of picking a choice of code editor before you start your project and instead allows you to pick the editor style you want, when you want it; ships with 4 new localisations (Japanese, Korean, Polish, and Italian); adds a new dropdown to pick if you want compressed QOI images or not and whether to drop back to the old .png system instead; and several new filter types have been added for you to use in your games.&lt;/p&gt;
+
+&lt;p&gt;Runtime changes introduce Opera GX YYC support for everyone; enables video playback functionality on almost all platforms (UWP is not being implemented); two new audio falloff models have been added: &lt;i&gt;audio_falloff_inverse_distance_scaled&lt;/i&gt; and &lt;i&gt;audio_falloff_exponent_distance_scaled&lt;/i&gt;; and changes all Ubuntu builds to use Steamâ€™s new linux runtime tools and can now create a more consistent cross-distro â€œAppImageâ€ package also&lt;/p&gt;
+
+&lt;p&gt;Accordingly, the OperaGX target has a brand new setup guide so you can configure YYC builds and the Ubuntu guide has been updated to state the extra packages you need. Please see their guides and &lt;a href="https://help.yoyogames.com/hc/en-us/articles/227860547" target="_blank"&gt;the Required SDKs FAQ&lt;/a&gt; before attempting to build for these platforms.&lt;/p&gt;
+
+&lt;p&gt;See below for all the IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for the in-game ones.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.3.0.624.exe</link>
+      <guid isPermaLink="false">e9c9fb1598-ad38cfea984fd9494ef2065485c738f9</guid>
+    </item>
+    <item>
+      <title>Version 2022.3.0.625</title>
+      <pubDate>Wed, 06 Apr 2022 11:39:25 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.3.0.625.exe" type="application/octet-stream" length="116461328" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.3.0.625.json</comments>
+      <description>&lt;p&gt;Say hello to GameMaker! (or indeed your pick of ã“ã‚“ã«ã¡ã¯ , ì•ˆë…•í•˜ì„¸ìš” , czeÅ›Ä‡, or ciao)&lt;/p&gt;
+
+&lt;p&gt;2022.3 IDE changes several branding names and does away with the concept of picking a choice of code editor before you start your project and instead allows you to pick the editor style you want, when you want it; ships with 4 new localisations (Japanese, Korean, Polish, and Italian); adds a new dropdown to pick if you want compressed QOI images or not and whether to drop back to the old .png system instead; and several new filter types have been added for you to use in your games.&lt;/p&gt;
+
+&lt;p&gt;Runtime changes introduce Opera GX YYC support for everyone; enables video playback functionality on almost all platforms (UWP is not being implemented); two new audio falloff models have been added: &lt;i&gt;audio_falloff_inverse_distance_scaled&lt;/i&gt; and &lt;i&gt;audio_falloff_exponent_distance_scaled&lt;/i&gt;; and changes all Ubuntu builds to use Steamâ€™s new linux runtime tools and can now create a more consistent cross-distro â€œAppImageâ€ package also&lt;/p&gt;
+
+&lt;p&gt;Accordingly, the OperaGX target has a brand new setup guide so you can configure YYC builds and the Ubuntu guide has been updated to state the extra packages you need. Please see their guides and &lt;a href="https://help.yoyogames.com/hc/en-us/articles/227860547" target="_blank"&gt;the Required SDKs FAQ&lt;/a&gt; before attempting to build for these platforms.&lt;/p&gt;
+
+&lt;p&gt;See below for all the IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for the in-game ones.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.3.0.625.exe</link>
+      <guid isPermaLink="false">296dfa67cd-abc7c7f844c48e6481267cf8d9943c2c</guid>
+    </item>
+    <item>
+      <title>Version 2022.5.0.8</title>
+      <pubDate>Wed, 25 May 2022 20:19:55 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.5.0.8.exe" type="application/octet-stream" length="114783400" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.5.0.8.json</comments>
+      <description>&lt;p&gt;Welcome to the new May 2022.5 version! We hope you find it worth the little wait since Marchâ€™s release. This is a very comprehensive and exciting change to a lot of the underlying GameMaker tooling and functionality - although, if all goes to plan you perhaps wonâ€™t even notice most of our hard work.&lt;/p&gt;
+
+&lt;p&gt;Even with all the changes to our build system, the installers, the IDE, and most of the runtime tools, we still found time to introduce some new features and so you can now enjoy the new Sound Inspector and its waveform visualisation, the new in-game timers system and clipboard support in HTML5/Opera GX, a new Windblown Particles effect to use in your games, and several others!&lt;/p&gt;
+
+&lt;p&gt;You will notice that the last bit of the IDE and runtime version numbers is much lower than it was previously - this is correct and simply a result of our new build system.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.5.0.8.exe</link>
+      <guid isPermaLink="false">631cd766-4353196dfae2120c4e02991db4d9228a</guid>
+    </item>
+    <item>
+      <title>Version 2022.5.1.14</title>
+      <pubDate>Mon, 06 Jun 2022 21:50:49 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.5.1.14.exe" type="application/octet-stream" length="114754552" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.5.1.14.json</comments>
+      <description>&lt;p&gt;Welcome to the new May 2022.5 version! We hope you find it worth the little wait since Marchâ€™s release. This is a very comprehensive and exciting change to a lot of the underlying GameMaker tooling and functionality - although, if all goes to plan you perhaps wonâ€™t even notice most of our hard work.&lt;/p&gt;
+
+&lt;p&gt;Even with all the changes to our build system, the installers, the IDE, and most of the runtime tools, we still found time to introduce some new features and so you can now enjoy the new Sound Inspector and its waveform visualisation, the new in-game timers system and clipboard support in HTML5/Opera GX, a new Windblown Particles effect to use in your games, and several others!&lt;/p&gt;
+
+&lt;p&gt;You will notice that the last bit of the IDE and runtime version numbers is much lower than it was previously - this is correct and simply a result of our new build system.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.5.1.14.exe</link>
+      <guid isPermaLink="false">2b9b89dc-6da1a701468c4e1c2ae6f5d5b7c838c5</guid>
+    </item>
+    <item>
+      <title>Version 2022.5.1.16</title>
+      <pubDate>Wed, 08 Jun 2022 19:32:46 Z</pubDate>
+      <enclosure url="https://gms.yoyogames.com/GameMaker-Installer-2022.5.1.16.exe" type="application/octet-stream" length="114755400" />
+      <author>gms2@yoyogames.com (gms2 optional)</author>
+      <comments>https://gms.yoyogames.com/release-notes-win-2022.5.1.16.json</comments>
+      <description>&lt;p&gt;Welcome to the new May 2022.5 version! We hope you find it worth the little wait since Marchâ€™s release. This is a very comprehensive and exciting change to a lot of the underlying GameMaker tooling and functionality - although, if all goes to plan you perhaps wonâ€™t even notice most of our hard work.&lt;/p&gt;
+
+&lt;p&gt;Even with all the changes to our build system, the installers, the IDE, and most of the runtime tools, we still found time to introduce some new features and so you can now enjoy the new Sound Inspector and its waveform visualisation, the new in-game timers system and clipboard support in HTML5/Opera GX, a new Windblown Particles effect to use in your games, and several others!&lt;/p&gt;
+
+&lt;p&gt;You will notice that the last bit of the IDE and runtime version numbers is much lower than it was previously - this is correct and simply a result of our new build system.&lt;/p&gt;
+
+&lt;p&gt;Please review the whole of the IDE and the runtime notes carefully, as there are a lot of changes and things to be aware of in this new release. See below for IDE changes/fixes and check the &lt;a href="https://gms.yoyogames.com/release-notes-runtime.html" target="_blank"&gt;Runtime Release Notes&lt;/a&gt; for in-game changes/fixes.&lt;/p&gt;
+</description>
+      <link>https://gms.yoyogames.com/GameMaker-Installer-2022.5.1.16.exe</link>
+      <guid isPermaLink="false">f375415e-12a686cbd7077dd0379f8a9561dc2cbc</guid>
+    </item>
+  </channel>
+</rss>
