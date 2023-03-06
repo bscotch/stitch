@@ -1,13 +1,13 @@
 {
   "name": "@bscotch/stitch-ui",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "private": true,
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/bscotch/stitch.git",
     "directory": "packages/desktop-ui"
   },
+  "type": "module",
   "exports": {
     ".": {
       "import": "./build/handler.js"

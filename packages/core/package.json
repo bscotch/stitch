@@ -1,12 +1,7 @@
 {
   "name": "@bscotch/stitch",
-  "version": "10.4.3",
+  "version": "10.4.4",
   "description": "Stitch: The GameMaker Studio 2 Asset Pipeline Development Kit.",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bscotch/stitch.git",
-    "directory": "packages/core"
-  },
   "keywords": [
     "gamemaker",
     "game-maker",
@@ -22,6 +17,11 @@
     "import",
     "pipeline"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/core"
+  },
   "license": "MIT",
   "author": "Adam Coster (https://www.bscotch.net/about#adam-coster)",
   "contributors": [

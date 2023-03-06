@@ -1,13 +1,13 @@
 {
   "name": "@bscotch/stitch-server",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "private": true,
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/bscotch/stitch.git",
     "directory": "packages/desktop-server"
   },
+  "type": "module",
   "exports": {
     "./client": {
       "types": "./dist/client.d.ts",
