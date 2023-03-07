@@ -35,7 +35,7 @@ jobs:
 
       # PUBLISH
       - name: Create New Release
-        run: gh release create --title "Stitch Desktop v${{env.RELEASE_VERSION}}" stitch-desktop@${{env.RELEASE_VERSION}} packages/desktop/bundle/out/make/squirrel.windows/x64/RELEASES packages/desktop/bundle/out/make/squirrel.windows/x64/Stitch-{{env.RELEASE_VERSION}}-full.nupkg#Nupkg packages/desktop/bundle/out/make/squirrel.windows/x64/StitchSetup.exe#Installer
+        run: gh release create --title "Stitch Desktop v${{env.RELEASE_VERSION}}" stitch-desktop@${{env.RELEASE_VERSION}} packages/desktop/bundle/out/make/squirrel.windows/x64/RELEASES packages/desktop/bundle/out/make/squirrel.windows/x64/Stitch-${{env.RELEASE_VERSION}}-full.nupkg#Nupkg packages/desktop/bundle/out/make/squirrel.windows/x64/StitchSetup.exe#Installer
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
