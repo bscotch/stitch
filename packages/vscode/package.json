@@ -1,7 +1,7 @@
 {
   "name": "bscotch-stitch-vscode",
   "displayName": "Stitch",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
@@ -31,49 +31,6 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
-    "configuration": {
-      "title": "Stitch",
-      "properties": {
-        "stitch.template.path": {
-          "title": "GameMaker Project Template",
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Specifies the path to a GameMaker project to use as a template to clone when creating a new project via the explorer context menu. Defaults to a simple project with a single room and a single object."
-        }
-      }
-    },
-    "commands": [
-      {
-        "command": "stitch.openIde",
-        "title": "Stitch: Open in GameMaker",
-        "enablement": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
-      },
-      {
-        "command": "stitch.createProject",
-        "title": "Stitch: New GameMaker Project",
-        "enablement": "explorerResourceIsFolder"
-      }
-    ],
-    "menus": {
-      "explorer/context": [
-        {
-          "command": "stitch.openIde",
-          "group": "navigation"
-        },
-        {
-          "command": "stitch.createProject",
-          "group": "navigation"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "stitch.openIde"
-        }
-      ]
-    },
     "colors": [
       {
         "id": "comment.line.region.start.gml",
@@ -108,6 +65,32 @@
         }
       }
     ],
+    "commands": [
+      {
+        "command": "stitch.openIde",
+        "title": "Stitch: Open in GameMaker",
+        "enablement": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      },
+      {
+        "command": "stitch.createProject",
+        "title": "Stitch: New GameMaker Project",
+        "enablement": "explorerResourceIsFolder"
+      }
+    ],
+    "configuration": {
+      "title": "Stitch",
+      "properties": {
+        "stitch.template.path": {
+          "title": "GameMaker Project Template",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the path to a GameMaker project to use as a template to clone when creating a new project via the explorer context menu. Defaults to a simple project with a single room and a single object."
+        }
+      }
+    },
     "grammars": [
       {
         "language": "gml",
@@ -146,6 +129,23 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "stitch.openIde",
+          "group": "navigation"
+        },
+        {
+          "command": "stitch.createProject",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "stitch.openIde"
+        }
+      ]
+    },
     "semanticTokenTypes": [
       {
         "id": "resource",
@@ -199,10 +199,10 @@
     "onCommand:stitch.createProject"
   ],
   "devDependencies": {
-    "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/gml-parser": "workspace:*",
     "@bscotch/pathy": "^2.6.0",
     "@bscotch/stitch": "workspace:*",
+    "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/yy": "workspace:*",
     "@types/plist": "3.0.2",
     "@types/vscode": "1.76.0",
