@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises';
 import { parseStringPromise } from 'xml2js';
-import { GmlSpec, gmlSpecSchema } from './spec.schemas.js';
-export type { GmlSpec } from './spec.schemas.js';
+import { GmlSpec, gmlSpecSchema } from './spec.schemas.mjs';
+export type { GmlSpec } from './spec.schemas.mjs';
 
 // @ts-expect-error
 import fallbackSpec from '../samples/GmlSpec.xml';

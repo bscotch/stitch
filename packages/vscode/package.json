@@ -31,17 +31,40 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
+    "configuration": {
+      "title": "Stitch",
+      "properties": {
+        "stitch.template.path": {
+          "title": "GameMaker Project Template",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the path to a GameMaker project to use as a template to clone when creating a new project via the explorer context menu. Defaults to a simple project with a single room and a single object."
+        }
+      }
+    },
     "commands": [
       {
         "command": "stitch.openIde",
         "title": "Stitch: Open in GameMaker",
         "enablement": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      },
+      {
+        "command": "stitch.createProject",
+        "title": "Stitch: New GameMaker Project",
+        "enablement": "explorerResourceIsFolder"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "command": "stitch.openIde",
+          "group": "navigation"
+        },
+        {
+          "command": "stitch.createProject",
           "group": "navigation"
         }
       ],
@@ -172,14 +195,14 @@
   },
   "activationEvents": [
     "onLanguage:gml",
-    "onCommand:stitch.openIde"
+    "onCommand:stitch.openIde",
+    "onCommand:stitch.createProject"
   ],
-  "dependencies": {
-    "@bscotch/stitch-launcher": "1.0.1"
-  },
   "devDependencies": {
+    "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/gml-parser": "workspace:*",
     "@bscotch/pathy": "^2.6.0",
+    "@bscotch/stitch": "workspace:*",
     "@bscotch/yy": "workspace:*",
     "@types/plist": "3.0.2",
     "@types/vscode": "1.76.0",
@@ -193,7 +216,8 @@
     "xml2js": "0.4.23",
     "yaml": "2.2.1",
     "zod": "^3.21.2",
-    "zod-to-json-schema": "3.20.4"
+    "zod-to-json-schema": "3.20.4",
+    "zx": "^7.2.0"
   },
   "engines": {
     "vscode": "^1.75.0"

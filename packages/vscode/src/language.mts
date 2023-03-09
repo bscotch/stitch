@@ -1,7 +1,10 @@
+import { pathy } from '@bscotch/pathy';
+import { StitchProject } from '@bscotch/stitch';
 import { Yy, YyResourceType } from '@bscotch/yy';
 import vscode from 'vscode';
-import { GameMakerProject } from './language.project.js';
-import { GmlSpec } from './spec.js';
+import { debounce } from './debounce.mjs';
+import { GameMakerProject } from './language.project.mjs';
+import { GmlSpec, parseSpec } from './spec.mjs';
 
 export class GmlProvider
   implements
@@ -17,7 +20,7 @@ export class GmlProvider
   globalSignatures: Map<string, vscode.SignatureHelp> = new Map();
   protected projects: GameMakerProject[] = [];
 
-  constructor(readonly spec: GmlSpec) {
+  protected constructor(readonly spec: GmlSpec) {
     for (const func of spec.functions) {
       this.globalCompletions.push(
         new vscode.CompletionItem(
@@ -72,6 +75,15 @@ export class GmlProvider
         ),
       );
     }
+  }
+
+  clearProjects() {
+    this.projects = [];
+    void vscode.commands.executeCommand(
+      'setContext',
+      'stitch.projectCount',
+      this.projects.length,
+    );
   }
 
   async loadProject(yypPath: vscode.Uri) {
@@ -220,6 +232,9 @@ export class GmlProvider
   public documentToProject(
     document: vscode.TextDocument | vscode.Uri,
   ): GameMakerProject | undefined {
+    if (!document) {
+      return;
+    }
     const uri = document instanceof vscode.Uri ? document : document.uri;
     return this.projects.find((p) => p.includesFile(uri));
   }
@@ -233,5 +248,117 @@ export class GmlProvider
       /(#macro|[a-zA-Z0-9_]+)/,
     );
     return document.getText(range);
+  }
+
+  /**
+   * Only allow a single instance at a time.
+   */
+  protected static provider: GmlProvider;
+  protected static ctx: vscode.ExtensionContext;
+
+  static async activate(ctx: vscode.ExtensionContext) {
+    this.ctx ||= ctx;
+    if (!this.provider) {
+      this.provider = new GmlProvider(await parseSpec());
+      const onChangeDoc = debounce((event: vscode.TextDocumentChangeEvent) => {
+        const doc = event.document;
+        if (doc.languageId !== 'gml') {
+          return;
+        }
+        void GmlProvider.provider.updateFile(event.document);
+      }, 100);
+
+      vscode.workspace.onDidChangeTextDocument(onChangeDoc);
+    }
+
+    // Dispose any existing subscriptions
+    // to allow for reloading the extension
+    this.ctx.subscriptions.forEach((s) => s.dispose());
+
+    ctx.subscriptions.push(
+      vscode.languages.registerHoverProvider('gml', this.provider),
+      vscode.languages.registerCompletionItemProvider(
+        'gml',
+        this.provider,
+        '.',
+        '"',
+      ),
+      vscode.languages.registerSignatureHelpProvider(
+        'gml',
+        this.provider,
+        '(',
+        ',',
+      ),
+      vscode.languages.registerDocumentFormattingEditProvider(
+        'jsonc',
+        this.provider,
+      ),
+      vscode.languages.registerDefinitionProvider('gml', this.provider),
+      vscode.languages.registerReferenceProvider('gml', this.provider),
+      vscode.commands.registerCommand('stitch.openIde', (...args) => {
+        const uri = vscode.Uri.parse(
+          args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
+        );
+        const ide = this.provider.documentToProject(uri)?.openInIde();
+        if (!ide) {
+          void vscode.window.showErrorMessage('Could not open IDE');
+          return;
+        }
+        void vscode.window.showInformationMessage(
+          `Opening project in GameMaker`,
+        );
+      }),
+      vscode.commands.registerCommand(
+        'stitch.createProject',
+        async (folder: vscode.Uri, ...args: any[]) => {
+          // stitch.template.path
+          if (!(folder instanceof vscode.Uri)) {
+            console.warn('No folder selected');
+            return;
+          }
+          const isInProject = this.provider.documentToProject(folder);
+          if (isInProject) {
+            void vscode.window.showErrorMessage(
+              'Cannot create a project inside another project',
+            );
+            return;
+          }
+          const templatePath =
+            vscode.workspace
+              .getConfiguration('stitch')
+              .get<string | null>('template.path') ||
+            pathy(__dirname).join(
+              '..',
+              'assets',
+              'templates',
+              'issue-template',
+              'issue-template.yyp',
+            ).absolute;
+          if (!templatePath || !(await pathy(templatePath).exists())) {
+            return void vscode.window.showErrorMessage(
+              `Template not found at ${templatePath}`,
+            );
+          }
+          vscode.window.showInformationMessage('Cloning template...');
+          const template = await StitchProject.cloneProject({
+            templatePath,
+            where: folder.fsPath,
+          });
+          const projectUri = vscode.Uri.file(template.yypPathAbsolute);
+          console.log('projectUri', projectUri);
+          this.provider.loadProject(projectUri);
+        },
+      ),
+    );
+
+    this.provider.clearProjects();
+
+    const yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
+
+    for (const yypFile of yypFiles) {
+      await GmlProvider.provider.loadProject(yypFile);
+    }
+
+    return this.provider;
   }
 }
