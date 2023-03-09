@@ -2,8 +2,8 @@ import { Pathy } from '@bscotch/pathy';
 import { oneline } from '@bscotch/utility';
 import { Yy, Yyp } from '@bscotch/yy';
 import { join } from 'path';
+import { assetsDirectory } from '../constants.js';
 import { assert } from '../utility/errors.js';
-import { assetsDirectory } from './constants.js';
 import { gms2Platforms } from './StitchProject.constants.js';
 
 export class StitchProjectStatic {
@@ -27,7 +27,8 @@ export class StitchProjectStatic {
     try {
       await StitchProjectStatic.parseYypFile(yypFilepath);
       return true;
-    } catch {
+    } catch (err) {
+      console.warn('Invalid YYP file found', yypFilepath, err);
       return false;
     }
   }
@@ -66,7 +67,8 @@ export class StitchProjectStatic {
       paths.map((p) => StitchProjectStatic.isValidYypFile(p)),
     );
     // Filter by valid (parseable) YYP files
-    return paths.filter((_p, i) => areValid[i]);
+    const validPaths = paths.filter((_p, i) => areValid[i]);
+    return validPaths;
   }
 
   static async findYypFile(startingPath: string): Promise<string> {
@@ -88,4 +90,4 @@ export class StitchProjectStatic {
   }
 }
 
-export type Gms2Platform = typeof StitchProjectStatic.platforms[number];
+export type Gms2Platform = (typeof StitchProjectStatic.platforms)[number];

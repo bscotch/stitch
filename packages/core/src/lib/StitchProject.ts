@@ -13,6 +13,11 @@ import fs, {
 } from '../utility/files.js';
 import { debug, info } from '../utility/log.js';
 import paths from '../utility/paths.js';
+import {
+  AssetSourcesConfig,
+  AudioAsset,
+  DeletedAsset,
+} from './assetSource/assetSource.js';
 import { Gms2AudioGroup } from './components/Gms2AudioGroup.js';
 import { Gms2ComponentArray } from './components/Gms2ComponentArray.js';
 import { Gms2Config } from './components/Gms2Config.js';
@@ -59,11 +64,6 @@ import {
   StitchMergerOptions,
 } from './StitchProjectMerger.js';
 import { StitchStorage } from './StitchStorage.js';
-import {
-  AssetSourcesConfig,
-  AudioAsset,
-  DeletedAsset,
-} from './assetSource/assetSource.js';
 
 export * from './StitchProject.static.js';
 export * from './StitchProject.types.js';
@@ -735,17 +735,21 @@ export class StitchProject extends StitchProjectStatic {
   static async cloneProject(options: GameMakerProjectCloneOptions) {
     // Ensure that the template project actually
     // exists, and get access to its details.
+    console.info('Loading template project...');
     const template = await StitchProject.load({
       projectPath: options.templatePath,
       readOnly: true,
       dangerouslyAllowDirtyWorkingDir: true,
     });
+    console.info('Template project loaded!');
     const templateFolder = new Pathy(template.yypDirAbsolute);
     const where = (
       options.where ? new Pathy(options.where) : templateFolder.up()
     ).join(paramCase(options.name || template.name));
     await where.ensureDirectory();
     await where.isEmptyDirectory({ assert: true });
+
+    console.info('Cloning from', templateFolder.absolute, 'to', where.absolute);
 
     // Copy over all of the project's files
     await templateFolder.copy(where, {
