@@ -5,3 +5,4 @@ samples/project/logs
 samples/*.diff.json
 zip-download
 samples/assets/**/stitch.src.json
+assets/issue-template/options
