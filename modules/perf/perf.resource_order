@@ -1,0 +1,10 @@
+{
+  "FolderOrderSettings": [],
+  "ResourceOrderSettings": [
+    {"name":"o_entry","order":4,"path":"objects/o_entry/o_entry.yy",},
+    {"name":"UnitTests","order":5,"path":"scripts/UnitTests/UnitTests.yy",},
+    {"name":"StitchPerf","order":1,"path":"scripts/StitchPerf/StitchPerf.yy",},
+    {"name":"Helpers","order":6,"path":"scripts/Helpers/Helpers.yy",},
+    {"name":"rm_entry","order":3,"path":"rooms/rm_entry/rm_entry.yy",},
+  ],
+}

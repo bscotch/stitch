@@ -1,0 +1,35 @@
+{
+  "resourceType": "GMProject",
+  "resourceVersion": "1.6",
+  "name": "perf",
+  "AudioGroups": [
+    {"resourceType":"GMAudioGroup","resourceVersion":"1.3","name":"audiogroup_default","targets":-1,},
+  ],
+  "configs": {
+    "children": [],
+    "name": "Default",
+  },
+  "defaultScriptType": 1,
+  "Folders": [
+    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Module","folderPath":"folders/Module.yy","order":0,},
+  ],
+  "IncludedFiles": [],
+  "isEcma": false,
+  "MetaData": {
+    "IDEVersion": "2023.100.0.271",
+  },
+  "resources": [
+    {"id":{"name":"o_entry","path":"objects/o_entry/o_entry.yy",},"order":4,},
+    {"id":{"name":"StitchPerfLib","path":"scripts/StitchPerfLib/StitchPerfLib.yy",},"order":0,},
+    {"id":{"name":"UnitTests","path":"scripts/UnitTests/UnitTests.yy",},"order":0,},
+    {"id":{"name":"StitchPerf","path":"scripts/StitchPerf/StitchPerf.yy",},"order":0,},
+    {"id":{"name":"Helpers","path":"scripts/Helpers/Helpers.yy",},"order":0,},
+    {"id":{"name":"rm_entry","path":"rooms/rm_entry/rm_entry.yy",},"order":3,},
+  ],
+  "RoomOrderNodes": [
+    {"roomId":{"name":"rm_entry","path":"rooms/rm_entry/rm_entry.yy",},},
+  ],
+  "TextureGroups": [
+    {"resourceType":"GMTextureGroup","resourceVersion":"1.3","name":"Default","autocrop":true,"border":2,"compressFormat":"bz2","directory":"","groupParent":null,"isScaled":true,"loadType":"default","mipsToGenerate":0,"targets":-1,},
+  ],
+}
