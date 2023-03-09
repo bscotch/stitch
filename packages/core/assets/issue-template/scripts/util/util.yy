@@ -1,12 +1,11 @@
 {
-  "isDnD": false,
-  "isCompatibility": false,
-  "parent": {
-    "name": "issue-template",
-    "path": "issue-template.yyp"
-  },
+  "resourceType": "GMScript",
   "resourceVersion": "1.0",
   "name": "Util",
-  "tags": [],
-  "resourceType": "GMScript"
+  "isCompatibility": false,
+  "isDnD": false,
+  "parent": {
+    "name": "issue-template",
+    "path": "issue-template.yyp",
+  },
 }

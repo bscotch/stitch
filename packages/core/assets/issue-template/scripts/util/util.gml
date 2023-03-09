@@ -1,69 +1,71 @@
-/// @arg condition
-/// @arg [error_message]
-/// @arg [...]
-function assert() {
-	var condition = argument[0];
-	
-    if !condition {
-        echo("Assertion failed.");
-        echo(debug_get_callstack());
-		var error_message = "Error: Assertion failed.";
+#macro chr_newline chr(10)
+
+/**
+  * @description Throw an error if a condition is not met.
+  * @param {Any} condition
+  * @param {String} [error_message]
+  * @param {Any} [...]
+  */
+function assert(condition, error_message = "Error: Assertion failed.") {
+	if(!!condition){
+		return;
+	}
+	var _callstack = debug_get_callstack();
+  echo("Assertion failed at", _callstack[1]);
+  echo(_callstack);
 		
-		if argument_count > 1 {
-			error_message = "";
-			for ( var i = 1; i < argument_count; i++) {
-				error_message += string(argument[i]) + " ";
-			}
+	if argument_count > 2 {
+		for ( var i = 2; i < argument_count; i++) {
+			error_message += " " + string(argument[i]);
 		}
+	}
 		
-        show_error(error_message, true);
-        return false;
-    }
-    return true;
+  show_error(error_message, true);
+  return false;
 }
 
+/**
+	* @description Throw if the two values are unequal
+	* @param {Any} value0
+	* @param {Any} value1
+	*/
 function assert_equals(value0, value1) {
-    if (value0 != value1) {
-        echo("Equality assertion failed.");
-		var _callstack = debug_get_callstack();
-        echo(_callstack);
-		var error_message = array_join( ["Error: Equality assertion failed at " + string(_callstack[1]), "-----", "Value0:", string(value0), "-----", "Value1:", string(value1), "-----"], chr(10));
-		
-        show_error(error_message, true);
-        return false;
-    }
-    return true;	
+	assert(
+		value0 == value1,
+		string(value0), "does not equal", string(value1)
+	)
 }
 
-function array_join(){
-	var array	= argument[0];
-	var divider = argument_count > 1 ? argument[1] : ",";
-	var text = "";
-	for ( var i = 0; i < array_length(array); i++){
-		text += string(array[i]);
-		if (i < array_length(array)-1) {
-			text += string(divider);
+/// @description Create a string by joining array elements
+/// @param {Array<Any>} _array
+/// @param {String} [_delimiter=", "]
+function array_join(_array, _delimiter=", "){
+	var _text = "";
+	for ( var i = 0; i < array_length(_array); i++){
+		_text += string(_array[i]);
+		if (i < array_length(_array)-1) {
+			_text += string(_delimiter);
 		}
 	}
-	return text;
+	return _text;
 }
 
+/// @description Write info to the console.
+/// @param {Any} [...]
 function echo() {
-	var echo_item;
-	var echo_string="";
+	var _echo_string="";
 		
-	for(echo_item=0;echo_item<argument_count;echo_item++){
-		echo_string+=string(argument[echo_item])+" ";
+	for(var _echo_item=0 ; _echo_item<argument_count ; _echo_item++){
+		_echo_string+=string(argument[_echo_item]) + " ";
 	}
-	var echo_coming_from_struct = is_struct(self);
-	var final_string = echo_coming_from_struct ? "Struct" : object_get_name(object_index);
+	var _echo_coming_from_struct = is_struct(self);
+	var _final_string = _echo_coming_from_struct ? "Struct" : object_get_name(object_index);
 		
-	final_string += "|" + string(get_timer()/1000000) + "| " + echo_string;
+	_final_string += "|" + string(get_timer()/1000000) + "| " + _echo_string;
 	
 	if debug_mode {
-		final_string = string_replace_all(final_string, "%", "*");
+		_final_string = string_replace_all(_final_string, "%", "*");
 	}
 		
-	show_debug_message(final_string)
-	
+	show_debug_message(_final_string);
 }
