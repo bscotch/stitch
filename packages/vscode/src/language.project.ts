@@ -1,4 +1,5 @@
 import { pathy } from '@bscotch/pathy';
+import { GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { Yy, Yyp, YypResource } from '@bscotch/yy';
 import path from 'path';
 import vscode from 'vscode';
@@ -21,7 +22,7 @@ export class GameMakerProject
   resourceTree: Map<string, Set<GameMakerResource>> = new Map();
   yypWatcher: vscode.FileSystemWatcher;
   gmlWatcher: vscode.FileSystemWatcher;
-  protected yyp!: Yyp;
+  yyp!: Yyp;
 
   protected constructor(readonly yypPath: vscode.Uri) {
     this.yypWatcher = vscode.workspace.createFileSystemWatcher(
@@ -35,6 +36,12 @@ export class GameMakerProject
   }
 
   protected gmlFiles: Map<string, GmlFile> = new Map();
+
+  openInIde() {
+    return GameMakerLauncher.openProject(this.yypPath.fsPath, {
+      ideVersion: this.yyp.MetaData.IDEVersion,
+    });
+  }
 
   async getTreeItem(element: GameMakerResource): Promise<vscode.TreeItem> {
     return element;

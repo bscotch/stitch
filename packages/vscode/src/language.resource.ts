@@ -88,7 +88,7 @@ export class GameMakerResource<
   protected async load() {
     (await pathy(this.dir).listChildren()).forEach((p) => {
       if (p.hasExtension('gml')) {
-        this.loadFile(vscode.Uri.file(p.absolute));
+        void this.loadFile(vscode.Uri.file(p.absolute));
       }
     });
   }

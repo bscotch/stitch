@@ -396,7 +396,7 @@ importers:
       '@bscotch/gml-parser': workspace:*
       '@bscotch/pathy': ^2.6.0
       '@bscotch/stitch-launcher': 1.0.1
-      '@bscotch/yy': 0.6.1
+      '@bscotch/yy': workspace:*
       '@types/plist': 3.0.2
       '@types/vscode': 1.76.0
       '@types/xml2js': 0.4.11
@@ -415,7 +415,7 @@ importers:
     devDependencies:
       '@bscotch/gml-parser': link:../parser
       '@bscotch/pathy': 2.6.0
-      '@bscotch/yy': 0.6.1
+      '@bscotch/yy': link:../yy
       '@types/plist': 3.0.2
       '@types/vscode': 1.76.0
       '@types/xml2js': 0.4.11
@@ -658,6 +658,7 @@ packages:
       zod: 3.21.2
     transitivePeerDependencies:
       - supports-color
+    dev: false
 
   /@electron-forge/cli/6.0.5:
     resolution: {integrity: sha512-3xD4XKyV634cQCR8HobpVnb4LqVdTHDs+KwsU9zgjaBIJMBapCS3ZzpXYbxzPekTaVwu39ojMUg990JVYBhs2A==}

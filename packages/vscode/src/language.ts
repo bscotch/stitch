@@ -77,6 +77,11 @@ export class GmlProvider
   async loadProject(yypPath: vscode.Uri) {
     const project = await GameMakerProject.from(yypPath);
     this.projects.push(project);
+    void vscode.commands.executeCommand(
+      'setContext',
+      'stitch.projectCount',
+      this.projects.length,
+    );
     return project;
   }
 
@@ -154,9 +159,9 @@ export class GmlProvider
     return this.globalHovers.get(word);
   }
 
-  public async provideCompletionItems(
+  public provideCompletionItems(
     document: vscode.TextDocument,
-  ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
+  ): vscode.CompletionItem[] | vscode.CompletionList {
     const project = this.documentToProject(document);
     return [
       ...(project?.completions.values() || []),
@@ -203,10 +208,10 @@ export class GmlProvider
    * Determine the project the file belongs to,
    * and pass an update request to that project.
    */
-  public updateFile(document: vscode.TextDocument) {
+  public async updateFile(document: vscode.TextDocument) {
     const project = this.documentToProject(document);
     if (project) {
-      project.updateFile(document);
+      await project.updateFile(document);
     } else {
       console.error(`Could not find project for ${document.uri}`);
     }

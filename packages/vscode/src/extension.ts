@@ -19,6 +19,17 @@ export async function activate(ctx: vscode.ExtensionContext): Promise<void> {
     vscode.languages.registerDocumentFormattingEditProvider('jsonc', provider),
     vscode.languages.registerDefinitionProvider('gml', provider),
     vscode.languages.registerReferenceProvider('gml', provider),
+    vscode.commands.registerCommand('stitch.openIde', (...args) => {
+      const uri = vscode.Uri.parse(
+        args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
+      );
+      const ide = provider.documentToProject(uri)?.openInIde();
+      if (!ide) {
+        void vscode.window.showErrorMessage('Could not open IDE');
+        return;
+      }
+      void vscode.window.showInformationMessage(`Opening project in GameMaker`);
+    }),
   );
 
   const onChangeDoc = debounce((event: vscode.TextDocumentChangeEvent) => {
@@ -26,7 +37,7 @@ export async function activate(ctx: vscode.ExtensionContext): Promise<void> {
     if (doc.languageId !== 'gml') {
       return;
     }
-    provider.updateFile(event.document);
+    void provider.updateFile(event.document);
   }, 100);
 
   vscode.workspace.onDidChangeTextDocument(onChangeDoc);

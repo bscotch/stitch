@@ -31,6 +31,26 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
+    "commands": [
+      {
+        "command": "stitch.openIde",
+        "title": "Stitch: Open in GameMaker",
+        "enablement": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "stitch.openIde",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "stitch.openIde"
+        }
+      ]
+    },
     "colors": [
       {
         "id": "comment.line.region.start.gml",
@@ -151,7 +171,8 @@
     }
   },
   "activationEvents": [
-    "onLanguage:gml"
+    "onLanguage:gml",
+    "onCommand:stitch.openIde"
   ],
   "dependencies": {
     "@bscotch/stitch-launcher": "1.0.1"
@@ -159,7 +180,7 @@
   "devDependencies": {
     "@bscotch/gml-parser": "workspace:*",
     "@bscotch/pathy": "^2.6.0",
-    "@bscotch/yy": "0.6.1",
+    "@bscotch/yy": "workspace:*",
     "@types/plist": "3.0.2",
     "@types/vscode": "1.76.0",
     "@types/xml2js": "0.4.11",
