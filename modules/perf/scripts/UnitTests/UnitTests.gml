@@ -1,4 +1,4 @@
-var lib = new StitchPerfLib();
+var lib = new StitchPerf();
 
 #region Make sure utilities are working
 var median_sample = [0, 0, 10, 3, 0, 5, 2];

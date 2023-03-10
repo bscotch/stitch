@@ -1,11 +1,11 @@
-function create_struct (_i){
+function struct_creator (_i){
 	return {
 		name: "Hello!",
 		i: _i
 	}
 }
 
-function CreateStruct_ (_i){
+function StructConstructor (_i) constructor {
 	name = "Hello!";
 	i = _i;
 }

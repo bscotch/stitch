@@ -1,6 +1,6 @@
 {
   "resourceType": "GMProject",
-  "resourceVersion": "1.6",
+  "resourceVersion": "1.7",
   "name": "perf",
   "AudioGroups": [
     {"resourceType":"GMAudioGroup","resourceVersion":"1.3","name":"audiogroup_default","targets":-1,},
@@ -11,20 +11,22 @@
   },
   "defaultScriptType": 1,
   "Folders": [
-    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Module","folderPath":"folders/Module.yy","order":0,},
+    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Module","folderPath":"folders/Module.yy",},
   ],
   "IncludedFiles": [],
   "isEcma": false,
+  "LibraryEmitters": [],
   "MetaData": {
-    "IDEVersion": "2023.100.0.271",
+    "IDEVersion": "2023.200.0.299",
   },
   "resources": [
-    {"id":{"name":"o_entry","path":"objects/o_entry/o_entry.yy",},"order":4,},
-    {"id":{"name":"StitchPerfLib","path":"scripts/StitchPerfLib/StitchPerfLib.yy",},"order":0,},
-    {"id":{"name":"UnitTests","path":"scripts/UnitTests/UnitTests.yy",},"order":0,},
-    {"id":{"name":"StitchPerf","path":"scripts/StitchPerf/StitchPerf.yy",},"order":0,},
-    {"id":{"name":"Helpers","path":"scripts/Helpers/Helpers.yy",},"order":0,},
-    {"id":{"name":"rm_entry","path":"rooms/rm_entry/rm_entry.yy",},"order":3,},
+    {"id":{"name":"o_another","path":"objects/o_another/o_another.yy",},},
+    {"id":{"name":"o_entry","path":"objects/o_entry/o_entry.yy",},},
+    {"id":{"name":"o_whatever","path":"objects/o_whatever/o_whatever.yy",},},
+    {"id":{"name":"StitchPerf","path":"scripts/StitchPerf/StitchPerf.yy",},},
+    {"id":{"name":"UnitTests","path":"scripts/UnitTests/UnitTests.yy",},},
+    {"id":{"name":"Helpers","path":"scripts/Helpers/Helpers.yy",},},
+    {"id":{"name":"rm_entry","path":"rooms/rm_entry/rm_entry.yy",},},
   ],
   "RoomOrderNodes": [
     {"roomId":{"name":"rm_entry","path":"rooms/rm_entry/rm_entry.yy",},},
