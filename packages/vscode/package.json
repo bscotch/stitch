@@ -17,6 +17,9 @@
     "url": "https://github.com/bscotch/stitch.git",
     "directory": "packages/vscode"
   },
+  "bugs": {
+    "url": "https://github.com/bscotch/stitch/issues?q=is%3Aissue+is%3Aopen+label%3A%22%3Akeyboard%3A+vscode%22"
+  },
   "license": "SEE LICENSE IN LICENSE.md",
   "qna": false,
   "publisher": "bscotch",
@@ -95,12 +98,12 @@
             "string"
           ],
           "enum": [
+            "internal",
             "localRuntime",
-            "external",
-            "internal"
+            "external"
           ],
-          "default": "localRuntime",
-          "description": "Specifies the GmlSpec.xml source. Obtained by default from the installed runtime.It needs to restart vscode after modification to take effect"
+          "default": "internal",
+          "description": "Specifies the GmlSpec.xml source. Obtained by default from the installed runtime. It needs to restart vscode after modification to take effect. Falls back to `internal`, an internal copy of a recent version of the GmlSpec.xml."
         },
         "stitch.gmlSpec.path": {
           "title": "GameMaker GmlSpec.xml file path",
@@ -230,20 +233,19 @@
     "onCommand:stitch.openIde",
     "onCommand:stitch.createProject"
   ],
-  "dependencies": {
-    "glob": "9.2.1"
-  },
   "devDependencies": {
     "@bscotch/gml-parser": "workspace:*",
     "@bscotch/pathy": "^2.6.0",
     "@bscotch/stitch": "workspace:*",
     "@bscotch/stitch-launcher": "workspace:*",
+    "@bscotch/utility": "^6.8.0",
     "@bscotch/yy": "workspace:*",
     "@types/plist": "3.0.2",
     "@types/vscode": "1.76.0",
     "@types/xml2js": "0.4.11",
     "@vscode/vsce": "2.18.0",
     "esbuild": "^0.17.11",
+    "glob": "9.2.1",
     "nodemon": "^2.0.21",
     "plist": "3.0.6",
     "typescript": "5.0.1-rc",

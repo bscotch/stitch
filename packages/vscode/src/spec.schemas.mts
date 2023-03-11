@@ -210,9 +210,9 @@ export const gmlSpecSchema = z
         Structures: z.tuple([
           z.object({ Structure: z.array(gmlSpecStructureSchema) }),
         ]),
-        Enumerations: z.tuple([
-          z.object({ Enumeration: z.array(gmlSpecEnumerationSchema) }),
-        ]),
+        Enumerations: z
+          .tuple([z.object({ Enumeration: z.array(gmlSpecEnumerationSchema) })])
+          .optional(),
       })
       .strict()
       .transform((v) => ({
@@ -221,7 +221,7 @@ export const gmlSpecSchema = z
         variables: v.Variables[0].Variable,
         constants: v.Constants[0].Constant,
         structures: v.Structures[0].Structure,
-        enumerations: v.Enumerations[0].Enumeration,
+        enumerations: v.Enumerations?.[0].Enumeration || [],
       })),
   })
   .strict()

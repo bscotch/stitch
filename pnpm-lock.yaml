@@ -397,6 +397,7 @@ importers:
       '@bscotch/pathy': ^2.6.0
       '@bscotch/stitch': workspace:*
       '@bscotch/stitch-launcher': workspace:*
+      '@bscotch/utility': ^6.8.0
       '@bscotch/yy': workspace:*
       '@types/plist': 3.0.2
       '@types/vscode': 1.76.0
@@ -413,19 +414,19 @@ importers:
       zod: ^3.21.2
       zod-to-json-schema: 3.20.4
       zx: ^7.2.0
-    dependencies:
-      glob: 9.2.1
     devDependencies:
       '@bscotch/gml-parser': link:../parser
       '@bscotch/pathy': 2.6.0
       '@bscotch/stitch': link:../core
       '@bscotch/stitch-launcher': link:../launcher
+      '@bscotch/utility': 6.8.0
       '@bscotch/yy': link:../yy
       '@types/plist': 3.0.2
       '@types/vscode': 1.76.0
       '@types/xml2js': 0.4.11
       '@vscode/vsce': 2.18.0
       esbuild: 0.17.11
+      glob: 9.2.1
       nodemon: 2.0.21
       plist: 3.0.6
       typescript: 5.0.1-rc
@@ -4199,6 +4200,7 @@ packages:
       minimatch: 7.4.2
       minipass: 4.2.4
       path-scurry: 1.6.1
+    dev: true
 
   /global-agent/3.0.0:
     resolution: {integrity: sha512-PT6XReJ+D07JvGoxQMkT6qji/jVNfX/h364XHZOWeRzy64sSFr+xJ5OX7LI3b4MPQzdL4H8Y8M0xzPpsVMwA8Q==}
@@ -5075,6 +5077,7 @@ packages:
   /lru-cache/7.18.3:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
+    dev: true
 
   /lzma-native/8.0.6:
     resolution: {integrity: sha512-09xfg67mkL2Lz20PrrDeNYZxzeW7ADtpYFbwSQh9U8+76RIzx5QsJBMy8qikv3hbUPfpy6hqwxt6FcGK81g9AA==}
@@ -5287,6 +5290,7 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       brace-expansion: 2.0.1
+    dev: true
 
   /minimist/0.0.8:
     resolution: {integrity: sha512-miQKw5Hv4NS1Psg2517mV4e4dYNaO3++hjAvLOAzKqZ61rH8NS1SK+vbfBWZ5PY/Me/bEWhUwqMghEW5Fb9T7Q==}
@@ -5344,6 +5348,7 @@ packages:
   /minipass/4.2.4:
     resolution: {integrity: sha512-lwycX3cBMTvcejsHITUgYj6Gy6A7Nh4Q6h9NP4sTHY1ccJlC7yKzDmiShEHsJ16Jf1nKGDEaiHxiltsJEvk0nQ==}
     engines: {node: '>=8'}
+    dev: true
 
   /minizlib/2.1.2:
     resolution: {integrity: sha512-bAxsR8BVfj60DWXHE3u30oHzfl4G7khkSuPW+qvpd7jFRHm7dLxOjUk1EHACJ/hxLY8phGJ0YhYHZo7jil7Qdg==}
@@ -6126,6 +6131,7 @@ packages:
     dependencies:
       lru-cache: 7.18.3
       minipass: 4.2.4
+    dev: true
 
   /path-to-regexp/3.2.0:
     resolution: {integrity: sha512-jczvQbCUS7XmS7o+y1aEO9OBVFeZBQ1MDSEqmO7xSoPgOPoowY/SxLpZ6Vh97/8qHZOteiCKb7gkG9gA2ZUxJA==}

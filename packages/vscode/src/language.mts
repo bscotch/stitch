@@ -1,6 +1,8 @@
 import { pathy } from '@bscotch/pathy';
 import { StitchProject } from '@bscotch/stitch';
 import { Yy, YyResourceType } from '@bscotch/yy';
+import glob from 'glob';
+import os from 'os';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { GameMakerProject } from './language.project.mjs';
@@ -262,25 +264,32 @@ export class GmlProvider
     this.ctx ||= ctx;
     if (!this.provider) {
       let gmlSpecFilePath;
-      const gmlSpecSource = vscode.workspace.getConfiguration('stitch').get<string | null>('gmlSpec.source');
-      const gmlSpecFilePathFromSettings = vscode.workspace.getConfiguration('stitch').get<string | null>('gmlSpec.path');
-      if (gmlSpecSource === "external" && gmlSpecFilePathFromSettings !== null) {
+      const gmlSpecSource = vscode.workspace
+        .getConfiguration('stitch')
+        .get<string | null>('gmlSpec.source');
+      const gmlSpecFilePathFromSettings = vscode.workspace
+        .getConfiguration('stitch')
+        .get<string | null>('gmlSpec.path');
+      if (
+        gmlSpecSource === 'external' &&
+        gmlSpecFilePathFromSettings !== null
+      ) {
         gmlSpecFilePath = gmlSpecFilePathFromSettings;
-      } else if (gmlSpecSource === "localRuntime") {
+      } else if (gmlSpecSource === 'localRuntime') {
         let runtimeLocalPath;
         if (os.type() == 'Windows_NT') {
-          runtimeLocalPath = "C:/ProgramData/GameMakerStudio2/Cache/runtimes/";
+          runtimeLocalPath = 'C:/ProgramData/GameMakerStudio2/Cache/runtimes/';
         } else if (os.type() == 'Darwin') {
-          runtimeLocalPath = "/Users/Shared/GameMakerStudio2/Cache/runtimes/";  // (LiarOnce) Need testing because I don't have any macOS devices.
+          runtimeLocalPath = '/Users/Shared/GameMakerStudio2/Cache/runtimes/'; // (LiarOnce) Need testing because I don't have any macOS devices.
         } else if (os.type() == 'Linux') {
-          runtimeLocalPath = "~/.local/GameMakerStudio2-Beta/Cache/runtimes/";  // GameMaker IDE in Linux only available in Beta channel
+          runtimeLocalPath = '~/.local/GameMakerStudio2-Beta/Cache/runtimes/'; // GameMaker IDE in Linux only available in Beta channel
         }
-        let runtimeGlob = await glob(runtimeLocalPath + '**/GmlSpec.xml', {});
+        const runtimeGlob = await glob(runtimeLocalPath + '**/GmlSpec.xml', {});
         gmlSpecFilePath = runtimeGlob[0]; // Always get the latest version of the installed runtimes' GmlSpec.xml files on local
-      } else if (gmlSpecSource === "internal"){
-        gmlSpecFilePath = null;
       }
-      this.provider = new GmlProvider(await parseSpec(gmlSpecFilePath as string));
+      this.provider = new GmlProvider(
+        await parseSpec(gmlSpecFilePath as string),
+      );
       const onChangeDoc = debounce((event: vscode.TextDocumentChangeEvent) => {
         const doc = event.document;
         if (doc.languageId !== 'gml') {

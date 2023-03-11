@@ -8,6 +8,8 @@
     "emitDeclarationOnly": true,
     "allowJs": true,
     "checkJs": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "moduleResolution": "nodenext",
+    "isolatedModules": true
   }
 }
