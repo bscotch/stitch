@@ -4,7 +4,7 @@ This extension provides language features for GameMaker Language (GML), among ot
 
 **⚠️ IN EARLY DEVELOPMENT, EXPECT BUGS AND INSTABILITY ⚠️**
 
-*Stitch and its logo are Trademarks of [Butterscotch Shenanigans](https://www.bscotch.net) (a.k.a. "Bscotch"). Stitch and Bscotch are unaffiliated with GameMaker.
+*Stitch and its logo are Trademarks of [Butterscotch Shenanigans](https://www.bscotch.net) (a.k.a. "Bscotch"). Stitch and Bscotch are unaffiliated with GameMaker.*
 
 ## 💡 Features
 
@@ -17,8 +17,7 @@ This extension provides language features for GameMaker Language (GML), among ot
   - Go-to-definition
   - Find all references
 - Autocomplete for a project's resources ( sprite IDs, object IDs, ...)
-- Autocomplete and validation for `.yy` and `.yyp` files
-- A JSONC formatter that works on `.yy` and `.yyp` files, outputting the same format that GameMaker uses for these files (set this extension as your `defaultFormatter` for `jsonc` files)
+- Format and validate `.yy`/`.yyp` project files. (To use it, set it as your default formatter for those filetypes.)
 
 ## 🛣️ Roadmap
 
@@ -34,14 +33,12 @@ This extension provides language features for GameMaker Language (GML), among ot
 - Add commands for changing the target IDE & runtime version
 - Rename project-specific globals
 - Add mechanism to dynamically load syntax definitions that match the project's runtime version
-- Add `yy` and `yyp` as specific languages instead of aliases for `jsonc`, so that autoformatting can be more properly set up.
 
 ## ⚙️ Supported GameMaker versions
 
-This extension uses the GameMaker syntax definitions provided by GameMaker Runtime `2023.100.0.287`.
-
 Different GameMaker versions may have different features and built-in functions, constants, etc. This extension will still work with many other GameMaker project versions, but it might give you incorrect autocompletes or surprising command outcomes!
 
+This extension uses the GameMaker syntax definitions provided by the `GmlSpec.xml` file from GameMaker Runtime `2023.200.0.312`. You can configure this extension to use a different spec file.
 
 ## Requirements
 

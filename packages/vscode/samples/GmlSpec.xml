@@ -220,6 +220,33 @@
 			<Parameter Name="index" Type="Asset.GMSound,Id.Sound" Optional="false">The index of the sound to change.</Parameter>
 			<Parameter Name="time" Type="Real" Optional="false">The time (in seconds) to set the start point to.</Parameter>
 		</Function>
+		<Function Name="audio_sound_loop" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>This function will set the state of a playing sound's loop section.</Description>
+			<Parameter Name="index" Type="Id.Sound" Optional="false">The index of the sound to change.</Parameter>
+			<Parameter Name="state" Type="Bool" Optional="false">The state that the loop section should be set to.</Parameter>
+		</Function>
+		<Function Name="audio_sound_get_loop" Deprecated="false" ReturnType="Bool" Pure="true">
+			<Description>This function will return the state of a playing sound's loop section.</Description>
+			<Parameter Name="index" Type="Id.Sound" Optional="false">The index of the sound whose loop section state is retrieved.</Parameter>
+		</Function>
+		<Function Name="audio_sound_loop_start" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>This function will set the offset (in seconds) of the start of a sound's loop section.</Description>
+			<Parameter Name="index" Type="Asset.GMSound,Id.Sound" Optional="false">The index of the sound to change.</Parameter>
+			<Parameter Name="time" Type="Real" Optional="false">The offset (in seconds) to set the start of the loop section to.</Parameter>
+		</Function>
+		<Function Name="audio_sound_get_loop_start" Deprecated="false" ReturnType="Real" Pure="true">
+			<Description>This function will return the offset (in seconds) of the start of a sound's loop section.</Description>
+			<Parameter Name="index" Type="Asset.GMSound,Id.Sound" Optional="false">The index of the sound whose loop-start is retrieved.</Parameter>
+		</Function>
+		<Function Name="audio_sound_loop_end" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>This function will set the offset (in seconds) of the end of a sound's loop section.</Description>
+			<Parameter Name="index" Type="Asset.GMSound,Id.Sound" Optional="false">The index of the sound to change.</Parameter>
+			<Parameter Name="time" Type="Real" Optional="false">The offset (in seconds) to set the end of the loop section to.</Parameter>
+		</Function>
+		<Function Name="audio_sound_get_loop_end" Deprecated="false" ReturnType="Real" Pure="true">
+			<Description>This function will return the offset (in seconds) of the end of a sound's loop section.</Description>
+			<Parameter Name="index" Type="Asset.GMSound,Id.Sound" Optional="false">The index of the sound whose loop-end is retrieved.</Parameter>
+		</Function>
 		<Function Name="audio_stop_all" Deprecated="false" ReturnType="Undefined" Pure="false">
 			<Description>This function will stop all sounds that are currently playing.</Description>
 		</Function>
@@ -230,14 +257,17 @@
 		<Function Name="audio_system_is_available" Deprecated="false" ReturnType="Bool" Pure="true">
 			<Description>This function can be used to check and see if the audio system has been initialised, or if the audio context is running. On all platforms, this function will return true immediately after Game Start when the audio engine is initialised, except on the Opera GX and HTML5 targets. On Opera GX and HTML5, the audio context status can change at any time depending on user input, the browser being used, and its version, so this function can be used to check and see if audio can be played or not. If the function returns false (ie: the audio context status is not running), then only unstreamed sounds may play (but it&apos;s not guaranteed, and you should assume that no audio can be played), while if it returns true then all audio will play.</Description>
 		</Function>
-		<Function Name="audio_create_buffer_sound" Deprecated="false" ReturnType="Id.Sound" Pure="true">
+		<Function Name="audio_system_is_initialised" Deprecated="false" ReturnType="Bool" Pure="true">
+			<Description>This function can be used to check if the audio engine has been initialised, after which all audio functions can be called normally. For all targets other than HTML5, this will return true on Game Start. On HTML5, this may only begin to return true after Game Start. While audio_system_is_available() reflects the ability to play audio, this function reflects the ability to call audio functions more generally.</Description>
+		</Function>
+		<Function Name="audio_create_buffer_sound" Deprecated="false" ReturnType="Asset.GMSound" Pure="true">
 			<Description>With this function you can create a new sound from the contents of a buffer. The buffer will have been created previously (see the buffer functions for details on how to do this), and have had data added or loaded into it. You then pass it to this function with the data format (only buffer_u8 or buffer_s16 are currently supported), the sample rate (which can be between 1000hz and 48000hz), and an offset into the buffer to get the data from. You also need to supply the number of samples in the buffer and the channels that the sound requires. These channels are defined by one of the following constants:</Description>
-			<Parameter Name="bufferid" Type="Id.Buffer" Optional="false">The ID of the buffer to use.</Parameter>
-			<Parameter Name="bufferformat" Type="Constant.BufferDataType" Optional="false">The format of the data in the buffer (buffer_u8 or buffer_s16).</Parameter>
-			<Parameter Name="bufferrate" Type="Real" Optional="false">The sample rate of the data in the buffer.</Parameter>
-			<Parameter Name="bufferoffset" Type="Real" Optional="false">The offset into the buffer to read the sample data from (in bytes).</Parameter>
-			<Parameter Name="bufferlength" Type="Real" Optional="false">The length of the buffer (the number of bytes of audio data, excluding the header).</Parameter>
-			<Parameter Name="bufferchannels" Type="Real" Optional="false">The channels to use from one of the constants listed below.</Parameter>
+			<Parameter Name="bufferId" Type="Id.Buffer" Optional="false">The ID of the buffer to use.</Parameter>
+			<Parameter Name="bufferFormat" Type="Constant.BufferDataType" Optional="false">The format of the data in the buffer (buffer_u8 or buffer_s16).</Parameter>
+			<Parameter Name="bufferRate" Type="Real" Optional="false">The sample rate of the data in the buffer.</Parameter>
+			<Parameter Name="bufferOffset" Type="Real" Optional="false">The offset into the buffer to read the sample data from (in bytes).</Parameter>
+			<Parameter Name="bufferLength" Type="Real" Optional="false">The length of the buffer (the number of bytes of audio data, excluding the header).</Parameter>
+			<Parameter Name="bufferChannels" Type="Constant.AudioChannelType" Optional="false">The channels to use (audio_mono, audio_stereo or audio_3D).</Parameter>
 		</Function>
 		<Function Name="audio_create_play_queue" Deprecated="false" ReturnType="Real" Pure="true">
 			<Description>This function prepares a buffer queue for audio. You pass data format (only buffer_u8 or buffer_s16 are currently supported), the sample rate (which can be between 1000hz and 48000hz), and the channels that the audio requires from one of the constants listed below:</Description>
@@ -403,6 +433,14 @@
 			<Description>This function will unload all the sounds that are flagged as belonging to the given Audio Group into memory. The function will return true if unloading is initiated and false if the group ID is invalid, or it has already been flagged for unloading. Note that any audio currently being played when this function is called will be stopped.</Description>
 			<Parameter Name="groupid" Type="Asset.GMAudioGroup" Optional="false">The index of the audio group to unload (as defined in the Audio Groups Window)</Parameter>
 		</Function>
+		<Function Name="audio_group_get_assets" Deprecated="false" ReturnType="Array[Asset.GMSound]" Pure="true">
+			<Description>This function will return an array containing the asset index of each audio asset in the given audio group.</Description>
+			<Parameter Name="group_index" Type="Asset.GMAudioGroup" Optional="false">The index of the audio group whose asset indices should be retrieved.</Parameter>
+		</Function>
+		<Function Name="audio_sound_get_audio_group" Deprecated="false" ReturnType="Asset.GMAudioGroup" Pure="true">
+			<Description>This function will return the index of the audio group that is associated with the given sound index.</Description>
+			<Parameter Name="sound_index" Type="Asset.GMSound,Id.Sound" Optional="false">The index of the sound whose audio group should be retrieved.</Parameter>
+		</Function>
 		<Function Name="audio_get_listener_count" Deprecated="false" ReturnType="Real" Pure="true">
 			<Description>Certain target platforms permit more than one listener, so it is important that you know how many the target has before changing or using different listeners. This function will return the number of listeners available.</Description>
 		</Function>
@@ -532,6 +570,10 @@
 			<Description>This function returns an array of all of the audio emitters linked to a given audio bus.</Description>
 			<Parameter Name="bus" Type="Struct.AudioBus" Optional="false">The audio bus whose emitters should be returned.</Parameter>
 		</Function>
+		<Function Name="audio_bus_clear_emitters" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>This function relinks all of the emitters linked to the given bus back to the main bus.</Description>
+			<Parameter Name="bus" Type="Struct.AudioBus" Optional="false">The audio bus whose emitters should be cleared.</Parameter>
+		</Function>
 		<Function Name="font_add" Deprecated="false" ReturnType="Asset.GMFont" Pure="false">
 			<Description>This function can be used to add a font to your game from a font file present in the Included Files. You can define the size of the font (in points), as well as whether the font should be bold or italic, and you can also define the range of characters to include. The function returns an index value that should be stored in a variable as this will be needed in all further code that refer to this font, or it will return -1 if the function fails for any reason.</Description>
 			<Parameter Name="name" Type="String" Optional="false">The path of the font file in the Included Files (*.ttf or *.otf).</Parameter>
@@ -573,6 +615,15 @@
 		</Function>
 		<Function Name="font_get_sdf_enabled" Deprecated="false" ReturnType="Undefined" Pure="false">
 			<Description>With this function you can determine whether SDF rendering is enabled or disabled for the specified font</Description>
+			<Parameter Name="ind" Type="Asset.GMFont" Optional="false">The index of the font.</Parameter>			
+		</Function>
+		<Function Name="font_sdf_spread" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>With this function you can set the SDF spread value for the specified font. This only works on fonts added using font_add(), and its effect is only visible if the font is using SDF rendering.</Description>
+			<Parameter Name="ind" Type="Asset.GMFont" Optional="false">The index of the font.</Parameter>
+			<Parameter Name="spread" Type="Real" Optional="false">The SDF spread value to set for the specified font.</Parameter>
+		</Function>
+		<Function Name="font_get_sdf_spread" Deprecated="false" ReturnType="Real" Pure="false">
+			<Description>With this function you can query the SDF spread value for the specified font</Description>
 			<Parameter Name="ind" Type="Asset.GMFont" Optional="false">The index of the font.</Parameter>			
 		</Function>
 		<Function Name="font_exists" Deprecated="false" ReturnType="Bool" Pure="true">
@@ -4034,13 +4085,13 @@
 			<Description>This runtime function can be used to &quot;take over&quot; the default GameMaker error message when a runtime exception occurs. You supply a method or function which is called when the exception occurs, and its first argument will be a struct containing information about the exception. This struct has the following format:</Description>
 			<Parameter Name="user_handler" Type="Function" Optional="false">The method (user-defined function) to use as the exception handler, or undefined to reset it to default.</Parameter>
 		</Function>
-		<Function Name="get_integer" Deprecated="false" ReturnType="Real" Pure="true">
-			<Description>This creates a pop-up window showing a custom message, with a button labelled &quot;Ok&quot;, and prompts the user to input an integer value. The function will return the typed in integer, or the default value if nothing has been entered.</Description>
+		<Function Name="get_integer" Deprecated="true" ReturnType="Real" Pure="true">
+			<Description>This function has being deprecated and is now obsolete (use get_integer_async instead). Calls to this function will produce a warning message.</Description>
 			<Parameter Name="str" Type="String" Optional="false">The string to show in the pop-up message.</Parameter>
 			<Parameter Name="def" Type="Real" Optional="false">The default value in the text box.</Parameter>
 		</Function>
-		<Function Name="get_string" Deprecated="false" ReturnType="String" Pure="true">
-			<Description>This creates a pop-up window showing a standard message, with a button labelled &quot;Ok&quot;, that prompts the user to input a string. The function will return the input string, or the default value if nothing has been entered.</Description>
+		<Function Name="get_string" Deprecated="true" ReturnType="String" Pure="true">
+			<Description>This function has being deprecated and is now obsolete (use get_string_async instead). Calls to this function will produce a warning message.</Description>
 			<Parameter Name="str" Type="String" Optional="false">The string to show in the pop-up message.</Parameter>
 			<Parameter Name="def" Type="String" Optional="false">The default string in the text box.</Parameter>
 		</Function>
@@ -4751,11 +4802,13 @@
 		</Function>
 		<Function Name="part_system_create" Deprecated="false" ReturnType="Id.ParticleSystem" Pure="true">
 			<Description>This function is used to create a new particle system and will return a unique index number that should be stored and used in all further functions relating to that system. The system will be assigned a managed layer and will be set to have a depth of 0. Managed layers are not accessible to the user and used only for internal management when depth is used instead of layers. Normally you would use the function part_system_create_layer() instead of this one.</Description>
+			<Parameter Name="partsys" Type="Asset.GMParticleSystem" Optional="true">A particle system resource to create an instance of.</Parameter>
 		</Function>
 		<Function Name="part_system_create_layer" Deprecated="false" ReturnType="Id.ParticleSystem" Pure="true">
 			<Description>This function will create a new particle system on a given layer. You give the unique layer ID as returned by the function layer_create() or the name of the layer to use as a string - for example &quot;instance_layer&quot; - and then flag the system as being persistent or not. If the system is not flagged as persistent then it will be automatically destroyed at the end of the room it was created in (this is the same as if you had called the function part_system_destroy() and will also destroy any emitters associated with the system). However, when flagged as persistent, the system will be carried to the next room when the room is changed, and if the following room does not have a layer with the same name or depth as the one assigned, then a new layer will be created for the system that is persisting across the rooms, and it will be named the same as original layer. When changing rooms, if there is another layer in the following rooms with the same name, then the persisted instance will be assigned to the layer with the that name regardless of the depth of the layer. Finally, if a persisted system moves to a room with a layer at the same depth as the layer the system was created on, it will not be assigned to this layer, but instead a new layer will be created at the same depth (with the same name as the original layer).</Description>
 			<Parameter Name="layer" Type="Any" Optional="false">The layer ID value or string to assign the particle system to (can be any layer type)</Parameter>
 			<Parameter Name="persistent" Type="Bool" Optional="false">Flag the particle system as persistent (set to true) or not (set to false)</Parameter>
+			<Parameter Name="partsys" Type="Asset.GMParticleSystem" Optional="true">A particle system resource to create an instance of.</Parameter>
 		</Function>
 		<Function Name="part_system_depth" Deprecated="false" ReturnType="Undefined" Pure="false">
 			<Description>With this function you can set the draw depth for the particle system, much the same as you can set the render depth of different layers within the room, where a low draw depth means that it will appear on top of all things drawn with a higher depth, and a high draw depth placing it below everything with a lower draw depth.</Description>
@@ -5464,12 +5517,17 @@
 			<Description>This function is used to create a surface and will return the index of the surface which should be stored in a variable for future function calls. When the surface is first created, it may contain &quot;noise&quot; as basically it is just an area of memory that is put aside for the purpose (and that memory may still contain information), so you may want to clear the surface before use with a function like draw_clear_alpha().</Description>
 			<Parameter Name="w" Type="Real" Optional="false">The width of the surface to be created.</Parameter>
 			<Parameter Name="h" Type="Real" Optional="false">The height of the surface to be created.</Parameter>
+			<Parameter Name="format" Type="Constant.SurfaceFormatType" Optional="true">The format of the surface to be created.</Parameter>
 		</Function>
 		<Function Name="surface_create_ext" Deprecated="false" ReturnType="Id.Surface" Pure="true">
 			<Description>This function allows you to attach a surface to a canvas element that already exists in your web page, meaning that you can effectively split up portions of your game to be drawn at various different places within the page. To that end, you must have defined the canvas element correctly within the *.html page of your game using the correct sizes and names that correspond to the surfaces you wish to create. So, you would have your &quot;main&quot; canvas, and then your secondary surface canvas elements, which will be assigned using this function to the correct surfaces. The following image is an example of how a page with three canvas elements would be set up:</Description>
 			<Parameter Name="name" Type="String" Optional="false">The name of the canvas element to link the surface to.</Parameter>
 			<Parameter Name="w" Type="Real" Optional="false">The width of the surface to be created.</Parameter>
 			<Parameter Name="h" Type="Real" Optional="false">The height of the surface to be created.</Parameter>
+		</Function>
+		<Function Name="surface_format_is_supported" Deprecated="false" ReturnType="Bool" Pure="true">
+			<Description>This function is used to test whether the specified surface format is supported on the current platform.</Description>
+			<Parameter Name="format" Type="Constant.SurfaceFormatType" Optional="true">The surface format to be tested.</Parameter>
 		</Function>
 		<Function Name="surface_depth_disable" Deprecated="false" ReturnType="Undefined" Pure="false">
 			<Description>This function disables the automatic depth buffer generation for all surfaces that are created after it has been disabled. Normally all surfaces have depth buffers so if you draw 3D objects to them then it&apos;ll sort them properly by depth in order to maintain functional parity between rendering to surfaces and rendering to the back buffer, however allocating depth buffers essentially doubles the amount of memory required for surfaces, which could be an excessive and unnecessary overhead especially if your game is very memory intensive, and for 2D games they aren&apos;t generally required.</Description>
@@ -5798,6 +5856,7 @@
 		<Function Name="json_encode" Deprecated="false" ReturnType="String" Pure="true">
 			<Description>JSON (JavaScript Object Notation) is a lightweight data-interchange format which is easy for to read and write, for both people and machines. It is built on two basic structures:</Description>
 			<Parameter Name="map" Type="Id.DsMap" Optional="false">a DS map with the information to encode (or an array)</Parameter>
+			<Parameter Name="prettify" Type="Bool" Optional="true">Whether of not the result JSON string should be prettified. Defaults to false.</Parameter>
 		</Function>
 		<Function Name="json_parse" Deprecated="false" ReturnType="Any" Pure="true">
 			<Description>This function can be used to parse a JSON string (either previously created using json_stringify or from any valid source), and convert it into a collection of arrays or structs, where an array is the equivalent of a JSON array and a struct is the equivalent of a JSON object. You supply the string to parse, and the function will return the top level array or struct which can then be checked in your code. If you are not sure of the contents of the JSON, you can use the different Variable Functions (like typeof() or variable_struct_get_names()) to check the returned contents. Note that trying to parse an invalid value (ie: not a string) will throw an exception error.</Description>
@@ -5806,6 +5865,7 @@
 		<Function Name="json_stringify" Deprecated="false" ReturnType="String" Pure="true">
 			<Description>With this function you can convert single or nested structs and arrays into a valid JSON string. You supply the initial value to use (an array index or a struct reference) and then the function will &quot;stringify&quot; it, converting it into a JSON string, converting GameMaker arrays into JSON arrays, and GameMaker structs in to JSON objects.</Description>
 			<Parameter Name="val" Type="Any" Optional="false">The reference value for a struct or array to convert into a JSON string</Parameter>
+			<Parameter Name="prettify" Type="Bool" Optional="true">Whether of not the result JSON string should be prettified. Defaults to false.</Parameter>
 		</Function>
 		<Function Name="load_csv" Deprecated="false" ReturnType="Id.DsGrid" Pure="true">
 			<Description>This function will load a CSV format file and convert it into a DS grid, returning the unique ID value for the grid created.</Description>
@@ -7418,7 +7478,9 @@
 			<Parameter Name="obj" Type="Asset.GMObject,Constant.All" Optional="false">The object to check for collisions with.</Parameter>
 			<Parameter Name="num_iterations" Type="Real" Optional="true">The number of steps the motion will be broken down into to resolve collisions, defaults to 4</Parameter>
 			<Parameter Name="xoff" Type="Real" Optional="true">The x component of direction to move to attempt to avoid obstacles. If not specified the perpendicular to the direction of movement is used.</Parameter>
-			<Parameter Name="yoff" Type="Real" Optional="true">The y component of direction to move to attempt to avoid obstacles. If not specified the perpendicular to the direction of movement is used.</Parameter>	
+			<Parameter Name="yoff" Type="Real" Optional="true">The y component of direction to move to attempt to avoid obstacles. If not specified the perpendicular to the direction of movement is used.</Parameter>
+			<Parameter Name="max_x_distance" Type="Real" Optional="true">The maximum distance in the x direction the instance will move. If less than or equal to 0 no clamping is performed.</Parameter>
+			<Parameter Name="max_y_distance" Type="Real" Optional="true">The maximum distance in the y direction the instance will move. If less than or equal to 0 no clamping is performed.</Parameter>				
 		</Function>
 		<Function Name="move_outside_solid" Deprecated="false" ReturnType="Undefined" Pure="false">
 			<Description>With this function you can tell an instance to move out of a collision with any instance flagged as solid in any direction and any number of pixels each step, with a value of -1 or 0 for the maxdist being a default 1000px, ie: GameMaker will move the instance continually up 1000 pixels until it is out of collision.</Description>
@@ -8353,16 +8415,19 @@
 			<Parameter Name="val_array" Type="Array" Optional="false">An array of values to replace the placeholders.</Parameter>
 		</Function>
 		<Function Name="string_trim_start" Deprecated="false" ReturnType="String" Pure="true">
-			<Description>This function removes whitespace from the beginning of a string (left).</Description>
+			<Description>This function removes whitespace from the beginning of a string (left). You can optionally provide an array of strings to be used for trimming if you want to remove something other than whitespaces.</Description>
 			<Parameter Name="str" Type="String" Optional="false">The input string.</Parameter>
+			<Parameter Name="substrs" Type="Array[String]" Optional="true">An array of strings to be used during trimming.</Parameter>
 		</Function>
 		<Function Name="string_trim_end" Deprecated="false" ReturnType="String" Pure="true">
-			<Description>This function removes whitespace from the end of a string (right).</Description>
+			<Description>This function removes whitespace from the end of a string (right). You can optionally provide an array of strings to be used for trimming if you want to remove something other than whitespaces.</Description>
 			<Parameter Name="str" Type="String" Optional="false">The input string.</Parameter>
+			<Parameter Name="substrs" Type="Array[String]" Optional="true">An array of strings to be used during trimming.</Parameter>
 		</Function>
 		<Function Name="string_trim" Deprecated="false" ReturnType="String" Pure="true">
-			<Description>This function removes whitespace from both ends of a string and returns a new string, without modifying the original string.</Description>
+			<Description>This function removes whitespace from both ends of a string and returns a new string, without modifying the original string. You can optionally provide an array of strings to be used for trimming if you want to remove something other than whitespaces.</Description>
 			<Parameter Name="str" Type="String" Optional="false">The input string.</Parameter>
+			<Parameter Name="substrs" Type="Array[String]" Optional="true">An array of strings to be used during trimming.</Parameter>
 		</Function>
 		<Function Name="string_starts_with" Deprecated="false" ReturnType="Bool" Pure="true">
 			<Description>This function determines whether a string begins with the characters of a specified string, returning true or false as appropriate.</Description>
@@ -8457,7 +8522,7 @@
 			<Parameter Name="array" Type="Array" Optional="false">The index of the array to check.</Parameter>
 		</Function>
 		<Function Name="array_pop" Deprecated="false" ReturnType="ArgumentIdentity" Pure="false">
-			<Description>With this function you can retrieve a value from the end of an array without having to know the length of the array. You supply the variable that holds the array, and the function will return the contents of last entry in the array. If the array is empty, the function will return undefined.</Description>
+			<Description>This function will remove the last element in the given array and return its value. If the array is empty undefined is returned.</Description>
 			<Parameter Name="array" Type="Array" Optional="false">The variable that holds the array.</Parameter>
 		</Function>
 		<Function Name="array_push" Deprecated="false" ReturnType="Undefined" Pure="false">
@@ -8650,7 +8715,7 @@
 			<Parameter Name="struct" Type="Struct" Optional="false">The struct reference to use.</Parameter>
 		</Function>
 		<Function Name="is_instanceof" Deprecated="false" ReturnType="Bool" Pure="true">
-			<Description>returns true if &quot;struct&quot; has &quot;constructor_name&quot; as part of its inheritance hierarchy</Description>
+			<Description>Returns true if &quot;struct&quot; has &quot;constructor_name&quot; as part of its inheritance hierarchy</Description>
 			<Parameter Name="struct" Type="Struct" Optional="false">The struct reference to check.</Parameter>
 			<Parameter Name="constructor_name" Type="Function,Asset.GMScript" Optional="false">The constructor reference to check against</Parameter>
 		</Function>
@@ -8675,6 +8740,10 @@
 			<Description>This function returns whether a given variable is a boolean (true ior false) or not. In some cases you want to check and see if a variable in GameMaker holds a boolean value, and that&apos;s when you would use this function.</Description>
 			<Parameter Name="n" Type="Any" Coerce="true" Optional="false">The argument to check.</Parameter>
 		</Function>
+		<Function Name="is_callable" Deprecated="false" ReturnType="Bool" Pure="true">
+			<Description>This function returns whether a given variable can be called (either beeing a method or a valid function index).</Description>
+			<Parameter Name="n" Type="Any" Coerce="true" Optional="false">The argument to check.</Parameter>
+		</Function>
 		<Function Name="is_infinity" Deprecated="false" ReturnType="Bool" Pure="true">
 			<Description>This function returns whether a given variable is infinity (an infinite number) or not, returning true if it is, and false if it is not.</Description>
 			<Parameter Name="n" Type="Any" Coerce="true" Optional="false">The argument to check.</Parameter>
@@ -8685,10 +8754,6 @@
 		</Function>
 		<Function Name="is_int64" Deprecated="false" ReturnType="Bool" Pure="true">
 			<Description>This function returns whether a given variable is a 64bit integer or not. In some cases you want to check and see what data type a variable holds in GameMaker and that&apos;s when you would use this function. It returns true or false depending on whether the value is an int64 or not.</Description>
-			<Parameter Name="n" Type="Any" Coerce="true" Optional="false">The argument to check.</Parameter>
-		</Function>
-		<Function Name="is_matrix" Deprecated="true" ReturnType="Bool" Pure="true">
-			<Description>This function returns whether a given variable refers to a matrix or not. In some cases you want to check and see what data type a variable holds in GameMaker and that&apos;s when you would use this function. It returns true or false depending on whether the value is a matrix or not.</Description>
 			<Parameter Name="n" Type="Any" Coerce="true" Optional="false">The argument to check.</Parameter>
 		</Function>
 		<Function Name="is_method" Deprecated="false" ReturnType="Bool" Pure="true">
@@ -8722,14 +8787,6 @@
 		<Function Name="is_undefined" Deprecated="false" ReturnType="Bool" Pure="true">
 			<Description>This function returns whether a given variable is defined or not. In some cases you want to check and see what data type a variable holds in GameMaker and that&apos;s when you would use this function. It returns true or false depending on whether the value is defined or not.</Description>
 			<Parameter Name="n" Type="Any" Optional="false">The argument to check.</Parameter>
-		</Function>
-		<Function Name="is_vec3" Deprecated="false" ReturnType="Bool" Pure="true">
-			<Description>In some cases you want to check and see what data type a variable holds in GameMaker and that&apos;s when you would use this function. It returns true or false depending on whether the value is a 3 value vector or not.</Description>
-			<Parameter Name="n" Type="Any" Coerce="true" Optional="false">The argument to check.</Parameter>
-		</Function>
-		<Function Name="is_vec4" Deprecated="false" ReturnType="Bool" Pure="true">
-			<Description>In some cases you want to check and see what data type a variable holds in GameMaker and that&apos;s when you would use this function. It returns true or false depending on whether the value is a 4 value vector or not.</Description>
-			<Parameter Name="n" Type="Any" Coerce="true" Optional="false">The argument to check.</Parameter>
 		</Function>
 		<Function Name="method" Deprecated="false" ReturnType="Function" Pure="true">
 			<Description>With this function you can bind any function that has previously been defined to a given instance or struct, creating a method variable that can be used later. You supply the instance ID to use (it must be an instance that is active and in the room, and can&apos;t be an object ID) or a struct reference, as well as the ID of the function that you want to bind. The function will return a method which can be called from the variable it is assigned to (see the code example below). It is worth noting that you can bind built-in functions as well as user defined functions, and you can also supply undefined as the instance/struct argument meaning that the current self scope will be used for the binding.</Description>
@@ -8898,7 +8955,7 @@
 			<Description>This will open the specified URL on the browser of the chosen target device, or, if you are using the HTML5 module, in the currently open browser. The &quot;target&quot; parameter that you specify is the same as the standard JavaScript &quot;name&quot; value when you use the open() method (be aware that all but &quot;_self&quot; may result in the browser blocking, or asking the user if they wish to allow it) and the &quot;options&quot; is the same as the JavaScript &quot;specs&quot; parameter for controlling what properties the new window/tab should display (not all browsers may support all features).</Description>
 			<Parameter Name="url" Type="String" Optional="false">The URL (website address) to link to.</Parameter>
 			<Parameter Name="target" Type="String" Optional="false">This is the target area to open the URL in (see description).</Parameter>
-			<Parameter Name="options" Type="Real" Optional="false">Standard browser options (see description).</Parameter>
+			<Parameter Name="options" Type="String" Optional="false">Standard browser options (see description).</Parameter>
 		</Function>
 		<Function Name="array_length_1d" Deprecated="true" ReturnType="Real" Pure="true">
 			<Parameter Name="variable" Type="Array" Optional="false" />
@@ -10241,6 +10298,7 @@
 		<Constant Name="asset_timeline" Class="AssetType" Type="Real" Deprecated="false">The given name refers to a time line.</Constant>
 		<Constant Name="asset_shader" Class="AssetType" Type="Real" Deprecated="false">The given name refers to a shader.</Constant>
 		<Constant Name="asset_animationcurve" Class="AssetType" Type="Real" Deprecated="false">The given name refers to an Animation Curve.</Constant>
+		<Constant Name="asset_particlesystem" Class="AssetType" Type="Real" Deprecated="false">The given name refers to a Particle System.</Constant>
 		<Constant Name="asset_sequence" Class="AssetType" Type="Real" Deprecated="false">The given name refers to a Sequence.</Constant>
 		<Constant Name="asset_unknown" Class="AssetType" Type="Real" Deprecated="false">The given name refers to an asset that either does not exist, or is not one of the above listed.</Constant>
 		<Constant Name="audio_falloff_exponent_distance" Class="AudioFalloff" Type="Real" Deprecated="false"> gain = (listener_distance / reference_distance) ^ (-falloff_factor)</Constant>
@@ -10252,9 +10310,9 @@
 		<Constant Name="audio_falloff_linear_distance" Class="AudioFalloff" Type="Real" Deprecated="false"> distance = min(distance, maximum_distance) gain = (1 - falloff_factor * (distance - reference_distance) / (maximum_distance - reference_distance))</Constant>
 		<Constant Name="audio_falloff_linear_distance_clamped" Class="AudioFalloff" Type="Real" Deprecated="false"> distance = clamp(listener_distance, reference_distance, maximum_distance) gain = (1 - falloff_factor * (distance - reference_distance) / (maximum_distance - reference_distance))</Constant>
 		<Constant Name="audio_falloff_none" Class="AudioFalloff" Type="Real" Deprecated="false"> gain = 1</Constant>
-		<Constant Name="audio_mono" Class="AudioType" Type="Real" Deprecated="false">Mono (single channel) audio.</Constant>
-		<Constant Name="audio_stereo" Class="AudioType" Type="Real" Deprecated="false">Stereo (dual channel) audio.</Constant>
-		<Constant Name="audio_3D" Class="AudioType" Type="Real" Deprecated="false">3D (5.1) audio.</Constant>
+		<Constant Name="audio_mono" Class="AudioChannelType" Type="Real" Deprecated="false">Mono (single channel) audio.</Constant>
+		<Constant Name="audio_stereo" Class="AudioChannelType" Type="Real" Deprecated="false">Stereo (dual channel) audio.</Constant>
+		<Constant Name="audio_3D" Class="AudioChannelType" Type="Real" Deprecated="false">3D (5.1) audio.</Constant>
 		<Constant Name="ev_create" Class="EventType" Type="Real" Deprecated="false">Create event</Constant>
 		<Constant Name="ev_destroy" Class="EventType" Type="Real" Deprecated="false">Destroy event</Constant>
 		<Constant Name="ev_cleanup" Class="EventType" Type="Real" Deprecated="false">Clean Up Event</Constant>
@@ -10381,6 +10439,7 @@
 		<Constant Name="seqtracktype_message" Class="SequenceTrackType" Type="Real" Deprecated="false">This is a broadcast message track.</Constant>
 		<Constant Name="seqtracktype_moment" Class="SequenceTrackType" Type="Real" Deprecated="false">This is an event/moment track.</Constant>
 		<Constant Name="seqtracktype_text" Class="SequenceTrackType" Type="Real" Deprecated="false">This is a text track.</Constant>
+		<Constant Name="seqtracktype_particlesystem" Class="SequenceTrackType" Type="Real" Deprecated="false">This is a particle system asset track.</Constant>
 		<Constant Name="seqtracktype_bool" Class="SequenceTrackType" Type="Real" Deprecated="false">Not used currently.</Constant>
 		<Constant Name="seqtracktype_string" Class="SequenceTrackType" Type="Real" Deprecated="false">Not used currently.</Constant>
 		<Constant Name="seqtracktype_spriteframes" Class="SequenceTrackType" Type="Real" Deprecated="false">Not used currently.</Constant>
@@ -10415,6 +10474,14 @@
 		<Constant Name="texturegroup_status_loading" Class="NineSlice" Type="Real" Deprecated="false">The texture group is loading</Constant>
 		<Constant Name="texturegroup_status_loaded" Class="NineSlice" Type="Real" Deprecated="false">The texture group is loaded</Constant>
 		<Constant Name="texturegroup_status_fetched" Class="NineSlice" Type="Real" Deprecated="false">The texture group is decompressed and ready to be used</Constant>
+		<Constant Name="surface_rgba8unorm" Class="SurfaceFormatType" Type="Real" Deprecated="false">8 bit integer per channel (normalised) RGBA surface format</Constant>
+		<Constant Name="surface_r16float" Class="SurfaceFormatType" Type="Real" Deprecated="false">16 bit float single channel surface format</Constant>
+		<Constant Name="surface_r32float" Class="SurfaceFormatType" Type="Real" Deprecated="false">32 bit float single channel surface format</Constant>
+		<Constant Name="surface_rgba4unorm" Class="SurfaceFormatType" Type="Real" Deprecated="false">4 bit integer per channel (normalised) RGBA surface format</Constant>
+		<Constant Name="surface_r8unorm" Class="SurfaceFormatType" Type="Real" Deprecated="false">8 bit integer single channel (normalised) surface format</Constant>
+		<Constant Name="surface_rg8unorm" Class="SurfaceFormatType" Type="Real" Deprecated="false">8 bit integer two channel (normalised) surface format</Constant>
+		<Constant Name="surface_rgba16float" Class="SurfaceFormatType" Type="Real" Deprecated="false">16 bit float per channel RGBA surface format</Constant>
+		<Constant Name="surface_rgba32float" Class="SurfaceFormatType" Type="Real" Deprecated="false">32 bit float per channel RGBA surface format</Constant>
 		<Constant Name="bboxmode_automatic" Class="BBoxMode" Type="Real" Deprecated="false">Automatic - The bounding box will be calculated automatically, based on the tolerance setting for the sprite</Constant>
 		<Constant Name="bboxmode_fullimage" Class="BBoxMode" Type="Real" Deprecated="false">Full Image - The bounding box will be set to use the full width and height of the sprite, regardless of the tolerance and &quot;empty&quot; pixels</Constant>
 		<Constant Name="bboxmode_manual" Class="BBoxMode" Type="Real" Deprecated="false">Manual - The bounding box has been set manually to user defined values (either in the sprite editor, or using the function sprite_set_bbox())</Constant>
