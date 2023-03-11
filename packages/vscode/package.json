@@ -1,7 +1,7 @@
 {
   "name": "bscotch-stitch-vscode",
   "displayName": "Stitch",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
@@ -12,13 +12,13 @@
     "gml"
   ],
   "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/vscode#readme",
+  "bugs": {
+    "url": "https://github.com/bscotch/stitch/issues?q=is%3Aissue+is%3Aopen+label%3A%22%3Akeyboard%3A+vscode%22"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/bscotch/stitch.git",
     "directory": "packages/vscode"
-  },
-  "bugs": {
-    "url": "https://github.com/bscotch/stitch/issues?q=is%3Aissue+is%3Aopen+label%3A%22%3Akeyboard%3A+vscode%22"
   },
   "license": "SEE LICENSE IN LICENSE.md",
   "qna": false,
