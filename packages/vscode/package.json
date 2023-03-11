@@ -5,7 +5,8 @@
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Formatters"
   ],
   "keywords": [
     "gamemaker",
@@ -83,6 +84,12 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.yy.format.enable": {
+          "title": "Enable yy/yyp formatting",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable formatting of GameMaker `.yy` and `.yyp` files."
+        },
         "stitch.template.path": {
           "title": "GameMaker Project Template",
           "type": [

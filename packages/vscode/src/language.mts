@@ -133,10 +133,31 @@ export class GmlProvider
     return;
   }
 
+  static get config() {
+    const config = vscode.workspace.getConfiguration('stitch');
+    return {
+      gmlSpecPath: config.get<string | null>('gmlSpec.path'),
+      gmlSpecSource: config.get<string | null>('gmlSpec.source'),
+      templatePath:
+        config.get<string | null>('template.path') ||
+        pathy(__dirname).join(
+          '..',
+          'assets',
+          'templates',
+          'issue-template',
+          'issue-template.yyp',
+        ).absolute,
+      enableYyFormatting: config.get<boolean>('yy.format.enable'),
+    };
+  }
+
   provideDocumentFormattingEdits(
     document: vscode.TextDocument,
   ): vscode.ProviderResult<vscode.TextEdit[]> {
-    if (document.languageId !== 'yy' || !document.uri.path.match(/\.yyp?$/)) {
+    if (
+      document.languageId !== 'yy' ||
+      !GmlProvider.config.enableYyFormatting
+    ) {
       console.warn("Not a yy file, shouldn't format");
       return;
     }
@@ -260,16 +281,9 @@ export class GmlProvider
     this.ctx ||= ctx;
     if (!this.provider) {
       let gmlSpecFilePath;
-      const gmlSpecSource = vscode.workspace
-        .getConfiguration('stitch')
-        .get<string | null>('gmlSpec.source');
-      const gmlSpecFilePathFromSettings = vscode.workspace
-        .getConfiguration('stitch')
-        .get<string | null>('gmlSpec.path');
-      if (
-        gmlSpecSource === 'external' &&
-        gmlSpecFilePathFromSettings !== null
-      ) {
+      const gmlSpecSource = this.config.gmlSpecSource;
+      const gmlSpecFilePathFromSettings = this.config.gmlSpecPath;
+      if (gmlSpecSource === 'external' && gmlSpecFilePathFromSettings) {
         gmlSpecFilePath = gmlSpecFilePathFromSettings;
       } else if (gmlSpecSource === 'localRuntime') {
         let runtimeLocalPath;
@@ -349,17 +363,7 @@ export class GmlProvider
             );
             return;
           }
-          const templatePath =
-            vscode.workspace
-              .getConfiguration('stitch')
-              .get<string | null>('template.path') ||
-            pathy(__dirname).join(
-              '..',
-              'assets',
-              'templates',
-              'issue-template',
-              'issue-template.yyp',
-            ).absolute;
+          const templatePath = this.config.templatePath;
           if (!templatePath || !(await pathy(templatePath).exists())) {
             return void vscode.window.showErrorMessage(
               `Template not found at ${templatePath}`,
