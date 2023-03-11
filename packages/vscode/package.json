@@ -175,11 +175,13 @@
       "explorer/context": [
         {
           "command": "stitch.openIde",
-          "group": "navigation"
+          "group": "navigation",
+          "when": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
         },
         {
           "command": "stitch.createProject",
-          "group": "navigation"
+          "group": "navigation",
+          "when": "explorerResourceIsFolder"
         }
       ],
       "commandPalette": [
