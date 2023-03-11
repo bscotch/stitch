@@ -228,6 +228,9 @@
     "onCommand:stitch.openIde",
     "onCommand:stitch.createProject"
   ],
+  "dependencies": {
+    "glob": "9.2.1"
+  },
   "devDependencies": {
     "@bscotch/gml-parser": "workspace:*",
     "@bscotch/pathy": "^2.6.0",
@@ -274,9 +277,5 @@
       ]
     },
     "hoverProvider": "true"
-  },
-  "dependencies": {
-    "glob": "9.2.1",
-    "tsc": "2.0.4"
   }
 }
