@@ -91,12 +91,14 @@
         },
         "stitch.gmlSpec.source": {
           "title": "GameMaker GmlSpec.xml file source",
-          "type": ["string"],
+          "type": [
+            "string"
+          ],
           "enum": [
-						"localRuntime",
-						"external",
+            "localRuntime",
+            "external",
             "internal"
-					],
+          ],
           "default": "localRuntime",
           "description": "Specifies the GmlSpec.xml source. Obtained by default from the installed runtime.It needs to restart vscode after modification to take effect"
         },
