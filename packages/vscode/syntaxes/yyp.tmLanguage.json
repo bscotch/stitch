@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "fileTypes": ["yy", "yyp"],
+  "name": "GameMaker YY & YYP File",
+  "patterns": [
+    {
+        "name": "source.yyp",
+        "include": "source.json"
+    }
+  ],
+  "repository": {},
+  "scopeName": "source.yyp"
+}

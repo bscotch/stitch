@@ -64,3 +64,4 @@ Thumbs.db
 !.env.project
 !.env.vault
 .flaskenv*
+packages/vscode/.npmrc

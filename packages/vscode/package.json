@@ -88,10 +88,35 @@
           ],
           "default": null,
           "description": "Specifies the path to a GameMaker project to use as a template to clone when creating a new project via the explorer context menu. Defaults to a simple project with a single room and a single object."
+        },
+        "stitch.gmlSpec.source": {
+          "title": "GameMaker GmlSpec.xml file source",
+          "type": ["string"],
+          "enum": [
+						"localRuntime",
+						"external",
+            "internal"
+					],
+          "default": "localRuntime",
+          "description": "Specifies the GmlSpec.xml source. Obtained by default from the installed runtime.It needs to restart vscode after modification to take effect"
+        },
+        "stitch.gmlSpec.path": {
+          "title": "GameMaker GmlSpec.xml file path",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the path to a GmlSpec.xml file when \"gmlSpec.source\" is \"external\"."
         }
       }
     },
     "grammars": [
+      {
+        "language": "yy",
+        "scopeName": "source.yyp",
+        "path": "./syntaxes/yyp.tmLanguage.json"
+      },
       {
         "language": "gml",
         "scopeName": "source.gml",
@@ -110,7 +135,12 @@
     ],
     "languages": [
       {
-        "id": "jsonc",
+        "id": "yy",
+        "aliases": [
+          "GameMaker YY & YYP File",
+          "yy",
+          "yyp"
+        ],
         "configuration": "./language-configuration.json",
         "extensions": [
           ".yy",
@@ -244,5 +274,9 @@
       ]
     },
     "hoverProvider": "true"
+  },
+  "dependencies": {
+    "glob": "9.2.1",
+    "tsc": "2.0.4"
   }
 }
