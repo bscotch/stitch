@@ -3,8 +3,8 @@ import { GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { Yy, Yyp, YypResource } from '@bscotch/yy';
 import path from 'path';
 import vscode from 'vscode';
-import { GmlFile } from './language.file.mjs';
-import { GameMakerResource } from './language.resource.mjs';
+import { GmlFile } from './extension.gml.mjs';
+import { GameMakerResource } from './extension.resource.mjs';
 
 export class GameMakerProject
   implements vscode.TreeDataProvider<GameMakerResource | vscode.TreeItem>

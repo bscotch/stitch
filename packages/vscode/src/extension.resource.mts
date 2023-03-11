@@ -1,11 +1,16 @@
 import { Pathy, pathy } from '@bscotch/pathy';
-import { Yy, YyResourceType, YySprite, YypResource } from '@bscotch/yy';
-import { YyDataStrict } from '@bscotch/yy/dist/Yy.js';
+import {
+  Yy,
+  YyResourceType,
+  YySprite,
+  YypResource,
+  type YyDataStrict,
+} from '@bscotch/yy';
 import { ok } from 'assert';
-import { GameMakerProject } from 'language.project.mjs';
+import { GameMakerProject } from 'extension.project.mjs';
 import path from 'path';
 import vscode from 'vscode';
-import { GmlFile } from './language.file.mjs';
+import { GmlFile } from './extension.gml.mjs';
 
 export class GameMakerResource<
   T extends YyResourceType = YyResourceType,

@@ -6,7 +6,7 @@ import glob from 'glob';
 import os from 'os';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
-import { GameMakerProject } from './language.project.mjs';
+import { GameMakerProject } from './extension.project.mjs';
 import { GmlSpec, parseSpec } from './spec.mjs';
 
 export class GmlProvider

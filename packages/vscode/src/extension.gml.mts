@@ -3,7 +3,7 @@ import { YyResourceType } from '@bscotch/yy';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import vscode from 'vscode';
-import type { GameMakerResource } from './language.resource.mjs';
+import type { GameMakerResource } from './extension.resource.mjs';
 
 // TODO: Add command to open the current project in GameMaker
 
