@@ -1,5 +1,5 @@
 import { pathy } from '@bscotch/pathy';
-import { GameMakerLauncher } from '@bscotch/stitch-launcher';
+import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { Yy, Yyp, YypResource } from '@bscotch/yy';
 import path from 'path';
 import vscode from 'vscode';
@@ -35,12 +35,34 @@ export class GameMakerProject
     this.gmlWatcher.onDidChange((uri) => this.updateFile(uri));
   }
 
+  get ideVersion() {
+    return this.yyp.MetaData.IDEVersion;
+  }
+
   protected gmlFiles: Map<string, GmlFile> = new Map();
 
-  openInIde() {
-    return GameMakerLauncher.openProject(this.yypPath.fsPath, {
+  async openInIde() {
+    vscode.window.showInformationMessage(
+      `Opening project with GameMaker v${this.ideVersion}...`,
+    );
+    const ide = await GameMakerIde.findInstalled(this.ideVersion);
+    if (!ide) {
+      vscode.window.showWarningMessage(
+        `GameMaker v${this.ideVersion} not found. Attempting to install (this may take a while)...`,
+      );
+      await GameMakerIde.install(this.ideVersion).catch((err) => {
+        vscode.window.showErrorMessage(
+          `Failed to install GameMaker v${this.ideVersion}: ${err}`,
+        );
+      });
+    }
+    const runner = GameMakerLauncher.openProject(this.yypPath.fsPath, {
       ideVersion: this.yyp.MetaData.IDEVersion,
     });
+    runner.catch((err) => {
+      vscode.window.showErrorMessage(`Failed to open project: ${err}`);
+    });
+    return runner;
   }
 
   async getTreeItem(element: GameMakerResource): Promise<vscode.TreeItem> {
@@ -90,12 +112,18 @@ export class GameMakerProject
     }
   }
 
-  async registerResource(info: YypResource): Promise<GameMakerResource> {
+  async registerResource(
+    info: YypResource,
+  ): Promise<GameMakerResource | undefined> {
     const resourceId = this.filepathToResourceId(info.id.path);
     if (this.resources.has(resourceId)) {
       return this.resources.get(resourceId)!;
     }
     const resource = await GameMakerResource.from(this, info);
+    if (!resource) {
+      console.warn(`Could not find resource files for ${resourceId}`);
+      return;
+    }
     this.resources.set(resourceId, resource);
     this.completions.set(resourceId, resource.completion);
     this.hovers.set(resource.name, await resource.createHover());

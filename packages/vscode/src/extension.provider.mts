@@ -339,14 +339,7 @@ export class GmlProvider
         const uri = vscode.Uri.parse(
           args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
         );
-        const ide = this.provider.documentToProject(uri)?.openInIde();
-        if (!ide) {
-          void vscode.window.showErrorMessage('Could not open IDE');
-          return;
-        }
-        void vscode.window.showInformationMessage(
-          `Opening project in GameMaker`,
-        );
+        this.provider.documentToProject(uri)?.openInIde();
       }),
       vscode.commands.registerCommand(
         'stitch.createProject',

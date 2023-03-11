@@ -101,8 +101,11 @@ export class GameMakerResource<
   static async from<T extends YyResourceType>(
     project: GameMakerProject,
     resource: YypResource,
-  ): Promise<GameMakerResource<T>> {
+  ): Promise<GameMakerResource<T> | undefined> {
     const item = new GameMakerResource(project, resource);
+    if (!(await pathy(item.yyPath).exists())) {
+      return;
+    }
     await item.load();
     return item as any;
   }
