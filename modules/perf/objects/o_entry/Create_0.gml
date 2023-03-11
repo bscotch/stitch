@@ -76,11 +76,12 @@ ds_map_add(map,"hello","world");
 #endregion
 
 #region DYNAMIC STRUCTS
-	var many_fields = {};
 	perf.run( "Dynamic Struct Setters: adding many fields",
-		function (i){ self[$ string(i)] = i },
-		function (i){ string(i); return self },
-		many_fields);
+		function (i,_iterations,_run){ self[$ string(i)] = i },
+		function (i,_iterations,_run){ string(i); return self },
+		function(){
+			return {}
+		});
 	
 	// `many_fields` now has one key per iteration.
 	// Accessing each key will prevent GameMaker from caching
@@ -88,26 +89,37 @@ ds_map_add(map,"hello","world");
 	perf.run("Dynamic Struct Getters: getting many fields",
 		function (i){ return self[$ string(i)]},
 		function (i){ string(i); return self },
-		many_fields);
+		function(_run,_runs,_iterations){
+			var struct = {};
+			for(var i=0; i<_iterations; i++){
+				struct[$ string(i)] = i;
+			}
+			return struct;
+		});
 #endregion
 
 #region DYNAMIC MAPS
-	var many_fields_map = ds_map_create();
 	perf.run( "Dynamic Map Setters: adding many fields",
-		function (i){ ds_map_add(self.many_fields_map, string(i), i) },
-		function (i){ string(i); return self.many_fields_map },
-		{many_fields_map: many_fields_map});
+		function (i,_iterations,_run){ ds_map_add(dynamic_setters, string(i + _run * _iterations), i) },
+		function (i,_iterations,_run){ string(i + _run * _iterations); return dynamic_setters },
+		function(){ return {dynamic_setters: ds_map_create()}});
 
 	// Get each field in turn to prevent caching
 	perf.run( "Dynamic Map Getters: getting many fields",
-		function (i){ ds_map_find_value(self.many_fields_map, string(i)) },
-		function (i){ string(i); return self.many_fields_map },
-		{many_fields_map: many_fields_map});
+		function (i){ return ds_map_find_value(dynamic_getters, string(i)) },
+		function (i){ string(i); return dynamic_getters },
+		function(_run,_runs,_iterations){
+			var dynamic_getters = ds_map_create();
+			for(var i=0; i<_iterations; i++){
+				ds_map_add(dynamic_getters, string(i), i)
+			}
+			return {dynamic_getters:dynamic_getters};
+		});
 #endregion
 
 #region WITHING
 var with_into = {field: "value"};
-perf.run("WITH: struct",
+perf.run("With: struct",
 	function(){
 		var stuff = {a: "hello", b: "world", c: 10, d: undefined};
 		with(stuff){
@@ -154,4 +166,14 @@ perf.run("WITH: identifier vs. loop for many objects",
 	},
 	{objs: buncha_objects, objects_count: objects_count});
 
+#endregion
+
+#region ARRAYS
+perf.run("Array: Preallocation",
+	function(i){
+			
+	},
+	function(i){
+	},
+	{dynamic: [], preallocated: []});
 #endregion

@@ -1,4 +1,7 @@
 function StitchPerf () constructor {
+
+	self.default_runs = 5;
+	self.default_iterations = 10000;
 	
 	/**
 	  * @description Throw an error if a condition is not met.
@@ -76,6 +79,17 @@ function StitchPerf () constructor {
 		return self.array_create(_size, _of);
 	}
 	
+	/// @desc Get the mean of an array of numbers
+	/// @param {Array<Real>} _nums
+	static array_mean = function array_mean (_nums) {
+		var sum = 0;
+		var count = array_length(_nums);
+		for(var i=0; i<count; i++){
+			sum += _nums[i];
+		}
+		return sum/count;
+	}
+	
 	/// @desc Get the median of an array by sorting and grabbing the middle value.
 	///       (WARNING: mutates the array!)
 	/// @param {Array<Real>} _nums
@@ -106,86 +120,61 @@ function StitchPerf () constructor {
 		return _new_array;
 	}
 	
-	static StitchTimer = function StitchTimer() constructor {
-		static lib = new StitchPerf();
-	
-		self._start_time = get_timer();
-		self._marks = self.lib.create_real_array();
-		self._end_time = infinity;
-	
-		static start = function start (){
-			self.lib.assert( array_length(self._marks) == 0, "Cannot restart a timer after the first mark()" );
-			self._start_time = get_timer();
-		}
-	
-		static mark = function mark (){
-			var _time = get_timer();
-			array_push(self._marks, _time);
-			self._end_time = _time;
-		}
-	
-		static stats = function stats (){
-			var _marks_count = array_length(self._marks);
-			var _diffs = lib.create_real_array(_marks_count);
-			for( var i=0 ; i<_marks_count ; i++ ){
-				_diffs[i] = self._marks[i] - (i>0 ? self._marks[i-1] : self._start_time);
-			}
-			var _middle = self.lib.array_median( self.lib.array_clone( _diffs ) );
-			return {
-				"median": _middle,
-				"intervals": _diffs
-			}
-		}
-	
-		/// @desc Total time between instantiation and the last mark
-		static duration = function duration (){
-			return self._end_time - self._start_time;	
-		}
-	}
-	
-	/// @param {String} _description
-	/// @param {Function} _test
-	/// @param {Function} _baseline_function The time to run this function will be subtracted from the _test function
-	/// @param {Struct} [_context]
+	/// @param {String} _title
+	/// @param {Function} _runner
+	/// @param {Function} [_baseline_runner] The time to run this function will be subtracted from the _runner function
+	/// @param {Function|Struct} [_setup] A function that returns the struct to use as the function's `self` context prior to each run, or a struct to use for all runs
 	static run = function(
-		_description,
-		_test,
-		_baseline_function=function(_i){},
-		_context={},
-		_runs=5,
-		_iterations_per_run=10000
+		_title,
+		_runner,
+		_baseline_runner=function(_current_iteration, _total_iterations, _current_run, _total_runs){},
+		_setup=function(_current_run, _total_runs, _total_iterations){return {}},
+		_runs=self.default_runs,
+		_iterations_per_run=self.default_iterations
 	) {
-
-		var _baseline_medians = self.create_real_array(_runs,0);
-		var _run_medians = self.create_real_array(_runs,0);
-		_baseline_function = method(_context, _baseline_function);
-		_test = method(_context, _test);
-	
-		var _baseline_timer = new self.StitchTimer();
-		for(var _run = 0 ; _run < _runs ; _run++){
-			for(var _i = 0 ; _i < _iterations_per_run ; _i++){
-				_baseline_function(_i);
+		var _create_array = self.create_real_array;
+		var _summary = {
+			title: _title,
+			iteration_difference: 0,
+			runner: {
+				runs: _create_array(_runs, 0),
+				run_average: 0,
+				iteration_average: 0
+			},
+			baseline: {
+				runs: _create_array(_runs, 0),
+				run_average: 0,
+				iteration_average: 0,
 			}
-			_baseline_timer.mark();
-		}
-	
-		var _test_timer = new self.StitchTimer();
-		for(var _run = 0 ; _run < _runs ; _run++){
-			for(var _i = 0 ; _i < _iterations_per_run ; _i++){
-				_test(_i);
+		};
+		
+		for(var _scenario=0 ; _scenario < 2 ; _scenario++ ){
+			var _stats  = _scenario == 0 ? _summary.baseline : _summary.runner ;
+			var _to_run = _scenario == 0 ? _baseline_runner : _runner ;
+			for(var _run = 0 ; _run < _runs ; _run++){
+				var _context = is_callable(_setup)
+					? _setup(_run, _runs, _iterations_per_run)
+					: _setup;
+				var _with_context = method(
+					_context,
+					_to_run
+				);
+				var _start = get_timer();
+				for(var _i = 0 ; _i < _iterations_per_run ; _i++){
+					_with_context( _i, _iterations_per_run, _run, _runs );
+				}
+				_stats.runs[_run] = get_timer() - _start;
 			}
-			_test_timer.mark();
+			_stats.run_average = self.array_mean(_stats.runs);
+			_stats.iteration_average = _stats.run_average / _iterations_per_run ;
+			if(_scenario == 1){
+				_summary.iteration_difference = _summary.runner.iteration_average - _summary.baseline.iteration_average;	
+			}
 		}
 	
 		// Diff the values
-		var _time_cost = _test_timer.stats().median - _baseline_timer.stats().median ;
-		var _normalized_time_cost = _time_cost / _iterations_per_run ;
-		self.echo("PERF |", _normalized_time_cost, "|", _description );
-		return {
-			baseline_timer: _baseline_timer,
-			test_timer: _test_timer,
-			normalized_iteration_time: _normalized_time_cost
-		}
+		self.echo("PERF |", _summary.iteration_difference, "|", _title, "|", _summary.runner.runs );
+		return _summary
 	}
 }
 
