@@ -1,5 +1,6 @@
 import { pathy } from '@bscotch/pathy';
 import { StitchProject } from '@bscotch/stitch';
+import { sortKeysByReference } from '@bscotch/utility/browser';
 import { Yy, YyResourceType } from '@bscotch/yy';
 import glob from 'glob';
 import os from 'os';
@@ -7,8 +8,6 @@ import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { GameMakerProject } from './language.project.mjs';
 import { GmlSpec, parseSpec } from './spec.mjs';
-import glob from 'glob';
-import os from 'os';
 
 export class GmlProvider
   implements
@@ -137,10 +136,7 @@ export class GmlProvider
   provideDocumentFormattingEdits(
     document: vscode.TextDocument,
   ): vscode.ProviderResult<vscode.TextEdit[]> {
-    if (
-      document.languageId !== 'jsonc' ||
-      !document.uri.path.match(/\.yyp?$/)
-    ) {
+    if (document.languageId !== 'yy' || !document.uri.path.match(/\.yyp?$/)) {
       console.warn("Not a yy file, shouldn't format");
       return;
     }
@@ -152,10 +148,10 @@ export class GmlProvider
     const text = document.getText();
     const start = document.positionAt(0);
     const end = document.positionAt(text.length);
-    const parsed = Yy.parse(text, type);
+    const parsed = sortKeysByReference(Yy.parse(text, type), Yy.parse(text));
     const edit = new vscode.TextEdit(
       new vscode.Range(start, end),
-      Yy.stringify(parsed, type),
+      Yy.stringify(parsed),
     );
     return [edit];
   }
@@ -320,7 +316,7 @@ export class GmlProvider
         ',',
       ),
       vscode.languages.registerDocumentFormattingEditProvider(
-        'jsonc',
+        'yy',
         this.provider,
       ),
       vscode.languages.registerDefinitionProvider('gml', this.provider),

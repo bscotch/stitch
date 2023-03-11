@@ -59,13 +59,3 @@ This extension contributes the following settings:
 ## ⁉️ Known Issues
 
 - 🔥 When using `Find all references`, not all references are found
-- 😐 `yy` and `yyp` files are treated as plain `jsonc`, so they report warnings for trailing commas and autoformat according to whatever you've set as your `jsonc` formatter. To use this extension to format those files, add the following to your `.vscode/settings.json` options:
-  ```jsonc
-  {
-    //...
-    "[jsonc]": {
-      "editor.formatOnSave": true,
-      "editor.defaultFormatter": "bscotch.bscotch-stitch-vscode"
-    }
-  }
-  ```
