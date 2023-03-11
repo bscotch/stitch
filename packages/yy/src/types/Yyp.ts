@@ -19,7 +19,7 @@ export const yypResourceIdSchema = z.object({
 export type YypResource = z.infer<typeof yypResourceSchema>;
 const yypResourceSchema = z.object({
   id: yypResourceIdSchema,
-  order: z.number().default(0),
+  order: z.number().optional(),
 });
 
 export type YypOption = z.infer<typeof yypOptionSchema>;
