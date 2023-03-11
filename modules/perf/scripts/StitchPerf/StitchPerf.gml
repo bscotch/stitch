@@ -14,8 +14,8 @@ function StitchPerf () constructor {
 			return;
 		}
 		var _callstack = debug_get_callstack();
-	  echo("Assertion failed at", _callstack[1]);
-	  echo(_callstack);
+	  self.echo("Assertion failed at", _callstack[1]);
+	  self.echo(_callstack);
 		
 		if argument_count > 2 {
 			for ( var i = 2; i < argument_count; i++) {
