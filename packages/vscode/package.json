@@ -9,8 +9,7 @@
     "Formatters"
   ],
   "keywords": [
-    "gamemaker",
-    "gml"
+    "gamemaker"
   ],
   "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/vscode#readme",
   "bugs": {
@@ -35,40 +34,6 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
-    "colors": [
-      {
-        "id": "comment.line.region.start.gml",
-        "description": "Color for the `#region` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.description.start.gml",
-        "description": "Color for the text following the `#region` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.end.gml",
-        "description": "Color for the `#endregion` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.description.end.gml",
-        "description": "Color for the text following the `#endregion` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      }
-    ],
     "commands": [
       {
         "command": "stitch.openIde",
@@ -136,6 +101,25 @@
         }
       }
     },
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "stitch.openIde",
+          "group": "navigation",
+          "when": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
+        },
+        {
+          "command": "stitch.createProject",
+          "group": "navigation",
+          "when": "explorerResourceIsFolder"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "stitch.openIde"
+        }
+      ]
+    },
     "grammars": [
       {
         "language": "yy",
@@ -146,16 +130,6 @@
         "language": "gml",
         "scopeName": "source.gml",
         "path": "./syntaxes/gml.tmLanguage.json"
-      }
-    ],
-    "jsonValidation": [
-      {
-        "fileMatch": "scripts/*/*.yy",
-        "url": "./schemas/scripts.json"
-      },
-      {
-        "fileMatch": "objects/*/*.yy",
-        "url": "./schemas/objects.json"
       }
     ],
     "languages": [
@@ -184,25 +158,6 @@
         "configuration": "./language-configuration.json"
       }
     ],
-    "menus": {
-      "explorer/context": [
-        {
-          "command": "stitch.openIde",
-          "group": "navigation",
-          "when": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
-        },
-        {
-          "command": "stitch.createProject",
-          "group": "navigation",
-          "when": "explorerResourceIsFolder"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "stitch.openIde"
-        }
-      ]
-    },
     "semanticTokenTypes": [
       {
         "id": "resource",
@@ -248,7 +203,51 @@
           "icon": "./images/stitch-logo-mono.svg"
         }
       ]
-    }
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": "scripts/*/*.yy",
+        "url": "./schemas/scripts.json"
+      },
+      {
+        "fileMatch": "objects/*/*.yy",
+        "url": "./schemas/objects.json"
+      }
+    ],
+    "colors": [
+      {
+        "id": "comment.line.region.start.gml",
+        "description": "Color for the `#region` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      },
+      {
+        "id": "comment.line.region.description.start.gml",
+        "description": "Color for the text following the `#region` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      },
+      {
+        "id": "comment.line.region.end.gml",
+        "description": "Color for the `#endregion` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      },
+      {
+        "id": "comment.line.region.description.end.gml",
+        "description": "Color for the text following the `#endregion` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      }
+    ]
   },
   "activationEvents": [
     "onLanguage:gml",
