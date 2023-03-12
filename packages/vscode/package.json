@@ -204,16 +204,6 @@
         }
       ]
     },
-    "jsonValidation": [
-      {
-        "fileMatch": "scripts/*/*.yy",
-        "url": "./schemas/scripts.json"
-      },
-      {
-        "fileMatch": "objects/*/*.yy",
-        "url": "./schemas/objects.json"
-      }
-    ],
     "colors": [
       {
         "id": "comment.line.region.start.gml",
