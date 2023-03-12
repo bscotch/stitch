@@ -5,6 +5,7 @@ import { Yy, YyResourceType } from '@bscotch/yy';
 import glob from 'glob';
 import os from 'os';
 import vscode from 'vscode';
+import process from 'process';
 import { debounce } from './debounce.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GmlSpec, parseSpec } from './spec.mjs';
@@ -136,6 +137,7 @@ export class GmlProvider
   static get config() {
     const config = vscode.workspace.getConfiguration('stitch');
     return {
+      gmChannel: config.get<string | null>('gm.channel'),
       gmlSpecPath: config.get<string | null>('gmlSpec.path'),
       gmlSpecSource: config.get<string | null>('gmlSpec.source'),
       templatePath:
@@ -281,6 +283,7 @@ export class GmlProvider
     this.ctx ||= ctx;
     if (!this.provider) {
       let gmlSpecFilePath;
+      const gmChannel = this.config.gmChannel;
       const gmlSpecSource = this.config.gmlSpecSource;
       const gmlSpecFilePathFromSettings = this.config.gmlSpecPath;
       if (gmlSpecSource === 'external' && gmlSpecFilePathFromSettings) {
@@ -288,11 +291,17 @@ export class GmlProvider
       } else if (gmlSpecSource === 'localRuntime') {
         let runtimeLocalPath;
         if (os.type() == 'Windows_NT') {
-          runtimeLocalPath = 'C:/ProgramData/GameMakerStudio2/Cache/runtimes/';
+          // Get the path of runtime from the system environment variable.
+          // And change the backslash to forward slash, otherwise the path cannot be found
+          // In most cases, it should be "C:/ProgramData".
+          // However, in rare cases, the Windows drive letter installed by the user is not C:
+          runtimeLocalPath = (process.env.ALLUSERSPROFILE as string).replace("\\", "/") + '/' + gmChannel + '/Cache/runtimes/';
         } else if (os.type() == 'Darwin') {
-          runtimeLocalPath = '/Users/Shared/GameMakerStudio2/Cache/runtimes/'; // (LiarOnce) Need testing because I don't have any macOS devices.
+          // (LiarOnce) Need testing because I don't have any macOS devices.
+          runtimeLocalPath = '/Users/Shared/' + gmChannel + '/Cache/runtimes/';
         } else if (os.type() == 'Linux') {
-          runtimeLocalPath = '~/.local/GameMakerStudio2-Beta/Cache/runtimes/'; // GameMaker IDE in Linux only available in Beta channel
+          // GameMaker IDE in Linux only available in Beta channel (GameMakerStudio2-Beta)
+          runtimeLocalPath = '~/.local/' + gmChannel + '/Cache/runtimes/';
         }
         const runtimeGlob = await glob(runtimeLocalPath + '**/GmlSpec.xml', {});
         gmlSpecFilePath = runtimeGlob[0]; // Always get the latest version of the installed runtimes' GmlSpec.xml files on local

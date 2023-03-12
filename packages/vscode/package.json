@@ -99,6 +99,19 @@
           "default": null,
           "description": "Specifies the path to a GameMaker project to use as a template to clone when creating a new project via the explorer context menu. Defaults to a simple project with a single room and a single object."
         },
+        "stitch.gm.channel": {
+          "title": "GameMaker Channel",
+          "type": [
+            "string"
+          ],
+          "enum": [
+            "GameMakerStudio2",
+            "GameMakerStudio2-Beta",
+            "GameMakerStudio2-LTS"
+          ],
+          "default": "GameMakerStudio2",
+          "description": "Manually specify the channel of GameMaker, default is Stable channel (GameMakerStudio2) \nNote: only \"GameMakerStudio2-Beta\" can be used in Linux"
+        },
         "stitch.gmlSpec.source": {
           "title": "GameMaker GmlSpec.xml file source",
           "type": [
@@ -110,7 +123,7 @@
             "external"
           ],
           "default": "internal",
-          "description": "Specifies the GmlSpec.xml source. Obtained by default from the installed runtime. It needs to restart vscode after modification to take effect. Falls back to `internal`, an internal copy of a recent version of the GmlSpec.xml."
+          "description": "Specifies the GmlSpec.xml source. Obtained by default from the installed runtime. Falls back to `internal`, an internal copy of a recent version of the GmlSpec.xml. \nNote: It needs to restart vscode after modification to take effect. "
         },
         "stitch.gmlSpec.path": {
           "title": "GameMaker GmlSpec.xml file path",

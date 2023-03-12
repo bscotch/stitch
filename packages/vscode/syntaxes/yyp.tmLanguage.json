@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "fileTypes": ["yy", "yyp"],
-  "name": "GameMaker YY & YYP File",
+  "name": "GameMaker Metadata",
   "patterns": [
     {
         "name": "source.yyp",
