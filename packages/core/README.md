@@ -15,7 +15,6 @@
 - 💻 Use the Command Line Interface (CLI) for instant pipelines
 - 📁 Batch-manage audio and texture groups based on folder structure
 - ⌨ Programmatically generate and modify resources with the Stitch Node.js API
-- 🐛 Identify code issues through static code analysis
 
 Stitch is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 
@@ -71,9 +70,6 @@ _GameMaker&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&r
     5. [Create Objects ](#create-objects-)
   4. [Texture Group Management ](#texture-group-management-)
   5. [Audio Group Management ](#audio-group-management-)
-  6. [Linter ](#linter-)
-    1. [Non-referenced Global Functions](#non-referenced-global-functions)
-    2. [Global Function Versioning](#global-function-versioning)
 
 ## Changelog <a id="changelog"></a>
 
@@ -114,12 +110,11 @@ const projectPath = 'my/project';
 const myProject = await StitchProject.load({projectPath});
 
 // Manipulate the project (toy example showing a few available methods)
-myProject
-  .importModules('other/project', ['my_module'])
-  .addTextureGroupAssignment('Sprites/interface', 'interface')
-  .addSounds('my/sounds/source')
-  .addSprites('my/art/assets', { prefix: 'sp_', case: 'snake' })
-  .addIncludedFiles('my/localization/files');
+await myProject.merge('other/project', ['my_module']);
+myProject.addTextureGroupAssignment('Sprites/interface', 'interface');
+await myProject.addSounds('my/sounds/source');
+await myProject.addSprites('my/art/assets', { prefix: 'sp_', case: 'snake' });
+myProject.addIncludedFiles('my/localization/files');
 ```
 
 **ⓘ Note:** The documentation is currently only within the code itself,
@@ -322,15 +317,14 @@ stitch merge --source-github="gm-core/gdash?^v(\\d+\\.){2}\\d+$"
 import {StitchProject} from "@bscotch/stitch";
 const myProject = await StitchProject.load();
 // Import everything:
-myProject.merge('path/to/your/modules-project');
+await myProject.merge('path/to/your/modules-project');
 // Import with options specified:
-myProject.merge('path/to/your/modules-project', {
+await myProject.merge('path/to/your/modules-project', {
   ifNameMatches: string['^hello'],
   types: ['objects'],
   skipDependencyCheck: true,
   moveConflicting: true,
   onClobber: 'error'
-}
 });
 ```
 
@@ -409,7 +403,7 @@ const addSpriteOptions = {
   flatten: true,
   exclude: /_draft$/,
 };
-myProject.addSprites('path/to/your/sprites', addSpriteOptions);
+await myProject.addSprites('path/to/your/sprites', addSpriteOptions);
 ```
 
 We have another tool, [Spritely](https://github.com/bscotch/spritely), that you
@@ -435,7 +429,7 @@ stitch add sounds --source=path/to/your/sounds
 // Typescript
 import { StitchProject } from '@bscotch/stitch';
 const myProject = await StitchProject.load();
-myProject.addSounds('path/to/your/sounds');
+await myProject.addSounds('path/to/your/sounds');
 ```
 
 #### Create "Included Files" <a id="import-files"></a>
@@ -479,7 +473,7 @@ You can create and update scripts programmatically:
 ```ts
 import { StitchProject } from '@bscotch/stitch';
 const myProject = await StitchProject.load();
-myProject.addScript('your/script/name', '// Just a placeholder now!');
+await myProject.addScript('your/script/name', '// Just a placeholder now!');
 myProject.resources.findByName('name').code =
   'function functionName(arg1){return arg1;}';
 ```
@@ -491,7 +485,7 @@ You can create Objects programmatically:
 ```ts
 import { StitchProject } from '@bscotch/stitch';
 const myProject = await StitchProject.load();
-myProject.addObject('your/object/name');
+await myProject.addObject('your/object/name');
 ```
 
 ### Texture Group Management <a id="texture-groups"></a>
@@ -550,75 +544,4 @@ myProject.addAudioGroup('nameOfYourAudioGroup');
 // Assign a audio group to all sounds within an folder
 // (the Audio Group will be created if it doesn't already exist)
 myProject.addAudioGroupAssignment('folder/in/the/ide', 'nameOfYourAudioGroup');
-```
-
-### Linter <a id="linter"></a>
-
-** ⚠ This is a new feature that is both incomplete and likely to change substanially! ⚠ **
-
-The GameMaker IDE has limited Intellisense, does not do type-checking, and has a noisy syntax error log that does not allow easy differentiation of types of issues (nor ignoring things that are actually fine). Collectively this makes it difficult to have confidence that the code will run successfully, especially since code issues may not be discovered until run-time. Runtime errors are expensive to discover and fix, because they can easily slip through QA unnoticed and are likely to have hard-to-trace consequences.
-
-Stitch provides limited linter capabilities to help with some of the short-comings of the build-in GameMaker error detection systems.
-
-```sh
-# Run via the commandline to get a linter report.
-# Use flags and options to control what gets checked.
-stitch lint -h # See options
-```
-
-```ts
-// Typescript: Using the linter and underlying functionality programmatically
-import { StitchProject } from '@bscotch/stitch';
-const myProject = await StitchProject.load();
-
-// Get linter output. Runs any available checks by default.
-// An options object creates an allowlist of what gets checked instead.
-const linterResults = myProject.lint();
-```
-
-#### Non-referenced Global Functions
-
-Identify global functions (any function defined in a script using the standard named-function syntax)
-that are not references in the project. This is useful for finding legacy functions that can be
-removed.
-
-** ⚠ Only the following are checked for references:**
-
-- Scripts
-- Object events
-
-(Room code and any other GML sources are not currently checked.)
-
-#### Global Function Versioning
-
-Because GameMaker does not have strict typing for function signatures, when a function changes its signature there is no way to know if usage of that function follows the new signature. To combat this, we use a simple approach to API versioning, where we post-fix function names with `_v1` when its behavior has changed (incrementing the version number with each breaking change). This essentially breaks existing uses of that function because they are using a name that no longer exists, making it easy to create a list of function references that have not been updated to reflect the changes to the function signature.
-
-The GameMaker IDE does list these cases among the syntax errors, but there is no way to specifically identify these cases amongst the others. Therefore there is no way to be certain that all references to the old function have been updated.
-
-Stitch includes functionality to identify these cases, so that one can retrieve and exhaustive list of these issues and then check again after refactoring to ensure that that list has become empty.
-
-** ⚠ Only the following are checked for references:**
-
-- Scripts
-- Object events
-
-(Room code and any other GML sources are not currently checked.)
-
-```ts
-// Typescript: Using the linter and underlying functionality programmatically
-import { StitchProject } from '@bscotch/stitch';
-const myProject = await StitchProject.load();
-
-// Find all function references, returned as complex objects
-// for further parsing and analysis. In this case, fuzzy matching
-// will be used to find references that match a function name even
-// if they have a different "version suffix"
-// (e.g. `myFunc_v1` would show as a reference to function `myFunc` or `myFunc_v10`,
-// but the field `isCorrectVersion` would be `false` in the returned reference objects.)
-const nonreferencedFunctions = myProject
-  .findGlobalFunctionReferences({ versionSuffix: '(_v\\d+)?' })
-  .filter((r) => !r.references.length);
-
-// Alternatively, use the linter method
-const linterResults = myProject.lint({ versionSuffix: '(_v\\d+)?' });
 ```
