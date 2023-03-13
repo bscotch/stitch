@@ -8,7 +8,7 @@ import { fetchJson } from './fetch.js';
  * releases object can be downloaded from this URL.
  */
 export const releasesUrl =
-	'https://github.com/bscotch/stitch/releases/latest/download/releases-summary.json';
+  'https://gist.githubusercontent.com/adam-coster/ff8bf0f892f40ca353a94103015b6493/raw/release-notes-cache.json';
 
 /**
  * Given a URL to an already-synthesized
@@ -17,9 +17,9 @@ export const releasesUrl =
  * releases.
  */
 export async function fetchReleasesSummaryWithNotes(url = releasesUrl) {
-	const releases = await fetchJson(
-		url,
-		z.array(gameMakerReleaseWithNotesSchema),
-	);
-	return releases;
+  const releases = await fetchJson(
+    url,
+    z.array(gameMakerReleaseWithNotesSchema),
+  );
+  return releases;
 }
