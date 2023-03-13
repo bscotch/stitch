@@ -16,3 +16,12 @@
 - For small structures, structs and DsMaps have very similar accessor speeds, excluding the caching mentioned above, with a slight advantage for Structs.
 - For large, dynamic structures (thousands of keys), structs are ~2x more performant than maps, even without the use of cached `.` accessors.
 - The `with` keyword is much more performant than alternative ways of accessing struct or object variables
+
+## Arrays
+
+- Bracket-indexing and `array_get` have the same performance
+- Except for extremely tiny arrays
+- Preallocating arrays (via `array_create`) is universally and far more performant than pushing onto an array.
+- Deleting a single array entry (via `array_delete`) is surprisingly performant even for arrays of 100+ items
+- Deleting a single array entry gets increasingly costly pretty quickly for larger arrays (hundreds or thousands of items)
+- 
