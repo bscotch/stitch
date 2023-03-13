@@ -39,10 +39,8 @@ _GameMaker&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&r
 
 - In the terminal, navigate to your Node.js project
 - Locally install Stitch: `npm install @bscotch/stitch`
-- In your code, import the `Gms2Project` class from Stitch
-  - ESM style: `import {Gms2Project} from "@bscotch/stitch"`
-  - CommonJS style: `const {Gms2Project} = require('@bscotch/stitch')`
-- In your code, load a GameMaker project by creating a `Gms2Project` instance: `const myProject = new Gms2Project('my/project/folder');`
+- In your code, import the `StitchProject` class from Stitch
+- In your code, load a GameMaker project by creating a `StitchProject` instance: `const myProject = await StitchProject.load({projectPath:'my/project/folder'});`
 - Use the Intellisense features of your editor (e.g. Visual Studio Code) to explore the API of the class instance.
 
 ## Table of Contents
@@ -100,18 +98,20 @@ This project will stay rougly up-to-date with recent beta versions of GameMaker.
 
 Install/update globally with `npm install -g @bscotch/stitch@latest`. This will let you use the CLI commands anywhere on your system. To install a specific version of Stitch, replace `@latest` with `@x.y.z`, where `x.y.x` is the specific version.
 
+**ⓘ Note:** Stitch uses ESM ("modules") format. For easiest use in your own Node set `"type": "module"` in your `package.json` file to tell Node that your package is in ESM. This will also allow you to use top-level `await`, as in all of the code examples.
+
 **ⓘ Note:** Updates to Stitch are likely to introduce new features and change existing features, so update with caution and [check the changelog](./CHANGELOG.md) first.
 
 If you are creating a pipeline in Node.JS, you may want to install locally (same as above, but without the `-g`) and import directly into your code. Using Stitch programmatically will look something like this:
 
 ```ts
 // @file Some component of your Typescript pipeline
-import { Gms2Project } from '@bscotch/stitch';
+import { StitchProject } from '@bscotch/stitch';
 
 const projectPath = 'my/project';
 // Open a project. If you don't specify the path,
 // it will search for a .yyp file starting in the current working directory
-const myProject = new Gms2Project('my/project');
+const myProject = await StitchProject.load({projectPath});
 
 // Manipulate the project (toy example showing a few available methods)
 myProject
@@ -127,8 +127,8 @@ but will be surfaced for you with Typescript-aware IDEs
 (such as Visual Studio Code). The examples here and below are all in
 Typescript, but you can use plain Node.JS instead. The main difference
 there will be in how you import Stitch: instead of
-`import {Gms2Project} from "@bscotch/stitch"` you'd probably use
-`const {Gms2Project} = require('@bscotch/stitch')`.
+`import {StitchProject} from "@bscotch/stitch"` you'd probably use
+`const {StitchProject} = require('@bscotch/stitch')`.
 
 ### Preparing your GameMaker project for Stitch <a id="game-setup"></a>
 
@@ -196,17 +196,17 @@ scripts and pipelines that automate asset management in all kinds of ways.
 For example, you may want to replace a script with different content,
 set all sounds to have a different bitrate, and more.
 
-Some modification methods have available batch functions at the `Gms2Project`
+Some modification methods have available batch functions at the `StitchProject`
 instance level, while others are available on instances representing
 specific resources. The best way to find all available options is to
 use a Typescript-aware IDE to view the documentation while creating a
 project, but some samples are below:
 
 ```ts
-import { Gms2Project } from '@bscotch/stitch';
+import { StitchProject } from '@bscotch/stitch';
 
 // Load a project by searching starting in the current working directory
-const myProject = new Gms2Project();
+const myProject = await StitchProject.load();
 // Set the version in all options files
 myProject.version = '1.0.0';
 myProject.deleteResourceByName('myCrappySprite');
@@ -319,8 +319,8 @@ stitch merge --source-github="gm-core/gdash?^v(\\d+\\.){2}\\d+$"
 
 ```ts
 // Typescript
-import {Gms2Project} from "@bscotch/stitch";
-const myProject = new Gms2Project();
+import {StitchProject} from "@bscotch/stitch";
+const myProject = await StitchProject.load();
 // Import everything:
 myProject.merge('path/to/your/modules-project');
 // Import with options specified:
@@ -396,8 +396,8 @@ stitch add sprites --source=path/to/your/sprites
 
 ```ts
 // Typescript
-import { Gms2Project } from '@bscotch/stitch';
-const myProject = new Gms2Project();
+import { StitchProject } from '@bscotch/stitch';
+const myProject = await StitchProject.load();
 const addSpriteOptions = {
   prefix: 'sp_',
   case: 'camel',
@@ -433,8 +433,8 @@ stitch add sounds --source=path/to/your/sounds
 
 ```ts
 // Typescript
-import { Gms2Project } from '@bscotch/stitch';
-const myProject = new Gms2Project();
+import { StitchProject } from '@bscotch/stitch';
+const myProject = await StitchProject.load();
 myProject.addSounds('path/to/your/sounds');
 ```
 
@@ -458,8 +458,8 @@ stitch add files --source=path/to/your/file.txt
 
 ```ts
 // Typescript
-import { Gms2Project } from '@bscotch/stitch';
-const myProject = new Gms2Project();
+import { StitchProject } from '@bscotch/stitch';
+const myProject = await StitchProject.load();
 // Add all txt and json files found in a folder (recursively)
 myProject.addIncludedFiles('path/to/your/files', {
   extensions: ['txt', 'json'],
@@ -477,8 +477,8 @@ myProject.addIncludedFiles('path/to/your/new-file.txt', {
 You can create and update scripts programmatically:
 
 ```ts
-import { Gms2Project } from '@bscotch/stitch';
-const myProject = new Gms2Project();
+import { StitchProject } from '@bscotch/stitch';
+const myProject = await StitchProject.load();
 myProject.addScript('your/script/name', '// Just a placeholder now!');
 myProject.resources.findByName('name').code =
   'function functionName(arg1){return arg1;}';
@@ -489,8 +489,8 @@ myProject.resources.findByName('name').code =
 You can create Objects programmatically:
 
 ```ts
-import { Gms2Project } from '@bscotch/stitch';
-const myProject = new Gms2Project();
+import { StitchProject } from '@bscotch/stitch';
+const myProject = await StitchProject.load();
 myProject.addObject('your/object/name');
 ```
 
@@ -516,8 +516,8 @@ stitch debork
 
 ```ts
 // Typescript
-import { Gms2Project } from '@bscotch/stitch';
-const myProject = new Gms2Project();
+import { StitchProject } from '@bscotch/stitch';
+const myProject = await StitchProject.load();
 // Create a new Texture Group (without assigning anything to it)
 myProject.addTextureGroup('nameOfYourTextureGroup');
 // Assign a texture group to all sprites within an folder
@@ -543,8 +543,8 @@ stitch debork
 
 ```ts
 // Typescript
-import { Gms2Project } from '@bscotch/stitch';
-const myProject = new Gms2Project();
+import { StitchProject } from '@bscotch/stitch';
+const myProject = await StitchProject.load();
 // Create a new Audio Group (without assigning anything to it)
 myProject.addAudioGroup('nameOfYourAudioGroup');
 // Assign a audio group to all sounds within an folder
@@ -568,8 +568,8 @@ stitch lint -h # See options
 
 ```ts
 // Typescript: Using the linter and underlying functionality programmatically
-import { Gms2Project } from '@bscotch/stitch';
-const myProject = new Gms2Project();
+import { StitchProject } from '@bscotch/stitch';
+const myProject = await StitchProject.load();
 
 // Get linter output. Runs any available checks by default.
 // An options object creates an allowlist of what gets checked instead.
@@ -606,8 +606,8 @@ Stitch includes functionality to identify these cases, so that one can retrieve 
 
 ```ts
 // Typescript: Using the linter and underlying functionality programmatically
-import { Gms2Project } from '@bscotch/stitch';
-const myProject = new Gms2Project();
+import { StitchProject } from '@bscotch/stitch';
+const myProject = await StitchProject.load();
 
 // Find all function references, returned as complex objects
 // for further parsing and analysis. In this case, fuzzy matching
