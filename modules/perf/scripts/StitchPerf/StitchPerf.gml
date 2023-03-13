@@ -128,7 +128,7 @@ function StitchPerf () constructor {
 		_title,
 		_runner,
 		_baseline_runner=function(_current_iteration, _total_iterations, _current_run, _total_runs){},
-		_setup=function(_current_run, _total_runs, _total_iterations){return {}},
+		_setup=function(_current_run, _total_runs, _total_iterations, _is_runner){return {}},
 		_runs=self.default_runs,
 		_iterations_per_run=self.default_iterations
 	) {
@@ -153,7 +153,7 @@ function StitchPerf () constructor {
 			var _to_run = _scenario == 0 ? _baseline_runner : _runner ;
 			for(var _run = 0 ; _run < _runs ; _run++){
 				var _context = is_callable(_setup)
-					? _setup(_run, _runs, _iterations_per_run)
+					? _setup(_run, _runs, _iterations_per_run, _scenario==1)
 					: _setup;
 				var _with_context = method(
 					_context,

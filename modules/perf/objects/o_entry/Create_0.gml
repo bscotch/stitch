@@ -16,6 +16,7 @@ perf.run("Structs: Init literal with 6 fields", function(i){ return {i:i, a: "hi
 var obj = {"hello": "world"};
 var map = ds_map_create();
 ds_map_add(map,"hello","world");
+//var random_keys = array_map(array_create(perf.default_iterations,""), function(){ generate_consonumeric_string(6)});
 
 #region STRUCT GETTERS
 	perf.run( "Struct Getters: struct.field",
@@ -96,6 +97,45 @@ ds_map_add(map,"hello","world");
 			}
 			return struct;
 		});
+	
+	perf.run("Struct shared keys: get (dot-accessor)",
+		function(){
+			// Create a new struct each time
+			var s = {shared_key: 100};
+			// Access it with `.` accessor
+			return s.shared_key;
+		},
+		function(){
+			var s = {shared_key: 100};
+			return s;
+		});
+	
+	perf.run("Struct shared keys: get ($ accessor)",
+		function(){
+			// Create a new struct each time
+			var s = {shared_key: 100};
+			// Access it with `.` accessor
+			return s[$ "shared_key"];
+		},
+		function(){
+			var s = {shared_key: 100};
+			return s;
+		});
+	
+	perf.run("Struct non-shared keys: get ($ accessor)",
+		function(){
+			// Create a new struct each time
+			var key = generate_consonumeric_string(6);
+			var s = {};
+			s[$ key] = 100;
+			return s[$ "shared_key"];
+		},
+		function(){
+			var key = generate_consonumeric_string(6);
+			var s = {};
+			s[$ key] = 100;
+			return s;
+		});
 #endregion
 
 #region DYNAMIC MAPS
@@ -169,11 +209,78 @@ perf.run("WITH: identifier vs. loop for many objects",
 #endregion
 
 #region ARRAYS
-perf.run("Array: Preallocation",
-	function(i){
-			
+perf.run("Array: [] getter",
+	function(i){ return arr[i] },
+	function(i,_iterations){ return arr },
+	{arr: array_create(perf.default_iterations,0)});
+perf.run("Array: array_get",
+	function(i){ return array_get(arr,i) },
+	function(i,_iterations){ return arr },
+	{arr: array_create(perf.default_iterations,0)});
+
+perf.run("Array: Preallocate vs Push (10 items)",
+	function(){
+		var arr = array_create(len,0);
+		for(var i=0; i<len; i++){};
 	},
-	function(i){
+	function(){
+		var arr = [];
+		for(var i=0; i<len; i++){ array_push(arr,0) };
 	},
-	{dynamic: [], preallocated: []});
+	{len: 10});
+
+perf.run("Array: Preallocate vs Push (100 items)",
+	function(){
+		var arr = array_create(len,0);
+		for(var i=0; i<len; i++){}
+	},
+	function(){
+		var arr = [];
+		for(var i=0; i<len; i++){ array_push(arr,0) }
+	},
+	{len: 100});
+
+perf.run("Array: Push vs. Overwrite (large array)",
+	function(i){ arr[i] = 100 },
+	function(i){ arr[i] = 100 },
+	function(_run,_runs,_iterations, _is_runner){
+		return {
+			arr: _is_runner ? array_create(_iterations, 0) : []
+		}
+	});
+	
+perf.run("Array: Push vs. Overwrite (many small arrays)",
+	function(){
+		var arr = array_create(len,0);
+		for(var i=0; i<len; i++){ arr[i] = 100 }
+	},
+	function(){
+		var arr = [];
+		for(var i=0; i<len; i++){ arr[i] = 100 }
+	},
+	{len: 10});
+
+
+perf.run("Array: Deleting 1st entry of 10-item array",
+	function(){
+		var arr = array_create(len,0);
+		array_delete(arr,5,1);
+	},
+	function(){
+		var arr = array_create(len,0);
+	},
+	{len: 10});
+	
+
+
+perf.run("Array: Deleting 1st entry of 1000-item array",
+	function(){
+		var arr = array_create(len,0);
+		array_delete(arr,50,1);
+	},
+	function(){
+		var arr = array_create(len,0);
+		return arr[0];
+	},
+	{len: 1000});
 #endregion
