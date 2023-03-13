@@ -16,6 +16,8 @@ jobs:
   update:
     name: Update Summary
     runs-on: ubuntu-latest
+    env:
+      GIST_ID: ff8bf0f892f40ca353a94103015b6493
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -24,15 +26,9 @@ jobs:
       - run: corepack enable
       - run: pnpm install --filter=@bscotch/gamemaker-releases...
 
-      - name: Cache Notes
-        id: cache-notes
-        uses: actions/cache@v3
-        with:
-          key: cached-notes
-          path: packages/releases/release-notes-cache.json
-      - name: Download Latest Summary
+      - name: Download Latest (to minimize requests needed)
         continue-on-error: true
-        run: gh release download --pattern packages/releases/release*.json --clobber
+        run: mkdir -p tmp && cd tmp && gh gist clone $GIST_ID && cd $GIST_ID && cp * ../../packages/releases/
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Store Latest Summary Checksum
@@ -49,8 +45,9 @@ jobs:
         run: echo ${{env.LATEST_RELEASE}} ${{env.OLD_SUMMARY_CHECKSUM}} ${{ENV.NEW_SUMMARY_CHECKSUM}} && ls packages/releases/release*.json
   
       - name: Create New Release
-        if: ${{env.OLD_SUMMARY_CHECKSUM != env.NEW_SUMMARY_CHECKSUM}}
-        run: gh release create --title "GameMaker Releases Summary v${{env.LATEST_RELEASE}}" releases-summary@${{env.LATEST_RELEASE}} packages/releases/releases-summary.json#GameMakerReleases packages/releases/release-notes-cache.json#NotesCache
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # if: ${{env.OLD_SUMMARY_CHECKSUM != env.NEW_SUMMARY_CHECKSUM}}
+        run: cd packages/releases && gh gist edit $GIST_ID -a release-notes-cache.json -a releases-summary.json
+        # run: gh release create --title "GameMaker Releases Summary v${{env.LATEST_RELEASE}}" releases-summary@${{env.LATEST_RELEASE}} packages/releases/releases-summary.json#GameMakerReleases packages/releases/release-notes-cache.json#NotesCache
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
