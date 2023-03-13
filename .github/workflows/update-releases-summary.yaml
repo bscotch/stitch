@@ -47,6 +47,8 @@ jobs:
       - name: Create New Release
         # if: ${{env.OLD_SUMMARY_CHECKSUM != env.NEW_SUMMARY_CHECKSUM}}
         run: cd packages/releases && gh gist edit $GIST_ID -a release-notes-cache.json -a releases-summary.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # run: gh release create --title "GameMaker Releases Summary v${{env.LATEST_RELEASE}}" releases-summary@${{env.LATEST_RELEASE}} packages/releases/releases-summary.json#GameMakerReleases packages/releases/release-notes-cache.json#NotesCache
         # env:
         #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
