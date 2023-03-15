@@ -1,0 +1,10 @@
+{
+  "FolderOrderSettings": [
+    {"name":"Module","order":5,"path":"folders/Module.yy",},
+  ],
+  "ResourceOrderSettings": [
+    {"name":"o_entry","order":4,"path":"objects/o_entry/o_entry.yy",},
+    {"name":"Util","order":2,"path":"scripts/Util/Util.yy",},
+    {"name":"rm_entry","order":3,"path":"rooms/rm_entry/rm_entry.yy",},
+  ],
+}
