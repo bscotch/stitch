@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>GML Truthiness Table</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-spacing: 0;
+      margin: 40px 0;
+    }
+
+    th {
+      background-color: #222;
+      font-weight: bold;
+      color: #fff;
+      padding: 16px;
+      text-align: left;
+      border-bottom: 4px solid #000;
+    }
+
+    td {
+      padding: 12px;
+      text-align: left;
+      vertical-align: middle;
+      border-bottom: 2px solid #444;
+    }
+
+    td.code {
+      font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+      font-size: 0.9em;
+      background-color: #333;
+      padding: 4px;
+      border-radius: 4px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    li:last-child {
+      margin-bottom: 0;
+    }
+
+    @media screen and (min-width: 768px) {
+      table {
+        max-width: 800px;
+        margin: 40px auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+</body>
+<script>
+  const data = [
+    {
+      "Value": "empty_struct",
+      "Truthy": true,
+      "Should Equal": [],
+      "Should Not Equal": [[1, 2, 3], null, undefined, 5, "the", "", 0, false, true, [], {}, { "key": 5 }]
+    },
+    {
+      "Value": "full_struct",
+      "Truthy": true,
+      "Should Equal": [],
+      "Should Not Equal": [[1, 2, 3], null, undefined, 5, "the", "", 0, false, true, [], {}, { "key": 5 }]
+    },
+    {
+      "Value": "empty_array",
+      "Truthy": null,
+      "Should Equal": [],
+      "Should Not Equal": [[1, 2, 3], null, undefined, 5, "the", "", 0, false, true, [], {}, { "key": 5 }]
+    },
+    {
+      "Value": "full_array",
+      "Truthy": null,
+      "Should Equal": [],
+      "Should Not Equal": [[1, 2, 3], null, undefined, 5, "the", "", 0, false, true, [], {}, { "key": 5 }]
+    },
+    {
+      "Value": "Empty String",
+      "Truthy": null,
+      "Should Equal": [""],
+      "Should Not Equal": [[1, 2, 3], null, undefined, 5, 0, "the", false, true, [], {}, { "key": 5 }]
+    },
+    {
+      "Value": "real(0)",
+      "Truthy": false,
+      "Should Equal": [0, false],
+      "Should Not Equal": [[1, 2, 3], null, "the", "", true, [], {}, { "key": 5 }]
+    },
+    {
+      "Value": "false",
+      "Truthy": false,
+      "Should Equal": [0, false],
+      "Should Not Equal": [[1, 2, 3], null, "the", "", true, [], {}, { "key": 5 }]
+    },
+    {
+      "Value": "Null",
+      "Truthy": false,
+      "Should Equal": [null],
+      "Should Not Equal": [[1, 2, 3], undefined, 5, "the", "", true, [], {}, { "key": 5 }]
+    },
+    {
+      "Value": "Undefined",
+      "Truthy": false,
+      "Should Equal": [undefined],
+      "Should Not Equal": [[1, 2, 3], null, 5, 0, "the", "", false, true, [], {}, { "key": 5 }]
+    },
+    {
+      "Value": "real(5)",
+      "Truthy": true,
+      "Should Equal": [5],
+      "Should Not Equal": [[1, 2, 3], null, undefined, 0, "the", "", false, true, [], {}, { "key": 5 }]
+    },
+    {
+      "Value": "true",
+      "Truthy": true,
+      "Should Equal": [true, 1],
+      "Should Not Equal": [[1, 2, 3], null, undefined, 5, "the", "", 0, false, [], {}, { "key": 5 }]
+    }
+  ];
+
+
+  const table = document.createElement('table');
+
+  // Create the table header
+  const header = table.createTHead();
+  const headerRow = header.insertRow();
+  const valueHeader = headerRow.insertCell();
+  valueHeader.innerHTML = 'Value';
+  const truthyHeader = headerRow.insertCell();
+  truthyHeader.innerHTML = 'Truthy';
+  const shouldEqualHeader = headerRow.insertCell();
+  shouldEqualHeader.innerHTML = 'Should Equal';
+  const shouldNotEqualHeader = headerRow.insertCell();
+  shouldNotEqualHeader.innerHTML = 'Should Not Equal';
+
+  // Create the table body
+  const body = table.createTBody();
+  for (const item of data) {
+    const row = body.insertRow();
+    const valueCell = row.insertCell();
+    valueCell.innerHTML = item.Value;
+    const truthyCell = row.insertCell();
+    truthyCell.innerHTML = item.Truthy === null ? 'null' : item.Truthy.toString();
+    const shouldEqualCell = row.insertCell();
+    shouldEqualCell.innerHTML = createListHTML(item['Should Equal']);
+    const shouldNotEqualCell = row.insertCell();
+    shouldNotEqualCell.innerHTML = createListHTML(item['Should Not Equal']);
+  }
+
+  // Helper function to create a comma-separated list of values in HTML format
+  function createListHTML(list) {
+    if (list.length === 0) {
+      return '';
+    } else {
+      const listItems = list.map(item => {
+        if (typeof item === 'object') {
+          return `<code>${JSON.stringify(item)}</code>`;
+        } else if (typeof item === 'string') {
+          return `<code>"${item}"</code>`;
+        } else {
+          return `<code>${item}</code>`;
+        }
+      });
+      const listHTML = `<ul><li>${listItems.join('</li><li>')}</li></ul>`;
+      return listHTML;
+    }
+  }
+
+  // Add the table to the document
+  document.body.appendChild(table);
+
+</script>
+
+</html>
