@@ -63,15 +63,6 @@ repository:
     patterns:
       - include: "#expression"
       - include: "#punctuation-comma"
-  arrow-return-type:
-    begin: (?<=\))\s*(:)
-    beginCaptures:
-      "1":
-        name: keyword.operator.type.annotation.gml
-    end: (?==>|\{|(^\s*(export|function|class|interface|let|var|const|import|enum|namespace|module|type|abstract|declare)\s+))
-    name: meta.return.type.arrow.gml
-    patterns:
-      - include: "#arrow-return-type-body"
   arrow-return-type-body:
     patterns:
       - begin: (?<=[:])(?=\s*\{)
@@ -153,7 +144,7 @@ repository:
         patterns:
           - include: "#type"
   class-declaration:
-    begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(?:(abstract)\s+)?\b(class)\b(?=\s+|/[/*])
+    begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(?:(abstract)\s+)?\b(constructor)\b(?=\s+|/[/*])
     beginCaptures:
       "1":
         name: keyword.control.export.gml
@@ -178,7 +169,7 @@ repository:
       - include: "#type-parameters"
       - include: "#class-or-interface-body"
   class-expression:
-    begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(abstract)\s+)?(class)\b(?=\s+|[<{]|\/[\/*])
+    begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(abstract)\s+)?(constructor)\b(?=\s+|[<{]|\/[\/*])
     beginCaptures:
       "1":
         name: storage.modifier.gml
@@ -201,7 +192,7 @@ repository:
       - include: "#comment"
       - include: "#decorator"
       - begin: (?<=:)\s*
-        end: (?=\s|[;),}\]:\-\+]|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))
+        end: (?=\s|[;),}\]:\-\+]|;|^\s*$|(?:^\s*(?:abstract|async|constructor|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar)\b))
         patterns:
           - include: "#expression"
       - include: "#method-declaration"
@@ -219,7 +210,7 @@ repository:
       - include: "#punctuation-comma"
       - include: "#punctuation-semicolon"
   class-or-interface-heritage:
-    begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:\b(extends|implements)\b)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))
+    begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:\b(extends|implements|:)\b)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))
     beginCaptures:
       "1":
         name: storage.modifier.gml
@@ -534,18 +525,18 @@ repository:
             name: keyword.operator.assignment.gml
           "4":
             name: keyword.control.default.gml
-        end: (?=$|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))
+        end: (?=$|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar)\b))
         name: meta.export.default.gml
         patterns:
           - include: "#interface-declaration"
           - include: "#expression"
-      - begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(export)(?:\s+(type))?\b(?!(\$)|(\s*:))((?=\s*[\{*])|((?=\s*[_$[:alpha:]][_$[:alnum:]]*(\s|,))(?!\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b)))
+      - begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(export)(?:\s+(type))?\b(?!(\$)|(\s*:))((?=\s*[\{*])|((?=\s*[_$[:alpha:]][_$[:alnum:]]*(\s|,))(?!\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar)\b)))
         beginCaptures:
           "1":
             name: keyword.control.export.gml
           "2":
             name: keyword.control.type.gml
-        end: (?=$|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))
+        end: (?=$|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar)\b))
         name: meta.export.gml
         patterns:
           - include: "#import-export-declaration"
@@ -577,7 +568,7 @@ repository:
           "5":
             name: keyword.operator.optional.gml
         match: >-
-          (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(override|public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(this)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*(\??)(?=\s*
+          (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(override|public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(self)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*(\??)(?=\s*
 
           # function assignment |
 
@@ -669,7 +660,7 @@ repository:
             name: variable.parameter.gml
           "5":
             name: keyword.operator.optional.gml
-        match: (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(override|public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(this)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*(\??)(?=\s*[:,]|$)
+        match: (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(override|public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(self)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*(\??)(?=\s*[:,]|$)
       - include: "#type-annotation"
       - include: "#variable-initializer"
       - match: ","
@@ -952,8 +943,6 @@ repository:
       - include: "#return-type"
       - include: "#type-function-return-type"
       - include: "#decl-block"
-      - match: \*
-        name: keyword.generator.asterisk.gml
   function-call:
     patterns:
       - begin: (?=(((([_$[:alpha:]][_$[:alnum:]]*)(\s*\??\.\s*(\#?[_$[:alpha:]][_$[:alnum:]]*))*)|(\??\.\s*\#?[_$[:alpha:]][_$[:alnum:]]*))|(?<=[\)]))\s*(?:(\?\.\s*)|(\!))?((<\s*(((keyof|infer|typeof|readonly)\s+)|(([_$[:alpha:]][_$[:alnum:]]*|(\{([^\{\}]|(\{([^\{\}]|\{[^\{\}]*\})*\}))*\})|(\(([^\(\)]|(\(([^\(\)]|\([^\(\)]*\))*\)))*\))|(\[([^\[\]]|(\[([^\[\]]|\[[^\[\]]*\])*\]))*\])|(\'([^\'\\]|\\.)*\')|(\"([^\"\\]|\\.)*\")|(\`([^\`\\]|\\.)*\`))(?=\s*([\<\>\,\.\[]|=>|&(?!&)|\|(?!\|)))))([^<>\(]|(\(([^\(\)]|(\(([^\(\)]|\([^\(\)]*\))*\)))*\))|(?<==)\>|\<\s*(((keyof|infer|typeof|readonly)\s+)|(([_$[:alpha:]][_$[:alnum:]]*|(\{([^\{\}]|(\{([^\{\}]|\{[^\{\}]*\})*\}))*\})|(\(([^\(\)]|(\(([^\(\)]|\([^\(\)]*\))*\)))*\))|(\[([^\[\]]|(\[([^\[\]]|\[[^\[\]]*\])*\]))*\])|(\'([^\'\\]|\\.)*\')|(\"([^\"\\]|\\.)*\")|(\`([^\`\\]|\\.)*\`))(?=\s*([\<\>\,\.\[]|=>|&(?!&)|\|(?!\|)))))(([^<>\(]|(\(([^\(\)]|(\(([^\(\)]|\([^\(\)]*\))*\)))*\))|(?<==)\>|\<\s*(((keyof|infer|typeof|readonly)\s+)|(([_$[:alpha:]][_$[:alnum:]]*|(\{([^\{\}]|(\{([^\{\}]|\{[^\{\}]*\})*\}))*\})|(\(([^\(\)]|(\(([^\(\)]|\([^\(\)]*\))*\)))*\))|(\[([^\[\]]|(\[([^\[\]]|\[[^\[\]]*\])*\]))*\])|(\'([^\'\\]|\\.)*\')|(\"([^\"\\]|\\.)*\")|(\`([^\`\\]|\\.)*\`))(?=\s*([\<\>\,\.\[]|=>|&(?!&)|\|(?!\|)))))([^<>\(]|(\(([^\(\)]|(\(([^\(\)]|\([^\(\)]*\))*\)))*\))|(?<==)\>)*(?<!=)\>))*(?<!=)\>)*(?<!=)>\s*)?\())
@@ -1005,7 +994,7 @@ repository:
         name: keyword.generator.asterisk.gml
       "6":
         name: meta.definition.function.gml entity.name.function.gml
-    end: (?=;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))|(?<=\})
+    end: (?=;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar|constructor)\b))|(?<=\})
     name: meta.function.gml
     patterns:
       - include: "#function-name"
@@ -1112,7 +1101,7 @@ repository:
       - match: ([[:upper:]][_$[:digit:][:upper:]]*)(?![_$[:alnum:]])
         name: variable.other.constant.gml
       - match: \#macro
-        name: storage.type.gml
+        name: storage.type.macro.gml
       - match: "[_$[:alpha:]][_$[:alnum:]]*"
         name: variable.other.readwrite.gml
   if-statement:
@@ -1586,7 +1575,7 @@ repository:
           (?x)
           (
             (@)
-            (?:arg|argument|const|constant|member|namespace|param|var)
+            (?:arg|argument|const|constant|member|namespace|param|var|globalvar)
           )
           \s+
           (
@@ -1604,7 +1593,7 @@ repository:
           - include: "#jsdoctype"
           - match: (?:[^@\s*/]|\*[^/])+
             name: entity.name.type.instance.jsdoc
-      - begin: ((@)(?:arg|argument|const|constant|member|namespace|param|prop|property|var))\s+(?={)
+      - begin: ((@)(?:arg|argument|const|constant|member|namespace|param|prop|property|var|globalvar))\s+(?={)
         beginCaptures:
           "1":
             name: storage.type.class.jsdoc
@@ -1662,7 +1651,7 @@ repository:
           (
             (@)
             (?:define|enum|exception|export|extends|lends|implements|modifies
-            |namespace|private|protected|returns?|satisfies|suppress|this|throws|type
+            |namespace|private|protected|returns?|satisfies|suppress|self|throws|type
             |yields?)
           )
 
@@ -1689,7 +1678,7 @@ repository:
             (@)
             (?:alias|augments|callback|constructs|emits|event|fires|exports?
             |extends|external|function|func|host|lends|listens|interface|memberof!?
-            |method|module|mixes|mixin|name|requires|see|this|typedef|uses)
+            |method|module|mixes|mixin|name|requires|see|self|typedef|uses)
           )
 
           \s+
@@ -1737,7 +1726,7 @@ repository:
           |mixes|mixins?|modifies|module|name|namespace|noalias|nocollapse|nocompile|nosideeffects
           |override|overview|package|param|polymer(?:Behavior)?|preserve|private|prop|property|protected
           |public|read[Oo]nly|record|require[ds]|returns?|see|since|static|struct|submodule|summary
-          |suppress|template|this|throws|todo|tutorial|type|typedef|unrestricted|uses|var|variation
+          |suppress|template|self|throws|todo|tutorial|type|typedef|unrestricted|uses|var|globalvar|variation
           |version|virtual|writeOnce|yields?) \b
         name: storage.type.class.jsdoc
       - include: "#inline-tags"
@@ -1890,7 +1879,7 @@ repository:
         name: storage.modifier.gml
       "3":
         name: storage.type.namespace.gml
-    end: (?<=\})|(?=;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))
+    end: (?<=\})|(?=;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar)\b))
     name: meta.namespace.declaration.gml
     patterns:
       - include: "#comment"
@@ -2373,7 +2362,7 @@ repository:
           "5":
             name: keyword.operator.optional.gml
         match: >-
-          (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(override|public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(this)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*(\??)(?=\s*
+          (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(override|public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(self)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*(\??)(?=\s*
 
           # function assignment |
 
@@ -2465,7 +2454,7 @@ repository:
             name: variable.parameter.gml
           "5":
             name: keyword.operator.optional.gml
-        match: (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(override|public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(this)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*(\??)
+        match: (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(override|public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(self)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*(\??)
   parameter-object-binding-element:
     patterns:
       - include: "#comment"
@@ -2560,7 +2549,7 @@ repository:
         name: meta.arrow.gml meta.return.type.arrow.gml
           keyword.operator.type.annotation.gml
     contentName: meta.arrow.gml meta.return.type.arrow.gml
-    end: (?==>|\{|(^\s*(export|function|class|interface|let|var|const|import|enum|namespace|module|type|abstract|declare)\s+))
+    end: (?==>|\{|(^\s*(export|function|class|interface|let|var|globalvar|const|import|enum|namespace|module|type|abstract|declare)\s+))
     patterns:
       - include: "#arrow-return-type-body"
   property-accessor:
@@ -3280,7 +3269,7 @@ repository:
     patterns:
       - include: "#expression"
   this-literal:
-    match: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))this\b(?!\$)
+    match: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))self\b(?!\$)
     name: variable.language.this.gml
   type:
     patterns:
@@ -3313,7 +3302,7 @@ repository:
         name: storage.type.type.gml
       "4":
         name: entity.name.type.alias.gml
-    end: (?=\}|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))
+    end: (?=\}|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar)\b))
     name: meta.type.declaration.gml
     patterns:
       - include: "#comment"
@@ -3324,14 +3313,14 @@ repository:
             name: keyword.operator.assignment.gml
           "2":
             name: keyword.control.intrinsic.gml
-        end: (?=\}|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))
+        end: (?=\}|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|globalvar)\b))
         patterns:
           - include: "#type"
       - begin: (=)\s*
         beginCaptures:
           "1":
             name: keyword.operator.assignment.gml
-        end: (?=\}|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))
+        end: (?=\}|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar)\b))
         patterns:
           - include: "#type"
   type-annotation:
@@ -3373,7 +3362,7 @@ repository:
       - include: "#type"
       - include: "#punctuation-comma"
   type-builtin-literals:
-    match: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(this|true|false|undefined|null|object)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))
+    match: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(self|true|false|undefined|null|object)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))
     name: support.type.builtin.gml
   type-conditional:
     patterns:
@@ -3603,7 +3592,7 @@ repository:
           "5":
             name: keyword.operator.optional.gml
         match: >-
-          (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(this)|([_$[:alpha:]][_$[:alnum:]]*))\s*(\??)(?=\s*(:\s*(
+          (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(self)|([_$[:alpha:]][_$[:alnum:]]*))\s*(\??)(?=\s*(:\s*(
             (<) |
             ([(]\s*(
               ([)]) |
@@ -3629,7 +3618,7 @@ repository:
             name: variable.parameter.gml
           "5":
             name: keyword.operator.optional.gml
-        match: (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(this)|([_$[:alpha:]][_$[:alnum:]]*))\s*(\??)(?=:)
+        match: (?x)(?:(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(public|private|protected|readonly)\s+)?(?:(\.\.\.)\s*)?(?<!=|:)(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(self)|([_$[:alpha:]][_$[:alnum:]]*))\s*(\??)(?=:)
       - include: "#type-annotation"
       - match: ","
         name: punctuation.separator.parameter.gml
@@ -3645,7 +3634,7 @@ repository:
             name: variable.parameter.gml
           "4":
             name: keyword.operator.expression.is.gml
-        match: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(asserts)\s+)?(?!asserts)(?:(this)|([_$[:alpha:]][_$[:alnum:]]*))\s(is)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))
+        match: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(asserts)\s+)?(?!asserts)(?:(self)|([_$[:alpha:]][_$[:alnum:]]*))\s(is)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))
       - captures:
           "1":
             name: keyword.operator.type.asserts.gml
@@ -3653,7 +3642,7 @@ repository:
             name: variable.parameter.gml variable.language.this.gml
           "3":
             name: variable.parameter.gml
-        match: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(asserts)\s+(?!is)(?:(this)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))
+        match: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(asserts)\s+(?!is)(?:(self)|([_$[:alpha:]][_$[:alnum:]]*))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))
       - match: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))asserts(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))
         name: keyword.operator.type.asserts.gml
       - match: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))is(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))
@@ -3694,7 +3683,7 @@ repository:
     beginCaptures:
       "0":
         name: keyword.operator.expression.typeof.gml
-    end: (?=[,);}\]=>:&|{\?]|(extends\s+)|$|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))
+    end: (?=[,);}\]=>:&|{\?]|(extends\s+)|$|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar)\b))
     patterns:
       - include: "#type-arguments"
       - include: "#expression"
@@ -3703,11 +3692,11 @@ repository:
     name: constant.language.undefined.gml
   var-expr:
     patterns:
-      - begin: (?=(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(var|let)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.)))
-        end: (?!(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(var|let)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.)))((?=;|}|((?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(of|in)\s+)|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))|((?<!^let|[^\._$[:alnum:]]let|^var|[^\._$[:alnum:]]var)(?=\s*$)))
+      - begin: (?=(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(var|let|globalvar)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.)))
+        end: (?!(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(var|let|globalvar)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.)))((?=;|}|((?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(of|in)\s+)|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar)\b))|((?<!^let|[^\._$[:alnum:]]let|^var|[^\._$[:alnum:]]var|^globalvar|[^\._$[:alnum:]]globalvar)(?=\s*$)))
         name: meta.var.expr.gml
         patterns:
-          - begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(var|let)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*
+          - begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(var|let|globalvar)(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*
             beginCaptures:
               "1":
                 name: keyword.control.export.gml
@@ -3740,7 +3729,7 @@ repository:
             name: storage.modifier.gml
           "3":
             name: storage.type.gml
-        end: (?!(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(const(?!\s+enum\b))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.)))((?=;|}|((?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(of|in)\s+)|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var)\b))|((?<!^const|[^\._$[:alnum:]]const)(?=\s*$)))
+        end: (?!(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(const(?!\s+enum\b))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.)))((?=;|}|((?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(of|in)\s+)|;|^\s*$|(?:^\s*(?:abstract|async|class|const|declare|enum|export|function|import|interface|let|module|namespace|return|type|var|globalvar)\b))|((?<!^const|[^\._$[:alnum:]]const)(?=\s*$)))
         name: meta.var.expr.gml
         patterns:
           - begin: (?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(?:(\bexport)\s+)?(?:(\bdeclare)\s+)?\b(const(?!\s+enum\b))(?![_$[:alnum:]])(?:(?=\.\.\.)|(?!\.))\s*
@@ -4002,4 +3991,5 @@ repository:
         end: (?=[,);}\]]|((?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))(of|in)\s+))|(?=^\s*$)|(?<![\|\&\+\-\*\/])(?<=\S)(?<!=)(?=\s*$)
         patterns:
           - include: "#expression"
+
 scopeName: source.gml
