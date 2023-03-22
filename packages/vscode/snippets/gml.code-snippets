@@ -1,0 +1,28 @@
+{
+  "GML: For Loop": {
+    "scope": "gml",
+    "prefix": "for",
+    "body": [
+      "for (var ${1:i} = ${2:0}; ${1:i} < ${3}; ${1:i} += ${4:1}) {",
+      "\t$0",
+      "}"
+    ]
+  },
+  "GML: Constructor": {
+    "scope": "gml",
+    "prefix": "constructor",
+    "body": ["function ${1}() constructor {", "\t$0", "}"]
+  },
+  "GML: Constructor Method": {
+    "scope": "gml",
+    "prefix": "function-constructor",
+    "description": "Create a constructor method",
+    "body": ["/// @desc $2", "${1} = function ${1}($3) {", "\t$0", "}"]
+  },
+  "GML: Static Constructor Method": {
+    "scope": "gml",
+    "prefix": "static-function-constructor",
+    "description": "Create a static constructor method",
+    "body": ["/// @desc $2", "static ${1} = function ${1}($3) {", "\t$0", "}"]
+  }
+}

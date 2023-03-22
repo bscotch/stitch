@@ -6,7 +6,8 @@
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
     "Programming Languages",
-    "Formatters"
+    "Formatters",
+    "Snippets"
   ],
   "keywords": [
     "gamemaker"
@@ -34,6 +35,12 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
+    "snippets": [
+      {
+        "language": "gml",
+        "path": "./snippets/gml.code-snippets"
+      }
+    ],
     "colors": [
       {
         "id": "comment.line.region.start.gml",
