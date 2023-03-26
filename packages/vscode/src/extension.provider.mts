@@ -4,8 +4,8 @@ import { sortKeysByReference } from '@bscotch/utility/browser';
 import { Yy, YyResourceType } from '@bscotch/yy';
 import glob from 'glob';
 import os from 'os';
-import vscode from 'vscode';
 import process from 'process';
+import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GmlSpec, parseSpec } from './spec.mjs';
@@ -64,12 +64,14 @@ export class GmlProvider
       this.globalSignatures.set(func.name, help);
     }
     for (const vars of spec.variables) {
-      this.globalCompletions.push(
-        new vscode.CompletionItem(
-          vars.name,
-          vscode.CompletionItemKind.Variable,
-        ),
+      const item = new vscode.CompletionItem(
+        vars.name,
+        vars.writable
+          ? vscode.CompletionItemKind.Variable
+          : vscode.CompletionItemKind.Constant,
       );
+      item.documentation = vars.description;
+      this.globalCompletions.push(item);
     }
     for (const constant of spec.constants) {
       this.globalCompletions.push(
@@ -295,7 +297,11 @@ export class GmlProvider
           // And change the backslash to forward slash, otherwise the path cannot be found
           // In most cases, it should be "C:/ProgramData".
           // However, in rare cases, the Windows drive letter installed by the user is not C:
-          runtimeLocalPath = (process.env.ALLUSERSPROFILE as string).replace("\\", "/") + '/' + gmChannel + '/Cache/runtimes/';
+          runtimeLocalPath =
+            (process.env.ALLUSERSPROFILE as string).replace('\\', '/') +
+            '/' +
+            gmChannel +
+            '/Cache/runtimes/';
         } else if (os.type() == 'Darwin') {
           // (LiarOnce) Need testing because I don't have any macOS devices.
           runtimeLocalPath = '/Users/Shared/' + gmChannel + '/Cache/runtimes/';
