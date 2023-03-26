@@ -1,7 +1,7 @@
 {
   "name": "bscotch-stitch-vscode",
   "displayName": "Stitch",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
@@ -35,12 +35,6 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
-    "snippets": [
-      {
-        "language": "gml",
-        "path": "./snippets/gml.code-snippets"
-      }
-    ],
     "colors": [
       {
         "id": "comment.line.region.start.gml",
@@ -224,6 +218,12 @@
         "id": "sprite",
         "description": "A GameMaker sprite.",
         "superType": "variable"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "gml",
+        "path": "./snippets/gml.code-snippets"
       }
     ],
     "views": {
