@@ -176,7 +176,20 @@ repository:
   macros:
     patterns:
       - name: storage.type.macro.gml
-        match: (#macro)\s+(\w+)\s+(.+)
+        begin: (#macro)\s+(\w+)\s*
+        end: (?<!\\[ \t]*)\n
+        beginCaptures:
+          '1': { name: storage.type.gml }
+          '2': { name: variable.other.macro.gml }
+        patterns:
+          - include: '#strings'
+          - include: '#numbers'
+          - include: '#keywords'
+          - include: '#constants'
+          - include: '#functions'
+          - include: '#function_calls'
+          - include: '#structs'
+          - include: '#variables'
   structs:
     patterns:
       - name: entity.name.struct.gml
