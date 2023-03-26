@@ -108,8 +108,10 @@ fileTypes:
 patterns:
   - include: '#jsdoc'
   - include: '#comments'
+  - include: '#regions'
   - include: '#keywords'
   - include: '#constants'
+  - include: '#operators'
   - include: '#functions'
   - include: '#function_calls'
   - include: '#numbers'
@@ -132,12 +134,41 @@ repository:
           '0': { name: punctuation.definition.comment.begin.gml }
         endCaptures:
           '0': { name: punctuation.definition.comment.end.gml }
+  regions:
+    patterns:
+      - name: comment.line.region.start.gml
+        match: '(#region\b)(\s+.*)?$'
+        captures:
+          '1': { name: keyword.region.begin.gml }
+          '2': { name: comment.line.region.title.gml }
+      - name: keyword.region.end.gml
+        match: '#endregion\b'
   keywords:
     patterns:
-      - name: storage.type.js
+      - name: storage.type.gml
         match: \b(var|globalvar|enum)\b
+      - name: storage.modifier.gml
+        match: \b(static)\b
+      - name: storage.type.class
+        match: \b(constructor)\b
+      - name: keyword.operator.new.gml
+        match: \b(new)\b
       - name: keyword.control.gml
-        match: \b(begin|end|if|then|else|while|do|for|break|continue|with|until|repeat|exit|and|or|xor|not|return|mod|div|switch|case|default|global|try|catch|finally|throw|static|new|delete|constructor|#macro|#region|#endregion)\b
+        match: \b(begin|end|if|then|else|while|do|for|break|continue|with|until|repeat|exit|return|switch|case|default|global|try|catch|finally|throw|delete)\b
+  operators:
+    patterns:
+      - name: keyword.operator.arithmetic.gml
+        match: '([-+*/%]|mod|div)'
+      - name: keyword.operator.comparison.gml
+        match: '(?:<|>|<=|>=|==|!=)'
+      - name: keyword.operator.logical.gml
+        match: '(?:&&|\|\||\^\^|!|\b(?:and|or|xor|not)\b)'
+      - name: keyword.operator.assignment.gml
+        match: '(?:\+=|-=|\*=|/=|%=|\|=|&=|\^=|\?\?=|<<=|>>=|>>>=|=)'
+      - name: keyword.operator.bitwise.gml
+        match: '(?:&|\||\^|<<|>>|>>>|~)'
+      - name: keyword.operator.ternary.gml
+        match: '\?|:'
   constants:
     patterns:
       - name: constant.language.gml
