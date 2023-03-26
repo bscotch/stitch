@@ -51,5 +51,11 @@
   "typescript.preferences.importModuleSpecifierEnding": "js",
   "javascript.preferences.importModuleSpecifierEnding": "js",
   "cSpell.useGitignore": true,
-  "cSpell.files": ["**/*.md", "**/src/**/*"]
+  "cSpell.files": ["**/*.md", "**/src/**/*"],
+  "grammarly.selectors": [
+    {
+      "language": "markdown",
+      "scheme": "file"
+    }
+  ]
 }
