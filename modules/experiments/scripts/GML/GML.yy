@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "ScriptA",
+  "name": "GML",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {

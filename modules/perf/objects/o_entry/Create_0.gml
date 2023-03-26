@@ -284,3 +284,15 @@ perf.run("Array: Deleting 1st entry of 1000-item array",
 	},
 	{len: 1000});
 #endregion
+
+#region GLOBALS
+global.a_number = 1_000;
+globalvar A_STRING; A_STRING = "global!";
+
+perf.run("Globals: getting global.",
+	function(){ return global.A_STRING });
+
+perf.run("Globals: implicit reference",
+	function(){ return A_STRING });
+
+#endregion

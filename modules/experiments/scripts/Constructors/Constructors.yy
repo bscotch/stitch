@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "ScriptB",
+  "name": "Constructors",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {

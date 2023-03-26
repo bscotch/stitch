@@ -1,10 +1,10 @@
 {
   "FolderOrderSettings": [],
   "ResourceOrderSettings": [
+    {"name":"Constructors","order":7,"path":"scripts/Constructors/Constructors.yy",},
     {"name":"o_entry","order":4,"path":"objects/o_entry/o_entry.yy",},
     {"name":"Util","order":2,"path":"scripts/Util/Util.yy",},
-    {"name":"ScriptB","order":6,"path":"scripts/ScriptB/ScriptB.yy",},
-    {"name":"ScriptA","order":5,"path":"scripts/ScriptA/ScriptA.yy",},
+    {"name":"GML","order":8,"path":"scripts/GML/GML.yy",},
     {"name":"rm_entry","order":3,"path":"rooms/rm_entry/rm_entry.yy",},
   ],
 }

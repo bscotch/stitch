@@ -1,5 +1,49 @@
 #macro chr_newline chr(10)
 
+/// @returns {Array<Struct.MemoryUsage>}
+function array_of_memory_usage (length=0){
+	return array_create_ext(length, function(){ return new MemoryUsage()});
+}
+
+function random_letter(){
+	static characters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+	var idx = irandom_range(0,array_length(characters)-1);
+	return characters[idx];
+}
+
+function MemoryUsage () constructor {
+	totalUsed = 0
+	peakUsage = 0
+}
+
+function MemoryTrace () constructor {
+	snapshots = array_of_memory_usage();
+	
+	static mark = function mark(){
+		array_push(snapshots, debug_event("DumpMemory",true));
+	}
+	
+	static diffs = function diffs(normalize_by=1){
+		var _diffs = array_of_memory_usage(array_length(snapshots)-1);
+		for(var i=0; i<array_length(_diffs); i++){
+			var _diff = _diffs[i];
+			var _first = snapshots[i];
+			var _second = snapshots[i+1];
+			_diff.totalUsed = (_second.totalUsed - _first.totalUsed)/normalize_by;
+			_diff.peakUsage = (_second.peakUsage - _first.peakUsage)/normalize_by;
+		}
+		return _diffs;
+	}
+}
+
+/// @returns {Struct.MemoryTrace}
+function start_memory_trace (){
+	var _trace = new MemoryTrace();
+	_trace.mark();
+	return _trace;
+}
+
+
 /**
   * @description Throw an error if a condition is not met.
   * @param {Any} condition
