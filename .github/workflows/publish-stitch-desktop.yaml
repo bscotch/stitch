@@ -22,9 +22,17 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: pnpm
       - run: corepack enable
       - run: pnpm install --filter=stitch-desktop...
       - run: pwd
+
+      - name: Cache Turbo
+        uses: actions/cache@v3
+        with:
+          key: turbo-stitch-desktop
+          path: |
+            ~/node_modules/.cache/turbo
 
       # PREBUILD
       - name: Prepare Cert
@@ -33,7 +41,7 @@ jobs:
 
       # BUILD
       - name: Build
-        run: pnpm turbo run build --only --no-cache --filter=stitch-desktop... 
+        run: pnpm turbo run build --only --filter=stitch-desktop... 
         env:
           CODESIGN_PASSWORD: ${{ secrets.CODESIGN_PASSWORD }}
       # - name: Set release version
