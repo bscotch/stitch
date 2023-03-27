@@ -32,6 +32,7 @@ jobs:
           key: turbo-stitch-desktop
           path: |
             ~/node_modules
+            ~/packages/desktop/bundle/node_modules
 
       # PREBUILD
       - name: Prepare Cert
