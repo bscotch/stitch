@@ -21,15 +21,6 @@ const squirrelMaker = {
   platforms: ['win32'],
 };
 
-const allowedPathRoots = [
-  '/bundle',
-  '/assets',
-  '/code',
-  '/node_modules',
-  '/package.json',
-  '/forge.config.js',
-];
-
 /** @type {import('@electron-forge/shared-types').ForgeConfig} */
 module.exports = {
   packagerConfig: {
@@ -51,4 +42,15 @@ module.exports = {
     // },
   },
   makers: [squirrelMaker],
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'bscotch',
+          name: 'stitch',
+        },
+      },
+    },
+  ],
 };

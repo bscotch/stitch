@@ -57,7 +57,6 @@ cd('../desktop/bundle');
 // await $`rm *.tgz`;
 // await $`mv package stitch-ui`;
 await $`mv bscotch-stitch-ui-* stitch-ui.tgz`;
-await $`cp ../.env .`;
 await $`cp ../cert.pfx .`;
 
 await $`npm install`;

@@ -25,6 +25,7 @@
     "@bscotch/utility": "^6.8.0",
     "@electron-forge/cli": "6.0.5",
     "@electron-forge/maker-squirrel": "^6.0.5",
+    "@electron-forge/publisher-github": "6.0.5",
     "@electron-forge/shared-types": "^6.0.5",
     "concurrently": "^7.6.0",
     "dotenv": "16.0.3",
