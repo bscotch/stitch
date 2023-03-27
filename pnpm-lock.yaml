@@ -142,6 +142,7 @@ importers:
       '@electron-forge/maker-squirrel': ^6.0.5
       '@electron-forge/shared-types': ^6.0.5
       concurrently: ^7.6.0
+      dotenv: 16.0.3
       electron: ^23.1.2
       electron-packager: ^17.1.1
       electron-squirrel-startup: 1.0.0
@@ -161,6 +162,7 @@ importers:
       '@electron-forge/maker-squirrel': 6.0.5
       '@electron-forge/shared-types': 6.0.5
       concurrently: 7.6.0
+      dotenv: 16.0.3
       electron: 23.1.2
       electron-packager: 17.1.1
       electron-squirrel-startup: 1.0.0
@@ -3249,6 +3251,11 @@ packages:
       no-case: 3.0.4
       tslib: 2.5.0
     dev: false
+
+  /dotenv/16.0.3:
+    resolution: {integrity: sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==}
+    engines: {node: '>=12'}
+    dev: true
 
   /duplexer/0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}

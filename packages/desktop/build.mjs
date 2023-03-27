@@ -51,11 +51,14 @@ await $`cp dist/index.cjs bundle/code/`;
 await $`cp forge.config.js bundle/`;
 cd('../desktop-ui');
 await $`pnpm pack --pack-destination ../desktop/bundle`;
+
 cd('../desktop/bundle');
 // await $`tar -zxvf *.tgz`;
 // await $`rm *.tgz`;
 // await $`mv package stitch-ui`;
 await $`mv bscotch-stitch-ui-* stitch-ui.tgz`;
+await $`cp ../.env .`;
+await $`cp ../cert.pfx .`;
 
 await $`npm install`;
 

@@ -27,6 +27,7 @@
     "@electron-forge/maker-squirrel": "^6.0.5",
     "@electron-forge/shared-types": "^6.0.5",
     "concurrently": "^7.6.0",
+    "dotenv": "16.0.3",
     "electron": "^23.1.2",
     "electron-packager": "^17.1.1",
     "electron-squirrel-startup": "1.0.0",

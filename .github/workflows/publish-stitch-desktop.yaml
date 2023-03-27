@@ -26,9 +26,16 @@ jobs:
       - run: pnpm install --filter=stitch-desktop...
       - run: pwd
 
+      # PREBUILD
+      - name: Prepare Cert
+        run: |
+          echo "${{ secrets.CODESIGN_PFX_BASE64 }}" > cert.base64 && certutil -decode cert.base64 cert.pfx && cp cert.pfx packages/desktop/cert.pfx
+
       # BUILD
       - name: Build
         run: pnpm turbo run build --only --filter=stitch-desktop...
+        env:
+          CODESIGN_PASSWORD: ${{ secrets.CODESIGN_PASSWORD }}
       - name: Set release version
         # This script adds the env var `RELEASE_VERSION`
         run: node scripts/set-release-version.mjs packages/desktop

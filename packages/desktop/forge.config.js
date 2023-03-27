@@ -1,3 +1,7 @@
+const dotenv = require('dotenv');
+
+dotenv.config();
+
 /** @type {import('@electron-forge/shared-types').ForgeConfigMaker} */
 const squirrelMaker = {
   name: '@electron-forge/maker-squirrel',
@@ -10,6 +14,8 @@ const squirrelMaker = {
     authors: 'Butterscotch Shenanigans',
     setupIcon: 'assets/stitch-logo.ico',
     setupExe: 'StitchSetup.exe',
+    certificateFile: './cert.pfx',
+    certificatePassword: process.env.CODESIGN_PASSWORD,
   },
   /** @type {import('electron-packager').OfficialPlatform[]} */
   platforms: ['win32'],
