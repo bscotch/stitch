@@ -44,19 +44,12 @@ jobs:
         run: pnpm turbo run build --only --filter=stitch-desktop... 
         env:
           CODESIGN_PASSWORD: ${{ secrets.CODESIGN_PASSWORD }}
-      # - name: Set release version
-      #   # This script adds the env var `RELEASE_VERSION`
-      #   run: node scripts/set-release-version.mjs packages/desktop
+      - name: Set release version
+        # This script adds the env var `RELEASE_VERSION`
+        run: node scripts/set-release-version.mjs packages/desktop
 
-      # PUBLISH
-      - name: Publish to GitHub
-        working-directory: packages/desktop/bundle
-        run: pnpm electron-forge publish
+      - name: Create New Release
+        run: gh release create --title "Stitch Desktop v${{env.RELEASE_VERSION}}" stitch-desktop@${{env.RELEASE_VERSION}} packages/desktop/bundle/out/make/squirrel.windows/x64/RELEASES packages/desktop/bundle/out/make/squirrel.windows/x64/Stitch-${{env.RELEASE_VERSION}}-full.nupkg#Nupkg packages/desktop/bundle/out/make/squirrel.windows/x64/StitchSetup.exe#Installer
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Create New Release
-      #   run: gh release create --title "Stitch Desktop v${{env.RELEASE_VERSION}}" stitch-desktop@${{env.RELEASE_VERSION}} packages/desktop/bundle/out/make/squirrel.windows/x64/RELEASES packages/desktop/bundle/out/make/squirrel.windows/x64/Stitch-${{env.RELEASE_VERSION}}-full.nupkg#Nupkg packages/desktop/bundle/out/make/squirrel.windows/x64/StitchSetup.exe#Installer
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       

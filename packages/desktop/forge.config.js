@@ -42,15 +42,4 @@ module.exports = {
     // },
   },
   makers: [squirrelMaker],
-  publishers: [
-    {
-      name: '@electron-forge/publisher-github',
-      config: {
-        repository: {
-          owner: 'bscotch',
-          name: 'stitch',
-        },
-      },
-    },
-  ],
 };

@@ -12,4 +12,4 @@ export const stitchConfigDir = path.join(os.homedir(), '.stitch');
 export const uriProtocol = 'bscotch.stitch-desktop';
 export const updateFeed = `https://update.electronjs.org/bscotch/stitch/${
   process.platform
-}-${process.arch}/${app.getVersion()}`;
+}/${app.getVersion()}`;
