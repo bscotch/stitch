@@ -42,7 +42,7 @@ jobs:
 
       # PUBLISH
       - name: Publish to GitHub
-        working-directory: packages/desktop
+        working-directory: packages/desktop/bundle
         run: pnpm electron-forge publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
