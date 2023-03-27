@@ -22,7 +22,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: pnpm
       - run: corepack enable
       - run: pnpm install --filter=stitch-desktop...
       - run: pwd
@@ -32,7 +31,7 @@ jobs:
         with:
           key: turbo-stitch-desktop
           path: |
-            ~/node_modules/.cache/turbo
+            ~/node_modules
 
       # PREBUILD
       - name: Prepare Cert
