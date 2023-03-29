@@ -9,6 +9,7 @@ import type {
   GameMakerRunOptions,
 } from './GameMakerRuntime.types.js';
 import { listInstalledRuntimes, sortByDateField } from './utility.js';
+export * from './GameMakerRuntime.command.js';
 
 export class GameMakerRuntime extends GameMakerComponent {
   constructor(info: GameMakerInstalledVersion) {

@@ -11,6 +11,7 @@ import {
   GameMakerBuildOptions,
   GameMakerExecuteOptions,
   GameMakerExecutionResults,
+  StitchSupportedBuilder,
 } from './GameMakerRuntime.types.js';
 import {
   artifactExtensionForPlatform,
@@ -35,17 +36,14 @@ export async function executeGameMakerRuntimeInstallCommand(
   );
 }
 
-// E:\repos\GamePipe\gms2-setup\sandbox\runtimes\runtime-2022.300.0.476\bin\Igor.exe /rp=E:\repos\GamePipe\gms2-setup\sandbox\runtimes /ru=http://gms.yoyogames.com/Zeus-Runtime-NuBeta.rss /m=android,xboxseriesxs -- Runtime Install 2022.500.0.43
-
-// If I don't specify modules, I'll just get all of those I'm entitled to.
-// The /rp points to the folder CONTAINING the runtime FOLDERS
-// The /ru feed is required
-// The other arguments are positional
-
-export async function executeGameMakerBuildCommand(
+async function computeGameMakerBuildOptions(
   runtime: GameMakerRuntime,
   options: GameMakerBuildOptions & { compile?: boolean },
-) {
+): Promise<{
+  target: StitchSupportedBuilder;
+  command: 'Run' | 'PackageZip' | 'Package';
+  options: GameMakerExecuteOptions;
+}> {
   const target = options?.targetPlatform || 'windows';
   const command = options?.compile
     ? target === 'windows'
@@ -56,30 +54,101 @@ export async function executeGameMakerBuildCommand(
   const projectDir = projectPath.up();
   const outputDir = new Pathy(options?.outDir || projectDir);
   const tempDir = new Pathy(projectDir).join('tmp');
+  const buildOptions = {
+    project: projectPath.toString({ format: 'win32' }),
+    user: (await runtime.activeUserDirectory()).absolute,
+    runtimePath: runtime.directory.absolute,
+    runtime: options?.yyc ? 'YYC' : 'VM',
+    config: options?.config,
+    verbose: true,
+    ignorecache: true,
+    cache: tempDir.join('igor/cache').absolute,
+    temp: tempDir.join('igor/temp').absolute,
+    // For some reason the filename has to be there
+    // but only the directory is used...
+    of: tempDir.join(`igor/out/${projectPath.name}.win`).absolute,
+    tf: outputDir.join(
+      `${projectPath.name}.${artifactExtensionForPlatform(target)}`,
+    ).absolute,
+  };
+  return {
+    target,
+    command,
+    options: buildOptions,
+  };
+}
+
+// If I don't specify modules, I'll just get all of those I'm entitled to.
+// The /rp points to the folder CONTAINING the runtime FOLDERS
+// The /ru feed is required
+// The other arguments are positional
+
+export async function executeGameMakerBuildCommand(
+  runtime: GameMakerRuntime,
+  options: GameMakerBuildOptions & { compile?: boolean },
+) {
+  const {
+    target,
+    command,
+    options: buildOptions,
+  } = await computeGameMakerBuildOptions(runtime, options);
+
   const results = await executeGameMakerCommand(
     runtime,
     target,
     command,
-    {
-      project: projectPath.toString({ format: 'win32' }),
-      user: (await runtime.activeUserDirectory()).absolute,
-      runtimePath: runtime.directory.absolute,
-      runtime: options?.yyc ? 'YYC' : 'VM',
-      config: options?.config,
-      verbose: true,
-      ignorecache: true,
-      cache: tempDir.join('igor/cache').absolute,
-      temp: tempDir.join('igor/temp').absolute,
-      // For some reason the filename has to be there
-      // but only the directory is used...
-      of: tempDir.join(`igor/out/${projectPath.name}.win`).absolute,
-      tf: outputDir.join(
-        `${projectPath.name}.${artifactExtensionForPlatform(target)}`,
-      ).absolute,
-    },
+    buildOptions,
     options,
   );
   return results;
+}
+
+export async function stringifyGameMakerBuildCommand(
+  runtime: GameMakerRuntime,
+  options: GameMakerBuildOptions & { compile?: boolean },
+) {
+  const {
+    target,
+    command,
+    options: buildOptions,
+  } = await computeGameMakerBuildOptions(runtime, options);
+
+  const { cmd, args } = computeGameMakerCommand(
+    runtime,
+    target,
+    command,
+    buildOptions,
+  );
+  return `${cmd} ${args.join(' ')}`;
+}
+
+export function computeGameMakerCommand<W extends GameMakerCliWorker>(
+  runtime: GameMakerRuntime,
+  worker: W,
+  command:
+    | GameMakerCliCommand<W>
+    | [command: GameMakerCliCommand<W>, ...positionalArgs: string[]],
+  executionOptions: GameMakerExecuteOptions,
+) {
+  let args = Object.entries(executionOptions)
+    .map((option) => {
+      const [key, value] = option;
+      if (typeof value === 'undefined') {
+        return;
+      }
+      let arg = `--${key}`;
+      if (typeof value !== 'boolean') {
+        arg += `=${value}`;
+      }
+      return arg;
+    })
+    .filter((x) => x) as string[];
+  const cmd = runtime.executablePath.absolute;
+  args = [...args, '--', worker, ...arrayWrapped(command)];
+  return {
+    cmd,
+    args,
+  };
 }
 
 export async function executeGameMakerCommand<W extends GameMakerCliWorker>(
@@ -97,21 +166,12 @@ export async function executeGameMakerCommand<W extends GameMakerCliWorker>(
     //See https://github.com/dotnet/msbuild/issues/5726
     delete childEnv.PATH;
   }
-  let args = Object.entries(executionOptions)
-    .map((option) => {
-      const [key, value] = option;
-      if (typeof value === 'undefined') {
-        return;
-      }
-      let arg = `--${key}`;
-      if (typeof value !== 'boolean') {
-        arg += `=${value}`;
-      }
-      return arg;
-    })
-    .filter((x) => x) as string[];
-  const cmd = runtime.executablePath.absolute;
-  args = [...args, '--', worker, ...arrayWrapped(command)];
+  const { cmd, args } = computeGameMakerCommand(
+    runtime,
+    worker,
+    command,
+    executionOptions,
+  );
   console.log('🚀 Running GameMaker CLI command:');
   console.log(cmd, ...args);
   const child = spawn(cmd, args, {
