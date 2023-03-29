@@ -1,7 +1,7 @@
 {
   "GML: For Loop": {
     "scope": "gml",
-    "prefix": "for",
+    "prefix": "for-loop",
     "body": [
       "for (var ${1:i} = ${2:0}; ${1:i} < ${3}; ${1:i} += ${4:1}) {",
       "\t$0",
@@ -17,12 +17,30 @@
     "scope": "gml",
     "prefix": "function-constructor",
     "description": "Create a constructor method",
-    "body": ["/// @desc $2", "${1} = function ${1}($3) {", "\t$0", "}"]
+    "body": ["${1} = function ${1} ($2) {", "\t$0", "}"]
   },
   "GML: Static Constructor Method": {
     "scope": "gml",
     "prefix": "static-function-constructor",
     "description": "Create a static constructor method",
-    "body": ["/// @desc $2", "static ${1} = function ${1}($3) {", "\t$0", "}"]
+    "body": ["static ${1} = function ${1}($2) {", "\t$0", "}"]
+  },
+  "GML: JSDoc Description": {
+    "scope": "gml",
+    "prefix": "///-description",
+    "description": "Create a JSDoc description",
+    "body": ["/// @description ${0}"]
+  },
+  "GML: JSDoc Param": {
+    "scope": "gml",
+    "prefix": "///-param",
+    "description": "Create a JSDoc description",
+    "body": ["/// @param {${2:Any}} ${1} ${0}"]
+  },
+  "GML: JSDoc Returns": {
+    "scope": "gml",
+    "prefix": "///-returns",
+    "description": "Create a JSDoc description",
+    "body": ["/// @returns {${1:Any}} ${0}"]
   }
 }

@@ -215,14 +215,45 @@ export const gmlSpecSchema = z
           .optional(),
       })
       .strict()
-      .transform((v) => ({
-        runtime: v.$.RuntimeVersion,
-        functions: v.Functions[0].Function,
-        variables: v.Variables[0].Variable,
-        constants: v.Constants[0].Constant,
-        structures: v.Structures[0].Structure,
-        enumerations: v.Enumerations?.[0].Enumeration || [],
-      })),
+      .transform((v) => {
+        const types = new Set<string>([
+          'Array',
+          'Struct',
+          'String',
+          'Real',
+          'Bool',
+          'Struct',
+          'Function',
+          'Any',
+          'Pointer',
+          'Undefined',
+        ]);
+        const addTypes = (t: string | string[]) => {
+          t = Array.isArray(t) ? t : [t];
+          t.forEach((t) => types.add(t.replace(/\[.*/, '')));
+        };
+        for (const f of v.Functions[0].Function) {
+          addTypes(f.returnType);
+          for (const p of f.parameters) {
+            addTypes(p.type);
+          }
+        }
+        for (const va of v.Variables[0].Variable) {
+          addTypes(va.type);
+        }
+        for (const c of v.Constants[0].Constant) {
+          addTypes(c.type);
+        }
+        return {
+          runtime: v.$.RuntimeVersion,
+          functions: v.Functions[0].Function,
+          variables: v.Variables[0].Variable,
+          constants: v.Constants[0].Constant,
+          structures: v.Structures[0].Structure,
+          enumerations: v.Enumerations?.[0].Enumeration || [],
+          types: [...types].sort(),
+        };
+      }),
   })
   .strict()
   .transform((v) => v.GameMakerLanguageSpec);

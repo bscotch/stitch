@@ -17,6 +17,9 @@ This extension provides language features for GameMaker Language (GML), among ot
   - Go-to-definition
   - Find all references
 - Autocomplete for a project's resources ( sprite IDs, object IDs, ...)
+- JSDoc helpers
+  - Snippets to speed up adding JSDocs
+  - Autocomplete for global types in JSDocs (built-in and project-specific)
 - Format and validate `.yy`/`.yyp` project files. (To use it, set it as your default formatter for those filetypes.)
 
 ## 🛣️ Roadmap

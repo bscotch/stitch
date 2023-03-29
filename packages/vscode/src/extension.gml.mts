@@ -65,7 +65,12 @@ export class GmlFile {
           continue;
         }
         const paramNames = node.info.map((p) => p.name);
-        this.addProjectCompletion(name, vscode.CompletionItemKind.Function);
+        this.addProjectCompletion(
+          name,
+          node.kind === SyntaxKind.ConstructorDeclaration
+            ? vscode.CompletionItemKind.Constructor
+            : vscode.CompletionItemKind.Function,
+        );
         this.addProjectDefinition(node);
         const signatureString = `${
           node.kind === SyntaxKind.ConstructorDeclaration

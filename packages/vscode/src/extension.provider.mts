@@ -87,8 +87,6 @@ export class GmlProvider
       item.documentation = vars.description;
       this.globalCompletions.push(item);
     }
-
-    const constantClasses = new Set<string>();
     for (const constant of spec.constants) {
       this.globalCompletions.push(
         new vscode.CompletionItem(
@@ -96,31 +94,10 @@ export class GmlProvider
           vscode.CompletionItemKind.Constant,
         ),
       );
-      if (constant.class) {
-        constantClasses.add(constant.class);
-      }
     }
-    for (const constantClass of constantClasses) {
+    for (const type of spec.types) {
       this.globalTypeCompletions.push(
-        new vscode.CompletionItem(
-          `Constant.${constantClass}`,
-          vscode.CompletionItemKind.Class,
-        ),
-      );
-    }
-    for (const coreType of [
-      'Array',
-      'Struct',
-      'String',
-      'Real',
-      'Bool',
-      'Struct',
-      'Function',
-      'Any',
-      'Undefined',
-    ]) {
-      this.globalTypeCompletions.push(
-        new vscode.CompletionItem(coreType, vscode.CompletionItemKind.Class),
+        new vscode.CompletionItem(type, vscode.CompletionItemKind.Class),
       );
     }
   }
@@ -148,8 +125,6 @@ export class GmlProvider
   provideReferences(
     document: vscode.TextDocument,
     position: vscode.Position,
-    context: vscode.ReferenceContext,
-    token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.Location[]> {
     const word = GmlProvider.positionToWord(document, position);
     if (!word) {
@@ -263,7 +238,25 @@ export class GmlProvider
         }
       }
       if (inBlock) {
-        return this.globalTypeCompletions;
+        const haveNames = new Set<string>();
+        const projectConstructors = [...(project?.completions.values() || [])]
+          ?.filter((comp) => {
+            if (comp.kind !== vscode.CompletionItemKind.Constructor) {
+              return false;
+            }
+            if (haveNames.has(comp.label)) {
+              return false;
+            }
+            haveNames.add(comp.label);
+            return true;
+          })
+          .map((comp) => {
+            return new vscode.CompletionItem(
+              `Struct.${comp.label}`,
+              vscode.CompletionItemKind.Constructor,
+            );
+          });
+        return [...projectConstructors, ...this.globalTypeCompletions];
       }
       // Otherwise we can return valid JSDoc tags.
       return jsdocCompletions;
@@ -361,7 +354,7 @@ export class GmlProvider
       offset--;
       const pos = document.positionAt(offset);
       const char = document.getText(new vscode.Range(pos, pos.translate(0, 1)));
-      if (['\r', '\n'].includes(char)) {
+      if (['\r', '\n', ''].includes(char)) {
         return false;
       }
       if (char === '/' && commentCharsSoFar === '//') {
@@ -468,8 +461,8 @@ export class GmlProvider
       vscode.languages.registerCompletionItemProvider(
         'gml',
         this.provider,
-        '.',
-        '"',
+        // '.',
+        // '"',
       ),
       vscode.languages.registerSignatureHelpProvider(
         'gml',
