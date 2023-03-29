@@ -10,6 +10,19 @@ import { debounce } from './debounce.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GmlSpec, parseSpec } from './spec.mjs';
 
+const jsdocCompletions = [
+  '@param',
+  '@returns',
+  '@description',
+  '@self',
+  '@function',
+  '@ignore',
+  '@pure',
+  '@deprecated',
+].map(
+  (tag) => new vscode.CompletionItem(tag, vscode.CompletionItemKind.Property),
+);
+
 export class GmlProvider
   implements
     vscode.HoverProvider,
@@ -19,6 +32,7 @@ export class GmlProvider
     vscode.DefinitionProvider,
     vscode.ReferenceProvider
 {
+  globalTypeCompletions: vscode.CompletionItem[] = [];
   globalCompletions: vscode.CompletionItem[] = [];
   globalHovers: Map<string, vscode.Hover> = new Map();
   globalSignatures: Map<string, vscode.SignatureHelp> = new Map();
@@ -73,12 +87,40 @@ export class GmlProvider
       item.documentation = vars.description;
       this.globalCompletions.push(item);
     }
+
+    const constantClasses = new Set<string>();
     for (const constant of spec.constants) {
       this.globalCompletions.push(
         new vscode.CompletionItem(
           constant.name,
           vscode.CompletionItemKind.Constant,
         ),
+      );
+      if (constant.class) {
+        constantClasses.add(constant.class);
+      }
+    }
+    for (const constantClass of constantClasses) {
+      this.globalTypeCompletions.push(
+        new vscode.CompletionItem(
+          `Constant.${constantClass}`,
+          vscode.CompletionItemKind.Class,
+        ),
+      );
+    }
+    for (const coreType of [
+      'Array',
+      'Struct',
+      'String',
+      'Real',
+      'Bool',
+      'Struct',
+      'Function',
+      'Any',
+      'Undefined',
+    ]) {
+      this.globalTypeCompletions.push(
+        new vscode.CompletionItem(coreType, vscode.CompletionItemKind.Class),
       );
     }
   }
@@ -198,12 +240,46 @@ export class GmlProvider
 
   public provideCompletionItems(
     document: vscode.TextDocument,
+    position: vscode.Position,
   ): vscode.CompletionItem[] | vscode.CompletionList {
     const project = this.documentToProject(document);
-    return [
-      ...(project?.completions.values() || []),
-      ...this.globalCompletions,
-    ];
+    // If we're in JSDoc comment, and within a `{}` block,
+    //
+    if (GmlProvider.positionIsInJsdocComment(document, position)) {
+      // Are we inside a `{}` block?
+      let inBlock = false;
+      let offset = document.offsetAt(position);
+      while (offset > 0) {
+        offset--;
+        const pos = document.positionAt(offset);
+        const char = document.getText(
+          new vscode.Range(pos, pos.translate(0, 1)),
+        );
+        if (['}', '\r', '\n'].includes(char)) {
+          break;
+        } else if (char === '{') {
+          inBlock = true;
+          break;
+        }
+      }
+      if (inBlock) {
+        return this.globalTypeCompletions;
+      }
+      // Otherwise we can return valid JSDoc tags.
+      return jsdocCompletions;
+    }
+
+    // Are we dotting into something?
+    const dottingInto = GmlProvider.positionToDottingInto(document, position);
+    if (!dottingInto) {
+      return [
+        ...(project?.completions.values() || []),
+        ...this.globalCompletions,
+      ];
+    } else {
+      // Autocomplete with fields of what we're dotting into.
+      return [];
+    }
   }
 
   public provideSignatureHelp(
@@ -273,6 +349,63 @@ export class GmlProvider
       /(#macro|[a-zA-Z0-9_]+)/,
     );
     return document.getText(range);
+  }
+
+  static positionIsInJsdocComment(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+  ): boolean {
+    let offset = document.offsetAt(position);
+    let commentCharsSoFar = '';
+    while (offset > 0) {
+      offset--;
+      const pos = document.positionAt(offset);
+      const char = document.getText(new vscode.Range(pos, pos.translate(0, 1)));
+      if (['\r', '\n'].includes(char)) {
+        return false;
+      }
+      if (char === '/' && commentCharsSoFar === '//') {
+        return true;
+      } else if (char === '/') {
+        commentCharsSoFar += '/';
+      } else {
+        // Reset!
+        commentCharsSoFar = '';
+      }
+    }
+    return false;
+  }
+
+  /**
+   * At a given position, determine if we're dotting into
+   * something, and if so, what.
+   */
+  static positionToDottingInto(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+  ) {
+    // Are we dotting into something?
+    let dottingInto: string | undefined;
+    let offset = document.offsetAt(position);
+    while (offset > 0) {
+      offset--;
+      const pos = document.positionAt(offset);
+      const char = document.getText(new vscode.Range(pos, pos.translate(0, 1)));
+      // Skip over identifier characters until we hit a dot or something else
+      if (/[a-zA-Z0-9_]/.test(char)) {
+        continue;
+      }
+      if (char === '.') {
+        dottingInto = GmlProvider.positionToWord(
+          document,
+          document.positionAt(offset - 1),
+        );
+        break;
+      } else {
+        break;
+      }
+    }
+    return dottingInto;
   }
 
   /**
