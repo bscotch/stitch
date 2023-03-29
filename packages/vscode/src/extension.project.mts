@@ -1,5 +1,10 @@
 import { pathy } from '@bscotch/pathy';
-import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
+import {
+  GameMakerIde,
+  GameMakerLauncher,
+  GameMakerRuntime,
+  stringifyGameMakerBuildCommand,
+} from '@bscotch/stitch-launcher';
 import { Yy, Yyp, YypResource } from '@bscotch/yy';
 import path from 'path';
 import vscode from 'vscode';
@@ -35,6 +40,10 @@ export class GameMakerProject
     this.gmlWatcher.onDidChange((uri) => this.updateFile(uri));
   }
 
+  get name() {
+    return this.yyp.name;
+  }
+
   get ideVersion() {
     return this.yyp.MetaData.IDEVersion;
   }
@@ -63,6 +72,30 @@ export class GameMakerProject
       vscode.window.showErrorMessage(`Failed to open project: ${err}`);
     });
     return runner;
+  }
+
+  async computeRunCommand() {
+    const release = await GameMakerRuntime.findRelease({
+      ideVersion: this.ideVersion,
+    });
+    if (!release) {
+      vscode.window.showErrorMessage(
+        `Could not find a release of GameMaker v${this.ideVersion} to run this project.`,
+      );
+      return;
+    }
+    const runner = await GameMakerLauncher.findInstalledRuntime({
+      version: release.runtime.version,
+    });
+    if (!runner) {
+      vscode.window.showErrorMessage(
+        `Could not find locally installed GameMaker Runtime v${this.ideVersion}. Please install it through the GameMaker IDE and try again.`,
+      );
+      return;
+    }
+    return await stringifyGameMakerBuildCommand(runner, {
+      project: this.yypPath.fsPath,
+    });
   }
 
   async getTreeItem(element: GameMakerResource): Promise<vscode.TreeItem> {

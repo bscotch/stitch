@@ -35,37 +35,21 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
-    "colors": [
+    "taskDefinitions": [
       {
-        "id": "comment.line.region.start.gml",
-        "description": "Color for the `#region` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.description.start.gml",
-        "description": "Color for the text following the `#region` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.end.gml",
-        "description": "Color for the `#endregion` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.description.end.gml",
-        "description": "Color for the text following the `#endregion` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
+        "type": "gml",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "task": {
+            "type": "string",
+            "description": "The type of Stitch task to run."
+          },
+          "project": {
+            "type": "string",
+            "description": "The path to the GameMaker project to run the task on."
+          }
         }
       }
     ],
@@ -244,7 +228,41 @@
           "icon": "./images/stitch-logo-mono.svg"
         }
       ]
-    }
+    },
+    "colors": [
+      {
+        "id": "comment.line.region.start.gml",
+        "description": "Color for the `#region` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      },
+      {
+        "id": "comment.line.region.description.start.gml",
+        "description": "Color for the text following the `#region` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      },
+      {
+        "id": "comment.line.region.end.gml",
+        "description": "Color for the `#endregion` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      },
+      {
+        "id": "comment.line.region.description.end.gml",
+        "description": "Color for the text following the `#endregion` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      }
+    ]
   },
   "activationEvents": [
     "onLanguage:gml",

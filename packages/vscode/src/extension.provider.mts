@@ -23,6 +23,12 @@ const jsdocCompletions = [
   (tag) => new vscode.CompletionItem(tag, vscode.CompletionItemKind.Property),
 );
 
+interface StitchTaskDefinition extends vscode.TaskDefinition {
+  type: 'gml';
+  task: 'run';
+  project: string;
+}
+
 export class GmlProvider
   implements
     vscode.HoverProvider,
@@ -31,7 +37,8 @@ export class GmlProvider
     vscode.DocumentFormattingEditProvider,
     vscode.DefinitionProvider,
     vscode.ReferenceProvider,
-    vscode.WorkspaceSymbolProvider
+    vscode.WorkspaceSymbolProvider,
+    vscode.TaskProvider
 {
   globalTypeCompletions: vscode.CompletionItem[] = [];
   globalCompletions: vscode.CompletionItem[] = [];
@@ -121,6 +128,43 @@ export class GmlProvider
       this.projects.length,
     );
     return project;
+  }
+
+  async provideTasks(): Promise<vscode.Task[]> {
+    console.log('PROVIDING TASKS');
+    const tasks: vscode.Task[] = [];
+    const commands = new Map<GameMakerProject, string | undefined>();
+    const waits = this.projects.map((project) =>
+      project
+        .computeRunCommand()
+        .then((command) => commands.set(project, command)),
+    );
+    await Promise.all(waits);
+    for (const project of this.projects) {
+      const command = commands.get(project);
+      if (!command) continue;
+      const taskDefinition: StitchTaskDefinition = {
+        type: 'gml',
+        task: 'run',
+        project: project.yypPath.fsPath,
+      };
+      const task = new vscode.Task(
+        taskDefinition,
+        vscode.TaskScope.Workspace,
+        taskDefinition.task,
+        `Run ${project.name}`,
+        new vscode.ProcessExecution(command),
+      );
+      task.group = vscode.TaskGroup.Test;
+      tasks.push(task);
+    }
+    console.log('TASKS', tasks);
+    return tasks;
+  }
+
+  resolveTask(task: vscode.Task): vscode.ProviderResult<vscode.Task> {
+    console.log('RESOLVE', task);
+    return task;
   }
 
   provideWorkspaceSymbols(
@@ -509,6 +553,7 @@ export class GmlProvider
       vscode.languages.registerDefinitionProvider('gml', this.provider),
       vscode.languages.registerReferenceProvider('gml', this.provider),
       vscode.languages.registerWorkspaceSymbolProvider(this.provider),
+      vscode.tasks.registerTaskProvider('gml', this.provider),
       vscode.commands.registerCommand('stitch.openIde', (...args) => {
         const uri = vscode.Uri.parse(
           args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
