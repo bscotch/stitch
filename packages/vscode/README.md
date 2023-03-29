@@ -11,6 +11,7 @@ This extension provides language features for GameMaker Language (GML), among ot
 - `Stitch: New GameMaker Project` command available via the file explorer context menu for folders. This command clones a template GameMaker project into that folder. A very basic built-in template is used by default, but can be overridden with the `stitch.template.path` configuration option.
 - `Stitch: Open in GameMaker` command available via the palette while editing `.yyp`, `.yy`, or `.gml` files, and via the file explorer context menu for the same file types. This command opens the project in the GameMaker IDE version last used by the same project, automatically installing that IDE version if necessary.
 - GML syntax highlighting
+- Workspace Symbol Search via the command palette.
 - Autocomplete for built-in GameMaker functions and constants
 - Editor support for a project's global symbols (macros, script functions, script enums, and globalvars)
   - Autocomplete

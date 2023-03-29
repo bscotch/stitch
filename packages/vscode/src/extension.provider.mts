@@ -30,7 +30,8 @@ export class GmlProvider
     vscode.SignatureHelpProvider,
     vscode.DocumentFormattingEditProvider,
     vscode.DefinitionProvider,
-    vscode.ReferenceProvider
+    vscode.ReferenceProvider,
+    vscode.WorkspaceSymbolProvider
 {
   globalTypeCompletions: vscode.CompletionItem[] = [];
   globalCompletions: vscode.CompletionItem[] = [];
@@ -120,6 +121,28 @@ export class GmlProvider
       this.projects.length,
     );
     return project;
+  }
+
+  provideWorkspaceSymbols(
+    query: string,
+  ): vscode.ProviderResult<vscode.SymbolInformation[]> {
+    const symbols: vscode.SymbolInformation[] = [];
+    const matcher = new RegExp(query.split('').join('.*'), 'i');
+    for (const project of this.projects) {
+      project.definitions.forEach((loc, name) => {
+        if (matcher.test(name)) {
+          symbols.push(
+            new vscode.SymbolInformation(
+              name,
+              vscode.SymbolKind.Variable,
+              loc.range,
+              loc.uri,
+            ),
+          );
+        }
+      });
+    }
+    return symbols;
   }
 
   provideReferences(
@@ -476,6 +499,7 @@ export class GmlProvider
       ),
       vscode.languages.registerDefinitionProvider('gml', this.provider),
       vscode.languages.registerReferenceProvider('gml', this.provider),
+      vscode.languages.registerWorkspaceSymbolProvider(this.provider),
       vscode.commands.registerCommand('stitch.openIde', (...args) => {
         const uri = vscode.Uri.parse(
           args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
