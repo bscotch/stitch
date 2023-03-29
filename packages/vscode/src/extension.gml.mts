@@ -58,7 +58,13 @@ export class GmlFile {
         this.addProjectDefinition(node);
         this.addProjectHover(name, `enum ${name}`);
         // TODO: Add definition location lookup
-        // TODO: Add enum members to project-wide completions
+        for (const [, value] of node.info) {
+          const memberName = `${name}.${value.name}`;
+          this.addProjectCompletion(
+            memberName,
+            vscode.CompletionItemKind.EnumMember,
+          );
+        }
       }
       for (const [name, node] of parser.functions) {
         if (!node.name) {

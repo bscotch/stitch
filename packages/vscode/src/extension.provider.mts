@@ -242,7 +242,6 @@ export class GmlProvider
   ): vscode.CompletionItem[] | vscode.CompletionList {
     const project = this.documentToProject(document);
     // If we're in JSDoc comment, and within a `{}` block,
-    //
     if (GmlProvider.positionIsInJsdocComment(document, position)) {
       // Are we inside a `{}` block?
       let inBlock = false;
@@ -263,22 +262,32 @@ export class GmlProvider
       if (inBlock) {
         const haveNames = new Set<string>();
         const projectConstructors = [...(project?.completions.values() || [])]
-          ?.filter((comp) => {
-            if (comp.kind !== vscode.CompletionItemKind.Constructor) {
-              return false;
+          ?.map((comp) => {
+            if (comp.kind === vscode.CompletionItemKind.Constructor) {
+              const label = `Struct.${comp.label}`;
+              if (haveNames.has(label)) {
+                return;
+              }
+              haveNames.add(label);
+              return new vscode.CompletionItem(
+                label,
+                vscode.CompletionItemKind.Constructor,
+              );
+            } else if (comp.kind === vscode.CompletionItemKind.Enum) {
+              const label = `Enum.${comp.label}`;
+              if (haveNames.has(label)) {
+                return;
+              }
+              haveNames.add(label);
+              return new vscode.CompletionItem(
+                label,
+                vscode.CompletionItemKind.Enum,
+              );
+            } else {
+              return;
             }
-            if (haveNames.has(comp.label)) {
-              return false;
-            }
-            haveNames.add(comp.label);
-            return true;
           })
-          .map((comp) => {
-            return new vscode.CompletionItem(
-              `Struct.${comp.label}`,
-              vscode.CompletionItemKind.Constructor,
-            );
-          });
+          .filter((x) => x) as vscode.CompletionItem[];
         return [...projectConstructors, ...this.globalTypeCompletions];
       }
       // Otherwise we can return valid JSDoc tags.
