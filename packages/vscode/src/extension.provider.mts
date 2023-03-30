@@ -24,9 +24,9 @@ const jsdocCompletions = [
 );
 
 interface StitchTaskDefinition extends vscode.TaskDefinition {
-  type: 'gml';
+  type: 'stitch';
   task: 'run';
-  project: string;
+  projectName?: string;
 }
 
 export class GmlProvider
@@ -131,9 +131,15 @@ export class GmlProvider
   }
 
   async provideTasks(): Promise<vscode.Task[]> {
-    console.log('PROVIDING TASKS');
     const tasks: vscode.Task[] = [];
-    const commands = new Map<GameMakerProject, string | undefined>();
+    const commands = new Map<
+      GameMakerProject,
+      | {
+          cmd: string;
+          args: string[];
+        }
+      | undefined
+    >();
     const waits = this.projects.map((project) =>
       project
         .computeRunCommand()
@@ -144,26 +150,36 @@ export class GmlProvider
       const command = commands.get(project);
       if (!command) continue;
       const taskDefinition: StitchTaskDefinition = {
-        type: 'gml',
+        type: 'stitch',
         task: 'run',
-        project: project.yypPath.fsPath,
+        projectName: project.name,
       };
       const task = new vscode.Task(
         taskDefinition,
         vscode.TaskScope.Workspace,
         taskDefinition.task,
         `Run ${project.name}`,
-        new vscode.ProcessExecution(command),
+        new vscode.ProcessExecution(command.cmd, command.args, {
+          cwd: project.rootPath,
+        }),
       );
-      task.group = vscode.TaskGroup.Test;
       tasks.push(task);
     }
-    console.log('TASKS', tasks);
     return tasks;
   }
 
-  resolveTask(task: vscode.Task): vscode.ProviderResult<vscode.Task> {
-    console.log('RESOLVE', task);
+  resolveTask(task: vscode.Task): vscode.Task {
+    // console.log('RESOLVE', task);
+    // const project: GameMakerProject =
+    //   (task.definition.projectName &&
+    //     this.projects.find((p) => p.name === task.definition.projectName)) ||
+    //   this.projects[0];
+    // assertLoudly(project, 'Could not resolve project.');
+    // const command = await project.computeRunCommand();
+    // assertLoudly(command, 'Could not compute run command');
+    // task.execution = new vscode.ProcessExecution(command.cmd, command.args);
+    // console.log('RESOLVED', task);
+    // return task;
     return task;
   }
 
@@ -553,7 +569,7 @@ export class GmlProvider
       vscode.languages.registerDefinitionProvider('gml', this.provider),
       vscode.languages.registerReferenceProvider('gml', this.provider),
       vscode.languages.registerWorkspaceSymbolProvider(this.provider),
-      vscode.tasks.registerTaskProvider('gml', this.provider),
+      vscode.tasks.registerTaskProvider('stitch', this.provider),
       vscode.commands.registerCommand('stitch.openIde', (...args) => {
         const uri = vscode.Uri.parse(
           args[0] || vscode.window.activeTextEditor?.document.uri.toString(),

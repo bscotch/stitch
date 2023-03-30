@@ -37,20 +37,7 @@
   "contributes": {
     "taskDefinitions": [
       {
-        "type": "gml",
-        "required": [
-          "type"
-        ],
-        "properties": {
-          "task": {
-            "type": "string",
-            "description": "The type of Stitch task to run."
-          },
-          "project": {
-            "type": "string",
-            "description": "The path to the GameMaker project to run the task on."
-          }
-        }
+        "type": "stitch"
       }
     ],
     "commands": [
@@ -267,7 +254,8 @@
   "activationEvents": [
     "onLanguage:gml",
     "onCommand:stitch.openIde",
-    "onCommand:stitch.createProject"
+    "onCommand:stitch.createProject",
+    "onCommand:workbench.action.tasks.runTask"
   ],
   "devDependencies": {
     "@bscotch/gml-parser": "workspace:*",

@@ -3,7 +3,7 @@ import {
   GameMakerIde,
   GameMakerLauncher,
   GameMakerRuntime,
-  stringifyGameMakerBuildCommand,
+  computeGameMakerBuildCommand,
 } from '@bscotch/stitch-launcher';
 import { Yy, Yyp, YypResource } from '@bscotch/yy';
 import path from 'path';
@@ -84,16 +84,16 @@ export class GameMakerProject
       );
       return;
     }
-    const runner = await GameMakerLauncher.findInstalledRuntime({
+    const runtime = await GameMakerLauncher.findInstalledRuntime({
       version: release.runtime.version,
     });
-    if (!runner) {
+    if (!runtime) {
       vscode.window.showErrorMessage(
         `Could not find locally installed GameMaker Runtime v${this.ideVersion}. Please install it through the GameMaker IDE and try again.`,
       );
       return;
     }
-    return await stringifyGameMakerBuildCommand(runner, {
+    return await computeGameMakerBuildCommand(runtime, {
       project: this.yypPath.fsPath,
     });
   }
