@@ -36,7 +36,7 @@ export async function executeGameMakerRuntimeInstallCommand(
   );
 }
 
-async function computeGameMakerBuildOptions(
+export async function computeGameMakerBuildOptions(
   runtime: GameMakerRuntime,
   options: GameMakerBuildOptions & { compile?: boolean },
 ): Promise<{
@@ -107,19 +107,21 @@ export async function stringifyGameMakerBuildCommand(
   runtime: GameMakerRuntime,
   options: GameMakerBuildOptions & { compile?: boolean },
 ) {
+  const { cmd, args } = await computeGameMakerBuildCommand(runtime, options);
+  return `${cmd} ${args.join(' ')}`;
+}
+
+export async function computeGameMakerBuildCommand(
+  runtime: GameMakerRuntime,
+  options: GameMakerBuildOptions & { compile?: boolean },
+) {
   const {
     target,
     command,
     options: buildOptions,
   } = await computeGameMakerBuildOptions(runtime, options);
 
-  const { cmd, args } = computeGameMakerCommand(
-    runtime,
-    target,
-    command,
-    buildOptions,
-  );
-  return `${cmd} ${args.join(' ')}`;
+  return computeGameMakerCommand(runtime, target, command, buildOptions);
 }
 
 export function computeGameMakerCommand<W extends GameMakerCliWorker>(
