@@ -8,6 +8,7 @@ import {
 import { Yy, Yyp, YypResource } from '@bscotch/yy';
 import path from 'path';
 import vscode from 'vscode';
+import { StitchTaskDefinition, config } from './extension.config.mjs';
 import { GmlFile } from './extension.gml.mjs';
 import { GameMakerResource } from './extension.resource.mjs';
 
@@ -49,6 +50,64 @@ export class GameMakerProject
   }
 
   protected gmlFiles: Map<string, GmlFile> = new Map();
+
+  /**
+   * Generate a GML-parseable string showing how all global
+   * functions map to their scripts, in the format:
+   * `func1:script1,func2:script2,func3:script3`
+   */
+  createFunctionScriptString() {
+    const asString = [...this.resources]
+      .reduce((acc, [, resource]) => {
+        if (resource.type !== 'scripts') {
+          return acc;
+        }
+        resource.gmlFiles.forEach((gmlFile) => {
+          gmlFile.globalFunctions.forEach((func) => {
+            if (!func.name) {
+              return;
+            }
+            acc.push(`${func.name}:${resource.name}`);
+          });
+        });
+
+        return acc;
+      }, [] as string[])
+      .join(',');
+    return asString;
+  }
+
+  async asRunTask() {
+    const taskDefinition: StitchTaskDefinition = {
+      type: 'stitch',
+      task: 'run',
+      compiler: config.runCompilerDefault,
+      config:
+        config.runConfigDefault ||
+        this.yyp.configs.children[0]?.name ||
+        this.yyp.configs.name,
+      projectName: this.name,
+    };
+    const command = await this.computeRunCommand(taskDefinition);
+    if (!command) {
+      return;
+    }
+    return new vscode.Task(
+      taskDefinition,
+      vscode.TaskScope.Workspace,
+      taskDefinition.task,
+      this.name,
+      new vscode.ProcessExecution(command.cmd, command.args, {
+        cwd: this.rootPath,
+        env: {
+          VSCODE_STITCH_VERSION: vscode.extensions.getExtension(
+            'bscotch.bscotch-stitch-vscode',
+          )?.packageJSON.version,
+          VSCODE_STITCH_SCRIPT_FUNCTIONS: this.createFunctionScriptString(),
+        },
+      }),
+    );
+  }
 
   async openInIde() {
     vscode.window.showInformationMessage(
@@ -100,6 +159,8 @@ export class GameMakerProject
       project: this.yypPath.fsPath,
       config: options?.config ?? undefined,
       yyc: options?.compiler === 'yyc',
+      noCache: false,
+      quiet: true,
     });
   }
 

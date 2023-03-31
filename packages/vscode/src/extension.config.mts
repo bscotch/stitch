@@ -46,3 +46,5 @@ export class StitchConfig {
     return this.config.get<string>('task.run.defaultConfig') || null;
   }
 }
+
+export const config = new StitchConfig();

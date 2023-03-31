@@ -7,7 +7,7 @@ import os from 'os';
 import process from 'process';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
-import { StitchConfig, StitchTaskDefinition } from './extension.config.mjs';
+import { config } from './extension.config.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GmlSpec, parseSpec } from './spec.mjs';
 
@@ -40,7 +40,7 @@ export class GmlProvider
   globalHovers: Map<string, vscode.Hover> = new Map();
   globalSignatures: Map<string, vscode.SignatureHelp> = new Map();
   protected projects: GameMakerProject[] = [];
-  static config = new StitchConfig();
+  static config = config;
 
   protected constructor(readonly spec: GmlSpec) {
     for (const func of spec.functions) {
@@ -126,34 +126,19 @@ export class GmlProvider
     return project;
   }
 
+  // TODO: Make the runner use F5 somehow?
+  // TODO: Investigate GameMaker error objects/messages -- how can we get a problem matcher working?
+  // TODO: Add a problem matcher. What happens with a compile error vs. a runtime error?
   async provideTasks(): Promise<vscode.Task[]> {
     const tasks: vscode.Task[] = [];
     if (!this.projects.length || !GmlProvider.config.autoDetectTasks) {
       return tasks;
     }
     for (const project of this.projects) {
-      const taskDefinition: StitchTaskDefinition = {
-        type: 'stitch',
-        task: 'run',
-        compiler: GmlProvider.config.runCompilerDefault,
-        config:
-          GmlProvider.config.runConfigDefault ||
-          project.yyp.configs.children[0]?.name ||
-          project.yyp.configs.name,
-        projectName: project.name,
-      };
-      const command = await project.computeRunCommand(taskDefinition);
-      if (!command) continue;
-      const task = new vscode.Task(
-        taskDefinition,
-        vscode.TaskScope.Workspace,
-        taskDefinition.task,
-        `Run ${project.name}`,
-        new vscode.ProcessExecution(command.cmd, command.args, {
-          cwd: project.rootPath,
-        }),
-      );
-      tasks.push(task);
+      const task = await project.asRunTask();
+      if (task) {
+        tasks.push(task);
+      }
     }
     return tasks;
   }

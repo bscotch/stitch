@@ -11,6 +11,7 @@ export class GmlFile {
   readonly dir: string;
   readonly resourceType: YyResourceType;
   readonly resourceName: string;
+  readonly globalFunctions: Map<string, ParsedNode> = new Map();
 
   // Track any globals defined in this file
   readonly globals: Set<string> = new Set();
@@ -70,6 +71,8 @@ export class GmlFile {
         if (!node.name) {
           continue;
         }
+        this.globalFunctions.set(name, node);
+
         const paramNames = node.info.map((p) => p.name);
         this.addProjectCompletion(
           name,
