@@ -1,7 +1,7 @@
 {
   "name": "bscotch-stitch-vscode",
   "displayName": "Stitch",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
@@ -35,26 +35,37 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
-    "taskDefinitions": [
+    "colors": [
       {
-        "type": "stitch",
-        "properties": {
-          "config": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "default": null,
-            "description": "The project config to use for this task."
-          },
-          "compiler": {
-            "enum": [
-              "vm",
-              "yyc"
-            ],
-            "default": "vm",
-            "description": "Which compiler to use for this task."
-          }
+        "id": "comment.line.region.start.gml",
+        "description": "Color for the `#region` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      },
+      {
+        "id": "comment.line.region.description.start.gml",
+        "description": "Color for the text following the `#region` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      },
+      {
+        "id": "comment.line.region.end.gml",
+        "description": "Color for the `#endregion` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
+        }
+      },
+      {
+        "id": "comment.line.region.description.end.gml",
+        "description": "Color for the text following the `#endregion` keyword.",
+        "defaults": {
+          "dark": "#6A9955",
+          "light": "#6A9955"
         }
       }
     ],
@@ -238,6 +249,29 @@
         "path": "./snippets/gml.code-snippets"
       }
     ],
+    "taskDefinitions": [
+      {
+        "type": "stitch",
+        "properties": {
+          "config": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null,
+            "description": "The project config to use for this task."
+          },
+          "compiler": {
+            "enum": [
+              "vm",
+              "yyc"
+            ],
+            "default": "vm",
+            "description": "Which compiler to use for this task."
+          }
+        }
+      }
+    ],
     "views": {
       "bscotch-stitch": [
         {
@@ -256,41 +290,7 @@
           "icon": "./images/stitch-logo-mono.svg"
         }
       ]
-    },
-    "colors": [
-      {
-        "id": "comment.line.region.start.gml",
-        "description": "Color for the `#region` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.description.start.gml",
-        "description": "Color for the text following the `#region` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.end.gml",
-        "description": "Color for the `#endregion` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.description.end.gml",
-        "description": "Color for the text following the `#endregion` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      }
-    ]
+    }
   },
   "activationEvents": [
     "onLanguage:gml",
