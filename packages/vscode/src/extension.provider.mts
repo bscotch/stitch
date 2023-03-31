@@ -7,6 +7,7 @@ import os from 'os';
 import process from 'process';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
+import { StitchConfig } from './extension.config.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GmlSpec, parseSpec } from './spec.mjs';
 
@@ -45,6 +46,7 @@ export class GmlProvider
   globalHovers: Map<string, vscode.Hover> = new Map();
   globalSignatures: Map<string, vscode.SignatureHelp> = new Map();
   protected projects: GameMakerProject[] = [];
+  static config = new StitchConfig();
 
   protected constructor(readonly spec: GmlSpec) {
     for (const func of spec.functions) {
@@ -132,6 +134,9 @@ export class GmlProvider
 
   async provideTasks(): Promise<vscode.Task[]> {
     const tasks: vscode.Task[] = [];
+    if (!this.projects.length || !GmlProvider.config.autoDetectTasks) {
+      return tasks;
+    }
     const commands = new Map<
       GameMakerProject,
       | {
@@ -140,6 +145,8 @@ export class GmlProvider
         }
       | undefined
     >();
+    // TODO: Add setting for the default config
+    // TODO: Add problem matchers
     const waits = this.projects.map((project) =>
       project
         .computeRunCommand()
@@ -236,25 +243,6 @@ export class GmlProvider
     return;
   }
 
-  static get config() {
-    const config = vscode.workspace.getConfiguration('stitch');
-    return {
-      gmChannel: config.get<string | null>('gm.channel'),
-      gmlSpecPath: config.get<string | null>('gmlSpec.path'),
-      gmlSpecSource: config.get<string | null>('gmlSpec.source'),
-      templatePath:
-        config.get<string | null>('template.path') ||
-        pathy(__dirname).join(
-          '..',
-          'assets',
-          'templates',
-          'issue-template',
-          'issue-template.yyp',
-        ).absolute,
-      enableYyFormatting: config.get<boolean>('yy.format.enable'),
-    };
-  }
-
   provideDocumentFormattingEdits(
     document: vscode.TextDocument,
   ): vscode.ProviderResult<vscode.TextEdit[]> {
@@ -296,7 +284,7 @@ export class GmlProvider
     return this.globalHovers.get(word);
   }
 
-  public provideCompletionItems(
+  provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.CompletionItem[] | vscode.CompletionList {
@@ -367,7 +355,7 @@ export class GmlProvider
     }
   }
 
-  public provideSignatureHelp(
+  provideSignatureHelp(
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.SignatureHelp> {
@@ -406,7 +394,7 @@ export class GmlProvider
    * Determine the project the file belongs to,
    * and pass an update request to that project.
    */
-  public async updateFile(document: vscode.TextDocument) {
+  async updateFile(document: vscode.TextDocument) {
     const project = this.documentToProject(document);
     if (project) {
       await project.updateFile(document);
@@ -415,7 +403,7 @@ export class GmlProvider
     }
   }
 
-  public documentToProject(
+  documentToProject(
     document: vscode.TextDocument | vscode.Uri,
   ): GameMakerProject | undefined {
     if (!document) {

@@ -37,7 +37,13 @@
   "contributes": {
     "taskDefinitions": [
       {
-        "type": "stitch"
+        "type": "stitch",
+        "properties": {
+          "config": {
+            "type": "string",
+            "description": "The project config to use for this task."
+          }
+        }
       }
     ],
     "commands": [
@@ -55,6 +61,12 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.task.autoDetect": {
+          "title": "Auto-detect tasks",
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically detect tasks in the workspace, e.g. for building and running GameMaker projects. Having this active can slow down initial loading of available tasks."
+        },
         "stitch.yy.format.enable": {
           "title": "Enable yy/yyp formatting",
           "type": "boolean",
