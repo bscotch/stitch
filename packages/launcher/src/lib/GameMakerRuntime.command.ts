@@ -60,8 +60,8 @@ export async function computeGameMakerBuildOptions(
     runtimePath: runtime.directory.absolute,
     runtime: options?.yyc ? 'YYC' : 'VM',
     config: options?.config,
-    verbose: true,
-    ignorecache: true,
+    verbose: !options?.quiet,
+    ignorecache: !!options?.noCache,
     cache: tempDir.join('igor/cache').absolute,
     temp: tempDir.join('igor/temp').absolute,
     // For some reason the filename has to be there
@@ -139,10 +139,13 @@ export function computeGameMakerCommand<W extends GameMakerCliWorker>(
         return;
       }
       let arg = `--${key}`;
-      if (typeof value !== 'boolean') {
-        arg += `=${value}`;
+      if (value === false) {
+        return;
       }
-      return arg;
+      if (value === true) {
+        return arg;
+      }
+      return arg + `=${value}`;
     })
     .filter((x) => x) as string[];
   const cmd = runtime.executablePath.absolute;

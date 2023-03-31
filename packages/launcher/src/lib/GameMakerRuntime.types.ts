@@ -26,6 +26,8 @@ export interface GameMakerRunOptions extends GameMakerLogOptions {
   targetPlatform?: StitchSupportedBuilder;
   config?: string;
   yyc?: boolean;
+  noCache?: boolean;
+  quiet?: boolean;
 }
 
 export interface GameMakerBuildOptions extends GameMakerRunOptions {
