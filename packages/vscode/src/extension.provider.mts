@@ -7,7 +7,7 @@ import os from 'os';
 import process from 'process';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
-import { StitchConfig } from './extension.config.mjs';
+import { StitchConfig, StitchTaskDefinition } from './extension.config.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GmlSpec, parseSpec } from './spec.mjs';
 
@@ -23,12 +23,6 @@ const jsdocCompletions = [
 ].map(
   (tag) => new vscode.CompletionItem(tag, vscode.CompletionItemKind.Property),
 );
-
-interface StitchTaskDefinition extends vscode.TaskDefinition {
-  type: 'stitch';
-  task: 'run';
-  projectName?: string;
-}
 
 export class GmlProvider
   implements
@@ -137,30 +131,19 @@ export class GmlProvider
     if (!this.projects.length || !GmlProvider.config.autoDetectTasks) {
       return tasks;
     }
-    const commands = new Map<
-      GameMakerProject,
-      | {
-          cmd: string;
-          args: string[];
-        }
-      | undefined
-    >();
-    // TODO: Add setting for the default config
-    // TODO: Add problem matchers
-    const waits = this.projects.map((project) =>
-      project
-        .computeRunCommand()
-        .then((command) => commands.set(project, command)),
-    );
-    await Promise.all(waits);
     for (const project of this.projects) {
-      const command = commands.get(project);
-      if (!command) continue;
       const taskDefinition: StitchTaskDefinition = {
         type: 'stitch',
         task: 'run',
+        compiler: GmlProvider.config.runCompilerDefault,
+        config:
+          GmlProvider.config.runConfigDefault ||
+          project.yyp.configs.children[0]?.name ||
+          project.yyp.configs.name,
         projectName: project.name,
       };
+      const command = await project.computeRunCommand(taskDefinition);
+      if (!command) continue;
       const task = new vscode.Task(
         taskDefinition,
         vscode.TaskScope.Workspace,

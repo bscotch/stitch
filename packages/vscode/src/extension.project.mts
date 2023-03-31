@@ -74,7 +74,10 @@ export class GameMakerProject
     return runner;
   }
 
-  async computeRunCommand() {
+  async computeRunCommand(options?: {
+    config?: string | null;
+    compiler?: 'yyc' | 'vm';
+  }) {
     const release = await GameMakerRuntime.findRelease({
       ideVersion: this.ideVersion,
     });
@@ -95,6 +98,8 @@ export class GameMakerProject
     }
     return await computeGameMakerBuildCommand(runtime, {
       project: this.yypPath.fsPath,
+      config: options?.config ?? undefined,
+      yyc: options?.compiler === 'yyc',
     });
   }
 

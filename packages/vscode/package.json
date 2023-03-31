@@ -40,8 +40,20 @@
         "type": "stitch",
         "properties": {
           "config": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null,
             "description": "The project config to use for this task."
+          },
+          "compiler": {
+            "enum": [
+              "vm",
+              "yyc"
+            ],
+            "default": "vm",
+            "description": "Which compiler to use for this task."
           }
         }
       }
@@ -61,6 +73,23 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.task.run.defaultCompiler": {
+          "title": "Default compiler for run tasks",
+          "enum": [
+            "vm",
+            "yyc"
+          ],
+          "default": "vm"
+        },
+        "stitch.task.run.defaultConfig": {
+          "title": "Default project config",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "The default project config to use for the GameMaker runtime. If not set, the first child config will be used. If no configs are found, the Default will be used. This can also be set via the `config` property on a task."
+        },
         "stitch.task.autoDetect": {
           "title": "Auto-detect tasks",
           "type": "boolean",

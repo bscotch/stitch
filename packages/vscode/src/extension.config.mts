@@ -1,6 +1,13 @@
 import { pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
 
+export interface StitchTaskDefinition extends vscode.TaskDefinition {
+  type: 'stitch';
+  projectName?: string;
+  compiler?: 'vm' | 'yyc';
+  config: string | null;
+}
+
 export class StitchConfig {
   protected readonly config = vscode.workspace.getConfiguration('stitch');
   get gmChannel() {
@@ -29,5 +36,13 @@ export class StitchConfig {
   }
   get autoDetectTasks() {
     return this.config.get<boolean>('task.autoDetect') ?? true;
+  }
+  get runCompilerDefault(): 'vm' | 'yyc' {
+    return (
+      this.config.get<string>('task.run.defaultCompiler') || 'vm'
+    ).toLowerCase() as 'vm' | 'yyc';
+  }
+  get runConfigDefault(): string | null {
+    return this.config.get<string>('task.run.defaultConfig') || null;
   }
 }
