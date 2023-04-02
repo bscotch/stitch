@@ -28,5 +28,8 @@
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
     "typescript": "5.0.4"
+  },
+  "dependencies": {
+    "chevrotain": "10.5.0"
   }
 }
