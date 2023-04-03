@@ -100,7 +100,7 @@
  * - `pointer_null`
  */
 
-import { createToken, Lexer } from 'chevrotain';
+import { createToken, Lexer, tokenListToObject } from './lib.js';
 
 export const tokens = [
   //#region Whitespace and comments
@@ -204,7 +204,7 @@ export const tokens = [
   createToken({ name: 'BitwiseOrAssign', pattern: /\|=/ }),
   createToken({ name: 'BitwiseXorAssign', pattern: /\^=/ }),
   createToken({ name: 'Nullish', pattern: /\?\?/ }),
-  createToken({ name: 'Equal', pattern: /==/ }),
+  createToken({ name: 'Equals', pattern: /==/ }),
   createToken({ name: 'NotEqual', pattern: /!=/ }),
   createToken({ name: 'Increment', pattern: /\+\+/ }),
   createToken({ name: 'Decrement', pattern: /--/ }),
@@ -257,3 +257,5 @@ export const tokens = [
   //#region Identifiers
   createToken({ name: 'Identifier', pattern: /[a-zA-Z_][a-zA-Z0-9_]*/ }),
 ];
+
+export const t = tokenListToObject(tokens);
