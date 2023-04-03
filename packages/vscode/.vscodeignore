@@ -1,8 +1,8 @@
 **/*
+!assets/
 !dist/
 !images/
-!syntaxes/
-!schemas/
-!assets/
 !language-configuration.json
 !LICENSE.md
+!snippets/
+!syntaxes/
