@@ -314,7 +314,7 @@
         },
         {
           "name": "comment.block.documentation.gml",
-          "begin": "(///)\\s*(@(?:returns|self|context))\\b(?:\\s*(?:(\\{)\\s*([^}]+)\\s*(\\})))?",
+          "begin": "(///)\\s*(@(?:returns?|self|context))\\b(?:\\s*(?:(\\{)\\s*([^}]+)\\s*(\\})))?",
           "end": "$",
           "beginCaptures": {
             "1": {
