@@ -113,18 +113,23 @@ export const tokens = [
     name: 'Comment',
     pattern: /\/\/[^\n]*/,
     group: Lexer.SKIPPED,
+    start_chars_hint: ['/'],
   }),
   createToken({
     name: 'MultiLineComment',
-    pattern: /(?<!\\)\/\*[\s\S]*?(?<!\\)\*\//,
+    pattern: /(?<!\\)\/\*([\r\n]|.)*?(?<!\\)\*\//,
     group: Lexer.SKIPPED,
+    line_breaks: true,
+    start_chars_hint: ['/'],
   }),
   //#endregion
 
   //#region Strings
   createToken({
     name: 'StringLiteral',
-    pattern: /(?<!\\)".*?(?<!\\)"/,
+    pattern: /(?<!\\)"[^\r\n]*?(?<!\\)"/,
+    start_chars_hint: ['"'],
+    line_breaks: false,
   }),
   //#endregion
 
@@ -240,6 +245,7 @@ export const tokens = [
   createToken({ name: 'EndBracket', pattern: /\]/ }),
   createToken({ name: 'StartBrace', pattern: /\{/ }),
   createToken({ name: 'EndBrace', pattern: /\}/ }),
+  createToken({ name: 'Escape', pattern: /\\/ }),
   //#endregion
 
   //#region Literals
