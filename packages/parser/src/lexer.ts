@@ -1,7 +1,4 @@
 import { Lexer } from 'chevrotain';
 import { tokens } from './tokens.js';
 
-export const GmlLexer = new Lexer(tokens, {
-  ensureOptimizations: true,
-  lineTerminatorsPattern: /\r?\n/,
-});
+export const GmlLexer = new Lexer(tokens);
