@@ -18,6 +18,7 @@ export class GmlParser extends CstParser {
       $.OR([
         { ALT: () => $.SUBRULE($.ifStatement) },
         { ALT: () => $.SUBRULE($.functionStatement) },
+        { ALT: () => $.SUBRULE($.tryStatement) },
         { ALT: () => $.SUBRULE($.whileStatement) },
         { ALT: () => $.SUBRULE($.forStatement) },
         { ALT: () => $.SUBRULE($.doWhileStatement) },
@@ -32,7 +33,12 @@ export class GmlParser extends CstParser {
         { ALT: () => $.SUBRULE($.expressionStatement) },
         { ALT: () => $.SUBRULE($.macroStatement) },
         { ALT: () => $.SUBRULE($.declarationStatement) },
+        { ALT: () => $.SUBRULE($.emptyStatement) },
       ]);
+    });
+
+    $.RULE('emptyStatement', () => {
+      $.CONSUME(t.Semicolon);
     });
 
     $.RULE('enumStatement', () => {
@@ -52,7 +58,7 @@ export class GmlParser extends CstParser {
       $.CONSUME(t.EndBrace);
     });
 
-    $.RULE('functionStatement', () => {
+    $.RULE('functionExpression', () => {
       $.CONSUME(t.Function);
       $.OPTION1(() => $.CONSUME1(t.Identifier));
       $.SUBRULE1($.functionParameters);
@@ -60,11 +66,25 @@ export class GmlParser extends CstParser {
         $.OPTION(() => {
           $.CONSUME(t.Colon);
           $.CONSUME2(t.Identifier);
-          $.SUBRULE2($.functionParameters);
+          $.SUBRULE2($.functionArguments);
         });
         $.CONSUME(t.Constructor);
       });
       $.SUBRULE($.blockStatement);
+    });
+
+    $.RULE('functionStatement', () => {
+      $.SUBRULE($.functionExpression);
+      $.OPTION(() => $.CONSUME(t.Semicolon));
+    });
+
+    $.RULE('functionArguments', () => {
+      $.CONSUME(t.StartParen);
+      $.MANY_SEP({
+        SEP: t.Comma,
+        DEF: () => $.SUBRULE($.expression),
+      });
+      $.CONSUME(t.EndParen);
     });
 
     $.RULE('functionParameters', () => {
@@ -200,6 +220,7 @@ export class GmlParser extends CstParser {
     $.RULE('declaration', () => {
       $.OR([
         { ALT: () => $.CONSUME(t.Var) },
+        { ALT: () => $.CONSUME(t.Static) },
         { ALT: () => $.CONSUME(t.GlobalVar) },
       ]);
       $.CONSUME(t.Identifier);
@@ -218,37 +239,107 @@ export class GmlParser extends CstParser {
       $.OR([
         { ALT: () => $.CONSUME(t.Identifier) },
         { ALT: () => $.CONSUME(c.Literal) },
-        {
-          ALT: () => {
-            $.CONSUME1(t.StartParen);
-            $.SUBRULE($.expression);
-            $.CONSUME2(t.EndParen);
-          },
-        },
+        { ALT: () => $.SUBRULE($.arrayLiteral) },
+        { ALT: () => $.SUBRULE($.structLiteral) },
+        { ALT: () => $.SUBRULE($.parenthesisExpression) },
       ]);
     });
 
-    $.RULE('expression', () => {
-      $.SUBRULE($.binaryExpression);
-      $.SUBRULE($.functionCallExpression);
-      // Add more complex expression types here as needed
+    $.RULE('parenthesisExpression', () => {
+      $.CONSUME(t.StartParen);
+      $.SUBRULE($.expression);
+      $.CONSUME(t.EndParen);
     });
 
-    $.RULE('functionCallExpression', () => {
-      $.OPTION(() => $.CONSUME(t.New));
-      $.SUBRULE($.primaryExpression);
-      $.CONSUME(t.StartParen);
+    $.RULE('arrayLiteral', () => {
+      $.CONSUME(t.StartBracket);
       $.MANY_SEP({
         SEP: t.Comma,
         DEF: () => $.SUBRULE($.expression),
       });
-      $.CONSUME(t.EndParen);
+      $.CONSUME(t.EndBracket);
+    });
+
+    $.RULE('structLiteral', () => {
+      $.CONSUME(t.StartBrace);
+      $.MANY_SEP({
+        SEP: t.Comma,
+        DEF: () => $.SUBRULE($.structLiteralEntry),
+      });
+      $.CONSUME(t.EndBrace);
+    });
+
+    $.RULE('structLiteralEntry', () => {
+      $.CONSUME(t.Identifier);
+      $.CONSUME(t.Colon);
+      $.SUBRULE($.expression);
+    });
+
+    $.RULE('expression', () => {
+      $.OR([
+        { ALT: () => $.SUBRULE($.binaryExpression) },
+        { ALT: () => $.SUBRULE($.unaryPrefixExpression) },
+        { ALT: () => $.SUBRULE($.unarySuffixExpression) },
+        { ALT: () => $.SUBRULE($.functionCallExpression) },
+      ]);
+      // Add more complex expression types here as needed
+    });
+
+    $.RULE('functionCallExpression', () => {
+      $.MANY(() => {
+        $.CONSUME(t.New);
+      });
+      $.SUBRULE($.primaryExpression);
+      $.MANY2(() => {
+        $.OR2([
+          { ALT: () => $.SUBRULE($.boxMemberExpression) },
+          { ALT: () => $.SUBRULE($.dotMemberExpression) },
+          { ALT: () => $.SUBRULE($.functionArguments) },
+        ]);
+      });
+    });
+
+    $.RULE('boxMemberExpression', () => {
+      $.CONSUME(t.StartBracket);
+      $.SUBRULE($.expression);
+      $.CONSUME(t.EndBracket);
+    });
+
+    $.RULE('dotMemberExpression', () => {
+      $.CONSUME(t.Dot);
+      $.CONSUME(t.Identifier);
     });
 
     $.RULE('binaryExpression', () => {
       $.SUBRULE($.primaryExpression);
       $.CONSUME(c.BinaryOperator);
       $.SUBRULE2($.primaryExpression);
+    });
+
+    $.RULE('unaryPrefixExpression', () => {
+      $.SUBRULE($.primaryExpression);
+      $.CONSUME(c.UnaryPrefixOperator);
+    });
+
+    $.RULE('unarySuffixExpression', () => {
+      $.SUBRULE($.primaryExpression);
+      $.CONSUME(c.UnarySuffixOperator);
+    });
+
+    $.RULE('tryStatement', () => {
+      $.CONSUME(t.Try);
+      $.SUBRULE($.blockStatement);
+      $.OPTION1(() => {
+        $.CONSUME(t.Catch);
+        $.CONSUME(t.StartParen);
+        $.CONSUME(t.Identifier);
+        $.CONSUME(t.EndParen);
+        $.SUBRULE2($.blockStatement);
+      });
+      $.OPTION2(() => {
+        $.CONSUME(t.Finally);
+        $.SUBRULE3($.blockStatement);
+      });
     });
 
     this.performSelfAnalysis();
