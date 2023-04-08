@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import { GmlLexer } from './lexer.js';
 
-describe.only('Lexer', function () {
+describe('Lexer', function () {
   it('can lex sample files', async function () {
     const samples = await fs.readdir('./samples');
     for (const sample of samples) {
