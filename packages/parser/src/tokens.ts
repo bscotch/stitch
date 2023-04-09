@@ -57,6 +57,8 @@ export const tokens = [
     pattern: /[ \t\n\r]+/,
     group: Lexer.SKIPPED,
   }),
+
+  // TODO: Add separate parser modes for comments
   createToken({
     name: 'SingleLineComment',
     pattern: /\/\/[^\n]*/,
@@ -252,15 +254,19 @@ export const tokens = [
     pattern: /\bconstructor\b/,
     categories: [c.Keyword],
   }),
+  // TODO: Add separate parser modes for macros
   createToken({ name: 'Macro', pattern: /#macro\b/, categories: [c.Keyword] }),
+  // TODO: Add separate parser modes for regions
   createToken({
     name: 'Region',
-    pattern: /#region\b/,
+    pattern: /#region\b[^\n]*/,
+    group: Lexer.SKIPPED,
     categories: [c.Keyword, c.Comment],
   }),
   createToken({
     name: 'EndRegion',
-    pattern: /#endregion\b/,
+    pattern: /#endregion[^\n]*\b/,
+    group: Lexer.SKIPPED,
     categories: [c.Keyword, c.Comment],
   }),
   createToken({ name: 'Self', pattern: /\bself\b/, categories: [c.Keyword] }),

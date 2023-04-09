@@ -1,420 +1,467 @@
-import { CstNode, CstParser, ParserMethod } from 'chevrotain';
+import { CstNode, CstParser } from 'chevrotain';
 import { GmlLexer } from './lexer.js';
 import { c, categories, t, tokens } from './tokens.js';
 
 export class GmlParser extends CstParser {
   readonly lexer = GmlLexer;
 
+  readonly program = this.RULE('program', () => {
+    this.SUBRULE(this.statements);
+  });
+
+  optionallyConsumeSemicolon() {
+    this.OPTION9(() => this.CONSUME(t.Semicolon));
+  }
+
+  readonly statements = this.RULE('statements', () => {
+    this.MANY(() => this.SUBRULE(this.statement));
+  });
+
+  readonly statement = this.RULE('statement', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.expressionStatement) },
+      { ALT: () => this.SUBRULE(this.functionStatement) },
+      { ALT: () => this.SUBRULE(this.localVarDeclarationsStatement) },
+      { ALT: () => this.SUBRULE(this.globalVarDeclarationsStatement) },
+      { ALT: () => this.SUBRULE(this.ifStatement) },
+      { ALT: () => this.SUBRULE(this.tryStatement) },
+      { ALT: () => this.SUBRULE(this.whileStatement) },
+      { ALT: () => this.SUBRULE(this.forStatement) },
+      { ALT: () => this.SUBRULE(this.doWhileStatement) },
+      { ALT: () => this.SUBRULE(this.switchStatement) },
+      { ALT: () => this.SUBRULE(this.breakStatement) },
+      { ALT: () => this.SUBRULE(this.continueStatement) },
+      { ALT: () => this.SUBRULE(this.returnStatement) },
+      { ALT: () => this.SUBRULE(this.exitStatement) },
+      { ALT: () => this.SUBRULE(this.withStatement) },
+      { ALT: () => this.SUBRULE(this.enumStatement) },
+      { ALT: () => this.SUBRULE(this.macroStatement) },
+      { ALT: () => this.SUBRULE(this.emptyStatement) },
+    ]);
+  });
+
+  readonly returnStatement = this.RULE('returnStatement', () => {
+    this.CONSUME(t.Return);
+    this.OPTION1(() => this.SUBRULE(this.expression));
+    this.OPTION2(() => this.CONSUME(t.Semicolon));
+  });
+
+  readonly ifStatement = this.RULE('ifStatement', () => {
+    this.CONSUME(t.If);
+    this.SUBRULE(this.expression);
+    this.SUBRULE(this.blockableStatement);
+    this.MANY(() => this.SUBRULE2(this.elseIfStatement));
+    this.OPTION(() => {
+      this.SUBRULE(this.elseStatement);
+    });
+  });
+
+  readonly elseIfStatement = this.RULE('elseIfStatement', () => {
+    this.CONSUME(t.Else);
+    this.CONSUME(t.If);
+    this.SUBRULE(this.expression);
+    this.SUBRULE(this.blockableStatement);
+  });
+
+  readonly elseStatement = this.RULE('elseStatement', () => {
+    this.CONSUME(t.Else);
+    this.SUBRULE2(this.blockableStatement);
+  });
+
+  readonly blockableStatement = this.RULE('blockableStatement', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.statement) },
+      { ALT: () => this.SUBRULE(this.blockStatement) },
+    ]);
+  });
+
+  readonly blockStatement = this.RULE('blockStatement', () => {
+    this.CONSUME(t.StartBrace);
+    this.MANY(() => this.SUBRULE(this.statement));
+    this.CONSUME(t.EndBrace);
+  });
+
+  readonly expressionStatement = this.RULE('expressionStatement', () => {
+    this.SUBRULE(this.expression);
+    this.optionallyConsumeSemicolon();
+  });
+
+  readonly expression = this.RULE('expression', () => {
+    this.SUBRULE(this.primaryExpression);
+    this.OPTION(() => {
+      this.OR([
+        { ALT: () => this.SUBRULE(this.variableAssignment) },
+        {
+          ALT: () =>
+            this.AT_LEAST_ONE(() => this.SUBRULE2(this.binaryExpression)),
+        },
+        { ALT: () => this.SUBRULE(this.ternaryExpression) },
+      ]);
+    });
+  });
+
+  readonly binaryExpression = this.RULE('binaryExpression', () => {
+    this.CONSUME(c.BinaryOperator);
+    this.SUBRULE(this.primaryExpression);
+  });
+
+  readonly ternaryExpression = this.RULE('ternaryExpression', () => {
+    this.CONSUME(t.QuestionMark);
+    this.SUBRULE(this.assignmentRightHandSide);
+    this.CONSUME(t.Colon);
+    this.SUBRULE2(this.assignmentRightHandSide);
+  });
+
+  readonly primaryExpression = this.RULE('primaryExpression', () => {
+    this.OPTION1(() => this.CONSUME(c.UnaryPrefixOperator));
+    this.OR1([
+      { ALT: () => this.CONSUME(c.Literal) },
+      { ALT: () => this.SUBRULE(this.identifierAccessor) },
+      { ALT: () => this.SUBRULE(this.parenthesizedExpression) },
+      { ALT: () => this.SUBRULE(this.arrayLiteral) },
+    ]);
+    this.OPTION2(() => this.CONSUME(c.UnarySuffixOperator));
+  });
+
+  readonly identifierAccessor = this.RULE('identifierAccessor', () => {
+    this.CONSUME(t.Identifier);
+    this.MANY(() => {
+      this.SUBRULE(this.expressionSuffixes);
+    });
+  });
+
+  readonly parenthesizedExpression = this.RULE(
+    'parenthesizedExpression',
+    () => {
+      this.CONSUME(t.StartParen);
+      this.SUBRULE(this.expression);
+      this.CONSUME(t.EndParen);
+    },
+  );
+
+  readonly expressionSuffixes = this.RULE('expressionSuffixes', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.arrayAccessSuffix) },
+      { ALT: () => this.SUBRULE(this.structAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.listAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.mapAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.gridAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.dotAccessSuffix) },
+      { ALT: () => this.SUBRULE(this.functionArguments) },
+    ]);
+  });
+
+  readonly dotAccessSuffix = this.RULE('dotAccessSuffix', () => {
+    this.CONSUME(t.Dot);
+    this.CONSUME(t.Identifier);
+  });
+
+  readonly arrayAccessSuffix = this.RULE('arrayAccessSuffix', () => {
+    this.CONSUME(t.StartBracket);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly structAccessorSuffix = this.RULE('structAccessSuffix', () => {
+    this.CONSUME(t.StructAccessorStart);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly listAccessorSuffix = this.RULE('listAccessSuffix', () => {
+    this.CONSUME(t.DsListAccessorStart);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly mapAccessorSuffix = this.RULE('mapAccessSuffix', () => {
+    this.CONSUME(t.DsMapAccessorStart);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly gridAccessorSuffix = this.RULE('gridAccessSuffix', () => {
+    this.CONSUME(t.DsGridAccessorStart);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly functionArguments = this.RULE('functionArguments', () => {
+    this.CONSUME(t.StartParen);
+    this.MANY_SEP({
+      SEP: t.Comma,
+      DEF: () => {
+        this.OR([
+          { ALT: () => this.SUBRULE(this.assignmentRightHandSide) },
+          { ALT: () => this.SUBRULE(this.emptyArgument) },
+        ]);
+      },
+    });
+    this.CONSUME(t.EndParen);
+  });
+
+  readonly emptyArgument = this.RULE('emptyArgument', () => {
+    this.CONSUME(t.Comma);
+  });
+
+  readonly emptyStatement = this.RULE('emptyStatement', () => {
+    this.CONSUME(t.Semicolon);
+  });
+
+  readonly enumStatement = this.RULE('enumStatement', () => {
+    this.CONSUME(t.Enum);
+    this.CONSUME1(t.Identifier);
+    this.CONSUME(t.StartBrace);
+    this.MANY_SEP({
+      SEP: t.Comma,
+      DEF: () => {
+        this.CONSUME2(t.Identifier);
+        this.OPTION(() => {
+          this.CONSUME(t.Assign);
+          this.CONSUME(c.NumericLiteral);
+        });
+      },
+    });
+    this.CONSUME(t.EndBrace);
+  });
+
+  readonly constructorSuffix = this.RULE('constructorSuffix', () => {
+    this.OPTION(() => {
+      this.CONSUME(t.Colon);
+      this.CONSUME(t.Identifier);
+      this.SUBRULE(this.functionArguments);
+    });
+    this.CONSUME(t.Constructor);
+  });
+
+  readonly functionExpression = this.RULE('functionExpression', () => {
+    this.CONSUME(t.Function);
+    this.OPTION1(() => this.CONSUME1(t.Identifier));
+    this.SUBRULE1(this.functionParameters);
+    this.OPTION2(() => {
+      this.SUBRULE2(this.constructorSuffix);
+    });
+    this.SUBRULE(this.blockStatement);
+  });
+
+  readonly functionStatement = this.RULE('functionStatement', () => {
+    this.SUBRULE(this.functionExpression);
+    this.OPTION(() => this.CONSUME(t.Semicolon));
+  });
+
+  readonly functionParameters = this.RULE('functionParameters', () => {
+    this.CONSUME(t.StartParen);
+    this.MANY_SEP({
+      SEP: t.Comma,
+      DEF: () => this.SUBRULE(this.functionParameter),
+    });
+    this.CONSUME(t.EndParen);
+  });
+
+  readonly functionParameter = this.RULE('functionParameter', () => {
+    this.CONSUME(t.Identifier);
+    this.OPTION(() => {
+      this.CONSUME(t.Assign);
+      this.SUBRULE(this.assignmentRightHandSide);
+    });
+  });
+
+  readonly macroStatement = this.RULE('macroStatement', () => {
+    this.CONSUME(t.Macro);
+    this.CONSUME(t.Identifier);
+    this.MANY_SEP({
+      SEP: t.Escape,
+      DEF: () => this.SUBRULE(this.assignmentRightHandSide),
+    });
+  });
+
+  readonly forStatement = this.RULE('forStatement', () => {
+    this.CONSUME(t.For);
+    this.CONSUME(t.StartParen);
+    this.OPTION1(() => this.SUBRULE1(this.localVarDeclarations));
+    this.CONSUME2(t.Semicolon);
+    this.OPTION2(() => this.SUBRULE2(this.expression));
+    this.CONSUME3(t.Semicolon);
+    this.OPTION3(() => this.SUBRULE3(this.expression));
+    this.CONSUME(t.EndParen);
+    this.SUBRULE(this.blockableStatement);
+  });
+
+  readonly globalVarDeclarationsStatement = this.RULE(
+    'globalVarDeclarationsStatement',
+    () => {
+      this.SUBRULE(this.globalVarDeclarations);
+      this.optionallyConsumeSemicolon();
+    },
+  );
+
+  readonly globalVarDeclarations = this.RULE('globalVarDeclarations', () => {
+    this.CONSUME(t.GlobalVar);
+    this.AT_LEAST_ONE_SEP({
+      SEP: t.Comma,
+      DEF: () => {
+        this.SUBRULE(this.globalVarDeclaration);
+      },
+    });
+  });
+
+  readonly globalVarDeclaration = this.RULE('globalVarDeclaration', () => {
+    this.CONSUME(t.Identifier);
+  });
+
+  readonly localVarDeclarationsStatement = this.RULE(
+    'localVarDeclarationsStatement',
+    () => {
+      this.SUBRULE(this.localVarDeclarations);
+      this.optionallyConsumeSemicolon();
+    },
+  );
+
+  readonly localVarDeclarations = this.RULE('localVarDeclarations', () => {
+    this.CONSUME(t.Var);
+    this.AT_LEAST_ONE_SEP({
+      SEP: t.Comma,
+      DEF: () => {
+        this.SUBRULE(this.localVarDeclaration);
+      },
+    });
+  });
+
+  readonly localVarDeclaration = this.RULE('localVarDeclaration', () => {
+    this.CONSUME(t.Identifier);
+    this.OPTION(() => {
+      this.CONSUME(t.Assign);
+      this.SUBRULE(this.assignmentRightHandSide);
+    });
+  });
+
+  readonly variableAssignment = this.RULE('variableAssignment', () => {
+    this.CONSUME(c.AssignmentOperator);
+    this.SUBRULE(this.assignmentRightHandSide);
+  });
+
+  readonly assignmentRightHandSide = this.RULE(
+    'assignmentRightHandSide',
+    () => {
+      this.OR([
+        { ALT: () => this.SUBRULE(this.expression) },
+        { ALT: () => this.SUBRULE(this.structLiteral) },
+        { ALT: () => this.SUBRULE(this.functionExpression) },
+      ]);
+    },
+  );
+
+  readonly arrayLiteral = this.RULE('arrayLiteral', () => {
+    this.CONSUME(t.StartBracket);
+    this.MANY_SEP({
+      SEP: t.Comma,
+      DEF: () => this.SUBRULE(this.expression),
+    });
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly structLiteral = this.RULE('structLiteral', () => {
+    this.CONSUME(t.StartBrace);
+    this.OPTION1(() => {
+      this.SUBRULE1(this.structLiteralEntry);
+      this.MANY(() => {
+        this.CONSUME1(t.Comma);
+        this.SUBRULE2(this.structLiteralEntry);
+      });
+      this.OPTION2(() => this.CONSUME2(t.Comma));
+    });
+    this.CONSUME(t.EndBrace);
+  });
+
+  readonly structLiteralEntry = this.RULE('structLiteralEntry', () => {
+    this.CONSUME(t.Identifier);
+    this.CONSUME(t.Colon);
+    this.SUBRULE(this.assignmentRightHandSide);
+  });
+
+  readonly whileStatement = this.RULE('whileStatement', () => {
+    this.CONSUME(t.While);
+    this.SUBRULE(this.expression);
+    this.SUBRULE(this.blockableStatement);
+  });
+
+  readonly doWhileStatement = this.RULE('doWhileStatement', () => {
+    this.CONSUME(t.Do);
+    this.SUBRULE(this.blockableStatement);
+    this.CONSUME(t.While);
+    this.SUBRULE(this.expression);
+  });
+
+  readonly switchStatement = this.RULE('switchStatement', () => {
+    this.CONSUME(t.Switch);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.StartBrace);
+    this.MANY(() => this.SUBRULE(this.caseStatement));
+    this.OPTION(() => this.SUBRULE(this.defaultStatement));
+    this.CONSUME(t.EndBrace);
+  });
+
+  readonly caseStatement = this.RULE('caseStatement', () => {
+    this.CONSUME(t.Case);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.Colon);
+    this.SUBRULE(this.statements);
+  });
+
+  readonly defaultStatement = this.RULE('defaultStatement', () => {
+    this.CONSUME(t.Default);
+    this.CONSUME(t.Colon);
+    this.SUBRULE(this.statements);
+  });
+
+  readonly breakStatement = this.RULE('breakStatement', () => {
+    this.CONSUME(t.Break);
+    this.optionallyConsumeSemicolon();
+  });
+
+  readonly continueStatement = this.RULE('continueStatement', () => {
+    this.CONSUME(t.Continue);
+    this.optionallyConsumeSemicolon();
+  });
+
+  readonly exitStatement = this.RULE('exitStatement', () => {
+    this.CONSUME(t.Exit);
+    this.optionallyConsumeSemicolon();
+  });
+
+  readonly withStatement = this.RULE('withStatement', () => {
+    this.CONSUME(t.With);
+    this.SUBRULE(this.expression);
+    this.SUBRULE(this.blockableStatement);
+  });
+
+  readonly tryStatement = this.RULE('tryStatement', () => {
+    this.CONSUME(t.Try);
+    this.SUBRULE(this.blockStatement);
+    this.OPTION1(() => {
+      this.CONSUME(t.Catch);
+      this.CONSUME(t.StartParen);
+      this.CONSUME(t.Identifier);
+      this.CONSUME(t.EndParen);
+      this.SUBRULE2(this.blockStatement);
+    });
+    this.OPTION2(() => {
+      this.CONSUME(t.Finally);
+      this.SUBRULE3(this.blockStatement);
+    });
+  });
+
   constructor() {
     super([...tokens, ...categories], {
       nodeLocationTracking: 'full',
     });
-
-    const $ = this as this & Record<string, ParserMethod<any, CstNode>>;
-
-    $.RULE('program', () => {
-      $.MANY(() => $.SUBRULE($.statement));
-    });
-
-    $.RULE('statement', () => {
-      $.OR([
-        { ALT: () => $.SUBRULE($.expressionStatement) },
-        //     { ALT: () => $.SUBRULE($.functionStatement) },
-        //     { ALT: () => $.SUBRULE($.ifStatement) },
-        //     { ALT: () => $.SUBRULE($.tryStatement) },
-        //     { ALT: () => $.SUBRULE($.whileStatement) },
-        //     { ALT: () => $.SUBRULE($.forStatement) },
-        //     { ALT: () => $.SUBRULE($.doWhileStatement) },
-        //     { ALT: () => $.SUBRULE($.switchStatement) },
-        //     { ALT: () => $.SUBRULE($.breakStatement) },
-        //     { ALT: () => $.SUBRULE($.continueStatement) },
-        //     { ALT: () => $.SUBRULE($.returnStatement) },
-        //     { ALT: () => $.SUBRULE($.exitStatement) },
-        //     { ALT: () => $.SUBRULE($.withStatement) },
-        //     { ALT: () => $.SUBRULE($.enumStatement) },
-        //     { ALT: () => $.SUBRULE($.blockStatement) },
-        //     { ALT: () => $.SUBRULE($.expressionStatement) },
-        //     { ALT: () => $.SUBRULE($.macroStatement) },
-        //     { ALT: () => $.SUBRULE($.declarationStatement) },
-        { ALT: () => $.SUBRULE($.emptyStatement) },
-      ]);
-    });
-
-    $.RULE('expressionStatement', () => {
-      $.SUBRULE($.expression);
-      $.OPTION(() => $.CONSUME(t.Semicolon));
-    });
-
-    $.RULE('expression', () => {
-      $.SUBRULE($.primaryExpression);
-      $.MANY(() => {
-        $.CONSUME(c.BinaryOperator);
-        $.SUBRULE2($.primaryExpression);
-      });
-    });
-
-    $.RULE('primaryExpression', () => {
-      $.OPTION1(() => $.CONSUME(c.UnaryPrefixOperator));
-      $.OR1([
-        { ALT: () => $.CONSUME(c.Literal) },
-        {
-          ALT: () => {
-            $.CONSUME(t.Identifier);
-            $.MANY(() => {
-              $.OR2([
-                { ALT: () => $.SUBRULE($.arrayAccessSuffix) },
-                { ALT: () => $.SUBRULE($.functionCallSuffix) },
-              ]);
-            });
-          },
-        },
-        { ALT: () => $.SUBRULE($.parenthesizedExpression) },
-      ]);
-      $.OPTION2(() => $.CONSUME(c.UnarySuffixOperator));
-    });
-
-    $.RULE('parenthesizedExpression', () => {
-      $.CONSUME(t.StartParen);
-      $.SUBRULE($.expression);
-      $.CONSUME(t.EndParen);
-    });
-
-    $.RULE('arrayAccessSuffix', () => {
-      $.CONSUME(t.StartBracket);
-      $.SUBRULE($.expression);
-      $.CONSUME(t.EndBracket);
-    });
-
-    $.RULE('functionCallSuffix', () => {
-      $.CONSUME(t.StartParen);
-      $.MANY_SEP({
-        SEP: t.Comma,
-        DEF: () => {
-          $.OR([
-            { ALT: () => $.SUBRULE($.expression) },
-            { ALT: () => $.SUBRULE($.emptyArgument) },
-          ]);
-        },
-      });
-      $.CONSUME(t.EndParen);
-    });
-
-    $.RULE('emptyArgument', () => {
-      $.CONSUME(t.Comma);
-    });
-
-    $.RULE('emptyStatement', () => {
-      $.CONSUME(t.Semicolon);
-    });
-
-    // $.RULE('enumStatement', () => {
-    //   $.CONSUME(t.Enum);
-    //   $.CONSUME1(t.Identifier);
-    //   $.CONSUME(t.StartBrace);
-    //   $.MANY_SEP({
-    //     SEP: t.Comma,
-    //     DEF: () => {
-    //       $.CONSUME2(t.Identifier);
-    //       $.OPTION(() => {
-    //         $.CONSUME(t.Assign);
-    //         $.CONSUME(c.NumericLiteral);
-    //       });
-    //     },
-    //   });
-    //   $.CONSUME(t.EndBrace);
-    // });
-
-    // $.RULE('functionExpression', () => {
-    //   $.CONSUME(t.Function);
-    //   $.OPTION1(() => $.CONSUME1(t.Identifier));
-    //   $.SUBRULE1($.functionParameters);
-    //   $.OPTION2(() => {
-    //     $.OPTION(() => {
-    //       $.CONSUME(t.Colon);
-    //       $.CONSUME2(t.Identifier);
-    //       $.SUBRULE2($.functionArguments);
-    //     });
-    //     $.CONSUME(t.Constructor);
-    //   });
-    //   $.SUBRULE($.blockStatement);
-    // });
-
-    // $.RULE('functionStatement', () => {
-    //   $.SUBRULE($.functionExpression);
-    //   $.OPTION(() => $.CONSUME(t.Semicolon));
-    // });
-
-    // $.RULE('functionArguments', () => {
-    //   $.CONSUME(t.StartParen);
-    //   $.MANY_SEP({
-    //     SEP: t.Comma,
-    //     DEF: () => $.SUBRULE($.expression),
-    //   });
-    //   $.CONSUME(t.EndParen);
-    // });
-
-    // $.RULE('functionParameters', () => {
-    //   $.CONSUME(t.StartParen);
-    //   $.MANY_SEP({
-    //     SEP: t.Comma,
-    //     DEF: () => $.SUBRULE($.functionParameter),
-    //   });
-    //   $.CONSUME(t.EndParen);
-    // });
-
-    // $.RULE('functionParameter', () => {
-    //   $.CONSUME(t.Identifier);
-    //   $.OPTION(() => {
-    //     $.CONSUME(t.Assign);
-    //     $.SUBRULE($.expression);
-    //   });
-    // });
-
-    // $.RULE('macroStatement', () => {
-    //   $.CONSUME(t.Macro);
-    //   $.CONSUME(t.Identifier);
-    //   $.MANY_SEP({
-    //     SEP: t.Escape,
-    //     DEF: () => $.SUBRULE($.expression),
-    //   });
-    // });
-
-    // $.RULE('expressionStatement', () => {
-    //   $.SUBRULE($.expression);
-    //   $.OPTION(() => $.CONSUME(t.Semicolon));
-    // });
-
-    // $.RULE('ifStatement', () => {
-    //   $.CONSUME(t.If);
-    //   $.SUBRULE($.expression);
-    //   $.SUBRULE($.statement);
-    //   $.MANY(() => $.SUBRULE2($.elseIfStatement));
-    //   $.OPTION(() => {
-    //     $.CONSUME(t.Else);
-    //     $.SUBRULE2($.statement);
-    //   });
-    // });
-
-    // $.RULE('elseIfStatement', () => {
-    //   $.CONSUME(t.Else);
-    //   $.CONSUME(t.If);
-    //   $.SUBRULE($.expression);
-    //   $.SUBRULE($.statement);
-    // });
-
-    // $.RULE('whileStatement', () => {
-    //   $.CONSUME(t.While);
-    //   $.SUBRULE($.expression);
-    //   $.SUBRULE($.statement);
-    // });
-
-    // $.RULE('forStatement', () => {
-    //   $.CONSUME(t.For);
-    //   $.CONSUME(t.StartParen);
-    //   $.OPTION1(() => $.SUBRULE1($.expression));
-    //   $.CONSUME2(t.Semicolon);
-    //   $.OPTION2(() => $.SUBRULE2($.expression));
-    //   $.CONSUME3(t.Semicolon);
-    //   $.OPTION3(() => $.SUBRULE3($.expression));
-    //   $.CONSUME(t.EndParen);
-    //   $.SUBRULE($.statement);
-    // });
-
-    // $.RULE('doWhileStatement', () => {
-    //   $.CONSUME(t.Do);
-    //   $.SUBRULE($.statement);
-    //   $.CONSUME(t.While);
-    //   $.SUBRULE($.expression);
-    //   $.OPTION(() => $.CONSUME(t.Semicolon));
-    // });
-
-    // $.RULE('switchStatement', () => {
-    //   $.CONSUME(t.Switch);
-    //   $.SUBRULE($.expression);
-    //   $.CONSUME(t.StartBrace);
-    //   $.MANY(() => $.SUBRULE($.caseStatement));
-    //   $.OPTION(() => $.SUBRULE($.defaultStatement));
-    //   $.CONSUME(t.EndBrace);
-    // });
-
-    // $.RULE('caseStatement', () => {
-    //   $.CONSUME(t.Case);
-    //   $.SUBRULE($.expression);
-    //   $.CONSUME(t.Colon);
-    //   $.SUBRULE($.statement);
-    // });
-
-    // $.RULE('defaultStatement', () => {
-    //   $.CONSUME(t.Default);
-    //   $.CONSUME(t.Colon);
-    //   $.SUBRULE($.statement);
-    // });
-
-    // $.RULE('breakStatement', () => {
-    //   $.CONSUME(t.Break);
-    //   $.OPTION(() => $.CONSUME(t.Semicolon));
-    // });
-
-    // $.RULE('continueStatement', () => {
-    //   $.CONSUME(t.Continue);
-    //   $.OPTION(() => $.CONSUME(t.Semicolon));
-    // });
-
-    // $.RULE('returnStatement', () => {
-    //   $.CONSUME(t.Return);
-    //   $.OPTION1(() => $.SUBRULE($.expression));
-    //   $.OPTION2(() => $.CONSUME(t.Semicolon));
-    // });
-
-    // $.RULE('exitStatement', () => {
-    //   $.CONSUME(t.Exit);
-    //   $.OPTION(() => $.CONSUME(t.Semicolon));
-    // });
-
-    // $.RULE('withStatement', () => {
-    //   $.CONSUME(t.With);
-    //   $.SUBRULE($.expression);
-    //   $.SUBRULE($.statement);
-    // });
-
-    // $.RULE('blockStatement', () => {
-    //   $.CONSUME(t.StartBrace);
-    //   $.MANY(() => $.SUBRULE($.statement));
-    //   $.CONSUME(t.EndBrace);
-    // });
-
-    // $.RULE('declaration', () => {
-    //   $.OR([
-    //     { ALT: () => $.CONSUME(t.Var) },
-    //     { ALT: () => $.CONSUME(t.Static) },
-    //     { ALT: () => $.CONSUME(t.GlobalVar) },
-    //   ]);
-    //   $.CONSUME(t.Identifier);
-    //   $.OPTION1(() => {
-    //     $.CONSUME(c.AssignmentOperator);
-    //     $.SUBRULE($.expression);
-    //   });
-    // });
-
-    // $.RULE('declarationStatement', () => {
-    //   $.SUBRULE($.declaration);
-    //   $.OPTION2(() => $.CONSUME(t.Semicolon));
-    // });
-
-    // $.RULE('primaryExpression', () => {
-    //   $.OR([
-    //     { ALT: () => $.CONSUME(t.Identifier) },
-    //     { ALT: () => $.CONSUME(c.Literal) },
-    //     { ALT: () => $.SUBRULE($.arrayLiteral) },
-    //     { ALT: () => $.SUBRULE($.structLiteral) },
-    //     { ALT: () => $.SUBRULE($.parenthesisExpression) },
-    //   ]);
-    // });
-
-    // $.RULE('parenthesisExpression', () => {
-    //   $.CONSUME(t.StartParen);
-    //   $.SUBRULE($.primaryExpression);
-    //   $.CONSUME(t.EndParen);
-    // });
-
-    // $.RULE('arrayLiteral', () => {
-    //   $.CONSUME(t.StartBracket);
-    //   $.MANY_SEP({
-    //     SEP: t.Comma,
-    //     DEF: () => $.SUBRULE($.expression),
-    //   });
-    //   $.CONSUME(t.EndBracket);
-    // });
-
-    // $.RULE('structLiteral', () => {
-    //   $.CONSUME(t.StartBrace);
-    //   $.MANY_SEP({
-    //     SEP: t.Comma,
-    //     DEF: () => $.SUBRULE($.structLiteralEntry),
-    //   });
-    //   $.CONSUME(t.EndBrace);
-    // });
-
-    // $.RULE('structLiteralEntry', () => {
-    //   $.CONSUME(t.Identifier);
-    //   $.CONSUME(t.Colon);
-    //   $.SUBRULE($.expression);
-    // });
-
-    // $.RULE('expression', () => {
-    //   $.OR([
-    //     { ALT: () => $.SUBRULE($.binaryExpression) },
-    //     { ALT: () => $.SUBRULE($.unaryPrefixExpression) },
-    //     { ALT: () => $.SUBRULE($.unarySuffixExpression) },
-    //     { ALT: () => $.SUBRULE($.functionCallExpression) },
-    //   ]);
-    //   // Add more complex expression types here as needed
-    // });
-
-    // $.RULE('functionCallExpression', () => {
-    //   $.MANY(() => {
-    //     $.CONSUME(t.New);
-    //   });
-    //   $.SUBRULE($.primaryExpression);
-    //   $.MANY2(() => {
-    //     $.OR2([
-    //       { ALT: () => $.SUBRULE($.boxMemberExpression) },
-    //       { ALT: () => $.SUBRULE($.dotMemberExpression) },
-    //       { ALT: () => $.SUBRULE($.functionArguments) },
-    //     ]);
-    //   });
-    // });
-
-    // $.RULE('boxMemberExpression', () => {
-    //   $.CONSUME(t.StartBracket);
-    //   $.SUBRULE($.expression);
-    //   $.CONSUME(t.EndBracket);
-    // });
-
-    // $.RULE('dotMemberExpression', () => {
-    //   $.CONSUME(t.Dot);
-    //   $.CONSUME(t.Identifier);
-    // });
-
-    // $.RULE('binaryExpression', () => {
-    //   $.SUBRULE($.primaryExpression);
-    //   $.CONSUME(c.BinaryOperator);
-    //   $.SUBRULE2($.primaryExpression);
-    // });
-
-    // $.RULE('unaryPrefixExpression', () => {
-    //   $.SUBRULE($.primaryExpression);
-    //   $.CONSUME(c.UnaryPrefixOperator);
-    // });
-
-    // $.RULE('unarySuffixExpression', () => {
-    //   $.SUBRULE($.primaryExpression);
-    //   $.CONSUME(c.UnarySuffixOperator);
-    // });
-
-    // $.RULE('tryStatement', () => {
-    //   $.CONSUME(t.Try);
-    //   $.SUBRULE($.blockStatement);
-    //   $.OPTION1(() => {
-    //     $.CONSUME(t.Catch);
-    //     $.CONSUME(t.StartParen);
-    //     $.CONSUME(t.Identifier);
-    //     $.CONSUME(t.EndParen);
-    //     $.SUBRULE2($.blockStatement);
-    //   });
-    //   $.OPTION2(() => {
-    //     $.CONSUME(t.Finally);
-    //     $.SUBRULE3($.blockStatement);
-    //   });
-    // });
 
     this.performSelfAnalysis();
   }
 
   parse(code: string): CstNode | undefined {
     this.input = this.lexer.tokenize(code).tokens;
-    // @ts-expect-error
-    return this['program']();
+    return this.program();
   }
 
   static jsonify(cst: CstNode): string {
