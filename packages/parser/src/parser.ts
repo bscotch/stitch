@@ -17,8 +17,27 @@ export class GmlParser extends CstParser {
     });
 
     $.RULE('statement', () => {
-      // Start by trying to parse increasingly complex expression statements
-      $.OR([{ ALT: () => $.SUBRULE($.expressionStatement) }]);
+      $.OR([
+        { ALT: () => $.SUBRULE($.expressionStatement) },
+        //     { ALT: () => $.SUBRULE($.functionStatement) },
+        //     { ALT: () => $.SUBRULE($.ifStatement) },
+        //     { ALT: () => $.SUBRULE($.tryStatement) },
+        //     { ALT: () => $.SUBRULE($.whileStatement) },
+        //     { ALT: () => $.SUBRULE($.forStatement) },
+        //     { ALT: () => $.SUBRULE($.doWhileStatement) },
+        //     { ALT: () => $.SUBRULE($.switchStatement) },
+        //     { ALT: () => $.SUBRULE($.breakStatement) },
+        //     { ALT: () => $.SUBRULE($.continueStatement) },
+        //     { ALT: () => $.SUBRULE($.returnStatement) },
+        //     { ALT: () => $.SUBRULE($.exitStatement) },
+        //     { ALT: () => $.SUBRULE($.withStatement) },
+        //     { ALT: () => $.SUBRULE($.enumStatement) },
+        //     { ALT: () => $.SUBRULE($.blockStatement) },
+        //     { ALT: () => $.SUBRULE($.expressionStatement) },
+        //     { ALT: () => $.SUBRULE($.macroStatement) },
+        //     { ALT: () => $.SUBRULE($.declarationStatement) },
+        { ALT: () => $.SUBRULE($.emptyStatement) },
+      ]);
     });
 
     $.RULE('expressionStatement', () => {
@@ -84,32 +103,9 @@ export class GmlParser extends CstParser {
       $.CONSUME(t.Comma);
     });
 
-    // this.RULE('statement', () => {
-    //   $.OR([
-    //     { ALT: () => $.SUBRULE($.ifStatement) },
-    //     { ALT: () => $.SUBRULE($.functionStatement) },
-    //     { ALT: () => $.SUBRULE($.tryStatement) },
-    //     { ALT: () => $.SUBRULE($.whileStatement) },
-    //     { ALT: () => $.SUBRULE($.forStatement) },
-    //     { ALT: () => $.SUBRULE($.doWhileStatement) },
-    //     { ALT: () => $.SUBRULE($.switchStatement) },
-    //     { ALT: () => $.SUBRULE($.breakStatement) },
-    //     { ALT: () => $.SUBRULE($.continueStatement) },
-    //     { ALT: () => $.SUBRULE($.returnStatement) },
-    //     { ALT: () => $.SUBRULE($.exitStatement) },
-    //     { ALT: () => $.SUBRULE($.withStatement) },
-    //     { ALT: () => $.SUBRULE($.enumStatement) },
-    //     { ALT: () => $.SUBRULE($.blockStatement) },
-    //     { ALT: () => $.SUBRULE($.expressionStatement) },
-    //     { ALT: () => $.SUBRULE($.macroStatement) },
-    //     { ALT: () => $.SUBRULE($.declarationStatement) },
-    //     { ALT: () => $.SUBRULE($.emptyStatement) },
-    //   ]);
-    // });
-
-    // $.RULE('emptyStatement', () => {
-    //   $.CONSUME(t.Semicolon);
-    // });
+    $.RULE('emptyStatement', () => {
+      $.CONSUME(t.Semicolon);
+    });
 
     // $.RULE('enumStatement', () => {
     //   $.CONSUME(t.Enum);

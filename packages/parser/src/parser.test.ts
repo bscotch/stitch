@@ -40,6 +40,7 @@ describe('Parser', function () {
       const filePath = `./samples/${sample}`;
       const code = await fs.readFile(filePath, 'utf-8');
       const cst = parser.parse(code);
+      expect(cst).to.exist;
       console.log(
         parser.errors.map((e) => ({
           msg: e.message,
@@ -48,7 +49,8 @@ describe('Parser', function () {
           token: e.token.image,
         })),
       );
-      console.log(cst);
+      expect(parser.errors).to.have.length(0);
+      // console.log(cst);
     }
   });
 });
