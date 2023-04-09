@@ -329,21 +329,6 @@ function olympus_spawn_awaiter(function_to_wait_for, context = self){
 }
 
 #region Macros
-/**
-@desc Calls the resolution function of the current test
-@arg {*} [args...] Can take any arguments
- */
-#macro olympus_test_resolve \
-var olympus_resolve_callback_handle = _olympus_get_resolve_function_handle(); \
-olympus_resolve_callback_handle
-
-/**
-@desc Calls the rejection function of the current test
-@arg {*} [args...] Can take any arguments
- */
-#macro olympus_test_reject \
-var olympus_reject_callback_handle = _olympus_get_reject_function_handle(); \
-olympus_reject_callback_handle
 
 
 /** 

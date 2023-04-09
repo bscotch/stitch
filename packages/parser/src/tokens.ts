@@ -239,7 +239,15 @@ export const tokens = [
     pattern: /\bstatic\b/,
     categories: [c.Keyword],
   }),
-  createToken({ name: 'New', pattern: /\bnew\b/, categories: [c.Keyword] }),
+  createToken({
+    name: 'New',
+    pattern: /\bnew\b/,
+    categories: [
+      c.Keyword,
+      c.UnaryPrefixOperator,
+      c.UnaryPrefixOperatorNotPlusMinus,
+    ],
+  }),
   createToken({
     name: 'Delete',
     pattern: /\bdelete\b/,
@@ -469,7 +477,6 @@ export const tokens = [
   createToken({ name: 'Comma', pattern: /,/, categories: [c.Separators] }),
   createToken({ name: 'Semicolon', pattern: /;/, categories: [c.Separators] }),
   createToken({ name: 'Colon', pattern: /:/ }),
-  createToken({ name: 'Dot', pattern: /\./, categories: [c.Separators] }),
   createToken({ name: 'QuestionMark', pattern: /\?/ }),
   createToken({
     name: 'StartParen',
@@ -500,7 +507,7 @@ export const tokens = [
 
   createToken({
     name: 'Real',
-    pattern: /\d[\d_]*(\.[\d_]+)?/,
+    pattern: /(\d[\d_]*(\.\d[\d_]*)?)|\.\d[\d_]*/,
     categories: [c.Literal, c.NumericLiteral],
   }),
   createToken({
@@ -514,8 +521,11 @@ export const tokens = [
     categories: [c.Literal, c.NumericLiteral],
   }),
 
+  // Dot-accessor needs to be late so it doesn't conflict with decimals
+  createToken({ name: 'Dot', pattern: /\./, categories: [c.Separators] }),
+
   //#region Identifiers
-  createToken({ name: 'Identifier', pattern: /[a-zA-Z_][a-zA-Z0-9_]*/ }),
+  createToken({ name: 'Identifier', pattern: /\b[a-zA-Z_][a-zA-Z0-9_]*\b/ }),
 ];
 
 export const t = tokenListToObject(tokens);

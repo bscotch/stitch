@@ -23,6 +23,7 @@ export class GmlParser extends CstParser {
       { ALT: () => this.SUBRULE(this.functionStatement) },
       { ALT: () => this.SUBRULE(this.localVarDeclarationsStatement) },
       { ALT: () => this.SUBRULE(this.globalVarDeclarationsStatement) },
+      { ALT: () => this.SUBRULE(this.staticVarDeclarationStatement) },
       { ALT: () => this.SUBRULE(this.ifStatement) },
       { ALT: () => this.SUBRULE(this.tryStatement) },
       { ALT: () => this.SUBRULE(this.whileStatement) },
@@ -42,7 +43,7 @@ export class GmlParser extends CstParser {
 
   readonly returnStatement = this.RULE('returnStatement', () => {
     this.CONSUME(t.Return);
-    this.OPTION1(() => this.SUBRULE(this.expression));
+    this.OPTION1(() => this.SUBRULE(this.assignmentRightHandSide));
     this.OPTION2(() => this.CONSUME(t.Semicolon));
   });
 
@@ -123,8 +124,17 @@ export class GmlParser extends CstParser {
     this.OPTION2(() => this.CONSUME(c.UnarySuffixOperator));
   });
 
+  readonly identifier = this.RULE('identifier', () => {
+    this.OR([
+      { ALT: () => this.CONSUME(t.Identifier) },
+      { ALT: () => this.CONSUME(t.Self) },
+      { ALT: () => this.CONSUME(t.Other) },
+      { ALT: () => this.CONSUME(t.Global) },
+    ]);
+  });
+
   readonly identifierAccessor = this.RULE('identifierAccessor', () => {
-    this.CONSUME(t.Identifier);
+    this.SUBRULE(this.identifier);
     this.MANY(() => {
       this.SUBRULE(this.expressionSuffixes);
     });
@@ -153,7 +163,7 @@ export class GmlParser extends CstParser {
 
   readonly dotAccessSuffix = this.RULE('dotAccessSuffix', () => {
     this.CONSUME(t.Dot);
-    this.CONSUME(t.Identifier);
+    this.SUBRULE(this.identifier);
   });
 
   readonly arrayAccessSuffix = this.RULE('arrayAccessSuffix', () => {
@@ -218,6 +228,7 @@ export class GmlParser extends CstParser {
         this.CONSUME2(t.Identifier);
         this.OPTION(() => {
           this.CONSUME(t.Assign);
+          this.OPTION2(() => this.CONSUME(t.Minus));
           this.CONSUME(c.NumericLiteral);
         });
       },
@@ -269,9 +280,13 @@ export class GmlParser extends CstParser {
   readonly macroStatement = this.RULE('macroStatement', () => {
     this.CONSUME(t.Macro);
     this.CONSUME(t.Identifier);
-    this.MANY_SEP({
-      SEP: t.Escape,
-      DEF: () => this.SUBRULE(this.assignmentRightHandSide),
+    this.OPTION(() => {
+      this.CONSUME(t.Escape);
+    });
+    this.SUBRULE(this.assignmentRightHandSide);
+    this.MANY(() => {
+      this.CONSUME2(t.Escape);
+      this.SUBRULE2(this.assignmentRightHandSide);
     });
   });
 
@@ -333,6 +348,21 @@ export class GmlParser extends CstParser {
       this.CONSUME(t.Assign);
       this.SUBRULE(this.assignmentRightHandSide);
     });
+  });
+
+  readonly staticVarDeclarationStatement = this.RULE(
+    'staticVarDeclarationStatement',
+    () => {
+      this.SUBRULE(this.staticVarDeclaration);
+      this.optionallyConsumeSemicolon();
+    },
+  );
+
+  readonly staticVarDeclaration = this.RULE('staticVarDeclarations', () => {
+    this.CONSUME(t.Static);
+    this.CONSUME(t.Identifier);
+    this.CONSUME(t.Assign);
+    this.SUBRULE(this.assignmentRightHandSide);
   });
 
   readonly variableAssignment = this.RULE('variableAssignment', () => {
