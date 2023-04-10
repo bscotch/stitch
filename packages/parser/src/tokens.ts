@@ -61,7 +61,7 @@ export const tokens = [
   // TODO: Add separate parser modes for comments
   createToken({
     name: 'SingleLineComment',
-    pattern: /\/\/[^\n]*/,
+    pattern: /\/\/[^\r\n]*/,
     group: Lexer.SKIPPED,
     start_chars_hint: ['/'],
     categories: [c.Comment],
@@ -69,6 +69,15 @@ export const tokens = [
   createToken({
     name: 'MultiLineComment',
     pattern: /(?<!\\)\/\*([\r\n]|.)*?(?<!\\)\*\//,
+    group: Lexer.SKIPPED,
+    line_breaks: true,
+    start_chars_hint: ['/'],
+    categories: [c.Comment],
+  }),
+  // Note: Sometimes multiline comments are started and then comment out the rest of the file, and are not terminated.
+  createToken({
+    name: 'MultiLineCommentNotTerminated',
+    pattern: /(?<!\\)\/\*([\r\n]|.)*/,
     group: Lexer.SKIPPED,
     line_breaks: true,
     start_chars_hint: ['/'],
