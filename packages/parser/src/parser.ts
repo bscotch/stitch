@@ -110,7 +110,7 @@ export class GmlParser extends CstParser {
 
   readonly binaryExpression = this.RULE('binaryExpression', () => {
     this.CONSUME(c.BinaryOperator);
-    this.SUBRULE(this.primaryExpression);
+    this.SUBRULE(this.assignmentRightHandSide);
   });
 
   readonly ternaryExpression = this.RULE('ternaryExpression', () => {
@@ -206,20 +206,14 @@ export class GmlParser extends CstParser {
 
   readonly functionArguments = this.RULE('functionArguments', () => {
     this.CONSUME(t.StartParen);
-    this.MANY_SEP({
-      SEP: t.Comma,
-      DEF: () => {
-        this.OR([
-          { ALT: () => this.SUBRULE(this.assignmentRightHandSide) },
-          { ALT: () => this.SUBRULE(this.emptyArgument) },
-        ]);
-      },
+    this.OPTION1(() => {
+      this.SUBRULE(this.assignmentRightHandSide);
+    });
+    this.MANY(() => {
+      this.CONSUME(t.Comma);
+      this.OPTION2(() => this.SUBRULE2(this.assignmentRightHandSide));
     });
     this.CONSUME(t.EndParen);
-  });
-
-  readonly emptyArgument = this.RULE('emptyArgument', () => {
-    this.CONSUME(t.Comma);
   });
 
   readonly emptyStatement = this.RULE('emptyStatement', () => {
@@ -230,6 +224,7 @@ export class GmlParser extends CstParser {
     this.CONSUME(t.Enum);
     this.CONSUME1(t.Identifier);
     this.CONSUME(t.StartBrace);
+    // TODO: Fix so that a trailing comma is allowed.
     this.MANY_SEP({
       SEP: t.Comma,
       DEF: () => {
@@ -301,7 +296,12 @@ export class GmlParser extends CstParser {
   readonly forStatement = this.RULE('forStatement', () => {
     this.CONSUME(t.For);
     this.CONSUME(t.StartParen);
-    this.OPTION1(() => this.SUBRULE1(this.localVarDeclarations));
+    this.OPTION1(() =>
+      this.OR([
+        { ALT: () => this.SUBRULE(this.localVarDeclarations) },
+        { ALT: () => this.SUBRULE(this.expression) },
+      ]),
+    );
     this.CONSUME2(t.Semicolon);
     this.OPTION2(() => this.SUBRULE2(this.expression));
     this.CONSUME3(t.Semicolon);
@@ -391,9 +391,13 @@ export class GmlParser extends CstParser {
 
   readonly arrayLiteral = this.RULE('arrayLiteral', () => {
     this.CONSUME(t.StartBracket);
-    this.MANY_SEP({
-      SEP: t.Comma,
-      DEF: () => this.SUBRULE(this.expression),
+    this.OPTION(() => {
+      this.SUBRULE(this.assignmentRightHandSide);
+      this.MANY(() => {
+        this.CONSUME1(t.Comma);
+        this.SUBRULE2(this.assignmentRightHandSide);
+      });
+      this.OPTION2(() => this.CONSUME2(t.Comma));
     });
     this.CONSUME(t.EndBracket);
   });

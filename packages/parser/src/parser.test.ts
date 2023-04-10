@@ -73,8 +73,9 @@ describe('Parser', function () {
     expect(files.length).to.be.greaterThan(0);
 
     const parser = new GmlParser();
-    for (const file of files) {
-      console.log('Reading file', file.relative);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      console.log(i, 'Parsing:', file.relative);
       const code = await file.read<string>();
       const cst = parser.parse(code);
       console.log(
