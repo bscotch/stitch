@@ -313,16 +313,20 @@ importers:
 
   packages/parser:
     specifiers:
+      '@bscotch/pathy': ^2.6.0
       '@bscotch/utility': ^6.8.2
       chai: ^4.3.7
       chevrotain: 10.5.0
+      dotenv: 16.0.3
       mocha: ^10.2.0
       typescript: 5.0.4
     dependencies:
       chevrotain: 10.5.0
     devDependencies:
+      '@bscotch/pathy': 2.7.3
       '@bscotch/utility': 6.8.3
       chai: 4.3.7
+      dotenv: 16.0.3
       mocha: 10.2.0
       typescript: 5.0.4
 

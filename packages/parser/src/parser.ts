@@ -38,7 +38,14 @@ export class GmlParser extends CstParser {
       { ALT: () => this.SUBRULE(this.enumStatement) },
       { ALT: () => this.SUBRULE(this.macroStatement) },
       { ALT: () => this.SUBRULE(this.emptyStatement) },
+      { ALT: () => this.SUBRULE(this.repeatStatement) },
     ]);
+  });
+
+  readonly repeatStatement = this.RULE('repeatStatement', () => {
+    this.CONSUME(t.Repeat);
+    this.SUBRULE(this.expression);
+    this.SUBRULE(this.blockableStatement);
   });
 
   readonly returnStatement = this.RULE('returnStatement', () => {
@@ -130,6 +137,7 @@ export class GmlParser extends CstParser {
       { ALT: () => this.CONSUME(t.Self) },
       { ALT: () => this.CONSUME(t.Other) },
       { ALT: () => this.CONSUME(t.Global) },
+      { ALT: () => this.CONSUME(t.Noone) },
     ]);
   });
 
