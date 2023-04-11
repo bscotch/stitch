@@ -280,36 +280,36 @@ importers:
 
   packages/launcher:
     specifiers:
-      '@bscotch/gamemaker-releases': 0.4.1
+      '@bscotch/gamemaker-releases': 0.4.4
       '@bscotch/pathy': ^2.6.0
       '@bscotch/utility': ^6.8.0
       '@types/chai': ^4.3.4
       '@types/inquirer': ^9.0.3
       '@types/mocha': ^10.0.1
-      axios: ^1.3.4
+      axios: ^1.3.5
       chai: ^4.3.7
-      inquirer: 9.1.4
+      inquirer: 9.1.5
       mocha: ^10.2.0
-      rimraf: ^4.3.1
+      rimraf: ^5.0.0
       tslib: ^2.5.0
-      typescript: 5.0.1-rc
-      zod: ^3.21.2
+      typescript: 5.0.4
+      zod: ^3.21.4
     dependencies:
-      '@bscotch/gamemaker-releases': 0.4.1
+      '@bscotch/gamemaker-releases': 0.4.4
       '@bscotch/pathy': 2.6.0
       '@bscotch/utility': 6.8.0
-      axios: 1.3.4
+      axios: 1.3.5
       tslib: 2.5.0
-      zod: 3.21.2
+      zod: 3.21.4
     devDependencies:
       '@types/chai': 4.3.4
       '@types/inquirer': 9.0.3
       '@types/mocha': 10.0.1
       chai: 4.3.7
-      inquirer: 9.1.4
+      inquirer: 9.1.5
       mocha: 10.2.0
-      rimraf: 4.3.1
-      typescript: 5.0.1-rc
+      rimraf: 5.0.0
+      typescript: 5.0.4
 
   packages/parser:
     specifiers:
@@ -533,8 +533,8 @@ packages:
       - supports-color
     dev: false
 
-  /@bscotch/gamemaker-releases/0.4.1:
-    resolution: {integrity: sha512-FNnp5ez8DRolWDMV49qTLTl8QImXG0rGVF0xSWVVsInkVX3CxMN9/B5FNxG3YBSUT9DcQ0/+7Vff3Qr0CZSkIg==}
+  /@bscotch/gamemaker-releases/0.4.4:
+    resolution: {integrity: sha512-9m6mf9Pz9PN39VtpQVU4lI/7gyIh17WXRyRLN6KdjcSqNh1u1wALFQUgksOB6PxSVrLYEPSa0h2HRb2ZbnM0/g==}
     dependencies:
       '@bscotch/pathy': 2.6.0
       '@bscotch/utility': 6.8.0
@@ -2384,7 +2384,7 @@ packages:
     resolution: {integrity: sha512-IG23inYII3dWlU2EyiAiGj6Bwal5GzsgPMwjYGvc1HPE2dgbj4ZB5ToWBKSquKw74nB3TIuOwaI6/jSULzfgrw==}
     engines: {node: '>=14.16'}
     dependencies:
-      type-fest: 3.6.1
+      type-fest: 3.8.0
 
   /ansi-regex/5.0.1:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
@@ -2506,8 +2506,8 @@ packages:
     engines: {node: '>=0.8'}
     dev: true
 
-  /axios/1.3.4:
-    resolution: {integrity: sha512-toYm+Bsyl6VC5wSkfkbbNB6ROv7KY93PEBBL6xyDczaIHasAiv4wPqQ/c4RjoQzipxRD2W5g21cOqQulZ7rHwQ==}
+  /axios/1.3.5:
+    resolution: {integrity: sha512-glL/PvG/E+xCWwV8S6nCHcrfg1exGx7vxyUIivIA1iL7BIh6bePylCfVHwp6k13ao7SATxB6imau2kqY+I67kw==}
     dependencies:
       follow-redirects: 1.15.2
       form-data: 4.0.0
@@ -4957,6 +4957,7 @@ packages:
       strip-ansi: 7.0.1
       through: 2.3.8
       wrap-ansi: 8.1.0
+    dev: false
 
   /inquirer/9.1.5:
     resolution: {integrity: sha512-3ygAIh8gcZavV9bj6MTdYddG2zPSYswP808fKS46NOwlF0zZljVpnLCHODDqItWJDbDpLb3aouAxGaJbkxoppA==}
@@ -4977,7 +4978,6 @@ packages:
       strip-ansi: 7.0.1
       through: 2.3.8
       wrap-ansi: 8.1.0
-    dev: false
 
   /interpret/3.1.1:
     resolution: {integrity: sha512-6xwYfHbajpoF0xLW+iwLkhwgvLoZDfjYfoFNu8ftMoXINzwuymNLd9u/KmwtdT2GbR+/Cz66otEGEVVUHX9QLQ==}
@@ -6056,7 +6056,6 @@ packages:
   /mute-stream/1.0.0:
     resolution: {integrity: sha512-avsJQhyd+680gKXyG/sQc0nXaC6rBkPOfyHYcFb9+hdkqQkR9bdnkJ0AMZhke0oesPqIO+mFFJ+IdBc7mst4IA==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
-    dev: false
 
   /nanoid/3.3.3:
     resolution: {integrity: sha512-p1sjXuopFs0xg+fPASzQ28agW1oHD7xDsd9Xkf3T15H3c/cifrFHVwrh74PdoklAPi+i7MdRsE47vm2r6JoB+w==}
@@ -8148,11 +8147,11 @@ packages:
   /type-fest/3.6.1:
     resolution: {integrity: sha512-htXWckxlT6U4+ilVgweNliPqlsVSSucbxVexRYllyMVJDtf5rTjv6kF/s+qAd4QSL1BZcnJPEJavYBPQiWuZDA==}
     engines: {node: '>=14.16'}
+    dev: false
 
   /type-fest/3.8.0:
     resolution: {integrity: sha512-FVNSzGQz9Th+/9R6Lvv7WIAkstylfHN2/JYxkyhhmKFYh9At2DST8t6L6Lref9eYO8PXFTfG9Sg1Agg0K3vq3Q==}
     engines: {node: '>=14.16'}
-    dev: false
 
   /type-is/1.6.18:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
