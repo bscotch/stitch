@@ -43,7 +43,7 @@
     "@bscotch/pathy": "^2.6.0",
     "@bscotch/utility": "^6.8.0",
     "commander": "10.0.0",
-    "fs-extra": "11.1.0",
+    "fs-extra": "11.1.1",
     "image-js": "0.35.3",
     "image-size": "1.0.2",
     "tslib": "^2.5.0",
@@ -55,8 +55,8 @@
     "@types/mocha": "^10.0.1",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
-    "rimraf": "^4.3.1",
-    "typescript": "5.0.1-rc"
+    "rimraf": "^5.0.0",
+    "typescript": "5.0.4"
   },
   "engines": {
     "node": ">=14.0.0"
