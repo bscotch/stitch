@@ -12,6 +12,7 @@ import { Gms2Extension } from './resources/Gms2Extension.js';
 import { Gms2Font } from './resources/Gms2Font.js';
 import { Gms2Note } from './resources/Gms2Note.js';
 import { Gms2Object } from './resources/Gms2Object.js';
+import { Gms2Particle } from './resources/Gms2Particle.js';
 import { Gms2Path } from './resources/Gms2Path.js';
 import { Gms2ResourceBase } from './resources/Gms2ResourceBase.js';
 import { Gms2Room } from './resources/Gms2Room.js';
@@ -269,6 +270,7 @@ export class Gms2ResourceArray {
       fonts: Gms2Font,
       notes: Gms2Note,
       objects: Gms2Object,
+      particles: Gms2Particle,
       paths: Gms2Path,
       rooms: Gms2Room,
       scripts: Gms2Script,
@@ -312,7 +314,7 @@ export class Gms2ResourceArray {
 }
 
 export type Gms2ResourceSubclassType =
-  | typeof Gms2ResourceArray.resourceClassMap[keyof typeof Gms2ResourceArray.resourceClassMap]
+  | (typeof Gms2ResourceArray.resourceClassMap)[keyof typeof Gms2ResourceArray.resourceClassMap]
   | typeof Gms2ResourceBase;
 export type Gms2ResourceSubclass = InstanceType<Gms2ResourceSubclassType>;
 export type Gms2ResourceType = keyof typeof Gms2ResourceArray.resourceClassMap;

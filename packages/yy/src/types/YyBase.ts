@@ -22,13 +22,14 @@ export const yyBaseSchema = unstable({
   resourceVersion: z.string().default('1.0'),
 });
 
-export type YyResourceType = typeof yyResourceTypes[number];
+export type YyResourceType = (typeof yyResourceTypes)[number];
 export const yyResourceTypes = [
   'animcurves',
   'extensions',
   'fonts',
   'notes',
   'objects',
+  'particles',
   'paths',
   'rooms',
   'scripts',

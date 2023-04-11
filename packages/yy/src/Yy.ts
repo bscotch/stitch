@@ -39,6 +39,7 @@ export const yySchemas = {
   fonts: anyObject,
   notes: anyObject,
   objects: yyObjectSchema,
+  particles: anyObject,
   paths: anyObject,
   rooms: yyRoomSchema,
   scripts: yyScriptSchema,
@@ -48,7 +49,7 @@ export const yySchemas = {
   sprites: yySpriteSchema,
   tilesets: anyObject,
   timelines: anyObject,
-} as const;
+} as const satisfies { [K in YyResourceType | 'project']: Schema };
 Object.freeze(yySchemas);
 Object.seal(yySchemas);
 
