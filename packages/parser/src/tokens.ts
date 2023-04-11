@@ -513,12 +513,6 @@ export const tokens = [
   //#endregion
 
   //#region Literals
-
-  createToken({
-    name: 'Real',
-    pattern: /(\d[\d_]*(\.\d[\d_]*)?)|\.\d[\d_]*/,
-    categories: [c.Literal, c.NumericLiteral],
-  }),
   createToken({
     name: 'Hex',
     pattern: /(0x|\$)[\da-fA-F_]+/,
@@ -527,6 +521,11 @@ export const tokens = [
   createToken({
     name: 'Binary',
     pattern: /0b[01_]+/,
+    categories: [c.Literal, c.NumericLiteral],
+  }),
+  createToken({
+    name: 'Real',
+    pattern: /(\d[\d_]*(\.\d[\d_]*)?)|\.\d[\d_]*/,
     categories: [c.Literal, c.NumericLiteral],
   }),
 

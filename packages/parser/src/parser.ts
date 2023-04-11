@@ -28,7 +28,7 @@ export class GmlParser extends CstParser {
       { ALT: () => this.SUBRULE(this.tryStatement) },
       { ALT: () => this.SUBRULE(this.whileStatement) },
       { ALT: () => this.SUBRULE(this.forStatement) },
-      { ALT: () => this.SUBRULE(this.doWhileStatement) },
+      { ALT: () => this.SUBRULE(this.doUntilStatement) },
       { ALT: () => this.SUBRULE(this.switchStatement) },
       { ALT: () => this.SUBRULE(this.breakStatement) },
       { ALT: () => this.SUBRULE(this.continueStatement) },
@@ -138,6 +138,7 @@ export class GmlParser extends CstParser {
       { ALT: () => this.CONSUME(t.Other) },
       { ALT: () => this.CONSUME(t.Global) },
       { ALT: () => this.CONSUME(t.Noone) },
+      { ALT: () => this.CONSUME(t.All) },
     ]);
   });
 
@@ -164,6 +165,7 @@ export class GmlParser extends CstParser {
       { ALT: () => this.SUBRULE(this.listAccessorSuffix) },
       { ALT: () => this.SUBRULE(this.mapAccessorSuffix) },
       { ALT: () => this.SUBRULE(this.gridAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.arrayMutationAccessorSuffix) },
       { ALT: () => this.SUBRULE(this.dotAccessSuffix) },
       { ALT: () => this.SUBRULE(this.functionArguments) },
     ]);
@@ -204,6 +206,15 @@ export class GmlParser extends CstParser {
     this.CONSUME(t.EndBracket);
   });
 
+  readonly arrayMutationAccessorSuffix = this.RULE(
+    'arrayMutationAccessorSuffix',
+    () => {
+      this.CONSUME(t.ArrayMutateAccessorStart);
+      this.SUBRULE(this.expression);
+      this.CONSUME(t.EndBracket);
+    },
+  );
+
   readonly functionArguments = this.RULE('functionArguments', () => {
     this.CONSUME(t.StartParen);
     this.OPTION1(() => {
@@ -224,19 +235,22 @@ export class GmlParser extends CstParser {
     this.CONSUME(t.Enum);
     this.CONSUME1(t.Identifier);
     this.CONSUME(t.StartBrace);
-    // TODO: Fix so that a trailing comma is allowed.
-    this.MANY_SEP({
-      SEP: t.Comma,
-      DEF: () => {
-        this.CONSUME2(t.Identifier);
-        this.OPTION(() => {
-          this.CONSUME(t.Assign);
-          this.OPTION2(() => this.CONSUME(t.Minus));
-          this.CONSUME(c.NumericLiteral);
-        });
-      },
+    this.SUBRULE(this.enumMember);
+    this.MANY(() => {
+      this.CONSUME2(t.Comma);
+      this.SUBRULE2(this.enumMember);
     });
+    this.OPTION(() => this.CONSUME3(t.Comma));
     this.CONSUME(t.EndBrace);
+  });
+
+  readonly enumMember = this.RULE('enumMember', () => {
+    this.CONSUME(t.Identifier);
+    this.OPTION(() => {
+      this.CONSUME(t.Assign);
+      this.OPTION2(() => this.CONSUME(t.Minus));
+      this.CONSUME(c.NumericLiteral);
+    });
   });
 
   readonly constructorSuffix = this.RULE('constructorSuffix', () => {
@@ -416,7 +430,10 @@ export class GmlParser extends CstParser {
   });
 
   readonly structLiteralEntry = this.RULE('structLiteralEntry', () => {
-    this.CONSUME(t.Identifier);
+    this.OR([
+      { ALT: () => this.CONSUME(t.Identifier) },
+      { ALT: () => this.CONSUME(t.StringLiteral) },
+    ]);
     this.CONSUME(t.Colon);
     this.SUBRULE(this.assignmentRightHandSide);
   });
@@ -427,10 +444,10 @@ export class GmlParser extends CstParser {
     this.SUBRULE(this.blockableStatement);
   });
 
-  readonly doWhileStatement = this.RULE('doWhileStatement', () => {
+  readonly doUntilStatement = this.RULE('doUntilStatement', () => {
     this.CONSUME(t.Do);
     this.SUBRULE(this.blockableStatement);
-    this.CONSUME(t.While);
+    this.CONSUME(t.Until);
     this.SUBRULE(this.expression);
   });
 
