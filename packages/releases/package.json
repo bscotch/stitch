@@ -45,8 +45,8 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/pathy": "^2.6.0",
-    "@bscotch/utility": "^6.8.0",
+    "@bscotch/pathy": "^2.7.2",
+    "@bscotch/utility": "^6.8.2",
     "entities": "^4.4.0",
     "fast-xml-parser": "^4.2.0",
     "node-fetch": "^3.3.1",

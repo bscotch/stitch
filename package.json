@@ -12,8 +12,8 @@
     "watch": "turbo run watch --parallel"
   },
   "dependencies": {
-    "@bscotch/pathy": "^2.6.0",
-    "@bscotch/trebuchet": "2.8.0",
+    "@bscotch/pathy": "^2.7.2",
+    "@bscotch/trebuchet": "2.8.3",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.15.11",
@@ -26,7 +26,7 @@
     "mocha": "^10.2.0",
     "prettier": "^2.8.7",
     "syncpack": "^9.8.4",
-    "turbo": "^1.9.0",
+    "turbo": "^1.9.1",
     "zx": "^7.2.1"
   },
   "engines": {

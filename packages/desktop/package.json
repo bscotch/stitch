@@ -21,8 +21,8 @@
     "@bscotch/stitch-ui": "workspace:*"
   },
   "devDependencies": {
-    "@bscotch/pathy": "^2.6.0",
-    "@bscotch/utility": "^6.8.0",
+    "@bscotch/pathy": "^2.7.2",
+    "@bscotch/utility": "^6.8.2",
     "@electron-forge/cli": "6.1.1",
     "@electron-forge/maker-squirrel": "^6.1.1",
     "@electron-forge/shared-types": "^6.1.1",
@@ -34,7 +34,7 @@
     "esbuild": "^0.17.16",
     "nodemon": "^2.0.22",
     "tslib": "^2.5.0",
-    "turbo": "^1.9.0",
+    "turbo": "^1.9.1",
     "typescript": "5.0.4",
     "zx": "^7.2.1"
   },
