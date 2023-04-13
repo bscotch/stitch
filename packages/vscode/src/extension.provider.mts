@@ -2,7 +2,7 @@ import { pathy } from '@bscotch/pathy';
 import { StitchProject } from '@bscotch/stitch';
 import { sortKeysByReference } from '@bscotch/utility/browser';
 import { Yy, YyResourceType } from '@bscotch/yy';
-import glob from 'glob';
+import { glob } from 'glob';
 import os from 'os';
 import process from 'process';
 import vscode from 'vscode';

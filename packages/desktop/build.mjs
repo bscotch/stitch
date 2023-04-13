@@ -35,7 +35,7 @@ const buildOptions = literal({
   treeShaking: true,
   minify: false,
   banner: {
-    js: interopBanner + cjsPathConstsBanner,
+    js: interopBanner,
   },
 });
 
