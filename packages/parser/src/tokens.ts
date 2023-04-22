@@ -149,7 +149,7 @@ export const multilineSingleStringTokens = [
 export const templateTokens = [
   ...escapedCharacterTokens,
   createToken({
-    name: 'LeftTemplateInterpStart',
+    name: 'TemplateInterpStart',
     pattern: /\{/,
     categories: [c.Separators, c.TemplateLiteral],
     push_mode: 'code'

@@ -42,6 +42,53 @@ export class GmlParser extends CstParser {
     ]);
   });
 
+  readonly stringLiteral = this.RULE('stringLiteral', () => {
+    this.CONSUME(t.StringStart);
+    this.MANY(() => {
+      this.CONSUME(c.Substring);
+    });
+    this.CONSUME(t.StringEnd);
+  });
+
+  readonly multilineDoubleStringLiteral = this.RULE(
+    'multilineDoubleStringLiteral',
+    () => {
+      this.CONSUME(t.MultilineDoubleStringStart);
+      this.MANY(() => {
+        this.CONSUME(c.Substring);
+      });
+      this.CONSUME(t.MultilineDoubleStringEnd);
+    },
+  );
+
+  readonly multilineSingleStringLiteral = this.RULE(
+    'multilineSingleStringLiteral',
+    () => {
+      this.CONSUME(t.MultilineSingleStringStart);
+      this.MANY(() => {
+        this.CONSUME(c.Substring);
+      });
+      this.CONSUME(t.MultilineSingleStringEnd);
+    },
+  );
+
+  readonly templateLiteral = this.RULE('templateLiteral', () => {
+    this.CONSUME(t.TemplateStart);
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(c.Substring) },
+        {
+          ALT: () => {
+            this.CONSUME(t.TemplateInterpStart);
+            this.SUBRULE(this.expression);
+            this.CONSUME(t.EndBrace);
+          },
+        },
+      ]);
+    });
+    this.CONSUME(t.TemplateStringEnd);
+  });
+
   readonly repeatStatement = this.RULE('repeatStatement', () => {
     this.CONSUME(t.Repeat);
     this.SUBRULE(this.expression);
@@ -124,6 +171,10 @@ export class GmlParser extends CstParser {
     this.OPTION1(() => this.CONSUME(c.UnaryPrefixOperator));
     this.OR1([
       { ALT: () => this.CONSUME(c.Literal) },
+      { ALT: () => this.SUBRULE(this.stringLiteral) },
+      { ALT: () => this.SUBRULE(this.multilineDoubleStringLiteral) },
+      { ALT: () => this.SUBRULE(this.multilineSingleStringLiteral) },
+      { ALT: () => this.SUBRULE(this.templateLiteral) },
       { ALT: () => this.SUBRULE(this.identifierAccessor) },
       { ALT: () => this.SUBRULE(this.parenthesizedExpression) },
       { ALT: () => this.SUBRULE(this.arrayLiteral) },
@@ -432,7 +483,7 @@ export class GmlParser extends CstParser {
   readonly structLiteralEntry = this.RULE('structLiteralEntry', () => {
     this.OR([
       { ALT: () => this.CONSUME(t.Identifier) },
-      { ALT: () => this.CONSUME(c.StringLiteral) },
+      { ALT: () => this.SUBRULE(this.stringLiteral) },
     ]);
     this.CONSUME(t.Colon);
     this.SUBRULE(this.assignmentRightHandSide);

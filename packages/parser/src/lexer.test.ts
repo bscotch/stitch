@@ -22,8 +22,8 @@ describe('Lexer', function () {
   it('can lex templates', function () {
     const sample = '$"a template {woo+3}!"';
     const result = GmlLexer.tokenize(sample);
-    console.dir(result, { depth: null });
     if (result.errors.length) {
+      console.dir(result, { depth: null });
       throw new Error('Lexer failed to lex sample file: ' + sample);
     }
   });

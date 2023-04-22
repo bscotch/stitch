@@ -6,11 +6,23 @@ import { GmlParser } from './parser.js';
 
 dotenv.config();
 
+function showErrors(parser: GmlParser, filepath?: string) {
+  if (!parser.errors.length) return;
+  console.error(
+    parser.errors.map((e) => ({
+      loc: `${filepath || ''}:${e.token.startLine}:${e.token.startColumn}`,
+      msg: e.message,
+      // @ts-ignore
+      prior: e.previousToken,
+      token: e.token,
+    })),
+  );
+}
+
 describe('Parser', function () {
   it('can parse simple expressions', function () {
     const parser = new GmlParser();
     const cst = parser.parse('(1 + 2 * 3) + (hello / (world || undefined))');
-    console.log(parser.errors);
     expect(parser.errors.length).to.equal(0);
     expect(cst).to.exist;
   });
@@ -46,14 +58,7 @@ describe('Parser', function () {
       const filePath = `./samples/${sample}`;
       const code = await fs.readFile(filePath, 'utf-8');
       const cst = parser.parse(code);
-      console.log(
-        parser.errors.map((e) => ({
-          msg: e.message,
-          // @ts-ignore
-          prior: e.previousToken,
-          token: e.token,
-        })),
-      );
+      showErrors(parser, filePath);
       expect(cst).to.exist;
       expect(parser.errors).to.have.length(0);
       // console.log(cst);
@@ -78,14 +83,7 @@ describe('Parser', function () {
       console.log(i, 'Parsing:', file.relative);
       const code = await file.read<string>();
       const cst = parser.parse(code);
-      console.log(
-        parser.errors.map((e) => ({
-          msg: e.message,
-          // @ts-ignore
-          prior: e.previousToken,
-          token: e.token,
-        })),
-      );
+      showErrors(parser, file.absolute);
       expect(cst).to.exist;
       expect(parser.errors).to.have.length(0);
       // console.log(cst);
