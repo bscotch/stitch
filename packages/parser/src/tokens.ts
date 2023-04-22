@@ -22,6 +22,30 @@ export const categories = [
     pattern: Lexer.NA,
   }),
   createToken({
+    name: 'Substring',
+    pattern: Lexer.NA,
+  }),
+  createToken({
+    name: 'StringLiteral',
+    pattern: Lexer.NA,
+  }),
+  createToken({
+    name: 'MultilineStringLiteral',
+    pattern: Lexer.NA,
+  }),
+  createToken({
+    name: 'DoubleQuoted',
+    pattern: Lexer.NA,
+  }),
+  createToken({
+    name: 'SingleQuoted',
+    pattern: Lexer.NA,
+  }),
+  createToken({
+    name: 'TemplateLiteral',
+    pattern: Lexer.NA,
+  }),
+  createToken({
     name: 'AssignmentOperator',
     pattern: Lexer.NA,
   }),
@@ -50,7 +74,100 @@ export const categories = [
 
 export const c = tokenListToObject(categories);
 
-export const tokens = [
+const escapedCharacterTokens = [
+  createToken({
+    name: 'UnicodeCharacter',
+    pattern: /\\u[0-9a-fA-F]{2,}/,
+    start_chars_hint: ['\\'],
+    categories: [c.StringLiteral, c.Substring],
+  }),
+  createToken({
+    name: 'HexCharacter',
+    pattern: /\\x[0-9a-fA-F]+/,
+    start_chars_hint: ['\\'],
+    categories: [c.StringLiteral, c.Substring],
+  }),
+  createToken({
+    name: 'OctalCharacter',
+    pattern: /\\[0-7]+/,
+    start_chars_hint: ['\\'],
+    categories: [c.StringLiteral, c.Substring],
+  }),
+  createToken({
+    name: 'EscapedCharacter',
+    pattern: /\\./,
+    start_chars_hint: ['\\'],
+    categories: [c.StringLiteral, c.Substring],
+  })
+];
+
+export const stringTokens = [
+  ...escapedCharacterTokens,
+  createToken({
+    name: 'Character',
+    pattern: /[^\n\r"]/,
+    categories: [c.StringLiteral, c.Substring],
+  }),
+  createToken({
+    name: 'StringEnd',
+    pattern: /"/,
+    categories: [c.Separators,c.StringLiteral],
+    pop_mode: true,
+  })
+];
+
+export const multilineDoubleStringTokens = [
+  createToken({
+    name: 'MultilineDoubleStringCharacter',
+    pattern: /[^"]/,
+    line_breaks: true,
+    categories: [c.StringLiteral, c.Substring, c.MultilineStringLiteral, c.DoubleQuoted],
+  }),
+  createToken({
+    name: 'MultilineDoubleStringEnd',
+    pattern: /"/,
+    categories: [c.Separators,c.StringLiteral, c.MultilineStringLiteral, c.DoubleQuoted],
+    pop_mode: true,
+  })
+];
+
+export const multilineSingleStringTokens = [
+  createToken({
+    name: 'MultilineSingleStringCharacter',
+    pattern: /[^']/,
+    line_breaks: true,
+    categories: [c.StringLiteral, c.Substring, c.MultilineStringLiteral, c.SingleQuoted],
+  }),
+  createToken({
+    name: 'MultilineSingleStringEnd',
+    pattern: /'/,
+    categories: [c.Separators,c.StringLiteral, c.MultilineStringLiteral, c.SingleQuoted],
+    pop_mode: true,
+  })
+];
+
+export const templateTokens = [
+  ...escapedCharacterTokens,
+  createToken({
+    name: 'LeftTemplateInterpStart',
+    pattern: /\{/,
+    categories: [c.Separators, c.TemplateLiteral],
+    push_mode: 'code'
+  }),
+  createToken({
+    name: 'TemplateStringCharacter',
+    pattern: /[^"\r\n]/,
+    categories: [c.Substring, c.TemplateLiteral],
+  }),
+  createToken({
+    name: 'TemplateStringEnd',
+    pattern: /"/,
+    categories: [c.Separators, c.TemplateLiteral],
+    pop_mode: true,
+  })
+]
+
+export const codeTokens = [
   //#region Whitespace and comments
   createToken({
     name: 'WhiteSpace',
@@ -85,13 +202,34 @@ export const tokens = [
   }),
   //#endregion
 
-  //#region Strings
+  //#region Strings (require multiple modes)
   createToken({
-    name: 'StringLiteral',
-    pattern: /(?<!\\)"[^\r\n]*?(?<!\\)"/,
+    name: 'StringStart',
+    pattern: /"/,
     start_chars_hint: ['"'],
-    line_breaks: false,
-    categories: [c.Literal],
+    categories: [c.Separators,c.StringLiteral],
+    push_mode: 'string',
+  }),
+  createToken({
+    name: 'TemplateStart',
+    pattern: /\$"/,
+    start_chars_hint: ['$'],
+    categories: [c.Separators,c.StringLiteral],
+    push_mode: 'template',
+  }),
+  createToken({
+    name: 'MultilineDoubleStringStart',
+    pattern: /@"/,
+    start_chars_hint: ['@'],
+    categories: [c.Separators,c.StringLiteral, c.MultilineStringLiteral, c.DoubleQuoted],
+    push_mode: 'multilineDoubleString',
+  }),
+  createToken({
+    name: 'MultilineSingleStringStart',
+    pattern: /@'/,
+    start_chars_hint: ['@'],
+    categories: [c.Separators,c.StringLiteral, c.MultilineStringLiteral, c.SingleQuoted],
+    push_mode: 'multilineSingleString',
   }),
   //#endregion
 
@@ -143,11 +281,13 @@ export const tokens = [
     name: 'Begin',
     pattern: /\bbegin\b/,
     categories: [c.Keyword, c.Separators],
+    push_mode: 'code'
   }),
   createToken({
     name: 'End',
     pattern: /\bend\b/,
     categories: [c.Keyword, c.Separators],
+    pop_mode: true
   }),
   createToken({ name: 'If', pattern: /\bif\b/, categories: [c.Keyword] }),
   createToken({ name: 'Then', pattern: /\bthen\b/, categories: [c.Keyword] }),
@@ -507,8 +647,9 @@ export const tokens = [
     name: 'StartBrace',
     pattern: /\{/,
     categories: [c.Separators],
+    push_mode: 'code'
   }),
-  createToken({ name: 'EndBrace', pattern: /\}/, categories: [c.Separators] }),
+  createToken({ name: 'EndBrace', pattern: /\}/, categories: [c.Separators], pop_mode: true }),
   createToken({ name: 'Escape', pattern: /\\/, categories: [c.Separators] }),
   //#endregion
 
@@ -535,5 +676,13 @@ export const tokens = [
   //#region Identifiers
   createToken({ name: 'Identifier', pattern: /\b[a-zA-Z_][a-zA-Z0-9_]*\b/ }),
 ];
+
+export const tokens = [
+  ...codeTokens,
+  ...stringTokens,
+  ...multilineDoubleStringTokens,
+  ...multilineSingleStringTokens,
+  ...templateTokens
+]
 
 export const t = tokenListToObject(tokens);

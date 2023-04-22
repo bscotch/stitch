@@ -432,7 +432,7 @@ export class GmlParser extends CstParser {
   readonly structLiteralEntry = this.RULE('structLiteralEntry', () => {
     this.OR([
       { ALT: () => this.CONSUME(t.Identifier) },
-      { ALT: () => this.CONSUME(t.StringLiteral) },
+      { ALT: () => this.CONSUME(c.StringLiteral) },
     ]);
     this.CONSUME(t.Colon);
     this.SUBRULE(this.assignmentRightHandSide);

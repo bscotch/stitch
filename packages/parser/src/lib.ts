@@ -5,6 +5,13 @@ import {
 } from 'chevrotain';
 export { Lexer } from 'chevrotain';
 
+export type GmlLexerMode =
+  | 'code'
+  | 'string'
+  | 'multilineDoubleString'
+  | 'multilineSingleString'
+  | 'template';
+
 export interface TokenType<Name extends string = string> extends TokenTypeBase {
   name: Name;
 }
@@ -12,6 +19,7 @@ export interface TokenType<Name extends string = string> extends TokenTypeBase {
 export interface ITokenConfig<Name extends string = string>
   extends ITokenConfigBase {
   name: Name;
+  push_mode?: GmlLexerMode;
 }
 
 export function createToken<Name extends string = string>(
