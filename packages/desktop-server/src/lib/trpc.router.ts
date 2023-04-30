@@ -105,6 +105,15 @@ export const router = t.router({
       const projects = await req.ctx.config.addProjects(req.input.directory);
       return { added: toJson(projects) };
     }),
+  openIssues: t.procedure
+    .input(
+      z.object({
+        version: z.string()
+      })
+    )
+    .query(async (req) => {
+      open(`https://github.com/bscotch/stitch/issues/new?title=Desktop%20issue&labels=desktop&body=Version:%20${req.input.version}`)
+    }),
   openPath: t.procedure
     .input(
       z.object({
