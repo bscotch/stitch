@@ -22,6 +22,10 @@
     await trpc.openPath.query({ name: 'stitchDesktopConfig' });
   }
 
+  async function openIssues() {
+    await trpc.openIssues.query({ version: stitchVersion });
+  }
+
   async function loadGameMakerPaths() {
     const knownPaths = await trpc.listGameMakerPaths.query();
     knownPaths.sort((a, b) => a.name.localeCompare(b.name));
@@ -63,6 +67,7 @@
         {stitchVersion}
       </span>
     </h2>
+    <p>Have an issue? <a role="button" on:click={openIssues}>Click here.</a></p>
     <p />
     <p>
       Stitch currently stores its settings in a
