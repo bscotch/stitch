@@ -1,8 +1,8 @@
 // CST Visitor for creating an AST etc
 import { ok } from 'assert';
 import type {
+  FileCstChildren,
   GmlVisitor,
-  ProgramCstChildren,
   StatementCstChildren,
 } from '../gml-cst.js';
 import { GmlParser } from './parser.js';
@@ -18,11 +18,9 @@ export class GmlCstVisitor extends GmlVisitorBase {
     this.validateVisitor();
   }
 
-  override program(children: ProgramCstChildren) {
-    return {
-      kind: 'program',
-      statements: children.statements.map((s) => this.visit(s)),
-    };
+  override file(children: FileCstChildren) {
+    console.log(children);
+    return;
   }
 
   override statement(children: StatementCstChildren, param?: unknown) {
