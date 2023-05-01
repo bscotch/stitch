@@ -1,11 +1,11 @@
 import type { CstNode, ICstVisitor, IToken } from 'chevrotain';
 
-export interface ProgramCstNode extends CstNode {
-  name: 'program';
-  children: ProgramCstChildren;
+export interface FileCstNode extends CstNode {
+  name: 'file';
+  children: FileCstChildren;
 }
 
-export type ProgramCstChildren = {
+export type FileCstChildren = {
   statements: StatementsCstNode[];
 };
 
@@ -24,7 +24,6 @@ export interface StatementCstNode extends CstNode {
 }
 
 export type StatementCstChildren = {
-  expressionStatement?: ExpressionStatementCstNode[];
   functionStatement?: FunctionStatementCstNode[];
   localVarDeclarationsStatement?: LocalVarDeclarationsStatementCstNode[];
   globalVarDeclarationsStatement?: GlobalVarDeclarationsStatementCstNode[];
@@ -44,6 +43,7 @@ export type StatementCstChildren = {
   macroStatement?: MacroStatementCstNode[];
   emptyStatement?: EmptyStatementCstNode[];
   repeatStatement?: RepeatStatementCstNode[];
+  expressionStatement?: ExpressionStatementCstNode[];
 };
 
 export interface StringLiteralCstNode extends CstNode {
@@ -749,7 +749,7 @@ export type TryStatementCstChildren = {
 };
 
 export interface GmlVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
-  program(children: ProgramCstChildren, param?: IN): OUT;
+  file(children: FileCstChildren, param?: IN): OUT;
   statements(children: StatementsCstChildren, param?: IN): OUT;
   statement(children: StatementCstChildren, param?: IN): OUT;
   stringLiteral(children: StringLiteralCstChildren, param?: IN): OUT;

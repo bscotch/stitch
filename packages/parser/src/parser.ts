@@ -5,7 +5,7 @@ import { c, categories, t, tokens } from './tokens.js';
 export class GmlParser extends CstParser {
   readonly lexer = GmlLexer;
 
-  readonly program = this.RULE('program', () => {
+  readonly file = this.RULE('file', () => {
     this.SUBRULE(this.statements);
   });
 
@@ -19,7 +19,6 @@ export class GmlParser extends CstParser {
 
   readonly statement = this.RULE('statement', () => {
     this.OR([
-      { ALT: () => this.SUBRULE(this.expressionStatement) },
       { ALT: () => this.SUBRULE(this.functionStatement) },
       { ALT: () => this.SUBRULE(this.localVarDeclarationsStatement) },
       { ALT: () => this.SUBRULE(this.globalVarDeclarationsStatement) },
@@ -39,6 +38,7 @@ export class GmlParser extends CstParser {
       { ALT: () => this.SUBRULE(this.macroStatement) },
       { ALT: () => this.SUBRULE(this.emptyStatement) },
       { ALT: () => this.SUBRULE(this.repeatStatement) },
+      { ALT: () => this.SUBRULE(this.expressionStatement) },
     ]);
   });
 
@@ -571,7 +571,7 @@ export class GmlParser extends CstParser {
 
   parse(code: string): CstNode | undefined {
     this.input = this.lexer.tokenize(code).tokens;
-    return this.program();
+    return this.file();
   }
 
   static jsonify(cst: CstNode): string {
