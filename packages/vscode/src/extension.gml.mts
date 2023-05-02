@@ -7,7 +7,7 @@ import type { GameMakerResource } from './extension.resource.mjs';
 
 // TODO: Add command to open the current project in GameMaker
 
-export class GmlFile {
+export class GmlFile extends vscode.TreeItem {
   readonly dir: string;
   readonly resourceType: YyResourceType;
   readonly resourceName: string;
@@ -19,9 +19,20 @@ export class GmlFile {
   readonly identifiers: Map<string, vscode.Location[]> = new Map();
 
   constructor(readonly resource: GameMakerResource, readonly uri: vscode.Uri) {
+    super(path.basename(uri.fsPath));
     this.dir = path.dirname(uri.fsPath);
     this.resourceName = path.basename(this.dir);
     this.resourceType = path.basename(path.dirname(this.dir)) as YyResourceType;
+
+    // TREE STUFF
+    this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+    this.iconPath = new vscode.ThemeIcon('code');
+
+    this.command = {
+      command: 'vscode.open',
+      title: 'Open',
+      arguments: [uri],
+    };
   }
 
   async load(doc?: vscode.TextDocument) {

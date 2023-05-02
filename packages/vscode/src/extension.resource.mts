@@ -17,6 +17,7 @@ export class GameMakerResource<
 > extends vscode.TreeItem {
   readonly type: T;
   readonly gmlFiles: Map<string, GmlFile> = new Map();
+  yy!: YyDataStrict<T>;
 
   protected constructor(
     readonly project: GameMakerProject,
@@ -27,7 +28,67 @@ export class GameMakerResource<
     this.id = resource.id.path;
   }
 
-  async readYy(): Promise<YyDataStrict<T>> {
+  //#region TREE stuff
+  protected refreshTreeItem() {
+    if (this.type !== 'objects') {
+      let file: vscode.Uri;
+      if (this.type === 'scripts') {
+        const gmlFiles = [...this.gmlFiles.values()];
+        file = gmlFiles[0]?.uri;
+      } else {
+        file = vscode.Uri.file(this.yyPath);
+      }
+      this.command = {
+        command: 'vscode.open',
+        title: 'Open',
+        arguments: [file],
+      };
+    }
+
+    this.collapsibleState =
+      this.type === 'objects'
+        ? vscode.TreeItemCollapsibleState.Collapsed
+        : vscode.TreeItemCollapsibleState.None;
+
+    let icon = 'question';
+    switch (this.type) {
+      case 'objects':
+        icon = 'symbol-misc';
+        break;
+      case 'rooms':
+        icon = 'screen-full';
+        break;
+      case 'scripts':
+        icon = 'code';
+        break;
+      case 'sprites':
+        icon = 'device-camera';
+        break;
+      case 'sounds':
+        icon = 'unmute';
+        break;
+      case 'paths':
+        icon = 'debug-disconnect';
+        break;
+      case 'shaders':
+        icon = 'symbol-color';
+        break;
+      case 'timelines':
+        icon = 'clock';
+        break;
+      case 'fonts':
+        icon = 'text-size';
+        break;
+      case 'tilesets':
+        icon = 'layers';
+        break;
+    }
+    this.iconPath = new vscode.ThemeIcon(icon);
+  }
+
+  //#endregion /Tree stuff
+
+  protected async readYy(): Promise<YyDataStrict<T>> {
     let asPath: Pathy | undefined = pathy(this.yyPath);
     if (!(await asPath.exists())) {
       const filePattern = new RegExp(`${this.name}\\.yy$`, 'i');
@@ -35,8 +96,8 @@ export class GameMakerResource<
       asPath = paths.find((x) => filePattern.test(x.basename));
     }
     ok(asPath, `Could not find a .yy file for ${this.name}`);
-    const yy = await Yy.read(asPath.absolute, this.type);
-    return yy;
+    this.yy = await Yy.read(asPath.absolute, this.type);
+    return this.yy;
   }
 
   get yyPath() {
@@ -51,13 +112,13 @@ export class GameMakerResource<
     return this.resource.id.name;
   }
 
-  async createDocs() {
+  createDocs() {
     const docs = new vscode.MarkdownString();
     docs.isTrusted = true;
     docs.baseUri = vscode.Uri.file(this.dir);
     docs.supportHtml = true;
     if (this.type === 'sprites') {
-      const yy = (await this.readYy()) as YySprite;
+      const yy = this.yy as YySprite;
       for (const frame of yy.frames) {
         const framePath = `${frame.name}.png`;
         docs.appendMarkdown(`<img src="${this.name}/${framePath}" />`);
@@ -95,11 +156,14 @@ export class GameMakerResource<
   }
 
   protected async load() {
+    const waits: Promise<any>[] = [];
+    waits.push(this.readYy());
     (await pathy(this.dir).listChildren()).forEach((p) => {
       if (p.hasExtension('gml')) {
-        void this.loadFile(vscode.Uri.file(p.absolute));
+        waits.push(this.loadFile(vscode.Uri.file(p.absolute)));
       }
     });
+    await Promise.all(waits);
   }
 
   static async from<T extends YyResourceType>(
@@ -111,6 +175,7 @@ export class GameMakerResource<
       return;
     }
     await item.load();
+    item.refreshTreeItem();
     return item as any;
   }
 }

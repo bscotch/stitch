@@ -563,6 +563,16 @@ export class GmlProvider
       await GmlProvider.provider.loadProject(yypFile);
     }
 
+    const treeProvider = this.provider.projects[0];
+    if (treeProvider) {
+      ctx.subscriptions.push(
+        vscode.window.registerTreeDataProvider(
+          'bscotch-stitch-resources',
+          treeProvider,
+        ),
+      );
+    }
+
     ctx.subscriptions.push(
       vscode.languages.registerHoverProvider('gml', this.provider),
       vscode.languages.registerCompletionItemProvider(
