@@ -38,7 +38,6 @@ export class GmlProvider
     vscode.DefinitionProvider,
     vscode.ReferenceProvider,
     vscode.WorkspaceSymbolProvider,
-    vscode.TaskProvider,
     vscode.DocumentSemanticTokensProvider
 {
   globalTypeCompletions: vscode.CompletionItem[] = [];
@@ -208,38 +207,6 @@ export class GmlProvider
     }
     const tokens = tokensBuilder.build();
     return tokens;
-  }
-
-  // TODO: Make the runner use F5 somehow?
-  // TODO: Investigate GameMaker error objects/messages -- how can we get a problem matcher working?
-  // TODO: Add a problem matcher. What happens with a compile error vs. a runtime error?
-  async provideTasks(): Promise<vscode.Task[]> {
-    const tasks: vscode.Task[] = [];
-    if (!this.projects.length || !GmlProvider.config.autoDetectTasks) {
-      return tasks;
-    }
-    for (const project of this.projects) {
-      const task = await project.asRunTask();
-      if (task) {
-        tasks.push(task);
-      }
-    }
-    return tasks;
-  }
-
-  resolveTask(task: vscode.Task): vscode.Task {
-    // console.log('RESOLVE', task);
-    // const project: GameMakerProject =
-    //   (task.definition.projectName &&
-    //     this.projects.find((p) => p.name === task.definition.projectName)) ||
-    //   this.projects[0];
-    // assertLoudly(project, 'Could not resolve project.');
-    // const command = await project.computeRunCommand();
-    // assertLoudly(command, 'Could not compute run command');
-    // task.execution = new vscode.ProcessExecution(command.cmd, command.args);
-    // console.log('RESOLVED', task);
-    // return task;
-    return task;
   }
 
   provideWorkspaceSymbols(
@@ -617,7 +584,20 @@ export class GmlProvider
       vscode.languages.registerDefinitionProvider('gml', this.provider),
       vscode.languages.registerReferenceProvider('gml', this.provider),
       vscode.languages.registerWorkspaceSymbolProvider(this.provider),
-      vscode.tasks.registerTaskProvider('stitch', this.provider),
+      vscode.commands.registerCommand('stitch.run', (...args) => {
+        const uri = vscode.Uri.parse(
+          args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
+        );
+        let project = this.provider.documentToProject(uri);
+        if (!project && this.provider.projects.length === 1) {
+          project = this.provider.projects[0];
+        }
+        if (!project) {
+          void vscode.window.showErrorMessage('No project found to run!');
+          return;
+        }
+        project.run();
+      }),
       vscode.commands.registerCommand('stitch.openIde', (...args) => {
         const uri = vscode.Uri.parse(
           args[0] || vscode.window.activeTextEditor?.document.uri.toString(),

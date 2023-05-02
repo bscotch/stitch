@@ -3,16 +3,18 @@ import {
   GameMakerIde,
   GameMakerLauncher,
   GameMakerRuntime,
-  computeGameMakerBuildCommand,
+  stringifyGameMakerBuildCommand,
 } from '@bscotch/stitch-launcher';
 import { Yy, Yyp, YypResource } from '@bscotch/yy';
 import path from 'path';
 import vscode from 'vscode';
-import { StitchTaskDefinition, config } from './extension.config.mjs';
+import { StitchConfig } from './extension.config.mjs';
 import { GmlFile } from './extension.gml.mjs';
 import { GameMakerResource } from './extension.resource.mjs';
 
 export class GameMakerProject {
+  static config = new StitchConfig();
+
   /**
    * Globally available completions specific to this project,
    * such as resource names, macros, and script functions. */
@@ -77,38 +79,6 @@ export class GameMakerProject {
     return asString;
   }
 
-  async asRunTask() {
-    const taskDefinition: StitchTaskDefinition = {
-      type: 'stitch',
-      task: 'run',
-      compiler: config.runCompilerDefault,
-      config:
-        config.runConfigDefault ||
-        this.yyp.configs.children[0]?.name ||
-        this.yyp.configs.name,
-      projectName: this.name,
-    };
-    const command = await this.computeRunCommand(taskDefinition);
-    if (!command) {
-      return;
-    }
-    return new vscode.Task(
-      taskDefinition,
-      vscode.TaskScope.Workspace,
-      taskDefinition.task,
-      this.name,
-      new vscode.ProcessExecution(command.cmd, command.args, {
-        cwd: this.rootPath,
-        env: {
-          VSCODE_STITCH_VERSION: vscode.extensions.getExtension(
-            'bscotch.bscotch-stitch-vscode',
-          )?.packageJSON.version,
-          VSCODE_STITCH_SCRIPT_FUNCTIONS: this.createFunctionScriptString(),
-        },
-      }),
-    );
-  }
-
   async openInIde() {
     vscode.window.showInformationMessage(
       `Opening project with GameMaker v${this.ideVersion}...`,
@@ -133,10 +103,11 @@ export class GameMakerProject {
     return runner;
   }
 
-  async computeRunCommand(options?: {
-    config?: string | null;
-    compiler?: 'yyc' | 'vm';
-  }) {
+  async run(options?: { config?: string | null; compiler?: 'yyc' | 'vm' }) {
+    const config = options?.config ?? GameMakerProject.config.runConfigDefault;
+    const compiler =
+      options?.compiler ?? GameMakerProject.config.runCompilerDefault;
+
     const release = await GameMakerRuntime.findRelease({
       ideVersion: this.ideVersion,
     });
@@ -155,13 +126,21 @@ export class GameMakerProject {
       );
       return;
     }
-    return await computeGameMakerBuildCommand(runtime, {
+    const cmd = await stringifyGameMakerBuildCommand(runtime, {
       project: this.yypPath.fsPath,
-      config: options?.config ?? undefined,
-      yyc: options?.compiler === 'yyc',
+      config: config || undefined,
+      yyc: compiler === 'yyc',
       noCache: false,
       quiet: true,
     });
+
+    // Create a terminal
+    const terminal = vscode.window.createTerminal({
+      name: `GameMaker v${release.runtime.version}`,
+    });
+    terminal.show();
+    terminal.sendText(cmd);
+    return;
   }
 
   get rootPath(): string {

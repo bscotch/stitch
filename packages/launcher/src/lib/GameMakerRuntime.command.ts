@@ -54,22 +54,25 @@ export async function computeGameMakerBuildOptions(
   const projectDir = projectPath.up();
   const outputDir = new Pathy(options?.outDir || projectDir);
   const tempDir = new Pathy(projectDir).join('tmp');
+  const empath = (p: Pathy | string) => `"${p}"`;
   const buildOptions = {
-    project: projectPath.toString({ format: 'win32' }),
-    user: (await runtime.activeUserDirectory()).absolute,
-    runtimePath: runtime.directory.absolute,
+    project: empath(projectPath),
+    user: empath(await runtime.activeUserDirectory()),
+    runtimePath: empath(runtime.directory),
     runtime: options?.yyc ? 'YYC' : 'VM',
     config: options?.config,
     verbose: !options?.quiet,
     ignorecache: !!options?.noCache,
-    cache: tempDir.join('igor/cache').absolute,
-    temp: tempDir.join('igor/temp').absolute,
+    cache: empath(tempDir.join('igor/cache')),
+    temp: empath(tempDir.join('igor/temp')),
     // For some reason the filename has to be there
     // but only the directory is used...
-    of: tempDir.join(`igor/out/${projectPath.name}.win`).absolute,
-    tf: outputDir.join(
-      `${projectPath.name}.${artifactExtensionForPlatform(target)}`,
-    ).absolute,
+    of: empath(tempDir.join(`igor/out/${projectPath.name}.win`)),
+    tf: empath(
+      outputDir.join(
+        `${projectPath.name}.${artifactExtensionForPlatform(target)}`,
+      ),
+    ),
   };
   return {
     target,
@@ -108,7 +111,8 @@ export async function stringifyGameMakerBuildCommand(
   options: GameMakerBuildOptions & { compile?: boolean },
 ) {
   const { cmd, args } = await computeGameMakerBuildCommand(runtime, options);
-  return `${cmd} ${args.join(' ')}`;
+
+  return `"${cmd}" ${args.join(' ')}`;
 }
 
 export async function computeGameMakerBuildCommand(

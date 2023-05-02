@@ -45,33 +45,31 @@
         "command": "stitch.createProject",
         "title": "Stitch: New GameMaker Project",
         "enablement": "explorerResourceIsFolder"
+      },
+      {
+        "command": "stitch.run",
+        "title": "Stitch: Run Project"
       }
     ],
     "configuration": {
       "title": "Stitch",
       "properties": {
-        "stitch.task.run.defaultCompiler": {
-          "title": "Default compiler for run tasks",
+        "stitch.run.defaultCompiler": {
+          "title": "Default GameMaker compiler",
           "enum": [
             "vm",
             "yyc"
           ],
           "default": "vm"
         },
-        "stitch.task.run.defaultConfig": {
-          "title": "Default project config",
+        "stitch.run.defaultConfig": {
+          "title": "Default GameMaker config",
           "type": [
             "string",
             "null"
           ],
           "default": null,
           "description": "The default project config to use for the GameMaker runtime. If not set, the first child config will be used. If no configs are found, the Default will be used. This can also be set via the `config` property on a task."
-        },
-        "stitch.task.autoDetect": {
-          "title": "Auto-detect tasks",
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically detect tasks in the workspace, e.g. for building and running GameMaker projects. Having this active can slow down initial loading of available tasks."
         },
         "stitch.yy.format.enable": {
           "title": "Enable yy/yyp formatting",
@@ -179,6 +177,9 @@
       "commandPalette": [
         {
           "command": "stitch.openIde"
+        },
+        {
+          "command": "stitch.run"
         }
       ]
     },
@@ -196,29 +197,6 @@
       {
         "language": "gml",
         "path": "./snippets/gml.code-snippets"
-      }
-    ],
-    "taskDefinitions": [
-      {
-        "type": "stitch",
-        "properties": {
-          "config": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "default": null,
-            "description": "The project config to use for this task."
-          },
-          "compiler": {
-            "enum": [
-              "vm",
-              "yyc"
-            ],
-            "default": "vm",
-            "description": "Which compiler to use for this task."
-          }
-        }
       }
     ],
     "views": {
@@ -244,8 +222,7 @@
   "activationEvents": [
     "onLanguage:gml",
     "onCommand:stitch.openIde",
-    "onCommand:stitch.createProject",
-    "onCommand:workbench.action.tasks.runTask"
+    "onCommand:stitch.createProject"
   ],
   "devDependencies": {
     "@bscotch/gml-parser": "workspace:*",

@@ -34,16 +34,13 @@ export class StitchConfig {
   get enableYyFormatting() {
     return this.config.get<boolean>('yy.format.enable');
   }
-  get autoDetectTasks() {
-    return this.config.get<boolean>('task.autoDetect') ?? true;
-  }
   get runCompilerDefault(): 'vm' | 'yyc' {
     return (
-      this.config.get<string>('task.run.defaultCompiler') || 'vm'
+      this.config.get<string>('run.defaultCompiler') || 'vm'
     ).toLowerCase() as 'vm' | 'yyc';
   }
   get runConfigDefault(): string | null {
-    return this.config.get<string>('task.run.defaultConfig') || null;
+    return this.config.get<string>('run.defaultConfig') || null;
   }
 }
 
