@@ -35,40 +35,6 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
-    "colors": [
-      {
-        "id": "comment.line.region.start.gml",
-        "description": "Color for the `#region` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.description.start.gml",
-        "description": "Color for the text following the `#region` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.end.gml",
-        "description": "Color for the `#endregion` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      },
-      {
-        "id": "comment.line.region.description.end.gml",
-        "description": "Color for the text following the `#endregion` keyword.",
-        "defaults": {
-          "dark": "#6A9955",
-          "light": "#6A9955"
-        }
-      }
-    ],
     "commands": [
       {
         "command": "stitch.openIde",
@@ -216,31 +182,14 @@
         }
       ]
     },
-    "semanticTokenTypes": [
+    "semanticTokenModifiers": [
       {
-        "id": "resource",
-        "description": "A project resource, such as a sprite, sound, or object.",
-        "superType": "variable"
+        "id": "global",
+        "description": "Global"
       },
       {
-        "id": "object",
-        "description": "A GameMaker object.",
-        "superType": "class"
-      },
-      {
-        "id": "sound",
-        "description": "A GameMaker sound.",
-        "superType": "variable"
-      },
-      {
-        "id": "room",
-        "description": "A GameMaker room.",
-        "superType": "variable"
-      },
-      {
-        "id": "sprite",
-        "description": "A GameMaker sprite.",
-        "superType": "variable"
+        "id": "asset",
+        "description": "A subset of global variables representing a GameMaker asset."
       }
     ],
     "snippets": [
@@ -314,7 +263,6 @@
     "nodemon": "^2.0.22",
     "plist": "3.0.6",
     "typescript": "5.0.4",
-    "vscode": "1.1.37",
     "xml2js": "0.5.0",
     "yaml": "2.2.1",
     "zod": "^3.21.4",

@@ -9,6 +9,11 @@ import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { config } from './extension.config.mjs';
 import { GameMakerProject } from './extension.project.mjs';
+import {
+  SemanticTokenModifier,
+  SemanticTokenType,
+  semanticTokensLegend,
+} from './semanticTokens.mjs';
 import { GmlSpec, parseSpec } from './spec.mjs';
 
 const jsdocCompletions = [
@@ -33,10 +38,12 @@ export class GmlProvider
     vscode.DefinitionProvider,
     vscode.ReferenceProvider,
     vscode.WorkspaceSymbolProvider,
-    vscode.TaskProvider
+    vscode.TaskProvider,
+    vscode.DocumentSemanticTokensProvider
 {
   globalTypeCompletions: vscode.CompletionItem[] = [];
   globalCompletions: vscode.CompletionItem[] = [];
+  builtIns = new Set<string>();
   globalHovers: Map<string, vscode.Hover> = new Map();
   globalSignatures: Map<string, vscode.SignatureHelp> = new Map();
   protected projects: GameMakerProject[] = [];
@@ -50,6 +57,7 @@ export class GmlProvider
           vscode.CompletionItemKind.Function,
         ),
       );
+      this.builtIns.add(func.name);
 
       // Create hover-docs
       const docs = new vscode.MarkdownString();
@@ -90,6 +98,7 @@ export class GmlProvider
       );
       item.documentation = vars.description;
       this.globalCompletions.push(item);
+      this.builtIns.add(vars.name);
     }
     for (const constant of spec.constants) {
       this.globalCompletions.push(
@@ -98,6 +107,7 @@ export class GmlProvider
           vscode.CompletionItemKind.Constant,
         ),
       );
+      this.builtIns.add(constant.name);
     }
     for (const type of spec.types) {
       this.globalTypeCompletions.push(
@@ -124,6 +134,80 @@ export class GmlProvider
       this.projects.length,
     );
     return project;
+  }
+
+  provideDocumentSemanticTokens(
+    document: vscode.TextDocument,
+  ): vscode.SemanticTokens | undefined {
+    const project = this.documentToProject(document);
+    if (!project) {
+      return;
+    }
+    const resource = project.filepathToResource(document);
+    const resourceFile = resource?.fileFromPath(document);
+    if (!resourceFile) {
+      return;
+    }
+
+    const tokensBuilder = new vscode.SemanticTokensBuilder(
+      semanticTokensLegend,
+    );
+    const identifiers = resourceFile.identifiers;
+
+    const completions = [
+      ...(project?.completions.values() || []),
+      ...this.globalCompletions,
+    ].reduce((acc, item) => {
+      const name =
+        typeof item.label === 'string' ? item.label : item.label.label;
+      acc[name] = item;
+      return acc;
+    }, {} as { [identifier: string]: vscode.CompletionItem });
+
+    for (const [identifier, locations] of identifiers) {
+      // What kind of token is this?
+      const completion = completions[identifier];
+      if (!completion) {
+        continue;
+      }
+
+      let tokenType: SemanticTokenType | undefined;
+      const tokenModifiers: SemanticTokenModifier[] = ['global'];
+      const isBuiltIn = this.builtIns.has(identifier);
+      const isResource = project.resourceNames.has(identifier);
+      if (isBuiltIn) {
+        tokenModifiers.push('defaultLibrary');
+      }
+
+      switch (completion.kind) {
+        case vscode.CompletionItemKind.Constructor:
+          tokenType = 'class';
+          break;
+        case vscode.CompletionItemKind.Function:
+          tokenType = 'function';
+          break;
+        case vscode.CompletionItemKind.Variable:
+          tokenType = 'variable';
+          break;
+        case vscode.CompletionItemKind.Constant:
+          tokenType = isBuiltIn || isResource ? 'variable' : 'macro';
+          if (isResource) {
+            tokenModifiers.push('asset');
+          }
+          break;
+        case vscode.CompletionItemKind.Enum:
+          tokenType = 'enum';
+          break;
+      }
+      if (!tokenType) {
+        continue;
+      }
+      for (const location of locations) {
+        tokensBuilder.push(location.range, tokenType, tokenModifiers);
+      }
+    }
+    const tokens = tokensBuilder.build();
+    return tokens;
   }
 
   // TODO: Make the runner use F5 somehow?
@@ -504,6 +588,14 @@ export class GmlProvider
     // to allow for reloading the extension
     this.ctx.subscriptions.forEach((s) => s.dispose());
 
+    this.provider.clearProjects();
+
+    const yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
+
+    for (const yypFile of yypFiles) {
+      await GmlProvider.provider.loadProject(yypFile);
+    }
+
     ctx.subscriptions.push(
       vscode.languages.registerHoverProvider('gml', this.provider),
       vscode.languages.registerCompletionItemProvider(
@@ -563,15 +655,12 @@ export class GmlProvider
           this.provider.loadProject(projectUri);
         },
       ),
+      vscode.languages.registerDocumentSemanticTokensProvider(
+        'gml',
+        this.provider,
+        semanticTokensLegend,
+      ),
     );
-
-    this.provider.clearProjects();
-
-    const yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
-
-    for (const yypFile of yypFiles) {
-      await GmlProvider.provider.loadProject(yypFile);
-    }
 
     return this.provider;
   }

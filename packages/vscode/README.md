@@ -163,3 +163,31 @@ This extension contributes the following settings:
 ## ⁉️ Known Issues
 
 - 🔥 When using `Find all references`, not all references are found
+
+## ✅ TODOs
+
+- [ ] Add support for semantic highlighting
+	- [x] macro identifiers
+		- type: `macro`
+		- modifier: `global`
+	- [x] globalvars
+		- type: `variable`
+		- modifier: `global` (new)
+	- [x] global (script) functions
+		- type: `function`
+		- modifier: `global` (new)
+	- [x] global (script) constructors
+		- type: `class`
+		- modifier: `global` (new)
+	- [x] global enums
+		- type: `enum`
+		- modifier: `global` (new)
+	- [ ] asset identifiers
+		- type: `variable`
+		- modifier: `global` `readonly` `asset` (new)
+	- [ ] built-in functions
+		- type: `function`
+		- modifier: `global` `defaultLibrary`
+	- [ ] built-in variables
+		- type: `variable`
+		- modifier: `global` `defaultLibrary`

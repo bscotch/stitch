@@ -25,7 +25,7 @@ export class Parser {
     FunctionDeclaration | ConstructorDeclaration
   > = new Map();
   readonly macros: Map<string, MacroDeclaration> = new Map();
-  readonly identifiers: Map<string, Identifier> = new Map();
+  readonly identifiers: Map<string, Identifier[]> = new Map();
   readonly enums: Map<string, EnumDeclaration> = new Map();
   readonly globalvars: Map<string, GlobalVarDeclaration> = new Map();
 
@@ -80,6 +80,17 @@ export class Parser {
       nameToken,
     );
     this.globalvars.set(declaration.name, declaration);
+    while (this.nextIs(TokenKind.Comma) && this.input.next()) {
+      const anotherGlobal = this.input.next();
+      if (!anotherGlobal) {
+        break;
+      }
+      const anotherDeclaration: GlobalVarDeclaration = createNode(
+        SyntaxKind.GlobalVarDeclaration,
+        anotherGlobal,
+      );
+      this.globalvars.set(anotherDeclaration.name, anotherDeclaration);
+    }
     return declaration;
   }
 
@@ -89,7 +100,11 @@ export class Parser {
     }
     const idToken = this.input.next()!;
     const identifier = createNode<Identifier>(SyntaxKind.Identifier, idToken);
-    this.identifiers.set(identifier.name, identifier);
+    this.identifiers.set(
+      identifier.name,
+      this.identifiers.get(identifier.name) || [],
+    );
+    this.identifiers.get(identifier.name)!.push(identifier);
     return identifier;
   }
 
@@ -227,6 +242,7 @@ export class Parser {
       // Consume any macros, identifiers, and functions
       if (
         this.parseMacro() ||
+        this.parseEnum() ||
         this.parseGlobalVarDefinition() ||
         this.parseIdentifier() ||
         this.parseFunction(true)

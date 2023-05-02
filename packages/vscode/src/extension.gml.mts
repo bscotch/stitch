@@ -34,39 +34,42 @@ export class GmlFile {
       console.error(`Error parsing ${this.uri.fsPath}: ${e}`);
     }
     // Add all identifiers to project-wide identifiers
-    for (const [, node] of parser.identifiers) {
-      this.addProjectIdentifierReference(node);
+    for (const [, nodes] of parser.identifiers) {
+      for (const node of nodes) {
+        this.addProjectIdentifierReference(node);
+      }
     }
 
     // Add all macros to project-wide completions
     for (const [name, node] of parser.macros) {
-      this.addProjectCompletion(name, vscode.CompletionItemKind.Constant);
+      this.addProjectCompletion(node, vscode.CompletionItemKind.Constant);
       this.addProjectDefinition(node);
       this.addProjectHover(name, `#macro ${name} ${node.info ?? ''}`);
       // TODO: Add definition location lookup
     }
     // Add all globalvars to project-wide completions
     for (const [name, node] of parser.globalvars) {
-      this.addProjectCompletion(name, vscode.CompletionItemKind.Variable);
+      this.addProjectCompletion(node, vscode.CompletionItemKind.Variable);
       this.addProjectDefinition(node);
       this.addProjectHover(name, `globalvar ${name}`);
       // TODO: Add definition location lookup
     }
+    for (const [name, node] of parser.enums) {
+      this.addProjectCompletion(node, vscode.CompletionItemKind.Enum);
+      this.addProjectDefinition(node);
+      this.addProjectHover(name, `enum ${name}`);
+      // TODO: Add definition location lookup
+      for (const [, value] of node.info) {
+        const memberName = `${name}.${value.name}`;
+        this.addProjectCompletion(
+          node,
+          vscode.CompletionItemKind.EnumMember,
+          memberName,
+        );
+      }
+    }
     // Add all global functions and enums to project-wide completions
     if (this.resourceType === 'scripts') {
-      for (const [name, node] of parser.enums) {
-        this.addProjectCompletion(name, vscode.CompletionItemKind.Enum);
-        this.addProjectDefinition(node);
-        this.addProjectHover(name, `enum ${name}`);
-        // TODO: Add definition location lookup
-        for (const [, value] of node.info) {
-          const memberName = `${name}.${value.name}`;
-          this.addProjectCompletion(
-            memberName,
-            vscode.CompletionItemKind.EnumMember,
-          );
-        }
-      }
       for (const [name, node] of parser.functions) {
         if (!node.name) {
           continue;
@@ -75,7 +78,7 @@ export class GmlFile {
 
         const paramNames = node.info.map((p) => p.name);
         this.addProjectCompletion(
-          name,
+          node,
           node.kind === SyntaxKind.ConstructorDeclaration
             ? vscode.CompletionItemKind.Constructor
             : vscode.CompletionItemKind.Function,
@@ -111,6 +114,7 @@ export class GmlFile {
     }
     this.globals.clear();
     this.globalDefinitions.clear();
+    this.globalFunctions.clear();
     // Clear all identifier references
     for (const [name] of this.identifiers) {
       const refs = this.resource.project.identifiers.get(name) ?? [];
@@ -120,16 +124,41 @@ export class GmlFile {
         }
       }
     }
+    this.identifiers.clear();
   }
 
-  addProjectIdentifierReference(info: ParsedNode) {
+  addIdentifierLocation(info: ParsedNode) {
     if (!info.name) {
       return;
     }
-    const location = new vscode.Location(
-      this.uri,
+    const range = new vscode.Range(
       new vscode.Position(info.position.line - 1, info.position.column),
+      new vscode.Position(
+        info.position.line - 1,
+        info.position.column + info.name.length,
+      ),
     );
+    const location = new vscode.Location(this.uri, range);
+    // Add to the file identifiers
+    this.identifiers.set(info.name, this.identifiers.get(info.name) ?? []);
+    this.identifiers.get(info.name)!.push(location);
+  }
+
+  addProjectIdentifierReference(info: ParsedNode) {
+    this.addIdentifierLocation(info);
+    if (!info.name) {
+      return;
+    }
+    const range = new vscode.Range(
+      new vscode.Position(info.position.line - 1, info.position.column),
+      new vscode.Position(
+        info.position.line - 1,
+        info.position.column + info.name.length,
+      ),
+    );
+    const location = new vscode.Location(this.uri, range);
+
+    // Add to the project identifiers
     const ids = this.resource.project.identifiers;
     ids.set(info.name, ids.get(info.name) ?? []);
     ids.get(info.name)!.push(location);
@@ -146,7 +175,16 @@ export class GmlFile {
     this.resource.project.definitions.set(info.name, location);
   }
 
-  addProjectCompletion(name: string, type: vscode.CompletionItemKind) {
+  addProjectCompletion(
+    node: ParsedNode,
+    type: vscode.CompletionItemKind,
+    name?: string,
+  ) {
+    name = name ?? node.name ?? undefined;
+    if (!name) {
+      return;
+    }
+    this.addIdentifierLocation(node);
     this.globals.add(name);
     this.resource.project.completions.set(
       name,

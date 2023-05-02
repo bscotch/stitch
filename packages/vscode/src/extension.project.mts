@@ -12,9 +12,7 @@ import { StitchTaskDefinition, config } from './extension.config.mjs';
 import { GmlFile } from './extension.gml.mjs';
 import { GameMakerResource } from './extension.resource.mjs';
 
-export class GameMakerProject
-  implements vscode.TreeDataProvider<GameMakerResource | vscode.TreeItem>
-{
+export class GameMakerProject {
   /**
    * Globally available completions specific to this project,
    * such as resource names, macros, and script functions. */
@@ -24,8 +22,10 @@ export class GameMakerProject
   definitions: Map<string, vscode.Location> = new Map();
   identifiers: Map<string, vscode.Location[]> = new Map();
 
+  /** The key is the resource path, e.g. `scripts/my_script` */
   resources: Map<string, GameMakerResource> = new Map();
-  resourceTree: Map<string, Set<GameMakerResource>> = new Map();
+  /** The key is just the name */
+  resourceNames: Map<string, GameMakerResource> = new Map();
   yypWatcher: vscode.FileSystemWatcher;
   gmlWatcher: vscode.FileSystemWatcher;
   yyp!: Yyp;
@@ -164,29 +164,6 @@ export class GameMakerProject
     });
   }
 
-  async getTreeItem(element: GameMakerResource): Promise<vscode.TreeItem> {
-    return element;
-  }
-
-  async getChildren(
-    element?: GameMakerResource | vscode.TreeItem,
-  ): Promise<(GameMakerResource | vscode.TreeItem)[]> {
-    if (!element) {
-      // Then we're at the root
-      return Array.from(this.resourceTree.keys())
-        .sort()
-        .map((x) => {
-          const item = new vscode.TreeItem(
-            x,
-            vscode.TreeItemCollapsibleState.Collapsed,
-          );
-          item.contextValue = 'folder';
-          return item;
-        });
-    }
-    return Array.from(this.resourceTree.get(element.label!) || []);
-  }
-
   get rootPath(): string {
     return path.dirname(this.yypPath.fsPath);
   }
@@ -224,23 +201,22 @@ export class GameMakerProject
       return;
     }
     this.resources.set(resourceId, resource);
+    this.resourceNames.set(resource.name, resource);
     this.completions.set(resourceId, resource.completion);
     this.hovers.set(resource.name, await resource.createHover());
-    this.resourceTree.set(
-      resource.type,
-      this.resourceTree.get(resource.type) || new Set(),
-    );
-    this.resourceTree.get(resource.type)!.add(resource);
     return resource;
+  }
+
+  filepathToResource(doc: vscode.TextDocument | vscode.Uri | string) {
+    const resourceId = this.filepathToResourceId(doc);
+    return this.resources.get(resourceId);
   }
 
   /**
    * Given a document, return the expected path identifier that
    * the resource it belongs to would have.
    */
-  public filepathToResourceId(
-    doc: vscode.TextDocument | vscode.Uri | string,
-  ): string {
+  filepathToResourceId(doc: vscode.TextDocument | vscode.Uri | string): string {
     const uri =
       typeof doc === 'string'
         ? doc

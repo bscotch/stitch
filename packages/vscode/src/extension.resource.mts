@@ -54,9 +54,7 @@ export class GameMakerResource<
   async createDocs() {
     const docs = new vscode.MarkdownString();
     docs.isTrusted = true;
-    // @ts-expect-error
     docs.baseUri = vscode.Uri.file(this.dir);
-    // @ts-expect-error
     docs.supportHtml = true;
     if (this.type === 'sprites') {
       const yy = (await this.readYy()) as YySprite;
@@ -79,6 +77,12 @@ export class GameMakerResource<
       this.name,
       vscode.CompletionItemKind.Constant,
     );
+  }
+
+  fileFromPath(file: vscode.Uri | vscode.TextDocument) {
+    const uri = file instanceof vscode.Uri ? file : file.uri;
+    const fileName = path.basename(uri.fsPath);
+    return this.gmlFiles.get(fileName);
   }
 
   async loadFile(file: vscode.Uri | vscode.TextDocument): Promise<GmlFile> {
