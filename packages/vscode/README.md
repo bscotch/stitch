@@ -11,7 +11,7 @@ This extension provides language features for GameMaker Language (GML), among ot
 - `Stitch: New GameMaker Project` command available via the file explorer context menu for folders. This command clones a template GameMaker project into that folder. A very basic built-in template is used by default, but can be overridden with the `stitch.template.path` configuration option.
 - `Stitch: Open in GameMaker` command available via the palette while editing `.yyp`, `.yy`, or `.gml` files, and via the file explorer context menu for the same file types. This command opens the project in the GameMaker IDE version last used by the same project, automatically installing that IDE version if necessary.
 - Tasks for running your project right from VSCode
-- GML syntax highlighting
+- GML syntax highlighting, including semantic highlighting for built-in functions and project globals
 - Workspace Symbol Search via the command palette.
 - Autocomplete for built-in GameMaker functions and constants
 - Editor support for a project's global symbols (macros, script functions, script enums, and globalvars)
@@ -163,31 +163,3 @@ This extension contributes the following settings:
 ## ⁉️ Known Issues
 
 - 🔥 When using `Find all references`, not all references are found
-
-## ✅ TODOs
-
-- [ ] Add support for semantic highlighting
-	- [x] macro identifiers
-		- type: `macro`
-		- modifier: `global`
-	- [x] globalvars
-		- type: `variable`
-		- modifier: `global` (new)
-	- [x] global (script) functions
-		- type: `function`
-		- modifier: `global` (new)
-	- [x] global (script) constructors
-		- type: `class`
-		- modifier: `global` (new)
-	- [x] global enums
-		- type: `enum`
-		- modifier: `global` (new)
-	- [ ] asset identifiers
-		- type: `variable`
-		- modifier: `global` `readonly` `asset` (new)
-	- [ ] built-in functions
-		- type: `function`
-		- modifier: `global` `defaultLibrary`
-	- [ ] built-in variables
-		- type: `variable`
-		- modifier: `global` `defaultLibrary`
