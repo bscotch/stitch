@@ -134,12 +134,18 @@ export class GameMakerProject {
       quiet: true,
     });
 
-    // Create a terminal
+    // Create or re-use a terminal
+    const name = `GameMaker v${release.runtime.version}`;
+    const existing = vscode.window.terminals.find((term) => term.name === name);
+    if (existing) {
+      existing.dispose();
+    }
+
     const terminal = vscode.window.createTerminal({
       name: `GameMaker v${release.runtime.version}`,
     });
-    terminal.show();
     terminal.sendText(cmd);
+    terminal.show();
     return;
   }
 
