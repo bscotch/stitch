@@ -270,7 +270,7 @@
     "zx": "^7.2.1"
   },
   "engines": {
-    "vscode": "^1.76.0"
+    "vscode": "^1.77.0"
   },
   "icon": "./images/stitch-logo.png",
   "galleryBanner": {
