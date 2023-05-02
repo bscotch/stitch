@@ -35,6 +35,28 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
+    "keybindings": [
+      {
+        "command": "-debug.openView",
+        "key": "f5",
+        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      },
+      {
+        "command": "-workbench.action.debug.start",
+        "key": "f5",
+        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      },
+      {
+        "command": "-workbench.action.debug.continue",
+        "key": "f5",
+        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      },
+      {
+        "command": "stitch.run",
+        "key": "f5",
+        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      }
+    ],
     "commands": [
       {
         "command": "stitch.openIde",
