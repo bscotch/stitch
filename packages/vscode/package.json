@@ -1,7 +1,7 @@
 {
   "name": "bscotch-stitch-vscode",
   "displayName": "Stitch",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
@@ -35,28 +35,6 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
-    "keybindings": [
-      {
-        "command": "-debug.openView",
-        "key": "f5",
-        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
-      },
-      {
-        "command": "-workbench.action.debug.start",
-        "key": "f5",
-        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
-      },
-      {
-        "command": "-workbench.action.debug.continue",
-        "key": "f5",
-        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
-      },
-      {
-        "command": "stitch.run",
-        "key": "f5",
-        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
-      }
-    ],
     "commands": [
       {
         "command": "stitch.openIde",
@@ -155,6 +133,28 @@
         "language": "gml",
         "scopeName": "source.gml",
         "path": "./syntaxes/gml.tmLanguage.json"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "-debug.openView",
+        "key": "f5",
+        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      },
+      {
+        "command": "-workbench.action.debug.start",
+        "key": "f5",
+        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      },
+      {
+        "command": "-workbench.action.debug.continue",
+        "key": "f5",
+        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      },
+      {
+        "command": "stitch.run",
+        "key": "f5",
+        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
       }
     ],
     "languages": [
