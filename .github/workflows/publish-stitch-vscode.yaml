@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 18
       - run: corepack enable
-      - run: pnpm install --filter=bscotch-stitch-vscodep...
+      - run: pnpm install --filter=bscotch-stitch-vscode...
       - run: pwd
 
       # BUILD DEPS
