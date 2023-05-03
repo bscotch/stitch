@@ -9,13 +9,9 @@ import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { config } from './extension.config.mjs';
 import { GameMakerProject } from './extension.project.mjs';
+import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { GameMakerTreeProvider } from './extension.tree.mjs';
-import {
-  SemanticTokenModifier,
-  SemanticTokenType,
-  semanticTokensLegend,
-} from './semanticTokens.mjs';
 import { GmlSpec, parseSpec } from './spec.mjs';
 
 const jsdocCompletions = [
@@ -38,8 +34,7 @@ export class GmlProvider
     vscode.SignatureHelpProvider,
     vscode.DocumentFormattingEditProvider,
     vscode.DefinitionProvider,
-    vscode.ReferenceProvider,
-    vscode.DocumentSemanticTokensProvider
+    vscode.ReferenceProvider
 {
   globalTypeCompletions: vscode.CompletionItem[] = [];
   globalCompletions: vscode.CompletionItem[] = [];
@@ -134,80 +129,6 @@ export class GmlProvider
       this.projects.length,
     );
     return project;
-  }
-
-  provideDocumentSemanticTokens(
-    document: vscode.TextDocument,
-  ): vscode.SemanticTokens | undefined {
-    const project = this.documentToProject(document);
-    if (!project) {
-      return;
-    }
-    const resource = project.filepathToResource(document);
-    const resourceFile = resource?.fileFromPath(document);
-    if (!resourceFile) {
-      return;
-    }
-
-    const tokensBuilder = new vscode.SemanticTokensBuilder(
-      semanticTokensLegend,
-    );
-    const identifiers = resourceFile.identifiers;
-
-    const completions = [
-      ...(project?.completions.values() || []),
-      ...this.globalCompletions,
-    ].reduce((acc, item) => {
-      const name =
-        typeof item.label === 'string' ? item.label : item.label.label;
-      acc[name] = item;
-      return acc;
-    }, {} as { [identifier: string]: vscode.CompletionItem });
-
-    for (const [identifier, locations] of identifiers) {
-      // What kind of token is this?
-      const completion = completions[identifier];
-      if (!completion) {
-        continue;
-      }
-
-      let tokenType: SemanticTokenType | undefined;
-      const tokenModifiers: SemanticTokenModifier[] = ['global'];
-      const isBuiltIn = this.builtIns.has(identifier);
-      const isResource = project.resourceNames.has(identifier);
-      if (isBuiltIn) {
-        tokenModifiers.push('defaultLibrary');
-      }
-
-      switch (completion.kind) {
-        case vscode.CompletionItemKind.Constructor:
-          tokenType = 'class';
-          break;
-        case vscode.CompletionItemKind.Function:
-          tokenType = 'function';
-          break;
-        case vscode.CompletionItemKind.Variable:
-          tokenType = 'variable';
-          break;
-        case vscode.CompletionItemKind.Constant:
-          tokenType = isBuiltIn || isResource ? 'variable' : 'macro';
-          if (isResource) {
-            tokenModifiers.push('asset');
-          }
-          break;
-        case vscode.CompletionItemKind.Enum:
-          tokenType = 'enum';
-          break;
-      }
-      if (!tokenType) {
-        continue;
-      }
-      for (const location of locations) {
-        tokensBuilder.push(location.range, tokenType, tokenModifiers);
-      }
-    }
-    const tokens = tokensBuilder.build();
-    return tokens;
   }
 
   provideReferences(
@@ -407,8 +328,7 @@ export class GmlProvider
     if (!document) {
       return;
     }
-    const uri = document instanceof vscode.Uri ? document : document.uri;
-    return this.projects.find((p) => p.includesFile(uri));
+    return this.projects.find((p) => p.includesFile(document));
   }
 
   static positionToWord(
@@ -542,18 +462,8 @@ export class GmlProvider
       await GmlProvider.provider.loadProject(yypFile);
     }
 
-    const treeProvider = new GameMakerTreeProvider(this.provider.projects);
-    treeProvider.refresh();
-
-    const workspaceSymbolProvider = new GameMakerWorkspaceSymbolProvider(
-      this.provider.projects,
-    );
-
     ctx.subscriptions.push(
-      vscode.window.registerTreeDataProvider(
-        'bscotch-stitch-resources',
-        treeProvider,
-      ),
+      new GameMakerTreeProvider(this.provider.projects).register(),
       vscode.languages.registerHoverProvider('gml', this.provider),
       vscode.languages.registerCompletionItemProvider(
         'gml',
@@ -573,7 +483,9 @@ export class GmlProvider
       ),
       vscode.languages.registerDefinitionProvider('gml', this.provider),
       vscode.languages.registerReferenceProvider('gml', this.provider),
-      vscode.languages.registerWorkspaceSymbolProvider(workspaceSymbolProvider),
+      vscode.languages.registerWorkspaceSymbolProvider(
+        new GameMakerWorkspaceSymbolProvider(this.provider.projects),
+      ),
       vscode.commands.registerCommand('stitch.run', (...args) => {
         const uri = vscode.Uri.parse(
           args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
@@ -625,11 +537,7 @@ export class GmlProvider
           this.provider.loadProject(projectUri);
         },
       ),
-      vscode.languages.registerDocumentSemanticTokensProvider(
-        'gml',
-        this.provider,
-        semanticTokensLegend,
-      ),
+      new GameMakerSemanticTokenProvider(this.provider).register(),
     );
 
     return this.provider;

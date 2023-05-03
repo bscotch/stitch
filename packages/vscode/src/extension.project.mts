@@ -153,7 +153,8 @@ export class GameMakerProject {
     return path.dirname(this.yypPath.fsPath);
   }
 
-  includesFile(file: vscode.Uri): boolean {
+  includesFile(document: vscode.Uri | vscode.TextDocument): boolean {
+    const file = document instanceof vscode.Uri ? document : document.uri;
     const relative = path.relative(this.rootPath, file.fsPath);
     return !relative || !relative.startsWith('..');
   }

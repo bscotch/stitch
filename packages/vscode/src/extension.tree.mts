@@ -113,5 +113,13 @@ export class GameMakerTreeProvider
         parent.addResource(resource);
       }
     }
+    return this;
+  }
+
+  register() {
+    return vscode.window.registerTreeDataProvider(
+      'bscotch-stitch-resources',
+      this.refresh(),
+    );
   }
 }
