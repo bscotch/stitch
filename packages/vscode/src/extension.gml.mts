@@ -4,6 +4,7 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import vscode from 'vscode';
 import type { GameMakerResource } from './extension.resource.mjs';
+import { getEventName } from './spec.events.mjs';
 
 // TODO: Add command to open the current project in GameMaker
 
@@ -34,6 +35,9 @@ export class GmlFile extends vscode.TreeItem {
       title: 'Open',
       arguments: [uri],
     };
+
+    // Ensure that the tree label is human-friendly.
+    this.label = getEventName(this.uri.fsPath);
   }
 
   get name() {
