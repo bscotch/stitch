@@ -278,6 +278,7 @@ export class GmlProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.SignatureHelp> {
+    const project = this.documentToProject(document);
     let leftParensNeeded = 1;
     let offset = document.offsetAt(position);
     let param = 0;
@@ -300,7 +301,8 @@ export class GmlProvider
       document,
       document.positionAt(offset),
     );
-    const help = this.globalSignatures.get(func);
+    const help =
+      this.globalSignatures.get(func) || project?.signatures.get(func);
     if (!help) {
       return;
     }
