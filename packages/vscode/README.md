@@ -2,43 +2,92 @@
 
 This extension provides language features for GameMaker Language (GML), among other helpers for GameMaker project development.
 
-**⚠️ IN EARLY DEVELOPMENT, EXPECT BUGS AND INSTABILITY ⚠️**
-
 *Stitch and its logo are trademarks of [Butterscotch Shenanigans](https://www.bscotch.net) (a.k.a. "Bscotch"). Stitch and Bscotch are unaffiliated with GameMaker.*
+
+## 🐛 Project Status
+
+Stitch for VSCode is in active development. Expect bugs, missing features, and frequent breaking changes. If you find a bug, please [file an issue](https://github.com/bscotch/stitch/issues/new).
+
+You're also welcome to make feature requests, but keep in mind that we're focusing our limited time on features that we need for our own projects.
 
 ## 💡 Features
 
-- A tree view displaying project resources just like in the GameMaker IDE.
-- `Stitch: Open in GameMaker` command available via the palette while editing `.yyp`, `.yy`, or `.gml` files, and via the file explorer context menu for the same file types. This command opens the project in the GameMaker IDE version last used by the same project, automatically installing that IDE version if necessary.
-- `Stitch: Run Project` command available via the command palette. This command directly runs your project in the GameMaker runtime associated with your IDE version. It overrides the F5 hotkey when you are actively editing a GameMaker project file.
-- `Stitch: New GameMaker Project` command available via the file explorer context menu for folders. This command clones a template GameMaker project into that folder. A very basic built-in template is used by default, but can be overridden with the `stitch.template.path` configuration option.
-- GML syntax highlighting, including semantic highlighting for built-in functions and project globals
-- Workspace symbol and asset search via the command palette (`Ctrl+T`).
-- Autocomplete for built-in GameMaker functions and constants
-- Editor support for a project's global symbols (macros, script functions, script enums, and globalvars)
-  - Autocomplete
-  - Go-to-definition
-  - Find all references
-- Autocomplete for a project's resources ( sprite IDs, object IDs, ...)
-- JSDoc helpers
-  - Snippets to speed up adding JSDocs
-  - Autocomplete for global types in JSDocs (built-in and project-specific)
-- Format and validate `.yy`/`.yyp` project files. (To use it, set it as your default formatter for those filetypes.)
+### 🤖 Intellisense
+
+Stitch provides Intellisense (auto-complete, hovertext, function signature helpers, go-to-definition, find-references, etc) for:
+
+- Built-in functions and constants
+- Your project's global symbols, such as macros, enums, globalvars, and global functions
+- Your project's resources, such as sprite IDs, object IDs, etc
+
+### 🦋 Full syntax highlighting
+
+Stitch provides context-aware "semantic highlighting" for global symbols, such as built-in functions and your macros, enums, globalvars, global functions, and assets.
+
+Depending on your VSCode Theme, you may need to enable semantic highlighting to get the full effect. Additionally, you may want to tweak the colors for the different symbol types.
+
+Here's an example of how you might update your `settings.json`:
+
+```json
+
+{
+  //... other settings
+  "editor.semanticTokenColorCustomizations": {
+    "[Default Dark Modern]": { // the theme you're using
+      "enabled": true, // enable semantic highlighting
+      "rules": {
+        "macro": "#A600FF",
+        "enum": "#FF0055",
+        "enumMember": "#00ADD9",
+        // Built-in variables and constants
+        "variable.defaultLibrary": "#58E55A",
+        // Your project's global variables and constants
+        "variable.global": "#96FF4C",
+        // Built-in functions
+        "function.defaultLibrary": "#FFB871",
+        // Asset identifiers (like sprite IDs)
+        "variable.asset": "#FF8500"
+      }
+    }
+  },
+  "editor.tokenColorCustomizations": {
+    // Regular (non-contextual) syntax highlighting
+    "[Default Dark Modern]": {
+      "comments": "#7d7d7d",
+      "strings": "#FFFF00",
+      "numbers": "#FFFF00",
+      // etc.
+    }
+  }
+  //... other settings
+}
+```
+
+### 🚀 Running your project
+
+Hit <kbd>F5</kbd> to run your project, just like you would in the GameMaker IDE. Stitch uses the Runtime version that matches the IDE version your project uses. A terminal will pop up with the output from the GameMaker runtime.
+
+Check out Stitch settings to configure how your project is run. In particular:
+
+- `stitch.run.defaultConfig`: Choose a run configuration to use as the default (defaults to "Default")
+- `stitch.run.defaultCompiler`: Choose whether to use the VM or YYC compiler (defaults to "VM")
+
+### 🔍 Navigating your project
+
+Stitch provides a tree view that mirrors the project resources in the GameMaker IDE. You can open it by clicking the Stitch icon in the Activity Bar.
+
+Stitch also provides support for symbol search <kbd><kbd>Ctrl</kbd>+<kbd>T</kbd></kbd> via the command palette, which finds where all of your project's globals are defined. It will also pull up your asset and your object events, so you can find everything in one place.
+
+### 📝 Opening the correct GameMaker version
+
+Stitch provides context-menu entries and a command palette command (`Stitch: Open in GameMaker`) to open your project in the GameMaker IDE. It will ensure that you're always using the same version of GameMaker to open your projects, even automatically installing the correct version if you don't already have it!
 
 ## 🛣️ Roadmap
 
-- Add dynamic syntax highlighting for the different resource types so they can be color-coded in the theme
-- Add tree for project resources, including object events
-  - Organized based on the same in-game folder view
-  - Add ability to create, delete, and rename resources (sprites, etc)
-- Improve autocomplete for global enums (the `.` trigger should check to the left to see what we're dotting into)
-- Add resource-specific built-in autocompletes (e.g. `x` in objects)
-- Differentiate the different types and scopes of variables during parsing
-- Add go-to-definition and find-references for non-global identifiers
-- Add commands for running projects directly through the Runtime
-- Add commands for changing the target IDE & runtime version
-- Rename project-specific globals
-- Add mechanism to dynamically load syntax definitions that match the project's runtime version
+- Add the ability to create, delete, and rename resources (sprites, etc) from the tree view
+- Provide full autocomplete, find-reference, go-to-definition, etc, even for non-globals
+- Symbol rename support
+- Loading the GameMaker syntax configuration that match the GameMaker version your project uses.
 
 ## ⚙️ Supported GameMaker versions
 
