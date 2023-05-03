@@ -9,6 +9,7 @@ import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { config } from './extension.config.mjs';
 import { GameMakerProject } from './extension.project.mjs';
+import { GameMakerTreeProvider } from './extension.tree.mjs';
 import {
   SemanticTokenModifier,
   SemanticTokenType,
@@ -563,15 +564,14 @@ export class GmlProvider
       await GmlProvider.provider.loadProject(yypFile);
     }
 
-    const treeProvider = this.provider.projects[0];
-    if (treeProvider) {
-      ctx.subscriptions.push(
-        vscode.window.registerTreeDataProvider(
-          'bscotch-stitch-resources',
-          treeProvider,
-        ),
-      );
-    }
+    const treeProvider = new GameMakerTreeProvider(this.provider.projects);
+    treeProvider.refresh();
+    ctx.subscriptions.push(
+      vscode.window.registerTreeDataProvider(
+        'bscotch-stitch-resources',
+        treeProvider,
+      ),
+    );
 
     ctx.subscriptions.push(
       vscode.languages.registerHoverProvider('gml', this.provider),

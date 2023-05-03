@@ -15,6 +15,7 @@ import { GmlFile } from './extension.gml.mjs';
 export class GameMakerResource<
   T extends YyResourceType = YyResourceType,
 > extends vscode.TreeItem {
+  readonly kind = 'resource';
   readonly type: T;
   readonly gmlFiles: Map<string, GmlFile> = new Map();
   yy!: YyDataStrict<T>;

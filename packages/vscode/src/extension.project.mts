@@ -12,47 +12,8 @@ import { StitchConfig } from './extension.config.mjs';
 import { GmlFile } from './extension.gml.mjs';
 import { GameMakerResource } from './extension.resource.mjs';
 
-class GameMakerFolder extends vscode.TreeItem {
-  folders: GameMakerFolder[] = [];
-  resources: GameMakerResource[] = [];
-
-  constructor(readonly name: string) {
-    super(name);
-    this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-  }
-
-  getFolder(name: string): GameMakerFolder | undefined {
-    return this.folders.find(
-      (x) => x instanceof GameMakerFolder && x.name === name,
-    ) as GameMakerFolder;
-  }
-
-  addFolder(name: string): GameMakerFolder {
-    let folder = this.getFolder(name);
-    if (!folder) {
-      folder = new GameMakerFolder(name);
-      this.folders.push(folder);
-    }
-    return folder;
-  }
-
-  getResource(name: string): GameMakerResource | undefined {
-    return this.resources.find(
-      (x) => x instanceof GameMakerResource && x.name === name,
-    ) as GameMakerResource;
-  }
-
-  addResource(resource: GameMakerResource) {
-    if (!this.getResource(resource.name)) {
-      this.resources.push(resource);
-    }
-  }
-}
-
-export class GameMakerProject
-  implements
-    vscode.TreeDataProvider<GameMakerResource | GameMakerFolder | GmlFile>
-{
+export class GameMakerProject extends vscode.TreeItem {
+  readonly kind = 'project';
   static config = new StitchConfig();
 
   /**
@@ -71,9 +32,9 @@ export class GameMakerProject
   yypWatcher: vscode.FileSystemWatcher;
   gmlWatcher: vscode.FileSystemWatcher;
   yyp!: Yyp;
-  tree: GameMakerFolder = new GameMakerFolder('root');
 
   protected constructor(readonly yypPath: vscode.Uri) {
+    super(yypPath.fsPath, vscode.TreeItemCollapsibleState.Collapsed);
     this.yypWatcher = vscode.workspace.createFileSystemWatcher(
       this.yypPath.fsPath,
     );
@@ -82,6 +43,9 @@ export class GameMakerProject
     );
     this.yypWatcher.onDidChange(() => this.loadYyp());
     this.gmlWatcher.onDidChange((uri) => this.updateFile(uri));
+
+    // TREE STUFF
+    this.iconPath = new vscode.ThemeIcon('file-directory');
   }
 
   get name() {
@@ -91,56 +55,6 @@ export class GameMakerProject
   get ideVersion() {
     return this.yyp.MetaData.IDEVersion;
   }
-
-  updateResourceTree() {
-    const folderPathToParts = (folderPath: string) =>
-      folderPath
-        .replace(/^folders[\\/]/, '')
-        .replace(/\.yy$/, '')
-        .split(/[\\/]/);
-    this.tree = new GameMakerFolder('root');
-    for (const folder of this.yyp.Folders) {
-      const pathParts = folderPathToParts(folder.folderPath);
-      let parent = this.tree;
-      for (let i = 0; i < pathParts.length; i++) {
-        parent = parent.addFolder(pathParts[i]);
-      }
-    }
-    for (const [, resource] of this.resourceNames) {
-      const path = (resource.yy.parent as any).path;
-      if (!path) {
-        console.error('Resource has no path', resource);
-        continue;
-      }
-      const pathParts = folderPathToParts(path);
-      let parent = this.tree;
-      for (let i = 0; i < pathParts.length; i++) {
-        parent = parent.addFolder(pathParts[i]);
-      }
-      parent.addResource(resource);
-    }
-  }
-
-  getTreeItem(element: GameMakerResource | GameMakerFolder | GmlFile) {
-    return element;
-  }
-
-  getChildren(
-    element?: GameMakerResource | GameMakerFolder | GmlFile | undefined,
-  ) {
-    if (!element) {
-      return [...this.tree.folders, ...this.tree.resources];
-    }
-    if (element instanceof GameMakerFolder) {
-      return [...element.folders, ...element.resources];
-    } else if (element instanceof GameMakerResource) {
-      if (element.type === 'objects') {
-        return [...element.gmlFiles.values()];
-      }
-    }
-    return;
-  }
-
   protected gmlFiles: Map<string, GmlFile> = new Map();
 
   /**
@@ -313,7 +227,6 @@ export class GameMakerProject
       waits.push(this.registerResource(resource));
     }
     await Promise.all(waits);
-    this.updateResourceTree();
   }
 
   static async from(yypPath: vscode.Uri) {

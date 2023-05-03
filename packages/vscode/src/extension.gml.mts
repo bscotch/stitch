@@ -8,6 +8,7 @@ import type { GameMakerResource } from './extension.resource.mjs';
 // TODO: Add command to open the current project in GameMaker
 
 export class GmlFile extends vscode.TreeItem {
+  readonly kind = 'gmlFile';
   readonly dir: string;
   readonly resourceType: YyResourceType;
   readonly resourceName: string;
