@@ -1,0 +1,38 @@
+name: Publish Stitch for VSCode
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "bscotch-stitch-vscode@*"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      # SETUP
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: corepack enable
+      - run: pnpm install --filter=bscotch-stitch-vscodep...
+      - run: pwd
+
+      # BUILD DEPS
+      - name: Build
+        run: pnpm turbo run build --only --filter=bscotch-stitch-vscode... 
+
+      # PUBLISH
+      - name: Publish
+        working-directory: packages/vscode
+        run: pnpm vscode:publish
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
