@@ -12,7 +12,7 @@ import { StitchConfig } from './extension.config.mjs';
 import { GmlFile } from './extension.gml.mjs';
 import { GameMakerResource } from './extension.resource.mjs';
 
-export class GameMakerProject extends vscode.TreeItem {
+export class GameMakerProject {
   readonly kind = 'project';
   static config = new StitchConfig();
 
@@ -34,7 +34,6 @@ export class GameMakerProject extends vscode.TreeItem {
   yyp!: Yyp;
 
   protected constructor(readonly yypPath: vscode.Uri) {
-    super(yypPath.fsPath, vscode.TreeItemCollapsibleState.Collapsed);
     this.yypWatcher = vscode.workspace.createFileSystemWatcher(
       this.yypPath.fsPath,
     );
@@ -43,9 +42,6 @@ export class GameMakerProject extends vscode.TreeItem {
     );
     this.yypWatcher.onDidChange(() => this.loadYyp());
     this.gmlWatcher.onDidChange((uri) => this.updateFile(uri));
-
-    // TREE STUFF
-    this.iconPath = new vscode.ThemeIcon('file-directory');
   }
 
   get name() {

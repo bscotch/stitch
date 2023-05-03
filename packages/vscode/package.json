@@ -35,22 +35,6 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
-    "commands": [
-      {
-        "command": "stitch.openIde",
-        "title": "Stitch: Open in GameMaker",
-        "enablement": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
-      },
-      {
-        "command": "stitch.createProject",
-        "title": "Stitch: New GameMaker Project",
-        "enablement": "explorerResourceIsFolder"
-      },
-      {
-        "command": "stitch.run",
-        "title": "Stitch: Run Project"
-      }
-    ],
     "configuration": {
       "title": "Stitch",
       "properties": {
@@ -183,28 +167,6 @@
         "configuration": "./language-configuration.json"
       }
     ],
-    "menus": {
-      "explorer/context": [
-        {
-          "command": "stitch.openIde",
-          "group": "navigation",
-          "when": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
-        },
-        {
-          "command": "stitch.createProject",
-          "group": "navigation",
-          "when": "explorerResourceIsFolder"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "stitch.openIde"
-        },
-        {
-          "command": "stitch.run"
-        }
-      ]
-    },
     "semanticTokenModifiers": [
       {
         "id": "global",
@@ -221,6 +183,80 @@
         "path": "./snippets/gml.code-snippets"
       }
     ],
+    "commands": [
+      {
+        "command": "stitch.openIde",
+        "title": "Stitch: Open in GameMaker",
+        "shortTitle": "Open in GameMaker",
+        "enablement": "resourceExtname =~ /\\.(yy|yyp|gml)$/",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "stitch.createProject",
+        "title": "Stitch: New GameMaker Project",
+        "enablement": "explorerResourceIsFolder"
+      },
+      {
+        "command": "stitch.run",
+        "title": "Stitch: Run Project",
+        "shortTitle": "Run",
+        "icon": "$(play)"
+      },
+      {
+        "command": "stitch.clean",
+        "title": "Stitch: Clean Project Cache",
+        "shortTitle": "Clean Cache",
+        "icon": "$(history)"
+      },
+      {
+        "command": "stitch.refresh",
+        "title": "Stitch: Refresh Project",
+        "shortTitle": "Refresh Project",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "stitch.run",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "stitch.run",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
+          "group": "inline"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "stitch.openIde",
+          "group": "navigation@3",
+          "when": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
+        },
+        {
+          "command": "stitch.createProject",
+          "group": "navigation@3",
+          "when": "explorerResourceIsFolder"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "stitch.openIde"
+        },
+        {
+          "command": "stitch.run"
+        },
+        {
+          "command": "stitch.clean"
+        },
+        {
+          "command": "stitch.refresh"
+        }
+      ]
+    },
     "views": {
       "bscotch-stitch": [
         {

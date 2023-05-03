@@ -14,8 +14,10 @@ export class GameMakerFolder extends vscode.TreeItem {
     super(name);
     this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
+    this.contextValue = 'folder';
     if (isProject) {
       this.iconPath = new vscode.ThemeIcon('heart');
+      this.contextValue = 'project';
     }
   }
 
@@ -45,27 +47,18 @@ export class GameMakerFolder extends vscode.TreeItem {
 
 export class GameMakerTreeProvider
   implements
-    vscode.TreeDataProvider<
-      GameMakerResource | GameMakerFolder | GmlFile | GameMakerProject
-    >
+    vscode.TreeDataProvider<GameMakerResource | GameMakerFolder | GmlFile>
 {
   tree: GameMakerFolder = new GameMakerFolder('root');
 
   constructor(readonly projects: GameMakerProject[]) {}
 
-  getTreeItem(
-    element: GameMakerResource | GameMakerFolder | GmlFile | GameMakerProject,
-  ) {
+  getTreeItem(element: GameMakerResource | GameMakerFolder | GmlFile) {
     return element;
   }
 
   getChildren(
-    element?:
-      | GameMakerResource
-      | GameMakerFolder
-      | GmlFile
-      | GameMakerProject
-      | undefined,
+    element?: GameMakerResource | GameMakerFolder | GmlFile | undefined,
   ) {
     if (!element) {
       // Then we're at the root.
