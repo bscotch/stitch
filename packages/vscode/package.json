@@ -1,7 +1,7 @@
 {
   "name": "bscotch-stitch-vscode",
   "displayName": "Stitch",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
@@ -35,6 +35,38 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
+    "commands": [
+      {
+        "command": "stitch.openIde",
+        "title": "Stitch: Open in GameMaker",
+        "shortTitle": "Open in GameMaker",
+        "enablement": "resourceExtname =~ /\\.(yy|yyp|gml)$/",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "stitch.createProject",
+        "title": "Stitch: New GameMaker Project",
+        "enablement": "explorerResourceIsFolder"
+      },
+      {
+        "command": "stitch.run",
+        "title": "Stitch: Run Project",
+        "shortTitle": "Run",
+        "icon": "$(play)"
+      },
+      {
+        "command": "stitch.clean",
+        "title": "Stitch: Clean Project Cache",
+        "shortTitle": "Clean Cache",
+        "icon": "$(history)"
+      },
+      {
+        "command": "stitch.refresh",
+        "title": "Stitch: Refresh Project",
+        "shortTitle": "Refresh Project",
+        "icon": "$(refresh)"
+      }
+    ],
     "configuration": {
       "title": "Stitch",
       "properties": {
@@ -167,54 +199,6 @@
         "configuration": "./language-configuration.json"
       }
     ],
-    "semanticTokenModifiers": [
-      {
-        "id": "global",
-        "description": "Global"
-      },
-      {
-        "id": "asset",
-        "description": "A subset of global variables representing a GameMaker asset."
-      }
-    ],
-    "snippets": [
-      {
-        "language": "gml",
-        "path": "./snippets/gml.code-snippets"
-      }
-    ],
-    "commands": [
-      {
-        "command": "stitch.openIde",
-        "title": "Stitch: Open in GameMaker",
-        "shortTitle": "Open in GameMaker",
-        "enablement": "resourceExtname =~ /\\.(yy|yyp|gml)$/",
-        "icon": "$(edit)"
-      },
-      {
-        "command": "stitch.createProject",
-        "title": "Stitch: New GameMaker Project",
-        "enablement": "explorerResourceIsFolder"
-      },
-      {
-        "command": "stitch.run",
-        "title": "Stitch: Run Project",
-        "shortTitle": "Run",
-        "icon": "$(play)"
-      },
-      {
-        "command": "stitch.clean",
-        "title": "Stitch: Clean Project Cache",
-        "shortTitle": "Clean Cache",
-        "icon": "$(history)"
-      },
-      {
-        "command": "stitch.refresh",
-        "title": "Stitch: Refresh Project",
-        "shortTitle": "Refresh Project",
-        "icon": "$(refresh)"
-      }
-    ],
     "menus": {
       "view/title": [
         {
@@ -257,6 +241,22 @@
         }
       ]
     },
+    "semanticTokenModifiers": [
+      {
+        "id": "global",
+        "description": "Global"
+      },
+      {
+        "id": "asset",
+        "description": "A subset of global variables representing a GameMaker asset."
+      }
+    ],
+    "snippets": [
+      {
+        "language": "gml",
+        "path": "./snippets/gml.code-snippets"
+      }
+    ],
     "views": {
       "bscotch-stitch": [
         {
