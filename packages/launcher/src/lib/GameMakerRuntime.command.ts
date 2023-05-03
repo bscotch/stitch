@@ -111,8 +111,8 @@ export async function stringifyGameMakerBuildCommand(
   options: GameMakerBuildOptions & { compile?: boolean },
 ) {
   const { cmd, args } = await computeGameMakerBuildCommand(runtime, options);
-
-  return `"${cmd}" ${args.join(' ')}`;
+  const escapedCmd = cmd.replace(/[/\\]/g, '/').replace(/ /g, '\\ ');
+  return `${escapedCmd} ${args.join(' ')}`;
 }
 
 export async function computeGameMakerBuildCommand(
@@ -142,7 +142,7 @@ export function computeGameMakerCommand<W extends GameMakerCliWorker>(
       if (typeof value === 'undefined') {
         return;
       }
-      let arg = `--${key}`;
+      const arg = `--${key}`;
       if (value === false) {
         return;
       }
