@@ -70,6 +70,22 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.editing.signatureStatus.enable": {
+          "title": "Enable signature status",
+          "type": "boolean",
+          "default": true,
+          "description": "Stitch adds a statusbar item showing a function signature helper, replicating the functionality of the GameMaker IDE. This can be disabled."
+        },
+        "stitch.editing.signatureStatus.alignment": {
+          "title": "Signature status alignment",
+          "type": "string",
+          "enum": [
+            "left",
+            "right"
+          ],
+          "default": "right",
+          "description": "Whether the statusbar will show the function signature helper on the left or right side."
+        },
         "stitch.run.defaultCompiler": {
           "title": "Default GameMaker compiler",
           "enum": [

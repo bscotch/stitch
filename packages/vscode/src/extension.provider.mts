@@ -41,10 +41,19 @@ export class GmlProvider
   builtIns = new Set<string>();
   globalHovers: Map<string, vscode.Hover> = new Map();
   globalSignatures: Map<string, vscode.SignatureHelp> = new Map();
+  readonly signatureHelpStatus = vscode.window.createStatusBarItem(
+    config.functionSignatureStatusAlignment,
+    config.functionSignatureStatusAlignment === vscode.StatusBarAlignment.Left
+      ? -Infinity
+      : Infinity,
+  );
+
   protected projects: GameMakerProject[] = [];
   static config = config;
 
   protected constructor(readonly spec: GmlSpec) {
+    this.signatureHelpStatus.hide();
+
     for (const func of spec.functions) {
       this.globalCompletions.push(
         new vscode.CompletionItem(
@@ -277,7 +286,7 @@ export class GmlProvider
   provideSignatureHelp(
     document: vscode.TextDocument,
     position: vscode.Position,
-  ): vscode.ProviderResult<vscode.SignatureHelp> {
+  ): vscode.SignatureHelp | undefined {
     const project = this.documentToProject(document);
     let leftParensNeeded = 1;
     let offset = document.offsetAt(position);
@@ -540,6 +549,50 @@ export class GmlProvider
         },
       ),
       new GameMakerSemanticTokenProvider(this.provider).register(),
+      this.provider.signatureHelpStatus,
+      vscode.window.onDidChangeTextEditorSelection((e) => {
+        this.provider.signatureHelpStatus.text = '';
+        this.provider.signatureHelpStatus.hide();
+        if (!config.enableFunctionSignatureStatus) {
+          return;
+        }
+        // If something is actually selected, versus
+        // just the cursor being in a position, then
+        // we don't want to do anything.
+        if (e.selections.length !== 1) {
+          return;
+        }
+        // Get the signature helper.
+        const signatureHelp = this.provider.provideSignatureHelp(
+          e.textEditor.document,
+          e.selections[0].start,
+        );
+        if (!signatureHelp) {
+          return;
+        }
+        // Update the status bar with the signature.
+        // We can't do any formatting, so we'll need
+        // to upper-case the current parameter.
+        const signature =
+          signatureHelp.signatures[signatureHelp.activeSignature];
+        const name = signature.label.match(/^function\s+([^(]+)/i)?.[1];
+        if (!name) {
+          return;
+        }
+        const asString = `${name}(${signature.parameters
+          .map((p, i) => {
+            if (
+              typeof p.label === 'string' &&
+              i === signatureHelp.activeParameter
+            ) {
+              return p.label.toUpperCase();
+            }
+            return p.label;
+          })
+          .join(', ')})`;
+        this.provider.signatureHelpStatus.text = asString;
+        this.provider.signatureHelpStatus.show();
+      }),
     );
 
     return this.provider;

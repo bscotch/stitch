@@ -10,6 +10,18 @@ export interface StitchTaskDefinition extends vscode.TaskDefinition {
 
 export class StitchConfig {
   protected readonly config = vscode.workspace.getConfiguration('stitch');
+  get enableFunctionSignatureStatus() {
+    return this.config.get<boolean>('editing.signatureStatus.enable');
+  }
+  get functionSignatureStatusAlignment(): vscode.StatusBarAlignment {
+    const alignment = this.config.get<'left' | 'right'>(
+      'editing.signatureStatus.alignment',
+    );
+    if (alignment === 'left') {
+      return vscode.StatusBarAlignment.Left;
+    }
+    return vscode.StatusBarAlignment.Right;
+  }
   get gmChannel() {
     return this.config.get<string | null>('gm.channel');
   }
