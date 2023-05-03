@@ -91,7 +91,7 @@ export class GameMakerResource<
     return new vscode.SymbolInformation(
       this.name,
       vscode.SymbolKind.Package,
-      `${this.type} (yy)`,
+      `yy-file (${this.type})`,
       new vscode.Location(
         vscode.Uri.file(this.yyPath),
         new vscode.Position(0, 0),
@@ -108,7 +108,7 @@ export class GameMakerResource<
         new vscode.SymbolInformation(
           this.name,
           vscode.SymbolKind.Module,
-          `${this.type} (gml)`,
+          `${this.type}`,
           new vscode.Location(gmlFiles[0].uri, fileStart),
         ),
       );
@@ -124,8 +124,11 @@ export class GameMakerResource<
           ),
         );
       }
-    } else {
-      // Fall back on the YY file
+    }
+
+    // YY files can be useful for many kinds of
+    // assets.
+    if (!['scripts'].includes(this.type)) {
       symbols.push(this.yyFileSymbol);
     }
     // Include any GML files
