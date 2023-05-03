@@ -11,6 +11,7 @@ import { GameMakerProject } from 'extension.project.mjs';
 import path from 'path';
 import vscode from 'vscode';
 import { GmlFile } from './extension.gml.mjs';
+import { getEventName } from './spec.events.mjs';
 
 export class GameMakerResource<
   T extends YyResourceType = YyResourceType,
@@ -29,7 +30,6 @@ export class GameMakerResource<
     this.id = resource.id.path;
   }
 
-  //#region TREE stuff
   protected refreshTreeItem() {
     if (this.type !== 'objects') {
       let file: vscode.Uri;
@@ -87,7 +87,50 @@ export class GameMakerResource<
     this.iconPath = new vscode.ThemeIcon(icon);
   }
 
-  //#endregion /Tree stuff
+  get yyFileSymbol(): vscode.SymbolInformation {
+    return new vscode.SymbolInformation(
+      this.name,
+      vscode.SymbolKind.Package,
+      `${this.type} (yy)`,
+      new vscode.Location(
+        vscode.Uri.file(this.yyPath),
+        new vscode.Position(0, 0),
+      ),
+    );
+  }
+
+  workspaceSymbols(): vscode.SymbolInformation[] {
+    const symbols: vscode.SymbolInformation[] = [];
+    const fileStart = new vscode.Position(0, 0);
+    const gmlFiles = [...this.gmlFiles.values()];
+    if (this.type === 'scripts') {
+      symbols.push(
+        new vscode.SymbolInformation(
+          this.name,
+          vscode.SymbolKind.Module,
+          `${this.type} (gml)`,
+          new vscode.Location(gmlFiles[0].uri, fileStart),
+        ),
+      );
+    } else if (this.type === 'objects') {
+      // Need one entry per event
+      for (const gmlFile of gmlFiles) {
+        symbols.push(
+          new vscode.SymbolInformation(
+            this.name,
+            vscode.SymbolKind.Namespace,
+            getEventName(gmlFile.name),
+            new vscode.Location(gmlFile.uri, fileStart),
+          ),
+        );
+      }
+    } else {
+      // Fall back on the YY file
+      symbols.push(this.yyFileSymbol);
+    }
+    // Include any GML files
+    return symbols;
+  }
 
   protected async readYy(): Promise<YyDataStrict<T>> {
     let asPath: Pathy | undefined = pathy(this.yyPath);

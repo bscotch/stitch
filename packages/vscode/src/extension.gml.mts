@@ -36,6 +36,14 @@ export class GmlFile extends vscode.TreeItem {
     };
   }
 
+  get name() {
+    return path.basename(this.uri.fsPath, '.gml');
+  }
+
+  get basename() {
+    return path.basename(this.uri.fsPath);
+  }
+
   async load(doc?: vscode.TextDocument) {
     this.clearGlobals();
     const text = doc?.getText() || (await readFile(this.uri.fsPath, 'utf8'));

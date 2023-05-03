@@ -9,6 +9,7 @@ import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { config } from './extension.config.mjs';
 import { GameMakerProject } from './extension.project.mjs';
+import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { GameMakerTreeProvider } from './extension.tree.mjs';
 import {
   SemanticTokenModifier,
@@ -38,7 +39,6 @@ export class GmlProvider
     vscode.DocumentFormattingEditProvider,
     vscode.DefinitionProvider,
     vscode.ReferenceProvider,
-    vscode.WorkspaceSymbolProvider,
     vscode.DocumentSemanticTokensProvider
 {
   globalTypeCompletions: vscode.CompletionItem[] = [];
@@ -208,28 +208,6 @@ export class GmlProvider
     }
     const tokens = tokensBuilder.build();
     return tokens;
-  }
-
-  provideWorkspaceSymbols(
-    query: string,
-  ): vscode.ProviderResult<vscode.SymbolInformation[]> {
-    const symbols: vscode.SymbolInformation[] = [];
-    const matcher = new RegExp(query.split('').join('.*'), 'i');
-    for (const project of this.projects) {
-      project.definitions.forEach((loc, name) => {
-        if (matcher.test(name)) {
-          symbols.push(
-            new vscode.SymbolInformation(
-              name,
-              vscode.SymbolKind.Variable,
-              loc.range,
-              loc.uri,
-            ),
-          );
-        }
-      });
-    }
-    return symbols;
   }
 
   provideReferences(
@@ -566,14 +544,16 @@ export class GmlProvider
 
     const treeProvider = new GameMakerTreeProvider(this.provider.projects);
     treeProvider.refresh();
+
+    const workspaceSymbolProvider = new GameMakerWorkspaceSymbolProvider(
+      this.provider.projects,
+    );
+
     ctx.subscriptions.push(
       vscode.window.registerTreeDataProvider(
         'bscotch-stitch-resources',
         treeProvider,
       ),
-    );
-
-    ctx.subscriptions.push(
       vscode.languages.registerHoverProvider('gml', this.provider),
       vscode.languages.registerCompletionItemProvider(
         'gml',
@@ -593,7 +573,7 @@ export class GmlProvider
       ),
       vscode.languages.registerDefinitionProvider('gml', this.provider),
       vscode.languages.registerReferenceProvider('gml', this.provider),
-      vscode.languages.registerWorkspaceSymbolProvider(this.provider),
+      vscode.languages.registerWorkspaceSymbolProvider(workspaceSymbolProvider),
       vscode.commands.registerCommand('stitch.run', (...args) => {
         const uri = vscode.Uri.parse(
           args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
