@@ -1,3 +1,4 @@
+import path from 'path';
 import vscode from 'vscode';
 import type { GmlFile } from './extension.gml.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
@@ -5,7 +6,26 @@ import type { GameMakerResource } from './extension.resource.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
-export class GameMakerFolder extends vscode.TreeItem {
+export class StitchTreeItemBase extends vscode.TreeItem {
+  setThemeIcon(icon: string) {
+    this.iconPath = new vscode.ThemeIcon(icon);
+  }
+  setGameMakerIcon(icon: string) {
+    this.iconPath = path.join(__dirname, '..', 'images', 'gm', icon + '.svg');
+  }
+  setObjectEventIcon(icon: string) {
+    this.iconPath = path.join(
+      __dirname,
+      '..',
+      'images',
+      'gm',
+      'obj',
+      icon + '.svg',
+    );
+  }
+}
+
+export class GameMakerFolder extends StitchTreeItemBase {
   readonly kind = 'folder';
   folders: GameMakerFolder[] = [];
   resources: GameMakerResource[] = [];
@@ -16,7 +36,7 @@ export class GameMakerFolder extends vscode.TreeItem {
 
     this.contextValue = 'folder';
     if (isProject) {
-      this.iconPath = new vscode.ThemeIcon('heart');
+      this.setGameMakerIcon('gamemaker');
       this.contextValue = 'project';
     }
   }

@@ -4,11 +4,12 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import vscode from 'vscode';
 import type { GameMakerResource } from './extension.resource.mjs';
+import { StitchTreeItemBase } from './extension.tree.mjs';
 import { getEventName } from './spec.events.mjs';
 
 // TODO: Add command to open the current project in GameMaker
 
-export class GmlFile extends vscode.TreeItem {
+export class GmlFile extends StitchTreeItemBase {
   readonly kind = 'gmlFile';
   readonly dir: string;
   readonly resourceType: YyResourceType;
@@ -28,16 +29,41 @@ export class GmlFile extends vscode.TreeItem {
 
     // TREE STUFF
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
-    this.iconPath = new vscode.ThemeIcon('code');
-
     this.command = {
       command: 'vscode.open',
       title: 'Open',
       arguments: [uri],
     };
+    this.setIcon();
 
     // Ensure that the tree label is human-friendly.
     this.label = getEventName(this.uri.fsPath);
+  }
+
+  protected setIcon() {
+    // Set the default
+    if (this.name.startsWith('Other_')) {
+      this.setObjectEventIcon('other');
+    } else {
+      this.setGameMakerIcon('script');
+    }
+
+    // Override for object events
+    if (this.name.match(/^Draw_\d+$/i)) {
+      this.setObjectEventIcon('draw');
+    } else if (this.name.match(/^Alarm_\d+$/i)) {
+      this.setObjectEventIcon('alarm');
+    } else if (this.name.match(/^Step_\d+$/i)) {
+      this.setObjectEventIcon('step');
+    } else if (this.name === 'Create_0') {
+      this.setObjectEventIcon('create');
+    } else if (this.name === 'Destroy_0') {
+      this.setObjectEventIcon('destroy');
+    } else if (this.name === 'CleanUp_0') {
+      this.setObjectEventIcon('cleanup');
+    } else if (this.name.match(/^Other_(7[250]|6[239])$/i)) {
+      this.setObjectEventIcon('asynchronous');
+    }
   }
 
   get name() {

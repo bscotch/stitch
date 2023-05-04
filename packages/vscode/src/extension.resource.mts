@@ -11,11 +11,12 @@ import { GameMakerProject } from 'extension.project.mjs';
 import path from 'path';
 import vscode from 'vscode';
 import { GmlFile } from './extension.gml.mjs';
+import { StitchTreeItemBase } from './extension.tree.mjs';
 import { getEventName } from './spec.events.mjs';
 
 export class GameMakerResource<
   T extends YyResourceType = YyResourceType,
-> extends vscode.TreeItem {
+> extends StitchTreeItemBase {
   readonly kind = 'resource';
   readonly type: T;
   readonly gmlFiles: Map<string, GmlFile> = new Map();
@@ -51,40 +52,40 @@ export class GameMakerResource<
         ? vscode.TreeItemCollapsibleState.Collapsed
         : vscode.TreeItemCollapsibleState.None;
 
-    let icon = 'question';
+    this.setThemeIcon('question');
+
     switch (this.type) {
       case 'objects':
-        icon = 'symbol-misc';
+        this.setThemeIcon('symbol-misc');
         break;
       case 'rooms':
-        icon = 'screen-full';
+        this.setGameMakerIcon('room');
         break;
       case 'scripts':
-        icon = 'code';
+        this.setGameMakerIcon('script');
         break;
       case 'sprites':
-        icon = 'device-camera';
+        this.setGameMakerIcon('sprite');
         break;
       case 'sounds':
-        icon = 'unmute';
+        this.setGameMakerIcon('audio');
         break;
       case 'paths':
-        icon = 'debug-disconnect';
+        this.setThemeIcon('debug-disconnect');
         break;
       case 'shaders':
-        icon = 'symbol-color';
+        this.setGameMakerIcon('shader');
         break;
       case 'timelines':
-        icon = 'clock';
+        this.setThemeIcon('clock');
         break;
       case 'fonts':
-        icon = 'text-size';
+        this.setGameMakerIcon('font');
         break;
       case 'tilesets':
-        icon = 'layers';
+        this.setThemeIcon('layers');
         break;
     }
-    this.iconPath = new vscode.ThemeIcon(icon);
   }
 
   get yyFileSymbol(): vscode.SymbolInformation {
