@@ -27,6 +27,19 @@ export class GameMakerSpriteFrame extends StitchTreeItemBase {
   }
 }
 
+export class GameMakerShaderFile extends StitchTreeItemBase {
+  readonly kind = 'shader-file';
+  constructor(readonly uri: vscode.Uri) {
+    super(uri.fsPath.endsWith('.vsh') ? 'Vertex' : 'Fragment');
+    this.command = {
+      command: 'vscode.open',
+      title: 'Open',
+      arguments: [uri],
+    };
+    this.setFileIcon('shader');
+  }
+}
+
 export class GameMakerResource<
   T extends YyResourceType = YyResourceType,
 > extends StitchTreeItemBase {
@@ -34,6 +47,7 @@ export class GameMakerResource<
   readonly type: T;
   readonly gmlFiles: Map<string, GmlFile> = new Map();
   yy!: YyDataStrict<T>;
+  readonly shaders: vscode.Uri[] = [];
 
   protected constructor(
     readonly project: GameMakerProject,
@@ -45,30 +59,30 @@ export class GameMakerResource<
   }
 
   protected refreshTreeItem() {
-    if (this.type !== 'objects') {
-      let file: vscode.Uri;
-      if (this.type === 'scripts') {
-        const gmlFiles = [...this.gmlFiles.values()];
-        file = gmlFiles[0]?.uri;
-      } else {
-        file = vscode.Uri.file(this.yyPath);
-      }
-      this.command = {
-        command: 'vscode.open',
-        title: 'Open',
-        arguments: [file],
-      };
+    let file: vscode.Uri;
+    if (this.type === 'scripts') {
+      const gmlFiles = [...this.gmlFiles.values()];
+      file = gmlFiles[0]?.uri;
+    } else {
+      file = vscode.Uri.file(this.yyPath);
     }
+    this.command = {
+      command: 'vscode.open',
+      title: 'Open',
+      arguments: [file],
+    };
 
-    this.collapsibleState = ['objects', 'sprites'].includes(this.type)
+    this.collapsibleState = ['objects', 'sprites', 'shaders'].includes(
+      this.type,
+    )
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
 
-    this.setThemeIcon('question');
+    this.setBaseIcon('question');
 
     switch (this.type) {
       case 'objects':
-        this.setThemeIcon('symbol-misc');
+        this.setBaseIcon('symbol-misc');
         break;
       case 'rooms':
         this.setGameMakerIcon('room');
@@ -83,19 +97,19 @@ export class GameMakerResource<
         this.setGameMakerIcon('audio');
         break;
       case 'paths':
-        this.setThemeIcon('debug-disconnect');
+        this.setBaseIcon('debug-disconnect');
         break;
       case 'shaders':
         this.setGameMakerIcon('shader');
         break;
       case 'timelines':
-        this.setThemeIcon('clock');
+        this.setBaseIcon('clock');
         break;
       case 'fonts':
         this.setGameMakerIcon('font');
         break;
       case 'tilesets':
-        this.setThemeIcon('layers');
+        this.setBaseIcon('layers');
         break;
     }
   }
@@ -215,7 +229,7 @@ export class GameMakerResource<
     return this.gmlFiles.get(fileName);
   }
 
-  async loadFile(file: vscode.Uri | vscode.TextDocument): Promise<GmlFile> {
+  async loadGml(file: vscode.Uri | vscode.TextDocument): Promise<GmlFile> {
     const uri = file instanceof vscode.Uri ? file : file.uri;
     const fileName = path.basename(uri.fsPath);
     const gml = this.gmlFiles.get(fileName) || new GmlFile(this, uri);
@@ -226,10 +240,14 @@ export class GameMakerResource<
 
   protected async load() {
     const waits: Promise<any>[] = [];
+    this.shaders.length = 0;
+    this.gmlFiles.clear();
     waits.push(this.readYy());
     (await pathy(this.dir).listChildren()).forEach((p) => {
       if (p.hasExtension('gml')) {
-        waits.push(this.loadFile(vscode.Uri.file(p.absolute)));
+        waits.push(this.loadGml(vscode.Uri.file(p.absolute)));
+      } else if (p.hasExtension('vsh') || p.hasExtension('fsh')) {
+        this.shaders.push(vscode.Uri.file(p.absolute));
       }
     });
     await Promise.all(waits);

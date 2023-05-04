@@ -170,7 +170,7 @@ export class GameMakerProject {
     if (!resource) {
       console.error(`Could not find resource for file ${uri}`);
     } else {
-      await resource.loadFile(doc);
+      await resource.loadGml(doc);
     }
   }
 

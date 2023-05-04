@@ -4,15 +4,27 @@ import type { GmlFile } from './extension.gml.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import {
   GameMakerResource,
+  GameMakerShaderFile,
   GameMakerSpriteFrame,
 } from './extension.resource.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
 export class StitchTreeItemBase extends vscode.TreeItem {
-  setThemeIcon(icon: string) {
+  setBaseIcon(icon: string) {
     this.iconPath = new vscode.ThemeIcon(icon);
   }
+
+  setFileIcon(icon: string) {
+    this.iconPath = path.join(
+      __dirname,
+      '..',
+      'images',
+      'files',
+      icon + '.svg',
+    );
+  }
+
   setGameMakerIcon(icon: string) {
     this.iconPath = path.join(__dirname, '..', 'images', 'gm', icon + '.svg');
   }
@@ -71,7 +83,11 @@ export class GameMakerFolder extends StitchTreeItemBase {
 export class GameMakerTreeProvider
   implements
     vscode.TreeDataProvider<
-      GameMakerResource | GameMakerFolder | GameMakerSpriteFrame | GmlFile
+      | GameMakerResource
+      | GameMakerFolder
+      | GameMakerSpriteFrame
+      | GmlFile
+      | GameMakerShaderFile
     >
 {
   tree: GameMakerFolder = new GameMakerFolder('root');
@@ -88,6 +104,7 @@ export class GameMakerTreeProvider
       | GameMakerFolder
       | GmlFile
       | GameMakerSpriteFrame
+      | GameMakerShaderFile
       | undefined,
   ) {
     if (!element) {
@@ -109,6 +126,8 @@ export class GameMakerTreeProvider
         return element
           .framePaths()
           .map((p, i) => new GameMakerSpriteFrame(p, i));
+      } else if (element.type == 'shaders') {
+        return element.shaders.map((s) => new GameMakerShaderFile(s));
       }
     }
     return;

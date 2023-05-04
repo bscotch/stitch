@@ -145,6 +145,9 @@
     "readme": {
       "iconPath": "./files/readme.svg"
     },
+    "shader": {
+      "iconPath": "./files/shader.svg"
+    },
     "svg": {
       "iconPath": "./files/svg.svg"
     },
@@ -334,6 +337,8 @@
   "fileExtensions": {
     "gml": "gm-script",
     "ext": "gm-extension",
+    "fsh": "gm-shader",
+    "vsh": "gm-shader",
     "h": "cpp",
     "yy": "gamemaker",
     "yyp": "gamemaker",
