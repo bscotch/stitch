@@ -2,7 +2,10 @@ import path from 'path';
 import vscode from 'vscode';
 import type { GmlFile } from './extension.gml.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
-import type { GameMakerResource } from './extension.resource.mjs';
+import {
+  GameMakerResource,
+  GameMakerSpriteFrame,
+} from './extension.resource.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
@@ -67,7 +70,9 @@ export class GameMakerFolder extends StitchTreeItemBase {
 
 export class GameMakerTreeProvider
   implements
-    vscode.TreeDataProvider<GameMakerResource | GameMakerFolder | GmlFile>
+    vscode.TreeDataProvider<
+      GameMakerResource | GameMakerFolder | GameMakerSpriteFrame | GmlFile
+    >
 {
   tree: GameMakerFolder = new GameMakerFolder('root');
 
@@ -78,7 +83,12 @@ export class GameMakerTreeProvider
   }
 
   getChildren(
-    element?: GameMakerResource | GameMakerFolder | GmlFile | undefined,
+    element?:
+      | GameMakerResource
+      | GameMakerFolder
+      | GmlFile
+      | GameMakerSpriteFrame
+      | undefined,
   ) {
     if (!element) {
       // Then we're at the root.
@@ -95,6 +105,10 @@ export class GameMakerTreeProvider
     } else if (element.kind === 'resource') {
       if (element.type === 'objects') {
         return [...element.gmlFiles.values()];
+      } else if (element.type === 'sprites') {
+        return element
+          .framePaths()
+          .map((p, i) => new GameMakerSpriteFrame(p, i));
       }
     }
     return;

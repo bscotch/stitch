@@ -14,6 +14,19 @@ import { GmlFile } from './extension.gml.mjs';
 import { StitchTreeItemBase } from './extension.tree.mjs';
 import { getEventName } from './spec.events.mjs';
 
+export class GameMakerSpriteFrame extends StitchTreeItemBase {
+  readonly kind = 'sprite-frame';
+  constructor(readonly imagePath: string, readonly idx: number) {
+    super(`[${idx}] ${path.basename(imagePath, '.png')}`);
+    this.iconPath = vscode.Uri.file(imagePath);
+    this.command = {
+      command: 'vscode.open',
+      title: 'Open',
+      arguments: [this.iconPath],
+    };
+  }
+}
+
 export class GameMakerResource<
   T extends YyResourceType = YyResourceType,
 > extends StitchTreeItemBase {
@@ -47,10 +60,9 @@ export class GameMakerResource<
       };
     }
 
-    this.collapsibleState =
-      this.type === 'objects'
-        ? vscode.TreeItemCollapsibleState.Collapsed
-        : vscode.TreeItemCollapsibleState.None;
+    this.collapsibleState = ['objects', 'sprites'].includes(this.type)
+      ? vscode.TreeItemCollapsibleState.Collapsed
+      : vscode.TreeItemCollapsibleState.None;
 
     this.setThemeIcon('question');
 
@@ -158,6 +170,15 @@ export class GameMakerResource<
 
   get name() {
     return this.resource.id.name;
+  }
+
+  /** If this is a sprite, the paths to the frames  */
+  framePaths(): string[] {
+    if (this.type !== 'sprites') {
+      return [];
+    }
+    const yy = this.yy as YySprite;
+    return yy.frames.map((frame) => path.join(this.dir, `${frame.name}.png`));
   }
 
   createDocs() {
