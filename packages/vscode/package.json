@@ -7,7 +7,8 @@
   "categories": [
     "Programming Languages",
     "Formatters",
-    "Snippets"
+    "Snippets",
+    "Themes"
   ],
   "keywords": [
     "gamemaker"
@@ -35,6 +36,13 @@
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
+    "iconThemes": [
+      {
+        "id": "stitch-icon-theme",
+        "label": "Stitch Icons",
+        "path": "./images/icon-theme.json"
+      }
+    ],
     "commands": [
       {
         "command": "stitch.openIde",

@@ -26,3 +26,6 @@ const builder = esbuild.build({
 await $`rm -rf ./assets/templates`;
 await $`mkdir -p ./assets/templates`;
 await $`cp -r ../core/assets/issue-template ./assets/templates/`;
+
+// Update the icon theme file
+await import('./sync-icons.mjs');

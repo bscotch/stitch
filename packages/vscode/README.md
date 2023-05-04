@@ -63,6 +63,12 @@ Here's an example of how you might update your `settings.json`:
 }
 ```
 
+### 🎨 Stitch Icon Theme
+
+Stitch provides an Icon Theme based on a subset of [Material Icon Theme](https://github.com/PKief/vscode-material-icon-theme), with support for GameMaker files and common non-GameMaker filetypes.
+
+To use it, use <kbd><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd></kbd> to open the command palette, search for "Preferences: File Icon Theme", then select "Stitch Icons". You can also set it as your default icon theme in your VSCode settings.
+
 ### 🚀 Running your project
 
 Hit <kbd>F5</kbd> to run your project, just like you would in the GameMaker IDE. Stitch uses the Runtime version that matches the IDE version your project uses. A terminal will pop up with the output from the GameMaker runtime.

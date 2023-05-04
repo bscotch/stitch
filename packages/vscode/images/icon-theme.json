@@ -1,0 +1,394 @@
+{
+  "file": "file",
+  "iconDefinitions": {
+    "audio": {
+      "iconPath": "./files/audio.svg"
+    },
+    "command": {
+      "iconPath": "./files/command.svg"
+    },
+    "cpp": {
+      "iconPath": "./files/cpp.svg"
+    },
+    "css": {
+      "iconPath": "./files/css.svg"
+    },
+    "database": {
+      "iconPath": "./files/database.svg"
+    },
+    "deno": {
+      "iconPath": "./files/deno.svg"
+    },
+    "file": {
+      "iconPath": "./files/file.svg"
+    },
+    "folder-audio-open": {
+      "iconPath": "./files/folder-audio-open.svg"
+    },
+    "folder-audio": {
+      "iconPath": "./files/folder-audio.svg"
+    },
+    "folder-config-open": {
+      "iconPath": "./files/folder-config-open.svg"
+    },
+    "folder-config": {
+      "iconPath": "./files/folder-config.svg"
+    },
+    "folder-database-open": {
+      "iconPath": "./files/folder-database-open.svg"
+    },
+    "folder-database": {
+      "iconPath": "./files/folder-database.svg"
+    },
+    "folder-font-open": {
+      "iconPath": "./files/folder-font-open.svg"
+    },
+    "folder-font": {
+      "iconPath": "./files/folder-font.svg"
+    },
+    "folder-gamemaker-open": {
+      "iconPath": "./files/folder-gamemaker-open.svg"
+    },
+    "folder-gamemaker": {
+      "iconPath": "./files/folder-gamemaker.svg"
+    },
+    "folder-git-open": {
+      "iconPath": "./files/folder-git-open.svg"
+    },
+    "folder-git": {
+      "iconPath": "./files/folder-git.svg"
+    },
+    "folder-github-open": {
+      "iconPath": "./files/folder-github-open.svg"
+    },
+    "folder-github": {
+      "iconPath": "./files/folder-github.svg"
+    },
+    "folder-images-open": {
+      "iconPath": "./files/folder-images-open.svg"
+    },
+    "folder-images": {
+      "iconPath": "./files/folder-images.svg"
+    },
+    "folder-open": {
+      "iconPath": "./files/folder-open.svg"
+    },
+    "folder-scripts-open": {
+      "iconPath": "./files/folder-scripts-open.svg"
+    },
+    "folder-scripts": {
+      "iconPath": "./files/folder-scripts.svg"
+    },
+    "folder-shader-open": {
+      "iconPath": "./files/folder-shader-open.svg"
+    },
+    "folder-shader": {
+      "iconPath": "./files/folder-shader.svg"
+    },
+    "folder-temp-open": {
+      "iconPath": "./files/folder-temp-open.svg"
+    },
+    "folder-template-open": {
+      "iconPath": "./files/folder-template-open.svg"
+    },
+    "folder-vscode-open": {
+      "iconPath": "./files/folder-vscode-open.svg"
+    },
+    "folder-vscode": {
+      "iconPath": "./files/folder-vscode.svg"
+    },
+    "folder": {
+      "iconPath": "./files/folder.svg"
+    },
+    "font": {
+      "iconPath": "./files/font.svg"
+    },
+    "gamemaker": {
+      "iconPath": "./files/gamemaker.svg"
+    },
+    "git": {
+      "iconPath": "./files/git.svg"
+    },
+    "html": {
+      "iconPath": "./files/html.svg"
+    },
+    "image": {
+      "iconPath": "./files/image.svg"
+    },
+    "java": {
+      "iconPath": "./files/java.svg"
+    },
+    "javascript": {
+      "iconPath": "./files/javascript.svg"
+    },
+    "json": {
+      "iconPath": "./files/json.svg"
+    },
+    "markdown": {
+      "iconPath": "./files/markdown.svg"
+    },
+    "mermaid": {
+      "iconPath": "./files/mermaid.svg"
+    },
+    "nodejs": {
+      "iconPath": "./files/nodejs.svg"
+    },
+    "npm": {
+      "iconPath": "./files/npm.svg"
+    },
+    "objective-c": {
+      "iconPath": "./files/objective-c.svg"
+    },
+    "pnpm": {
+      "iconPath": "./files/pnpm.svg"
+    },
+    "readme": {
+      "iconPath": "./files/readme.svg"
+    },
+    "svg": {
+      "iconPath": "./files/svg.svg"
+    },
+    "todo": {
+      "iconPath": "./files/todo.svg"
+    },
+    "tsconfig": {
+      "iconPath": "./files/tsconfig.svg"
+    },
+    "typescript-def": {
+      "iconPath": "./files/typescript-def.svg"
+    },
+    "typescript": {
+      "iconPath": "./files/typescript.svg"
+    },
+    "video": {
+      "iconPath": "./files/video.svg"
+    },
+    "vscode": {
+      "iconPath": "./files/vscode.svg"
+    },
+    "xml": {
+      "iconPath": "./files/xml.svg"
+    },
+    "yaml": {
+      "iconPath": "./files/yaml.svg"
+    },
+    "zip": {
+      "iconPath": "./files/zip.svg"
+    },
+    "gm-animation-curve": {
+      "iconPath": "./gm/animation-curve.svg"
+    },
+    "gm-audio": {
+      "iconPath": "./gm/audio.svg"
+    },
+    "gm-extension": {
+      "iconPath": "./gm/extension.svg"
+    },
+    "gm-font": {
+      "iconPath": "./gm/font.svg"
+    },
+    "gm-object": {
+      "iconPath": "./gm/object.svg"
+    },
+    "gm-room": {
+      "iconPath": "./gm/room.svg"
+    },
+    "gm-script": {
+      "iconPath": "./gm/script.svg"
+    },
+    "gm-shader": {
+      "iconPath": "./gm/shader.svg"
+    },
+    "gm-sprite": {
+      "iconPath": "./gm/sprite.svg"
+    },
+    "gm-obj-alarm": {
+      "iconPath": "./gm/obj/alarm.svg"
+    },
+    "gm-obj-asynchronous": {
+      "iconPath": "./gm/obj/asynchronous.svg"
+    },
+    "gm-obj-cleanup": {
+      "iconPath": "./gm/obj/cleanup.svg"
+    },
+    "gm-obj-collision": {
+      "iconPath": "./gm/obj/collision.svg"
+    },
+    "gm-obj-create": {
+      "iconPath": "./gm/obj/create.svg"
+    },
+    "gm-obj-destroy": {
+      "iconPath": "./gm/obj/destroy.svg"
+    },
+    "gm-obj-draw": {
+      "iconPath": "./gm/obj/draw.svg"
+    },
+    "gm-obj-gesture": {
+      "iconPath": "./gm/obj/gesture.svg"
+    },
+    "gm-obj-keyboard": {
+      "iconPath": "./gm/obj/keyboard.svg"
+    },
+    "gm-obj-keyboard-down": {
+      "iconPath": "./gm/obj/keyboard_down.svg"
+    },
+    "gm-obj-keyboard-up": {
+      "iconPath": "./gm/obj/keyboard_up.svg"
+    },
+    "gm-obj-mouse": {
+      "iconPath": "./gm/obj/mouse.svg"
+    },
+    "gm-obj-other": {
+      "iconPath": "./gm/obj/other.svg"
+    },
+    "gm-obj-step": {
+      "iconPath": "./gm/obj/step.svg"
+    }
+  },
+  "folder": "folder",
+  "folderExpanded": "folder-open",
+  "folderNames": {
+    "fonts": "folder-font",
+    "sounds": "folder-audio",
+    "sprites": "folder-image",
+    "shaders": "folder-shader",
+    "scripts": "folder-scripts",
+    "tmp": "folder-temp",
+    "temp": "folder-temp",
+    "config": "folder-config",
+    ".github": "folder-github",
+    ".vscode": "folder-vscode"
+  },
+  "folderNamesExpanded": {
+    "fonts": "folder-font-open",
+    "sounds": "folder-audio-open",
+    "sprites": "folder-image-open",
+    "shaders": "folder-shader-open",
+    "scripts": "folder-scripts-open",
+    "tmp": "folder-temp-open",
+    "temp": "folder-temp-open",
+    "config": "folder-config-open",
+    ".github": "folder-github-open",
+    ".vscode": "folder-vscode-open"
+  },
+  "fileNames": {
+    ".gitignore": "git",
+    ".gitattributes": "git",
+    ".npmignore": "npm",
+    ".npmrc": "npm",
+    ".pnpmignore": "pnpm",
+    ".vscodeignore": "vscode",
+    "tsconfig.json": "tsconfig",
+    "readme.md": "readme",
+    "Alarm_0.gml": "gm-obj-alarm",
+    "Alarm_1.gml": "gm-obj-alarm",
+    "Alarm_2.gml": "gm-obj-alarm",
+    "Alarm_3.gml": "gm-obj-alarm",
+    "Alarm_4.gml": "gm-obj-alarm",
+    "Alarm_5.gml": "gm-obj-alarm",
+    "Alarm_6.gml": "gm-obj-alarm",
+    "Alarm_7.gml": "gm-obj-alarm",
+    "Alarm_8.gml": "gm-obj-alarm",
+    "Alarm_9.gml": "gm-obj-alarm",
+    "Alarm_10.gml": "gm-obj-alarm",
+    "Alarm_11.gml": "gm-obj-alarm",
+    "Alarm_12.gml": "gm-obj-alarm",
+    "Alarm_13.gml": "gm-obj-alarm",
+    "Alarm_14.gml": "gm-obj-alarm",
+    "Alarm_15.gml": "gm-obj-alarm",
+    "Create_0.gml": "gm-obj-create",
+    "CleanUp_0.gml": "gm-obj-cleanup",
+    "Destroy_0.gml": "gm-obj-destroy",
+    "Draw_76.gml": "gm-obj-draw",
+    "Draw_72.gml": "gm-obj-draw",
+    "Draw_0.gml": "gm-obj-draw",
+    "Draw_63.gml": "gm-obj-draw",
+    "Draw_77.gml": "gm-obj-draw",
+    "Draw_74.gml": "gm-obj-draw",
+    "Draw_64.gml": "gm-obj-draw",
+    "Draw_75.gml": "gm-obj-draw",
+    "Step_1.gml": "gm-obj-step",
+    "Step_0.gml": "gm-obj-step",
+    "Step_2.gml": "gm-obj-step",
+    "Other_62.gml": "gm-obj-asynchronous",
+    "Other_5.gml": "gm-obj-other",
+    "Other_3.gml": "gm-obj-other",
+    "Other_75.gml": "gm-obj-asynchronous",
+    "Other_58.gml": "gm-obj-other",
+    "Other_59.gml": "gm-obj-other",
+    "Other_70.gml": "gm-obj-asynchronous",
+    "Other_72.gml": "gm-obj-asynchronous",
+    "Other_10.gml": "gm-obj-other",
+    "Other_11.gml": "gm-obj-other",
+    "Other_12.gml": "gm-obj-other",
+    "Other_13.gml": "gm-obj-other",
+    "Other_14.gml": "gm-obj-other",
+    "Other_15.gml": "gm-obj-other",
+    "Other_16.gml": "gm-obj-other",
+    "Other_17.gml": "gm-obj-other",
+    "Other_18.gml": "gm-obj-other",
+    "Other_19.gml": "gm-obj-other",
+    "Other_69.gml": "gm-obj-asynchronous",
+    "Other_63.gml": "gm-obj-asynchronous"
+  },
+  "fileExtensions": {
+    "gml": "gm-script",
+    "ext": "gm-extension",
+    "h": "cpp",
+    "yy": "gamemaker",
+    "yyp": "gamemaker",
+    "yaml": "yaml",
+    "yml": "yaml",
+    "xml": "xml",
+    "java": "java",
+    "jar": "java",
+    "cpp": "cpp",
+    "mm": "objective-c",
+    "json": "json",
+    "js": "javascript",
+    "mjs": "javascript",
+    "cjs": "javascript",
+    "ts": "typescript",
+    "mts": "typescript",
+    "cts": "typescript",
+    "css": "css",
+    "cmd": "command",
+    "bat": "batch",
+    "md": "markdown",
+    "mermaid": "mermaid",
+    "tsconfig": "tsconfig",
+    "d.ts": "typescript-def",
+    "zip": "zip",
+    "png": "image",
+    "jpg": "image",
+    "jpeg": "image",
+    "gif": "image",
+    "bmp": "image",
+    "ico": "image",
+    "svg": "svg",
+    "wav": "audio",
+    "mp3": "audio",
+    "ogg": "audio",
+    "flac": "audio",
+    "m4a": "audio",
+    "aac": "audio",
+    "wma": "audio",
+    "aiff": "audio",
+    "opus": "audio",
+    "mp4": "video",
+    "webm": "video",
+    "mkv": "video",
+    "avi": "video",
+    "mov": "video",
+    "wmv": "video",
+    "mpg": "video",
+    "mpeg": "video",
+    "m4v": "video",
+    "flv": "video",
+    "f4v": "video",
+    "ttf": "font",
+    "otf": "font",
+    "woff": "font",
+    "woff2": "font"
+  }
+}
