@@ -11,7 +11,7 @@ import { config } from './extension.config.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
-import { GameMakerTreeProvider } from './extension.tree.mjs';
+import { GameMakerFolder, GameMakerTreeProvider } from './extension.tree.mjs';
 import { GmlSpec } from './spec.mjs';
 
 const jsdocCompletions = [
@@ -448,20 +448,35 @@ export class GmlProvider
       vscode.languages.registerWorkspaceSymbolProvider(
         new GameMakerWorkspaceSymbolProvider(this.provider.projects),
       ),
-      vscode.commands.registerCommand('stitch.run', (...args) => {
-        const uri = vscode.Uri.parse(
-          args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
-        );
-        let project = this.provider.documentToProject(uri);
-        if (!project && this.provider.projects.length === 1) {
-          project = this.provider.projects[0];
-        }
-        if (!project) {
-          void vscode.window.showErrorMessage('No project found to run!');
-          return;
-        }
-        project.run();
-      }),
+      vscode.commands.registerCommand(
+        'stitch.run',
+        (uriOrFolder: string[] | GameMakerFolder) => {
+          // Identify the target project
+          let project: GameMakerProject | undefined;
+          if (this.provider.projects.length === 1) {
+            project = this.provider.projects[0];
+          } else if (uriOrFolder instanceof GameMakerFolder) {
+            // Then we clicked in the tree view
+            project = this.provider.projects.find(
+              (p) => p.name === uriOrFolder.name,
+            );
+          } else {
+            const uriString =
+              uriOrFolder[0] ||
+              vscode.window.activeTextEditor?.document.uri.toString();
+            if (uriString) {
+              const uri = vscode.Uri.parse(uriString);
+              project = this.provider.documentToProject(uri);
+            }
+          }
+
+          if (!project) {
+            void vscode.window.showErrorMessage('No project found to run!');
+            return;
+          }
+          project.run();
+        },
+      ),
       vscode.commands.registerCommand('stitch.openIde', (...args) => {
         const uri = vscode.Uri.parse(
           args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
