@@ -20,7 +20,7 @@ Stitch provides Intellisense (auto-complete, hovertext, function signature helpe
 - Your project's global symbols, such as macros, enums, globalvars, and global functions
 - Your project's resources, such as sprite IDs, object IDs, etc
 
-### 🦋 Full syntax highlighting
+### 🦋 Syntax highlighting
 
 Stitch provides context-aware "semantic highlighting" for global symbols, such as built-in functions and your macros, enums, globalvars, global functions, and assets.
 
@@ -82,13 +82,6 @@ Stitch also provides support for symbol search <kbd><kbd>Ctrl</kbd>+<kbd>T</kbd>
 
 Stitch provides context-menu entries and a command palette command (`Stitch: Open in GameMaker`) to open your project in the GameMaker IDE. It will ensure that you're always using the same version of GameMaker to open your projects, even automatically installing the correct version if you don't already have it!
 
-## 🛣️ Roadmap
-
-- Add the ability to create, delete, and rename resources (sprites, etc) from the tree view
-- Provide full autocomplete, find-reference, go-to-definition, etc, even for non-globals
-- Symbol rename support
-- Loading the GameMaker syntax configuration that match the GameMaker version your project uses.
-
 ## ⚙️ Supported GameMaker versions
 
 Different GameMaker versions may have different features and built-in functions, constants, etc. This extension will still work with many other GameMaker project versions, but it might give you incorrect autocompletes or surprising command outcomes!
@@ -99,15 +92,14 @@ This extension uses the GameMaker syntax definitions provided by the `GmlSpec.xm
 
 - A GameMaker project created with a recent version of GameMaker
 
-<!-- ## Extension Settings
+## 🛣️ Roadmap
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+- Add the ability to create, delete, and rename resources (sprites, etc) from the tree view
+- Provide full autocomplete, find-reference, go-to-definition, etc, even for non-globals
+- Symbol rename support
+- Loading the GameMaker syntax configuration that match the GameMaker version your project uses.
 
-This extension contributes the following settings:
+## 🤔 FAQ, Tips, and Known Issues
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something. -->
-
-## ⁉️ Known Issues
-
-- 🔥 When using `Find all references`, not all references are found
+- 🔥 **`Find all references` is incomplete**. This will be fixed in the future with a new GML parser, as the current one is very incomplete.
+- ⁉️ **Unexpected projects appear in the tree view**. If you're seeing extra projects in your tree view, it's likely that these are being discovered inside `node_modules` or other normally-hidden locations. Stitch excludes the same files that your VSCode setup does via the `files.exclude` setting, so if you want to prevent those projects from appearing add their parent folders to your excluded files.

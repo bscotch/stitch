@@ -48,7 +48,7 @@ export class GameMakerSemanticTokenProvider
 
       let tokenType: SemanticTokenType | undefined;
       const tokenModifiers: SemanticTokenModifier[] = ['global'];
-      const isBuiltIn = this.provider.builtIns.has(identifier);
+      const isBuiltIn = this.provider.spec.identifiers.has(identifier);
       const isResource = project.resourceNames.has(identifier);
       if (isBuiltIn) {
         tokenModifiers.push('defaultLibrary');

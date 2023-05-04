@@ -12,7 +12,7 @@ import { GameMakerProject } from './extension.project.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { GameMakerTreeProvider } from './extension.tree.mjs';
-import { GmlSpec, parseSpec } from './spec.mjs';
+import { GmlSpec } from './spec.mjs';
 
 const jsdocCompletions = [
   '@param',
@@ -38,7 +38,6 @@ export class GmlProvider
 {
   globalTypeCompletions: vscode.CompletionItem[] = [];
   globalCompletions: vscode.CompletionItem[] = [];
-  builtIns = new Set<string>();
   globalHovers: Map<string, vscode.Hover> = new Map();
   globalSignatures: Map<string, vscode.SignatureHelp> = new Map();
   readonly signatureHelpStatus = vscode.window.createStatusBarItem(
@@ -55,68 +54,20 @@ export class GmlProvider
     this.signatureHelpStatus.hide();
 
     for (const func of spec.functions) {
-      this.globalCompletions.push(
-        new vscode.CompletionItem(
-          func.name,
-          vscode.CompletionItemKind.Function,
-        ),
-      );
-      this.builtIns.add(func.name);
-
-      // Create hover-docs
-      const docs = new vscode.MarkdownString();
-      const signatureString = `${func.name}(${func.parameters
-        .map((a) => {
-          let param = a.name;
-          if (a.optional) {
-            param += '?';
-          }
-          if (a.type) {
-            param += `: ${a.type.join('|')}`;
-          }
-          return param;
-        })
-        .join(', ')})`;
-      docs.appendCodeblock(signatureString, 'gml');
-      if (func.description) {
-        docs.appendMarkdown(`${func.description}`);
-      }
-      this.globalHovers.set(func.name, new vscode.Hover(docs));
-
-      // Create signature help
-      const help = new vscode.SignatureHelp();
-      const signature = new vscode.SignatureInformation(signatureString, docs);
-      signature.parameters = func.parameters.map((p) => {
-        const param = new vscode.ParameterInformation(p.name, p.description);
-        return param;
-      });
-      help.signatures.push(signature);
-      this.globalSignatures.set(func.name, help);
+      this.globalCompletions.push(func.completion);
+      this.globalHovers.set(func.name, func.hover);
+      this.globalSignatures.set(func.name, func.help);
     }
     for (const vars of spec.variables) {
-      const item = new vscode.CompletionItem(
-        vars.name,
-        vars.writable
-          ? vscode.CompletionItemKind.Variable
-          : vscode.CompletionItemKind.Constant,
-      );
-      item.documentation = vars.description;
-      this.globalCompletions.push(item);
-      this.builtIns.add(vars.name);
+      this.globalCompletions.push(vars.completion);
+      this.globalHovers.set(vars.name, vars.hover);
     }
     for (const constant of spec.constants) {
-      this.globalCompletions.push(
-        new vscode.CompletionItem(
-          constant.name,
-          vscode.CompletionItemKind.Constant,
-        ),
-      );
-      this.builtIns.add(constant.name);
+      this.globalCompletions.push(constant.completion);
+      this.globalHovers.set(constant.name, constant.hover);
     }
     for (const type of spec.types) {
-      this.globalTypeCompletions.push(
-        new vscode.CompletionItem(type, vscode.CompletionItemKind.Class),
-      );
+      this.globalTypeCompletions.push(type.completion);
     }
   }
 
@@ -447,9 +398,9 @@ export class GmlProvider
         const runtimeGlob = await glob(runtimeLocalPath + '**/GmlSpec.xml', {});
         gmlSpecFilePath = runtimeGlob[0]; // Always get the latest version of the installed runtimes' GmlSpec.xml files on local
       }
-      this.provider = new GmlProvider(
-        await parseSpec(gmlSpecFilePath as string),
-      );
+      const spec = await GmlSpec.from(gmlSpecFilePath as string);
+
+      this.provider = new GmlProvider(spec);
       const onChangeDoc = debounce((event: vscode.TextDocumentChangeEvent) => {
         const doc = event.document;
         if (doc.languageId !== 'gml') {
