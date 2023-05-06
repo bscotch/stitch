@@ -25,13 +25,13 @@
     "watch": "tsc --build --watch"
   },
   "devDependencies": {
-    "@bscotch/pathy": "^2.6.0",
-    "@bscotch/utility": "^6.8.2",
+    "@bscotch/pathy": "^2.7.3",
+    "@bscotch/utility": "^6.8.3",
     "@types/xml2js": "0.4.11",
     "chai": "^4.3.7",
     "dotenv": "16.0.3",
     "mocha": "^10.2.0",
-    "prettier": "^2.8.7",
+    "prettier": "^2.8.8",
     "typescript": "5.0.4"
   },
   "dependencies": {

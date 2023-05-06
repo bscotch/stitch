@@ -313,14 +313,14 @@ importers:
 
   packages/parser:
     specifiers:
-      '@bscotch/pathy': ^2.6.0
-      '@bscotch/utility': ^6.8.2
+      '@bscotch/pathy': ^2.7.3
+      '@bscotch/utility': ^6.8.3
       '@types/xml2js': 0.4.11
       chai: ^4.3.7
       chevrotain: 10.5.0
       dotenv: 16.0.3
       mocha: ^10.2.0
-      prettier: ^2.8.7
+      prettier: ^2.8.8
       typescript: 5.0.4
       xml2js: 0.5.0
       zod: ^3.21.4
@@ -335,7 +335,7 @@ importers:
       chai: 4.3.7
       dotenv: 16.0.3
       mocha: 10.2.0
-      prettier: 2.8.7
+      prettier: 2.8.8
       typescript: 5.0.4
 
   packages/releases:
@@ -446,7 +446,7 @@ importers:
       glob: 10.0.0
       nodemon: 2.0.22
       plist: 3.0.6
-      turbo: 1.9.1
+      turbo: 1.9.3
       typescript: 5.0.4
       xml2js: 0.5.0
       yaml: 2.2.1
@@ -6200,6 +6200,12 @@ packages:
     resolution: {integrity: sha512-yPngTo3aXUUmyuTjeTUT75txrf+aMh9FiD7q9ZE/i6r0bPb22g4FsE6Y338PQX1bmfy08i9QQCB7/rcUAVntfw==}
     engines: {node: '>=10.13.0'}
     hasBin: true
+
+  /prettier/2.8.8:
+    resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
+    dev: true
 
   /process-nextick-args/2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
