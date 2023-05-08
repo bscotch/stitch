@@ -1,4 +1,5 @@
 import { undent } from '@bscotch/utility';
+import { ILexingResult } from 'chevrotain';
 import fs from 'fs/promises';
 import { GmlLexer } from './lexer.js';
 
@@ -24,7 +25,39 @@ describe('Lexer', function () {
     const result = GmlLexer.tokenize(sample);
     if (result.errors.length) {
       console.dir(result, { depth: null });
-      throw new Error('Lexer failed to lex sample file: ' + sample);
+      throw new Error('Lexer failed to lex sample: ' + sample);
+    }
+  });
+
+  it('can lex GML style JSDocs', function () {
+    const sample = undent`
+      /// @description This is a description
+      /// @param {string} a
+      /// @param {number} b
+      /// @returns {string}
+      function myFunc(a, b) {}
+    `;
+    const result = GmlLexer.tokenize(sample);
+    if (result.errors.length) {
+      console.dir(result, { depth: null });
+      throw new Error('Lexer failed to lex sample: ' + sample);
+    }
+  });
+
+  it('can lex JS style JSDocs', function () {
+    const sample = undent`
+      /**
+       * @description This is a description
+       * @param {string} a
+       * @param {number} b
+       * @returns {string}
+       */
+      function myFunc(a, b) {}
+    `;
+    const result = GmlLexer.tokenize(sample);
+    if (result.errors.length) {
+      console.dir(result.errors, { depth: null });
+      throw new Error('Lexer failed to lex sample: ' + sample);
     }
   });
 
@@ -41,3 +74,13 @@ describe('Lexer', function () {
     }
   });
 });
+
+function logResult(result: ILexingResult) {
+  console.log(
+    JSON.stringify(
+      result.tokens,
+      ['image', 'startOffset', 'tokenType', 'name', 'PUSH_MODE', 'POP_MODE'],
+      2,
+    ),
+  );
+}

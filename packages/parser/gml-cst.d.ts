@@ -44,6 +44,210 @@ export type StatementCstChildren = {
   emptyStatement?: EmptyStatementCstNode[];
   repeatStatement?: RepeatStatementCstNode[];
   expressionStatement?: ExpressionStatementCstNode[];
+  jsdoc?: JsdocCstNode[];
+};
+
+export interface JsdocCstNode extends CstNode {
+  name: 'jsdoc';
+  children: JsdocCstChildren;
+}
+
+export type JsdocCstChildren = {
+  jsdocGml?: JsdocGmlCstNode[];
+  jsdocJs?: JsdocJsCstNode[];
+};
+
+export interface JsdocGmlCstNode extends CstNode {
+  name: 'jsdocGml';
+  children: JsdocGmlCstChildren;
+}
+
+export type JsdocGmlCstChildren = {
+  JsdocGmlStart: IToken[];
+  jsdocLine: JsdocLineCstNode[];
+  JsdocGmlLineEnd: IToken[];
+};
+
+export interface JsdocJsCstNode extends CstNode {
+  name: 'jsdocJs';
+  children: JsdocJsCstChildren;
+}
+
+export type JsdocJsCstChildren = {
+  JsdocJsStart: IToken[];
+  jsdocLine?: JsdocLineCstNode[];
+  JsdocJsLineStart?: IToken[];
+  JsdocJsEnd: IToken[];
+};
+
+export interface JsdocTypeCstNode extends CstNode {
+  name: 'jsdocType';
+  children: JsdocTypeCstChildren;
+}
+
+export type JsdocTypeCstChildren = {
+  JsdocIdentifier: IToken[];
+  JsdocStartAngleBracket?: IToken[];
+  jsdocTypes?: JsdocTypesCstNode[];
+  JsdocEndAngleBracket?: IToken[];
+};
+
+export interface JsdocTypesCstNode extends CstNode {
+  name: 'jsdocTypes';
+  children: JsdocTypesCstChildren;
+}
+
+export type JsdocTypesCstChildren = {
+  jsdocType: JsdocTypeCstNode[];
+  JsdocPipe?: IToken[];
+};
+
+export interface JsdocTypeGroupCstNode extends CstNode {
+  name: 'jsdocTypeGroup';
+  children: JsdocTypeGroupCstChildren;
+}
+
+export type JsdocTypeGroupCstChildren = {
+  JsdocStartBrace: IToken[];
+  jsdocTypes: JsdocTypesCstNode[];
+  JsdocEndBrace: IToken[];
+};
+
+export interface JsdocUnstructuredContentCstNode extends CstNode {
+  name: 'jsdocUnstructuredContent';
+  children: JsdocUnstructuredContentCstChildren;
+}
+
+export type JsdocUnstructuredContentCstChildren = {
+  Jsdoc?: IToken[];
+  Literal?: IToken[];
+  JsdocTag?: IToken[];
+};
+
+export interface JsdocParamTagCstNode extends CstNode {
+  name: 'jsdocParamTag';
+  children: JsdocParamTagCstChildren;
+}
+
+export type JsdocParamTagCstChildren = {
+  JsdocParamTag: IToken[];
+  jsdocTypeGroup?: JsdocTypeGroupCstNode[];
+  JsdocIdentifier?: IToken[];
+  JsdocStartSquareBracket?: IToken[];
+  jsdocRemainingParams?: JsdocRemainingParamsCstNode[];
+  JsdocEquals?: IToken[];
+  Literal?: IToken[];
+  JsdocEndSquareBracket?: IToken[];
+};
+
+export interface JsdocReturnTagCstNode extends CstNode {
+  name: 'jsdocReturnTag';
+  children: JsdocReturnTagCstChildren;
+}
+
+export type JsdocReturnTagCstChildren = {
+  JsdocReturnTag: IToken[];
+  jsdocTypeGroup?: JsdocTypeGroupCstNode[];
+};
+
+export interface JsdocSelfTagCstNode extends CstNode {
+  name: 'jsdocSelfTag';
+  children: JsdocSelfTagCstChildren;
+}
+
+export type JsdocSelfTagCstChildren = {
+  JsdocSelfTag: IToken[];
+  JsdocIdentifier: IToken[];
+};
+
+export interface JsdocDescriptionTagCstNode extends CstNode {
+  name: 'jsdocDescriptionTag';
+  children: JsdocDescriptionTagCstChildren;
+}
+
+export type JsdocDescriptionTagCstChildren = {
+  JsdocDescriptionTag: IToken[];
+};
+
+export interface JsdocFunctionTagCstNode extends CstNode {
+  name: 'jsdocFunctionTag';
+  children: JsdocFunctionTagCstChildren;
+}
+
+export type JsdocFunctionTagCstChildren = {
+  JsdocFunctionTag: IToken[];
+};
+
+export interface JsdocPureTagCstNode extends CstNode {
+  name: 'jsdocPureTag';
+  children: JsdocPureTagCstChildren;
+}
+
+export type JsdocPureTagCstChildren = {
+  JsdocPureTag: IToken[];
+};
+
+export interface JsdocIgnoreTagCstNode extends CstNode {
+  name: 'jsdocIgnoreTag';
+  children: JsdocIgnoreTagCstChildren;
+}
+
+export type JsdocIgnoreTagCstChildren = {
+  JsdocIgnoreTag: IToken[];
+};
+
+export interface JsdocDeprecatedTagCstNode extends CstNode {
+  name: 'jsdocDeprecatedTag';
+  children: JsdocDeprecatedTagCstChildren;
+}
+
+export type JsdocDeprecatedTagCstChildren = {
+  JsdocDeprecatedTag: IToken[];
+};
+
+export interface JsdocUnknownTagCstNode extends CstNode {
+  name: 'jsdocUnknownTag';
+  children: JsdocUnknownTagCstChildren;
+}
+
+export type JsdocUnknownTagCstChildren = {
+  JsdocUnknownTag: IToken[];
+};
+
+export interface JsdocRemainingParamsCstNode extends CstNode {
+  name: 'jsdocRemainingParams';
+  children: JsdocRemainingParamsCstChildren;
+}
+
+export type JsdocRemainingParamsCstChildren = {
+  JsdocDot: IToken[];
+};
+
+export interface JsdocTagCstNode extends CstNode {
+  name: 'jsdocTag';
+  children: JsdocTagCstChildren;
+}
+
+export type JsdocTagCstChildren = {
+  jsdocParamTag?: JsdocParamTagCstNode[];
+  jsdocReturnTag?: JsdocReturnTagCstNode[];
+  jsdocSelfTag?: JsdocSelfTagCstNode[];
+  jsdocDescriptionTag?: JsdocDescriptionTagCstNode[];
+  jsdocFunctionTag?: JsdocFunctionTagCstNode[];
+  jsdocPureTag?: JsdocPureTagCstNode[];
+  jsdocIgnoreTag?: JsdocIgnoreTagCstNode[];
+  jsdocDeprecatedTag?: JsdocDeprecatedTagCstNode[];
+  jsdocUnknownTag?: JsdocUnknownTagCstNode[];
+};
+
+export interface JsdocLineCstNode extends CstNode {
+  name: 'jsdocLine';
+  children: JsdocLineCstChildren;
+}
+
+export type JsdocLineCstChildren = {
+  jsdocTag?: JsdocTagCstNode[];
+  jsdocUnstructuredContent: JsdocUnstructuredContentCstNode[];
 };
 
 export interface StringLiteralCstNode extends CstNode {
@@ -366,9 +570,19 @@ export interface FunctionArgumentsCstNode extends CstNode {
 
 export type FunctionArgumentsCstChildren = {
   StartParen: IToken[];
-  assignmentRightHandSide?: AssignmentRightHandSideCstNode[];
+  functionArgument?: FunctionArgumentCstNode[];
   Comma?: IToken[];
   EndParen: IToken[];
+};
+
+export interface FunctionArgumentCstNode extends CstNode {
+  name: 'functionArgument';
+  children: FunctionArgumentCstChildren;
+}
+
+export type FunctionArgumentCstChildren = {
+  jsdoc?: JsdocCstNode[];
+  assignmentRightHandSide: AssignmentRightHandSideCstNode[];
 };
 
 export interface EmptyStatementCstNode extends CstNode {
@@ -626,6 +840,7 @@ export interface StructLiteralEntryCstNode extends CstNode {
 }
 
 export type StructLiteralEntryCstChildren = {
+  jsdoc?: JsdocCstNode[];
   Identifier?: IToken[];
   stringLiteral?: StringLiteralCstNode[];
   Colon: IToken[];
@@ -752,6 +967,34 @@ export interface GmlVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
   file(children: FileCstChildren, param?: IN): OUT;
   statements(children: StatementsCstChildren, param?: IN): OUT;
   statement(children: StatementCstChildren, param?: IN): OUT;
+  jsdoc(children: JsdocCstChildren, param?: IN): OUT;
+  jsdocGml(children: JsdocGmlCstChildren, param?: IN): OUT;
+  jsdocJs(children: JsdocJsCstChildren, param?: IN): OUT;
+  jsdocType(children: JsdocTypeCstChildren, param?: IN): OUT;
+  jsdocTypes(children: JsdocTypesCstChildren, param?: IN): OUT;
+  jsdocTypeGroup(children: JsdocTypeGroupCstChildren, param?: IN): OUT;
+  jsdocUnstructuredContent(
+    children: JsdocUnstructuredContentCstChildren,
+    param?: IN,
+  ): OUT;
+  jsdocParamTag(children: JsdocParamTagCstChildren, param?: IN): OUT;
+  jsdocReturnTag(children: JsdocReturnTagCstChildren, param?: IN): OUT;
+  jsdocSelfTag(children: JsdocSelfTagCstChildren, param?: IN): OUT;
+  jsdocDescriptionTag(
+    children: JsdocDescriptionTagCstChildren,
+    param?: IN,
+  ): OUT;
+  jsdocFunctionTag(children: JsdocFunctionTagCstChildren, param?: IN): OUT;
+  jsdocPureTag(children: JsdocPureTagCstChildren, param?: IN): OUT;
+  jsdocIgnoreTag(children: JsdocIgnoreTagCstChildren, param?: IN): OUT;
+  jsdocDeprecatedTag(children: JsdocDeprecatedTagCstChildren, param?: IN): OUT;
+  jsdocUnknownTag(children: JsdocUnknownTagCstChildren, param?: IN): OUT;
+  jsdocRemainingParams(
+    children: JsdocRemainingParamsCstChildren,
+    param?: IN,
+  ): OUT;
+  jsdocTag(children: JsdocTagCstChildren, param?: IN): OUT;
+  jsdocLine(children: JsdocLineCstChildren, param?: IN): OUT;
   stringLiteral(children: StringLiteralCstChildren, param?: IN): OUT;
   multilineDoubleStringLiteral(
     children: MultilineDoubleStringLiteralCstChildren,
@@ -795,6 +1038,7 @@ export interface GmlVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
     param?: IN,
   ): OUT;
   functionArguments(children: FunctionArgumentsCstChildren, param?: IN): OUT;
+  functionArgument(children: FunctionArgumentCstChildren, param?: IN): OUT;
   emptyStatement(children: EmptyStatementCstChildren, param?: IN): OUT;
   enumStatement(children: EnumStatementCstChildren, param?: IN): OUT;
   enumMember(children: EnumMemberCstChildren, param?: IN): OUT;

@@ -39,7 +39,161 @@ export class GmlParser extends CstParser {
       { ALT: () => this.SUBRULE(this.emptyStatement) },
       { ALT: () => this.SUBRULE(this.repeatStatement) },
       { ALT: () => this.SUBRULE(this.expressionStatement) },
+      { ALT: () => this.SUBRULE(this.jsdoc) },
     ]);
+  });
+
+  readonly jsdoc = this.RULE('jsdoc', () => {
+    this.OR2([
+      { ALT: () => this.SUBRULE(this.jsdocGml) },
+      { ALT: () => this.SUBRULE(this.jsdocJs) },
+    ]);
+  });
+
+  readonly jsdocGml = this.RULE('jsdocGml', () => {
+    this.AT_LEAST_ONE(() => {
+      this.CONSUME(t.JsdocGmlStart);
+      this.SUBRULE(this.jsdocLine);
+      this.CONSUME(t.JsdocGmlLineEnd);
+    });
+  });
+
+  readonly jsdocJs = this.RULE('jsdocJs', () => {
+    this.CONSUME(t.JsdocJsStart);
+    this.MANY(() => {
+      this.SUBRULE(this.jsdocLine);
+      this.OPTION(() => this.CONSUME(t.JsdocJsLineStart));
+    });
+    this.CONSUME(t.JsdocJsEnd);
+  });
+
+  readonly jsdocType = this.RULE('jsdocType', () => {
+    this.CONSUME(t.JsdocIdentifier);
+    this.OPTION(() => {
+      this.CONSUME(t.JsdocStartAngleBracket);
+      this.SUBRULE(this.jsdocTypes);
+      this.CONSUME(t.JsdocEndAngleBracket);
+    });
+  });
+
+  readonly jsdocTypes = this.RULE('jsdocTypes', () => {
+    this.SUBRULE1(this.jsdocType);
+    this.MANY(() => {
+      this.CONSUME(t.JsdocPipe);
+      this.SUBRULE2(this.jsdocType);
+    });
+  });
+
+  readonly jsdocTypeGroup = this.RULE('jsdocTypeGroup', () => {
+    this.CONSUME(t.JsdocStartBrace);
+    this.SUBRULE1(this.jsdocTypes);
+    this.CONSUME(t.JsdocEndBrace);
+  });
+
+  /** Unstructured content following a structured tag */
+  readonly jsdocUnstructuredContent = this.RULE(
+    'jsdocUnstructuredContent',
+    () => {
+      this.MANY(() =>
+        this.OR([
+          { ALT: () => this.CONSUME(c.Jsdoc) },
+          { ALT: () => this.CONSUME(c.Literal) },
+          { ALT: () => this.CONSUME(c.JsdocTag) },
+        ]),
+      );
+    },
+  );
+
+  readonly jsdocParamTag = this.RULE('jsdocParamTag', () => {
+    this.CONSUME(t.JsdocParamTag);
+    // Optional type info
+    this.OPTION1(() => {
+      this.SUBRULE1(this.jsdocTypeGroup);
+    });
+    // Required name
+    this.OR1([
+      { ALT: () => this.CONSUME1(t.JsdocIdentifier) },
+      {
+        ALT: () => {
+          this.CONSUME(t.JsdocStartSquareBracket);
+          this.OR2([
+            { ALT: () => this.SUBRULE2(this.jsdocRemainingParams) },
+            {
+              ALT: () => {
+                this.CONSUME2(t.JsdocIdentifier);
+                this.OPTION2(() => {
+                  this.CONSUME(t.JsdocEquals);
+                  this.OR3([
+                    { ALT: () => this.CONSUME(c.Literal) },
+                    { ALT: () => this.CONSUME3(t.JsdocIdentifier) },
+                  ]);
+                });
+              },
+            },
+          ]);
+          this.CONSUME(t.JsdocEndSquareBracket);
+        },
+      },
+    ]);
+  });
+
+  readonly jsdocReturnTag = this.RULE('jsdocReturnTag', () => {
+    this.CONSUME(t.JsdocReturnTag);
+    this.OPTION(() => this.SUBRULE(this.jsdocTypeGroup));
+  });
+
+  readonly jsdocSelfTag = this.RULE('jsdocSelfTag', () => {
+    this.CONSUME(t.JsdocSelfTag);
+    this.CONSUME(t.JsdocIdentifier);
+  });
+
+  readonly jsdocDescriptionTag = this.RULE('jsdocDescriptionTag', () => {
+    this.CONSUME(t.JsdocDescriptionTag);
+  });
+
+  readonly jsdocFunctionTag = this.RULE('jsdocFunctionTag', () => {
+    this.CONSUME(t.JsdocFunctionTag);
+  });
+
+  readonly jsdocPureTag = this.RULE('jsdocPureTag', () => {
+    this.CONSUME(t.JsdocPureTag);
+  });
+
+  readonly jsdocIgnoreTag = this.RULE('jsdocIgnoreTag', () => {
+    this.CONSUME(t.JsdocIgnoreTag);
+  });
+
+  readonly jsdocDeprecatedTag = this.RULE('jsdocDeprecatedTag', () => {
+    this.CONSUME(t.JsdocDeprecatedTag);
+  });
+
+  readonly jsdocUnknownTag = this.RULE('jsdocUnknownTag', () => {
+    this.CONSUME(t.JsdocUnknownTag);
+  });
+
+  readonly jsdocRemainingParams = this.RULE('jsdocRemainingParams', () => {
+    this.CONSUME1(t.JsdocDot);
+    this.CONSUME2(t.JsdocDot);
+    this.CONSUME3(t.JsdocDot);
+  });
+
+  readonly jsdocTag = this.RULE('jsdocTag', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.jsdocParamTag) },
+      { ALT: () => this.SUBRULE(this.jsdocReturnTag) },
+      { ALT: () => this.SUBRULE(this.jsdocSelfTag) },
+      { ALT: () => this.SUBRULE(this.jsdocDescriptionTag) },
+      { ALT: () => this.SUBRULE(this.jsdocFunctionTag) },
+      { ALT: () => this.SUBRULE(this.jsdocPureTag) },
+      { ALT: () => this.SUBRULE(this.jsdocIgnoreTag) },
+      { ALT: () => this.SUBRULE(this.jsdocDeprecatedTag) },
+      { ALT: () => this.SUBRULE(this.jsdocUnknownTag) },
+    ]);
+  });
+
+  readonly jsdocLine = this.RULE('jsdocLine', () => {
+    this.OPTION(() => this.SUBRULE(this.jsdocTag));
+    this.SUBRULE(this.jsdocUnstructuredContent);
   });
 
   readonly stringLiteral = this.RULE('stringLiteral', () => {
@@ -269,13 +423,20 @@ export class GmlParser extends CstParser {
   readonly functionArguments = this.RULE('functionArguments', () => {
     this.CONSUME(t.StartParen);
     this.OPTION1(() => {
-      this.SUBRULE(this.assignmentRightHandSide);
+      this.SUBRULE(this.functionArgument);
     });
     this.MANY(() => {
       this.CONSUME(t.Comma);
-      this.OPTION2(() => this.SUBRULE2(this.assignmentRightHandSide));
+      this.OPTION2(() => this.SUBRULE2(this.functionArgument));
     });
     this.CONSUME(t.EndParen);
+  });
+
+  readonly functionArgument = this.RULE('functionArgument', () => {
+    this.OPTION1(() => {
+      this.SUBRULE(this.jsdoc);
+    });
+    this.SUBRULE(this.assignmentRightHandSide);
   });
 
   readonly emptyStatement = this.RULE('emptyStatement', () => {
@@ -482,7 +643,14 @@ export class GmlParser extends CstParser {
 
   readonly structLiteralEntry = this.RULE('structLiteralEntry', () => {
     this.OR([
-      { ALT: () => this.CONSUME(t.Identifier) },
+      {
+        ALT: () => {
+          this.OPTION(() => {
+            this.SUBRULE(this.jsdoc);
+          });
+          this.CONSUME(t.Identifier);
+        },
+      },
       { ALT: () => this.SUBRULE(this.stringLiteral) },
     ]);
     this.CONSUME(t.Colon);

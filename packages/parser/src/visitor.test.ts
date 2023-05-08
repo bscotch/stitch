@@ -23,7 +23,7 @@ function showParserErrors(parser: GmlParser, filepath?: string) {
   );
 }
 
-describe.only('Visitor', function () {
+describe('Visitor', function () {
   it('can visit sample files', async function () {
     const parser = new GmlParser();
     const samples = await fs.readdir('./samples');

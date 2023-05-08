@@ -10,19 +10,16 @@
     "name": "Default",
   },
   "defaultScriptType": 1,
-  "Folders": [
-    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"NEW","folderPath":"folders/NEW.yy","order":1,},
-  ],
+  "Folders": [],
   "IncludedFiles": [],
   "isEcma": false,
   "MetaData": {
     "IDEVersion": "2023.100.0.271",
   },
   "resources": [
-    {"id":{"name":"Constructors","path":"scripts/Constructors/Constructors.yy",},"order":0,},
+    {"id":{"name":"ScriptScope","path":"scripts/ScriptScope/ScriptScope.yy",},"order":0,},
     {"id":{"name":"o_entry","path":"objects/o_entry/o_entry.yy",},"order":4,},
     {"id":{"name":"Util","path":"scripts/Util/Util.yy",},"order":2,},
-    {"id":{"name":"GML","path":"scripts/GML/GML.yy",},"order":0,},
     {"id":{"name":"rm_entry","path":"rooms/rm_entry/rm_entry.yy",},"order":3,},
   ],
   "RoomOrderNodes": [

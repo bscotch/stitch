@@ -1,6 +1,27 @@
 import { Pathy } from '@bscotch/pathy';
 import { GmlSpec } from './gmlSpecSchema.js';
 
+/**
+ * GML local scopes are created by the following:
+ * - Function definitions
+ * - Script bodies
+ * - Object event bodies
+ *
+ * GML "Self" scopes include:
+ * - The global scope (script functions, globalvars)
+ * - Struct literal bodies
+ * - Constructor bodies
+ * - Object instances
+ *
+ * Local scope can only be changed within a code block
+ * by creating a new function.
+ *
+ * Self scope can be changed within a block by:
+ * - Using a struct accessor (inline self scope change)
+ * - Using a with statement
+ * - Creating a struct literal
+ */
+
 type GmlFilePath = string;
 type GmlSymbolName = string;
 

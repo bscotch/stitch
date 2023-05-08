@@ -1,4 +1,5 @@
 import { pathy } from '@bscotch/pathy';
+import { undent } from '@bscotch/utility';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
@@ -48,6 +49,22 @@ describe('Parser', function () {
     //       .expression[0],
     //   ),
     // );
+  });
+
+  it('can parse GML style JSDocs', function () {
+    const parser = new GmlParser();
+    const cst = parser.parse(
+      undent`
+        /// @description This is a description
+        /// @param {string} a
+        /// @param {number} b
+        /// @returns {string}
+        function myFunc(a, b) {}
+      `,
+    );
+    showErrors(parser);
+    expect(parser.errors.length).to.equal(0);
+    expect(cst).to.exist;
   });
 
   it('can parse sample files', async function () {

@@ -1,12 +1,13 @@
 import { Lexer } from 'chevrotain';
-import type { GmlLexerMode, TokenType } from './lib.js';
+import { codeTokens } from './tokens.code.js';
+import { jsdocsGmlTokens, jsdocsJsTokens } from './tokens.jsdocs.js';
+import type { GmlLexerMode, TokenType } from './tokens.lib.js';
 import {
-  codeTokens,
   multilineDoubleStringTokens,
   multilineSingleStringTokens,
   stringTokens,
   templateTokens,
-} from './tokens.js';
+} from './tokens.strings.js';
 
 export const GmlLexer = new Lexer({
   defaultMode: 'code',
@@ -16,5 +17,7 @@ export const GmlLexer = new Lexer({
     multilineDoubleString: multilineDoubleStringTokens,
     multilineSingleString: multilineSingleStringTokens,
     template: templateTokens,
+    jsdocGml: jsdocsGmlTokens,
+    jsdocJs: jsdocsJsTokens,
   } satisfies { [Mode in GmlLexerMode]: TokenType[] },
 });
