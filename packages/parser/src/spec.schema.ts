@@ -1,5 +1,9 @@
 import { z } from 'zod';
 export type GmlSpec = z.output<typeof gmlSpecSchema>;
+export type GmlSpecFunction = GmlSpec['functions'][number];
+export type GmlSpecVariable = GmlSpec['variables'][number];
+export type GmlSpecConstant = GmlSpec['constants'][number];
+export type GmlSpecType = GmlSpec['types'][number];
 
 const booleanStringSchema = z
   .union([z.literal('true'), z.literal('false')])

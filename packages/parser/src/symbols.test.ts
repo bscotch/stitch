@@ -4,9 +4,11 @@ import { expect } from 'chai';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { GmlParser } from './parser.js';
-import { GmlCstVisitor } from './visitor.js';
+import { Gml } from './spec.js';
+import { GmlSymbolVisitor } from './symbols.visitor.js';
 
-const visitor = new GmlCstVisitor();
+const gml = await Gml.from('./assets/GmlSpec.xml');
+const visitor = new GmlSymbolVisitor(gml);
 
 dotenv.config();
 
@@ -32,7 +34,7 @@ describe('Visitor', function () {
       const code = await fs.readFile(filePath, 'utf-8');
       const cst = parser.parse(code);
       ok(cst);
-      const ast = visitor.visit(cst);
+      const ast = visitor.visit(cst, 'hello');
       console.log(ast);
     }
   });

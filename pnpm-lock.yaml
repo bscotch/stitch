@@ -313,8 +313,11 @@ importers:
 
   packages/parser:
     specifiers:
+      '@bscotch/gamemaker-releases': workspace:*
       '@bscotch/pathy': ^2.7.3
+      '@bscotch/stitch-launcher': workspace:*
       '@bscotch/utility': ^6.8.3
+      '@bscotch/yy': workspace:*
       '@types/xml2js': 0.4.11
       chai: ^4.3.7
       chevrotain: 10.5.0
@@ -325,12 +328,15 @@ importers:
       xml2js: 0.5.0
       zod: ^3.21.4
     dependencies:
+      '@bscotch/gamemaker-releases': link:../releases
+      '@bscotch/pathy': 2.7.3
+      '@bscotch/stitch-launcher': link:../launcher
+      '@bscotch/utility': 6.8.3
+      '@bscotch/yy': link:../yy
       chevrotain: 10.5.0
       xml2js: 0.5.0
       zod: 3.21.4
     devDependencies:
-      '@bscotch/pathy': 2.7.3
-      '@bscotch/utility': 6.8.3
       '@types/xml2js': 0.4.11
       chai: 4.3.7
       dotenv: 16.0.3

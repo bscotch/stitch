@@ -1,5 +1,5 @@
 import { Pathy } from '@bscotch/pathy';
-import { GmlSpec } from './gmlSpecSchema.js';
+import { GmlSpec } from './spec.schema.js';
 
 /**
  * GML local scopes are created by the following:

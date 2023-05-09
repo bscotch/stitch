@@ -6,19 +6,21 @@ import type {
   StatementCstChildren,
 } from '../gml-cst.js';
 import { GmlParser } from './parser.js';
+import { Gml } from './spec.js';
 
 const GmlVisitorBase =
   new GmlParser().getBaseCstVisitorConstructorWithDefaults() as new (
     ...args: any[]
   ) => GmlVisitor<unknown, unknown>;
 
-export class GmlCstVisitor extends GmlVisitorBase {
-  constructor() {
+export class GmlSymbolVisitor extends GmlVisitorBase {
+  constructor(readonly spec: Gml) {
     super();
     this.validateVisitor();
   }
 
-  override file(children: FileCstChildren) {
+  override file(children: FileCstChildren, info: unknown) {
+    console.log(info);
     console.log(children);
     return;
   }
