@@ -6,7 +6,6 @@ import type {
   StatementCstChildren,
 } from '../gml-cst.js';
 import { GmlParser } from './parser.js';
-import { Gml } from './spec.js';
 
 const GmlVisitorBase =
   new GmlParser().getBaseCstVisitorConstructorWithDefaults() as new (
@@ -14,18 +13,17 @@ const GmlVisitorBase =
   ) => GmlVisitor<unknown, unknown>;
 
 export class GmlSymbolVisitor extends GmlVisitorBase {
-  constructor(readonly spec: Gml) {
+  constructor() {
     super();
     this.validateVisitor();
   }
 
-  override file(children: FileCstChildren, info: unknown) {
-    console.log(info);
+  override file(children: FileCstChildren) {
     console.log(children);
     return;
   }
 
-  override statement(children: StatementCstChildren, param?: unknown) {
+  override statement(children: StatementCstChildren) {
     const keys = Object.keys(children) as (keyof StatementCstChildren)[];
     ok(keys.length === 1, Error('Statement should have exactly one child'));
     const key = keys[0];
@@ -33,3 +31,5 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return this.visit(children[keys[0]] as any);
   }
 }
+
+export const gmlSymbolVisitor = new GmlSymbolVisitor();

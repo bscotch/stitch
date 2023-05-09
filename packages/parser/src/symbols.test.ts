@@ -4,11 +4,9 @@ import { expect } from 'chai';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { GmlParser } from './parser.js';
-import { Gml } from './spec.js';
 import { GmlSymbolVisitor } from './symbols.visitor.js';
 
-const gml = await Gml.from('./assets/GmlSpec.xml');
-const visitor = new GmlSymbolVisitor(gml);
+const visitor = new GmlSymbolVisitor();
 
 dotenv.config();
 
@@ -32,7 +30,7 @@ describe('Visitor', function () {
     for (const sample of samples) {
       const filePath = `./samples/${sample}`;
       const code = await fs.readFile(filePath, 'utf-8');
-      const cst = parser.parse(code);
+      const { cst } = parser.parse(code);
       ok(cst);
       const ast = visitor.visit(cst, 'hello');
       console.log(ast);

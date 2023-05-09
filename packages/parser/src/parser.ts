@@ -737,9 +737,14 @@ export class GmlParser extends CstParser {
     this.performSelfAnalysis();
   }
 
-  parse(code: string): CstNode | undefined {
+  parse(code: string) {
+    const lexed = this.lexer.tokenize(code);
     this.input = this.lexer.tokenize(code).tokens;
-    return this.file();
+    const cst = this.file();
+    return {
+      lexed,
+      cst,
+    };
   }
 
   static jsonify(cst: CstNode): string {
@@ -759,3 +764,5 @@ export class GmlParser extends CstParser {
     );
   }
 }
+
+export const parser = new GmlParser();

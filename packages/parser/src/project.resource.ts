@@ -49,6 +49,22 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
     return this.resource.id.name;
   }
 
+  parseGml() {
+    // Sort the files so that objects' Create event is first, since all
+    // instance vars should be defined there.
+    const gmlFiles = [...this.gmlFiles.values()].sort((a, b) => {
+      if (a.name === 'Create_0') {
+        return -1;
+      } else if (b.name === 'Create_0') {
+        return 1;
+      }
+      return 0;
+    });
+    for (const gml of gmlFiles) {
+      gml.parse();
+    }
+  }
+
   protected async loadGml(path: Pathy<string>): Promise<GmlFile> {
     const gml = this.gmlFiles.get(path.name) || new GmlFile(this, path);
     this.gmlFiles.set(path.name, gml);
@@ -103,11 +119,8 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   static async from<T extends YyResourceType>(
     project: GameMakerProjectParser,
     resource: YypResource,
-  ): Promise<GameMakerResource<T> | undefined> {
+  ): Promise<GameMakerResource<T>> {
     const item = new GameMakerResource(project, resource);
-    if (!(await pathy(item.yyPath).exists())) {
-      return;
-    }
     await item.load();
     return item as any;
   }

@@ -10,7 +10,7 @@ import { Gml } from './spec.js';
 export class GameMakerProjectParser {
   yyp!: Yyp;
   spec!: Gml;
-  resources!: GameMakerResource[];
+  resources = new Map<string, GameMakerResource>();
 
   protected constructor(readonly yypPath: Pathy) {}
 
@@ -32,13 +32,17 @@ export class GameMakerProjectParser {
    * yyp, yy, and gml files for scripts and objects. For other asset types
    * we just need their names and yyp filepaths.
    */
-  protected async loadProjectFiles() {
+  protected async loadResources() {
     this.yyp = await Yy.read(this.yypPath.absolute, 'project');
     const resourceWaits: Promise<any>[] = [];
     for (const resourceInfo of this.yyp.resources) {
-      resourceWaits.push(GameMakerResource.from(this, resourceInfo));
+      resourceWaits.push(
+        GameMakerResource.from(this, resourceInfo).then((r) =>
+          this.resources.set(r.name, r),
+        ),
+      );
     }
-    this.resources = await Promise.all(resourceWaits);
+    await Promise.all(resourceWaits);
   }
 
   /**
@@ -83,7 +87,7 @@ export class GameMakerProjectParser {
         this.spec = await Gml.from(gmlSpecPath.absolute);
       }
     }
-    // TODO: If we don't have a spec yet, use the fallback
+    // If we don't have a spec yet, use the fallback
     if (!this.spec) {
       console.error('No spec found, using fallback');
       this.spec = await Gml.from(
@@ -101,13 +105,16 @@ export class GameMakerProjectParser {
     }
     await path.exists({ assert: true });
     const project = new GameMakerProjectParser(path);
-    const fileLoader = project.loadProjectFiles();
+    const fileLoader = project.loadResources();
     const specLoaderWait = project.loadGmlSpec();
+
     await Promise.all([specLoaderWait, fileLoader]);
     // TODO: Populate the global data based on the assets in the project.
-    // TODO: Load all of the GML files (parse separately)
-    // TODO: Load all of the GML files and parse them, creating a symbol table.
-    console.log('Resources', project.resources.length);
+    // TODO: Parse the GML files to map symbol and scope locations.
+    for (const resource of project.resources.values()) {
+      resource.parseGml();
+    }
+    console.log('Resources', project.resources.size);
     return project;
   }
 

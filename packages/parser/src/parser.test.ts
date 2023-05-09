@@ -23,21 +23,23 @@ function showErrors(parser: GmlParser, filepath?: string) {
 describe('Parser', function () {
   it('can parse simple expressions', function () {
     const parser = new GmlParser();
-    const cst = parser.parse('(1 + 2 * 3) + (hello / (world || undefined))');
+    const { cst } = parser.parse(
+      '(1 + 2 * 3) + (hello / (world || undefined))',
+    );
     expect(parser.errors.length).to.equal(0);
     expect(cst).to.exist;
   });
 
   it('can get errors for invalid simple expressions', function () {
     const parser = new GmlParser();
-    const cst = parser.parse('(1 + 2 * 3) + hello / world || undefined +');
+    const { cst } = parser.parse('(1 + 2 * 3) + hello / world || undefined +');
     expect(parser.errors.length).to.equal(1);
     expect(cst).not.to.exist;
   });
 
   it('can parse complex expressions', function () {
     const parser = new GmlParser();
-    const cst = parser.parse(
+    const { cst } = parser.parse(
       '1 + 2 * 3 + hello / world[no+true] || undefined + (1 + 2 * 3 + hello / world || undefined ^^ functionCall(10+3,undefined,,))',
     );
     expect(parser.errors.length).to.equal(0);
@@ -53,7 +55,7 @@ describe('Parser', function () {
 
   it('can parse GML style JSDocs', function () {
     const parser = new GmlParser();
-    const cst = parser.parse(
+    const { cst } = parser.parse(
       undent`
         /// @description This is a description
         /// @param {string} a
@@ -74,7 +76,7 @@ describe('Parser', function () {
       console.log('Parsing', sample);
       const filePath = `./samples/${sample}`;
       const code = await fs.readFile(filePath, 'utf-8');
-      const cst = parser.parse(code);
+      const { cst } = parser.parse(code);
       showErrors(parser, filePath);
       expect(cst).to.exist;
       expect(parser.errors).to.have.length(0);
@@ -99,7 +101,7 @@ describe('Parser', function () {
       const file = files[i];
       console.log(i, 'Parsing:', file.relative);
       const code = await file.read<string>();
-      const cst = parser.parse(code);
+      const { cst } = parser.parse(code);
       showErrors(parser, file.absolute);
       expect(cst).to.exist;
       expect(parser.errors).to.have.length(0);
