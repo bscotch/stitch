@@ -32,7 +32,7 @@ describe('Visitor', function () {
       const code = await fs.readFile(filePath, 'utf-8');
       const { cst } = parser.parse(code);
       ok(cst);
-      const ast = visitor.visit(cst, 'hello');
+      const ast = visitor.visit(cst);
       console.log(ast);
     }
   });

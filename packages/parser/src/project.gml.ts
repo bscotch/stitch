@@ -31,7 +31,7 @@ export class GmlFile {
   parse() {
     const results = parser.parse(this._content);
     // TODO: Emit diagnostics
-    gmlSymbolVisitor.visit(results.cst);
+    const symbols = gmlSymbolVisitor.findSymbols(results.cst);
     // TODO: Update symbol/scope info somehow
   }
 }
