@@ -3,11 +3,14 @@ import { pathy, Pathy } from '@bscotch/pathy';
 import { GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { Yy, Yyp } from '@bscotch/yy';
 import { ok } from 'assert';
+import { z } from 'zod';
+import { GameMakerResource } from './project.resource.js';
 import { Gml } from './spec.js';
 
 export class GameMakerProjectParser {
   yyp!: Yyp;
   spec!: Gml;
+  resources!: GameMakerResource[];
 
   protected constructor(readonly yypPath: Pathy) {}
 
@@ -15,8 +18,27 @@ export class GameMakerProjectParser {
     return this.yyp.MetaData.IDEVersion;
   }
 
-  protected async loadYyp() {
+  get projectDir() {
+    return pathy(this.yypPath).up();
+  }
+
+  emitWarning(message: string) {
+    console.warn(`[WARNING] ${message}`);
+  }
+
+  /**
+   * When first creating an instance, we need to get all project file
+   * content into memory for fast access. In particular, we need all
+   * yyp, yy, and gml files for scripts and objects. For other asset types
+   * we just need their names and yyp filepaths.
+   */
+  protected async loadProjectFiles() {
     this.yyp = await Yy.read(this.yypPath.absolute, 'project');
+    const resourceWaits: Promise<any>[] = [];
+    for (const resourceInfo of this.yyp.resources) {
+      resourceWaits.push(GameMakerResource.from(this, resourceInfo));
+    }
+    this.resources = await Promise.all(resourceWaits);
   }
 
   /**
@@ -24,17 +46,34 @@ export class GameMakerProjectParser {
    * back on the included spec if necessary.
    */
   protected async loadGmlSpec() {
-    // TODO: Look up the runtime version that matches the project's IDE version.
-    const releases = await fetchReleasesSummaryWithNotes();
-    const usingRelease = releases.find(
-      (r) => r.ide.version === this.ideVersion,
-    );
-    // TODO: Look up the GML Spec file that matches the project's runtime version.
-    const runtime = usingRelease?.runtime.version;
-    if (runtime) {
-      // TODO: Find the locally installed runtime folder
+    let runtimeVersion: string | undefined;
+    // Check for a stitch config file that specifies the runtime version.
+    // If it exists, use that version. It's likely that it is correct, and this
+    // way we don't have to download the releases summary.
+    const stitchConfig = this.projectDir
+      .join('stitch.config.json')
+      .withValidator(
+        z.object({ runtimeVersion: z.string().optional() }).passthrough(),
+      );
+    if (await stitchConfig.exists()) {
+      console.error('Found stitch config');
+      const config = await stitchConfig.read();
+      runtimeVersion = config.runtimeVersion;
+    }
+    if (!runtimeVersion) {
+      console.error('No stitch config found, looking up runtime version');
+      // Look up the runtime version that matches the project's IDE version.
+      const releases = await fetchReleasesSummaryWithNotes();
+      const usingRelease = releases.find(
+        (r) => r.ide.version === this.ideVersion,
+      );
+      // Look up the GML Spec file that matches the project's runtime version.
+      runtimeVersion = usingRelease?.runtime.version;
+    }
+    if (runtimeVersion) {
+      // Find the locally installed runtime folder
       const installedRuntime = await GameMakerLauncher.findInstalledRuntime({
-        version: runtime,
+        version: runtimeVersion,
       });
       if (installedRuntime) {
         const gmlSpecPath = pathy(installedRuntime.directory).join(
@@ -44,7 +83,13 @@ export class GameMakerProjectParser {
         this.spec = await Gml.from(gmlSpecPath.absolute);
       }
     }
-    ok(runtime, `No runtime found for IDE version ${this.ideVersion}`);
+    // TODO: If we don't have a spec yet, use the fallback
+    if (!this.spec) {
+      console.error('No spec found, using fallback');
+      this.spec = await Gml.from(
+        GameMakerProjectParser.fallbackGmlSpecPath.absolute,
+      );
+    }
   }
 
   static async from(yypPath: string) {
@@ -56,10 +101,17 @@ export class GameMakerProjectParser {
     }
     await path.exists({ assert: true });
     const project = new GameMakerProjectParser(path);
-    await project.loadYyp();
-    await project.loadGmlSpec();
+    const fileLoader = project.loadProjectFiles();
+    const specLoaderWait = project.loadGmlSpec();
+    await Promise.all([specLoaderWait, fileLoader]);
     // TODO: Populate the global data based on the assets in the project.
+    // TODO: Load all of the GML files (parse separately)
     // TODO: Load all of the GML files and parse them, creating a symbol table.
+    console.log('Resources', project.resources.length);
     return project;
   }
+
+  static readonly fallbackGmlSpecPath = pathy(import.meta.url).resolveTo(
+    '../../assets/GmlSpec.xml',
+  );
 }
