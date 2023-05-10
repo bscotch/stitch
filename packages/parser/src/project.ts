@@ -6,11 +6,13 @@ import { ok } from 'assert';
 import { z } from 'zod';
 import { GameMakerResource } from './project.resource.js';
 import { Gml } from './spec.js';
+import { GlobalSelf } from './symbols.self.js';
 
 export class GameMakerProjectParser {
   yyp!: Yyp;
   spec!: Gml;
   resources = new Map<string, GameMakerResource>();
+  self = new GlobalSelf(this);
 
   protected constructor(readonly yypPath: Pathy) {}
 

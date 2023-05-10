@@ -9,18 +9,31 @@ import {
 import { ok } from 'assert';
 import { GmlFile } from './project.gml.js';
 import type { GameMakerProjectParser } from './project.js';
+import { GlobalSelf, InstanceSelf } from './symbols.self.js';
 
 export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   readonly kind = 'resource';
   readonly type: T;
   readonly gmlFiles: Map<string, GmlFile> = new Map();
   yy!: YyDataStrict<T>;
+  readonly self: T extends 'objects'
+    ? InstanceSelf
+    : T extends 'scripts'
+    ? GlobalSelf
+    : null;
 
   protected constructor(
     readonly project: GameMakerProjectParser,
     readonly resource: YypResource,
   ) {
     this.type = resource.id.path.split(/[/\\]/)[0] as T;
+    this.self = (
+      this.type === 'objects'
+        ? new InstanceSelf()
+        : this.type === 'scripts'
+        ? this.project.self
+        : null
+    ) as any;
   }
 
   protected async readYy(): Promise<YyDataStrict<T>> {
@@ -66,7 +79,9 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   }
 
   protected async loadGml(path: Pathy<string>): Promise<GmlFile> {
-    const gml = this.gmlFiles.get(path.name) || new GmlFile(this, path);
+    const gml =
+      this.gmlFiles.get(path.name) ||
+      new GmlFile(this as GameMakerResource<'scripts' | 'objects'>, path);
     this.gmlFiles.set(path.name, gml);
     await gml.load(path);
     return gml;

@@ -1,14 +1,16 @@
 import { Pathy } from '@bscotch/pathy';
-import { parser } from './parser.js';
 import type { GameMakerResource } from './project.resource.js';
-import { gmlSymbolVisitor } from './symbols.visitor.js';
+import type { LocalScope, SelfScope } from './symbols.scopes.js';
+import { processSymbols } from './symbols.visitor.js';
 
 export class GmlFile {
   readonly kind = 'gmlFile';
   protected _content!: string;
+  readonly localScopes: LocalScope[] = [];
+  readonly selfScopes: SelfScope[] = [];
 
   constructor(
-    readonly resource: GameMakerResource,
+    readonly resource: GameMakerResource<'objects' | 'scripts'>,
     readonly path: Pathy<string>,
   ) {}
 
@@ -29,9 +31,6 @@ export class GmlFile {
   }
 
   parse() {
-    const results = parser.parse(this._content);
-    // TODO: Emit diagnostics
-    const symbols = gmlSymbolVisitor.findSymbols(results.cst);
-    // TODO: Update symbol/scope info somehow
+    return processSymbols(this);
   }
 }
