@@ -1,13 +1,16 @@
 // CST Visitor for creating an AST etc
 import type { CstNode } from 'chevrotain';
 import type {
+  EnumStatementCstChildren,
   FileCstChildren,
   FunctionExpressionCstChildren,
   FunctionParameterCstChildren,
   GlobalVarDeclarationCstChildren,
   GmlVisitor,
   LocalVarDeclarationCstChildren,
+  MacroStatementCstChildren,
 } from '../gml-cst.js';
+import { EnumMemberCstChildren } from '../gml-cst.js';
 import { GmlParser, parser } from './parser.js';
 import type { GmlFile } from './project.gml.js';
 import {
@@ -17,8 +20,13 @@ import {
   asStartOffset,
 } from './symbols.location.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
-import type { Self } from './symbols.self.js';
-import { GlobalVariable } from './symbols.symbol.js';
+import type { GlobalSymbol, Self } from './symbols.self.js';
+import {
+  Enum,
+  GlobalFunction,
+  GlobalVariable,
+  Macro,
+} from './symbols.symbol.js';
 
 const GmlVisitorBase =
   new GmlParser().getBaseCstVisitorConstructorWithDefaults() as new (
@@ -107,6 +115,10 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     }
   }
 
+  ADD_GLOBAL_SYMBOL(_symbol: GlobalSymbol) {
+    this.PROCESSOR.project.self.addSymbol(_symbol);
+  }
+
   findSymbols(input: CstNode) {
     this.visit(input);
     return this.PROCESSOR;
@@ -119,20 +131,58 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return;
   }
 
+  override enumStatement(children: EnumStatementCstChildren) {
+    const _symbol = new Enum(
+      children.Identifier[0].image,
+      this.PROCESSOR.location.at(children.Identifier[0]),
+    );
+    this.ADD_GLOBAL_SYMBOL(_symbol);
+    this.visit(children.enumMember, _symbol);
+  }
+
+  override enumMember(children: EnumMemberCstChildren, _symbol: Enum) {
+    const name = children.Identifier[0];
+    _symbol.addMember(name, this.PROCESSOR.location.at(name));
+  }
+
   override functionExpression(children: FunctionExpressionCstChildren) {
+    const isGlobal =
+      this.PROCESSOR.currentLocalScope ===
+      this.PROCESSOR.file.scopeRanges[0].local;
     // Functions create a new localscope
+    // TODO: Add new selfscope
     // Start a new scope where the parameters are defined
     this.PROCESSOR.pushLocalScope(
       children.functionParameters[0].location!.startOffset,
     );
+
     // TODO: Consume the prior JSDOC comment as the function's documentation
-    // TODO: Add the function to a table of functions?
-    // TODO: Add the parameters as local variables
+    const name = children.Identifier?.[0];
+
+    // Add the function to a table of functions
+    if (name && isGlobal) {
+      const _symbol = new GlobalFunction(
+        name.image,
+        this.PROCESSOR.location.at(name),
+      );
+      this.ADD_GLOBAL_SYMBOL(_symbol);
+      // Add function signature components
+      for (const param of children.functionParameters) {
+        const token =
+          param.children.functionParameter![0].children.Identifier[0];
+        _symbol.addParam(token, this.PROCESSOR.location.at(token));
+      }
+    }
+
+    // Add the parameters as local variables
     this.visit(children.functionParameters);
     if (children.constructorSuffix) {
       this.visit(children.constructorSuffix);
     }
     this.visit(children.blockStatement);
+
+    // End the scope
+    // TODO: End the selfscope once it's added
     this.PROCESSOR.popLocalScope(
       children.blockStatement[0].children.EndBrace[0].startOffset + 1,
     );
@@ -154,6 +204,19 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       children.Identifier[0].image,
       this.PROCESSOR.location.at(children.Identifier[0]),
     );
-    this.PROCESSOR.project.self.addSymbol(_symbol);
+    this.ADD_GLOBAL_SYMBOL(_symbol);
   }
+
+  override macroStatement(children: MacroStatementCstChildren) {
+    const _symbol = new Macro(
+      children.Identifier[0].image,
+      this.PROCESSOR.location.at(children.Identifier[0]),
+    );
+    this.ADD_GLOBAL_SYMBOL(_symbol);
+    this.visit(children.assignmentRightHandSide);
+  }
+
+  // override identifier(children: IdentifierCstChildren) {
+
+  // }
 }
