@@ -1,64 +1,70 @@
+import { ok } from 'assert';
 import { IToken } from 'chevrotain';
+import type { GmlFile } from './project.gml.js';
 import { Location } from './symbols.location.js';
-import {
-  LocalVariable,
-  ProjectSymbol,
-  SelfVariable,
-} from './symbols.symbol.js';
+import type { Self } from './symbols.self.js';
+import { LocalVariable } from './symbols.symbol.js';
 
-/** A region of code wherein some subset of variables are accessible. */
-export abstract class Scope {
-  variables = new Map<string, ProjectSymbol>();
+/**
+ * A region of code that has access to a single combination of
+ * local and self variables. Scope ranges do not overlap and are not
+ * nested. Two scope ranges can map to the same pair of local and self vars.
+ */
+export class ScopeRange {
+  /** The immediately adjacent ScopeRange */
+  protected _next: ScopeRange | undefined = undefined;
+  readonly start: Location;
 
-  constructor(public readonly location: Location) {}
-
-  abstract create(offset: number): Scope;
-
-  abstract addVariable(token: IToken): void;
-}
-
-export class LocalScope extends Scope {
-  override variables = new Map<string, LocalVariable>();
-
-  /** Create a new localscope in the same file at a new offset. */
-  override create(offset: number): LocalScope {
-    return new LocalScope(this.location.at(offset));
+  constructor(
+    public self: Self,
+    public local: LocalScope,
+    start: Location | GmlFile,
+    public end: Location | undefined = undefined,
+  ) {
+    this.start = start instanceof Location ? start : new Location(start, 0);
   }
 
-  addVariable(token: IToken, isParam = false) {
-    // TODO: If this variable already exists, emit a warning
-    // and add it as a reference to the existing variable.
-    this.variables.set(
-      token.image,
-      new LocalVariable(token.image, this.location.at(token), isParam),
+  /**
+   * Create the next ScopeRange, adjacent to this one.
+   * This sets the end location of this scope range to
+   * match the start location of the next one. The self
+   * and local values default to the same as this scope range,
+   * so at least one will need to be changed!
+   */
+  createNext(offset: number): ScopeRange {
+    this.end = this.start.at(offset);
+    ok(
+      !this._next,
+      'Cannot create a next scope range when one already exists.',
     );
+    this._next = new ScopeRange(this.self, this.local, this.end);
+    return this._next;
   }
 }
 
 /**
- * A region of code wherein the variables for a specific instance are
- * available via `self`.
+ * A collection of local variables that are all available at the same time.
  */
-export class SelfScope extends Scope {
-  override variables = new Map<string, SelfVariable>();
+export class LocalScope {
+  readonly variables = new Map<string, LocalVariable>();
+  readonly start: Location;
 
-  /** Create a new localscope in the same file at a new offset. */
-  create(offset: number): InstanceScope {
-    return new InstanceScope(this.location.at(offset));
+  constructor(location: Location | GmlFile) {
+    this.start =
+      location instanceof Location ? location : new Location(location, 0);
   }
 
-  addVariable(token: IToken) {
+  /** Create a new localscope in the same file at a new offset. */
+  create(offset: number): LocalScope {
+    return new LocalScope(this.start.at(offset));
+  }
+
+  addSymbol(token: IToken, isParam = false) {
     // TODO: If this variable already exists, emit a warning
     // and add it as a reference to the existing variable.
     this.variables.set(
       token.image,
-      new SelfVariable(token.image, this.location.at(token)),
+      new LocalVariable(token.image, this.start.at(token), isParam),
     );
   }
 }
-
-/**
- * A region of code wherein the variables for a specific instance are
- * available via `self`, where that self is an object instance.
- */
-export class InstanceScope extends SelfScope {}

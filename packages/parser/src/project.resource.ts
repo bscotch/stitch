@@ -9,7 +9,7 @@ import {
 import { ok } from 'assert';
 import { GmlFile } from './project.gml.js';
 import type { GameMakerProjectParser } from './project.js';
-import { GlobalSelf, InstanceSelf } from './symbols.self.js';
+import { AssetSelf, GlobalSelf, InstanceSelf } from './symbols.self.js';
 
 export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   readonly kind = 'resource';
@@ -20,7 +20,7 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
     ? InstanceSelf
     : T extends 'scripts'
     ? GlobalSelf
-    : null;
+    : AssetSelf;
 
   protected constructor(
     readonly project: GameMakerProjectParser,
@@ -29,11 +29,19 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
     this.type = resource.id.path.split(/[/\\]/)[0] as T;
     this.self = (
       this.type === 'objects'
-        ? new InstanceSelf()
+        ? new InstanceSelf(this.name)
         : this.type === 'scripts'
         ? this.project.self
-        : null
+        : new AssetSelf(this.name)
     ) as any;
+    // If we are not a script, add ourselves to the global self.
+    if (!(this.self instanceof GlobalSelf)) {
+      this.project.self.addSymbol(this.self);
+    }
+  }
+
+  get gmlFilesArray() {
+    return [...this.gmlFiles.values()];
   }
 
   protected async readYy(): Promise<YyDataStrict<T>> {

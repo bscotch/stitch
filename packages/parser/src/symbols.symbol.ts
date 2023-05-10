@@ -9,7 +9,7 @@ export abstract class ProjectSymbol {
    * We may not know where a symbol is defined the first time we see it,
    * so we can set the location later if necessary.
    */
-  constructor(public readonly name: string, public location?: Location) {}
+  constructor(public readonly name: string, public location: Location) {}
 }
 
 export class LocalVariable extends ProjectSymbol {

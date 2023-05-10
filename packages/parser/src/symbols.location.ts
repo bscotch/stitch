@@ -1,13 +1,26 @@
+import { ok } from 'assert';
 import type { IToken } from 'chevrotain';
 import type { GmlFile } from './project.gml.js';
 
 export type FileName = string;
+export type TokenOrOffset = IToken | number;
+
+export function asStartOffset(token: IToken | number): number {
+  return typeof token === 'number' ? token : token.startOffset;
+}
+
+export function asEndOffset(token: IToken | number): number {
+  if (typeof token !== 'number') {
+    ok(token.endOffset !== undefined, 'Token has no endOffset');
+  }
+  return typeof token === 'number' ? token : token.endOffset!;
+}
 
 export class Location {
   constructor(
     /** Pathy-normalized absolute path to the file. */
     public readonly file: GmlFile,
-    public readonly startOffset: number,
+    public readonly offset: number,
   ) {}
 
   /**
@@ -15,7 +28,7 @@ export class Location {
    * at the given offset. */
   at(offset: number): Location;
   at(token: IToken): Location;
-  at(offsetOrToken: number | IToken): Location {
+  at(offsetOrToken: TokenOrOffset): Location {
     const offset =
       typeof offsetOrToken === 'number'
         ? offsetOrToken

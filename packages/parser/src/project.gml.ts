@@ -1,18 +1,25 @@
 import { Pathy } from '@bscotch/pathy';
 import type { GameMakerResource } from './project.resource.js';
-import type { LocalScope, SelfScope } from './symbols.scopes.js';
+import { LocalScope, ScopeRange } from './symbols.scopes.js';
 import { processSymbols } from './symbols.visitor.js';
 
 export class GmlFile {
-  readonly kind = 'gmlFile';
+  readonly kind = 'gml';
   protected _content!: string;
-  readonly localScopes: LocalScope[] = [];
-  readonly selfScopes: SelfScope[] = [];
+  readonly scopeRanges: ScopeRange[] = [];
 
   constructor(
     readonly resource: GameMakerResource<'objects' | 'scripts'>,
     readonly path: Pathy<string>,
-  ) {}
+  ) {
+    this.scopeRanges.push(
+      new ScopeRange(this.self, new LocalScope(this), this),
+    );
+  }
+
+  get self() {
+    return this.resource.self;
+  }
 
   get name() {
     return this.path.name;

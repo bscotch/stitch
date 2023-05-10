@@ -113,10 +113,8 @@ export class GameMakerProjectParser {
     await Promise.all([specLoaderWait, fileLoader]);
     // TODO: Populate the global data based on the assets in the project.
     // TODO: Parse the GML files to map symbol and scope locations.
-    for (const resource of project.resources.values()) {
-      resource.parseGml();
-    }
     console.log('Resources', project.resources.size);
+
     return project;
   }
 

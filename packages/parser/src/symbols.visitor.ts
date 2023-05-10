@@ -10,8 +10,15 @@ import type {
 } from '../gml-cst.js';
 import { GmlParser, parser } from './parser.js';
 import type { GmlFile } from './project.gml.js';
-import { Location } from './symbols.location.js';
-import { LocalScope, SelfScope } from './symbols.scopes.js';
+import {
+  Location,
+  TokenOrOffset,
+  asEndOffset,
+  asStartOffset,
+} from './symbols.location.js';
+import { LocalScope, ScopeRange } from './symbols.scopes.js';
+import type { Self } from './symbols.self.js';
+import { GlobalVariable } from './symbols.symbol.js';
 
 const GmlVisitorBase =
   new GmlParser().getBaseCstVisitorConstructorWithDefaults() as new (
@@ -20,11 +27,15 @@ const GmlVisitorBase =
 
 class SymbolProcessor {
   protected readonly localScopeStack: LocalScope[] = [];
-  protected readonly selfScopeStack: SelfScope[] = [];
+  protected readonly selfStack: Self[] = [];
+  /** The current ScopeRange, updated as we push/pop local and self */
+  protected scopeRange: ScopeRange;
   readonly location: Location;
 
   constructor(readonly file: GmlFile) {
-    this.location = new Location(file, 0);
+    this.scopeRange = file.scopeRanges[0];
+    this.localScopeStack.push(this.scopeRange.local);
+    this.location = this.scopeRange.start;
     this.pushLocalScope(0);
   }
 
@@ -40,27 +51,39 @@ class SymbolProcessor {
     return this.localScopeStack.at(-1)!;
   }
 
-  get currentSelfScope() {
-    return this.selfScopeStack.at(-1) || this.project.self;
+  get currentSelf() {
+    return this.selfStack.at(-1) || this.project.self;
   }
 
-  pushLocalScope(offset: number) {
+  protected nextScopeRange(offset: number) {
+    this.scopeRange = this.scopeRange.createNext(offset);
+    this.file.scopeRanges.push(this.scopeRange);
+    return this.scopeRange;
+  }
+
+  pushLocalScope(offset: TokenOrOffset) {
+    offset = asStartOffset(offset);
     const localScope = new LocalScope(this.location.at(offset));
     this.localScopeStack.push(localScope);
-    this.file.localScopes.push(localScope);
+    this.nextScopeRange(offset).local = localScope;
   }
 
-  popLocalScope() {
+  popLocalScope(offset: TokenOrOffset) {
+    offset = asEndOffset(offset);
     this.localScopeStack.pop();
+    this.nextScopeRange(offset).local = this.currentLocalScope;
   }
 
-  pushSelfScope(self: SelfScope) {
-    this.selfScopeStack.push(self);
-    this.file.selfScopes.push(self);
+  pushSelfScope(offset: TokenOrOffset, self: Self) {
+    offset = asStartOffset(offset);
+    this.selfStack.push(self);
+    this.nextScopeRange(offset).self = self;
   }
 
-  popSelfScope() {
-    this.selfScopeStack.pop();
+  popSelfScope(offset: TokenOrOffset) {
+    offset = asEndOffset(offset);
+    this.selfStack.pop();
+    this.nextScopeRange(offset).self = this.currentSelf;
   }
 }
 
@@ -110,21 +133,27 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       this.visit(children.constructorSuffix);
     }
     this.visit(children.blockStatement);
-    this.PROCESSOR.popLocalScope();
+    this.PROCESSOR.popLocalScope(
+      children.blockStatement[0].children.EndBrace[0].startOffset + 1,
+    );
   }
 
   override functionParameter(children: FunctionParameterCstChildren) {
-    this.PROCESSOR.currentLocalScope.addVariable(children.Identifier[0], true);
+    this.PROCESSOR.currentLocalScope.addSymbol(children.Identifier[0], true);
   }
 
   override localVarDeclaration(children: LocalVarDeclarationCstChildren) {
-    this.PROCESSOR.currentLocalScope.addVariable(children.Identifier[0]);
+    this.PROCESSOR.currentLocalScope.addSymbol(children.Identifier[0]);
     if (children.assignmentRightHandSide) {
       this.visit(children.assignmentRightHandSide);
     }
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    this.PROCESSOR.file.resource.project.self.symbo(children.Identifier[0]);
+    const _symbol = new GlobalVariable(
+      children.Identifier[0].image,
+      this.PROCESSOR.location.at(children.Identifier[0]),
+    );
+    this.PROCESSOR.project.self.addSymbol(_symbol);
   }
 }
