@@ -1,12 +1,18 @@
 import { Pathy } from '@bscotch/pathy';
 import type { GameMakerResource } from './project.resource.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
+import { ProjectSymbol } from './symbols.symbol.js';
 import { processSymbols } from './symbols.visitor.js';
 
 export class GmlFile {
   readonly kind = 'gml';
   protected _content!: string;
   readonly scopeRanges: ScopeRange[] = [];
+  /**
+   * List of all symbol references in this file,
+   * in order of appearance.
+   */
+  readonly refs: ProjectSymbol[] = [];
 
   constructor(
     readonly resource: GameMakerResource<'objects' | 'scripts'>,

@@ -7,6 +7,7 @@ import type {
   FunctionParameterCstChildren,
   GlobalVarDeclarationCstChildren,
   GmlVisitor,
+  IdentifierCstChildren,
   LocalVarDeclarationCstChildren,
   MacroStatementCstChildren,
 } from '../gml-cst.js';
@@ -20,7 +21,12 @@ import {
   asStartOffset,
 } from './symbols.location.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
-import type { GlobalSymbol, Self } from './symbols.self.js';
+import type {
+  GlobalSelf,
+  GlobalSymbol,
+  InstanceSelf,
+  StructSelf,
+} from './symbols.self.js';
 import {
   Enum,
   GlobalFunction,
@@ -33,9 +39,11 @@ const GmlVisitorBase =
     ...args: any[]
   ) => GmlVisitor<unknown, unknown>;
 
+type SelfType = InstanceSelf | StructSelf | GlobalSelf;
+
 class SymbolProcessor {
   protected readonly localScopeStack: LocalScope[] = [];
-  protected readonly selfStack: Self[] = [];
+  protected readonly selfStack: SelfType[] = [];
   /** The current ScopeRange, updated as we push/pop local and self */
   protected scopeRange: ScopeRange;
   readonly location: Location;
@@ -45,6 +53,15 @@ class SymbolProcessor {
     this.localScopeStack.push(this.scopeRange.local);
     this.location = this.scopeRange.start;
     this.pushLocalScope(0);
+  }
+
+  get scope() {
+    return {
+      local: this.currentLocalScope,
+      self: this.currentSelf,
+      global: this.project.self,
+      selfIsGlobal: this.currentSelf === this.project.self,
+    };
   }
 
   get resource() {
@@ -82,7 +99,7 @@ class SymbolProcessor {
     this.nextScopeRange(offset).local = this.currentLocalScope;
   }
 
-  pushSelfScope(offset: TokenOrOffset, self: Self) {
+  pushSelfScope(offset: TokenOrOffset, self: SelfType) {
     offset = asStartOffset(offset);
     this.selfStack.push(self);
     this.nextScopeRange(offset).self = self;
@@ -216,7 +233,41 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     this.visit(children.assignmentRightHandSide);
   }
 
-  // override identifier(children: IdentifierCstChildren) {
-
-  // }
+  /**
+   * Fallback identifier handler */
+  override identifier(children: IdentifierCstChildren) {
+    const scope = this.PROCESSOR.scope;
+    // TODO: Check if reference to a local symbol
+    // TODO: Check if reference to a self symbol
+    // TODO: Check if reference to a global symbol
+    // TODO: If we are in an object's create and this is from an assignment,
+    //       then add it to the self scope
+    // TODO: Infer self
+    // TODO: If this isn't definitely a reference to a known symbol,
+    //       then add it as an unknown symbol to be checked later.
+    if (children.Identifier?.[0]) {
+      const token = children.Identifier[0];
+      const location = this.PROCESSOR.location.at(token);
+      // Is it a localvar?
+      if (scope.local.hasSymbol(token.image)) {
+        const _symbol = scope.local.getSymbol(token.image)!;
+        _symbol.addRef(location);
+      }
+      // Is it a selfvar?
+      else if (scope.self.hasSymbol(token.image)) {
+        const _symbol = scope.self.getSymbol(token.image)!;
+        _symbol.addRef(location);
+      }
+      // Is it a globalvar (if self wasn't global)?
+      else if (!scope.selfIsGlobal && scope.global.hasSymbol(token.image)) {
+        const _symbol = this.PROCESSOR.project.self.getSymbol(token.image)!;
+        _symbol.addRef(location);
+      }
+      // Is it a builtin global?
+      else if (scope.global.gml.has(token.image)) {
+        const _symbol = scope.global.gml.get(token.image)!;
+        _symbol.addRef(location);
+      }
+    }
+  }
 }

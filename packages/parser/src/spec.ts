@@ -7,14 +7,20 @@ import {
   GmlSpecVariable,
   gmlSpecSchema,
 } from './spec.schema.js';
+import { Location } from './symbols.location.js';
 
 export type GmlSymbolKind = 'function' | 'variable' | 'constant';
 
 export abstract class GmlSymbol<T extends { name: string }> {
   readonly name: string;
   abstract readonly kind: GmlSymbolKind;
+  refs: Location[] = [];
   constructor(readonly definition: T) {
     this.name = definition.name;
+  }
+
+  addRef(location: Location) {
+    this.refs.push(location);
   }
 }
 
@@ -35,8 +41,6 @@ export class GmlType extends GmlSymbol<{ name: string }> {
 }
 
 export class Gml {
-  /** Cache of parsed specs by version */
-  protected static specCache: Map<string, Gml> = new Map();
   protected spec!: GmlSpec;
   readonly symbols: Map<
     string,
@@ -78,11 +82,7 @@ export class Gml {
 
   static async from(filePath: string) {
     const parsedSpec = await Gml.parse(filePath);
-    if (Gml.specCache.has(parsedSpec.runtime)) {
-      return Gml.specCache.get(parsedSpec.runtime)!;
-    }
     const spec = new Gml(filePath);
-    Gml.specCache.set(parsedSpec.runtime, spec);
     spec.spec = parsedSpec;
     spec.load();
     return spec;

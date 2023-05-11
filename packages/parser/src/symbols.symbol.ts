@@ -1,8 +1,17 @@
 import type { IToken } from 'chevrotain';
-import { FileName, Location } from './symbols.location.js';
+import { Location } from './symbols.location.js';
+
+export class SymbolRef {
+  constructor(
+    public readonly symbol: ProjectSymbol,
+    public readonly location: Location,
+    public readonly isDeclaration = false,
+  ) {}
+}
 
 export abstract class ProjectSymbol {
-  refs: Map<FileName, Location[]> = new Map();
+  abstract kind: string;
+  refs: SymbolRef[] = [];
   description?: string;
   deprecated?: boolean;
   type?: unknown; // TODO: implement
@@ -11,20 +20,33 @@ export abstract class ProjectSymbol {
    * We may not know where a symbol is defined the first time we see it,
    * so we can set the location later if necessary.
    */
-  constructor(public readonly name: string, public location: Location) {}
+  constructor(public readonly name: string, public location: Location) {
+    this.addRef(location, true);
+  }
+
+  addRef(location: Location, isDeclaration = false) {
+    this.refs.push(new SymbolRef(this, location, isDeclaration));
+    location.file.refs.push(this);
+  }
 }
 
 export class LocalVariable extends ProjectSymbol {
+  kind = 'localVariable';
   constructor(name: string, location: Location, public isParam = false) {
     super(name, location);
   }
 }
 
-export class SelfVariable extends ProjectSymbol {}
+export class SelfVariable extends ProjectSymbol {
+  kind = 'selfVariable';
+}
 
-export class GlobalVariable extends ProjectSymbol {}
+export class GlobalVariable extends ProjectSymbol {
+  kind = 'globalVariable';
+}
 
 class FunctionParam extends ProjectSymbol {
+  kind = 'functionParam';
   optional?: boolean;
 }
 
@@ -37,11 +59,16 @@ export class GlobalFunction extends GlobalVariable {
   }
 }
 
-export class Macro extends ProjectSymbol {}
+export class Macro extends ProjectSymbol {
+  kind = 'macro';
+}
 
-export class EnumMember extends ProjectSymbol {}
+export class EnumMember extends ProjectSymbol {
+  kind = 'enumMember';
+}
 
 export class Enum extends ProjectSymbol {
+  kind = 'enum';
   members = new Map<string, EnumMember>();
 
   addMember(token: IToken, location: Location) {

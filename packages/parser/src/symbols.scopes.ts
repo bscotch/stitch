@@ -54,9 +54,12 @@ export class LocalScope {
       location instanceof Location ? location : new Location(location, 0);
   }
 
-  /** Create a new localscope in the same file at a new offset. */
-  create(offset: number): LocalScope {
-    return new LocalScope(this.start.at(offset));
+  hasSymbol(name: string) {
+    return this.variables.has(name);
+  }
+
+  getSymbol(name: string) {
+    return this.variables.get(name);
   }
 
   addSymbol(token: IToken, isParam = false) {
