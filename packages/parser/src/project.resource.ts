@@ -41,7 +41,14 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   }
 
   get gmlFilesArray() {
-    return [...this.gmlFiles.values()];
+    return [...this.gmlFiles.values()].sort((a, b) => {
+      if (a.name === 'Create_0') {
+        return -1;
+      } else if (b.name === 'Create_0') {
+        return 1;
+      }
+      return 0;
+    });
   }
 
   protected async readYy(): Promise<YyDataStrict<T>> {
@@ -70,19 +77,15 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
     return this.resource.id.name;
   }
 
-  parseGml() {
-    // Sort the files so that objects' Create event is first, since all
-    // instance vars should be defined there.
-    const gmlFiles = [...this.gmlFiles.values()].sort((a, b) => {
-      if (a.name === 'Create_0') {
-        return -1;
-      } else if (b.name === 'Create_0') {
-        return 1;
-      }
-      return 0;
-    });
-    for (const gml of gmlFiles) {
-      gml.parse();
+  updateGlobals() {
+    for (const gml of this.gmlFilesArray) {
+      gml.updateGlobals();
+    }
+  }
+
+  updateAllSymbols() {
+    for (const gml of this.gmlFilesArray) {
+      gml.updateAllSymbols();
     }
   }
 
@@ -91,7 +94,7 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
       this.gmlFiles.get(path.name) ||
       new GmlFile(this as GameMakerResource<'scripts' | 'objects'>, path);
     this.gmlFiles.set(path.name, gml);
-    await gml.load(path);
+    await gml.parse(path);
     return gml;
   }
 

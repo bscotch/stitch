@@ -67,7 +67,10 @@ export class GlobalSelf extends Self {
   }
 
   addSymbol(symbol: GlobalSymbol) {
-    this.symbols.set(symbol.name, symbol);
+    if (!this.hasSymbol(symbol.name)) {
+      this.symbols.set(symbol.name, symbol);
+    }
+    return this.getSymbol(symbol.name);
   }
 
   hasSymbol(name: string) {

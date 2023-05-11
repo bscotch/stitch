@@ -1,18 +1,16 @@
 // CST Visitor for creating an AST etc
-import type { CstNode } from 'chevrotain';
+import type { CstNode, IToken } from 'chevrotain';
 import type {
   EnumStatementCstChildren,
-  FileCstChildren,
   FunctionExpressionCstChildren,
   FunctionParameterCstChildren,
   GlobalVarDeclarationCstChildren,
-  GmlVisitor,
   IdentifierCstChildren,
   LocalVarDeclarationCstChildren,
   MacroStatementCstChildren,
 } from '../gml-cst.js';
 import { EnumMemberCstChildren } from '../gml-cst.js';
-import { GmlParser, parser } from './parser.js';
+import { GmlVisitorBase } from './parser.js';
 import type { GmlFile } from './project.gml.js';
 import {
   Location,
@@ -32,12 +30,8 @@ import {
   GlobalFunction,
   GlobalVariable,
   Macro,
+  ProjectSymbol,
 } from './symbols.symbol.js';
-
-const GmlVisitorBase =
-  new GmlParser().getBaseCstVisitorConstructorWithDefaults() as new (
-    ...args: any[]
-  ) => GmlVisitor<unknown, unknown>;
 
 type SelfType = InstanceSelf | StructSelf | GlobalSelf;
 
@@ -113,11 +107,9 @@ class SymbolProcessor {
 }
 
 export function processSymbols(file: GmlFile) {
-  const parsed = parser.parse(file.content);
-  // TODO: Handle error logic and emits
   const processor = new SymbolProcessor(file);
   const visitor = new GmlSymbolVisitor(processor);
-  visitor.visit(parsed.cst);
+  visitor.visit(file.cst);
 }
 
 export class GmlSymbolVisitor extends GmlVisitorBase {
@@ -132,6 +124,15 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     }
   }
 
+  INSTANCE<T extends typeof ProjectSymbol>(
+    children: { Identifier?: IToken[] },
+    klass: T,
+  ): InstanceType<T> | undefined {
+    const name = children.Identifier?.[0];
+    if (!name) return;
+    return new klass(name.image, this.PROCESSOR.location.at(name)) as any;
+  }
+
   ADD_GLOBAL_SYMBOL(_symbol: GlobalSymbol) {
     this.PROCESSOR.project.self.addSymbol(_symbol);
   }
@@ -141,18 +142,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return this.PROCESSOR;
   }
 
-  override file(children: FileCstChildren) {
-    for (const statement of children.statements) {
-      this.visit(statement);
-    }
-    return;
-  }
-
   override enumStatement(children: EnumStatementCstChildren) {
-    const _symbol = new Enum(
-      children.Identifier[0].image,
-      this.PROCESSOR.location.at(children.Identifier[0]),
-    );
+    const _symbol = this.INSTANCE(children, Enum)!;
     this.ADD_GLOBAL_SYMBOL(_symbol);
     this.visit(children.enumMember, _symbol);
   }
@@ -165,12 +156,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   override functionExpression(children: FunctionExpressionCstChildren) {
     const isGlobal =
       this.PROCESSOR.currentLocalScope ===
-      this.PROCESSOR.file.scopeRanges[0].local;
+        this.PROCESSOR.file.scopeRanges[0].local &&
+      this.PROCESSOR.resource.type === 'scripts';
     // Functions create a new localscope
-    // TODO: Add new selfscope
-    // Start a new scope where the parameters are defined
     this.PROCESSOR.pushLocalScope(
-      children.functionParameters[0].location!.startOffset,
+      children.functionParameters[0].children.StartParen[0].startOffset,
     );
 
     // TODO: Consume the prior JSDOC comment as the function's documentation
@@ -178,10 +168,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
     // Add the function to a table of functions
     if (name && isGlobal) {
-      const _symbol = new GlobalFunction(
-        name.image,
-        this.PROCESSOR.location.at(name),
-      );
+      const _symbol = this.INSTANCE(children, GlobalFunction)!;
       this.ADD_GLOBAL_SYMBOL(_symbol);
       // Add function signature components
       for (const param of children.functionParameters) {
@@ -217,18 +204,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    const _symbol = new GlobalVariable(
-      children.Identifier[0].image,
-      this.PROCESSOR.location.at(children.Identifier[0]),
-    );
+    const _symbol = this.INSTANCE(children, GlobalVariable)!;
     this.ADD_GLOBAL_SYMBOL(_symbol);
   }
 
   override macroStatement(children: MacroStatementCstChildren) {
-    const _symbol = new Macro(
-      children.Identifier[0].image,
-      this.PROCESSOR.location.at(children.Identifier[0]),
-    );
+    const _symbol = this.INSTANCE(children, Macro)!;
     this.ADD_GLOBAL_SYMBOL(_symbol);
     this.visit(children.assignmentRightHandSide);
   }

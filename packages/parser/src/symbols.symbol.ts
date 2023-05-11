@@ -9,8 +9,8 @@ export class SymbolRef {
   ) {}
 }
 
-export abstract class ProjectSymbol {
-  abstract kind: string;
+export class ProjectSymbol {
+  kind = 'projectSymbol';
   refs: SymbolRef[] = [];
   description?: string;
   deprecated?: boolean;
@@ -31,22 +31,22 @@ export abstract class ProjectSymbol {
 }
 
 export class LocalVariable extends ProjectSymbol {
-  kind = 'localVariable';
+  override kind = 'localVariable';
   constructor(name: string, location: Location, public isParam = false) {
     super(name, location);
   }
 }
 
 export class SelfVariable extends ProjectSymbol {
-  kind = 'selfVariable';
+  override kind = 'selfVariable';
 }
 
 export class GlobalVariable extends ProjectSymbol {
-  kind = 'globalVariable';
+  override kind = 'globalVariable';
 }
 
 class FunctionParam extends ProjectSymbol {
-  kind = 'functionParam';
+  override kind = 'functionParam';
   optional?: boolean;
 }
 
@@ -54,23 +54,25 @@ export class GlobalFunction extends GlobalVariable {
   returnType?: unknown; // TODO: implement
   params: FunctionParam[] = [];
 
+  // TODO: Ensure only added once!
   addParam(token: IToken, location: Location) {
     this.params.push(new FunctionParam(token.image, location));
   }
 }
 
 export class Macro extends ProjectSymbol {
-  kind = 'macro';
+  override kind = 'macro';
 }
 
 export class EnumMember extends ProjectSymbol {
-  kind = 'enumMember';
+  override kind = 'enumMember';
 }
 
 export class Enum extends ProjectSymbol {
-  kind = 'enum';
+  override kind = 'enum';
   members = new Map<string, EnumMember>();
 
+  // TODO: Ensure only added once!
   addMember(token: IToken, location: Location) {
     this.members.set(token.image, new EnumMember(token.image, location));
   }

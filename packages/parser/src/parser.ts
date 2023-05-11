@@ -1,6 +1,12 @@
-import { CstNode, CstParser } from 'chevrotain';
+import { CstNode, CstParser, ILexingResult } from 'chevrotain';
+import type { GmlVisitor } from '../gml-cst.js';
 import { GmlLexer } from './lexer.js';
 import { c, categories, t, tokens } from './tokens.js';
+
+export interface GmlParsed {
+  lexed: ILexingResult;
+  cst: CstNode;
+}
 
 export class GmlParser extends CstParser {
   readonly lexer = GmlLexer;
@@ -737,7 +743,7 @@ export class GmlParser extends CstParser {
     this.performSelfAnalysis();
   }
 
-  parse(code: string) {
+  parse(code: string): GmlParsed {
     const lexed = this.lexer.tokenize(code);
     this.input = this.lexer.tokenize(code).tokens;
     const cst = this.file();
@@ -766,3 +772,7 @@ export class GmlParser extends CstParser {
 }
 
 export const parser = new GmlParser();
+export const GmlVisitorBase =
+  new GmlParser().getBaseCstVisitorConstructorWithDefaults() as new (
+    ...args: any[]
+  ) => GmlVisitor<unknown, unknown>;

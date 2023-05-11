@@ -1,12 +1,15 @@
-import { Pathy } from '@bscotch/pathy';
+import type { Pathy } from '@bscotch/pathy';
+import { parser, type GmlParsed } from './parser.js';
 import type { GameMakerResource } from './project.resource.js';
+import { processGlobalSymbols } from './symbols.globals.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
-import { ProjectSymbol } from './symbols.symbol.js';
+import type { ProjectSymbol } from './symbols.symbol.js';
 import { processSymbols } from './symbols.visitor.js';
 
 export class GmlFile {
   readonly kind = 'gml';
   protected _content!: string;
+  protected _parsed!: GmlParsed;
   readonly scopeRanges: ScopeRange[] = [];
   /**
    * List of all symbol references in this file,
@@ -39,11 +42,20 @@ export class GmlFile {
     return this._content;
   }
 
-  async load(path: Pathy<string>) {
-    this._content = await path.read();
+  get cst() {
+    return this._parsed.cst;
   }
 
-  parse() {
+  async parse(path: Pathy<string>) {
+    this._content = await path.read();
+    this._parsed = parser.parse(this.content);
+  }
+
+  updateGlobals() {
+    return processGlobalSymbols(this);
+  }
+
+  updateAllSymbols() {
     return processSymbols(this);
   }
 }

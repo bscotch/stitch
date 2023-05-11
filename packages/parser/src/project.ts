@@ -112,8 +112,14 @@ export class GameMakerProjectParser {
 
     await Promise.all([specLoaderWait, fileLoader]);
     console.log('Resources', project.resources.size);
+
+    // Discover all globals
     for (const [name, resource] of project.resources) {
-      resource.parseGml();
+      resource.updateGlobals();
+    }
+    // Discover all symbols and their references
+    for (const [name, resource] of project.resources) {
+      resource.updateAllSymbols();
       // for (const file of resource.gmlFilesArray) {
       //   console.log(`  ${name}:`);
       //   for (const ref of file.refs) {
