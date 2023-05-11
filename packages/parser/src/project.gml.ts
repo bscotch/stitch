@@ -3,14 +3,14 @@ import { parser, type GmlParsed } from './parser.js';
 import type { GameMakerResource } from './project.resource.js';
 import { processGlobalSymbols } from './symbols.globals.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
-import type { ProjectSymbol } from './symbols.symbol.js';
+import type { ProjectSymbol, SymbolRef } from './symbols.symbol.js';
 import { processSymbols } from './symbols.visitor.js';
 
 export class GmlFile {
   readonly kind = 'gml';
   readonly scopeRanges: ScopeRange[] = [];
   /** List of all symbol references in this file, in order of appearance. */
-  protected _refs: ProjectSymbol[] = [];
+  protected _refs: SymbolRef[] = [];
   protected _content!: string;
   protected _parsed!: GmlParsed;
 
@@ -58,11 +58,30 @@ export class GmlFile {
     this._parsed = parser.parse(this.content);
   }
 
-  addRef(ref: ProjectSymbol) {
+  addRef(ref: SymbolRef) {
     this._refs.push(ref);
   }
 
   clearRefs() {
+    // Remove each reference in *this file* from its symbol.
+    const cleared = new Set<ProjectSymbol>();
+    for (const ref of this._refs) {
+      if (cleared.has(ref.symbol) || !ref.symbol.refs.size) {
+        continue;
+      }
+      // If the symbol was declared in this file, remove its location
+      if (ref.symbol.location?.file === this) {
+        ref.symbol.location = undefined;
+      }
+      // Remove all references to this symbol found in this file
+      for (const symbolRef of ref.symbol.refs) {
+        if (symbolRef.location.file === this) {
+          ref.symbol.refs.delete(symbolRef);
+        }
+      }
+      cleared.add(ref.symbol);
+    }
+    // Reset this file's refs list
     this._refs = [];
   }
 
@@ -72,18 +91,16 @@ export class GmlFile {
    */
   async reload(content?: string) {
     await this.parse(this.path, content);
-    // TODO: Clean up refs somehow?
+    this.clearRefs();
     this.updateGlobals();
     this.updateAllSymbols();
   }
 
   updateGlobals() {
-    this.clearRefs();
     return processGlobalSymbols(this);
   }
 
   updateAllSymbols() {
-    this.clearRefs();
     return processSymbols(this);
   }
 }

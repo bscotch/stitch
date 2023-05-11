@@ -12,6 +12,7 @@ import type {
 export abstract class Self {
   abstract kind: string;
   refs: Location[] = [];
+  location?: Location;
   addRef(location: Location) {
     this.refs.push(location);
   }
@@ -32,6 +33,7 @@ export class StructSelf extends Self {
 }
 
 export class InstanceSelf extends StructSelf {
+  global = true;
   override kind = 'instance';
   constructor(public readonly name: string) {
     super();
@@ -46,6 +48,7 @@ export class UnknownSelf extends Self {
   kind = 'unknown';
 }
 export class AssetSelf extends Self {
+  global = true;
   kind = 'asset';
   constructor(public readonly name: string) {
     super();
@@ -62,6 +65,7 @@ export type GlobalSymbol =
   | AssetSelf;
 
 export class GlobalSelf extends Self {
+  global = true;
   kind = 'global';
   /** Project-defined symbols. */
   symbols = new Map<string, GlobalSymbol>();
@@ -74,6 +78,7 @@ export class GlobalSelf extends Self {
     if (!this.hasSymbol(symbol.name)) {
       this.symbols.set(symbol.name, symbol);
     }
+    // TODO: else throw?
     return this.getSymbol(symbol.name);
   }
 

@@ -11,22 +11,20 @@ export class SymbolRef {
 
 export class ProjectSymbol {
   kind = 'projectSymbol';
-  refs: SymbolRef[] = [];
+  location?: Location;
+  refs = new Set<SymbolRef>();
   description?: string;
   deprecated?: boolean;
-  type?: unknown; // TODO: implement
+  global?: boolean;
 
-  /**
-   * We may not know where a symbol is defined the first time we see it,
-   * so we can set the location later if necessary.
-   */
-  constructor(public readonly name: string, public location: Location) {
-    this.addRef(location, true);
+  constructor(public readonly name: string, location: Location) {
+    this.location = location;
   }
 
   addRef(location: Location, isDeclaration = false) {
-    this.refs.push(new SymbolRef(this, location, isDeclaration));
-    location.file.refs.push(this);
+    const ref = new SymbolRef(this, location, isDeclaration);
+    this.refs.add(ref);
+    location.file.refs.push(ref);
   }
 }
 
@@ -42,6 +40,7 @@ export class SelfVariable extends ProjectSymbol {
 }
 
 export class GlobalVariable extends ProjectSymbol {
+  override global = true;
   override kind = 'globalVariable';
 }
 
@@ -51,6 +50,7 @@ class FunctionParam extends ProjectSymbol {
 }
 
 export class GlobalFunction extends GlobalVariable {
+  override global = true;
   override kind = 'globalFunction';
   returnType?: unknown; // TODO: implement
   params: FunctionParam[] = [];
@@ -66,10 +66,12 @@ export class GlobalFunction extends GlobalVariable {
 }
 
 export class GlobalConstructorFunction extends GlobalFunction {
+  override global = true;
   override kind = 'globalConstructorFunction';
 }
 
 export class Macro extends ProjectSymbol {
+  override global = true;
   override kind = 'macro';
 }
 
@@ -78,6 +80,7 @@ export class EnumMember extends ProjectSymbol {
 }
 
 export class Enum extends ProjectSymbol {
+  override global = true;
   override kind = 'enum';
   members = new Map<string, EnumMember>();
 

@@ -1,5 +1,5 @@
 // CST Visitor for creating an AST etc
-import type { CstNode, IToken } from 'chevrotain';
+import type { CstNode } from 'chevrotain';
 import type {
   FunctionExpressionCstChildren,
   FunctionParameterCstChildren,
@@ -21,7 +21,6 @@ import type {
   InstanceSelf,
   StructSelf,
 } from './symbols.self.js';
-import { ProjectSymbol } from './symbols.symbol.js';
 
 type SelfType = InstanceSelf | StructSelf | GlobalSelf;
 
@@ -118,25 +117,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     }
   }
 
-  INSTANCE<T extends typeof ProjectSymbol>(
-    children: { Identifier?: IToken[] },
-    klass: T,
-  ): InstanceType<T> | undefined {
-    const name = children.Identifier?.[0];
-    if (!name) return;
-    return new klass(name.image, this.PROCESSOR.location.at(name)) as any;
-  }
-
   findSymbols(input: CstNode) {
     this.visit(input);
     return this.PROCESSOR;
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {
-    const isGlobal =
-      this.PROCESSOR.currentLocalScope ===
-        this.PROCESSOR.file.scopeRanges[0].local &&
-      this.PROCESSOR.resource.type === 'scripts';
     // Functions create a new localscope
     this.PROCESSOR.pushLocalScope(
       children.functionParameters[0].children.StartParen[0].startOffset,
@@ -171,9 +157,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
    * Fallback identifier handler */
   override identifier(children: IdentifierCstChildren) {
     const scope = this.PROCESSOR.scope;
-    // TODO: Check if reference to a local symbol
-    // TODO: Check if reference to a self symbol
-    // TODO: Check if reference to a global symbol
     // TODO: If we are in an object's create and this is from an assignment,
     //       then add it to the self scope
     // TODO: Infer self
@@ -187,13 +170,13 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         const _symbol = scope.local.getSymbol(token.image)!;
         _symbol.addRef(location);
       }
-      // Is it a selfvar?
-      else if (scope.self.hasSymbol(token.image)) {
+      // Is it a non-global selfvar?
+      else if (!scope.selfIsGlobal && scope.self.hasSymbol(token.image)) {
         const _symbol = scope.self.getSymbol(token.image)!;
         _symbol.addRef(location);
       }
-      // Is it a globalvar (if self wasn't global)?
-      else if (!scope.selfIsGlobal && scope.global.hasSymbol(token.image)) {
+      // Is it a globalvar?
+      else if (scope.global.hasSymbol(token.image)) {
         const _symbol = this.PROCESSOR.project.self.getSymbol(token.image)!;
         _symbol.addRef(location);
       }
@@ -202,6 +185,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         const _symbol = scope.global.gml.get(token.image)!;
         _symbol.addRef(location);
       }
+      // TODO: Emit error?
     }
   }
 }

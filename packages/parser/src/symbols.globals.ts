@@ -11,7 +11,6 @@ import { GmlVisitorBase } from './parser.js';
 import type { GmlFile } from './project.gml.js';
 import { Location } from './symbols.location.js';
 import { LocalScope } from './symbols.scopes.js';
-import type { GlobalSymbol } from './symbols.self.js';
 import {
   Enum,
   GlobalConstructorFunction,
@@ -20,6 +19,12 @@ import {
   Macro,
   ProjectSymbol,
 } from './symbols.symbol.js';
+
+export function processGlobalSymbols(file: GmlFile) {
+  const processor = new GlobalDeclarationsProcessor(file);
+  const visitor = new GmlGlobalDeclarationsVisitor(processor);
+  visitor.visit(file.cst);
+}
 
 class GlobalDeclarationsProcessor {
   protected readonly localScopeStack: LocalScope[] = [];
@@ -43,6 +48,10 @@ class GlobalDeclarationsProcessor {
     this.localScopeStack.pop();
   }
 
+  get globals() {
+    return this.project.self;
+  }
+
   get resource() {
     return this.file.resource;
   }
@@ -50,12 +59,6 @@ class GlobalDeclarationsProcessor {
   get project() {
     return this.resource.project;
   }
-}
-
-export function processGlobalSymbols(file: GmlFile) {
-  const processor = new GlobalDeclarationsProcessor(file);
-  const visitor = new GmlGlobalDeclarationsVisitor(processor);
-  visitor.visit(file.cst);
 }
 
 export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
@@ -70,17 +73,23 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     }
   }
 
-  INSTANCE<T extends typeof ProjectSymbol>(
+  UPDATE_GLOBAL<T extends typeof ProjectSymbol>(
     children: { Identifier?: IToken[] },
     klass: T,
   ): InstanceType<T> | undefined {
     const name = children.Identifier?.[0];
     if (!name) return;
+    const location = this.PROCESSOR.location.at(name);
+    // Only create it if it doesn't already exist.
+    let symbol = this.PROCESSOR.globals.getSymbol(name.image);
+    if (!symbol) {
+      symbol = new klass(name.image, location) as any;
+      this.PROCESSOR.globals.addSymbol(symbol as any);
+    } else {
+      symbol.location = location;
+    }
+    symbol!.addRef(location, true);
     return new klass(name.image, this.PROCESSOR.location.at(name)) as any;
-  }
-
-  ADD_GLOBAL_SYMBOL(_symbol: GlobalSymbol) {
-    this.PROCESSOR.project.self.addSymbol(_symbol);
   }
 
   findSymbols(input: CstNode) {
@@ -89,8 +98,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override enumStatement(children: EnumStatementCstChildren) {
-    const _symbol = this.INSTANCE(children, Enum)!;
-    this.ADD_GLOBAL_SYMBOL(_symbol);
+    const _symbol = this.UPDATE_GLOBAL(children, Enum)!;
     this.visit(children.enumMember, _symbol);
   }
 
@@ -112,8 +120,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       const _constructor = children.constructorSuffix?.[0]
         ? GlobalConstructorFunction
         : GlobalFunction;
-      const _symbol = this.INSTANCE(children, _constructor)!;
-      this.ADD_GLOBAL_SYMBOL(_symbol);
+      const _symbol = this.UPDATE_GLOBAL(children, _constructor)!;
       // Add function signature components
       const params =
         children.functionParameters?.[0]?.children.functionParameter || [];
@@ -129,12 +136,10 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    const _symbol = this.INSTANCE(children, GlobalVariable)!;
-    this.ADD_GLOBAL_SYMBOL(_symbol);
+    this.UPDATE_GLOBAL(children, GlobalVariable)!;
   }
 
   override macroStatement(children: MacroStatementCstChildren) {
-    const _symbol = this.INSTANCE(children, Macro)!;
-    this.ADD_GLOBAL_SYMBOL(_symbol);
+    this.UPDATE_GLOBAL(children, Macro)!;
   }
 }
