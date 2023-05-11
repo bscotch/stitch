@@ -15,7 +15,7 @@ export class GmlFile {
    * List of all symbol references in this file,
    * in order of appearance.
    */
-  readonly refs: ProjectSymbol[] = [];
+  protected _refs: ProjectSymbol[] = [];
 
   constructor(
     readonly resource: GameMakerResource<'objects' | 'scripts'>,
@@ -24,6 +24,10 @@ export class GmlFile {
     this.scopeRanges.push(
       new ScopeRange(this.self, new LocalScope(this), this),
     );
+  }
+
+  get refs() {
+    return [...this._refs];
   }
 
   get self() {
@@ -51,11 +55,21 @@ export class GmlFile {
     this._parsed = parser.parse(this.content);
   }
 
+  addRef(ref: ProjectSymbol) {
+    this._refs.push(ref);
+  }
+
+  clearRefs() {
+    this._refs = [];
+  }
+
   updateGlobals() {
+    this.clearRefs();
     return processGlobalSymbols(this);
   }
 
   updateAllSymbols() {
+    this.clearRefs();
     return processSymbols(this);
   }
 }

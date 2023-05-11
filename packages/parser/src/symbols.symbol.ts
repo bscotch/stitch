@@ -51,13 +51,22 @@ class FunctionParam extends ProjectSymbol {
 }
 
 export class GlobalFunction extends GlobalVariable {
+  override kind = 'globalFunction';
   returnType?: unknown; // TODO: implement
   params: FunctionParam[] = [];
 
-  // TODO: Ensure only added once!
-  addParam(token: IToken, location: Location) {
-    this.params.push(new FunctionParam(token.image, location));
+  addParam(paramIdx: number, token: IToken, location: Location) {
+    if (this.params[paramIdx]) {
+      // Update the location in case it has changed
+      this.params[paramIdx].location = location;
+    } else {
+      this.params.push(new FunctionParam(token.image, location));
+    }
   }
+}
+
+export class GlobalConstructorFunction extends GlobalFunction {
+  override kind = 'globalConstructorFunction';
 }
 
 export class Macro extends ProjectSymbol {
@@ -72,8 +81,21 @@ export class Enum extends ProjectSymbol {
   override kind = 'enum';
   members = new Map<string, EnumMember>();
 
-  // TODO: Ensure only added once!
+  // Ensure only added once!
   addMember(token: IToken, location: Location) {
+    if (this.members.has(token.image)) {
+      // Update the location in case it has changed
+      this.getMember(token.image)!.location = location;
+      return;
+    }
     this.members.set(token.image, new EnumMember(token.image, location));
+  }
+
+  hasMember(name: string) {
+    return this.members.has(name);
+  }
+
+  getMember(name: string) {
+    return this.members.get(name);
   }
 }

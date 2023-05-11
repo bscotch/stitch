@@ -1,15 +1,11 @@
 // CST Visitor for creating an AST etc
 import type { CstNode, IToken } from 'chevrotain';
 import type {
-  EnumStatementCstChildren,
   FunctionExpressionCstChildren,
   FunctionParameterCstChildren,
-  GlobalVarDeclarationCstChildren,
   IdentifierCstChildren,
   LocalVarDeclarationCstChildren,
-  MacroStatementCstChildren,
 } from '../gml-cst.js';
-import { EnumMemberCstChildren } from '../gml-cst.js';
 import { GmlVisitorBase } from './parser.js';
 import type { GmlFile } from './project.gml.js';
 import {
@@ -25,13 +21,7 @@ import type {
   InstanceSelf,
   StructSelf,
 } from './symbols.self.js';
-import {
-  Enum,
-  GlobalFunction,
-  GlobalVariable,
-  Macro,
-  ProjectSymbol,
-} from './symbols.symbol.js';
+import { ProjectSymbol } from './symbols.symbol.js';
 
 type SelfType = InstanceSelf | StructSelf | GlobalSelf;
 
@@ -72,6 +62,10 @@ class SymbolProcessor {
 
   get currentSelf() {
     return this.selfStack.at(-1) || this.project.self;
+  }
+
+  getGlobalSymbol(name: string): GlobalSymbol | undefined {
+    return this.project.self.getSymbol(name);
   }
 
   protected nextScopeRange(offset: number) {
@@ -133,24 +127,9 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return new klass(name.image, this.PROCESSOR.location.at(name)) as any;
   }
 
-  ADD_GLOBAL_SYMBOL(_symbol: GlobalSymbol) {
-    this.PROCESSOR.project.self.addSymbol(_symbol);
-  }
-
   findSymbols(input: CstNode) {
     this.visit(input);
     return this.PROCESSOR;
-  }
-
-  override enumStatement(children: EnumStatementCstChildren) {
-    const _symbol = this.INSTANCE(children, Enum)!;
-    this.ADD_GLOBAL_SYMBOL(_symbol);
-    this.visit(children.enumMember, _symbol);
-  }
-
-  override enumMember(children: EnumMemberCstChildren, _symbol: Enum) {
-    const name = children.Identifier[0];
-    _symbol.addMember(name, this.PROCESSOR.location.at(name));
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {
@@ -162,21 +141,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     this.PROCESSOR.pushLocalScope(
       children.functionParameters[0].children.StartParen[0].startOffset,
     );
-
-    // TODO: Consume the prior JSDOC comment as the function's documentation
-    const name = children.Identifier?.[0];
-
-    // Add the function to a table of functions
-    if (name && isGlobal) {
-      const _symbol = this.INSTANCE(children, GlobalFunction)!;
-      this.ADD_GLOBAL_SYMBOL(_symbol);
-      // Add function signature components
-      for (const param of children.functionParameters) {
-        const token =
-          param.children.functionParameter![0].children.Identifier[0];
-        _symbol.addParam(token, this.PROCESSOR.location.at(token));
-      }
-    }
 
     // Add the parameters as local variables
     this.visit(children.functionParameters);
@@ -201,17 +165,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     if (children.assignmentRightHandSide) {
       this.visit(children.assignmentRightHandSide);
     }
-  }
-
-  override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    const _symbol = this.INSTANCE(children, GlobalVariable)!;
-    this.ADD_GLOBAL_SYMBOL(_symbol);
-  }
-
-  override macroStatement(children: MacroStatementCstChildren) {
-    const _symbol = this.INSTANCE(children, Macro)!;
-    this.ADD_GLOBAL_SYMBOL(_symbol);
-    this.visit(children.assignmentRightHandSide);
   }
 
   /**

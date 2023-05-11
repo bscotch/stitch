@@ -1,6 +1,7 @@
 // CST Visitor for creating an AST etc
 import type { CstNode, IToken } from 'chevrotain';
 import type {
+  EnumMemberCstChildren,
   EnumStatementCstChildren,
   FunctionExpressionCstChildren,
   GlobalVarDeclarationCstChildren,
@@ -13,6 +14,7 @@ import { LocalScope } from './symbols.scopes.js';
 import type { GlobalSymbol } from './symbols.self.js';
 import {
   Enum,
+  GlobalConstructorFunction,
   GlobalFunction,
   GlobalVariable,
   Macro,
@@ -89,6 +91,12 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   override enumStatement(children: EnumStatementCstChildren) {
     const _symbol = this.INSTANCE(children, Enum)!;
     this.ADD_GLOBAL_SYMBOL(_symbol);
+    this.visit(children.enumMember, _symbol);
+  }
+
+  override enumMember(children: EnumMemberCstChildren, _symbol: Enum) {
+    const name = children.Identifier[0];
+    _symbol.addMember(name, this.PROCESSOR.location.at(name));
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {
@@ -101,8 +109,18 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const name = children.Identifier?.[0];
     // Add the function to a table of functions
     if (name && isGlobal) {
-      const _symbol = this.INSTANCE(children, GlobalFunction)!;
+      const _constructor = children.constructorSuffix?.[0]
+        ? GlobalConstructorFunction
+        : GlobalFunction;
+      const _symbol = this.INSTANCE(children, _constructor)!;
       this.ADD_GLOBAL_SYMBOL(_symbol);
+      // Add function signature components
+      const params =
+        children.functionParameters?.[0]?.children.functionParameter || [];
+      for (let i = 0; i < params.length; i++) {
+        const param = params[i].children.Identifier[0];
+        _symbol.addParam(i, param, this.PROCESSOR.location.at(param));
+      }
     }
     this.visit(children.blockStatement);
 

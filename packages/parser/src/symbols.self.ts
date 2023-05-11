@@ -2,6 +2,8 @@ import type { GameMakerProjectParser } from './project.js';
 import { Location } from './symbols.location.js';
 import type {
   Enum,
+  GlobalConstructorFunction,
+  GlobalFunction,
   GlobalVariable,
   Macro,
   SelfVariable,
@@ -52,6 +54,8 @@ export class AssetSelf extends Self {
 
 export type GlobalSymbol =
   | GlobalVariable
+  | GlobalFunction
+  | GlobalConstructorFunction
   | Macro
   | Enum
   | InstanceSelf
