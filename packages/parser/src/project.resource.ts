@@ -77,6 +77,22 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
     return this.resource.id.name;
   }
 
+  /**
+   * Reprocess an existing file after it has been modified.
+   */
+  reloadFile(path: Pathy) {
+    const gml = this.getGmlFile(path);
+    if (!gml) {
+      return;
+    }
+    // TODO: Reparse the file and ensure symbols
+    // are correctly updated.
+  }
+
+  getGmlFile(path: Pathy) {
+    return this.gmlFiles.get(path.absolute);
+  }
+
   updateGlobals() {
     for (const gml of this.gmlFilesArray) {
       gml.updateGlobals();
@@ -91,16 +107,15 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
 
   protected async loadGml(path: Pathy<string>): Promise<GmlFile> {
     const gml =
-      this.gmlFiles.get(path.name) ||
+      this.getGmlFile(path) ||
       new GmlFile(this as GameMakerResource<'scripts' | 'objects'>, path);
-    this.gmlFiles.set(path.name, gml);
+    this.gmlFiles.set(path.absolute, gml);
     await gml.parse(path);
     return gml;
   }
 
   protected async load() {
     const waits: Promise<any>[] = [];
-    this.gmlFiles.clear();
     // Find all immediate children, which might include legacy GML files
     const [, children] = await Promise.all([
       await this.readYy(),

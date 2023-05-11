@@ -8,14 +8,11 @@ import { processSymbols } from './symbols.visitor.js';
 
 export class GmlFile {
   readonly kind = 'gml';
+  readonly scopeRanges: ScopeRange[] = [];
+  /** List of all symbol references in this file, in order of appearance. */
+  protected _refs: ProjectSymbol[] = [];
   protected _content!: string;
   protected _parsed!: GmlParsed;
-  readonly scopeRanges: ScopeRange[] = [];
-  /**
-   * List of all symbol references in this file,
-   * in order of appearance.
-   */
-  protected _refs: ProjectSymbol[] = [];
 
   constructor(
     readonly resource: GameMakerResource<'objects' | 'scripts'>,
@@ -50,8 +47,14 @@ export class GmlFile {
     return this._parsed.cst;
   }
 
-  async parse(path: Pathy<string>) {
-    this._content = await path.read();
+  /**
+   * Load the file and parse it, resulting in an updated
+   * CST for future steps. If content is directly provided,
+   * it will be used instead of reading from disk. This
+   * is useful for editors that want to provide a live preview.
+   */
+  async parse(path: Pathy<string>, content?: string) {
+    this._content = typeof content === 'string' ? content : await path.read();
     this._parsed = parser.parse(this.content);
   }
 
@@ -61,6 +64,17 @@ export class GmlFile {
 
   clearRefs() {
     this._refs = [];
+  }
+
+  /**
+   * Reprocess after a modification to the file. Optionally
+   * provide new content to use instead of reading from disk.
+   */
+  async reload(content?: string) {
+    await this.parse(this.path, content);
+    // TODO: Clean up refs somehow?
+    this.updateGlobals();
+    this.updateAllSymbols();
   }
 
   updateGlobals() {

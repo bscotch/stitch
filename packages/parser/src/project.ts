@@ -3,16 +3,20 @@ import { pathy, Pathy } from '@bscotch/pathy';
 import { GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { Yy, Yyp } from '@bscotch/yy';
 import { ok } from 'assert';
+import chokidar from 'chokidar';
 import { z } from 'zod';
 import { GameMakerResource } from './project.resource.js';
 import { Gml } from './spec.js';
 import { GlobalSelf } from './symbols.self.js';
 
+type ResourceName = string;
+
 export class GameMakerProjectParser {
   yyp!: Yyp;
   spec!: Gml;
-  resources = new Map<string, GameMakerResource>();
+  protected _resources = new Map<ResourceName, GameMakerResource>();
   self = new GlobalSelf(this);
+  watcher!: chokidar.FSWatcher;
 
   protected constructor(readonly yypPath: Pathy) {}
 
@@ -28,6 +32,35 @@ export class GameMakerProjectParser {
     console.warn(`[WARNING] ${message}`);
   }
 
+  getResource(path: Pathy<any>) {
+    return this._resources.get(this.resourceNameFromPath(path));
+  }
+
+  addResource(resource: GameMakerResource) {
+    const name = this.resourceNameFromPath(resource.dir);
+    ok(!this._resources.has(name), `Resource ${name} already exists`);
+    this._resources.set(name, resource);
+  }
+
+  removeResource(path: Pathy<any>) {
+    const name = this.resourceNameFromPath(path);
+    ok(this._resources.has(name), `Resource ${name} does not exist`);
+    this._resources.delete(name);
+    // TODO: Cleanup?
+  }
+
+  /**
+   * The name of a resource, *in lower case*, from
+   * a path. This is used as the key for looking up resources.
+   *
+   * The path can be to the asset's folder, or to any file within
+   * that folder.
+   */
+  resourceNameFromPath(path: Pathy<any>) {
+    const parts = path.relativeFrom(this.projectDir).split(/[/\\]+/);
+    return parts[1].toLocaleLowerCase();
+  }
+
   /**
    * When first creating an instance, we need to get all project file
    * content into memory for fast access. In particular, we need all
@@ -35,13 +68,15 @@ export class GameMakerProjectParser {
    * we just need their names and yyp filepaths.
    */
   protected async loadResources() {
+    // TODO: Allow for reloading of resources, so that we only
+    // need to keep track of new/deleted resources.
     this.yyp = await Yy.read(this.yypPath.absolute, 'project');
     const resourceWaits: Promise<any>[] = [];
     for (const resourceInfo of this.yyp.resources) {
       resourceWaits.push(
-        GameMakerResource.from(this, resourceInfo).then((r) =>
-          this.resources.set(r.name, r),
-        ),
+        GameMakerResource.from(this, resourceInfo).then((r) => {
+          this.addResource(r);
+        }),
       );
     }
     await Promise.all(resourceWaits);
@@ -98,7 +133,37 @@ export class GameMakerProjectParser {
     }
   }
 
-  static async from(yypPath: string) {
+  protected watch() {
+    if (this.watcher) {
+      return;
+    }
+    const globs = [
+      this.yypPath.absolute,
+      this.projectDir.join('scripts/*/*.gml').absolute,
+      this.projectDir.join('objects/*/*.gml').absolute,
+    ];
+    this.watcher = chokidar.watch(globs, {
+      ignoreInitial: true,
+    });
+    this.watcher.on('change', async (path) => {
+      const normalized = pathy(path);
+      if (this.yypPath.equals(normalized)) {
+        // Then we probably have some new resources to load
+        // or need to delete one.
+        await this.loadResources();
+      } else {
+        // Then we probably have a script or object that has changed.
+        // Identify which resource has changed and have it manage reloading.
+        const resource = this.getResource(normalized);
+        if (!resource) {
+          return;
+        }
+        resource.reloadFile(normalized);
+      }
+    });
+  }
+
+  static async initialize(yypPath: string, options?: { watch?: boolean }) {
     let path = pathy(yypPath);
     if (await path.isDirectory()) {
       const children = await path.listChildren();
@@ -111,24 +176,19 @@ export class GameMakerProjectParser {
     const specLoaderWait = project.loadGmlSpec();
 
     await Promise.all([specLoaderWait, fileLoader]);
-    console.log('Resources', project.resources.size);
+    console.log('Resources', project._resources.size);
 
     // Discover all globals
-    for (const [name, resource] of project.resources) {
+    for (const [, resource] of project._resources) {
       resource.updateGlobals();
     }
     // Discover all symbols and their references
-    for (const [name, resource] of project.resources) {
+    for (const [, resource] of project._resources) {
       resource.updateAllSymbols();
-      // for (const file of resource.gmlFilesArray) {
-      //   console.log(`  ${name}:`);
-      //   for (const ref of file.refs) {
-      //     console.log(`    ${ref.name} [${ref.kind}]`);
-      //   }
-      // }
     }
-    // TODO: Resolve unresolved references
-
+    if (options?.watch) {
+      project.watch();
+    }
     return project;
   }
 

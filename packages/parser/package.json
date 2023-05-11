@@ -25,12 +25,13 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/utility": "^6.8.3",
-    "@bscotch/pathy": "^2.7.3",
-    "@bscotch/yy": "workspace:*",
-    "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/gamemaker-releases": "workspace:*",
+    "@bscotch/pathy": "^2.7.3",
+    "@bscotch/stitch-launcher": "workspace:*",
+    "@bscotch/utility": "^6.8.3",
+    "@bscotch/yy": "workspace:*",
     "chevrotain": "10.5.0",
+    "chokidar": "3.5.3",
     "xml2js": "0.5.0",
     "zod": "^3.21.4"
   },
