@@ -5,6 +5,7 @@ import { Yy, Yyp } from '@bscotch/yy';
 import { ok } from 'assert';
 import chokidar from 'chokidar';
 import { z } from 'zod';
+import { GmlFile } from './project.gml.js';
 import { GameMakerResource } from './project.resource.js';
 import { Gml } from './spec.js';
 import { GlobalSelf } from './symbols.self.js';
@@ -14,17 +15,17 @@ type ResourceName = string;
 export class GameMakerProjectParser {
   yyp!: Yyp;
   spec!: Gml;
-  protected _resources = new Map<ResourceName, GameMakerResource>();
+  readonly resources = new Map<ResourceName, GameMakerResource>();
   self = new GlobalSelf(this);
   watcher!: chokidar.FSWatcher;
 
   protected constructor(readonly yypPath: Pathy) {}
 
-  get ideVersion() {
+  get ideVersion(): string {
     return this.yyp.MetaData.IDEVersion;
   }
 
-  get projectDir() {
+  get projectDir(): Pathy {
     return pathy(this.yypPath).up();
   }
 
@@ -32,22 +33,31 @@ export class GameMakerProjectParser {
     console.warn(`[WARNING] ${message}`);
   }
 
-  getResource(path: Pathy<any>) {
-    return this._resources.get(this.resourceNameFromPath(path));
+  getResource(path: Pathy<any>): GameMakerResource | undefined {
+    return this.resources.get(this.resourceNameFromPath(path));
   }
 
-  addResource(resource: GameMakerResource) {
+  getGmlFile(path: Pathy<any>): GmlFile | undefined {
+    const resource = this.getResource(path);
+    if (!resource) {
+      this.emitWarning(`No resource found for ${path}`);
+      return;
+    }
+    return resource.getGmlFile(path);
+  }
+
+  addResource(resource: GameMakerResource): void {
     const name = this.resourceNameFromPath(resource.dir);
-    ok(!this._resources.has(name), `Resource ${name} already exists`);
-    this._resources.set(name, resource);
+    ok(!this.resources.has(name), `Resource ${name} already exists`);
+    this.resources.set(name, resource);
   }
 
-  removeResource(path: Pathy<any>) {
+  removeResource(path: Pathy<any>): void {
     const name = this.resourceNameFromPath(path);
-    const resource = this._resources.get(name);
+    const resource = this.resources.get(name);
     ok(resource, `Resource ${name} does not exist`);
     resource.onRemove();
-    this._resources.delete(name);
+    this.resources.delete(name);
   }
 
   /**
@@ -57,7 +67,7 @@ export class GameMakerProjectParser {
    * The path can be to the asset's folder, or to any file within
    * that folder.
    */
-  resourceNameFromPath(path: Pathy<any>) {
+  resourceNameFromPath(path: Pathy<any>): string {
     const parts = path.relativeFrom(this.projectDir).split(/[/\\]+/);
     return parts[1].toLocaleLowerCase();
   }
@@ -68,7 +78,7 @@ export class GameMakerProjectParser {
    * yyp, yy, and gml files for scripts and objects. For other asset types
    * we just need their names and yyp filepaths.
    */
-  protected async loadResources() {
+  protected async loadResources(): Promise<void> {
     // TODO: Allow for reloading of resources, so that we only
     // need to keep track of new/deleted resources.
     this.yyp = await Yy.read(this.yypPath.absolute, 'project');
@@ -87,7 +97,7 @@ export class GameMakerProjectParser {
    * Load the GML spec for the project's runtime version, falling
    * back on the included spec if necessary.
    */
-  protected async loadGmlSpec() {
+  protected async loadGmlSpec(): Promise<void> {
     let runtimeVersion: string | undefined;
     // Check for a stitch config file that specifies the runtime version.
     // If it exists, use that version. It's likely that it is correct, and this
@@ -134,7 +144,7 @@ export class GameMakerProjectParser {
     }
   }
 
-  protected watch() {
+  protected watch(): void {
     if (this.watcher) {
       return;
     }
@@ -164,7 +174,30 @@ export class GameMakerProjectParser {
     });
   }
 
-  static async initialize(yypPath: string, options?: { watch?: boolean }) {
+  async initialize(options?: { watch?: boolean }): Promise<void> {
+    const fileLoader = this.loadResources();
+    const specLoaderWait = this.loadGmlSpec();
+
+    await Promise.all([specLoaderWait, fileLoader]);
+    console.log('Resources', this.resources.size);
+
+    // Discover all globals
+    for (const [, resource] of this.resources) {
+      resource.updateGlobals();
+    }
+    // Discover all symbols and their references
+    for (const [, resource] of this.resources) {
+      resource.updateAllSymbols();
+    }
+    if (options?.watch) {
+      this.watch();
+    }
+  }
+
+  static async initialize(
+    yypPath: string,
+    options?: { watch?: boolean },
+  ): Promise<GameMakerProjectParser> {
     let path = pathy(yypPath);
     if (await path.isDirectory()) {
       const children = await path.listChildren();
@@ -173,23 +206,7 @@ export class GameMakerProjectParser {
     }
     await path.exists({ assert: true });
     const project = new GameMakerProjectParser(path);
-    const fileLoader = project.loadResources();
-    const specLoaderWait = project.loadGmlSpec();
-
-    await Promise.all([specLoaderWait, fileLoader]);
-    console.log('Resources', project._resources.size);
-
-    // Discover all globals
-    for (const [, resource] of project._resources) {
-      resource.updateGlobals();
-    }
-    // Discover all symbols and their references
-    for (const [, resource] of project._resources) {
-      resource.updateAllSymbols();
-    }
-    if (options?.watch) {
-      project.watch();
-    }
+    await project.initialize(options);
     return project;
   }
 

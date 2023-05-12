@@ -7,6 +7,14 @@ export class SymbolRef {
     public readonly location: Location,
     public readonly isDeclaration = false,
   ) {}
+
+  get startOffset() {
+    return this.location.offset;
+  }
+
+  get endOffset() {
+    return this.startOffset + this.symbol.name.length;
+  }
 }
 
 export class ProjectSymbol {
@@ -25,6 +33,14 @@ export class ProjectSymbol {
     const ref = new SymbolRef(this, location, isDeclaration);
     this.refs.add(ref);
     location.file.refs.push(ref);
+  }
+
+  get startOffset() {
+    return this.location?.offset || 0;
+  }
+
+  get endOffset() {
+    return this.startOffset + this.name.length;
   }
 }
 

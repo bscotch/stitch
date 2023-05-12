@@ -85,13 +85,12 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   /**
    * Reprocess an existing file after it has been modified.
    */
-  reloadFile(path: Pathy) {
+  async reloadFile(path: Pathy, virtualContent?: string) {
     const gml = this.getGmlFile(path);
     if (!gml) {
       return;
     }
-    // TODO: Reparse the file and ensure symbols
-    // are correctly updated.
+    await gml.reload(virtualContent);
   }
 
   getGmlFile(path: Pathy) {

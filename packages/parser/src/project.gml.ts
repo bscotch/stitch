@@ -23,6 +23,10 @@ export class GmlFile {
     );
   }
 
+  getReferenceAt(offset: number): SymbolRef | undefined {
+    return this._refs.find((symbol) => symbol.endOffset <= offset);
+  }
+
   get refs() {
     return [...this._refs];
   }
