@@ -4,9 +4,9 @@ import { $ } from 'zx';
 // CREATE THE BUNDLE
 
 const builder = esbuild.build({
-  entryPoints: ['./src/extension.js'],
+  entryPoints: ['./src/extension.mts'],
   bundle: true,
-  outfile: './dist/extension.js',
+  outfile: './dist/extension.mjs',
   target: 'esnext',
   keepNames: true,
   sourcemap: true,
@@ -20,12 +20,14 @@ const builder = esbuild.build({
   define: {
     'import.meta.url': 'import_meta_url',
   },
+  format: 'esm',
 });
 
 // Copy the template project from current stitch-core
 await $`rm -rf ./assets/templates`;
 await $`mkdir -p ./assets/templates`;
 await $`cp -r ../core/assets/issue-template ./assets/templates/`;
+await $`cp ./src/index.cjs ./dist/index.cjs`;
 
 // Update the icon theme file
 await import('./sync-icons.mjs');
