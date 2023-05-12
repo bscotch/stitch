@@ -12,24 +12,24 @@ export class GameMakerWorkspaceSymbolProvider
     const symbols: vscode.SymbolInformation[] = [];
     const matcher = new RegExp(query.split('').join('.*'), 'i');
     for (const project of this.projects) {
-      for (const [name, resource] of project.resourceNames) {
+      for (const [name, resource] of project.resources) {
         if (!matcher.test(name)) {
           continue;
         }
-        symbols.push(...resource.workspaceSymbols());
+        // symbols.push(...resource.workspaceSymbols());
       }
-      project.definitions.forEach((loc, name) => {
-        if (matcher.test(name)) {
-          symbols.push(
-            new vscode.SymbolInformation(
-              name,
-              vscode.SymbolKind.Variable,
-              loc.range,
-              loc.uri,
-            ),
-          );
-        }
-      });
+      // project.definitions.forEach((loc, name) => {
+      //   if (matcher.test(name)) {
+      //     symbols.push(
+      //       new vscode.SymbolInformation(
+      //         name,
+      //         vscode.SymbolKind.Variable,
+      //         loc.range,
+      //         loc.uri,
+      //       ),
+      //     );
+      //   }
+      // });
     }
     return symbols;
   }

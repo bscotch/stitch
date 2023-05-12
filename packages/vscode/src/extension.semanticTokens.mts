@@ -1,5 +1,5 @@
 import vscode from 'vscode';
-import type { GmlProvider } from './extension.provider.mjs';
+import type { StitchProvider } from './extension.provider.mjs';
 import {
   SemanticTokenModifier,
   SemanticTokenType,
@@ -9,20 +9,21 @@ import {
 export class GameMakerSemanticTokenProvider
   implements vscode.DocumentSemanticTokensProvider
 {
-  constructor(readonly provider: GmlProvider) {}
+  constructor(readonly provider: StitchProvider) {}
 
   provideDocumentSemanticTokens(
     document: vscode.TextDocument,
   ): vscode.SemanticTokens | undefined {
-    const project = this.provider.documentToProject(document);
+    const project = this.provider.getProject(document);
     if (!project) {
       return;
     }
-    const resource = project.filepathToResource(document);
-    const resourceFile = resource?.fileFromPath(document);
-    if (!resourceFile) {
-      return;
-    }
+    // const resource = project.filepathToResource(document);
+    // const resourceFile = resource?.fileFromPath(document);
+    // if (!resourceFile) {
+    //   return;
+    // }
+    const resourceFile: any = null;
 
     const tokensBuilder = new vscode.SemanticTokensBuilder(
       semanticTokensLegend,
@@ -30,11 +31,11 @@ export class GameMakerSemanticTokenProvider
     const identifiers = resourceFile.identifiers;
 
     const completions = [
-      ...(project?.completions.values() || []),
-      ...this.provider.globalCompletions,
+      { label: 'hello' },
+      // ...(project?.completions.values() || []),
+      // ...this.provider.globalCompletions,
     ].reduce((acc, item) => {
-      const name =
-        typeof item.label === 'string' ? item.label : item.label.label;
+      const name = item.label;
       acc[name] = item;
       return acc;
     }, {} as { [identifier: string]: vscode.CompletionItem });
@@ -48,8 +49,8 @@ export class GameMakerSemanticTokenProvider
 
       let tokenType: SemanticTokenType | undefined;
       const tokenModifiers: SemanticTokenModifier[] = ['global'];
-      const isBuiltIn = this.provider.spec.identifiers.has(identifier);
-      const isResource = project.resourceNames.has(identifier);
+      const isBuiltIn = false; //this.provider.spec.identifiers.has(identifier);
+      const isResource = false; //project.resourceNames.has(identifier);
       if (isBuiltIn) {
         tokenModifiers.push('defaultLibrary');
       }

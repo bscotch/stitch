@@ -1,18 +1,13 @@
-import { pathy } from '@bscotch/pathy';
-import { StitchProject } from '@bscotch/stitch';
-import { sortKeysByReference } from '@bscotch/utility/browser';
-import { Yy, YyResourceType } from '@bscotch/yy';
-import { glob } from 'glob';
-import os from 'os';
-import process from 'process';
+import { GmlFile, ProjectSymbol } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { config } from './extension.config.mjs';
+import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { GameMakerFolder, GameMakerTreeProvider } from './extension.tree.mjs';
-import { GmlSpec } from './spec.mjs';
+import { locationOf, pathyFromUri } from './lib.mjs';
 
 const jsdocCompletions = [
   '@param',
@@ -27,12 +22,11 @@ const jsdocCompletions = [
   (tag) => new vscode.CompletionItem(tag, vscode.CompletionItemKind.Property),
 );
 
-export class GmlProvider
+export class StitchProvider
   implements
     vscode.HoverProvider,
     vscode.CompletionItemProvider,
     vscode.SignatureHelpProvider,
-    vscode.DocumentFormattingEditProvider,
     vscode.DefinitionProvider,
     vscode.ReferenceProvider
 {
@@ -50,25 +44,8 @@ export class GmlProvider
   protected projects: GameMakerProject[] = [];
   static config = config;
 
-  protected constructor(readonly spec: GmlSpec) {
+  protected constructor() {
     this.signatureHelpStatus.hide();
-
-    for (const func of spec.functions) {
-      this.globalCompletions.push(func.completion);
-      this.globalHovers.set(func.name, func.hover);
-      this.globalSignatures.set(func.name, func.help);
-    }
-    for (const vars of spec.variables) {
-      this.globalCompletions.push(vars.completion);
-      this.globalHovers.set(vars.name, vars.hover);
-    }
-    for (const constant of spec.constants) {
-      this.globalCompletions.push(constant.completion);
-      this.globalHovers.set(constant.name, constant.hover);
-    }
-    for (const type of spec.types) {
-      this.globalTypeCompletions.push(type.completion);
-    }
   }
 
   clearProjects() {
@@ -95,180 +72,88 @@ export class GmlProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Location[]> {
-    const word = GmlProvider.positionToWord(document, position);
-    if (!word) {
+    const symbol = this.getSymbol(document, position);
+    if (!symbol) {
       return;
     }
-    const project = this.documentToProject(document);
-    // Only provide references for globals
-    if (!project?.completions.has(word)) {
-      return;
-    }
-    return project.identifiers.get(word);
+    return [...symbol.refs.values()]
+      .map((ref) => {
+        return locationOf(ref, document);
+      })
+      .filter((loc) => !!loc) as vscode.Location[];
   }
 
   provideDefinition(
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Definition | vscode.LocationLink[]> {
-    const word = GmlProvider.positionToWord(document, position);
-    if (!word) {
+    const symbol = this.getSymbol(document, position);
+    if (!symbol) {
       return;
     }
-    const project = this.documentToProject(document);
-    if (project?.definitions.has(word)) {
-      return project.definitions.get(word);
-    }
-    return;
-  }
-
-  provideDocumentFormattingEdits(
-    document: vscode.TextDocument,
-  ): vscode.ProviderResult<vscode.TextEdit[]> {
-    if (
-      document.languageId !== 'yy' ||
-      !GmlProvider.config.enableYyFormatting
-    ) {
-      console.warn("Not a yy file, shouldn't format");
-      return;
-    }
-    const parts = document.uri.path.split(/[\\/]+/);
-    const name = parts.at(-1)!;
-    const type = name.endsWith('.yyp')
-      ? 'project'
-      : (parts.at(-3) as YyResourceType);
-    const text = document.getText();
-    const start = document.positionAt(0);
-    const end = document.positionAt(text.length);
-    const parsed = sortKeysByReference(Yy.parse(text, type), Yy.parse(text));
-    const edit = new vscode.TextEdit(
-      new vscode.Range(start, end),
-      Yy.stringify(parsed),
-    );
-    return [edit];
+    return locationOf(symbol, document);
   }
 
   provideHover(
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Hover> {
-    const word = GmlProvider.positionToWord(document, position);
-    if (!word) {
+    const symbol = this.getSymbol(document, position);
+    if (!symbol) {
       return;
     }
-    const project = this.documentToProject(document);
-    if (project?.hovers.has(word)) {
-      return project.hovers.get(word);
-    }
-    return this.globalHovers.get(word);
+    // TODO: Create the hover text!
+    return new vscode.Hover(symbol.name);
   }
 
   provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.CompletionItem[] | vscode.CompletionList {
-    const project = this.documentToProject(document);
-    // If we're in JSDoc comment, and within a `{}` block,
-    if (GmlProvider.positionIsInJsdocComment(document, position)) {
-      // Are we inside a `{}` block?
-      let inBlock = false;
-      let offset = document.offsetAt(position);
-      while (offset > 0) {
-        offset--;
-        const pos = document.positionAt(offset);
-        const char = document.getText(
-          new vscode.Range(pos, pos.translate(0, 1)),
-        );
-        if (['}', '\r', '\n'].includes(char)) {
-          break;
-        } else if (char === '{') {
-          inBlock = true;
-          break;
-        }
-      }
-      if (inBlock) {
-        const haveNames = new Set<string>();
-        const projectConstructors = [...(project?.completions.values() || [])]
-          ?.map((comp) => {
-            if (comp.kind === vscode.CompletionItemKind.Constructor) {
-              const label = `Struct.${comp.label}`;
-              if (haveNames.has(label)) {
-                return;
-              }
-              haveNames.add(label);
-              return new vscode.CompletionItem(
-                label,
-                vscode.CompletionItemKind.Constructor,
-              );
-            } else if (comp.kind === vscode.CompletionItemKind.Enum) {
-              const label = `Enum.${comp.label}`;
-              if (haveNames.has(label)) {
-                return;
-              }
-              haveNames.add(label);
-              return new vscode.CompletionItem(
-                label,
-                vscode.CompletionItemKind.Enum,
-              );
-            } else {
-              return;
-            }
-          })
-          .filter((x) => x) as vscode.CompletionItem[];
-        return [...projectConstructors, ...this.globalTypeCompletions];
-      }
-      // Otherwise we can return valid JSDoc tags.
-      return jsdocCompletions;
-    }
-
-    // Are we dotting into something?
-    const dottingInto = GmlProvider.positionToDottingInto(document, position);
-    if (!dottingInto) {
-      return [
-        ...(project?.completions.values() || []),
-        ...this.globalCompletions,
-      ];
-    } else {
-      // Autocomplete with fields of what we're dotting into.
+    const gmlFile = this.getGmlFile(document);
+    if (!gmlFile) {
       return [];
     }
+    // TODO: Add completion items for all global variables, functions, etc.
+    return [];
   }
 
   provideSignatureHelp(
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.SignatureHelp | undefined {
-    const project = this.documentToProject(document);
-    let leftParensNeeded = 1;
-    let offset = document.offsetAt(position);
-    let param = 0;
-    while (leftParensNeeded > 0 && offset > 0) {
-      if (!leftParensNeeded) {
-        break;
-      }
-      offset--;
-      const pos = document.positionAt(offset);
-      const char = document.getText(new vscode.Range(pos, pos.translate(0, 1)));
-      if (char === '(') {
-        leftParensNeeded--;
-      } else if (char === ')') {
-        leftParensNeeded++;
-      } else if (char === ',' && leftParensNeeded === 1) {
-        param++;
-      }
-    }
-    const func = GmlProvider.positionToWord(
-      document,
-      document.positionAt(offset),
-    );
-    const help =
-      this.globalSignatures.get(func) || project?.signatures.get(func);
-    if (!help) {
-      return;
-    }
-    help.activeSignature = 0;
-    help.activeParameter = param;
-    return help;
+    return;
+    // const project = this.getProject(document);
+    // let leftParensNeeded = 1;
+    // let offset = document.offsetAt(position);
+    // let param = 0;
+    // while (leftParensNeeded > 0 && offset > 0) {
+    //   if (!leftParensNeeded) {
+    //     break;
+    //   }
+    //   offset--;
+    //   const pos = document.positionAt(offset);
+    //   const char = document.getText(new vscode.Range(pos, pos.translate(0, 1)));
+    //   if (char === '(') {
+    //     leftParensNeeded--;
+    //   } else if (char === ')') {
+    //     leftParensNeeded++;
+    //   } else if (char === ',' && leftParensNeeded === 1) {
+    //     param++;
+    //   }
+    // }
+    // const func = StitchProvider.positionToWord(
+    //   document,
+    //   document.positionAt(offset),
+    // );
+    // const help =
+    //   this.globalSignatures.get(func) || project?.signatures.get(func);
+    // if (!help) {
+    //   return;
+    // }
+    // help.activeSignature = 0;
+    // help.activeParameter = param;
+    // return help;
   }
 
   /**
@@ -276,7 +161,7 @@ export class GmlProvider
    * and pass an update request to that project.
    */
   async updateFile(document: vscode.TextDocument) {
-    const project = this.documentToProject(document);
+    const project = this.getProject(document);
     if (project) {
       await project.updateFile(document);
     } else {
@@ -284,7 +169,7 @@ export class GmlProvider
     }
   }
 
-  documentToProject(
+  getProject(
     document: vscode.TextDocument | vscode.Uri,
   ): GameMakerProject | undefined {
     if (!document) {
@@ -293,13 +178,30 @@ export class GmlProvider
     return this.projects.find((p) => p.includesFile(document));
   }
 
+  getSymbol(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+  ): ProjectSymbol | undefined {
+    return this.getGmlFile(document)?.getReferenceAt(
+      document.offsetAt(position),
+    )?.symbol;
+  }
+
+  getGmlFile(document: vscode.TextDocument | vscode.Uri): GmlFile | undefined {
+    const project = this.getProject(document);
+    if (!project) {
+      return;
+    }
+    return project.getGmlFile(pathyFromUri(document));
+  }
+
   static positionToWord(
     document: vscode.TextDocument,
     position: vscode.Position,
   ) {
     const range = document.getWordRangeAtPosition(
       position,
-      /(#macro|[a-zA-Z0-9_]+)/,
+      /(#macro|@?[a-zA-Z0-9_]+)/,
     );
     return document.getText(range);
   }
@@ -349,7 +251,7 @@ export class GmlProvider
         continue;
       }
       if (char === '.') {
-        dottingInto = GmlProvider.positionToWord(
+        dottingInto = StitchProvider.positionToWord(
           document,
           document.positionAt(offset - 1),
         );
@@ -364,49 +266,19 @@ export class GmlProvider
   /**
    * Only allow a single instance at a time.
    */
-  protected static provider: GmlProvider;
+  protected static provider: StitchProvider;
   protected static ctx: vscode.ExtensionContext;
 
   static async activate(ctx: vscode.ExtensionContext) {
     this.ctx ||= ctx;
     if (!this.provider) {
-      let gmlSpecFilePath;
-      const gmChannel = this.config.gmChannel;
-      const gmlSpecSource = this.config.gmlSpecSource;
-      const gmlSpecFilePathFromSettings = this.config.gmlSpecPath;
-      if (gmlSpecSource === 'external' && gmlSpecFilePathFromSettings) {
-        gmlSpecFilePath = gmlSpecFilePathFromSettings;
-      } else if (gmlSpecSource === 'localRuntime') {
-        let runtimeLocalPath;
-        if (os.type() == 'Windows_NT') {
-          // Get the path of runtime from the system environment variable.
-          // And change the backslash to forward slash, otherwise the path cannot be found
-          // In most cases, it should be "C:/ProgramData".
-          // However, in rare cases, the Windows drive letter installed by the user is not C:
-          runtimeLocalPath =
-            (process.env.ALLUSERSPROFILE as string).replace('\\', '/') +
-            '/' +
-            gmChannel +
-            '/Cache/runtimes/';
-        } else if (os.type() == 'Darwin') {
-          // (LiarOnce) Need testing because I don't have any macOS devices.
-          runtimeLocalPath = '/Users/Shared/' + gmChannel + '/Cache/runtimes/';
-        } else if (os.type() == 'Linux') {
-          // GameMaker IDE in Linux only available in Beta channel (GameMakerStudio2-Beta)
-          runtimeLocalPath = '~/.local/' + gmChannel + '/Cache/runtimes/';
-        }
-        const runtimeGlob = await glob(runtimeLocalPath + '**/GmlSpec.xml', {});
-        gmlSpecFilePath = runtimeGlob[0]; // Always get the latest version of the installed runtimes' GmlSpec.xml files on local
-      }
-      const spec = await GmlSpec.from(gmlSpecFilePath as string);
-
-      this.provider = new GmlProvider(spec);
+      this.provider = new StitchProvider();
       const onChangeDoc = debounce((event: vscode.TextDocumentChangeEvent) => {
         const doc = event.document;
         if (doc.languageId !== 'gml') {
           return;
         }
-        void GmlProvider.provider.updateFile(event.document);
+        void StitchProvider.provider.updateFile(event.document);
       }, 100);
 
       vscode.workspace.onDidChangeTextDocument(onChangeDoc);
@@ -421,7 +293,7 @@ export class GmlProvider
     const yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
 
     for (const yypFile of yypFiles) {
-      await GmlProvider.provider.loadProject(yypFile);
+      await StitchProvider.provider.loadProject(yypFile);
     }
 
     ctx.subscriptions.push(
@@ -441,7 +313,7 @@ export class GmlProvider
       ),
       vscode.languages.registerDocumentFormattingEditProvider(
         'yy',
-        this.provider,
+        new StitchYyFormatProvider(),
       ),
       vscode.languages.registerDefinitionProvider('gml', this.provider),
       vscode.languages.registerReferenceProvider('gml', this.provider),
@@ -466,7 +338,7 @@ export class GmlProvider
               vscode.window.activeTextEditor?.document.uri.toString();
             if (uriString) {
               const uri = vscode.Uri.parse(uriString);
-              project = this.provider.documentToProject(uri);
+              project = this.provider.getProject(uri);
             }
           }
 
@@ -481,39 +353,8 @@ export class GmlProvider
         const uri = vscode.Uri.parse(
           args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
         );
-        this.provider.documentToProject(uri)?.openInIde();
+        this.provider.getProject(uri)?.openInIde();
       }),
-      vscode.commands.registerCommand(
-        'stitch.createProject',
-        async (folder: vscode.Uri, ...args: any[]) => {
-          // stitch.template.path
-          if (!(folder instanceof vscode.Uri)) {
-            console.warn('No folder selected');
-            return;
-          }
-          const isInProject = this.provider.documentToProject(folder);
-          if (isInProject) {
-            void vscode.window.showErrorMessage(
-              'Cannot create a project inside another project',
-            );
-            return;
-          }
-          const templatePath = this.config.templatePath;
-          if (!templatePath || !(await pathy(templatePath).exists())) {
-            return void vscode.window.showErrorMessage(
-              `Template not found at ${templatePath}`,
-            );
-          }
-          vscode.window.showInformationMessage('Cloning template...');
-          const template = await StitchProject.cloneProject({
-            templatePath,
-            where: folder.fsPath,
-          });
-          const projectUri = vscode.Uri.file(template.yypPathAbsolute);
-          console.log('projectUri', projectUri);
-          this.provider.loadProject(projectUri);
-        },
-      ),
       new GameMakerSemanticTokenProvider(this.provider).register(),
       this.provider.signatureHelpStatus,
       vscode.window.onDidChangeTextEditorSelection((e) => {

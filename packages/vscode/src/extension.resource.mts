@@ -175,7 +175,7 @@ export class GameMakerResource<
   }
 
   get yyPath() {
-    return path.join(this.project.rootPath, this.resource.id.path);
+    return path.join(this.project.projectDir.absolute, this.resource.id.path);
   }
 
   get dir() {
