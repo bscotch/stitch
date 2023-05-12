@@ -63,6 +63,11 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
     return this.yy;
   }
 
+  /** The folder path this asset lives in within the GameMaker IDE virtual asset tree. */
+  get virtualFolder() {
+    return this.resource.id.path.replace(/^folders[/\\]+(.+)\.yy$/, '$1');
+  }
+
   get yyPath() {
     return this.project.projectDir
       .join(this.resource.id.path)
@@ -127,6 +132,10 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
       await this.loadObjectGml(children as Pathy<string>[]);
     }
     await Promise.all(waits);
+  }
+
+  onRemove() {
+    this.gmlFiles.forEach((gml) => gml.onRemove());
   }
 
   protected async loadObjectGml(children: Pathy<string>[]) {

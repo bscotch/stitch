@@ -44,9 +44,10 @@ export class GameMakerProjectParser {
 
   removeResource(path: Pathy<any>) {
     const name = this.resourceNameFromPath(path);
-    ok(this._resources.has(name), `Resource ${name} does not exist`);
+    const resource = this._resources.get(name);
+    ok(resource, `Resource ${name} does not exist`);
+    resource.onRemove();
     this._resources.delete(name);
-    // TODO: Cleanup?
   }
 
   /**

@@ -85,6 +85,10 @@ export class GmlFile {
     this._refs = [];
   }
 
+  onRemove() {
+    this.clearRefs();
+  }
+
   /**
    * Reprocess after a modification to the file. Optionally
    * provide new content to use instead of reading from disk.
