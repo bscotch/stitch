@@ -1,50 +1,28 @@
+import {
+  Channel,
+  gameMakerReleaseWithNotesSchema,
+  releasesUrl,
+  runtimeFeedUrls,
+} from '@bscotch/gamemaker-releases';
 import { Pathy, pathy } from '@bscotch/pathy';
 import { MaxAge } from '@bscotch/utility/browser';
 import { z } from 'zod';
 import {
   GameMakerChannel,
   GameMakerInstalledVersion,
+  GameMakerKnownPath,
   gameMakerUserDataSchema,
 } from './GameMakerLauncher.types.js';
 import { GameMakerUser } from './GameMakerUser.js';
 import {
+  RuntimeFeedsFile,
   cleanVersionString,
   downloadIfCacheExpired,
   listGameMakerDataDirs,
   listInstalledIdes,
   listRuntimeFeedsConfigPaths,
-  RuntimeFeedsFile,
   stitchConfigDir,
 } from './utility.js';
-import {
-  releasesUrl,
-  gameMakerReleaseWithNotesSchema,
-  Channel,
-  runtimeFeedUrls,
-} from '@bscotch/gamemaker-releases';
-
-export type GameMakerKnownPathId = z.infer<typeof gameMakerKnownPathIdSchema>;
-const gameMakerKnownPathIdSchema = z.enum([
-  'gameMakerDataDir',
-  'defaultMacrosFile',
-  'runtimeFeedsConfigFile',
-  'initialDefaultMacrosFile',
-  'runtimesCacheDir',
-  'gameMakerIdeDir',
-  'gameMakerIdeExe',
-  'gameMakerUserDir',
-  'activeUserFile',
-  'uiLogFile',
-  'activeRuntimeConfigFile',
-]);
-
-export type GameMakerKnownPath = z.infer<typeof gameMakerKnownPathSchema>;
-export const gameMakerKnownPathSchema = z.object({
-  id: gameMakerKnownPathIdSchema,
-  path: z.string(),
-  name: z.string(),
-  description: z.string(),
-});
 
 export class GameMakerComponent {
   constructor(protected info: GameMakerInstalledVersion) {}
