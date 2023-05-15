@@ -41,14 +41,14 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/utility": "^6.8.2",
+    "@bscotch/utility": "^6.8.3",
     "tslib": "^2.5.0",
-    "type-fest": "^3.8.0",
+    "type-fest": "^3.10.0",
     "uuid": "^9.0.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.4",
+    "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
     "@types/uuid": "^9.0.1",
     "chai": "^4.3.7",
