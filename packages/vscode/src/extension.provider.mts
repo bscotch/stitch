@@ -182,17 +182,34 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): ProjectSymbol | undefined {
-    return this.getGmlFile(document)?.getReferenceAt(
-      document.offsetAt(position),
-    )?.symbol;
+    console.log('getSymbol at', position);
+    const offset = document.offsetAt(position);
+    const file = this.getGmlFile(document);
+    const ref = file?.getReferenceAt(offset);
+    if (!ref) {
+      console.error(`Could not find reference at ${offset}`);
+      return;
+    }
+    const symbol = ref?.symbol;
+    if (!symbol) {
+      console.error(`Could not find symbol for ${ref}`);
+      return;
+    }
+    return symbol;
   }
 
   getGmlFile(document: vscode.TextDocument | vscode.Uri): GmlFile | undefined {
     const project = this.getProject(document);
     if (!project) {
+      console.error(`Could not find project for ${document}`);
       return;
     }
-    return project.getGmlFile(pathyFromUri(document));
+    const file = project.getGmlFile(pathyFromUri(document));
+    if (!file) {
+      console.error(`Could not find file for ${document}`);
+      return;
+    }
+    return file;
   }
 
   static positionToWord(

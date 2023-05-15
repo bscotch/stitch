@@ -7,7 +7,7 @@ export function pathyFromUri(uri: vscode.TextDocument | vscode.Uri): Pathy {
 }
 
 export function locationOf(
-  thing: { startOffset: number; endOffset: number; location?: Location },
+  thing: { start: number; end: number; location?: Location },
   inDocument: vscode.TextDocument,
 ): vscode.Location | undefined {
   if (!thing.location) {
@@ -16,8 +16,8 @@ export function locationOf(
   return new vscode.Location(
     vscode.Uri.file(thing.location.file.path.absolute),
     new vscode.Range(
-      inDocument.positionAt(thing.startOffset),
-      inDocument.positionAt(thing.endOffset),
+      inDocument.positionAt(thing.start),
+      inDocument.positionAt(thing.end),
     ),
   );
 }
