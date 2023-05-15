@@ -46,7 +46,8 @@ export class ScopeRange {
  * A collection of local variables that are all available at the same time.
  */
 export class LocalScope {
-  readonly variables = new Map<string, LocalVariable>();
+  /** Local variable declarations */
+  readonly symbols = new Map<string, LocalVariable>();
   readonly start: Location;
 
   constructor(location: Location | GmlFile) {
@@ -55,19 +56,26 @@ export class LocalScope {
   }
 
   hasSymbol(name: string) {
-    return this.variables.has(name);
+    return this.symbols.has(name);
   }
 
   getSymbol(name: string) {
-    return this.variables.get(name);
+    return this.symbols.get(name);
   }
 
   addSymbol(token: IToken, isParam = false) {
     // TODO: If this variable already exists, emit a warning
-    // and add it as a reference to the existing variable.
-    this.variables.set(
+    const existing = this.symbols.get(token.image);
+    if (existing) {
+      existing.addRef(new Location(this.start.file, token.startOffset));
+      return;
+    }
+    const symbol = new LocalVariable(
       token.image,
-      new LocalVariable(token.image, this.start.at(token), isParam),
+      this.start.at(token),
+      isParam,
     );
+    this.symbols.set(token.image, symbol);
+    symbol.addRef(new Location(this.start.file, token.startOffset), true);
   }
 }

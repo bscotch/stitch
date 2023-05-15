@@ -89,7 +89,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       symbol.location = location;
     }
     symbol!.addRef(location, true);
-    return new klass(name.image, this.PROCESSOR.location.at(name)) as any;
+    return symbol as any;
   }
 
   findSymbols(input: CstNode) {

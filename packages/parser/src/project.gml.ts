@@ -11,6 +11,7 @@ export class GmlFile {
   readonly scopeRanges: ScopeRange[] = [];
   /** List of all symbol references in this file, in order of appearance. */
   protected _refs: SymbolRef[] = [];
+  protected _refsAreSorted = false;
   protected _content!: string;
   protected _parsed!: GmlParsed;
 
@@ -24,10 +25,22 @@ export class GmlFile {
   }
 
   getReferenceAt(offset: number): SymbolRef | undefined {
-    return this._refs.find((symbol) => symbol.endOffset <= offset);
+    for (let i = 0; i < this.refs.length; i++) {
+      const ref = this.refs[i];
+      if (ref.start <= offset && ref.end >= offset) {
+        return ref;
+      } else if (ref.start > offset) {
+        return undefined;
+      }
+    }
+    return undefined;
   }
 
   get refs() {
+    if (!this._refsAreSorted) {
+      this.sortRefs();
+      this._refsAreSorted = true;
+    }
     return [...this._refs];
   }
 
@@ -66,6 +79,10 @@ export class GmlFile {
     this._refs.push(ref);
   }
 
+  sortRefs() {
+    this._refs.sort((a, b) => a.start - b.start);
+  }
+
   clearRefs() {
     // Remove each reference in *this file* from its symbol.
     const cleared = new Set<ProjectSymbol>();
@@ -87,6 +104,7 @@ export class GmlFile {
     }
     // Reset this file's refs list
     this._refs = [];
+    this._refsAreSorted = false;
   }
 
   onRemove() {
