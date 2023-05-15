@@ -8,12 +8,12 @@ export class SymbolRef {
     public readonly isDeclaration = false,
   ) {}
 
-  get startOffset() {
+  get start() {
     return this.location.offset;
   }
 
-  get endOffset() {
-    return this.startOffset + this.symbol.name.length;
+  get end() {
+    return this.start + this.symbol.name.length;
   }
 }
 
@@ -32,15 +32,15 @@ export class ProjectSymbol {
   addRef(location: Location, isDeclaration = false) {
     const ref = new SymbolRef(this, location, isDeclaration);
     this.refs.add(ref);
-    location.file.refs.push(ref);
+    location.file.addRef(ref);
   }
 
-  get startOffset() {
+  get start() {
     return this.location?.offset || 0;
   }
 
-  get endOffset() {
-    return this.startOffset + this.name.length;
+  get end() {
+    return this.start + this.name.length;
   }
 }
 
@@ -53,6 +53,9 @@ export class LocalVariable extends ProjectSymbol {
 
 export class SelfVariable extends ProjectSymbol {
   override kind = 'selfVariable';
+  constructor(name: string, location: Location, readonly isStatic = false) {
+    super(name, location);
+  }
 }
 
 export class GlobalVariable extends ProjectSymbol {

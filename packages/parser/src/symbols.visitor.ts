@@ -5,6 +5,7 @@ import type {
   FunctionParameterCstChildren,
   IdentifierCstChildren,
   LocalVarDeclarationCstChildren,
+  StaticVarDeclarationsCstChildren,
 } from '../gml-cst.js';
 import { GmlVisitorBase } from './parser.js';
 import type { GmlFile } from './project.gml.js';
@@ -15,12 +16,13 @@ import {
   asStartOffset,
 } from './symbols.location.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
-import type {
+import {
   GlobalSelf,
   GlobalSymbol,
   InstanceSelf,
   StructSelf,
 } from './symbols.self.js';
+import { enableLogging } from './util.js';
 
 type SelfType = InstanceSelf | StructSelf | GlobalSelf;
 
@@ -73,6 +75,23 @@ class SymbolProcessor {
     return this.scopeRange;
   }
 
+  pushScope(offset: TokenOrOffset, self: SelfType) {
+    offset = asStartOffset(offset);
+    const localScope = new LocalScope(this.location.at(offset));
+    this.localScopeStack.push(localScope);
+    this.nextScopeRange(offset).local = localScope;
+    this.selfStack.push(self);
+    this.scopeRange.self = self;
+  }
+
+  popScope(offset: TokenOrOffset) {
+    offset = asEndOffset(offset);
+    this.localScopeStack.pop();
+    this.selfStack.pop();
+    this.nextScopeRange(offset).local = this.currentLocalScope;
+    this.scopeRange.self = this.currentSelf;
+  }
+
   pushLocalScope(offset: TokenOrOffset) {
     offset = asStartOffset(offset);
     const localScope = new LocalScope(this.location.at(offset));
@@ -123,9 +142,20 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {
+    const location = this.PROCESSOR.location.at(
+      children.Identifier?.[0] || children.Function[0],
+    );
     // Functions create a new localscope
-    this.PROCESSOR.pushLocalScope(
-      children.functionParameters[0].children.StartParen[0].startOffset,
+    // If this is a constructor, add a new self scope
+    // for it.
+    let self = this.PROCESSOR.currentSelf;
+    if (children.constructorSuffix?.[0].children) {
+      self = new StructSelf();
+      self.addRef(location);
+    }
+    this.PROCESSOR.pushScope(
+      children.functionParameters[0].children.StartParen[0].startOffset + 1,
+      self,
     );
 
     // Add the parameters as local variables
@@ -136,9 +166,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     this.visit(children.blockStatement);
 
     // End the scope
-    // TODO: End the selfscope once it's added
-    this.PROCESSOR.popLocalScope(
-      children.blockStatement[0].children.EndBrace[0].startOffset + 1,
+    this.PROCESSOR.popScope(
+      children.blockStatement[0].children.EndBrace[0].startOffset,
     );
   }
 
@@ -146,7 +175,17 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     this.PROCESSOR.currentLocalScope.addSymbol(children.Identifier[0], true);
   }
 
+  override staticVarDeclarations(children: StaticVarDeclarationsCstChildren) {
+    // Add to the self scope.
+    const self = this.PROCESSOR.currentSelf as StructSelf;
+    self.addSymbol(this.PROCESSOR.file, children.Identifier[0]);
+    this.visit(children.assignmentRightHandSide);
+  }
+
   override localVarDeclaration(children: LocalVarDeclarationCstChildren) {
+    if (this.PROCESSOR.file.name === 'BschemaConstructors') {
+      enableLogging();
+    }
     this.PROCESSOR.currentLocalScope.addSymbol(children.Identifier[0]);
     if (children.assignmentRightHandSide) {
       this.visit(children.assignmentRightHandSide);
