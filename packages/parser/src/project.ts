@@ -169,7 +169,7 @@ export class GameMakerProjectParser {
         if (!resource) {
           return;
         }
-        resource.reloadFile(normalized);
+        await resource.reloadFile(normalized);
       }
     });
   }
