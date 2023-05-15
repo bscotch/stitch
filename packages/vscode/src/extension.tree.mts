@@ -3,9 +3,9 @@ import vscode from 'vscode';
 import type { GmlFile } from './extension.gml.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import {
-  GameMakerResource,
   GameMakerShaderFile,
   GameMakerSpriteFrame,
+  type GameMakerResource,
 } from './extension.resource.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing

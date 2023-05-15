@@ -1,4 +1,4 @@
-import { GmlFile, ProjectSymbol } from '@bscotch/gml-parser';
+import type { GmlFile, ProjectSymbol } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { config } from './extension.config.mjs';
@@ -6,7 +6,7 @@ import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
-import { GameMakerFolder, GameMakerTreeProvider } from './extension.tree.mjs';
+import { GameMakerFolder } from './extension.tree.mjs';
 import { locationOf, pathyFromUri } from './lib.mjs';
 
 const jsdocCompletions = [
@@ -297,7 +297,7 @@ export class StitchProvider
     }
 
     ctx.subscriptions.push(
-      new GameMakerTreeProvider(this.provider.projects).register(),
+      // new GameMakerTreeProvider(this.provider.projects).register(),
       vscode.languages.registerHoverProvider('gml', this.provider),
       vscode.languages.registerCompletionItemProvider(
         'gml',
