@@ -266,63 +266,6 @@ export class StitchProvider
     return document.getText(range);
   }
 
-  static positionIsInJsdocComment(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-  ): boolean {
-    let offset = document.offsetAt(position);
-    let commentCharsSoFar = '';
-    while (offset > 0) {
-      offset--;
-      const pos = document.positionAt(offset);
-      const char = document.getText(new vscode.Range(pos, pos.translate(0, 1)));
-      if (['\r', '\n', ''].includes(char)) {
-        return false;
-      }
-      if (char === '/' && commentCharsSoFar === '//') {
-        return true;
-      } else if (char === '/') {
-        commentCharsSoFar += '/';
-      } else {
-        // Reset!
-        commentCharsSoFar = '';
-      }
-    }
-    return false;
-  }
-
-  /**
-   * At a given position, determine if we're dotting into
-   * something, and if so, what.
-   */
-  static positionToDottingInto(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-  ) {
-    // Are we dotting into something?
-    let dottingInto: string | undefined;
-    let offset = document.offsetAt(position);
-    while (offset > 0) {
-      offset--;
-      const pos = document.positionAt(offset);
-      const char = document.getText(new vscode.Range(pos, pos.translate(0, 1)));
-      // Skip over identifier characters until we hit a dot or something else
-      if (/[a-zA-Z0-9_]/.test(char)) {
-        continue;
-      }
-      if (char === '.') {
-        dottingInto = StitchProvider.positionToWord(
-          document,
-          document.positionAt(offset - 1),
-        );
-        break;
-      } else {
-        break;
-      }
-    }
-    return dottingInto;
-  }
-
   /**
    * Only allow a single instance at a time.
    */
