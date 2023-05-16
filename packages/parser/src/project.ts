@@ -79,13 +79,28 @@ export class GameMakerProjectParser {
    * we just need their names and yyp filepaths.
    */
   protected async loadResources(): Promise<void> {
-    // TODO: Allow for reloading of resources, so that we only
-    // need to keep track of new/deleted resources.
-    this.yyp = await Yy.read(this.yypPath.absolute, 'project');
+    // TODO: Allow for reloading of resources, so that we only need to keep track of new/deleted resources.
+
+    // Collect the asset dirs since we can run into capitalization issues.
+    // We'll use these as a backup for "missing" resources.
+    const assetNameToYy = new Map<string, Pathy>();
+    const [yyp] = await Promise.all([
+      Yy.read(this.yypPath.absolute, 'project'),
+      this.projectDir.listChildrenRecursively({
+        includeExtension: 'yy',
+        maxDepth: 2,
+        onInclude: (p) => assetNameToYy.set(this.resourceNameFromPath(p), p),
+      }),
+    ]);
+    this.yyp = yyp;
     const resourceWaits: Promise<any>[] = [];
     for (const resourceInfo of this.yyp.resources) {
       resourceWaits.push(
-        GameMakerResource.from(this, resourceInfo).then((r) => {
+        GameMakerResource.from(
+          this,
+          resourceInfo,
+          assetNameToYy.get(resourceInfo.id.name.toLocaleLowerCase())!,
+        ).then((r) => {
           this.addResource(r);
         }),
       );

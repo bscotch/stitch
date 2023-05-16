@@ -2,6 +2,7 @@ import { Pathy, pathy } from '@bscotch/pathy';
 import {
   Yy,
   YyResourceType,
+  YySchemas,
   YypResource,
   yySchemas,
   type YyDataStrict,
@@ -16,6 +17,7 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   readonly type: T;
   readonly gmlFiles: Map<string, GmlFile> = new Map();
   yy!: YyDataStrict<T>;
+  readonly yyPath: Pathy<YySchemas[T]>;
   readonly self: T extends 'objects'
     ? InstanceSelf
     : T extends 'scripts'
@@ -25,8 +27,10 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   protected constructor(
     readonly project: GameMakerProjectParser,
     readonly resource: YypResource,
+    yyPath: Pathy,
   ) {
     this.type = resource.id.path.split(/[/\\]/)[0] as T;
+    this.yyPath = yyPath.withValidator(yySchemas[this.type]) as any;
     this.self = (
       this.type === 'objects'
         ? new InstanceSelf(this.name)
@@ -66,12 +70,6 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   /** The folder path this asset lives in within the GameMaker IDE virtual asset tree. */
   get virtualFolder() {
     return this.resource.id.path.replace(/^folders[/\\]+(.+)\.yy$/, '$1');
-  }
-
-  get yyPath() {
-    return this.project.projectDir
-      .join(this.resource.id.path)
-      .withValidator(yySchemas[this.type]);
   }
 
   get dir() {
@@ -168,8 +166,9 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   static async from<T extends YyResourceType>(
     project: GameMakerProjectParser,
     resource: YypResource,
+    yyPath: Pathy,
   ): Promise<GameMakerResource<T>> {
-    const item = new GameMakerResource(project, resource);
+    const item = new GameMakerResource(project, resource, yyPath);
     await item.load();
     return item as any;
   }
