@@ -4,7 +4,13 @@ import { parser, type GmlParsed } from './parser.js';
 import type { GameMakerResource } from './project.resource.js';
 import { processGlobalSymbols } from './symbols.globals.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
-import type { ProjectSymbol, SymbolRef } from './symbols.symbol.js';
+import { GlobalSymbol } from './symbols.self.js';
+import type {
+  LocalVariable,
+  ProjectSymbol,
+  SelfVariable,
+  SymbolRef,
+} from './symbols.symbol.js';
 import { processSymbols } from './symbols.visitor.js';
 
 export class GmlFile {
@@ -25,6 +31,10 @@ export class GmlFile {
     );
   }
 
+  get project() {
+    return this.resource.project;
+  }
+
   getReferenceAt(offset: number): SymbolRef | GmlSymbolRef | undefined {
     for (let i = 0; i < this.refs.length; i++) {
       const ref = this.refs[i];
@@ -35,6 +45,33 @@ export class GmlFile {
       }
     }
     return undefined;
+  }
+
+  getScopeRangeAt(offset: number): ScopeRange | undefined {
+    for (const scopeRange of this.scopeRanges) {
+      if (scopeRange.start.startOffset >= offset) {
+        if (!scopeRange.end || scopeRange.end.startOffset <= offset) {
+          return scopeRange;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  getInScopeVariablesAt(
+    offset: number,
+  ): (LocalVariable | SelfVariable | GlobalSymbol | GmlSymbol<any>)[] {
+    const scopeRange = this.getScopeRangeAt(offset);
+    if (!scopeRange) {
+      return [];
+    }
+    const self = scopeRange.self;
+    return [
+      ...scopeRange.local.symbols.values(), // Local
+      ...(self.kind !== 'global' ? self.symbols.values() : []), // Self (if not global)
+      ...this.project.self.symbols.values(), // Project globals
+      ...this.project.self.gml.values(), // GML globals
+    ];
   }
 
   get refs() {

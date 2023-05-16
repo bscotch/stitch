@@ -30,6 +30,7 @@ export class SelfRef {
 export abstract class Self {
   abstract kind: string;
   refs = new Set<SelfRef>();
+  symbols = new Map<string, SelfVariable | GlobalSymbol>();
 
   location?: Location;
 
@@ -44,7 +45,7 @@ export abstract class Self {
 export class StructSelf extends Self {
   kind = 'struct';
   /** Instance-defined symbols. */
-  symbols = new Map<string, SelfVariable>();
+  override symbols = new Map<string, SelfVariable>();
 
   constructor(name?: string) {
     super(name);
@@ -107,7 +108,7 @@ export class GlobalSelf extends Self {
   global = true;
   kind = 'global';
   /** Project-defined symbols. */
-  symbols = new Map<string, GlobalSymbol>();
+  override symbols = new Map<string, GlobalSymbol>();
 
   constructor(public readonly project: GameMakerProjectParser) {
     super('global');

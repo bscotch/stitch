@@ -27,6 +27,10 @@ export class ScopeRange {
         : new Location(start, { startOffset: 0 });
   }
 
+  get localVariables() {
+    return [...this.local.symbols.values()];
+  }
+
   /**
    * Create the next ScopeRange, adjacent to this one.
    * This sets the end location of this scope range to
