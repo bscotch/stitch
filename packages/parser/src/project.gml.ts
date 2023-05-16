@@ -1,7 +1,7 @@
 import type { Pathy } from '@bscotch/pathy';
+import { GmlSymbol, GmlSymbolRef } from './gml.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { GameMakerResource } from './project.resource.js';
-import { GmlSymbol, GmlSymbolRef } from './spec.js';
 import { processGlobalSymbols } from './symbols.globals.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
 import type { ProjectSymbol, SymbolRef } from './symbols.symbol.js';

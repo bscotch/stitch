@@ -1,4 +1,4 @@
-import type { GmlFile, ProjectSymbol } from '@bscotch/gml-parser';
+import { GmlFile, GmlSymbol, ProjectSymbol } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { config } from './extension.config.mjs';
@@ -78,7 +78,7 @@ export class StitchProvider
     }
     return [...symbol.refs.values()]
       .map((ref) => {
-        return locationOf(ref, document);
+        return locationOf(ref);
       })
       .filter((loc) => !!loc) as vscode.Location[];
   }
@@ -88,10 +88,10 @@ export class StitchProvider
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Definition | vscode.LocationLink[]> {
     const symbol = this.getSymbol(document, position);
-    if (!symbol) {
-      return;
+    if (symbol && symbol instanceof ProjectSymbol) {
+      return locationOf(symbol);
     }
-    return locationOf(symbol, document);
+    return;
   }
 
   provideHover(
@@ -102,8 +102,20 @@ export class StitchProvider
     if (!symbol) {
       return;
     }
-    // TODO: Create the hover text!
-    return new vscode.Hover(symbol.name);
+    const hoverContents = new vscode.MarkdownString();
+    let hasSomething = false;
+    if (symbol.code) {
+      hoverContents.appendCodeblock(symbol.code, 'gml');
+      hasSomething = true;
+    }
+    if (symbol.description) {
+      hoverContents.appendMarkdown(symbol.description);
+      hasSomething = true;
+    }
+    if (!hasSomething) {
+      return;
+    }
+    return new vscode.Hover(hoverContents);
   }
 
   provideCompletionItems(
@@ -181,7 +193,7 @@ export class StitchProvider
   getSymbol(
     document: vscode.TextDocument,
     position: vscode.Position,
-  ): ProjectSymbol | undefined {
+  ): ProjectSymbol | GmlSymbol<any> | undefined {
     console.log('getSymbol at', position);
     const offset = document.offsetAt(position);
     const file = this.getGmlFile(document);

@@ -5,9 +5,9 @@ import { Yy, Yyp } from '@bscotch/yy';
 import { ok } from 'assert';
 import chokidar from 'chokidar';
 import { z } from 'zod';
+import { Gml } from './gml.js';
 import { GmlFile } from './project.gml.js';
 import { GameMakerResource } from './project.resource.js';
-import { Gml } from './spec.js';
 import { GlobalSelf } from './symbols.self.js';
 
 type ResourceName = string;

@@ -1,15 +1,16 @@
 import { readFile } from 'fs/promises';
 import { parseStringPromise } from 'xml2js';
 import {
-  GmlSpec,
-  GmlSpecConstant,
-  GmlSpecFunction,
-  GmlSpecVariable,
   gmlSpecSchema,
-} from './spec.schema.js';
-import { Location } from './symbols.location.js';
+  type GmlSpec,
+  type GmlSpecConstant,
+  type GmlSpecFunction,
+  type GmlSpecVariable,
+} from './gml.schema.js';
+import type { Location } from './symbols.location.js';
+import type { SymbolBase, SymbolRefBase } from './types.js';
 
-export class GmlSymbolRef {
+export class GmlSymbolRef implements SymbolRefBase {
   constructor(
     public readonly symbol: GmlSymbol<any>,
     public readonly location: Location,
@@ -37,11 +38,16 @@ export abstract class GmlSymbol<
     writable?: boolean;
     instance?: boolean;
   },
-> {
+> implements SymbolBase
+{
   abstract readonly kind: GmlSymbolKind;
   refs = new Set<GmlSymbolRef>();
 
   constructor(readonly definition: T) {}
+
+  get code(): string | undefined {
+    return undefined;
+  }
 
   get name() {
     return this.definition.name;
@@ -60,6 +66,22 @@ export abstract class GmlSymbol<
 
 export class GmlFunction extends GmlSymbol<GmlSpecFunction> {
   readonly kind = 'function';
+  override get code() {
+    let code = `function ${this.name}(`;
+    for (let i = 0; i < this.definition.parameters.length; i++) {
+      const param = this.definition.parameters[i];
+      if (i > 0) {
+        code += ', ';
+      }
+      code += param.name;
+      if (param.optional) {
+        code += '?';
+      }
+      code += ': ' + param.type.join('|');
+    }
+    code += '): ' + this.definition.returnType.join('|');
+    return code;
+  }
 }
 
 export class GmlVariable extends GmlSymbol<GmlSpecVariable> {

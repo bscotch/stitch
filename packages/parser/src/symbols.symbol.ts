@@ -1,7 +1,8 @@
 import type { IToken } from 'chevrotain';
-import { Location } from './symbols.location.js';
+import type { Location } from './symbols.location.js';
+import type { SymbolBase, SymbolRefBase } from './types.js';
 
-export class SymbolRef {
+export class SymbolRef implements SymbolRefBase {
   constructor(
     public readonly symbol: ProjectSymbol,
     public readonly location: Location,
@@ -17,16 +18,27 @@ export class SymbolRef {
   }
 }
 
-export class ProjectSymbol {
+export class ProjectSymbol implements SymbolBase {
   kind = 'projectSymbol';
   location?: Location;
   refs = new Set<SymbolRef>();
-  description?: string;
   deprecated?: boolean;
   global?: boolean;
 
-  constructor(public readonly name: string, location: Location) {
+  constructor(protected readonly _name: string, location: Location) {
     this.location = location;
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  get description() {
+    return undefined;
+  }
+
+  get code(): string | undefined {
+    return this.name;
   }
 
   addRef(location: Location, isDeclaration = false) {
@@ -49,6 +61,10 @@ export class LocalVariable extends ProjectSymbol {
   constructor(name: string, location: Location, public isParam = false) {
     super(name, location);
   }
+
+  override get code() {
+    return this.isParam ? this.name : `var ${this.name}`;
+  }
 }
 
 export class SelfVariable extends ProjectSymbol {
@@ -56,11 +72,18 @@ export class SelfVariable extends ProjectSymbol {
   constructor(name: string, location: Location, readonly isStatic = false) {
     super(name, location);
   }
+
+  override get code() {
+    return this.isStatic ? `static ${this.name}` : `self.${this.name}`;
+  }
 }
 
 export class GlobalVariable extends ProjectSymbol {
   override global = true;
   override kind = 'globalVariable';
+  override get code() {
+    return `global.${this.name}`;
+  }
 }
 
 class FunctionParam extends ProjectSymbol {
@@ -72,6 +95,11 @@ export class GlobalFunction extends GlobalVariable {
   override global = true;
   override kind = 'globalFunction';
   params: FunctionParam[] = [];
+
+  override get code() {
+    const params = this.params.map((p) => p.name);
+    return `global.${this.name} = function (${params.join(', ')})`;
+  }
 
   addParam(paramIdx: number, token: IToken, location: Location) {
     if (this.params[paramIdx]) {
@@ -86,6 +114,11 @@ export class GlobalFunction extends GlobalVariable {
 export class GlobalConstructorFunction extends GlobalFunction {
   override global = true;
   override kind = 'globalConstructorFunction';
+
+  override get code() {
+    const params = this.params.map((p) => p.name);
+    return `global.${this.name} = constructor (${params.join(', ')})`;
+  }
 }
 
 export class Macro extends ProjectSymbol {
