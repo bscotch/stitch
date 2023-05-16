@@ -9,6 +9,18 @@ export interface GmlParsed {
 }
 
 export class GmlParser extends CstParser {
+  static parserIsValid = false;
+
+  parse(code: string): GmlParsed {
+    const lexed = this.lexer.tokenize(code);
+    this.input = this.lexer.tokenize(code).tokens;
+    const cst = this.file();
+    return {
+      lexed,
+      cst,
+    };
+  }
+
   readonly lexer = GmlLexer;
 
   readonly file = this.RULE('file', () => {
@@ -740,17 +752,10 @@ export class GmlParser extends CstParser {
       nodeLocationTracking: 'full',
     });
 
-    this.performSelfAnalysis();
-  }
-
-  parse(code: string): GmlParsed {
-    const lexed = this.lexer.tokenize(code);
-    this.input = this.lexer.tokenize(code).tokens;
-    const cst = this.file();
-    return {
-      lexed,
-      cst,
-    };
+    if (!GmlParser.parserIsValid) {
+      GmlParser.parserIsValid = true;
+      this.performSelfAnalysis();
+    }
   }
 
   static jsonify(cst: CstNode): string {
@@ -773,6 +778,6 @@ export class GmlParser extends CstParser {
 
 export const parser = new GmlParser();
 export const GmlVisitorBase =
-  new GmlParser().getBaseCstVisitorConstructorWithDefaults() as new (
+  parser.getBaseCstVisitorConstructorWithDefaults() as new (
     ...args: any[]
   ) => GmlVisitor<unknown, unknown>;

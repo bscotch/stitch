@@ -63,15 +63,6 @@ class GlobalDeclarationsProcessor {
 
 export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   static validated = false;
-  constructor(readonly PROCESSOR: GlobalDeclarationsProcessor) {
-    super();
-    if (!GmlGlobalDeclarationsVisitor.validated) {
-      // Validator logic only needs to run once, since
-      // new instances will be the same.
-      this.validateVisitor();
-      GmlGlobalDeclarationsVisitor.validated = true;
-    }
-  }
 
   UPDATE_GLOBAL<T extends typeof ProjectSymbol>(
     children: { Identifier?: IToken[] },
@@ -141,5 +132,15 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
 
   override macroStatement(children: MacroStatementCstChildren) {
     this.UPDATE_GLOBAL(children, Macro)!;
+  }
+
+  constructor(readonly PROCESSOR: GlobalDeclarationsProcessor) {
+    super();
+    if (!GmlGlobalDeclarationsVisitor.validated) {
+      // Validator logic only needs to run once, since
+      // new instances will be the same.
+      this.validateVisitor();
+      GmlGlobalDeclarationsVisitor.validated = true;
+    }
   }
 }

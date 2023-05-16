@@ -9,12 +9,7 @@ import type {
 } from '../gml-cst.js';
 import { GmlVisitorBase } from './parser.js';
 import type { GmlFile } from './project.gml.js';
-import {
-  Location,
-  TokenOrOffset,
-  asEndOffset,
-  asStartOffset,
-} from './symbols.location.js';
+import { Location, RawLocation } from './symbols.location.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
 import {
   GlobalSelf,
@@ -37,7 +32,7 @@ class SymbolProcessor {
     this.scopeRange = file.scopeRanges[0];
     this.localScopeStack.push(this.scopeRange.local);
     this.location = this.scopeRange.start;
-    this.pushLocalScope(0);
+    this.pushLocalScope({ startOffset: 0 });
   }
 
   get scope() {
@@ -69,52 +64,46 @@ class SymbolProcessor {
     return this.project.self.getSymbol(name);
   }
 
-  protected nextScopeRange(offset: number) {
-    this.scopeRange = this.scopeRange.createNext(offset);
+  protected nextScopeRange(token: RawLocation) {
+    this.scopeRange = this.scopeRange.createNext(token);
     this.file.scopeRanges.push(this.scopeRange);
     return this.scopeRange;
   }
 
-  pushScope(offset: TokenOrOffset, self: SelfType) {
-    offset = asStartOffset(offset);
-    const localScope = new LocalScope(this.location.at(offset));
+  pushScope(token: RawLocation, self: SelfType) {
+    const localScope = new LocalScope(this.location.at(token));
     this.localScopeStack.push(localScope);
-    this.nextScopeRange(offset).local = localScope;
+    this.nextScopeRange(token).local = localScope;
     this.selfStack.push(self);
     this.scopeRange.self = self;
   }
 
-  popScope(offset: TokenOrOffset) {
-    offset = asEndOffset(offset);
+  popScope(token: RawLocation) {
     this.localScopeStack.pop();
     this.selfStack.pop();
-    this.nextScopeRange(offset).local = this.currentLocalScope;
+    this.nextScopeRange(token).local = this.currentLocalScope;
     this.scopeRange.self = this.currentSelf;
   }
 
-  pushLocalScope(offset: TokenOrOffset) {
-    offset = asStartOffset(offset);
-    const localScope = new LocalScope(this.location.at(offset));
+  pushLocalScope(token: RawLocation) {
+    const localScope = new LocalScope(this.location.at(token));
     this.localScopeStack.push(localScope);
-    this.nextScopeRange(offset).local = localScope;
+    this.nextScopeRange(token).local = localScope;
   }
 
-  popLocalScope(offset: TokenOrOffset) {
-    offset = asEndOffset(offset);
+  popLocalScope(token: RawLocation) {
     this.localScopeStack.pop();
-    this.nextScopeRange(offset).local = this.currentLocalScope;
+    this.nextScopeRange(token).local = this.currentLocalScope;
   }
 
-  pushSelfScope(offset: TokenOrOffset, self: SelfType) {
-    offset = asStartOffset(offset);
+  pushSelfScope(token: RawLocation, self: SelfType) {
     this.selfStack.push(self);
-    this.nextScopeRange(offset).self = self;
+    this.nextScopeRange(token).self = self;
   }
 
-  popSelfScope(offset: TokenOrOffset) {
-    offset = asEndOffset(offset);
+  popSelfScope(token: RawLocation) {
     this.selfStack.pop();
-    this.nextScopeRange(offset).self = this.currentSelf;
+    this.nextScopeRange(token).self = this.currentSelf;
   }
 }
 
@@ -154,7 +143,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       self.addRef(location);
     }
     this.PROCESSOR.pushScope(
-      children.functionParameters[0].children.StartParen[0].startOffset + 1,
+      children.functionParameters[0].children.StartParen[0],
       self,
     );
 
@@ -166,9 +155,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     this.visit(children.blockStatement);
 
     // End the scope
-    this.PROCESSOR.popScope(
-      children.blockStatement[0].children.EndBrace[0].startOffset,
-    );
+    this.PROCESSOR.popScope(children.blockStatement[0].children.EndBrace[0]);
   }
 
   override functionParameter(children: FunctionParameterCstChildren) {

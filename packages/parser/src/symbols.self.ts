@@ -19,7 +19,7 @@ export class SelfRef {
   ) {}
 
   get start() {
-    return this.location.offset;
+    return this.location.startOffset;
   }
 
   get end() {
@@ -59,7 +59,7 @@ export class StructSelf extends Self {
   }
 
   addSymbol(file: GmlFile, token: IToken, isStatic = false) {
-    const location = new Location(file, token.startOffset);
+    const location = new Location(file, token);
     const existing = this.symbols.get(token.image);
     if (existing) {
       existing.addRef(location);

@@ -1,7 +1,7 @@
 import { ok } from 'assert';
 import { IToken } from 'chevrotain';
 import type { GmlFile } from './project.gml.js';
-import { Location } from './symbols.location.js';
+import { Location, RawLocation } from './symbols.location.js';
 import type { Self } from './symbols.self.js';
 import { LocalVariable } from './symbols.symbol.js';
 
@@ -21,7 +21,10 @@ export class ScopeRange {
     start: Location | GmlFile,
     public end: Location | undefined = undefined,
   ) {
-    this.start = start instanceof Location ? start : new Location(start, 0);
+    this.start =
+      start instanceof Location
+        ? start
+        : new Location(start, { startOffset: 0 });
   }
 
   /**
@@ -31,8 +34,8 @@ export class ScopeRange {
    * and local values default to the same as this scope range,
    * so at least one will need to be changed!
    */
-  createNext(offset: number): ScopeRange {
-    this.end = this.start.at(offset);
+  createNext(atToken: RawLocation): ScopeRange {
+    this.end = this.start.at(atToken);
     ok(
       !this._next,
       'Cannot create a next scope range when one already exists.',
@@ -52,7 +55,9 @@ export class LocalScope {
 
   constructor(location: Location | GmlFile) {
     this.start =
-      location instanceof Location ? location : new Location(location, 0);
+      location instanceof Location
+        ? location
+        : new Location(location, { startOffset: 0 });
   }
 
   hasSymbol(name: string) {
@@ -67,7 +72,7 @@ export class LocalScope {
     // TODO: If this variable already exists, emit a warning
     const existing = this.symbols.get(token.image);
     if (existing) {
-      existing.addRef(new Location(this.start.file, token.startOffset));
+      existing.addRef(new Location(this.start.file, token));
       return;
     }
     const symbol = new LocalVariable(
@@ -76,6 +81,6 @@ export class LocalScope {
       isParam,
     );
     this.symbols.set(token.image, symbol);
-    symbol.addRef(new Location(this.start.file, token.startOffset), true);
+    symbol.addRef(new Location(this.start.file, token), true);
   }
 }

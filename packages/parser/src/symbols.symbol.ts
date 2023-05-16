@@ -9,7 +9,7 @@ export class SymbolRef {
   ) {}
 
   get start() {
-    return this.location.offset;
+    return this.location.startOffset;
   }
 
   get end() {
@@ -36,7 +36,7 @@ export class ProjectSymbol {
   }
 
   get start() {
-    return this.location?.offset || 0;
+    return this.location?.startOffset || 0;
   }
 
   get end() {
@@ -71,7 +71,6 @@ class FunctionParam extends ProjectSymbol {
 export class GlobalFunction extends GlobalVariable {
   override global = true;
   override kind = 'globalFunction';
-  returnType?: unknown; // TODO: implement
   params: FunctionParam[] = [];
 
   addParam(paramIdx: number, token: IToken, location: Location) {

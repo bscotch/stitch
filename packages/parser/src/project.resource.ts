@@ -44,6 +44,13 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
     }
   }
 
+  /**
+   * Get the first GML file belonging to this resource.
+   * For scripts, this is the *only* GML file.*/
+  get gmlFile() {
+    return this.gmlFilesArray[0];
+  }
+
   get gmlFilesArray() {
     return [...this.gmlFiles.values()].sort((a, b) => {
       if (a.name === 'Create_0') {
