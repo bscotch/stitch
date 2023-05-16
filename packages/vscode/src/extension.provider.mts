@@ -1,4 +1,4 @@
-import { GmlFile, GmlSymbol, ProjectSymbol } from '@bscotch/gml-parser';
+import { GmlFile, GmlSymbolType, ProjectSymbolType } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { config } from './extension.config.mjs';
@@ -88,7 +88,7 @@ export class StitchProvider
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Definition | vscode.LocationLink[]> {
     const symbol = this.getSymbol(document, position);
-    if (symbol && symbol instanceof ProjectSymbol) {
+    if (symbol && !symbol.native) {
       return locationOf(symbol);
     }
     return;
@@ -126,8 +126,40 @@ export class StitchProvider
     if (!gmlFile) {
       return [];
     }
-    // TODO: Add completion items for all global variables, functions, etc.
-    return [];
+    const symbols = gmlFile.getInScopeSymbolsAt(document.offsetAt(position));
+    return symbols.map((symbol) => {
+      const item = new vscode.CompletionItem(
+        symbol.name!,
+        vscode.CompletionItemKind.Constant,
+      );
+      switch (symbol.kind) {
+        case 'enum':
+          item.kind = vscode.CompletionItemKind.Enum;
+          break;
+        case 'globalFunction':
+          item.kind = symbol.isConstructor
+            ? vscode.CompletionItemKind.Constructor
+            : vscode.CompletionItemKind.Function;
+          item.detail = 'global';
+          break;
+        case 'gmlFunction':
+          item.kind = vscode.CompletionItemKind.Function;
+          item.detail = 'gml';
+          break;
+        case 'globalVariable':
+          item.kind = vscode.CompletionItemKind.Variable;
+          item.detail = 'global';
+          break;
+        case 'localVariable':
+          item.kind = vscode.CompletionItemKind.Variable;
+          item.detail = 'local';
+          break;
+        case 'macro':
+          item.detail = 'macro';
+          break;
+      }
+      return item;
+    });
   }
 
   provideSignatureHelp(
@@ -193,8 +225,7 @@ export class StitchProvider
   getSymbol(
     document: vscode.TextDocument,
     position: vscode.Position,
-  ): ProjectSymbol | GmlSymbol<any> | undefined {
-    console.log('getSymbol at', position);
+  ): GmlSymbolType | ProjectSymbolType | undefined {
     const offset = document.offsetAt(position);
     const file = this.getGmlFile(document);
     const ref = file?.getReferenceAt(offset);
