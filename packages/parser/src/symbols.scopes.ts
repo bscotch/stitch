@@ -2,8 +2,8 @@ import { ok } from 'assert';
 import { IToken } from 'chevrotain';
 import type { GmlFile } from './project.gml.js';
 import { Location, RawLocation } from './symbols.location.js';
-import type { Self } from './symbols.self.js';
-import { LocalVariable } from './symbols.symbol.js';
+import type { SelfType } from './symbols.self.js';
+import { LocalVar } from './symbols.symbol.js';
 
 /**
  * A region of code that has access to a single combination of
@@ -16,7 +16,7 @@ export class ScopeRange {
   readonly start: Location;
 
   constructor(
-    public self: Self,
+    public self: SelfType,
     public local: LocalScope,
     start: Location | GmlFile,
     public end: Location | undefined = undefined,
@@ -54,7 +54,7 @@ export class ScopeRange {
  */
 export class LocalScope {
   /** Local variable declarations */
-  readonly symbols = new Map<string, LocalVariable>();
+  readonly symbols = new Map<string, LocalVar>();
   readonly start: Location;
 
   constructor(location: Location | GmlFile) {
@@ -79,11 +79,7 @@ export class LocalScope {
       existing.addRef(new Location(this.start.file, token));
       return;
     }
-    const symbol = new LocalVariable(
-      token.image,
-      this.start.at(token),
-      isParam,
-    );
+    const symbol = new LocalVar(token.image, this.start.at(token), isParam);
     this.symbols.set(token.image, symbol);
     symbol.addRef(new Location(this.start.file, token), true);
   }

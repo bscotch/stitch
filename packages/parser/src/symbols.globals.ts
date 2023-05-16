@@ -13,11 +13,10 @@ import { Location } from './symbols.location.js';
 import { LocalScope } from './symbols.scopes.js';
 import {
   Enum,
-  GlobalConstructorFunction,
   GlobalFunction,
-  GlobalVariable,
+  GlobalVar,
   Macro,
-  ProjectSymbol,
+  ProjectSymbolType,
 } from './symbols.symbol.js';
 
 export function processGlobalSymbols(file: GmlFile) {
@@ -64,10 +63,10 @@ class GlobalDeclarationsProcessor {
 export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   static validated = false;
 
-  UPDATE_GLOBAL<T extends typeof ProjectSymbol>(
+  UPDATE_GLOBAL<T extends ProjectSymbolType>(
     children: { Identifier?: IToken[] },
-    klass: T,
-  ): InstanceType<T> | undefined {
+    klass: new (...args: any[]) => T,
+  ): T | undefined {
     const name = children.Identifier?.[0];
     if (!name) return;
     const location = this.PROCESSOR.location.at(name);
@@ -108,10 +107,10 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const name = children.Identifier?.[0];
     // Add the function to a table of functions
     if (name && isGlobal) {
-      const _constructor = children.constructorSuffix?.[0]
-        ? GlobalConstructorFunction
-        : GlobalFunction;
-      const _symbol = this.UPDATE_GLOBAL(children, _constructor)!;
+      const _symbol = this.UPDATE_GLOBAL(children, GlobalFunction)!;
+      if (children.constructorSuffix?.[0]) {
+        _symbol.isConstructor = true;
+      }
       // Add function signature components
       const params =
         children.functionParameters?.[0]?.children.functionParameter || [];
@@ -127,7 +126,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    this.UPDATE_GLOBAL(children, GlobalVariable)!;
+    this.UPDATE_GLOBAL(children, GlobalVar)!;
   }
 
   override macroStatement(children: MacroStatementCstChildren) {

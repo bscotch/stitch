@@ -1,14 +1,14 @@
 import type { Pathy } from '@bscotch/pathy';
-import { GmlSymbol, GmlSymbolRef } from './gml.js';
+import { GmlSymbol, GmlSymbolRef, GmlSymbolType } from './gml.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { GameMakerResource } from './project.resource.js';
 import { processGlobalSymbols } from './symbols.globals.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
 import { GlobalSymbol } from './symbols.self.js';
 import type {
-  LocalVariable,
-  ProjectSymbol,
-  SelfVariable,
+  LocalVar,
+  ProjectSymbolType,
+  SelfSymbol,
   SymbolRef,
 } from './symbols.symbol.js';
 import { processSymbols } from './symbols.visitor.js';
@@ -60,7 +60,7 @@ export class GmlFile {
 
   getInScopeVariablesAt(
     offset: number,
-  ): (LocalVariable | SelfVariable | GlobalSymbol | GmlSymbol<any>)[] {
+  ): (LocalVar | SelfSymbol | GlobalSymbol | GmlSymbolType)[] {
     const scopeRange = this.getScopeRangeAt(offset);
     if (!scopeRange) {
       return [];
@@ -123,7 +123,7 @@ export class GmlFile {
 
   clearRefs() {
     // Remove each reference in *this file* from its symbol.
-    const cleared = new Set<ProjectSymbol | GmlSymbol<any>>();
+    const cleared = new Set<ProjectSymbolType | GmlSymbolType>();
     for (const ref of this._refs) {
       const symbol = ref.symbol;
       if (cleared.has(symbol) || !symbol.refs.size) {

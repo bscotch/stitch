@@ -8,11 +8,14 @@ import {
   type GmlSpecVariable,
 } from './gml.schema.js';
 import type { Location } from './symbols.location.js';
-import type { SymbolBase, SymbolRefBase } from './types.js';
+import type { GmlSymbolKind, SymbolBase, SymbolRefBase } from './types.js';
+
+export type GmlSymbolType = GmlFunction | GmlVariable | GmlConstant | GmlType;
 
 export class GmlSymbolRef implements SymbolRefBase {
+  readonly type = 'symbolRef';
   constructor(
-    public readonly symbol: GmlSymbol<any>,
+    public readonly symbol: GmlSymbolType,
     public readonly location: Location,
   ) {}
 
@@ -24,8 +27,6 @@ export class GmlSymbolRef implements SymbolRefBase {
     return this.start + this.symbol.name.length;
   }
 }
-
-export type GmlSymbolKind = 'function' | 'variable' | 'constant';
 
 export abstract class GmlSymbol<
   T extends {
@@ -40,6 +41,7 @@ export abstract class GmlSymbol<
   },
 > implements SymbolBase
 {
+  readonly type = 'symbol';
   abstract readonly kind: GmlSymbolKind;
   refs = new Set<GmlSymbolRef>();
 
@@ -58,14 +60,14 @@ export abstract class GmlSymbol<
   }
 
   addRef(location: Location) {
-    const ref = new GmlSymbolRef(this, location);
+    const ref = new GmlSymbolRef(this as GmlSymbolType, location);
     this.refs.add(ref);
     location.file.addRef(ref);
   }
 }
 
 export class GmlFunction extends GmlSymbol<GmlSpecFunction> {
-  readonly kind = 'function';
+  readonly kind = 'gmlFunction';
   override get code() {
     let code = `function ${this.name}(`;
     for (let i = 0; i < this.definition.parameters.length; i++) {
@@ -85,15 +87,15 @@ export class GmlFunction extends GmlSymbol<GmlSpecFunction> {
 }
 
 export class GmlVariable extends GmlSymbol<GmlSpecVariable> {
-  readonly kind = 'variable';
+  readonly kind = 'gmlVariable';
 }
 
 export class GmlConstant extends GmlSymbol<GmlSpecConstant> {
-  readonly kind = 'constant';
+  readonly kind = 'gmlConstant';
 }
 
 export class GmlType extends GmlSymbol<{ name: string }> {
-  readonly kind = 'constant';
+  readonly kind = 'gmlType';
 }
 
 export class Gml {

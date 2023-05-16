@@ -1,10 +1,20 @@
 import type { IToken } from 'chevrotain';
 import type { Location } from './symbols.location.js';
-import type { SymbolBase, SymbolRefBase } from './types.js';
+import type { SymbolBase, SymbolKind, SymbolRefBase } from './types.js';
+
+export type ProjectSymbolType =
+  | LocalVar
+  | SelfSymbol
+  | GlobalVar
+  | GlobalFunction
+  | Macro
+  | Enum
+  | EnumMember;
 
 export class SymbolRef implements SymbolRefBase {
+  readonly type = 'symbolRef';
   constructor(
-    public readonly symbol: ProjectSymbol,
+    public readonly symbol: ProjectSymbolType,
     public readonly location: Location,
     public readonly isDeclaration = false,
   ) {}
@@ -18,8 +28,9 @@ export class SymbolRef implements SymbolRefBase {
   }
 }
 
-export class ProjectSymbol implements SymbolBase {
-  kind = 'projectSymbol';
+abstract class ProjectSymbol implements SymbolBase {
+  readonly type = 'symbol';
+  abstract kind: SymbolKind;
   location?: Location;
   refs = new Set<SymbolRef>();
   deprecated?: boolean;
@@ -42,7 +53,11 @@ export class ProjectSymbol implements SymbolBase {
   }
 
   addRef(location: Location, isDeclaration = false) {
-    const ref = new SymbolRef(this, location, isDeclaration);
+    const ref = new SymbolRef(
+      this as ProjectSymbolType,
+      location,
+      isDeclaration,
+    );
     this.refs.add(ref);
     location.file.addRef(ref);
   }
@@ -56,8 +71,8 @@ export class ProjectSymbol implements SymbolBase {
   }
 }
 
-export class LocalVariable extends ProjectSymbol {
-  override kind = 'localVariable';
+export class LocalVar extends ProjectSymbol {
+  readonly kind = 'localVariable';
   constructor(name: string, location: Location, public isParam = false) {
     super(name, location);
   }
@@ -67,8 +82,8 @@ export class LocalVariable extends ProjectSymbol {
   }
 }
 
-export class SelfVariable extends ProjectSymbol {
-  override kind = 'selfVariable';
+export class SelfSymbol extends ProjectSymbol {
+  readonly kind = 'selfVariable';
   constructor(name: string, location: Location, readonly isStatic = false) {
     super(name, location);
   }
@@ -78,27 +93,30 @@ export class SelfVariable extends ProjectSymbol {
   }
 }
 
-export class GlobalVariable extends ProjectSymbol {
+export class GlobalVar extends ProjectSymbol {
   override global = true;
-  override kind = 'globalVariable';
+  readonly kind = 'globalVariable';
   override get code() {
     return `global.${this.name}`;
   }
 }
 
 class FunctionParam extends ProjectSymbol {
-  override kind = 'functionParam';
+  readonly kind = 'functionParam';
   optional?: boolean;
 }
 
-export class GlobalFunction extends GlobalVariable {
+export class GlobalFunction extends ProjectSymbol {
   override global = true;
-  override kind = 'globalFunction';
+  readonly kind = 'globalFunction';
+  isConstructor?: boolean;
   params: FunctionParam[] = [];
 
   override get code() {
     const params = this.params.map((p) => p.name);
-    return `global.${this.name} = function (${params.join(', ')})`;
+    return `global.${this.name} = ${
+      this.isConstructor ? 'constructor' : 'function'
+    } (${params.join(', ')})`;
   }
 
   addParam(paramIdx: number, token: IToken, location: Location) {
@@ -111,28 +129,18 @@ export class GlobalFunction extends GlobalVariable {
   }
 }
 
-export class GlobalConstructorFunction extends GlobalFunction {
-  override global = true;
-  override kind = 'globalConstructorFunction';
-
-  override get code() {
-    const params = this.params.map((p) => p.name);
-    return `global.${this.name} = constructor (${params.join(', ')})`;
-  }
-}
-
 export class Macro extends ProjectSymbol {
   override global = true;
-  override kind = 'macro';
+  readonly kind = 'macro';
 }
 
 export class EnumMember extends ProjectSymbol {
-  override kind = 'enumMember';
+  readonly kind = 'enumMember';
 }
 
 export class Enum extends ProjectSymbol {
   override global = true;
-  override kind = 'enum';
+  readonly kind = 'enum';
   members = new Map<string, EnumMember>();
 
   // Ensure only added once!
