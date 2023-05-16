@@ -17,7 +17,7 @@ import {
   InstanceSelf,
   StructSelf,
 } from './symbols.self.js';
-import { enableLogging } from './util.js';
+import { disableLogging, enableLogging, log } from './util.js';
 
 type SelfType = InstanceSelf | StructSelf | GlobalSelf;
 
@@ -170,9 +170,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   }
 
   override localVarDeclaration(children: LocalVarDeclarationCstChildren) {
-    if (this.PROCESSOR.file.name === 'BschemaConstructors') {
-      enableLogging();
-    }
     this.PROCESSOR.currentLocalScope.addSymbol(children.Identifier[0]);
     if (children.assignmentRightHandSide) {
       this.visit(children.assignmentRightHandSide);
@@ -182,14 +179,20 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   /**
    * Fallback identifier handler */
   override identifier(children: IdentifierCstChildren) {
+    disableLogging();
+    if (this.PROCESSOR.file.name === 'BschemaConstructors') {
+      enableLogging();
+    }
+    const identifier = children.Identifier?.[0];
+    log('identifier', identifier?.image, identifier?.startOffset);
     const scope = this.PROCESSOR.scope;
     // TODO: If we are in an object's create and this is from an assignment,
     //       then add it to the self scope
     // TODO: Infer self
     // TODO: If this isn't definitely a reference to a known symbol,
     //       then add it as an unknown symbol to be checked later.
-    if (children.Identifier?.[0]) {
-      const token = children.Identifier[0];
+    if (identifier) {
+      const token = identifier;
       const location = this.PROCESSOR.location.at(token);
       // Is it a localvar?
       if (scope.local.hasSymbol(token.image)) {
@@ -212,6 +215,10 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         _symbol.addRef(location);
       }
       // TODO: Emit error?
+      else {
+        log('Unknown symbol', token.image);
+      }
     }
+    disableLogging();
   }
 }

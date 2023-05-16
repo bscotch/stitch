@@ -1,6 +1,7 @@
 import type { Pathy } from '@bscotch/pathy';
 import { parser, type GmlParsed } from './parser.js';
 import type { GameMakerResource } from './project.resource.js';
+import { GmlSymbol, GmlSymbolRef } from './spec.js';
 import { processGlobalSymbols } from './symbols.globals.js';
 import { LocalScope, ScopeRange } from './symbols.scopes.js';
 import type { ProjectSymbol, SymbolRef } from './symbols.symbol.js';
@@ -10,7 +11,7 @@ export class GmlFile {
   readonly kind = 'gml';
   readonly scopeRanges: ScopeRange[] = [];
   /** List of all symbol references in this file, in order of appearance. */
-  protected _refs: SymbolRef[] = [];
+  protected _refs: (SymbolRef | GmlSymbolRef)[] = [];
   protected _refsAreSorted = false;
   protected _content!: string;
   protected _parsed!: GmlParsed;
@@ -24,7 +25,7 @@ export class GmlFile {
     );
   }
 
-  getReferenceAt(offset: number): SymbolRef | undefined {
+  getReferenceAt(offset: number): SymbolRef | GmlSymbolRef | undefined {
     for (let i = 0; i < this.refs.length; i++) {
       const ref = this.refs[i];
       if (ref.start <= offset && ref.end >= offset) {
@@ -75,7 +76,7 @@ export class GmlFile {
     this._parsed = parser.parse(this.content);
   }
 
-  addRef(ref: SymbolRef) {
+  addRef(ref: SymbolRef | GmlSymbolRef) {
     this._refs.push(ref);
   }
 
@@ -85,22 +86,26 @@ export class GmlFile {
 
   clearRefs() {
     // Remove each reference in *this file* from its symbol.
-    const cleared = new Set<ProjectSymbol>();
+    const cleared = new Set<ProjectSymbol | GmlSymbol<any>>();
     for (const ref of this._refs) {
-      if (cleared.has(ref.symbol) || !ref.symbol.refs.size) {
+      const symbol = ref.symbol;
+      if (cleared.has(symbol) || !symbol.refs.size) {
         continue;
       }
       // If the symbol was declared in this file, remove its location
-      if (ref.symbol.location?.file === this) {
-        ref.symbol.location = undefined;
-      }
-      // Remove all references to this symbol found in this file
-      for (const symbolRef of ref.symbol.refs) {
-        if (symbolRef.location.file === this) {
-          ref.symbol.refs.delete(symbolRef);
+      if (!(symbol instanceof GmlSymbol)) {
+        if (symbol.location?.file === this) {
+          symbol.location = undefined;
         }
       }
-      cleared.add(ref.symbol);
+      // Remove all references to this symbol found in this file
+      for (const symbolRef of symbol.refs) {
+        if (symbolRef.location.file === this) {
+          // @ts-expect-error
+          symbol.refs.delete(symbolRef);
+        }
+      }
+      cleared.add(symbol);
     }
     // Reset this file's refs list
     this._refs = [];

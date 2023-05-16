@@ -16,9 +16,14 @@ describe.only('Project Parser', function () {
       'A dotenv file should provide a path to a full sample project, as env var GML_PARSER_SAMPLE_PROJECT_DIR',
     );
     const project = await GameMakerProjectParser.initialize(projectDir);
-    const file = project.resources.get('bschemaconstructors')!
-      .gmlFilesArray[0]!;
-    for (const ref of file.refs) {
+    const [src, dest] = [
+      project.resources.get('bschemaconstructors')!.gmlFile,
+      project.resources.get('bschemacreators')!.gmlFile,
+    ];
+    const symbol = src.getReferenceAt(10)!.symbol!;
+    ok(symbol.name === 'BSCHEMA_SCHEMA_CONSTRUCTORS');
+
+    for (const ref of src.refs) {
       console.log(ref.symbol.name, ref.start, ref.end);
     }
   });

@@ -9,18 +9,52 @@ import {
 } from './spec.schema.js';
 import { Location } from './symbols.location.js';
 
+export class GmlSymbolRef {
+  constructor(
+    public readonly symbol: GmlSymbol<any>,
+    public readonly location: Location,
+  ) {}
+
+  get start() {
+    return this.location.startOffset;
+  }
+
+  get end() {
+    return this.start + this.symbol.name.length;
+  }
+}
+
 export type GmlSymbolKind = 'function' | 'variable' | 'constant';
 
-export abstract class GmlSymbol<T extends { name: string }> {
-  readonly name: string;
+export abstract class GmlSymbol<
+  T extends {
+    name: string;
+    type?: string;
+    class?: string;
+    description?: string;
+    deprecated?: boolean;
+    readable?: boolean;
+    writable?: boolean;
+    instance?: boolean;
+  },
+> {
   abstract readonly kind: GmlSymbolKind;
-  refs: Location[] = [];
-  constructor(readonly definition: T) {
-    this.name = definition.name;
+  refs = new Set<GmlSymbolRef>();
+
+  constructor(readonly definition: T) {}
+
+  get name() {
+    return this.definition.name;
+  }
+
+  get description() {
+    return this.definition.description;
   }
 
   addRef(location: Location) {
-    this.refs.push(location);
+    const ref = new GmlSymbolRef(this, location);
+    this.refs.add(ref);
+    location.file.addRef(ref);
   }
 }
 
