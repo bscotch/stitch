@@ -58,7 +58,7 @@ export class GmlFile {
     return undefined;
   }
 
-  getInScopeVariablesAt(
+  getInScopeSymbolsAt(
     offset: number,
   ): (LocalVar | SelfSymbol | GlobalSymbol | GmlSymbolType)[] {
     const scopeRange = this.getScopeRangeAt(offset);

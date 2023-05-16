@@ -42,6 +42,7 @@ export abstract class GmlSymbol<
 > implements SymbolBase
 {
   readonly type = 'symbol';
+  readonly native = true;
   abstract readonly kind: GmlSymbolKind;
   refs = new Set<GmlSymbolRef>();
 

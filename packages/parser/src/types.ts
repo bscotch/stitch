@@ -21,6 +21,8 @@ export type SelfKind = 'struct' | 'instance' | 'global' | 'asset' | 'unknown';
 
 export interface SymbolBase {
   readonly type: 'symbol';
+  /** If true, then this is a built-in GML symbol. */
+  readonly native: boolean;
   get name(): string;
   get description(): string | undefined;
   addRef(location: Location): void;

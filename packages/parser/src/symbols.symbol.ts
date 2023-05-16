@@ -30,6 +30,7 @@ export class SymbolRef implements SymbolRefBase {
 
 abstract class ProjectSymbol implements SymbolBase {
   readonly type = 'symbol';
+  readonly native = false;
   abstract kind: SymbolKind;
   location?: Location;
   refs = new Set<SymbolRef>();
