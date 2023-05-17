@@ -55,10 +55,6 @@ export class GameMakerWorkspaceSymbolProvider
           `${resource.type} (${file.path.name})`,
           new vscode.Location(vscode.Uri.file(file.path.absolute), start),
         );
-
-        if (resource.name === 'o_init') {
-          console.log('o_init', symbol);
-        }
         symbols.push(symbol);
       }
     } else {
@@ -77,6 +73,9 @@ export class GameMakerWorkspaceSymbolProvider
     const symbols: vscode.SymbolInformation[] = [];
     this.globalsCache.set(project, symbols);
     for (const symbol of project.self.symbols.values()) {
+      if (['instance', 'asset'].includes(symbol.kind)) {
+        continue;
+      }
       const kind =
         symbol.kind === 'enum'
           ? vscode.SymbolKind.Enum
@@ -89,7 +88,7 @@ export class GameMakerWorkspaceSymbolProvider
         new vscode.SymbolInformation(
           symbol.name!,
           kind,
-          'global',
+          symbol.kind,
           locationOf(symbol as any)!,
         ),
       );
@@ -125,7 +124,6 @@ export class GameMakerWorkspaceSymbolProvider
         `Found ${filteredSymbols.length} symbols matching "${query}"`,
       );
       const results = filteredSymbols.slice(0, 20);
-      console.log(results.map((r) => r.name));
       return results;
     } catch (error) {
       console.error(error);
@@ -162,7 +160,7 @@ export class GameMakerWorkspaceSymbolProvider
     return (a: { name: string }, b: { name: string }) => {
       const aScore = this.scoreResult(query, pattern, a.name);
       const bScore = this.scoreResult(query, pattern, b.name);
-      return bScore - aScore;
+      return bScore - aScore || a.name.localeCompare(b.name);
     };
   }
 }
