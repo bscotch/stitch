@@ -26,9 +26,7 @@ export class GmlFile {
     readonly resource: GameMakerResource<'objects' | 'scripts'>,
     readonly path: Pathy<string>,
   ) {
-    this.scopeRanges.push(
-      new ScopeRange(this.self, new LocalScope(this), this),
-    );
+    this.initializeScopeRanges();
   }
 
   get project() {
@@ -121,7 +119,15 @@ export class GmlFile {
     this._refs.sort((a, b) => a.start - b.start);
   }
 
+  protected initializeScopeRanges() {
+    this.scopeRanges.length = 0;
+    this.scopeRanges.push(
+      new ScopeRange(this.self, new LocalScope(this), this),
+    );
+  }
+
   clearRefs() {
+    this.initializeScopeRanges();
     // Remove each reference in *this file* from its symbol.
     const cleared = new Set<ProjectSymbolType | GmlSymbolType>();
     for (const ref of this._refs) {

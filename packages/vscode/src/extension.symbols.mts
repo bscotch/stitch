@@ -19,7 +19,6 @@ export class GameMakerWorkspaceSymbolProvider
   updateCache() {
     for (const project of this.projects) {
       this.updateProjectCache(project);
-      console.log('Updated cache for', project.name);
     }
   }
 
@@ -50,14 +49,17 @@ export class GameMakerWorkspaceSymbolProvider
       );
     } else if (resource.type === 'objects') {
       for (const file of resource.gmlFiles.values()) {
-        symbols.push(
-          new vscode.SymbolInformation(
-            resource.name,
-            vscode.SymbolKind.Namespace,
-            `${resource.type} (${file.path.name})`,
-            new vscode.Location(vscode.Uri.file(file.path.absolute), start),
-          ),
+        const symbol = new vscode.SymbolInformation(
+          resource.name,
+          vscode.SymbolKind.Class,
+          `${resource.type} (${file.path.name})`,
+          new vscode.Location(vscode.Uri.file(file.path.absolute), start),
         );
+
+        if (resource.name === 'o_init') {
+          console.log('o_init', symbol);
+        }
+        symbols.push(symbol);
       }
     } else {
       symbols.push(
@@ -95,26 +97,72 @@ export class GameMakerWorkspaceSymbolProvider
   }
 
   provideWorkspaceSymbols(query: string): vscode.SymbolInformation[] {
-    const filteredSymbols: vscode.SymbolInformation[] = [];
-    query = query.trim();
-    console.log('Searching for', query);
-    for (const project of this.projects) {
-      const resourceCache = this.resourceCache.get(project)!;
-      for (const [resource, symbols] of resourceCache.entries()) {
-        console.log('Searching', resource.name);
-        if (resource.name.includes(query)) {
-          for (const symbol of symbols) {
+    try {
+      const filteredSymbols: vscode.SymbolInformation[] = [];
+      query = query.trim();
+      const pattern = new RegExp(query.split('').join('.*'));
+      const isMatch = (item: { name: string }) =>
+        this.scoreResult(query, pattern, item.name) > 0;
+      for (const project of this.projects) {
+        const resourceCache = this.resourceCache.get(project)!;
+        for (const [resource, symbols] of resourceCache.entries()) {
+          if (isMatch(resource)) {
+            for (const symbol of symbols) {
+              filteredSymbols.push(symbol);
+            }
+          }
+        }
+        const globalsCache = this.globalsCache.get(project)!;
+        for (const symbol of globalsCache) {
+          if (isMatch(symbol)) {
             filteredSymbols.push(symbol);
           }
         }
       }
-      const globalsCache = this.globalsCache.get(project)!;
-      for (const symbol of globalsCache) {
-        if (symbol.name.includes(query)) {
-          filteredSymbols.push(symbol);
-        }
-      }
+      // Sort by match quality and then only return the top results.
+      filteredSymbols.sort(this.resultSorter(query, pattern));
+      console.log(
+        `Found ${filteredSymbols.length} symbols matching "${query}"`,
+      );
+      const results = filteredSymbols.slice(0, 20);
+      console.log(results.map((r) => r.name));
+      return results;
+    } catch (error) {
+      console.error(error);
+      return [];
     }
-    return filteredSymbols;
+  }
+
+  scoreResult(query: string, pattern: RegExp, result: string) {
+    // Prioritize in order of:
+    // 1. Exact match
+    // 2. Size of matching substring (shorter is better)
+    // 3. Position of match (earlier is better)
+    let score = 0;
+    const patterns = [
+      // pattern without case sensitivity
+      new RegExp(pattern.source, 'i'),
+      // pattern with case sensitivity
+      new RegExp(pattern.source),
+    ];
+    for (const pattern of patterns) {
+      const match = result.match(pattern);
+      if (!match) {
+        break;
+      }
+      const characterProximityScore = query.length / match[0].length;
+      const matchLengthScore = query.length / result.length;
+      const positionScore = 1 - match.index! / result.length;
+      score += characterProximityScore + positionScore + matchLengthScore;
+    }
+    return score;
+  }
+
+  resultSorter(query: string, pattern: RegExp) {
+    return (a: { name: string }, b: { name: string }) => {
+      const aScore = this.scoreResult(query, pattern, a.name);
+      const bScore = this.scoreResult(query, pattern, b.name);
+      return bScore - aScore;
+    };
   }
 }
