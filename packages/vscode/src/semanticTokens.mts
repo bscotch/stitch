@@ -10,13 +10,19 @@ const semanticTokenTypes = literal([
   'enum',
   'macro',
   'class',
+  'enumMember',
+  'parameter',
+  'property', // Self/instance variables
 ]);
 const semanticTokenModifiers = literal([
-  'global',
   'readonly',
-  'asset',
   'defaultLibrary',
   'declaration',
+  'static',
+  // Custom
+  'local',
+  'asset',
+  'global',
 ]);
 
 export const semanticTokensLegend = new vscode.SemanticTokensLegend(

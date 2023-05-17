@@ -219,6 +219,10 @@
       {
         "id": "asset",
         "description": "A subset of global variables representing a GameMaker asset."
+      },
+      {
+        "id": "local",
+        "description": "A local variable."
       }
     ],
     "snippets": [

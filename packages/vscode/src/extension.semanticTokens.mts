@@ -1,5 +1,7 @@
+import { GmlSymbolType, ProjectSymbolType } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
+import { locationOf } from './lib.mjs';
 import {
   SemanticTokenModifier,
   SemanticTokenType,
@@ -14,76 +16,91 @@ export class GameMakerSemanticTokenProvider
   provideDocumentSemanticTokens(
     document: vscode.TextDocument,
   ): vscode.SemanticTokens | undefined {
-    const project = this.provider.getProject(document);
-    if (!project) {
+    const file = this.provider.getGmlFile(document);
+    if (!file) {
       return;
     }
-    // const resource = project.filepathToResource(document);
-    // const resourceFile = resource?.fileFromPath(document);
-    // if (!resourceFile) {
-    //   return;
-    // }
-    const resourceFile: any = null;
 
     const tokensBuilder = new vscode.SemanticTokensBuilder(
       semanticTokensLegend,
     );
-    const identifiers = resourceFile.identifiers;
-
-    const completions = [
-      { label: 'hello' },
-      // ...(project?.completions.values() || []),
-      // ...this.provider.globalCompletions,
-    ].reduce((acc, item) => {
-      const name = item.label;
-      acc[name] = item;
-      return acc;
-    }, {} as { [identifier: string]: vscode.CompletionItem });
-
-    for (const [identifier, locations] of identifiers) {
-      // What kind of token is this?
-      const completion = completions[identifier];
-      if (!completion) {
+    const cache = new Map<
+      ProjectSymbolType | GmlSymbolType,
+      { type: SemanticTokenType; mods: SemanticTokenModifier[] }
+    >();
+    for (const ref of file.refs) {
+      // Get the location as a vscode range
+      const symbol = ref.symbol;
+      const range = locationOf(ref)!.range;
+      // If we've already seen this symbol, use the cached semantic details
+      if (cache.has(symbol)) {
+        const { type, mods } = cache.get(symbol)!;
+        tokensBuilder.push(range, type, mods);
         continue;
       }
 
+      // Figure out what the semantic details are
       let tokenType: SemanticTokenType | undefined;
-      const tokenModifiers: SemanticTokenModifier[] = ['global'];
-      const isBuiltIn = false; //this.provider.spec.identifiers.has(identifier);
-      const isResource = false; //project.resourceNames.has(identifier);
-      if (isBuiltIn) {
-        tokenModifiers.push('defaultLibrary');
+      const tokenModifiers: SemanticTokenModifier[] = [];
+      if ('isDeclaration' in ref && ref.isDeclaration) {
+        tokenModifiers.push('declaration');
       }
-
-      switch (completion.kind) {
-        case vscode.CompletionItemKind.Constructor:
-          tokenType = 'class';
+      if ('native' in symbol && symbol.native) {
+        tokenModifiers.push('defaultLibrary', 'global');
+      }
+      switch (symbol.kind) {
+        case 'enum':
+          tokenType = 'enum';
+          tokenModifiers.push('global');
           break;
-        case vscode.CompletionItemKind.Function:
+        case 'enumMember':
+          tokenType = 'enumMember';
+          break;
+        case 'globalFunction':
+          tokenType = symbol.isConstructor ? 'class' : 'function';
+          tokenModifiers.push('global');
+          break;
+        case 'gmlConstant':
+          tokenType = 'variable';
+          tokenModifiers.push('readonly');
+          break;
+        case 'gmlFunction':
           tokenType = 'function';
           break;
-        case vscode.CompletionItemKind.Variable:
+        case 'gmlVariable':
           tokenType = 'variable';
-          break;
-        case vscode.CompletionItemKind.Constant:
-          tokenType = isBuiltIn || isResource ? 'variable' : 'macro';
-          if (isResource) {
-            tokenModifiers.push('asset');
+          if (symbol.definition.instance) {
+            tokenType = 'property';
+          }
+          if (!symbol.definition.writable) {
+            tokenModifiers.push('readonly');
           }
           break;
-        case vscode.CompletionItemKind.Enum:
-          tokenType = 'enum';
+        case 'macro':
+          tokenType = 'macro';
+          break;
+        case 'globalVariable':
+          tokenType = 'variable';
+          tokenModifiers.push('global');
+          break;
+        case 'gmlType':
+          tokenType = 'class';
+          break;
+        case 'localVariable':
+          tokenType = symbol.isParam ? 'parameter' : 'variable';
+          tokenModifiers.push('local');
+          break;
+        case 'selfVariable':
+          tokenType = 'property';
+          if (symbol.isStatic) {
+            tokenModifiers.push('static');
+          }
           break;
       }
-      if (!tokenType) {
-        continue;
-      }
-      for (const location of locations) {
-        tokensBuilder.push(location.range, tokenType, tokenModifiers);
-      }
+      tokensBuilder.push(range, tokenType, tokenModifiers);
+      cache.set(symbol, { type: tokenType, mods: tokenModifiers });
     }
-    const tokens = tokensBuilder.build();
-    return tokens;
+    return tokensBuilder.build();
   }
 
   register() {
