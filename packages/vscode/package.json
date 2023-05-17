@@ -66,6 +66,15 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.editing.autocomplete.ignoredPrefix": {
+          "title": "Ignore autocomplete prefix",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Variables with this prefix will be skipped in autocomplete suggestions, unless those variables are within the same scope or file as the cursor."
+        },
         "stitch.editing.signatureStatus.enable": {
           "title": "Enable signature status",
           "type": "boolean",

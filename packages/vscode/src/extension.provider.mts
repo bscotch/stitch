@@ -129,8 +129,10 @@ export class StitchProvider
       if (!symbol.name) {
         continue;
       }
+      const ignoredPrefix = config.autocompleteIgnoredPrefix;
       const shouldHide =
-        symbol.name!.startsWith('_') &&
+        ignoredPrefix &&
+        symbol.name!.startsWith(ignoredPrefix) &&
         'location' in symbol &&
         !symbol.location?.file.path.equals(document.uri.fsPath);
       if (shouldHide) {

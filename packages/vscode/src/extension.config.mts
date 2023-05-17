@@ -12,6 +12,9 @@ export class StitchConfig {
   get enableFunctionSignatureStatus() {
     return this.config.get<boolean>('editing.signatureStatus.enable');
   }
+  get autocompleteIgnoredPrefix() {
+    return this.config.get<string | null>('editing.autocomplete.ignoredPrefix');
+  }
   get functionSignatureStatusAlignment(): vscode.StatusBarAlignment {
     const alignment = this.config.get<'left' | 'right'>(
       'editing.signatureStatus.alignment',
