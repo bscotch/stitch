@@ -26,5 +26,25 @@ describe.only('Project Parser', function () {
     for (const ref of src.refs) {
       console.log(ref.symbol.name, ref.start, ref.end);
     }
+
+    const resource = project.resources.get('bschemaconstructors')!;
+    const scope = resource.gmlFile.getScopeRangeAt(1687)!;
+    for (const scope of resource.gmlFile.scopeRanges.values()) {
+      console.log('SCOPE', scope.start.startOffset, scope.end?.startOffset);
+    }
+    console.log(
+      'MATCHING SCOPE',
+      scope.start.startOffset,
+      scope.end?.startOffset,
+    );
+    const vars = resource.gmlFile.getInScopeSymbolsAt(1687);
+    console.log(
+      'LOCALS',
+      scope!.localVariables.map((v) => v.name),
+    );
+    console.log(
+      'LOCAL SUBSET',
+      vars.filter((v) => v.kind === 'localVariable').map((v) => v.name),
+    );
   });
 });

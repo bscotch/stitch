@@ -98,13 +98,17 @@ export class GlobalVar extends ProjectSymbol {
   override global = true;
   readonly kind = 'globalVariable';
   override get code() {
-    return `global.${this.name}`;
+    return `globalvar ${this.name}`;
   }
 }
 
 class FunctionParam extends ProjectSymbol {
   readonly kind = 'functionParam';
   optional?: boolean;
+
+  override get code() {
+    return `/** @param */ ${this.name}`;
+  }
 }
 
 export class GlobalFunction extends ProjectSymbol {
@@ -115,9 +119,11 @@ export class GlobalFunction extends ProjectSymbol {
 
   override get code() {
     const params = this.params.map((p) => p.name);
-    return `global.${this.name} = ${
-      this.isConstructor ? 'constructor' : 'function'
-    } (${params.join(', ')})`;
+    let code = `function ${this.name} (${params.join(', ')})`;
+    if (this.isConstructor) {
+      code += `constructor`;
+    }
+    return code;
   }
 
   addParam(paramIdx: number, token: IToken, location: Location) {

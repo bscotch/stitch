@@ -114,7 +114,7 @@ export class GameMakerProject extends GameMakerProjectParser {
 
   static async from(yypPath: vscode.Uri) {
     const project = new GameMakerProject(yypPath);
-    await project.initialize();
+    await project.initialize({ watch: true });
     return project;
   }
 }

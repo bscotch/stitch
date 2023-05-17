@@ -30,10 +30,6 @@ export class StitchProvider
     vscode.DefinitionProvider,
     vscode.ReferenceProvider
 {
-  globalTypeCompletions: vscode.CompletionItem[] = [];
-  globalCompletions: vscode.CompletionItem[] = [];
-  globalHovers: Map<string, vscode.Hover> = new Map();
-  globalSignatures: Map<string, vscode.SignatureHelp> = new Map();
   readonly signatureHelpStatus = vscode.window.createStatusBarItem(
     config.functionSignatureStatusAlignment,
     config.functionSignatureStatusAlignment === vscode.StatusBarAlignment.Left
@@ -123,11 +119,23 @@ export class StitchProvider
     position: vscode.Position,
   ): vscode.CompletionItem[] | vscode.CompletionList {
     const gmlFile = this.getGmlFile(document);
+    const offset = document.offsetAt(position);
     if (!gmlFile) {
       return [];
     }
-    const symbols = gmlFile.getInScopeSymbolsAt(document.offsetAt(position));
-    return symbols.map((symbol) => {
+    const symbols = gmlFile.getInScopeSymbolsAt(offset);
+    const completions: vscode.CompletionItem[] = [];
+    for (const symbol of symbols) {
+      if (!symbol.name) {
+        continue;
+      }
+      const shouldHide =
+        symbol.name!.startsWith('_') &&
+        'location' in symbol &&
+        !symbol.location?.file.path.equals(document.uri.fsPath);
+      if (shouldHide) {
+        continue;
+      }
       const item = new vscode.CompletionItem(
         symbol.name!,
         vscode.CompletionItemKind.Constant,
@@ -158,8 +166,9 @@ export class StitchProvider
           item.detail = 'macro';
           break;
       }
-      return item;
-    });
+      completions.push(item);
+    }
+    return completions;
   }
 
   provideSignatureHelp(
@@ -205,12 +214,7 @@ export class StitchProvider
    * and pass an update request to that project.
    */
   async updateFile(document: vscode.TextDocument) {
-    const project = this.getProject(document);
-    if (project) {
-      await project.updateFile(document);
-    } else {
-      console.error(`Could not find project for ${document.uri}`);
-    }
+    await this.getGmlFile(document)?.reload(document.getText());
   }
 
   getProject(
