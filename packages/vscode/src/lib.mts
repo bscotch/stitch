@@ -17,12 +17,18 @@ export function locationOf(thing: {
   // Get a vscode.Range from the thing
   return new vscode.Location(
     vscode.Uri.file(thing.location.file.path.absolute),
-    new vscode.Range(
-      new vscode.Position(
-        thing.location.startLine - 1,
-        thing.location.startColumn - 1,
-      ),
-      new vscode.Position(thing.location.endLine - 1, thing.location.endColumn),
-    ),
+    rangeFrom(thing.location),
+  );
+}
+
+export function rangeFrom(location: {
+  startLine: number;
+  startColumn: number;
+  endLine: number;
+  endColumn: number;
+}) {
+  return new vscode.Range(
+    new vscode.Position(location.startLine - 1, location.startColumn - 1),
+    new vscode.Position(location.endLine - 1, location.endColumn),
   );
 }

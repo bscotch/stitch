@@ -162,7 +162,7 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
         `${this.name.toLocaleLowerCase()}.gml`,
     );
     if (matches.length !== 1) {
-      this.project.emitWarning(
+      console.error(
         `Script ${this.name} has ${matches.length} GML files. Expected 1.`,
       );
     } else {

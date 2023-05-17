@@ -17,7 +17,7 @@ import {
   InstanceSelf,
   StructSelf,
 } from './symbols.self.js';
-import { disableLogging, enableLogging, log } from './util.js';
+import { log } from './util.js';
 
 type SelfType = InstanceSelf | StructSelf | GlobalSelf;
 
@@ -117,12 +117,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   static validated = false;
   constructor(readonly PROCESSOR: SymbolProcessor) {
     super();
-    if (!GmlSymbolVisitor.validated) {
-      // Validator logic only needs to run once, since
-      // new instances will be the same.
-      this.validateVisitor();
-      GmlSymbolVisitor.validated = true;
-    }
+    this.validateVisitor();
   }
 
   findSymbols(input: CstNode) {
@@ -179,10 +174,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   /**
    * Fallback identifier handler */
   override identifier(children: IdentifierCstChildren) {
-    disableLogging();
-    if (this.PROCESSOR.file.name === 'BschemaConstructors') {
-      enableLogging();
-    }
     const identifier = children.Identifier?.[0];
     log('identifier', identifier?.image, identifier?.startOffset);
     const scope = this.PROCESSOR.scope;
@@ -219,6 +210,5 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         log('Unknown symbol', token.image);
       }
     }
-    disableLogging();
   }
 }

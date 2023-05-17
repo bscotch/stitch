@@ -12,6 +12,7 @@ import type {
   SymbolRef,
 } from './symbols.symbol.js';
 import { processSymbols } from './symbols.visitor.js';
+import { Diagnostic } from './types.js';
 
 export class GmlFile {
   readonly kind = 'gml';
@@ -109,6 +110,28 @@ export class GmlFile {
   async parse(path: Pathy<string>, content?: string) {
     this._content = typeof content === 'string' ? content : await path.read();
     this._parsed = parser.parse(this.content);
+    const diagnostics: Diagnostic[] = [];
+    for (const diagnostic of this._parsed.errors) {
+      diagnostics.push({
+        type: 'diagnostic',
+        kind: 'parser',
+        message: diagnostic.message,
+        severity: 'error',
+        info: diagnostic,
+        location: {
+          file: this.path.absolute,
+          startColumn: diagnostic.token.startColumn!,
+          startLine: diagnostic.token.startLine!,
+          startOffset: diagnostic.token.startOffset!,
+          endColumn: diagnostic.token.endColumn!,
+          endLine: diagnostic.token.endLine!,
+          endOffset: diagnostic.token.endOffset!,
+        },
+      });
+    }
+    if (diagnostics.length) {
+      this.project.emitDiagnostics(diagnostics);
+    }
   }
 
   addRef(ref: SymbolRef | GmlSymbolRef) {

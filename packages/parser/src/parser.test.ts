@@ -1,21 +1,29 @@
 import { pathy } from '@bscotch/pathy';
 import { undent } from '@bscotch/utility';
 import { expect } from 'chai';
+import type { IRecognitionException } from 'chevrotain';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { GmlParser } from './parser.js';
 
 dotenv.config();
 
-function showErrors(parser: GmlParser, filepath?: string) {
-  if (!parser.errors.length) return;
+function showErrors(
+  parser: GmlParser | IRecognitionException[],
+  filepath?: string,
+) {
+  const errors = Array.isArray(parser) ? parser : parser.errors;
+  if (!errors.length) return;
   console.error(
-    parser.errors.map((e) => ({
+    errors.map((e) => ({
       loc: `${filepath || ''}:${e.token.startLine}:${e.token.startColumn}`,
       msg: e.message,
-      // @ts-ignore
-      prior: e.previousToken,
-      token: e.token,
+      token: e.token.image,
+      resynced: e.resyncedTokens.map((t) => ({
+        image: t.image,
+        startLine: t.startLine,
+        startColumn: t.startColumn,
+      })),
     })),
   );
 }
@@ -32,9 +40,11 @@ describe('Parser', function () {
 
   it('can get errors for invalid simple expressions', function () {
     const parser = new GmlParser();
-    const { cst } = parser.parse('(1 + 2 * 3) + hello / world || undefined +');
+    const { cst, errors } = parser.parse(
+      '(1 + 2 * 3) + hello / world || undefined +',
+    );
     expect(parser.errors.length).to.equal(1);
-    expect(cst).not.to.exist;
+    expect(errors.length).to.equal(1);
   });
 
   it('can parse complex expressions', function () {

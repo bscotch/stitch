@@ -4,13 +4,29 @@ import { GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { Yy, Yyp } from '@bscotch/yy';
 import { ok } from 'assert';
 import chokidar from 'chokidar';
+import { EventEmitter } from 'events';
 import { z } from 'zod';
 import { Gml } from './gml.js';
 import { GmlFile } from './project.gml.js';
 import { GameMakerResource } from './project.resource.js';
 import { GlobalSelf } from './symbols.self.js';
+import { Diagnostic } from './types.js';
 
 type ResourceName = string;
+
+export interface ProjectOptions {
+  /**
+   * If true, a file watcher will be set up to reprocess
+   * files when they change on disk. */
+  watch?: boolean;
+  /**
+   * Register a callback to run when diagnostics are emitted.
+   * If not provided, a callback can be registered after
+   * initialization, but will not receive any diagnostics
+   * from the initial parse.
+   */
+  onDiagnostics?: (diagnostics: Diagnostic[]) => void;
+}
 
 export class GameMakerProjectParser {
   yyp!: Yyp;
@@ -18,6 +34,7 @@ export class GameMakerProjectParser {
   readonly resources = new Map<ResourceName, GameMakerResource>();
   self = new GlobalSelf(this);
   watcher!: chokidar.FSWatcher;
+  protected emitter = new EventEmitter();
 
   protected constructor(readonly yypPath: Pathy) {}
 
@@ -29,8 +46,15 @@ export class GameMakerProjectParser {
     return pathy(this.yypPath).up();
   }
 
-  emitWarning(message: string) {
-    console.warn(`[WARNING] ${message}`);
+  /**
+   * Run a callback when diagnostics are emitted. Returns an unsubscribe function. */
+  onDiagnostics(callback: (diagnostics: Diagnostic[]) => void): () => void {
+    this.emitter.on('diagnostics', callback);
+    return () => this.emitter.off('diagnostics', callback);
+  }
+
+  emitDiagnostics(diagnostics: Diagnostic[]): void {
+    this.emitter.emit('diagnostics', diagnostics);
   }
 
   getResource(path: Pathy<any>): GameMakerResource | undefined {
@@ -40,7 +64,6 @@ export class GameMakerProjectParser {
   getGmlFile(path: Pathy<any>): GmlFile | undefined {
     const resource = this.getResource(path);
     if (!resource) {
-      this.emitWarning(`No resource found for ${path}`);
       return;
     }
     return resource.getGmlFile(path);
@@ -189,7 +212,10 @@ export class GameMakerProjectParser {
     });
   }
 
-  async initialize(options?: { watch?: boolean }): Promise<void> {
+  async initialize(options?: ProjectOptions): Promise<void> {
+    if (options?.onDiagnostics) {
+      this.onDiagnostics(options.onDiagnostics);
+    }
     const fileLoader = this.loadResources();
     const specLoaderWait = this.loadGmlSpec();
 
@@ -211,7 +237,7 @@ export class GameMakerProjectParser {
 
   static async initialize(
     yypPath: string,
-    options?: { watch?: boolean },
+    options?: ProjectOptions,
   ): Promise<GameMakerProjectParser> {
     let path = pathy(yypPath);
     if (await path.isDirectory()) {

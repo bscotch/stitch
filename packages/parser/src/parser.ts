@@ -2,15 +2,15 @@ import { CstNode, CstParser, ILexingResult } from 'chevrotain';
 import type { GmlVisitor } from '../gml-cst.js';
 import { GmlLexer } from './lexer.js';
 import { c, categories, t, tokens } from './tokens.js';
+import type { GmlParseError } from './types.js';
 
 export interface GmlParsed {
   lexed: ILexingResult;
   cst: CstNode;
+  errors: GmlParseError[];
 }
 
 export class GmlParser extends CstParser {
-  static parserIsValid = false;
-
   parse(code: string): GmlParsed {
     const lexed = this.lexer.tokenize(code);
     this.input = this.lexer.tokenize(code).tokens;
@@ -18,6 +18,7 @@ export class GmlParser extends CstParser {
     return {
       lexed,
       cst,
+      errors: this.errors,
     };
   }
 
@@ -750,12 +751,9 @@ export class GmlParser extends CstParser {
   constructor() {
     super([...tokens, ...categories], {
       nodeLocationTracking: 'full',
+      recoveryEnabled: true,
     });
-
-    if (!GmlParser.parserIsValid) {
-      GmlParser.parserIsValid = true;
-      this.performSelfAnalysis();
-    }
+    this.performSelfAnalysis();
   }
 
   static jsonify(cst: CstNode): string {

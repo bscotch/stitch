@@ -1,4 +1,7 @@
+import { IRecognitionException } from 'chevrotain';
 import type { Location } from './symbols.location.js';
+
+export type GmlParseError = IRecognitionException;
 
 export type GmlSymbolKind =
   | 'gmlFunction'
@@ -41,4 +44,21 @@ export interface SymbolRefBase {
 export interface SelfBase {
   readonly type: 'self';
   readonly kind: SelfKind;
+}
+
+export interface Diagnostic {
+  type: 'diagnostic';
+  kind: 'parser';
+  message: string;
+  severity: 'error' | 'warning' | 'info';
+  location: {
+    file: string;
+    startColumn: number;
+    endColumn: number;
+    startLine: number;
+    endLine: number;
+    startOffset: number;
+    endOffset: number;
+  };
+  info?: GmlParseError;
 }

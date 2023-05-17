@@ -11,4 +11,9 @@ export {
   SelfSymbol as SelfVariable,
   SymbolRef,
 } from './symbols.symbol.js';
-export type { GmlSymbolKind, SymbolKind } from './types.js';
+export type {
+  Diagnostic,
+  GmlParseError,
+  GmlSymbolKind,
+  SymbolKind,
+} from './types.js';

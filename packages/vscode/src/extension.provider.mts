@@ -1,4 +1,9 @@
-import { GmlFile, GmlSymbolType, ProjectSymbolType } from '@bscotch/gml-parser';
+import {
+  Diagnostic,
+  GmlFile,
+  GmlSymbolType,
+  ProjectSymbolType,
+} from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { config } from './extension.config.mjs';
@@ -7,7 +12,7 @@ import { GameMakerProject } from './extension.project.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { GameMakerFolder } from './extension.tree.mjs';
-import { locationOf, pathyFromUri } from './lib.mjs';
+import { locationOf, pathyFromUri, rangeFrom } from './lib.mjs';
 
 const jsdocCompletions = [
   '@param',
@@ -36,12 +41,37 @@ export class StitchProvider
       ? -Infinity
       : Infinity,
   );
+  readonly diagnosticCollection =
+    vscode.languages.createDiagnosticCollection('gml');
 
   protected projects: GameMakerProject[] = [];
   static config = config;
 
   protected constructor() {
     this.signatureHelpStatus.hide();
+  }
+
+  /**
+   * Emit a collection of diagnostics for a particular file. */
+  emitDiagnostics(diagnostics: Diagnostic[]) {
+    if (!diagnostics.length) {
+      return;
+    }
+    const file = diagnostics[0].location.file;
+    this.diagnosticCollection.set(
+      vscode.Uri.file(file),
+      diagnostics.map((d) => ({
+        message: d.message,
+        range: rangeFrom(d.location),
+        severity:
+          d.severity === 'error'
+            ? vscode.DiagnosticSeverity.Error
+            : d.severity === 'info'
+            ? vscode.DiagnosticSeverity.Information
+            : vscode.DiagnosticSeverity.Warning,
+        source: 'stitch',
+      })),
+    );
   }
 
   clearProjects() {
@@ -53,8 +83,11 @@ export class StitchProvider
     );
   }
 
-  async loadProject(yypPath: vscode.Uri) {
-    const project = await GameMakerProject.from(yypPath);
+  async loadProject(
+    yypPath: vscode.Uri,
+    onDiagnostics: (diagnostics: Diagnostic[]) => void,
+  ) {
+    const project = await GameMakerProject.from(yypPath, onDiagnostics);
     this.projects.push(project);
     void vscode.commands.executeCommand(
       'setContext',
@@ -287,8 +320,9 @@ export class StitchProvider
         if (doc.languageId !== 'gml') {
           return;
         }
+        this.provider.diagnosticCollection.delete(doc.uri);
         void StitchProvider.provider.updateFile(event.document);
-      }, 100);
+      }, 50);
 
       vscode.workspace.onDidChangeTextDocument(onChangeDoc);
     }
@@ -302,7 +336,10 @@ export class StitchProvider
     const yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
 
     for (const yypFile of yypFiles) {
-      await StitchProvider.provider.loadProject(yypFile);
+      await StitchProvider.provider.loadProject(
+        yypFile,
+        this.provider.emitDiagnostics.bind(this.provider),
+      );
     }
 
     ctx.subscriptions.push(
@@ -409,6 +446,7 @@ export class StitchProvider
         this.provider.signatureHelpStatus.text = asString;
         this.provider.signatureHelpStatus.show();
       }),
+      this.provider.diagnosticCollection,
     );
 
     return this.provider;
