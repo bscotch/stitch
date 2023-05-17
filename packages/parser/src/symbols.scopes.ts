@@ -74,13 +74,14 @@ export class LocalScope {
 
   addSymbol(token: IToken, isParam = false) {
     // TODO: If this variable already exists, emit a warning
+    const location = new Location(this.start.file, token);
     const existing = this.symbols.get(token.image);
     if (existing) {
-      existing.addRef(new Location(this.start.file, token));
+      existing.addRef(location);
       return;
     }
     const symbol = new LocalVar(token.image, this.start.at(token), isParam);
     this.symbols.set(token.image, symbol);
-    symbol.addRef(new Location(this.start.file, token), true);
+    symbol.addRef(location, true);
   }
 }

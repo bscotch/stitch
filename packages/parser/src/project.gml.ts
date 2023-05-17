@@ -47,8 +47,8 @@ export class GmlFile {
 
   getScopeRangeAt(offset: number): ScopeRange | undefined {
     for (const scopeRange of this.scopeRanges) {
-      if (scopeRange.start.startOffset >= offset) {
-        if (!scopeRange.end || scopeRange.end.startOffset <= offset) {
+      if (offset >= scopeRange.start.startOffset) {
+        if (!scopeRange.end || offset <= scopeRange.end.startOffset) {
           return scopeRange;
         }
       }
