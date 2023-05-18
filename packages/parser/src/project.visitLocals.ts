@@ -1,22 +1,25 @@
 // CST Visitor for creating an AST etc
+import { keysOf } from '@bscotch/utility';
 import type { CstNode } from 'chevrotain';
 import type {
+  FunctionArgumentsCstChildren,
   FunctionExpressionCstChildren,
   FunctionParameterCstChildren,
+  IdentifierAccessorCstChildren,
   IdentifierCstChildren,
   LocalVarDeclarationCstChildren,
   StaticVarDeclarationsCstChildren,
 } from '../gml-cst.js';
 import { GmlVisitorBase } from './parser.js';
 import type { GmlFile } from './project.gml.js';
-import { Location, RawLocation } from './symbols.location.js';
-import { LocalScope, ScopeRange } from './symbols.scopes.js';
+import { Location, RawLocation } from './project.locations.js';
+import { LocalScope, ScopeRange } from './project.scopes.js';
 import {
   GlobalSelf,
   GlobalSymbol,
   InstanceSelf,
   StructSelf,
-} from './symbols.self.js';
+} from './project.selfs.js';
 import { log } from './util.js';
 
 type SelfType = InstanceSelf | StructSelf | GlobalSelf;
@@ -155,6 +158,37 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
   override functionParameter(children: FunctionParameterCstChildren) {
     this.PROCESSOR.currentLocalScope.addSymbol(children.Identifier[0], true);
+  }
+
+  override identifierAccessor(
+    children: IdentifierAccessorCstChildren,
+    param?: unknown,
+  ) {
+    const selfIdentifier = children.identifier[0].children.Self?.[0];
+    const identifier = children.identifier[0].children.Identifier?.[0];
+    // TODO: Track self through dot accessors
+    // TODO: Track enum member accessors
+    const keys = keysOf(children);
+    for (const key of keys) {
+      this.visit(children[key]!);
+    }
+  }
+
+  override functionArguments(children: FunctionArgumentsCstChildren) {
+    // TODO: Need to collect function argument ranges to provide function signature
+    // helpers. Basically we need the ranges between each comma in the argument list.
+    const start = children.StartParen[0];
+    const end = children.EndParen[0];
+    const commas = children.Comma?.map((comma) => comma.startOffset) || [];
+    // console.log(
+    //   'functionArguments',
+    //   start.startOffset,
+    //   commas,
+    //   end.startOffset,
+    // );
+    if (children.functionArgument) {
+      this.visit(children.functionArgument);
+    }
   }
 
   override staticVarDeclarations(children: StaticVarDeclarationsCstChildren) {

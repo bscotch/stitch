@@ -1,9 +1,9 @@
 import { ok } from 'assert';
 import { IToken } from 'chevrotain';
 import type { GmlFile } from './project.gml.js';
-import { Location, RawLocation } from './symbols.location.js';
-import type { SelfType } from './symbols.self.js';
-import { LocalVar } from './symbols.symbol.js';
+import { Location, RawLocation } from './project.locations.js';
+import type { SelfType } from './project.selfs.js';
+import { LocalVar } from './project.symbols.js';
 
 /**
  * A region of code that has access to a single combination of
@@ -82,6 +82,5 @@ export class LocalScope {
     }
     const symbol = new LocalVar(token.image, this.start.at(token), isParam);
     this.symbols.set(token.image, symbol);
-    symbol.addRef(location, true);
   }
 }

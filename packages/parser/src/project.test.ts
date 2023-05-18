@@ -4,7 +4,7 @@ import { GameMakerProjectParser } from './project.js';
 
 dotenv.config();
 
-describe('Project Parser', function () {
+describe.only('Project Parser', function () {
   it('can has fallback GmlSpec', async function () {
     await GameMakerProjectParser.fallbackGmlSpecPath.exists({ assert: true });
   });

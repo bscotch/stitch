@@ -2,16 +2,16 @@ import type { Pathy } from '@bscotch/pathy';
 import { GmlSymbol, GmlSymbolRef, GmlSymbolType } from './gml.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { GameMakerResource } from './project.resource.js';
-import { processGlobalSymbols } from './symbols.globals.js';
-import { LocalScope, ScopeRange } from './symbols.scopes.js';
-import { GlobalSymbol } from './symbols.self.js';
+import { LocalScope, ScopeRange } from './project.scopes.js';
+import { GlobalSymbol } from './project.selfs.js';
 import type {
   LocalVar,
   ProjectSymbolType,
   SelfSymbol,
   SymbolRef,
-} from './symbols.symbol.js';
-import { processSymbols } from './symbols.visitor.js';
+} from './project.symbols.js';
+import { processGlobalSymbols } from './project.visitGlobals.js';
+import { processSymbols } from './project.visitLocals.js';
 import { Diagnostic } from './types.js';
 
 export class GmlFile {
@@ -28,6 +28,18 @@ export class GmlFile {
     readonly path: Pathy<string>,
   ) {
     this.initializeScopeRanges();
+  }
+
+  get isScript() {
+    return this.resource.type === 'scripts';
+  }
+
+  get isObjectEvent() {
+    return this.resource.type === 'objects';
+  }
+
+  get isCreateEvent() {
+    return this.name === 'Create_0';
   }
 
   get project() {

@@ -1,5 +1,5 @@
 import type { IToken } from 'chevrotain';
-import type { Location } from './symbols.location.js';
+import type { Location } from './project.locations.js';
 import type { SymbolBase, SymbolKind, SymbolRefBase } from './types.js';
 
 export type ProjectSymbolType =
@@ -39,6 +39,7 @@ abstract class ProjectSymbol implements SymbolBase {
 
   constructor(protected readonly _name: string, location: Location) {
     this.location = location;
+    this.addRef(location, true);
   }
 
   get name() {

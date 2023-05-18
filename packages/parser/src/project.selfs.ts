@@ -1,14 +1,14 @@
 import type { IToken } from 'chevrotain';
 import type { GmlFile } from './project.gml.js';
 import type { GameMakerProjectParser } from './project.js';
-import { Location } from './symbols.location.js';
+import { Location } from './project.locations.js';
 import {
   SelfSymbol,
   type Enum,
   type GlobalFunction,
   type GlobalVar,
   type Macro,
-} from './symbols.symbol.js';
+} from './project.symbols.js';
 import { SelfKind } from './types.js';
 
 export type SelfType = StructSelf | GlobalSelf | InstanceSelf | AssetSelf;
@@ -76,7 +76,6 @@ export class StructSelf extends Self<SelfSymbol> {
     }
     const symbol = new SelfSymbol(token.image, location, isStatic);
     this.symbols.set(token.image, symbol);
-    symbol.addRef(location, true);
   }
 }
 

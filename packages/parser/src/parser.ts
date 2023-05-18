@@ -369,7 +369,7 @@ export class GmlParser extends CstParser {
   readonly identifierAccessor = this.RULE('identifierAccessor', () => {
     this.SUBRULE(this.identifier);
     this.MANY(() => {
-      this.SUBRULE(this.expressionSuffixes);
+      this.SUBRULE(this.accessorSuffixes);
     });
   });
 
@@ -382,7 +382,7 @@ export class GmlParser extends CstParser {
     },
   );
 
-  readonly expressionSuffixes = this.RULE('expressionSuffixes', () => {
+  readonly accessorSuffixes = this.RULE('accessorSuffixes', () => {
     this.OR([
       { ALT: () => this.SUBRULE(this.arrayAccessSuffix) },
       { ALT: () => this.SUBRULE(this.structAccessorSuffix) },
@@ -752,6 +752,7 @@ export class GmlParser extends CstParser {
     super([...tokens, ...categories], {
       nodeLocationTracking: 'full',
       recoveryEnabled: true,
+      skipValidations: true,
     });
     this.performSelfAnalysis();
   }

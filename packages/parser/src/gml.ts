@@ -7,7 +7,7 @@ import {
   type GmlSpecFunction,
   type GmlSpecVariable,
 } from './gml.schema.js';
-import type { Location } from './symbols.location.js';
+import type { Location } from './project.locations.js';
 import type { GmlSymbolKind, SymbolBase, SymbolRefBase } from './types.js';
 
 export type GmlSymbolType = GmlFunction | GmlVariable | GmlConstant | GmlType;

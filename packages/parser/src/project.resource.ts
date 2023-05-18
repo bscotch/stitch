@@ -10,7 +10,7 @@ import {
 import { ok } from 'assert';
 import { GmlFile } from './project.gml.js';
 import type { GameMakerProjectParser } from './project.js';
-import { AssetSelf, GlobalSelf, InstanceSelf } from './symbols.self.js';
+import { AssetSelf, GlobalSelf, InstanceSelf } from './project.selfs.js';
 
 export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   readonly kind = 'resource';

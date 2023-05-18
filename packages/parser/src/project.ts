@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { Gml } from './gml.js';
 import { GmlFile } from './project.gml.js';
 import { GameMakerResource } from './project.resource.js';
-import { GlobalSelf } from './symbols.self.js';
+import { GlobalSelf } from './project.selfs.js';
 import { Diagnostic } from './types.js';
 
 type ResourceName = string;
@@ -103,6 +103,7 @@ export class GameMakerProjectParser {
    */
   protected async loadResources(): Promise<void> {
     // TODO: Allow for reloading of resources, so that we only need to keep track of new/deleted resources.
+    const t = Date.now();
 
     // Collect the asset dirs since we can run into capitalization issues.
     // We'll use these as a backup for "missing" resources.
@@ -129,6 +130,9 @@ export class GameMakerProjectParser {
       );
     }
     await Promise.all(resourceWaits);
+    console.log(
+      `Loaded ${this.resources.size} resources in ${Date.now() - t}ms`,
+    );
   }
 
   /**
@@ -136,6 +140,7 @@ export class GameMakerProjectParser {
    * back on the included spec if necessary.
    */
   protected async loadGmlSpec(): Promise<void> {
+    const t = Date.now();
     let runtimeVersion: string | undefined;
     // Check for a stitch config file that specifies the runtime version.
     // If it exists, use that version. It's likely that it is correct, and this
@@ -180,6 +185,7 @@ export class GameMakerProjectParser {
         GameMakerProjectParser.fallbackGmlSpecPath.absolute,
       );
     }
+    console.log(`Loaded GML spec in ${Date.now() - t}ms`);
   }
 
   protected watch(): void {
@@ -216,20 +222,32 @@ export class GameMakerProjectParser {
     if (options?.onDiagnostics) {
       this.onDiagnostics(options.onDiagnostics);
     }
+    let t = Date.now();
     const fileLoader = this.loadResources();
     const specLoaderWait = this.loadGmlSpec();
 
     await Promise.all([specLoaderWait, fileLoader]);
-    console.log('Resources', this.resources.size);
+    console.log(
+      'Resources',
+      this.resources.size,
+      'loaded files in',
+      Date.now() - t,
+      'ms',
+    );
 
+    t = Date.now();
     // Discover all globals
     for (const [, resource] of this.resources) {
       resource.updateGlobals();
     }
+    console.log('Globals discovered in', Date.now() - t, 'ms');
+
+    t = Date.now();
     // Discover all symbols and their references
     for (const [, resource] of this.resources) {
       resource.updateAllSymbols();
     }
+    console.log('Symbols discovered in', Date.now() - t, 'ms');
     if (options?.watch) {
       this.watch();
     }

@@ -9,15 +9,15 @@ import type {
 } from '../gml-cst.js';
 import { GmlVisitorBase } from './parser.js';
 import type { GmlFile } from './project.gml.js';
-import { Location } from './symbols.location.js';
-import { LocalScope } from './symbols.scopes.js';
+import { Location } from './project.locations.js';
+import { LocalScope } from './project.scopes.js';
 import {
   Enum,
   GlobalFunction,
   GlobalVar,
   Macro,
   ProjectSymbolType,
-} from './symbols.symbol.js';
+} from './project.symbols.js';
 
 export function processGlobalSymbols(file: GmlFile) {
   const processor = new GlobalDeclarationsProcessor(file);
@@ -77,8 +77,8 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       this.PROCESSOR.globals.addSymbol(symbol as any);
     } else {
       symbol.location = location;
+      symbol.addRef(location, true);
     }
-    symbol!.addRef(location, true);
     return symbol as any;
   }
 

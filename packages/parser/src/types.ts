@@ -1,5 +1,5 @@
 import { IRecognitionException } from 'chevrotain';
-import type { Location } from './symbols.location.js';
+import type { Location } from './project.locations.js';
 
 export type GmlParseError = IRecognitionException;
 
