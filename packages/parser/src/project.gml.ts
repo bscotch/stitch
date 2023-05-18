@@ -3,7 +3,7 @@ import { GmlSymbol, GmlSymbolRef, GmlSymbolType } from './gml.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { GameMakerResource } from './project.resource.js';
 import { LocalScope, ScopeRange } from './project.scopes.js';
-import { GlobalSymbol } from './project.selfs.js';
+import { GlobalSymbolType } from './project.selfs.js';
 import type {
   LocalVar,
   ProjectSymbolType,
@@ -71,7 +71,7 @@ export class GmlFile {
 
   getInScopeSymbolsAt(
     offset: number,
-  ): (LocalVar | SelfSymbol | GlobalSymbol | GmlSymbolType)[] {
+  ): (LocalVar | SelfSymbol | GlobalSymbolType | GmlSymbolType)[] {
     const scopeRange = this.getScopeRangeAt(offset);
     if (!scopeRange) {
       return [];

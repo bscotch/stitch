@@ -16,7 +16,7 @@ import { Location, RawLocation } from './project.locations.js';
 import { LocalScope, ScopeRange } from './project.scopes.js';
 import {
   GlobalSelf,
-  GlobalSymbol,
+  GlobalSymbolType,
   InstanceSelf,
   StructSelf,
 } from './project.selfs.js';
@@ -63,7 +63,7 @@ class SymbolProcessor {
     return this.selfStack.at(-1) || this.project.self;
   }
 
-  getGlobalSymbol(name: string): GlobalSymbol | undefined {
+  getGlobalSymbol(name: string): GlobalSymbolType | undefined {
     return this.project.self.getSymbol(name);
   }
 

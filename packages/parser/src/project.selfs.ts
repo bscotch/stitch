@@ -13,7 +13,7 @@ import { SelfKind } from './types.js';
 
 export type SelfType = StructSelf | GlobalSelf | InstanceSelf | AssetSelf;
 
-export type GlobalSymbol =
+export type GlobalSymbolType =
   | InstanceSelf
   | AssetSelf
   | GlobalVar
@@ -37,7 +37,7 @@ export class SelfRef {
   }
 }
 
-abstract class Self<T extends SelfSymbol | GlobalSymbol | never> {
+abstract class Self<T extends SelfSymbol | GlobalSymbolType | never> {
   readonly type = 'self';
   abstract kind: SelfKind;
   refs = new Set<SelfRef>();
@@ -87,7 +87,7 @@ export class AssetSelf extends Self<SelfSymbol> {
   readonly kind = 'asset';
 }
 
-export class GlobalSelf extends Self<GlobalSymbol> {
+export class GlobalSelf extends Self<GlobalSymbolType> {
   readonly kind = 'global';
   global = true;
 
@@ -95,7 +95,7 @@ export class GlobalSelf extends Self<GlobalSymbol> {
     super('global');
   }
 
-  addSymbol(symbol: GlobalSymbol) {
+  addSymbol(symbol: GlobalSymbolType) {
     if (!this.hasSymbol(symbol.name!)) {
       this.symbols.set(symbol.name!, symbol);
     }

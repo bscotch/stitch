@@ -98,6 +98,19 @@ export class SelfSymbol extends ProjectSymbol {
 export class GlobalVar extends ProjectSymbol {
   override global = true;
   readonly kind = 'globalVariable';
+
+  /**
+   * Global variables live on the `global` object, and can either be defined
+   * via `global.whatever = ...` or `globalvar whatever`. In the former case,
+   * there is no unambiguous declaration location, so we set `isNotDeclaration`
+   * to `true`.
+   */
+  constructor(_name: string, location: Location, isNotDeclaration = false) {
+    super(_name, location);
+    this.location = isNotDeclaration ? undefined : location;
+    this.addRef(location, !isNotDeclaration);
+  }
+
   override get code() {
     return `globalvar ${this.name}`;
   }
