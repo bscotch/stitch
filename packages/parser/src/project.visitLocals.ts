@@ -9,6 +9,7 @@ import type {
   IdentifierCstChildren,
   LocalVarDeclarationCstChildren,
   StaticVarDeclarationsCstChildren,
+  WithStatementCstChildren,
 } from '../gml-cst.js';
 import { GmlVisitorBase } from './parser.js';
 import type { GmlFile } from './project.gml.js';
@@ -128,6 +129,18 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return this.PROCESSOR;
   }
 
+  override withStatement(children: WithStatementCstChildren) {
+    // With statements change the self scope to
+    // whatever their expression evaluates to.
+    // For now, just create a new self scope
+    // TODO: Figure out the actual self scope
+    this.visit(children.expression);
+    const location = children.blockableStatement[0].location!;
+    this.PROCESSOR.pushSelfScope(location, new StructSelf());
+    this.visit(children.blockableStatement);
+    this.PROCESSOR.popSelfScope(this.PROCESSOR.location.atEnd(location));
+  }
+
   override functionExpression(children: FunctionExpressionCstChildren) {
     const location = this.PROCESSOR.location.at(
       children.Identifier?.[0] || children.Function[0],
@@ -135,6 +148,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // Functions create a new localscope
     // If this is a constructor, add a new self scope
     // for it.
+    // TODO: If JSDocs specify a different scope, use that
     let self = this.PROCESSOR.currentSelf;
     if (children.constructorSuffix?.[0].children) {
       self = new StructSelf();
@@ -218,30 +232,31 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     //       then add it as an unknown symbol to be checked later.
     if (identifier) {
       const token = identifier;
+      const name = token.image;
       const location = this.PROCESSOR.location.at(token);
       // Is it a localvar?
-      if (scope.local.hasSymbol(token.image)) {
-        const _symbol = scope.local.getSymbol(token.image)!;
+      if (scope.local.hasSymbol(name)) {
+        const _symbol = scope.local.getSymbol(name)!;
         _symbol.addRef(location);
       }
       // Is it a non-global selfvar?
-      else if (!scope.selfIsGlobal && scope.self.hasSymbol(token.image)) {
-        const _symbol = scope.self.getSymbol(token.image)!;
+      else if (!scope.selfIsGlobal && scope.self.hasSymbol(name)) {
+        const _symbol = scope.self.getSymbol(name)!;
         _symbol.addRef(location);
       }
       // Is it a globalvar?
-      else if (scope.global.hasSymbol(token.image)) {
-        const _symbol = this.PROCESSOR.project.self.getSymbol(token.image)!;
+      else if (scope.global.hasSymbol(name)) {
+        const _symbol = this.PROCESSOR.project.self.getSymbol(name)!;
         _symbol.addRef(location);
       }
       // Is it a builtin global?
-      else if (scope.global.gml.has(token.image)) {
-        const _symbol = scope.global.gml.get(token.image)!;
+      else if (scope.global.gml.has(name)) {
+        const _symbol = scope.global.gml.get(name)!;
         _symbol.addRef(location);
       }
       // TODO: Emit error?
       else {
-        log('Unknown symbol', token.image);
+        log('Unknown symbol', name);
       }
     }
   }

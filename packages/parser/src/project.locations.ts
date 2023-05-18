@@ -39,6 +39,18 @@ export class Location {
     return new Location(this.file, loc);
   }
 
+  /**
+   * Create a new location starting at the end of
+   * the given location.
+   */
+  atEnd(loc: RawLocation): Location {
+    return new Location(this.file, {
+      startOffset: loc.endOffset || loc.startOffset,
+      startLine: loc.endLine || loc.startLine,
+      startColumn: loc.endColumn || loc.startColumn,
+    });
+  }
+
   static from(loc: RawLocation, file: GmlFile) {
     return new Location(file, loc);
   }
