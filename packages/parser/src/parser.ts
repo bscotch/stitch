@@ -1,5 +1,15 @@
-import { CstNode, CstParser, ILexingResult } from 'chevrotain';
-import type { GmlVisitor } from '../gml-cst.js';
+import { keysOf } from '@bscotch/utility';
+import {
+  CstParser,
+  IToken,
+  type CstNode,
+  type ILexingResult,
+} from 'chevrotain';
+import type {
+  GmlVisitor,
+  IdentifierCstChildren,
+  IdentifierCstNode,
+} from '../gml-cst.js';
 import { GmlLexer } from './lexer.js';
 import { c, categories, t, tokens } from './tokens.js';
 import type { GmlParseError } from './types.js';
@@ -8,6 +18,35 @@ export interface GmlParsed {
   lexed: ILexingResult;
   cst: CstNode;
   errors: GmlParseError[];
+}
+
+export type IdentifierSource =
+  | IdentifierCstChildren
+  | IdentifierCstNode
+  | IdentifierCstNode[]
+  | { identifier: IdentifierCstNode[] }
+  | { children: { identifier: IdentifierCstNode[] } };
+
+export function identifierFrom(nodes: IdentifierSource): {
+  token: IToken;
+  type: keyof IdentifierCstChildren;
+  name: string;
+} {
+  let node: IdentifierCstNode;
+  if (Array.isArray(nodes)) {
+    node = nodes[0];
+  } else if ('children' in nodes && 'identifier' in nodes.children) {
+    node = nodes.children.identifier[0];
+  } else if ('identifier' in nodes) {
+    node = nodes.identifier[0];
+  } else {
+    node = nodes as IdentifierCstNode;
+  }
+  const children = 'children' in node ? node.children : node;
+
+  const type = keysOf(children)[0];
+  const token = children[type]![0];
+  return { token, type, name: token.image };
 }
 
 export class GmlParser extends CstParser {

@@ -38,13 +38,9 @@ abstract class ProjectSymbol implements SymbolBase {
   deprecated?: boolean;
   global?: boolean;
 
-  constructor(protected readonly _name: string, location: Location) {
+  constructor(public name: string, location: Location) {
     this.location = location;
     this.addRef(location, true);
-  }
-
-  get name() {
-    return this._name;
   }
 
   get description() {
@@ -62,7 +58,7 @@ abstract class ProjectSymbol implements SymbolBase {
       isDeclaration,
     );
     this.refs.add(ref);
-    location.file.addRef(ref);
+    location.file?.addRef(ref);
   }
 
   get start() {
@@ -178,20 +174,20 @@ export class Enum extends ProjectSymbol {
   }
 
   // Ensure only added once!
-  addMember(token: IToken, location: Location) {
-    let member = this.getMember(token.image);
-    if (member) {
+  addMember(paramIdx: number, token: IToken, location: Location) {
+    if (this.members[paramIdx]) {
       // Update the location in case it has changed
-      member.location = location;
-      return;
+      this.members[paramIdx].location = location;
+      this.members[paramIdx].name = token.image;
+    } else {
+      const member = new EnumMember(token.image, location);
+      member.enum = this;
+      this.members.push(member);
     }
-    member = new EnumMember(token.image, location);
-    member.enum = this;
-    this.members.push(member);
   }
 
   hasMember(name: string) {
-    return !!this.members.find((m) => m.name === name);
+    return !!this.getMember(name);
   }
 
   getMember(name: string) {

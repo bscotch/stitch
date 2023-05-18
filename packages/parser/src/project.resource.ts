@@ -10,7 +10,8 @@ import {
 import { ok } from 'assert';
 import { GmlFile } from './project.gml.js';
 import type { GameMakerProjectParser } from './project.js';
-import { AssetSelf, GlobalSelf, InstanceSelf } from './project.selfs.js';
+import { Location } from './project.locations.js';
+import { GlobalSelf, InstanceSelf } from './project.selfs.js';
 
 export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   readonly kind = 'resource';
@@ -18,11 +19,11 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   readonly gmlFiles: Map<string, GmlFile> = new Map();
   yy!: YyDataStrict<T>;
   readonly yyPath: Pathy<YySchemas[T]>;
-  readonly self: T extends 'objects'
+  self!: T extends 'objects'
     ? InstanceSelf
     : T extends 'scripts'
     ? GlobalSelf
-    : AssetSelf;
+    : undefined;
 
   protected constructor(
     readonly project: GameMakerProjectParser,
@@ -31,17 +32,6 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
   ) {
     this.type = resource.id.path.split(/[/\\]/)[0] as T;
     this.yyPath = yyPath.withValidator(yySchemas[this.type]) as any;
-    this.self = (
-      this.type === 'objects'
-        ? new InstanceSelf(this.name)
-        : this.type === 'scripts'
-        ? this.project.self
-        : new AssetSelf(this.name)
-    ) as any;
-    // If we are not a script, add ourselves to the global self.
-    if (!(this.self instanceof GlobalSelf)) {
-      this.project.self.addSymbol(this.self);
-    }
   }
 
   /**
@@ -114,46 +104,42 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
     }
   }
 
-  protected async loadGml(path: Pathy<string>): Promise<GmlFile> {
+  protected addGmlFile(path: Pathy<string>) {
     const gml =
       this.getGmlFile(path) ||
       new GmlFile(this as GameMakerResource<'scripts' | 'objects'>, path);
     this.gmlFiles.set(path.absolute, gml);
-    await gml.parse(path);
-    return gml;
   }
 
   protected async load() {
-    const waits: Promise<any>[] = [];
     // Find all immediate children, which might include legacy GML files
     const [, children] = await Promise.all([
       await this.readYy(),
       this.dir.listChildren(),
     ]);
     if (this.type === 'scripts') {
-      await this.loadScriptGml(children as Pathy<string>[]);
+      this.addScriptFile(children as Pathy<string>[]);
     } else if (this.type === 'objects') {
-      await this.loadObjectGml(children as Pathy<string>[]);
+      this.addObjectFile(children as Pathy<string>[]);
     }
-    await Promise.all(waits);
+    await this.initiallyReadAndParseGml();
   }
 
   onRemove() {
     this.gmlFiles.forEach((gml) => gml.onRemove());
   }
 
-  protected async loadObjectGml(children: Pathy<string>[]) {
+  protected addObjectFile(children: Pathy<string>[]) {
     // Objects have one file per event, named after the event.
     // The YY file includes the list of events, but references them by
     // numeric identifiers instead of their name. For now we'll just
     // assume that the GML files are correct.
-    const gmlFiles = children
+    children
       .filter((p) => p.hasExtension('gml'))
-      .map((p) => this.loadGml(p));
-    await Promise.all(gmlFiles);
+      .forEach((p) => this.addGmlFile(p));
   }
 
-  protected async loadScriptGml(children: Pathy<string>[]) {
+  protected addScriptFile(children: Pathy<string>[]) {
     // Scripts should have exactly one GML file, which is the script itself,
     // named the same as the script (though there could be casing variations)
     const matches = children.filter(
@@ -166,8 +152,29 @@ export class GameMakerResource<T extends YyResourceType = YyResourceType> {
         `Script ${this.name} has ${matches.length} GML files. Expected 1.`,
       );
     } else {
-      await this.loadGml(matches[0]);
+      this.addGmlFile(matches[0]);
     }
+  }
+
+  protected async initiallyReadAndParseGml() {
+    const startLocation = new Location(this.gmlFile, { startOffset: 0 });
+    this.self = (
+      this.type === 'objects'
+        ? new InstanceSelf(this.name, startLocation)
+        : this.type === 'scripts'
+        ? this.project.self
+        : undefined
+    ) as any;
+    // If we are not a script, add ourselves to the global self.
+    if (this.self && !(this.self instanceof GlobalSelf)) {
+      this.project.self.addSymbol(this.self);
+    }
+
+    const parseWaits: Promise<any>[] = [];
+    for (const file of this.gmlFilesArray) {
+      parseWaits.push(file.parse());
+    }
+    return await Promise.all(parseWaits);
   }
 
   static async from<T extends YyResourceType>(

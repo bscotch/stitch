@@ -1,3 +1,4 @@
+import { randomString } from '@bscotch/utility';
 import type { IToken } from 'chevrotain';
 import type { GmlFile } from './project.gml.js';
 import type { GameMakerProjectParser } from './project.js';
@@ -11,11 +12,10 @@ import {
 } from './project.symbols.js';
 import { SelfKind } from './types.js';
 
-export type SelfType = StructSelf | GlobalSelf | InstanceSelf | AssetSelf;
+export type SelfType = StructSelf | GlobalSelf | InstanceSelf;
 
 export type GlobalSymbolType =
   | InstanceSelf
-  | AssetSelf
   | GlobalVar
   | GlobalFunction
   | Macro
@@ -45,7 +45,15 @@ abstract class Self<T extends SelfSymbol | GlobalSymbolType | never> {
 
   location?: Location;
 
-  constructor(public readonly name?: string) {}
+  constructor(public readonly name: string, location: Location | undefined) {
+    if (location) {
+      this.addRef(location, true);
+      // Add a self-ref to the self
+      const symbol = new SelfSymbol('self', location);
+      this.symbols.set('self', symbol as T);
+    }
+  }
+
   addRef(location: Location, isDeclaration = false) {
     const ref = new SelfRef(this as any, location, isDeclaration);
     this.refs.add(ref);
@@ -64,8 +72,11 @@ abstract class Self<T extends SelfSymbol | GlobalSymbolType | never> {
 export class StructSelf extends Self<SelfSymbol> {
   readonly kind = 'struct';
 
-  constructor(name?: string) {
-    super(name);
+  constructor(name: string | undefined, location: Location) {
+    super(
+      name || `unknown-${randomString(12, 'lowerAlphanumeric')}}`,
+      location,
+    );
   }
   addSymbol(file: GmlFile, token: IToken, isStatic = false) {
     const location = new Location(file, token);
@@ -81,10 +92,7 @@ export class StructSelf extends Self<SelfSymbol> {
 
 export class InstanceSelf extends Self<SelfSymbol> {
   readonly kind = 'instance';
-}
-
-export class AssetSelf extends Self<SelfSymbol> {
-  readonly kind = 'asset';
+  override location = undefined;
 }
 
 export class GlobalSelf extends Self<GlobalSymbolType> {
@@ -92,7 +100,7 @@ export class GlobalSelf extends Self<GlobalSymbolType> {
   global = true;
 
   constructor(public readonly project: GameMakerProjectParser) {
-    super('global');
+    super('global', undefined);
   }
 
   addSymbol(symbol: GlobalSymbolType) {

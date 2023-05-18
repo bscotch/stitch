@@ -51,6 +51,7 @@ module.exports = {
     'space-before-function-paren': 'off',
     'no-control-regex': 'warn',
     'no-misleading-character-class': 'warn',
+    'no-case-declarations': 'off',
   },
   overrides: [
     {

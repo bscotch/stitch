@@ -15,7 +15,7 @@ import { processSymbols } from './project.visitLocals.js';
 import { Diagnostic } from './types.js';
 
 export class GmlFile {
-  readonly kind = 'gml';
+  readonly type = 'gmlFile';
   readonly scopeRanges: ScopeRange[] = [];
   /** List of all symbol references in this file, in order of appearance. */
   protected _refs: (SymbolRef | GmlSymbolRef)[] = [];
@@ -119,8 +119,9 @@ export class GmlFile {
    * it will be used instead of reading from disk. This
    * is useful for editors that want to provide a live preview.
    */
-  async parse(path: Pathy<string>, content?: string) {
-    this._content = typeof content === 'string' ? content : await path.read();
+  async parse(content?: string) {
+    this._content =
+      typeof content === 'string' ? content : await this.path.read();
     this._parsed = parser.parse(this.content);
     const diagnostics: Diagnostic[] = [];
     for (const diagnostic of this._parsed.errors) {
@@ -199,7 +200,7 @@ export class GmlFile {
    * provide new content to use instead of reading from disk.
    */
   async reload(content?: string) {
-    await this.parse(this.path, content);
+    await this.parse(content);
     this.clearRefs();
     this.updateGlobals();
     this.updateAllSymbols();

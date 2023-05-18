@@ -40,6 +40,7 @@ export class GameMakerSemanticTokenProvider
             tokensBuilder.push(range, type, mods);
           } catch (error) {
             console.error(error);
+            console.error('CACHE ERROR');
             console.dir({ range, type, mods });
           }
           continue;
@@ -112,6 +113,7 @@ export class GameMakerSemanticTokenProvider
           cache.set(symbol, { type: tokenType, mods: tokenModifiers });
         } catch (err) {
           console.error(err);
+          console.error('PUSH ERROR');
           console.dir({ range, tokenType, tokenModifiers });
         }
       }
@@ -119,6 +121,7 @@ export class GameMakerSemanticTokenProvider
       return tokens;
     } catch (error) {
       console.error(error);
+      console.error('OUTER ERROR');
     }
   }
 
