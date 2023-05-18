@@ -32,7 +32,7 @@
     "package": "vsce package --pre-release --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
     "vscode:publish": "vsce publish --pre-release --no-dependencies --githubBranch develop",
-    "watch": "nodemon -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --exec \"npm run build\"",
+    "watch": "nodemon -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --watch ../parser/dist --exec \"npm run build\"",
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {

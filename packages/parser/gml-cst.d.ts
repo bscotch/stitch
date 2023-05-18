@@ -457,7 +457,7 @@ export interface IdentifierAccessorCstNode extends CstNode {
 
 export type IdentifierAccessorCstChildren = {
   identifier: IdentifierCstNode[];
-  expressionSuffixes?: ExpressionSuffixesCstNode[];
+  accessorSuffixes?: AccessorSuffixesCstNode[];
 };
 
 export interface ParenthesizedExpressionCstNode extends CstNode {
@@ -471,12 +471,12 @@ export type ParenthesizedExpressionCstChildren = {
   EndParen: IToken[];
 };
 
-export interface ExpressionSuffixesCstNode extends CstNode {
-  name: 'expressionSuffixes';
-  children: ExpressionSuffixesCstChildren;
+export interface AccessorSuffixesCstNode extends CstNode {
+  name: 'accessorSuffixes';
+  children: AccessorSuffixesCstChildren;
 }
 
-export type ExpressionSuffixesCstChildren = {
+export type AccessorSuffixesCstChildren = {
   arrayAccessSuffix?: ArrayAccessSuffixCstNode[];
   structAccessSuffix?: StructAccessSuffixCstNode[];
   listAccessSuffix?: ListAccessSuffixCstNode[];
@@ -1026,7 +1026,7 @@ export interface GmlVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
     children: ParenthesizedExpressionCstChildren,
     param?: IN,
   ): OUT;
-  expressionSuffixes(children: ExpressionSuffixesCstChildren, param?: IN): OUT;
+  accessorSuffixes(children: AccessorSuffixesCstChildren, param?: IN): OUT;
   dotAccessSuffix(children: DotAccessSuffixCstChildren, param?: IN): OUT;
   arrayAccessSuffix(children: ArrayAccessSuffixCstChildren, param?: IN): OUT;
   structAccessSuffix(children: StructAccessSuffixCstChildren, param?: IN): OUT;

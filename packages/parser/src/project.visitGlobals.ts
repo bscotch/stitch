@@ -141,7 +141,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const isGlobal = children.identifier[0].children.Global?.[0];
     if (isGlobal) {
       const identifier =
-        children.expressionSuffixes?.[0].children.dotAccessSuffix?.[0].children
+        children.accessorSuffixes?.[0].children.dotAccessSuffix?.[0].children
           .identifier[0].children;
       if (identifier?.Identifier) {
         this.ADD_GLOBAL_DECLARATION(identifier, GlobalVar, false);
@@ -149,8 +149,8 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     }
 
     // Stil visit the rest
-    if (children.expressionSuffixes) {
-      this.visit(children.expressionSuffixes);
+    if (children.accessorSuffixes) {
+      this.visit(children.accessorSuffixes);
     }
   }
 
