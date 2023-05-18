@@ -7,6 +7,7 @@ export type ProjectSymbolType =
   | SelfSymbol
   | GlobalVar
   | GlobalFunction
+  | FunctionParam
   | Macro
   | Enum
   | EnumMember;
@@ -116,7 +117,7 @@ export class GlobalVar extends ProjectSymbol {
   }
 }
 
-class FunctionParam extends ProjectSymbol {
+export class FunctionParam extends ProjectSymbol {
   readonly kind = 'functionParam';
   optional?: boolean;
 
@@ -135,7 +136,7 @@ export class GlobalFunction extends ProjectSymbol {
     const params = this.params.map((p) => p.name);
     let code = `function ${this.name} (${params.join(', ')})`;
     if (this.isConstructor) {
-      code += `constructor`;
+      code += ` constructor`;
     }
     return code;
   }
@@ -157,28 +158,43 @@ export class Macro extends ProjectSymbol {
 
 export class EnumMember extends ProjectSymbol {
   readonly kind = 'enumMember';
+  enum!: Enum;
+
+  override get code() {
+    return `enum ${this.enum.name}.${this.name}`;
+  }
 }
 
 export class Enum extends ProjectSymbol {
   override global = true;
   readonly kind = 'enum';
-  members = new Map<string, EnumMember>();
+  members: EnumMember[] = [];
+
+  override get code() {
+    let code = `enum ${this.name} {\n\t`;
+    code += this.members.map((m) => m.name).join(',\n\t');
+    code += `\n}`;
+    return code;
+  }
 
   // Ensure only added once!
   addMember(token: IToken, location: Location) {
-    if (this.members.has(token.image)) {
+    let member = this.getMember(token.image);
+    if (member) {
       // Update the location in case it has changed
-      this.getMember(token.image)!.location = location;
+      member.location = location;
       return;
     }
-    this.members.set(token.image, new EnumMember(token.image, location));
+    member = new EnumMember(token.image, location);
+    member.enum = this;
+    this.members.push(member);
   }
 
   hasMember(name: string) {
-    return this.members.has(name);
+    return !!this.members.find((m) => m.name === name);
   }
 
   getMember(name: string) {
-    return this.members.get(name);
+    return this.members.find((m) => m.name === name);
   }
 }

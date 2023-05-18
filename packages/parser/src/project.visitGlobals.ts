@@ -1,7 +1,6 @@
 // CST Visitor for creating an AST etc
 import type { CstNode, IToken } from 'chevrotain';
 import type {
-  EnumMemberCstChildren,
   EnumStatementCstChildren,
   FunctionExpressionCstChildren,
   GlobalVarDeclarationCstChildren,
@@ -92,12 +91,10 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
 
   override enumStatement(children: EnumStatementCstChildren) {
     const _symbol = this.ADD_GLOBAL_DECLARATION(children, Enum)!;
-    this.visit(children.enumMember, _symbol);
-  }
-
-  override enumMember(children: EnumMemberCstChildren, _symbol: Enum) {
-    const name = children.Identifier[0];
-    _symbol.addMember(name, this.PROCESSOR.location.at(name));
+    for (const member of children.enumMember) {
+      const name = member.children.Identifier[0];
+      _symbol.addMember(name, this.PROCESSOR.location.at(name));
+    }
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {
