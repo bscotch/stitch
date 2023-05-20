@@ -1,6 +1,8 @@
 // CST Visitor for creating an AST etc
+import { assert } from '@bscotch/utility';
 import type { CstNode } from 'chevrotain';
 import type {
+  EnumStatementCstChildren,
   FunctionArgumentsCstChildren,
   FunctionExpressionCstChildren,
   FunctionParameterCstChildren,
@@ -21,7 +23,7 @@ import {
   InstanceSelf,
   StructSelf,
 } from './project.selfs.js';
-import { ProjectSymbolType } from './project.symbols.js';
+import { Enum, ProjectSymbolType } from './project.symbols.js';
 
 type SelfType = InstanceSelf | StructSelf | GlobalSelf;
 type SymbolType = ProjectSymbolType | GlobalSymbolType | GmlSymbolType;
@@ -128,6 +130,22 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   findSymbols(input: CstNode) {
     this.visit(input);
     return this.PROCESSOR;
+  }
+
+  override enumStatement(children: EnumStatementCstChildren) {
+    // During the global pass we will have already
+    // created the enum symbol, so just add the members
+    const enumName = identifierFrom(children);
+    const symbol = this.PROCESSOR.getGlobalSymbol(enumName.name) as Enum;
+    assert(
+      symbol,
+      `Enum symbol ${enumName.name} found onn local but not global pass.`,
+    );
+    for (let i = 0; i < children.enumMember.length; i++) {
+      const member = children.enumMember[i];
+      const name = member.children.Identifier[0];
+      symbol.addMember(i, name, this.PROCESSOR.location.at(name));
+    }
   }
 
   override withStatement(children: WithStatementCstChildren) {

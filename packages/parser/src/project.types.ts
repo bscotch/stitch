@@ -1,13 +1,29 @@
 import type { YyResourceType } from '@bscotch/yy';
 
+/** Identifiers for the various main parts making up the model of a project. */
+const enum TagKind {
+  Project,
+  Resource,
+  GmlFile,
+  Position,
+  Range,
+  Scope,
+  Symbol,
+  Reference,
+  Type,
+  ArrayType,
+  StructType,
+  FunctionType,
+}
+
 interface Project extends Base {
-  $type: 'project';
+  $tag: TagKind.Project;
   resources: Resource[];
   global: StructType;
 }
 
 interface Resource<T extends YyResourceType = YyResourceType> extends Base {
-  $type: 'resource';
+  $tag: TagKind.Resource;
   kind: T;
   /** Objects and scripts have associated GML files. */
   gmlFiles: GmlFile[];
@@ -15,20 +31,25 @@ interface Resource<T extends YyResourceType = YyResourceType> extends Base {
   symbol: Symbol;
 }
 
-interface GmlFile<T extends GmlFileKind = GmlFileKind> extends Base {
-  $type: 'gmlFile';
-  kind: T;
-  scopeRanges: ScopeRange[];
+const enum GmlFileKind {
+  Script,
+  Object,
 }
 
-interface ScopeRange extends Range {
-  kind: 'scope';
+interface GmlFile<T extends GmlFileKind = GmlFileKind> extends Base {
+  $tag: TagKind.GmlFile;
+  kind: T;
+  scopeRanges: Scope[];
+}
+
+interface Scope extends Omit<Range, '$tag'> {
+  $tag: TagKind.Scope;
   local: StructType;
   self: StructType;
 }
 
 interface Symbol extends Base {
-  $type: 'symbol';
+  $tag: TagKind.Symbol;
   /**
    * Identifier that, in combination with the scope, uniquely
    * identifies this symbol. */
@@ -50,8 +71,8 @@ interface Symbol extends Base {
   refs: Reference[];
 }
 
-interface Reference extends Base {
-  $type: 'ref';
+interface Reference extends Omit<Range, '$tag'> {
+  $tag: TagKind.Reference;
   symbol: Symbol;
   /** The subset of types the symbol could have at this reference. */
   type: Type[];
@@ -63,24 +84,30 @@ interface Reference extends Base {
  * Type kinds are determined by the official GmlSpec.xml specs.
  * As a consequence, this listing might be incomplete!
  */
-type PrimitiveTypeKind =
-  | 'Array'
-  | 'Struct'
-  | 'String'
-  | 'Real'
-  | 'Bool'
-  | 'Function'
-  | 'Pointer'
-  | 'Undefined';
+const enum PrimitiveKind {
+  Array,
+  Struct,
+  String,
+  Real,
+  Bool,
+  Function,
+  Pointer,
+  Undefined,
+}
 
 type Type =
   | ArrayType
   | StructType
   | FunctionType
-  | TypeBase<'String' | 'Real' | 'Bool' | 'Pointer' | 'Undefined'>;
+  | TypeBase<
+      | PrimitiveKind.String
+      | PrimitiveKind.Real
+      | PrimitiveKind.Bool
+      | PrimitiveKind.Pointer
+      | PrimitiveKind.Undefined
+    >;
 
-interface FunctionType extends TypeBase<'Function'> {
-  kind: 'Function';
+interface FunctionType extends TypeBase<PrimitiveKind.Function> {
   context: StructType;
   /** The parameters this function takes. */
   params: {
@@ -92,19 +119,19 @@ interface FunctionType extends TypeBase<'Function'> {
   returns: Type[];
 }
 
-interface StructType extends TypeBase<'Struct'> {
+interface StructType extends TypeBase<PrimitiveKind.Struct> {
   members: { [property: string]: Type[] };
   /** The type that this struct extends, if any. */
   extends: Type | null;
 }
 
-interface ArrayType extends TypeBase<'Array'> {
+interface ArrayType extends TypeBase<PrimitiveKind.Array> {
   /** The types that members of this array can be. */
   members: Type[];
 }
 
-interface TypeBase<T extends PrimitiveTypeKind> extends Base {
-  $type: 'type';
+interface TypeBase<T extends PrimitiveKind> extends Base {
+  $tag: TagKind.Type;
   kind: T;
   /**
    * Non-native types are defined at a reference to a symbol,
@@ -129,34 +156,25 @@ interface TypeBase<T extends PrimitiveTypeKind> extends Base {
 
 //#region BASE TYPES
 interface Range extends Base {
-  $type: 'location';
+  $tag: TagKind.Range;
   start: Position;
   end: Position;
 }
 
 interface Position extends Base {
-  $type: 'position';
+  $tag: TagKind.Position;
   file: string;
   offset: number;
   line: number;
   column: number;
 }
 
-type ScopeKind = 'local' | 'self';
-type GmlFileKind = 'objects' | 'scripts';
-
 interface Base {
   /**
-   * A string representing the shape of this object,
+   * A category representing the shape of this object,
    * intended to make it easy to kind-guard. Often based
    * on the interface or class name implementing the interface.
    */
-  $type: string;
-  /**
-   * A string representing the specific kind of this object,
-   * where the general shape matches the type but some details
-   * may be added or made more specific.
-   */
-  kind?: string;
+  $tag: TagKind;
 }
 //#endregion BASE TYPES

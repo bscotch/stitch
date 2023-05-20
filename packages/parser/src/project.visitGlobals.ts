@@ -90,12 +90,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override enumStatement(children: EnumStatementCstChildren) {
-    const _symbol = this.ADD_GLOBAL_DECLARATION(children, Enum)!;
-    for (let i = 0; i < children.enumMember.length; i++) {
-      const member = children.enumMember[i];
-      const name = member.children.Identifier[0];
-      _symbol.addMember(i, name, this.PROCESSOR.location.at(name));
-    }
+    this.ADD_GLOBAL_DECLARATION(children, Enum)!;
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {
