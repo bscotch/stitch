@@ -1,0 +1,1716 @@
+{
+  "filePath": "/home/adam/code/stitch/packages/parser/assets/GmlSpec.xml",
+  "symbols": {},
+  "functions": [],
+  "variables": [],
+  "constants": [],
+  "types": {
+    "Struct.Sequence": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "name": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "String"
+                }
+              ]
+            },
+            "loopmode": {
+              "$tag": "Union",
+              "types": []
+            },
+            "playbackSpeed": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "playbackSpeedType": {
+              "$tag": "Union",
+              "types": []
+            },
+            "length": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "volume": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "xorigin": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "yorigin": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "messageEventKeyframes": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            },
+            "momentKeyframes": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            },
+            "tracks": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Constant.SeqPlay": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Constant.SpriteSpeed": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.SequenceInstance": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "sequence": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Struct",
+                  "parent": {
+                    "$tag": "Type",
+                    "kind": "Struct"
+                  },
+                  "members": {
+                    "name": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "String"
+                        }
+                      ]
+                    },
+                    "loopmode": {
+                      "$tag": "Union",
+                      "types": []
+                    },
+                    "playbackSpeed": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Real"
+                        }
+                      ]
+                    },
+                    "playbackSpeedType": {
+                      "$tag": "Union",
+                      "types": []
+                    },
+                    "length": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Real"
+                        }
+                      ]
+                    },
+                    "volume": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Real"
+                        }
+                      ]
+                    },
+                    "xorigin": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Real"
+                        }
+                      ]
+                    },
+                    "yorigin": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Real"
+                        }
+                      ]
+                    },
+                    "messageEventKeyframes": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Array"
+                        }
+                      ]
+                    },
+                    "momentKeyframes": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Array"
+                        }
+                      ]
+                    },
+                    "tracks": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Array"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "headPosition": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "headDirection": {
+              "$tag": "Union",
+              "types": []
+            },
+            "speedScale": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "volume": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "paused": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Bool"
+                }
+              ]
+            },
+            "finished": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Bool"
+                }
+              ]
+            },
+            "activeTracks": {
+              "$tag": "Union",
+              "types": []
+            },
+            "elementID": {
+              "$tag": "Union",
+              "types": []
+            }
+          }
+        }
+      ]
+    },
+    "Constant.SequenceDirection": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Array[Struct.ActiveTrack]": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Id.SequenceElement": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.Track": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "name": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "String"
+                }
+              ]
+            },
+            "type": {
+              "$tag": "Union",
+              "types": []
+            },
+            "tracks": {
+              "$tag": "Union",
+              "types": []
+            },
+            "visible": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Bool"
+                }
+              ]
+            },
+            "keyframes": {
+              "$tag": "Union",
+              "types": []
+            }
+          }
+        }
+      ]
+    },
+    "Constant.SequenceTrackType": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Array[Struct.Track]": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Array[Struct.Keyframe]": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.Keyframe": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "frame": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "length": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "stretch": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Bool"
+                }
+              ]
+            },
+            "disabled": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Bool"
+                }
+              ]
+            },
+            "channels": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.KeyChannel": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "channel": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.GraphicTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "spriteIndex": {
+              "$tag": "Union",
+              "types": []
+            }
+          }
+        }
+      ]
+    },
+    "Asset.GMSprite": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.SequenceTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "sequence": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Undefined"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.AudioTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "soundIndex": {
+              "$tag": "Union",
+              "types": []
+            },
+            "emitterIndex": {
+              "$tag": "Union",
+              "types": []
+            },
+            "playbackMode": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Asset.GMSound": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Id.EmitterIndex": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.SpriteTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "imageIndex": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.BoolTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "value": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Bool"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.StringTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "value": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "String"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.ColourTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "colour": {
+              "$tag": "Union",
+              "types": []
+            }
+          }
+        }
+      ]
+    },
+    "Constant.Color": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.ColorTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "color": {
+              "$tag": "Union",
+              "types": []
+            }
+          }
+        }
+      ]
+    },
+    "Struct.RealTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "value": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "curve": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.InstanceTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "objectIndex": {
+              "$tag": "Union",
+              "types": []
+            }
+          }
+        }
+      ]
+    },
+    "Asset.GMObject": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.TextTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "text": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "String"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.MessageEvent": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "events": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.Moment": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "event": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.AnimCurve": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "name": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "String"
+                }
+              ]
+            },
+            "graphType": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "channels": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.AnimCurveChannel": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "type": {
+              "$tag": "Union",
+              "types": []
+            },
+            "iterations": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "points": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Constant.AnimCurveChannel": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.AnimCurvePoint": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "posx": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "value": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.ActiveTrack": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "activeTracks": {
+              "$tag": "Union",
+              "types": []
+            },
+            "matrix": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            },
+            "posx": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "posy": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "scalex": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "scaley": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "xorigin": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "yorigin": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "gain": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "pitch": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "width": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "height": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "imageindex": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "imagespeed": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "colorMultiply": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            },
+            "colourMultiply": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            },
+            "emitterIndex": {
+              "$tag": "Union",
+              "types": []
+            },
+            "track": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Struct",
+                  "parent": {
+                    "$tag": "Type",
+                    "kind": "Struct"
+                  },
+                  "members": {
+                    "name": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "String"
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$tag": "Union",
+                      "types": []
+                    },
+                    "tracks": {
+                      "$tag": "Union",
+                      "types": []
+                    },
+                    "visible": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Bool"
+                        }
+                      ]
+                    },
+                    "keyframes": {
+                      "$tag": "Union",
+                      "types": []
+                    }
+                  }
+                }
+              ]
+            },
+            "parent": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Struct",
+                  "parent": {
+                    "$tag": "Type",
+                    "kind": "Struct"
+                  },
+                  "members": {
+                    "sequence": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Struct",
+                          "parent": {
+                            "$tag": "Type",
+                            "kind": "Struct"
+                          },
+                          "members": {
+                            "name": {
+                              "$tag": "Union",
+                              "types": [
+                                {
+                                  "$tag": "Type",
+                                  "kind": "String"
+                                }
+                              ]
+                            },
+                            "loopmode": {
+                              "$tag": "Union",
+                              "types": []
+                            },
+                            "playbackSpeed": {
+                              "$tag": "Union",
+                              "types": [
+                                {
+                                  "$tag": "Type",
+                                  "kind": "Real"
+                                }
+                              ]
+                            },
+                            "playbackSpeedType": {
+                              "$tag": "Union",
+                              "types": []
+                            },
+                            "length": {
+                              "$tag": "Union",
+                              "types": [
+                                {
+                                  "$tag": "Type",
+                                  "kind": "Real"
+                                }
+                              ]
+                            },
+                            "volume": {
+                              "$tag": "Union",
+                              "types": [
+                                {
+                                  "$tag": "Type",
+                                  "kind": "Real"
+                                }
+                              ]
+                            },
+                            "xorigin": {
+                              "$tag": "Union",
+                              "types": [
+                                {
+                                  "$tag": "Type",
+                                  "kind": "Real"
+                                }
+                              ]
+                            },
+                            "yorigin": {
+                              "$tag": "Union",
+                              "types": [
+                                {
+                                  "$tag": "Type",
+                                  "kind": "Real"
+                                }
+                              ]
+                            },
+                            "messageEventKeyframes": {
+                              "$tag": "Union",
+                              "types": [
+                                {
+                                  "$tag": "Type",
+                                  "kind": "Array"
+                                }
+                              ]
+                            },
+                            "momentKeyframes": {
+                              "$tag": "Union",
+                              "types": [
+                                {
+                                  "$tag": "Type",
+                                  "kind": "Array"
+                                }
+                              ]
+                            },
+                            "tracks": {
+                              "$tag": "Union",
+                              "types": [
+                                {
+                                  "$tag": "Type",
+                                  "kind": "Array"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "headPosition": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Real"
+                        }
+                      ]
+                    },
+                    "headDirection": {
+                      "$tag": "Union",
+                      "types": []
+                    },
+                    "speedScale": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Real"
+                        }
+                      ]
+                    },
+                    "volume": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Real"
+                        }
+                      ]
+                    },
+                    "paused": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Bool"
+                        }
+                      ]
+                    },
+                    "finished": {
+                      "$tag": "Union",
+                      "types": [
+                        {
+                          "$tag": "Type",
+                          "kind": "Bool"
+                        }
+                      ]
+                    },
+                    "activeTracks": {
+                      "$tag": "Union",
+                      "types": []
+                    },
+                    "elementID": {
+                      "$tag": "Union",
+                      "types": []
+                    }
+                  }
+                }
+              ]
+            },
+            "frameSizeX": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "frameSizeY": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "characterSpacing": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "lineSpacing": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "paragraphSpacing": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Id.AudioEmitter": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.GCStats": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "objects_touched": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "objects_collected": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "traversal_time": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "collection_time": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "gc_frame": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "generation_collected": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "num_generations": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "num_objects_in_generation": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.WeakRef": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "ref": {
+              "$tag": "Union",
+              "types": []
+            }
+          }
+        }
+      ]
+    },
+    "ArgumentIdentity": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.FontInfo": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "ascenderOffset": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "size": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "spriteIndex": {
+              "$tag": "Union",
+              "types": []
+            },
+            "texture": {
+              "$tag": "Union",
+              "types": []
+            },
+            "name": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "String"
+                }
+              ]
+            },
+            "bold": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Bool"
+                }
+              ]
+            },
+            "italic": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Bool"
+                }
+              ]
+            },
+            "glyphs": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Struct"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Asset.GMTexturePage": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.FontInfoGlyph": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "char": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "x": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "y": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "w": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "h": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "shift": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "offset": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "kerning": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Array"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Struct.Exception": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "message": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "String"
+                }
+              ]
+            },
+            "longMessage": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "String"
+                }
+              ]
+            },
+            "script": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "String"
+                }
+              ]
+            },
+            "stacktrace": {
+              "$tag": "Union",
+              "types": []
+            }
+          }
+        }
+      ]
+    },
+    "Array.String": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.AudioBus": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "bypass": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Bool"
+                }
+              ]
+            },
+            "gain": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Real"
+                }
+              ]
+            },
+            "effects": {
+              "$tag": "Union",
+              "types": []
+            }
+          }
+        }
+      ]
+    },
+    "Array.Struct.AudioEffect": {
+      "$tag": "Union",
+      "types": []
+    },
+    "Struct.AudioEffect": {
+      "$tag": "Union",
+      "types": [
+        {
+          "$tag": "Type",
+          "kind": "Struct",
+          "parent": {
+            "$tag": "Type",
+            "kind": "Struct"
+          },
+          "members": {
+            "bypass": {
+              "$tag": "Union",
+              "types": [
+                {
+                  "$tag": "Type",
+                  "kind": "Bool"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

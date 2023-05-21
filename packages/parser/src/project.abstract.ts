@@ -189,14 +189,6 @@ export interface TypeBase<T extends PrimitiveKind = PrimitiveKind>
    */
   def: Reference | null;
   refs: Reference[];
-
-  /**
-   * Some types can have a name. For example, a globally
-   * defined constructor MyConstructor will produce structs
-   * of type name `Struct.MyConstructor`. Type names can be
-   * used in JSDocs.
-   */
-  name: string | null;
 }
 
 //#endregion TYPES

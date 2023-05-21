@@ -3,98 +3,109 @@ import { ok } from 'node:assert';
 import { writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
-import { GmlSpec, gmlSpecSchema } from './gml.schema.js';
+import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './gml.schema.js';
 import * as t from './project.abstract.js';
 import { stringify } from './util.js';
 
-export class Gml {
+export class ProjectTypes {
   protected spec!: GmlSpec;
   readonly symbols: Map<string, Symbol> = new Map();
   readonly functions: Symbol[] = [];
   readonly variables: Symbol[] = [];
   readonly constants: Symbol[] = [];
-  /** Types, looked up by their Feather-compatible name. */
+  /**
+   * Types, looked up by their Feather-compatible name.
+   * Types can be either a single type or a type union.
+   */
   readonly types: Map<string, TypeUnion> = new Map();
+  readonly primitives = primitiveNames.reduce((acc, name) => {
+    // @ts-expect-error
+    acc[name] = new Type(name);
+    return acc;
+  }, {} as { [P in PrimitiveName]: Type<P> });
 
-  protected constructor(readonly filePath: string) {
-    // Add base types.
-    const anyType = new AnyType();
-    this.ensureType('Any', anyType);
-    this.ensureType('Real', new RealType());
-    this.ensureType('String', new StringType());
-    this.ensureType('Bool', new BoolType());
-    this.ensureType('Undefined', new UndefinedType());
-    this.ensureType('Pointer', new PointerType());
-    this.ensureType('Array', new ArrayType());
-    this.ensureType('Function', new FunctionType());
-    this.ensureType('Enum', new EnumType());
-    this.ensureType('Struct', new StructType());
-    this.ensureType('Mixed', anyType);
-
-    // Add wonky built-in root "types"
-    this.ensureType('Constant', anyType);
-    this.ensureType('Asset', anyType);
-    this.ensureType('Id', anyType);
-  }
-
-  ensureType(name: string, type?: Type | TypeUnion): TypeUnion {
-    const existing = this.types.get(name);
-    if (existing) {
-      return existing;
-    }
-    const baseName = name.replace(/\.[^.]+$/, '');
-    let parent: null | TypeUnion = null;
-    if (baseName !== name) {
-      parent = this.ensureType(baseName);
-    }
-    type = type
-      ? type.$tag === t.TagKind.Type
-        ? new TypeUnion().add(type)
-        : type
-      : new TypeUnion();
-    type.parent = parent;
-    this.types.set(name, type.named(name));
-    return type;
-  }
-
-  updateNamedType(name: string, type: Type) {
-    const existing = this.types.get(name);
-    ok(existing, `Could not find type ${name}`);
-    existing.add(type);
-    return this;
-  }
+  protected constructor(readonly filePath: string) {}
 
   get version() {
     return this.spec.runtime;
+  }
+
+  deriveStruct(): StructType {
+    return this.primitives.Struct.derive();
+  }
+
+  ensureType(name: string, type?: Type | Type[]): TypeUnion {
+    let union = this.types.get(name);
+    if (!union) {
+      union = new TypeUnion();
+      this.types.set(name, union);
+    }
+    const types = Array.isArray(type) ? type : [type];
+    for (type of types) {
+      if (type) {
+        union.add(type);
+      }
+    }
+    return union;
   }
 
   protected load() {
     for (const name of this.spec.types) {
       console.log(name);
     }
-    // Create struct types
+
+    // Create struct types. Each one extends the base Struct type.
     for (const struct of this.spec.structures) {
       if (!struct.name) {
         console.warn(`Skipping unnamed struct`);
         continue;
       }
       const typeName = `Struct.${struct.name}`;
-      const namedType = this.types.get('Struct')!.extend().named(typeName);
-      const structType = new StructType();
-      this.types.set(typeName, namedType);
-      namedType.add(structType);
+      const structType = this.deriveStruct();
+      ok(!this.types.has(typeName), `Type ${typeName} already exists`);
+      this.ensureType(typeName, structType);
 
       for (const prop of struct.properties) {
-        const propType = this.ensureType(prop.type);
+        let propType: TypeUnion;
+        if (prop.type in this.primitives) {
+          propType = new TypeUnion().add(
+            this.primitives[prop.type as PrimitiveName],
+          );
+        } else {
+          propType = this.ensureType(prop.type);
+        }
+        ok(propType instanceof TypeUnion, `Type ${prop.type} is not a union`);
         structType.addMember(prop.name, propType);
       }
     }
 
+    // Handle the constants.
+    // Each constant value represents a unique expression
+    // of its type (e.g. it's not just a Real, it's the Real
+    // value 7 or whatever). Unlike the structs section of
+    // the spec, which are *only* used for types, constants
+    // are referenceabled in the code. Therefore we need
+    // a unique symbol and type for each constant value,
+    // along with a type that collects all of those types.
+
+    // First group them all by "class". The empty-string
+    // class represents the absence of a class.
+    const constantsByClass = new Map<string, GmlSpecConstant[]>();
     for (const constant of this.spec.constants) {
-      let typeName = constant.type;
-      if (constant.class) {
-        typeName = `Constant.${constant.class}`;
+      const klass = constant.class || '';
+      constantsByClass.set(klass, constantsByClass.get(klass) || []);
+      constantsByClass.get(klass)!.push(constant);
+    }
+    // Then create a type for each class and a symbol for each constant.
+    for (const [klass, constants] of constantsByClass) {
+      if (!klass) {
+        // TODO: Figure out what to do with these.
+        continue;
       }
+      // TODO: Create a union type for the class
+      // TODO: Iterate over all constants in the class.
+      // TODO: For each, create an extended type and a symbol, and ensure that the type is in the union.
+
       // const type = this.ensureType(constant.type);
       // const namedType = this.ensureType(typeName);
       // namedType.add(type);
@@ -118,9 +129,11 @@ export class Gml {
     writeFileSync('gml.json', stringify(this));
   }
 
-  static async from(filePath: string = Gml.fallbackGmlSpecPath.absolute) {
-    const parsedSpec = await Gml.parse(filePath);
-    const spec = new Gml(filePath);
+  static async from(
+    filePath: string = ProjectTypes.fallbackGmlSpecPath.absolute,
+  ) {
+    const parsedSpec = await ProjectTypes.parse(filePath);
+    const spec = new ProjectTypes(filePath);
     spec.spec = parsedSpec;
     spec.load();
     return spec;
@@ -152,11 +165,11 @@ export class Gml {
 }
 
 export class Symbol {
-  readonly $tag = t.TagKind.Symbol;
+  readonly $tag = 'Sym';
   refs: t.Reference[] = [];
-  description: string | null = null;
+  description: string | undefined = undefined;
   flags: t.SymbolFlag = t.SymbolFlag.ReadWrite;
-  range: t.Range | null = null;
+  range: t.Range | undefined = undefined;
   type = new TypeUnion();
 
   constructor(readonly parent: t.StructType, readonly name: string) {}
@@ -174,7 +187,7 @@ export class Symbol {
 }
 
 export class Reference {
-  readonly $tag = t.TagKind.Reference;
+  readonly $tag = 'Ref';
   type = new TypeUnion();
   start: t.Position;
   end: t.Position;
@@ -185,14 +198,13 @@ export class Reference {
 }
 
 export class TypeUnion {
-  readonly $tag = t.TagKind.TypeUnion;
+  readonly $tag = 'Union';
   mutable = true;
-  parent: TypeUnion | null = null;
   protected _types: Type[] = [];
   /**
    * Feather-compatible name of this type, if present.
    */
-  name: string | null = null;
+  name: string | undefined = undefined;
 
   get types(): Type[] {
     return [...this._types];
@@ -209,23 +221,6 @@ export class TypeUnion {
     return this;
   }
 
-  /** Create a new TypeUnion using this one as the parent */
-  extend(): TypeUnion {
-    const union = new TypeUnion();
-    union.parent = this;
-    return union;
-  }
-
-  /** Check if a type union extends another type (i.e. it has the other TypeUnion in its ancestors) */
-  extends(other: TypeUnion): boolean {
-    let parent: TypeUnion | null = this;
-    while (parent) {
-      if (parent === other) return true;
-      parent = parent.parent;
-    }
-    return false;
-  }
-
   toJSON() {
     return {
       $tag: this.$tag,
@@ -235,137 +230,85 @@ export class TypeUnion {
   }
 }
 
-export type Type =
-  | AnyType
-  | ArrayType
-  | StructType
-  | FunctionType
-  | EnumType
-  | StringType
-  | RealType
-  | BoolType
-  | PointerType
-  | UndefinedType;
+export type PrimitiveName = (typeof primitiveNames)[number];
+export const primitiveNames = [
+  'Any',
+  'Array',
+  'Bool',
+  'Enum',
+  'Function',
+  'Mixed',
+  'Pointer',
+  'Real',
+  'String',
+  'Struct',
+  'Undefined',
+] as const;
+Object.freeze(Object.seal(primitiveNames));
 
-abstract class TypeBase<T extends t.PrimitiveKind> {
-  def: t.Reference | null = null;
+export type AnyType = Type<'Any'>;
+export type ArrayType = Type<'Array'>;
+export type BoolType = Type<'Bool'>;
+export type EnumType = Type<'Enum'>;
+export type FunctionType = Type<'Function'>;
+export type PointerType = Type<'Pointer'>;
+export type RealType = Type<'Real'>;
+export type StringType = Type<'String'>;
+export type StructType = Type<'Struct'>;
+export type UndefinedType = Type<'Undefined'>;
+
+export class Type<T extends PrimitiveName = PrimitiveName> {
+  /** The tag for this object, the same for all Type instances */
+  readonly $tag = 'Type';
+  /**
+   * If set, then this Type is treated as a subset of the parent.
+   * It will only "match" another type if that type is in its
+   * parent somewhere. Useful for struct inheritence, as well
+   * as for e.g. representing a subset of Real constants in a type. */
+  parent: Type<T> | undefined = undefined;
+
+  def: t.Reference | undefined = undefined;
   refs: t.Reference[] = [];
-  parent: Type | null = null;
-  readonly $tag = t.TagKind.Type;
+  // Applicable to Structs and Enums
+  members: Record<string, TypeUnion> | undefined = undefined;
+  // Applicable to Arrays
+  items: TypeUnion | undefined = undefined;
+  // Applicable to Functions
+  context: Type<'String'> | undefined = undefined;
+  params: undefined | { name: string; type: TypeUnion; optional: boolean }[] =
+    undefined;
+  returns: undefined | TypeUnion = undefined;
 
   constructor(readonly kind: T) {}
+
+  addMember(name: string, type: TypeUnion) {
+    ok(
+      ['Struct', 'Enum'].includes(this.kind),
+      `Cannot add member to non-struct/enum type ${this.kind}`,
+    );
+    this.members ??= {};
+    this.members[name] = type;
+  }
+
+  /**
+   * Create a derived type: of the same kind, pointing to
+   * this type as its parent. */
+  derive(): Type<T> {
+    const derived = new Type(this.kind);
+    derived.parent = this;
+    return derived;
+  }
 
   toJSON() {
     return {
       $tag: this.$tag,
       kind: this.kind,
-    };
-  }
-}
-
-export class AnyType extends TypeBase<t.PrimitiveKind.Any> {
-  override readonly kind = t.PrimitiveKind.Any;
-  constructor() {
-    super(t.PrimitiveKind.Any);
-  }
-}
-
-export class RealType extends TypeBase<t.PrimitiveKind.Real> {
-  override readonly kind = t.PrimitiveKind.Real;
-  constructor() {
-    super(t.PrimitiveKind.Real);
-  }
-}
-
-export class BoolType extends TypeBase<t.PrimitiveKind.Bool> {
-  override readonly kind = t.PrimitiveKind.Bool;
-  constructor() {
-    super(t.PrimitiveKind.Bool);
-  }
-}
-
-export class StringType extends TypeBase<t.PrimitiveKind.String> {
-  override readonly kind = t.PrimitiveKind.String;
-  constructor() {
-    super(t.PrimitiveKind.String);
-  }
-}
-
-export class PointerType extends TypeBase<t.PrimitiveKind.Pointer> {
-  override readonly kind = t.PrimitiveKind.Pointer;
-  constructor() {
-    super(t.PrimitiveKind.Pointer);
-  }
-}
-
-export class UndefinedType extends TypeBase<t.PrimitiveKind.Undefined> {
-  override readonly kind = t.PrimitiveKind.Undefined;
-  constructor() {
-    super(t.PrimitiveKind.Undefined);
-  }
-}
-
-export class FunctionType extends TypeBase<t.PrimitiveKind.Function> {
-  override readonly kind = t.PrimitiveKind.Function;
-  context!: StructType;
-  params: { name: string; type: TypeUnion; optional: boolean }[] = [];
-  returns = new TypeUnion();
-  constructor() {
-    super(t.PrimitiveKind.Function);
-  }
-  override toJSON() {
-    return {
-      ...super.toJSON(),
+      parent: this.parent,
+      members: this.members,
+      items: this.items,
       context: this.context,
       params: this.params,
       returns: this.returns,
-    };
-  }
-}
-
-export class EnumType extends TypeBase<t.PrimitiveKind.Enum> {
-  override readonly kind = t.PrimitiveKind.Enum;
-  members = {};
-  constructor() {
-    super(t.PrimitiveKind.Enum);
-  }
-  override toJSON() {
-    return {
-      ...super.toJSON(),
-      members: this.members,
-    };
-  }
-}
-
-export class StructType extends TypeBase<t.PrimitiveKind.Struct> {
-  override readonly kind = t.PrimitiveKind.Struct;
-  members: { [name: string]: TypeUnion } = {};
-  constructor() {
-    super(t.PrimitiveKind.Struct);
-  }
-
-  addMember(name: string, type: TypeUnion) {
-    this.members[name] = type;
-  }
-
-  override toJSON() {
-    return {
-      ...super.toJSON(),
-      members: this.members,
-    };
-  }
-}
-
-export class ArrayType extends TypeBase<t.PrimitiveKind.Array> {
-  override readonly kind = t.PrimitiveKind.Array;
-  members = new TypeUnion();
-  constructor() {
-    super(t.PrimitiveKind.Array);
-  }
-  override toJSON() {
-    return {
-      ...super.toJSON(),
-      members: this.members,
     };
   }
 }
