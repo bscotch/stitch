@@ -117,6 +117,7 @@ export class Gml {
   }
 
   protected load() {
+    // LEGACY
     for (const func of this.spec.functions) {
       const gmlFunc = new GmlFunction(func);
       this.functions.push(gmlFunc);

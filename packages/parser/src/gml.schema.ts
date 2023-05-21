@@ -4,6 +4,11 @@ export type GmlSpecFunction = GmlSpec['functions'][number];
 export type GmlSpecVariable = GmlSpec['variables'][number];
 export type GmlSpecConstant = GmlSpec['constants'][number];
 export type GmlSpecType = GmlSpec['types'][number];
+export type GmlSpecEntry =
+  | GmlSpecFunction
+  | GmlSpecVariable
+  | GmlSpecConstant
+  | GmlSpecType;
 
 const booleanStringSchema = z
   .union([z.literal('true'), z.literal('false')])

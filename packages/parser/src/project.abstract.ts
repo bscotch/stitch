@@ -1,7 +1,7 @@
 import type { YyResourceType } from '@bscotch/yy';
 
 /** Identifiers for the various main parts making up the model of a project. */
-const enum TagKind {
+export const enum TagKind {
   Project,
   Resource,
   GmlFile,
@@ -14,12 +14,23 @@ const enum TagKind {
   ArrayType,
   StructType,
   FunctionType,
+  TypeUnion,
 }
 
 interface Project extends Base {
   $tag: TagKind.Project;
   resources: Resource[];
-  global: StructType;
+  /**
+   * The variables available via `global.<name>`, defined
+   * via `globalvar`, dotting into `global`, or implicitly
+   * (e.g. functions defined in scripts).
+   */
+  globals: StructType;
+  enums: StructType;
+  /**
+   * The native GML functions and other globals.
+   */
+  gml: StructType;
 }
 
 interface Resource<T extends YyResourceType = YyResourceType> extends Base {
@@ -48,13 +59,26 @@ interface Scope extends Omit<Range, '$tag'> {
   self: StructType;
 }
 
-interface Symbol extends Base {
+export const enum SymbolFlag {
+  Readable = 1 << 0,
+  Writable = 1 << 1,
+  Instance = 1 << 2,
+  Deprecated = 1 << 3,
+  ReadWrite = Readable | Writable,
+}
+
+export interface Symbol extends Base {
   $tag: TagKind.Symbol;
   /**
    * Identifier that, in combination with the scope, uniquely
    * identifies this symbol. */
   name: string;
-  /** The parent struct containing this symbol */
+  description: string | null;
+  flags: SymbolFlag;
+
+  /**
+   * The parent struct/scope where this symbol's identifier
+   * refers to it. */
   parent: StructType;
   /**
    * Where this symbol was defined, if it is a project symbol
@@ -65,17 +89,18 @@ interface Symbol extends Base {
    * is a constant, then this is also the only type it can have.
    * If not, then this represents the cumulative types of all refs
    * for this symbol. */
-  type: Type[];
+  type: TypeUnion;
 
   /** All references to this symbol */
   refs: Reference[];
+  addRef(location: Range, type: TypeUnion): void;
 }
 
-interface Reference extends Omit<Range, '$tag'> {
+export interface Reference extends Omit<Range, '$tag'> {
   $tag: TagKind.Reference;
   symbol: Symbol;
   /** The subset of types the symbol could have at this reference. */
-  type: Type[];
+  type: TypeUnion;
 }
 
 //#region TYPES
@@ -84,55 +109,77 @@ interface Reference extends Omit<Range, '$tag'> {
  * Type kinds are determined by the official GmlSpec.xml specs.
  * As a consequence, this listing might be incomplete!
  */
-const enum PrimitiveKind {
+export const enum PrimitiveKind {
+  Any,
   Array,
-  Struct,
-  String,
-  Real,
   Bool,
+  Enum,
   Function,
   Pointer,
+  Real,
+  String,
+  Struct,
   Undefined,
 }
 
-type Type =
+export interface TypeUnion extends Base {
+  $tag: TagKind.TypeUnion;
+  mutable: boolean;
+  add(type: Type): this;
+  get types(): Type[];
+}
+
+export type Type =
+  | AnyType
   | ArrayType
   | StructType
   | FunctionType
-  | TypeBase<
-      | PrimitiveKind.String
-      | PrimitiveKind.Real
-      | PrimitiveKind.Bool
-      | PrimitiveKind.Pointer
-      | PrimitiveKind.Undefined
-    >;
+  | EnumType
+  | StringType
+  | RealType
+  | BoolType
+  | PointerType
+  | UndefinedType;
 
-interface FunctionType extends TypeBase<PrimitiveKind.Function> {
+export interface AnyType extends TypeBase<PrimitiveKind.Any> {}
+export interface StringType extends TypeBase<PrimitiveKind.String> {}
+export interface RealType extends TypeBase<PrimitiveKind.Real> {}
+export interface BoolType extends TypeBase<PrimitiveKind.Bool> {}
+export interface PointerType extends TypeBase<PrimitiveKind.Pointer> {}
+export interface UndefinedType extends TypeBase<PrimitiveKind.Undefined> {}
+
+export interface FunctionType extends TypeBase<PrimitiveKind.Function> {
   context: StructType;
   /** The parameters this function takes. */
   params: {
     name: string;
-    type: Type[];
+    type: TypeUnion;
     optional: boolean;
   }[];
   /** The type of value that this function returns. */
-  returns: Type[];
+  returns: TypeUnion;
 }
 
-interface StructType extends TypeBase<PrimitiveKind.Struct> {
-  members: { [property: string]: Type[] };
+export interface EnumType extends TypeBase<PrimitiveKind.Enum> {
+  members: { [name: string]: RealType };
+}
+
+export interface StructType extends TypeBase<PrimitiveKind.Struct> {
+  members: { [name: string]: TypeUnion };
   /** The type that this struct extends, if any. */
-  extends: Type | null;
+  parent: StructType | null;
 }
 
-interface ArrayType extends TypeBase<PrimitiveKind.Array> {
+export interface ArrayType extends TypeBase<PrimitiveKind.Array> {
   /** The types that members of this array can be. */
-  members: Type[];
+  members: TypeUnion;
 }
 
-interface TypeBase<T extends PrimitiveKind> extends Base {
+export interface TypeBase<T extends PrimitiveKind = PrimitiveKind>
+  extends Base {
   $tag: TagKind.Type;
   kind: T;
+  parent: Type | null;
   /**
    * Non-native types are defined at a reference to a symbol,
    * e.g. a constructor, struct literal, asset, or object create event.
@@ -149,19 +196,19 @@ interface TypeBase<T extends PrimitiveKind> extends Base {
    * of type name `Struct.MyConstructor`. Type names can be
    * used in JSDocs.
    */
-  name?: string;
+  name: string | null;
 }
 
 //#endregion TYPES
 
 //#region BASE TYPES
-interface Range extends Base {
+export interface Range extends Base {
   $tag: TagKind.Range;
   start: Position;
   end: Position;
 }
 
-interface Position extends Base {
+export interface Position extends Base {
   $tag: TagKind.Position;
   file: string;
   offset: number;
