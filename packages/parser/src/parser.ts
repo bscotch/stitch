@@ -14,6 +14,7 @@ import type {
 import { GmlLexer } from './lexer.js';
 import { c, categories, t, tokens } from './tokens.js';
 import type { GmlParseError } from './types.js';
+import { normalizeTypeString } from './util.js';
 
 export interface GmlParsed {
   lexed: ILexingResult;
@@ -65,10 +66,7 @@ export class GmlParser extends CstParser {
 
   /** Parse a Feather Typestring. */
   parseTypeString(typeString: string) {
-    typeString = typeString
-      .replace(/\[/g, '<')
-      .replace(/\]/g, '>')
-      .replace(/,|\s+or\s+/gi, '|');
+    typeString = normalizeTypeString(typeString);
     const lexed = this.lexer.tokenize(typeString, 'jsdocGml');
     this.input = lexed.tokens;
     const cst = this.jsdocTypeUnion() as JsdocTypeUnionCstNode;

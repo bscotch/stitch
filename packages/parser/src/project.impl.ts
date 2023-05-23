@@ -1,20 +1,37 @@
 import { pathy } from '@bscotch/pathy';
 import { ok } from 'node:assert';
-import { writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
 import { JsdocTypeCstNode, JsdocTypeUnionCstNode } from '../gml-cst.js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './gml.schema.js';
 import { parser } from './parser.js';
 import * as t from './project.abstract.js';
-import { stringify } from './util.js';
+
+export class Flaggable {
+  flags: t.SymbolFlag = t.SymbolFlag.ReadWrite;
+
+  canWrite() {
+    return !!(this.flags & t.SymbolFlag.Writable);
+  }
+
+  canRead() {
+    return !!(this.flags & t.SymbolFlag.Readable);
+  }
+
+  /** Set the Writeable flag to false */
+  writable(writable: boolean): this {
+    if (writable) {
+      this.flags |= t.SymbolFlag.Writable;
+    } else {
+      this.flags &= ~t.SymbolFlag.Writable;
+    }
+    return this;
+  }
+}
 
 export class ProjectTypes {
   protected spec!: GmlSpec;
   readonly symbols: Map<string, Symbol> = new Map();
-  readonly functions: Symbol[] = [];
-  readonly variables: Symbol[] = [];
-  readonly constants: Symbol[] = [];
   /**
    * Types, looked up by their Feather-compatible name.
    * Types can be either a single type or a type union.
@@ -22,6 +39,8 @@ export class ProjectTypes {
   readonly types: Map<string, Type> = new Map();
 
   protected constructor(readonly filePath: string) {
+    // Initialize all of the primitives so we can guarantee
+    // they exist on any lookup.
     primitiveNames.forEach((name) => {
       this.types.set(name, new Type(name));
     });
@@ -43,21 +62,7 @@ export class ProjectTypes {
     return this.types.get('String')!.derive() as StringType;
   }
 
-  ensureType(name: string, type: Type): Type {
-    const existing = this.types.get(name);
-    if (!existing) {
-      this.types.set(name, type);
-      return type;
-    }
-    // existing.addType(type);
-    return existing;
-  }
-
   protected load() {
-    for (const name of this.spec.types) {
-      console.log(name);
-    }
-
     // Create struct types. Each one extends the base Struct type.
     for (const struct of this.spec.structures) {
       if (!struct.name) {
@@ -65,23 +70,27 @@ export class ProjectTypes {
         continue;
       }
       const typeName = `Struct.${struct.name}`;
-      const structType = this.createStructType();
-      ok(!this.types.has(typeName), `Type ${typeName} already exists`);
-      const unionType = this.ensureType(typeName, structType);
+      const structType =
+        this.types.get(typeName) || this.createStructType().named(struct.name);
+      ok(!structType.members?.length, `Type ${typeName} already exists`);
+      this.types.set(typeName, structType);
 
-      // for (const prop of struct.properties) {
-      //   let propType: Type;
-      //   if (prop.type in this.primitives) {
-      //     propType = new Type().add(
-      //       this.primitives[prop.type as PrimitiveName],
-      //     );
-      //   } else {
-      //     propType = this.ensureType(prop.type);
-      //   }
-      //   ok(propType instanceof Type, `Type ${prop.type} is not a union`);
-      //   structType.addMemberType(prop.name, propType);
-      // }
-      // unionType.mutable = false;
+      for (const prop of struct.properties) {
+        if (prop.type.length === 1) {
+          structType.addMemberType(
+            prop.name,
+            Type.from(prop.type[0], this.types).named(prop.name),
+            prop.writable,
+          );
+          continue;
+        }
+        const propType = new Type('Union');
+        for (const typeString of prop.type) {
+          const type = Type.from(typeString, this.types).named(prop.name);
+          propType.addUnionType(type);
+        }
+        structType.addMemberType(prop.name, propType, prop.writable);
+      }
     }
 
     // Handle the constants.
@@ -103,21 +112,20 @@ export class ProjectTypes {
     }
     // Then create a type for each class and a symbol for each constant.
     for (const [klass, constants] of constantsByClass) {
-      if (!klass) {
-        // TODO: Figure out what to do with these.
-        continue;
-      }
-      // Do all members have the same type?
-      const typeNames = new Set(constants.map((c) => c.type));
-      if (typeNames.size > 1) {
-        console.log(
-          `Skipping class ${klass} with multiple types: ${stringify(
-            typeNames,
-          )}`,
-        );
-        continue;
-      }
-
+      // if (!klass) {
+      //   // TODO: Figure out what to do with these.
+      //   continue;
+      // }
+      // // Do all members have the same type?
+      // const typeNames = new Set(constants.map((c) => c.type));
+      // if (typeNames.size > 1) {
+      //   console.log(
+      //     `Skipping class ${klass} with multiple types: ${stringify(
+      //       typeNames,
+      //     )}`,
+      //   );
+      //   continue;
+      // }
       // // Create a union type for the class
       // const classTypeName = `Class.${klass}`;
       // const classType = this.ensureType(classTypeName);
@@ -154,7 +162,6 @@ export class ProjectTypes {
     }
     for (const variable of this.spec.variables) {
     }
-    writeFileSync('gml.json', stringify(this));
   }
 
   static async from(
@@ -180,9 +187,6 @@ export class ProjectTypes {
     return {
       filePath: this.filePath,
       symbols: this.symbols,
-      functions: this.functions,
-      variables: this.variables,
-      constants: this.constants,
       types: this.types,
     };
   }
@@ -192,24 +196,23 @@ export class ProjectTypes {
   );
 }
 
-export class Symbol {
+export class Symbol extends Flaggable {
   readonly $tag = 'Sym';
   refs: t.Reference[] = [];
   description: string | undefined = undefined;
-  flags: t.SymbolFlag = t.SymbolFlag.ReadWrite;
   range: t.Range | undefined = undefined;
   type: Type = new Type('Unknown');
 
-  constructor(readonly name: string) {}
+  constructor(readonly name: string) {
+    super();
+  }
 
-  /** Set the Writeable flag to false */
-  writable(writable: boolean): this {
-    if (writable) {
-      this.flags |= t.SymbolFlag.Writable;
-    } else {
-      this.flags &= ~t.SymbolFlag.Writable;
-    }
-    return this;
+  toJSON() {
+    return {
+      $tag: this.$tag,
+      name: this.name,
+      type: this.type,
+    };
   }
 
   addRef(location: t.Range, type: Type): void {
@@ -325,9 +328,19 @@ export type UndefinedType = Type<'Undefined'>;
 export type UnionType = Type<'Union'>;
 export type UnknownType = Type<'Unknown'>;
 
+export class TypeMember extends Flaggable {
+  constructor(public name: string, public type: Type) {
+    super();
+  }
+}
+
 export class Type<T extends PrimitiveName = PrimitiveName> {
-  /** The tag for this object, the same for all Type instances */
   readonly $tag = 'Type';
+  // Some types have names. It only counts as a name if it
+  // cannot be parsed into types given the name alone.
+  // E.g. `Array<String>` is not a name, but `Struct.MyStruct`
+  // results in the name `MyStruct`.
+  name: string | undefined = undefined;
   /**
    * If set, then this Type is treated as a subset of the parent.
    * It will only "match" another type if that type is in its
@@ -338,7 +351,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   def: t.Reference | undefined = undefined;
   refs: t.Reference[] = [];
   // Applicable to Structs and Enums
-  members: Record<string, Type> | undefined = undefined;
+  members: TypeMember[] | undefined = undefined;
   // Applicable to Arrays
   items: Type | undefined = undefined;
   // Applicable to Unions
@@ -351,25 +364,65 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   constructor(readonly kind: T) {}
 
-  /** For container types that have named members, like Structs and Enums */
-  addMemberType(name: string, type: Type) {
-    ok(
-      ['Struct', 'Enum'].includes(this.kind),
-      `Cannot add member to non-struct/enum type ${this.kind}`,
-    );
-    this.members ??= {};
-    // TODO: Convert to union type if necessary
-    this.members[name] = type;
+  getMember(name: string): TypeMember | undefined {
+    return this.members?.find((m) => m.name === name);
   }
 
-  /** For container types that have non-named members, like arrays and DsTypes */
-  addItemType(type: Type) {
-    ok(
-      this.kind === 'Array' || this.kind.startsWith('Id.Ds'),
-      `Cannot add item to non-array type ${this.kind}`,
+  get canHaveMembers() {
+    return ['Struct', 'Enum'].includes(this.kind);
+  }
+
+  get canHaveItems() {
+    return (
+      ['Array', 'Struct'].includes(this.kind) || this.kind.startsWith('Id.Ds')
     );
-    // TODO: Convert to union type if necessary
-    this.items = Type.merge(this.items, type);
+  }
+
+  /** For container types that have named members, like Structs and Enums */
+  addMemberType(name: string, type: Type, writable = true) {
+    ok(
+      this.canHaveMembers,
+      `Cannot add member to non-struct/enum type ${this.kind}`,
+    );
+    this.members ??= [];
+    let member = this.members.find((m) => m.name === name);
+    if (!member) {
+      // Add as a union type to allow future updating without
+      // surprises caused by mutation.
+      member = new TypeMember(name, type).writable(writable);
+      this.members.push(member);
+    } else {
+      if (member.type.kind !== 'Union') {
+        const union = new Type('Union').addUnionType(member.type);
+        member.type = union;
+      }
+      member.type.addUnionType(type);
+    }
+    return member;
+  }
+
+  addUnionType(type: Type): this {
+    ok(this.kind === 'Union', `Cannot add union type to ${this.kind}`);
+    this.types ??= [];
+    this.types.push(type);
+    return this;
+  }
+
+  /**
+   * For container types that have non-named members, like arrays and DsTypes.
+   * Can also be used for default Struct values. */
+  addItemType(type: Type): this {
+    ok(this.canHaveItems, `Cannot add item to non-array type ${this.kind}`);
+    if (!this.items) {
+      this.items = type;
+      return this;
+    }
+    if (this.items.kind !== 'Union') {
+      const union = new Type('Union').addUnionType(this.items);
+      this.items = union;
+    }
+    this.items.addUnionType(type);
+    return this;
   }
 
   /**
@@ -379,6 +432,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     const derived = new Type(this.kind);
     derived.parent = this;
     return derived;
+  }
+
+  named(name: string): this {
+    this.name = name;
+    return this;
   }
 
   /**
@@ -421,29 +479,36 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   /** Given a Feather-compatible type string, get a fully parsed type. */
-  static from(typeString: string): Type {
+  static from(typeString: string, knownTypes: Map<string, Type>): Type {
     const parsed = parser.parseTypeString(typeString);
-    return Type.fromCst(parsed.cst);
+    return Type.fromCst(parsed.cst, knownTypes);
   }
 
-  static fromCst(node: JsdocTypeUnionCstNode | JsdocTypeCstNode): Type {
+  static fromCst(
+    node: JsdocTypeUnionCstNode | JsdocTypeCstNode,
+    knownTypes: Map<string, Type>,
+  ): Type {
     if (node.name === 'jsdocType') {
       const identifier = node.children.JsdocIdentifier[0].image;
-      const type = Type.fromIdentifier(identifier);
+      const type = Type.fromIdentifier(identifier, knownTypes);
       const subtypeNode = node.children.jsdocTypeUnion?.[0];
       if (subtypeNode) {
-        const subtype = Type.fromCst(subtypeNode);
-        if (type.kind.match(/^(Array|Id.Ds)/)) {
+        const subtype = Type.fromCst(subtypeNode, knownTypes);
+        if (type.kind.match(/^(Array|Struct|Id.Ds)/)) {
           type.addItemType(subtype);
         }
+        // TODO: Else create a diagnostic?
       }
       return type;
     } else if (node.name === 'jsdocTypeUnion') {
       const unionOf = node.children.jsdocType;
-      const type = new Type('Unknown');
+      if (unionOf.length === 1) {
+        return Type.fromCst(unionOf[0], knownTypes);
+      }
+      const type = new Type('Union');
       for (const child of unionOf) {
-        const subtype = Type.fromCst(child);
-        Type.merge(type, subtype);
+        const subtype = Type.fromCst(child, knownTypes);
+        type.addUnionType(subtype);
       }
       return type;
     }
@@ -455,12 +520,24 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * the "leaves" of a type tree, e.g. "String" or "Struct.Mystruct".
    * Only creates primitive types, e.g. "Struct.MyStruct" will return
    * a plain `Type<"Struct">` instance.
+   *
+   * When knownTypes are provided, will return a known type by exact
+   * identifier match if it exists. Otherwise a new type instance will
+   * be created *and added to the knownTypes map*.
    */
-  static fromIdentifier(identifier: string): Type {
+  static fromIdentifier(
+    identifier: string,
+    knownTypes: Map<string, Type>,
+    __isRootRequest = true,
+  ): Type {
     ok(
       identifier.match(/^[A-Z][A-Z0-9.]*$/i),
       `Invalid type name ${identifier}`,
     );
+    const knownType = knownTypes?.get(identifier);
+    if (knownType) {
+      return knownType;
+    }
     const normalizedName = identifier.toLocaleLowerCase();
     const primitiveType = primitiveNames.find(
       (n) => n.toLocaleLowerCase() === normalizedName,
@@ -470,7 +547,12 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     } else if (identifier.match(/\./)) {
       // Then we might still be able to get a base type.
       const [baseType] = identifier.split('.');
-      return Type.fromIdentifier(baseType);
+      const type = Type.fromIdentifier(baseType, knownTypes, false);
+      if (__isRootRequest && type) {
+        // Then add to the known types map
+        knownTypes.set(identifier, type.derive());
+      }
+      return type;
     }
     return new Type('Unknown');
   }

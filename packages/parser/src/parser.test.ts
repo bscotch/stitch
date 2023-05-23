@@ -52,11 +52,11 @@ describe('Parser', function () {
   });
 
   it('can get types from typestrings', function () {
-    expect(Type.from('Array').kind).to.equal('Array');
-    const stringArray = Type.from('Array<string>');
+    expect(Type.from('Array', new Map()).kind).to.equal('Array');
+    const stringArray = Type.from('Array<string>', new Map());
     expect(stringArray.kind).to.equal('Array');
     expect(stringArray.items!.kind).to.equal('String');
-    const dsMap = Type.from('Id.DsMap[String,Real]');
+    const dsMap = Type.from('Id.DsMap[String,Real]', new Map());
     expect(dsMap.kind).to.equal('Id.DsMap');
     expect(dsMap.items!.kind).to.equal('Union');
     expect(dsMap.items!.types!.length).to.equal(2);
@@ -67,6 +67,7 @@ describe('Parser', function () {
   it('can parse complex typestrings', function () {
     const complexType = Type.from(
       'Array<string OR Array<Real>>|Struct.Hello OR Id.DsMap[String,Real]',
+      new Map(),
     );
     expect(complexType.kind).to.equal('Union');
     const types = complexType.types!;
