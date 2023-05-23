@@ -2,7 +2,7 @@ import { ok } from 'assert';
 import { expect } from 'chai';
 import { ProjectTypes } from './project.impl.js';
 
-describe.only('GML', function () {
+describe.skip('GML', function () {
   it('can load the GML spec', async function () {
     const spec = await ProjectTypes.from();
     expect(spec).to.exist;

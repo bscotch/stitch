@@ -84,9 +84,9 @@ export class ProjectTypes {
           );
           continue;
         }
-        const propType = new Type('Union');
+        const propType = new Type('Union').named(prop.name);
         for (const typeString of prop.type) {
-          const type = Type.from(typeString, this.types).named(prop.name);
+          const type = Type.from(typeString, this.types);
           propType.addUnionType(type);
         }
         structType.addMemberType(prop.name, propType, prop.writable);
@@ -534,7 +534,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       identifier.match(/^[A-Z][A-Z0-9.]*$/i),
       `Invalid type name ${identifier}`,
     );
-    const knownType = knownTypes?.get(identifier);
+    const knownType = knownTypes.get(identifier);
     if (knownType) {
       return knownType;
     }
@@ -546,11 +546,13 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       return new Type(primitiveType);
     } else if (identifier.match(/\./)) {
       // Then we might still be able to get a base type.
-      const [baseType] = identifier.split('.');
+      const [baseType, ...nameParts] = identifier.split('.');
       const type = Type.fromIdentifier(baseType, knownTypes, false);
       if (__isRootRequest && type) {
         // Then add to the known types map
-        knownTypes.set(identifier, type.derive());
+        const derivedTyped = type.derive().named(nameParts.join('.'));
+        knownTypes.set(identifier, derivedTyped);
+        return derivedTyped;
       }
       return type;
     }

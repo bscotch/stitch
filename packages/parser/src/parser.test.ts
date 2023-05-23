@@ -1,5 +1,6 @@
 import { pathy } from '@bscotch/pathy';
 import { undent } from '@bscotch/utility';
+import { ok } from 'assert';
 import { expect } from 'chai';
 import type { IRecognitionException } from 'chevrotain';
 import dotenv from 'dotenv';
@@ -62,6 +63,18 @@ describe('Parser', function () {
     expect(dsMap.items!.types!.length).to.equal(2);
     expect(dsMap.items!.types![0].kind).to.equal('String');
     expect(dsMap.items!.types![1].kind).to.equal('Real');
+  });
+
+  it('can parse cross-referencing types', function () {
+    const knownTypes = new Map();
+    const arrayOfStructs = Type.from('Array<Struct.Hello>', knownTypes);
+    const structType = Type.from('Struct.Hello', knownTypes);
+
+    ok(knownTypes.get('Struct.Hello') === structType);
+    expect(arrayOfStructs.kind).to.equal('Array');
+    expect(arrayOfStructs.items!.kind).to.equal('Struct');
+    ok(arrayOfStructs.items === structType);
+    expect(arrayOfStructs.items!.name).to.equal('Hello');
   });
 
   it('can parse complex typestrings', function () {
