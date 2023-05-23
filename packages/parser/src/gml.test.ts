@@ -2,18 +2,20 @@ import { ok } from 'assert';
 import { expect } from 'chai';
 import { ProjectTypes } from './project.impl.js';
 
-describe.skip('GML', function () {
+describe.only('GML', function () {
   it('can load the GML spec', async function () {
     const spec = await ProjectTypes.from();
     expect(spec).to.exist;
     // Check a few things that we expect to be in the spec.
     const track = spec.types.get('Struct.Track');
+    ok(track);
+    ok(track.kind === 'Struct');
+
     // <Field Name="name" Type="String" Get="true" Set="true" />
     // <Field Name="type" Type="Constant.SequenceTrackType" Get="true" Set="true" />
     // <Field Name="tracks" Type="Array[Struct.Track]" Get="true" Set="true" />
     // <Field Name="visible" Type="Bool" Get="true" Set="true" />
     // <Field Name="keyframes" Type="Array[Struct.Keyframe]" Get="true" Set="true" />
-    ok(track);
 
     const name = track.getMember('name');
     ok(name);

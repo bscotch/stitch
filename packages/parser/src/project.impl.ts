@@ -379,7 +379,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   /** For container types that have named members, like Structs and Enums */
-  addMemberType(name: string, type: Type, writable = true) {
+  addMemberType(name: string, type: Type, writable = true): this {
     ok(
       this.canHaveMembers,
       `Cannot add member to non-struct/enum type ${this.kind}`,
@@ -387,18 +387,16 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     this.members ??= [];
     let member = this.members.find((m) => m.name === name);
     if (!member) {
-      // Add as a union type to allow future updating without
-      // surprises caused by mutation.
       member = new TypeMember(name, type).writable(writable);
       this.members.push(member);
     } else {
       if (member.type.kind !== 'Union') {
-        const union = new Type('Union').addUnionType(member.type);
-        member.type = union;
+        const oldType = member.type;
+        member.type = new Type('Union').addUnionType(oldType);
       }
       member.type.addUnionType(type);
     }
-    return member;
+    return this;
   }
 
   addUnionType(type: Type): this {
