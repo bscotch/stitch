@@ -76,7 +76,7 @@ const gmlSpecVariableSchema = z
     $: z
       .object({
         Name: z.string(),
-        Type: z.string(),
+        Type: csvSchema,
         Deprecated: booleanStringSchema,
         Get: booleanStringSchema,
         Set: booleanStringSchema,
@@ -106,7 +106,7 @@ const gmlSpecConstantSchema = z
       .object({
         Name: z.string(),
         Class: z.string().optional(),
-        Type: z.string(),
+        Type: csvSchema,
         Deprecated: booleanStringSchema.optional(),
         FeatureFlag: featureFlagSchema.optional(),
         Locale: localeSchema.optional(),
@@ -139,7 +139,7 @@ const gmlSpecStructureSchema = z
           $: z
             .object({
               Name: z.string(),
-              Type: z.string(),
+              Type: csvSchema,
               Get: booleanStringSchema,
               Set: booleanStringSchema,
               Locale: localeSchema.optional(),

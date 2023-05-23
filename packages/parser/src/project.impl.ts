@@ -3,7 +3,9 @@ import { ok } from 'node:assert';
 import { writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
+import { JsdocTypeCstNode, JsdocTypeUnionCstNode } from '../gml-cst.js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './gml.schema.js';
+import { parser } from './parser.js';
 import * as t from './project.abstract.js';
 import { stringify } from './util.js';
 
@@ -17,36 +19,38 @@ export class ProjectTypes {
    * Types, looked up by their Feather-compatible name.
    * Types can be either a single type or a type union.
    */
-  readonly types: Map<string, TypeUnion> = new Map();
-  readonly primitives = primitiveNames.reduce((acc, name) => {
-    // @ts-expect-error
-    acc[name] = new Type(name);
-    return acc;
-  }, {} as { [P in PrimitiveName]: Type<P> });
+  readonly types: Map<string, Type> = new Map();
 
-  protected constructor(readonly filePath: string) {}
+  protected constructor(readonly filePath: string) {
+    primitiveNames.forEach((name) => {
+      this.types.set(name, new Type(name));
+    });
+  }
 
   get version() {
     return this.spec.runtime;
   }
 
-  deriveStruct(): StructType {
-    return this.primitives.Struct.derive();
+  createStructType(): StructType {
+    return this.types.get('Struct')!.derive() as StructType;
   }
 
-  ensureType(name: string, type?: Type | Type[]): TypeUnion {
-    let union = this.types.get(name);
-    if (!union) {
-      union = new TypeUnion();
-      this.types.set(name, union);
+  createRealType(): RealType {
+    return this.types.get('Real')!.derive() as RealType;
+  }
+
+  createStringType(): StringType {
+    return this.types.get('String')!.derive() as StringType;
+  }
+
+  ensureType(name: string, type: Type): Type {
+    const existing = this.types.get(name);
+    if (!existing) {
+      this.types.set(name, type);
+      return type;
     }
-    const types = Array.isArray(type) ? type : [type];
-    for (type of types) {
-      if (type) {
-        union.add(type);
-      }
-    }
-    return union;
+    // existing.addType(type);
+    return existing;
   }
 
   protected load() {
@@ -61,22 +65,23 @@ export class ProjectTypes {
         continue;
       }
       const typeName = `Struct.${struct.name}`;
-      const structType = this.deriveStruct();
+      const structType = this.createStructType();
       ok(!this.types.has(typeName), `Type ${typeName} already exists`);
-      this.ensureType(typeName, structType);
+      const unionType = this.ensureType(typeName, structType);
 
-      for (const prop of struct.properties) {
-        let propType: TypeUnion;
-        if (prop.type in this.primitives) {
-          propType = new TypeUnion().add(
-            this.primitives[prop.type as PrimitiveName],
-          );
-        } else {
-          propType = this.ensureType(prop.type);
-        }
-        ok(propType instanceof TypeUnion, `Type ${prop.type} is not a union`);
-        structType.addMember(prop.name, propType);
-      }
+      // for (const prop of struct.properties) {
+      //   let propType: Type;
+      //   if (prop.type in this.primitives) {
+      //     propType = new Type().add(
+      //       this.primitives[prop.type as PrimitiveName],
+      //     );
+      //   } else {
+      //     propType = this.ensureType(prop.type);
+      //   }
+      //   ok(propType instanceof Type, `Type ${prop.type} is not a union`);
+      //   structType.addMemberType(prop.name, propType);
+      // }
+      // unionType.mutable = false;
     }
 
     // Handle the constants.
@@ -102,25 +107,48 @@ export class ProjectTypes {
         // TODO: Figure out what to do with these.
         continue;
       }
-      // TODO: Create a union type for the class
-      // TODO: Iterate over all constants in the class.
-      // TODO: For each, create an extended type and a symbol, and ensure that the type is in the union.
+      // Do all members have the same type?
+      const typeNames = new Set(constants.map((c) => c.type));
+      if (typeNames.size > 1) {
+        console.log(
+          `Skipping class ${klass} with multiple types: ${stringify(
+            typeNames,
+          )}`,
+        );
+        continue;
+      }
 
-      // const type = this.ensureType(constant.type);
-      // const namedType = this.ensureType(typeName);
-      // namedType.add(type);
-
-      // let type = this.types.get(typeName);
-      // const baseType = this.types.get(constant.type);
-      // ok(baseType, `Could not find base type ${constant.type}`);
-      // if (!type) {
-      //   type = baseType.extend().named(typeName);
-      //   this.types.set(typeName, type);
+      // // Create a union type for the class
+      // const classTypeName = `Class.${klass}`;
+      // const classType = this.ensureType(classTypeName);
+      // // Iterate over all constants in the class.
+      // for (const constant of constants) {
+      //   // Create an extended type
+      //   const baseType = this.primitives[constant.type as PrimitiveName];
+      //   if (!baseType) {
+      //     // TODO: Handle this.
+      //     console.log(
+      //       `Skipping constant ${constant.name} of unknown type`,
+      //       constant.type,
+      //     );
+      //     continue;
+      //   }
+      //   const constantType = baseType.derive();
+      //   // Add the constantType to the class union
+      //   classType.add(constantType);
+      //   // Create the symbol
+      //   const symbol = new Symbol(constant.name)
+      //     .writable(false)
+      //     .addType(constantType);
+      //   // These symbols are constants, so flag their type as immutable.
+      //   symbol.type.mutable = false;
+      //   // Add the symbol to the global symbol table
+      //   ok(
+      //     !this.symbols.has(symbol.name),
+      //     `Symbol ${symbol.name} already exists`,
+      //   );
+      //   this.symbols.set(symbol.name, symbol);
       // }
-      // ok(
-      //   type.extends(baseType!),
-      //   `Type ${typeName} does not extend ${constant.type}`,
-      // );
     }
     for (const func of this.spec.functions) {
     }
@@ -170,25 +198,42 @@ export class Symbol {
   description: string | undefined = undefined;
   flags: t.SymbolFlag = t.SymbolFlag.ReadWrite;
   range: t.Range | undefined = undefined;
-  type = new TypeUnion();
+  type: Type = new Type('Unknown');
 
-  constructor(readonly parent: t.StructType, readonly name: string) {}
+  constructor(readonly name: string) {}
 
-  addRef(location: t.Range, type: TypeUnion): void {
+  /** Set the Writeable flag to false */
+  writable(writable: boolean): this {
+    if (writable) {
+      this.flags |= t.SymbolFlag.Writable;
+    } else {
+      this.flags &= ~t.SymbolFlag.Writable;
+    }
+    return this;
+  }
+
+  addRef(location: t.Range, type: Type): void {
     throw new Error('Method not implemented.');
   }
 
-  addType(type: Type) {
+  addType(type: Type): this {
     // We may have duplicate types, but that information is
     // still useful since the same type information may have
     // come from multiple assignment statements.
-    this.type.add(type);
+    if (this.type.kind === 'Unknown') {
+      // Change the type to a this new type
+      this.type = type;
+    } else if (this.type.kind !== 'Union') {
+      // Then we need to convert it into a union type
+      const unionType = new Type('Union');
+    }
+    return this;
   }
 }
 
 export class Reference {
   readonly $tag = 'Ref';
-  type = new TypeUnion();
+  type: Type = new Type('Unknown');
   start: t.Position;
   end: t.Position;
   constructor(readonly symbol: t.Symbol, readonly location: t.Range) {
@@ -197,52 +242,73 @@ export class Reference {
   }
 }
 
-export class TypeUnion {
-  readonly $tag = 'Union';
-  mutable = true;
-  protected _types: Type[] = [];
-  /**
-   * Feather-compatible name of this type, if present.
-   */
-  name: string | undefined = undefined;
-
-  get types(): Type[] {
-    return [...this._types];
-  }
-
-  named(name: string): this {
-    this.name = name;
-    return this;
-  }
-
-  add(type: Type): this {
-    ok(this.mutable, 'Cannot add type to immutable TypeUnion');
-    this._types.push(type);
-    return this;
-  }
-
-  toJSON() {
-    return {
-      $tag: this.$tag,
-      name: this.name,
-      types: this._types,
-    };
-  }
-}
-
 export type PrimitiveName = (typeof primitiveNames)[number];
 export const primitiveNames = [
   'Any',
   'Array',
+  'Asset.GMAnimCurve',
+  'Asset.GMAudioGroup',
+  'Asset.GMFont',
+  'Asset.GMObject',
+  'Asset.GMParticleSystem',
+  'Asset.GMPath',
+  'Asset.GMRoom',
+  'Asset.GMScript',
+  'Asset.GMSequence',
+  'Asset.GMShader',
+  'Asset.GMSound',
+  'Asset.GMSprite',
+  'Asset.GMTileSet',
+  'Asset.GMTimeline',
+  'Asset.Script',
   'Bool',
   'Enum',
   'Function',
+  'Id.AudioEmitter',
+  'Id.AudioListener',
+  'Id.AudioSyncGroup',
+  'Id.BackgroundElement',
+  'Id.BinaryFile',
+  'Id.Buffer',
+  'Id.Camera',
+  'Id.DsGrid',
+  'Id.DsList',
+  'Id.DsMap',
+  'Id.DsPriority',
+  'Id.DsQueue',
+  'Id.DsStack',
+  'Id.ExternalCall',
+  'Id.Gif',
+  'Id.Instance',
+  'Id.Layer',
+  'Id.MpGrid',
+  'Id.ParticleEmitter',
+  'Id.ParticleSystem',
+  'Id.ParticleType',
+  'Id.PhysicsIndex',
+  'Id.PhysicsParticleGroup',
+  'Id.Sampler',
+  'Id.SequenceElement',
+  'Id.Socket',
+  'Id.Sound',
+  'Id.SpriteElement',
+  'Id.Surface',
+  'Id.TextFile',
+  'Id.Texture',
+  'Id.TileElementId',
+  'Id.TileMapElement',
+  'Id.TimeSource',
+  'Id.Uniform',
+  'Id.VertexBuffer',
+  'Id.VertexFormat',
   'Mixed',
   'Pointer',
   'Real',
   'String',
   'Struct',
   'Undefined',
+  'Union',
+  'Unknown',
 ] as const;
 Object.freeze(Object.seal(primitiveNames));
 
@@ -256,6 +322,8 @@ export type RealType = Type<'Real'>;
 export type StringType = Type<'String'>;
 export type StructType = Type<'Struct'>;
 export type UndefinedType = Type<'Undefined'>;
+export type UnionType = Type<'Union'>;
+export type UnknownType = Type<'Unknown'>;
 
 export class Type<T extends PrimitiveName = PrimitiveName> {
   /** The tag for this object, the same for all Type instances */
@@ -270,24 +338,38 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   def: t.Reference | undefined = undefined;
   refs: t.Reference[] = [];
   // Applicable to Structs and Enums
-  members: Record<string, TypeUnion> | undefined = undefined;
+  members: Record<string, Type> | undefined = undefined;
   // Applicable to Arrays
-  items: TypeUnion | undefined = undefined;
+  items: Type | undefined = undefined;
+  // Applicable to Unions
+  types: Type[] | undefined = undefined;
   // Applicable to Functions
   context: Type<'String'> | undefined = undefined;
-  params: undefined | { name: string; type: TypeUnion; optional: boolean }[] =
+  params: undefined | { name: string; type: Type; optional: boolean }[] =
     undefined;
-  returns: undefined | TypeUnion = undefined;
+  returns: undefined | Type = undefined;
 
   constructor(readonly kind: T) {}
 
-  addMember(name: string, type: TypeUnion) {
+  /** For container types that have named members, like Structs and Enums */
+  addMemberType(name: string, type: Type) {
     ok(
       ['Struct', 'Enum'].includes(this.kind),
       `Cannot add member to non-struct/enum type ${this.kind}`,
     );
     this.members ??= {};
+    // TODO: Convert to union type if necessary
     this.members[name] = type;
+  }
+
+  /** For container types that have non-named members, like arrays and DsTypes */
+  addItemType(type: Type) {
+    ok(
+      this.kind === 'Array' || this.kind.startsWith('Id.Ds'),
+      `Cannot add item to non-array type ${this.kind}`,
+    );
+    // TODO: Convert to union type if necessary
+    this.items = Type.merge(this.items, type);
   }
 
   /**
@@ -299,6 +381,95 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return derived;
   }
 
+  /**
+   * If this type is unknown, change it to the provided Type.
+   * If it is a union, add the provided Type to the union.
+   * If it is not a union, convert it to a union and add the
+   * provided Type to the union.
+   *
+   * In all cases the original instance is mutated unless it was undefined.
+   */
+  static merge(original: Type | undefined, type: Type): Type {
+    // If the incoming type is unknown, toss it.
+    // If the original type is Any/Mixed, then it's already as wide as possible so don't change it.
+    if (!original) {
+      return type;
+    }
+    if (type.kind === 'Unknown' || ['Any', 'Mixed'].includes(original.kind)) {
+      return original;
+    }
+    // If the original type is unknow, now we know it! So just replace it.
+    if (original.kind === 'Unknown') {
+      // Then change it to the provided type
+      Object.assign(original, type);
+      return original as any;
+    }
+    // Otherwise we're going to add a type to a union. If we aren't a union, convert to one.
+    if (original.kind !== 'Union') {
+      // Get a copy of the current type to add to the new union
+      const preUnionType = structuredClone(original);
+      // Then convert it to a union
+      const unionType = new Type('Union');
+      Object.assign(original, unionType);
+      // Then add the previous type to the union
+      original.types = [preUnionType];
+    }
+    // Add the new type to the union
+    original.types ??= [];
+    original.types.push(type);
+    return original;
+  }
+
+  /** Given a Feather-compatible type string, get a fully parsed type. */
+  static from(typeString: string): Type {
+    const parsed = parser.parseTypeString(typeString);
+    return Type.fromCst(parsed.cst);
+  }
+
+  static fromCst(node: JsdocTypeUnionCstNode | JsdocTypeCstNode): Type {
+    if (node.name === 'jsdocType') {
+      const identifier = node.children.JsdocIdentifier[0].image;
+      const type = Type.fromIdentifier(identifier);
+      const subtypeNode = node.children.jsdocTypeUnion?.[0];
+      if (subtypeNode) {
+        const subtype = Type.fromCst(subtypeNode);
+        if (type.kind.match(/^(Array|Id.Ds)/)) {
+          type.addItemType(subtype);
+        }
+      }
+      return type;
+    } else {
+      const unionOf = node.children.jsdocType;
+      const type = new Type('Unknown');
+      for (const child of unionOf) {
+        const subtype = Type.fromCst(child);
+        Type.merge(type, subtype);
+      }
+      return type;
+    }
+  }
+
+  /**
+   * Given a type identifier, get a parsed Type instance. Useful for
+   * the "leaves" of a type tree, e.g. "String" or "Struct.Mystruct".
+   * Only creates primitive types, e.g. "Struct.MyStruct" will return
+   * a plain `Type<"Struct">` instance.
+   */
+  static fromIdentifier(identifier: string) {
+    ok(
+      identifier.match(/^[A-Z][A-Z0-9.]*$/i),
+      `Invalid type name ${identifier}`,
+    );
+    const normalizedName = identifier.toLocaleLowerCase().replace(/\..*$/, '');
+    const primitiveType = primitiveNames.find(
+      (n) => n.toLocaleLowerCase() === normalizedName,
+    );
+    if (primitiveType) {
+      return new Type(primitiveType);
+    }
+    return new Type('Unknown');
+  }
+
   toJSON() {
     return {
       $tag: this.$tag,
@@ -306,6 +477,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       parent: this.parent,
       members: this.members,
       items: this.items,
+      types: this.types,
       context: this.context,
       params: this.params,
       returns: this.returns,

@@ -88,16 +88,16 @@ export interface JsdocTypeCstNode extends CstNode {
 export type JsdocTypeCstChildren = {
   JsdocIdentifier: IToken[];
   JsdocStartAngleBracket?: IToken[];
-  jsdocTypes?: JsdocTypesCstNode[];
+  jsdocTypeUnion?: JsdocTypeUnionCstNode[];
   JsdocEndAngleBracket?: IToken[];
 };
 
-export interface JsdocTypesCstNode extends CstNode {
-  name: 'jsdocTypes';
-  children: JsdocTypesCstChildren;
+export interface JsdocTypeUnionCstNode extends CstNode {
+  name: 'jsdocTypeUnion';
+  children: JsdocTypeUnionCstChildren;
 }
 
-export type JsdocTypesCstChildren = {
+export type JsdocTypeUnionCstChildren = {
   jsdocType: JsdocTypeCstNode[];
   JsdocPipe?: IToken[];
 };
@@ -109,7 +109,7 @@ export interface JsdocTypeGroupCstNode extends CstNode {
 
 export type JsdocTypeGroupCstChildren = {
   JsdocStartBrace: IToken[];
-  jsdocTypes: JsdocTypesCstNode[];
+  jsdocTypeUnion: JsdocTypeUnionCstNode[];
   JsdocEndBrace: IToken[];
 };
 
@@ -971,7 +971,7 @@ export interface GmlVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
   jsdocGml(children: JsdocGmlCstChildren, param?: IN): OUT;
   jsdocJs(children: JsdocJsCstChildren, param?: IN): OUT;
   jsdocType(children: JsdocTypeCstChildren, param?: IN): OUT;
-  jsdocTypes(children: JsdocTypesCstChildren, param?: IN): OUT;
+  jsdocTypeUnion(children: JsdocTypeUnionCstChildren, param?: IN): OUT;
   jsdocTypeGroup(children: JsdocTypeGroupCstChildren, param?: IN): OUT;
   jsdocUnstructuredContent(
     children: JsdocUnstructuredContentCstChildren,

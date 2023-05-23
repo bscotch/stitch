@@ -31,7 +31,7 @@ export class GmlSymbolRef implements SymbolRefBase {
 export abstract class GmlSymbol<
   T extends {
     name: string;
-    type?: string;
+    type?: string[];
     class?: string;
     description?: string;
     deprecated?: boolean;

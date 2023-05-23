@@ -5,6 +5,7 @@ import type { IRecognitionException } from 'chevrotain';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { GmlParser } from './parser.js';
+import { Type } from './project.impl.js';
 
 dotenv.config();
 
@@ -28,7 +29,37 @@ function showErrors(
   );
 }
 
-describe('Parser', function () {
+describe.only('Parser', function () {
+  it.only('can parse Feather types', function () {
+    const parser = new GmlParser();
+    let { cst } = parser.parseTypeString('Array');
+    expect(
+      cst.children.jsdocType[0].children.JsdocIdentifier[0].image,
+    ).to.equal('Array');
+    expect(parser.errors.length).to.equal(0);
+
+    ({ cst } = parser.parseTypeString(
+      'Array<string OR Array<Real>> or Struct.Hello or Id.Map<String,Real>',
+    ));
+    expect(parser.errors.length).to.equal(0);
+    expect(cst.children.jsdocType.length).to.equal(3);
+    const [first, second, third] = cst.children.jsdocType;
+    expect(first.children.JsdocIdentifier[0].image).to.equal('Array');
+    const firstTypes = first.children.jsdocTypeUnion![0].children.jsdocType;
+    expect(firstTypes.length).to.equal(2);
+    expect(second.children.JsdocIdentifier[0].image).to.equal('Struct.Hello');
+    expect(third.children.JsdocIdentifier[0].image).to.equal('Id.Map');
+  });
+
+  it.only('can get types from typestrings', function () {
+    expect(Type.from('Array').kind).to.equal('Array');
+    const stringArray = Type.from('Array<string>');
+    expect(stringArray.kind).to.equal('Array');
+    expect(stringArray.items!.kind).to.equal('String');
+
+    // TODO: Add some more tests!
+  });
+
   it('can parse simple expressions', function () {
     const parser = new GmlParser();
     const { cst } = parser.parse(

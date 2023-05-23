@@ -9,6 +9,7 @@ import type {
   GmlVisitor,
   IdentifierCstChildren,
   IdentifierCstNode,
+  JsdocTypeUnionCstNode,
 } from '../gml-cst.js';
 import { GmlLexer } from './lexer.js';
 import { c, categories, t, tokens } from './tokens.js';
@@ -50,15 +51,32 @@ export function identifierFrom(nodes: IdentifierSource): {
 }
 
 export class GmlParser extends CstParser {
+  /** Parse GML Code, e.g. from a file. */
   parse(code: string): GmlParsed {
     const lexed = this.lexer.tokenize(code);
-    this.input = this.lexer.tokenize(code).tokens;
+    this.input = lexed.tokens;
     const cst = this.file();
     return {
       lexed,
       cst,
       errors: this.errors,
     };
+  }
+
+  /** Parse a Feather Typestring. */
+  parseTypeString(typeString: string) {
+    typeString = typeString
+      .replace(/\[/g, '<')
+      .replace(/\]/g, '>')
+      .replace(/,|\s+or\s+/gi, '|');
+    const lexed = this.lexer.tokenize(typeString, 'jsdocGml');
+    this.input = lexed.tokens;
+    const cst = this.jsdocTypeUnion() as JsdocTypeUnionCstNode;
+    return {
+      lexed,
+      cst,
+      errors: this.errors,
+    } satisfies GmlParsed;
   }
 
   readonly lexer = GmlLexer;
@@ -129,12 +147,12 @@ export class GmlParser extends CstParser {
     this.CONSUME(t.JsdocIdentifier);
     this.OPTION(() => {
       this.CONSUME(t.JsdocStartAngleBracket);
-      this.SUBRULE(this.jsdocTypes);
+      this.SUBRULE(this.jsdocTypeUnion);
       this.CONSUME(t.JsdocEndAngleBracket);
     });
   });
 
-  readonly jsdocTypes = this.RULE('jsdocTypes', () => {
+  readonly jsdocTypeUnion = this.RULE('jsdocTypeUnion', () => {
     this.SUBRULE1(this.jsdocType);
     this.MANY(() => {
       this.CONSUME(t.JsdocPipe);
@@ -144,7 +162,7 @@ export class GmlParser extends CstParser {
 
   readonly jsdocTypeGroup = this.RULE('jsdocTypeGroup', () => {
     this.CONSUME(t.JsdocStartBrace);
-    this.SUBRULE1(this.jsdocTypes);
+    this.SUBRULE1(this.jsdocTypeUnion);
     this.CONSUME(t.JsdocEndBrace);
   });
 
