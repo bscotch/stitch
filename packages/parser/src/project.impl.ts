@@ -438,7 +438,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
         }
       }
       return type;
-    } else {
+    } else if (node.name === 'jsdocTypeUnion') {
       const unionOf = node.children.jsdocType;
       const type = new Type('Unknown');
       for (const child of unionOf) {
@@ -447,6 +447,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       }
       return type;
     }
+    throw new Error(`Unknown node type ${node['name']}`);
   }
 
   /**
@@ -455,17 +456,21 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * Only creates primitive types, e.g. "Struct.MyStruct" will return
    * a plain `Type<"Struct">` instance.
    */
-  static fromIdentifier(identifier: string) {
+  static fromIdentifier(identifier: string): Type {
     ok(
       identifier.match(/^[A-Z][A-Z0-9.]*$/i),
       `Invalid type name ${identifier}`,
     );
-    const normalizedName = identifier.toLocaleLowerCase().replace(/\..*$/, '');
+    const normalizedName = identifier.toLocaleLowerCase();
     const primitiveType = primitiveNames.find(
       (n) => n.toLocaleLowerCase() === normalizedName,
     );
     if (primitiveType) {
       return new Type(primitiveType);
+    } else if (identifier.match(/\./)) {
+      // Then we might still be able to get a base type.
+      const [baseType] = identifier.split('.');
+      return Type.fromIdentifier(baseType);
     }
     return new Type('Unknown');
   }

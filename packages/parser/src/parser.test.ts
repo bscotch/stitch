@@ -29,8 +29,8 @@ function showErrors(
   );
 }
 
-describe.only('Parser', function () {
-  it.only('can parse Feather types', function () {
+describe('Parser', function () {
+  it('can parse Feather types', function () {
     const parser = new GmlParser();
     let { cst } = parser.parseTypeString('Array');
     expect(
@@ -51,13 +51,32 @@ describe.only('Parser', function () {
     expect(third.children.JsdocIdentifier[0].image).to.equal('Id.Map');
   });
 
-  it.only('can get types from typestrings', function () {
+  it('can get types from typestrings', function () {
     expect(Type.from('Array').kind).to.equal('Array');
     const stringArray = Type.from('Array<string>');
     expect(stringArray.kind).to.equal('Array');
     expect(stringArray.items!.kind).to.equal('String');
+    const dsMap = Type.from('Id.DsMap[String,Real]');
+    expect(dsMap.kind).to.equal('Id.DsMap');
+    expect(dsMap.items!.kind).to.equal('Union');
+    expect(dsMap.items!.types!.length).to.equal(2);
+    expect(dsMap.items!.types![0].kind).to.equal('String');
+    expect(dsMap.items!.types![1].kind).to.equal('Real');
+  });
 
-    // TODO: Add some more tests!
+  it('can parse complex typestrings', function () {
+    const complexType = Type.from(
+      'Array<string OR Array<Real>>|Struct.Hello OR Id.DsMap[String,Real]',
+    );
+    expect(complexType.kind).to.equal('Union');
+    const types = complexType.types!;
+    expect(types.length).to.equal(3);
+    expect(types[0].kind).to.equal('Array');
+    expect(types[0].items!.kind).to.equal('Union');
+    expect(types[0].items!.types!.length).to.equal(2);
+    expect(types[0].items!.types![0].kind).to.equal('String');
+    expect(types[0].items!.types![1].kind).to.equal('Array');
+    expect(types[0].items!.types![1].items!.kind).to.equal('Real');
   });
 
   it('can parse simple expressions', function () {
