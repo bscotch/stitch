@@ -6,7 +6,7 @@ import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './gml.schema.js';
 import * as t from './project.abstract.js';
 import { Flaggable } from './types.flags.js';
 import { primitiveNames } from './types.primitives.js';
-import { StructType, Type } from './types.type.js';
+import { Type, type FunctionType, type StructType } from './types.type.js';
 
 export class GmlTypes {
   protected spec!: GmlSpec;
@@ -33,9 +33,13 @@ export class GmlTypes {
     return this.spec.runtime;
   }
 
-  createStructType(): StructType {
+  protected createStructType(): StructType {
     return this.types.get('Struct')!.derive() as StructType;
   }
+  protected createFunctionType(): FunctionType {
+    return this.types.get('Function')!.derive() as FunctionType;
+  }
+
   protected load() {
     this.loadConstants();
     this.loadVariables();
@@ -60,6 +64,16 @@ export class GmlTypes {
 
   protected loadFunctions() {
     for (const func of this.spec.functions) {
+      // Need a type and a symbol for each function.
+      const type = this.createFunctionType().named(func.name);
+      // TODO: Add parameters to the type.
+      // TODO: Add return type to the type.
+
+      const symbol = new Symbol(func.name)
+        .describe(func.description)
+        .writable(false)
+        .deprecate(func.deprecated)
+        .addType(type);
     }
   }
 

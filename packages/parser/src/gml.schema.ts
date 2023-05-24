@@ -4,12 +4,7 @@ export type GmlSpec = z.output<typeof gmlSpecSchema>;
 export type GmlSpecFunction = GmlSpec['functions'][number];
 export type GmlSpecVariable = GmlSpec['variables'][number];
 export type GmlSpecConstant = GmlSpec['constants'][number];
-export type GmlSpecType = GmlSpec['types'][number];
-export type GmlSpecEntry =
-  | GmlSpecFunction
-  | GmlSpecVariable
-  | GmlSpecConstant
-  | GmlSpecType;
+export type GmlSpecEntry = GmlSpecFunction | GmlSpecVariable | GmlSpecConstant;
 
 const booleanStringSchema = z
   .union([z.literal('true'), z.literal('false')])
@@ -226,34 +221,6 @@ export const gmlSpecSchema = z
       })
       .strict()
       .transform((v) => {
-        const types = new Set<string>([
-          'Array',
-          'Struct',
-          'String',
-          'Real',
-          'Bool',
-          'Struct',
-          'Function',
-          'Any',
-          'Pointer',
-          'Undefined',
-        ]);
-        const addTypes = (t: string | string[]) => {
-          t = Array.isArray(t) ? t : [t];
-          t.forEach((t) => types.add(t.replace(/\[.*/, '')));
-        };
-        for (const f of v.Functions[0].Function) {
-          addTypes(f.returnType);
-          for (const p of f.parameters) {
-            addTypes(p.type);
-          }
-        }
-        for (const va of v.Variables[0].Variable) {
-          addTypes(va.type);
-        }
-        for (const c of v.Constants[0].Constant) {
-          addTypes(c.type);
-        }
         return {
           runtime: v.$.RuntimeVersion,
           functions: v.Functions[0].Function,
@@ -261,7 +228,6 @@ export const gmlSpecSchema = z
           constants: v.Constants[0].Constant,
           structures: v.Structures[0].Structure,
           enumerations: v.Enumerations?.[0].Enumeration || [],
-          types: [...types].sort(),
         };
       }),
   })

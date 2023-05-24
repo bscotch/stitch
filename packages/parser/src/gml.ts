@@ -137,11 +137,6 @@ export class Gml {
       this.constants.push(gmlConstant);
       this.symbols.set(gmlConstant.name, gmlConstant);
     }
-    for (const name of this.spec.types) {
-      const gmlType = new GmlType({ name });
-      this.types.push(gmlType);
-      this.symbols.set(gmlType.name, gmlType);
-    }
   }
 
   static async from(filePath: string) {
