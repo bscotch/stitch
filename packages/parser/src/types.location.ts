@@ -14,6 +14,21 @@ export class Position {
     readonly column: number,
   ) {}
 
+  /**
+   * Create a new Positiong instance within this same file
+   * at the given location. */
+  at(loc: CstNodeLocation): Position {
+    return Position.fromCstStart(this.file, loc);
+  }
+
+  /**
+   * Create a new location starting at the end of
+   * the given location.
+   */
+  atEnd(loc: CstNodeLocation): Position {
+    return Position.fromCstEnd(this.file, loc);
+  }
+
   static fromCstStart(fileName: string, location: CstNodeLocation) {
     return new Position(
       fileName,

@@ -1,12 +1,12 @@
 import type { Pathy } from '@bscotch/pathy';
 import { parser, type GmlParsed } from './parser.js';
-import { processGlobalSymbols } from './project.visitGlobals.js';
-import { processSymbols } from './project.visitLocals.js';
 import type { Asset } from './types.asset.js';
 import { Diagnostic } from './types.legacy.js';
 import { Position, Reference, Scope } from './types.location.js';
 import type { Symbol } from './types.symbol.js';
 import type { StructType, Type } from './types.type.js';
+import { processGlobalSymbols } from './types.visitGlobals.js';
+import { processSymbols } from './types.visitLocals.js';
 
 export class GmlFile {
   readonly $tag = 'gmlFile';
