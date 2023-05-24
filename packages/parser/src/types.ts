@@ -10,7 +10,11 @@ import { StructType, Type } from './types.type.js';
 
 export class GmlTypes {
   protected spec!: GmlSpec;
-  readonly symbols: Map<string, Symbol> = new Map();
+  /** Symbols available globally */
+  readonly global: Map<string, Symbol> = new Map();
+  /** Symbols available in object instance scopes */
+  readonly instance: Map<string, Symbol> = new Map();
+
   /**
    * Types, looked up by their Feather-compatible name.
    * Types can be either a single type or a type union.
@@ -32,26 +36,34 @@ export class GmlTypes {
   createStructType(): StructType {
     return this.types.get('Struct')!.derive() as StructType;
   }
-
   protected load() {
-    // Create struct types. Each one extends the base Struct type.
-    for (const struct of this.spec.structures) {
-      if (!struct.name) {
-        console.warn(`Skipping unnamed struct`);
-        continue;
-      }
-      const typeName = `Struct.${struct.name}`;
-      const structType =
-        this.types.get(typeName) || this.createStructType().named(struct.name);
-      ok(!structType.members?.length, `Type ${typeName} already exists`);
-      this.types.set(typeName, structType);
+    this.loadConstants();
+    this.loadVariables();
+    this.loadStructs();
+    this.loadFunctions();
+  }
 
-      for (const prop of struct.properties) {
-        const type = Type.from(prop.type, this.types);
-        structType.addMemberType(prop.name, type, prop.writable);
+  protected loadVariables() {
+    for (const variable of this.spec.variables) {
+      const symbol = new Symbol(variable.name)
+        .writable(variable.writable)
+        .describe(variable.description)
+        .deprecate(variable.deprecated)
+        .addType(Type.from(variable.type, this.types));
+      if (variable.instance) {
+        this.instance.set(symbol.name, symbol);
+      } else {
+        this.global.set(symbol.name, symbol);
       }
     }
+  }
 
+  protected loadFunctions() {
+    for (const func of this.spec.functions) {
+    }
+  }
+
+  protected loadConstants() {
     // Handle the constants.
     // Each constant value represents a unique expression
     // of its type (e.g. it's not just a Real, it's the Real
@@ -77,7 +89,7 @@ export class GmlTypes {
             .writable(false)
             .describe(constant.description)
             .addType(Type.from(constant.type, this.types));
-          this.symbols.set(symbol.name, symbol);
+          this.global.set(symbol.name, symbol);
         }
         continue;
       }
@@ -113,12 +125,28 @@ export class GmlTypes {
           .writable(false)
           .describe(constant.description);
         symbol.addType(classType);
-        this.symbols.set(symbol.name, symbol);
+        this.global.set(symbol.name, symbol);
       }
     }
-    for (const func of this.spec.functions) {
-    }
-    for (const variable of this.spec.variables) {
+  }
+
+  protected loadStructs() {
+    // Create struct types. Each one extends the base Struct type.
+    for (const struct of this.spec.structures) {
+      if (!struct.name) {
+        console.warn(`Skipping unnamed struct`);
+        continue;
+      }
+      const typeName = `Struct.${struct.name}`;
+      const structType =
+        this.types.get(typeName) || this.createStructType().named(struct.name);
+      ok(!structType.members?.length, `Type ${typeName} already exists`);
+      this.types.set(typeName, structType);
+
+      for (const prop of struct.properties) {
+        const type = Type.from(prop.type, this.types);
+        structType.addMemberType(prop.name, type, prop.writable);
+      }
     }
   }
 
@@ -142,7 +170,7 @@ export class GmlTypes {
   toJSON() {
     return {
       filePath: this.filePath,
-      symbols: this.symbols,
+      symbols: this.global,
       types: this.types,
     };
   }

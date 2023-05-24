@@ -45,5 +45,10 @@ describe.only('GML', function () {
     ok(expectedTypeType);
     ok(type.type === expectedTypeType);
     ok(expectedTypeType.kind === 'Real');
+
+    // Variables
+    const depthSymbol = spec.instance.get('depth');
+    ok(depthSymbol);
+    expect(depthSymbol.type.kind).to.equal('Real');
   });
 });
