@@ -69,6 +69,10 @@ export class ProjectTypes {
         console.warn(`Skipping unnamed struct`);
         continue;
       }
+      // TODO: DELETE THIS
+      if (!['Track', 'Keyframe'].includes(struct.name)) {
+        continue;
+      }
       const typeName = `Struct.${struct.name}`;
       const structType =
         this.types.get(typeName) || this.createStructType().named(struct.name);
@@ -488,10 +492,13 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   ): Type {
     if (node.name === 'jsdocType') {
       const identifier = node.children.JsdocIdentifier[0].image;
-      const type = Type.fromIdentifier(identifier, knownTypes);
+      let type = Type.fromIdentifier(identifier, knownTypes);
       const subtypeNode = node.children.jsdocTypeUnion?.[0];
       if (subtypeNode) {
         const subtype = Type.fromCst(subtypeNode, knownTypes);
+        // Then we need to create a new type instead of mutating
+        // the one we found.
+        type = type.derive();
         if (type.kind.match(/^(Array|Struct|Id.Ds)/)) {
           type.addItemType(subtype);
         }
