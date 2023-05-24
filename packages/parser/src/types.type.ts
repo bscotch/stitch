@@ -1,0 +1,269 @@
+import { ok } from 'assert';
+import { JsdocTypeCstNode, JsdocTypeUnionCstNode } from '../gml-cst.js';
+import { parser } from './parser.js';
+import * as t from './project.abstract.js';
+import { Flaggable } from './types.flags.js';
+import { PrimitiveName, primitiveNames } from './types.primitives.js';
+
+export type AnyType = Type<'Any'>;
+export type ArrayType = Type<'Array'>;
+export type BoolType = Type<'Bool'>;
+export type EnumType = Type<'Enum'>;
+export type FunctionType = Type<'Function'>;
+export type PointerType = Type<'Pointer'>;
+export type RealType = Type<'Real'>;
+export type StringType = Type<'String'>;
+export type StructType = Type<'Struct'>;
+export type UndefinedType = Type<'Undefined'>;
+export type UnionType = Type<'Union'>;
+export type UnknownType = Type<'Unknown'>;
+
+export class TypeMember extends Flaggable {
+  constructor(public name: string, public type: Type) {
+    super();
+  }
+}
+
+export class Type<T extends PrimitiveName = PrimitiveName> {
+  readonly $tag = 'Type';
+  // Some types have names. It only counts as a name if it
+  // cannot be parsed into types given the name alone.
+  // E.g. `Array<String>` is not a name, but `Struct.MyStruct`
+  // results in the name `MyStruct`.
+  name: string | undefined = undefined;
+  /**
+   * If set, then this Type is treated as a subset of the parent.
+   * It will only "match" another type if that type is in its
+   * parent somewhere. Useful for struct inheritence, as well
+   * as for e.g. representing a subset of Real constants in a type. */
+  parent: Type<T> | undefined = undefined;
+
+  def: t.Reference | undefined = undefined;
+  refs: t.Reference[] = [];
+  // Applicable to Structs and Enums
+  members: TypeMember[] | undefined = undefined;
+  // Applicable to Arrays
+  items: Type | undefined = undefined;
+  // Applicable to Unions
+  types: Type[] | undefined = undefined;
+  // Applicable to Functions
+  context: Type<'String'> | undefined = undefined;
+  params: undefined | { name: string; type: Type; optional: boolean }[] =
+    undefined;
+  returns: undefined | Type = undefined;
+
+  constructor(readonly kind: T) {}
+
+  getMember(name: string): TypeMember | undefined {
+    return this.members?.find((m) => m.name === name);
+  }
+
+  get canHaveMembers() {
+    return ['Struct', 'Enum'].includes(this.kind);
+  }
+
+  get canHaveItems() {
+    return (
+      ['Array', 'Struct'].includes(this.kind) || this.kind.startsWith('Id.Ds')
+    );
+  }
+
+  /** For container types that have named members, like Structs and Enums */
+  addMemberType(name: string, type: Type, writable = true): this {
+    ok(
+      this.canHaveMembers,
+      `Cannot add member to non-struct/enum type ${this.kind}`,
+    );
+    this.members ??= [];
+    let member = this.members.find((m) => m.name === name);
+    if (!member) {
+      member = new TypeMember(name, type).writable(writable);
+      this.members.push(member);
+    } else {
+      if (member.type.kind !== 'Union') {
+        const oldType = member.type;
+        member.type = new Type('Union').addUnionType(oldType);
+      }
+      member.type.addUnionType(type);
+    }
+    return this;
+  }
+
+  addUnionType(type: Type): this {
+    ok(this.kind === 'Union', `Cannot add union type to ${this.kind}`);
+    this.types ??= [];
+    this.types.push(type);
+    return this;
+  }
+
+  /**
+   * For container types that have non-named members, like arrays and DsTypes.
+   * Can also be used for default Struct values. */
+  addItemType(type: Type): this {
+    ok(this.canHaveItems, `Cannot add item to non-array type ${this.kind}`);
+    if (!this.items) {
+      this.items = type;
+      return this;
+    }
+    if (this.items.kind !== 'Union') {
+      const union = new Type('Union').addUnionType(this.items);
+      this.items = union;
+    }
+    this.items.addUnionType(type);
+    return this;
+  }
+
+  /**
+   * Create a derived type: of the same kind, pointing to
+   * this type as its parent. */
+  derive(): Type<T> {
+    const derived = new Type(this.kind);
+    derived.parent = this;
+    return derived;
+  }
+
+  named(name: string): this {
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * If this type is unknown, change it to the provided Type.
+   * If it is a union, add the provided Type to the union.
+   * If it is not a union, convert it to a union and add the
+   * provided Type to the union.
+   *
+   * In all cases the original instance is mutated unless it was undefined.
+   */
+  static merge(original: Type | undefined, withType: Type): Type {
+    // If the incoming type is unknown, toss it.
+    // If the original type is Any/Mixed, then it's already as wide as possible so don't change it.
+    if (!original) {
+      return withType;
+    }
+    if (
+      withType.kind === 'Unknown' ||
+      ['Any', 'Mixed'].includes(original.kind)
+    ) {
+      return original;
+    }
+    // If the original type is unknow, now we know it! So just replace it.
+    if (original.kind === 'Unknown') {
+      // Then change it to the provided type
+      Object.assign(original, withType);
+      return original as any;
+    }
+    // Otherwise we're going to add a type to a union. If we aren't a union, convert to one.
+    if (original.kind !== 'Union') {
+      // Get a copy of the current type to add to the new union
+      const preUnionType = structuredClone(original);
+      // Then convert it to a union
+      const unionType = new Type('Union');
+      Object.assign(original, unionType);
+      // Then add the previous type to the union
+      original.types = [preUnionType];
+    }
+    // Add the new type to the union
+    original.types ??= [];
+    original.types.push(withType);
+    return original;
+  }
+
+  /** Given a Feather-compatible type string, get a fully parsed type. */
+  static from(typeString: string, knownTypes: Map<string, Type>): Type {
+    const parsed = parser.parseTypeString(typeString);
+    return Type.fromCst(parsed.cst, knownTypes);
+  }
+
+  static fromCst(
+    node: JsdocTypeUnionCstNode | JsdocTypeCstNode,
+    knownTypes: Map<string, Type>,
+  ): Type {
+    if (node.name === 'jsdocType') {
+      const identifier = node.children.JsdocIdentifier[0].image;
+      let type = Type.fromIdentifier(identifier, knownTypes);
+      const subtypeNode = node.children.jsdocTypeUnion?.[0];
+      if (subtypeNode) {
+        const subtype = Type.fromCst(subtypeNode, knownTypes);
+        // Then we need to create a new type instead of mutating
+        // the one we found.
+        type = type.derive();
+        if (type.kind.match(/^(Array|Struct|Id.Ds)/)) {
+          type.addItemType(subtype);
+        }
+        // TODO: Else create a diagnostic?
+      }
+      return type;
+    } else if (node.name === 'jsdocTypeUnion') {
+      const unionOf = node.children.jsdocType;
+      if (unionOf.length === 1) {
+        return Type.fromCst(unionOf[0], knownTypes);
+      }
+      const type = new Type('Union');
+      for (const child of unionOf) {
+        const subtype = Type.fromCst(child, knownTypes);
+        type.addUnionType(subtype);
+      }
+      return type;
+    }
+    throw new Error(`Unknown node type ${node['name']}`);
+  }
+
+  /**
+   * Given a type identifier, get a parsed Type instance. Useful for
+   * the "leaves" of a type tree, e.g. "String" or "Struct.Mystruct".
+   * Only creates primitive types, e.g. "Struct.MyStruct" will return
+   * a plain `Type<"Struct">` instance.
+   *
+   * When knownTypes are provided, will return a known type by exact
+   * identifier match if it exists. Otherwise a new type instance will
+   * be created *and added to the knownTypes map*.
+   */
+  static fromIdentifier(
+    identifier: string,
+    knownTypes: Map<string, Type>,
+    __isRootRequest = true,
+  ): Type {
+    ok(
+      identifier.match(/^[A-Z][A-Z0-9.]*$/i),
+      `Invalid type name ${identifier}`,
+    );
+    const knownType = knownTypes.get(identifier);
+    if (knownType) {
+      return knownType;
+    }
+    const normalizedName = identifier.toLocaleLowerCase();
+    const primitiveType = primitiveNames.find(
+      (n) => n.toLocaleLowerCase() === normalizedName,
+    );
+    if (primitiveType) {
+      return new Type(primitiveType);
+    } else if (identifier.match(/\./)) {
+      // Then we might still be able to get a base type.
+      const [baseType, ...nameParts] = identifier.split('.');
+      const type = Type.fromIdentifier(baseType, knownTypes, false);
+      if (__isRootRequest && type) {
+        // Then add to the known types map
+        const derivedTyped = type.derive().named(nameParts.join('.'));
+        knownTypes.set(identifier, derivedTyped);
+        return derivedTyped;
+      }
+      return type;
+    }
+    return new Type('Unknown');
+  }
+
+  toJSON() {
+    return {
+      $tag: this.$tag,
+      kind: this.kind,
+      parent: this.parent,
+      members: this.members,
+      items: this.items,
+      types: this.types,
+      context: this.context,
+      params: this.params,
+      returns: this.returns,
+    };
+  }
+}

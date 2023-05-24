@@ -1,10 +1,10 @@
 import { ok } from 'assert';
 import { expect } from 'chai';
-import { ProjectTypes } from './project.impl.js';
+import { GmlTypes } from './types.js';
 
 describe.only('GML', function () {
   it('can load the GML spec', async function () {
-    const spec = await ProjectTypes.from();
+    const spec = await GmlTypes.from();
     expect(spec).to.exist;
     // Check a few things that we expect to be in the spec.
     const track = spec.types.get('Struct.Track');
@@ -28,7 +28,6 @@ describe.only('GML', function () {
     const tracks = track.getMember('tracks');
     ok(tracks);
     expect(tracks.type.kind).to.equal('Array');
-    console.dir(tracks.type.items);
     expect(tracks.type.items!.kind).to.equal('Struct');
     expect(tracks.type.items!.parent!).to.eql(spec.types.get('Struct'));
     expect(tracks.type.items!).to.eql(track);
@@ -42,6 +41,9 @@ describe.only('GML', function () {
 
     const type = track.getMember('type');
     ok(type);
-    expect(type.type.kind).to.equal('Union');
+    const expectedTypeType = spec.types.get('Constant.SequenceTrackType');
+    ok(expectedTypeType);
+    ok(type.type === expectedTypeType);
+    ok(expectedTypeType.kind === 'Real');
   });
 });

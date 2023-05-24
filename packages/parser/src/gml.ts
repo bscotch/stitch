@@ -8,7 +8,11 @@ import {
   type GmlSpecVariable,
 } from './gml.schema.js';
 import type { Location } from './project.locations.js';
-import type { GmlSymbolKind, SymbolBase, SymbolRefBase } from './types.js';
+import type {
+  GmlSymbolKind,
+  SymbolBase,
+  SymbolRefBase,
+} from './types.legacy.js';
 
 export type GmlSymbolType = GmlFunction | GmlVariable | GmlConstant | GmlType;
 
@@ -31,7 +35,7 @@ export class GmlSymbolRef implements SymbolRefBase {
 export abstract class GmlSymbol<
   T extends {
     name: string;
-    type?: string[];
+    type?: string;
     class?: string;
     description?: string;
     deprecated?: boolean;
@@ -80,9 +84,9 @@ export class GmlFunction extends GmlSymbol<GmlSpecFunction> {
       if (param.optional) {
         code += '?';
       }
-      code += ': ' + param.type.join('|');
+      code += ': ' + param.type;
     }
-    code += '): ' + this.definition.returnType.join('|');
+    code += '): ' + this.definition.returnType;
     return code;
   }
 }

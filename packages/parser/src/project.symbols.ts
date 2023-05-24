@@ -1,6 +1,6 @@
 import type { IToken } from 'chevrotain';
 import type { Location } from './project.locations.js';
-import type { SymbolBase, SymbolKind, SymbolRefBase } from './types.js';
+import type { SymbolBase, SymbolKind, SymbolRefBase } from './types.legacy.js';
 
 export type ProjectSymbolType =
   | LocalVar

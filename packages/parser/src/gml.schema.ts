@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { normalizeTypeString } from './util.js';
 export type GmlSpec = z.output<typeof gmlSpecSchema>;
 export type GmlSpecFunction = GmlSpec['functions'][number];
 export type GmlSpecVariable = GmlSpec['variables'][number];
@@ -13,7 +14,7 @@ export type GmlSpecEntry =
 const booleanStringSchema = z
   .union([z.literal('true'), z.literal('false')])
   .transform((v) => v === 'true');
-const csvSchema = z.string().transform((v) => v.split(','));
+const typeStringSchema = z.string().transform((v) => normalizeTypeString(v));
 const localeSchema = z.enum(['GB', 'US']);
 const numberSchema = z
   .string()
@@ -27,7 +28,7 @@ const gmlSpecFunctionSchema = z
       .object({
         Name: z.string(),
         Deprecated: booleanStringSchema,
-        ReturnType: csvSchema,
+        ReturnType: typeStringSchema,
         Pure: booleanStringSchema,
         Locale: localeSchema.optional(),
         FeatureFlag: featureFlagSchema.optional(),
@@ -42,7 +43,7 @@ const gmlSpecFunctionSchema = z
             $: z
               .object({
                 Name: z.string(),
-                Type: csvSchema,
+                Type: typeStringSchema,
                 Optional: booleanStringSchema,
                 Coerce: booleanStringSchema.optional(),
               })
@@ -76,7 +77,7 @@ const gmlSpecVariableSchema = z
     $: z
       .object({
         Name: z.string(),
-        Type: csvSchema,
+        Type: typeStringSchema,
         Deprecated: booleanStringSchema,
         Get: booleanStringSchema,
         Set: booleanStringSchema,
@@ -106,7 +107,7 @@ const gmlSpecConstantSchema = z
       .object({
         Name: z.string(),
         Class: z.string().optional(),
-        Type: csvSchema,
+        Type: typeStringSchema,
         Deprecated: booleanStringSchema.optional(),
         FeatureFlag: featureFlagSchema.optional(),
         Locale: localeSchema.optional(),
@@ -139,7 +140,7 @@ const gmlSpecStructureSchema = z
           $: z
             .object({
               Name: z.string(),
-              Type: csvSchema,
+              Type: typeStringSchema,
               Get: booleanStringSchema,
               Set: booleanStringSchema,
               Locale: localeSchema.optional(),

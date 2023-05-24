@@ -10,7 +10,7 @@ import {
   type GlobalVar,
   type Macro,
 } from './project.symbols.js';
-import { SelfKind } from './types.js';
+import { SelfKind } from './types.legacy.js';
 
 export type SelfType = StructSelf | GlobalSelf | InstanceSelf;
 

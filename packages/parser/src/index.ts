@@ -16,4 +16,4 @@ export type {
   GmlParseError,
   GmlSymbolKind,
   SymbolKind,
-} from './types.js';
+} from './types.legacy.js';

@@ -12,7 +12,7 @@ import type {
 } from './project.symbols.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
 import { processSymbols } from './project.visitLocals.js';
-import { Diagnostic } from './types.js';
+import { Diagnostic } from './types.legacy.js';
 
 export class GmlFile {
   readonly type = 'gmlFile';

@@ -10,7 +10,7 @@ import { Gml } from './gml.js';
 import { GmlFile } from './project.gml.js';
 import { GameMakerResource } from './project.resource.js';
 import { GlobalSelf } from './project.selfs.js';
-import { Diagnostic } from './types.js';
+import { Diagnostic } from './types.legacy.js';
 
 type ResourceName = string;
 
