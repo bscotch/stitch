@@ -727,8 +727,10 @@ export class GmlParser extends CstParser {
       },
       { ALT: () => this.SUBRULE(this.stringLiteral) },
     ]);
-    this.CONSUME(t.Colon);
-    this.SUBRULE(this.assignmentRightHandSide);
+    this.OPTION1(() => {
+      this.CONSUME(t.Colon);
+      this.SUBRULE(this.assignmentRightHandSide);
+    });
   });
 
   readonly whileStatement = this.RULE('whileStatement', () => {
