@@ -4,9 +4,10 @@ import { Type } from './types.type.js';
 
 export class Symbol extends Flaggable {
   readonly $tag = 'Sym';
-  refs: Reference[] = [];
+  refs = new Set<Reference>();
   description: string | undefined = undefined;
-  range: Range | undefined = undefined;
+  /** Where this symbol was declared, if it is a non-native symbol */
+  def: Range | undefined = undefined;
   type: Type = new Type('Unknown');
 
   constructor(readonly name: string) {
@@ -26,8 +27,11 @@ export class Symbol extends Flaggable {
     return this;
   }
 
-  addRef(location: Range, type: Type): void {
-    throw new Error('Method not implemented.');
+  addRef(location: Range, type: Type): this {
+    const ref = Reference.fromRange(location, this);
+    ref.type = type;
+    this.refs.add(ref);
+    return this;
   }
 
   addType(newType: Type): this {

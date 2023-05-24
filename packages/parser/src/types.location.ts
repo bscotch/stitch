@@ -1,4 +1,6 @@
 import type { CstNodeLocation } from 'chevrotain';
+import { ok } from 'node:assert';
+import type { Symbol } from './types.symbol.js';
 import { StructType, Type } from './types.type.js';
 
 export type CstLocation = Required<CstNodeLocation>;
@@ -33,7 +35,16 @@ export class Position {
 
 export class Range {
   $tag = 'Range';
-  constructor(public start: Position, public end: Position) {}
+  public start: Position;
+  public end: Position;
+
+  constructor(start: Position, end?: Position) {
+    this.start = start;
+    if (end) {
+      ok(end.offset >= start.offset, 'Range end must be after start');
+    }
+    this.end = end ?? start;
+  }
 
   get file(): string {
     return this.start.file;
@@ -51,18 +62,21 @@ export class Scope extends Range {
   override readonly $tag = 'Scope';
   constructor(
     start: Position,
-    end: Position,
     readonly local: StructType,
     readonly self: StructType,
   ) {
-    super(start, end);
+    super(start);
   }
 }
 
 export class Reference extends Range {
   override readonly $tag = 'Ref';
   type: Type = new Type('Unknown');
-  constructor(start: Position, end: Position, readonly symbol: Symbol) {
+  constructor(readonly symbol: Symbol, start: Position, end: Position) {
     super(start, end);
+  }
+
+  static fromRange(range: Range, symbol: Symbol) {
+    return new Reference(symbol, range.start, range.end);
   }
 }

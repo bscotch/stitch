@@ -1,13 +1,12 @@
 import type { Pathy } from '@bscotch/pathy';
-import { GmlSymbol, GmlSymbolType } from './gml.js';
 import { parser, type GmlParsed } from './parser.js';
-import { LocalScope } from './project.scopes.js';
-import { ProjectSymbolType } from './project.symbols.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
 import { processSymbols } from './project.visitLocals.js';
 import type { Asset } from './types.asset.js';
 import { Diagnostic } from './types.legacy.js';
-import { Reference, Scope } from './types.location.js';
+import { Position, Reference, Scope } from './types.location.js';
+import type { Symbol } from './types.symbol.js';
+import type { StructType, Type } from './types.type.js';
 
 export class GmlFile {
   readonly $tag = 'gmlFile';
@@ -18,16 +17,16 @@ export class GmlFile {
   protected _content!: string;
   protected _parsed!: GmlParsed;
 
-  constructor(readonly resource: Asset, readonly path: Pathy<string>) {
+  constructor(readonly asset: Asset, readonly path: Pathy<string>) {
     this.initializeScopeRanges();
   }
 
   get isScript() {
-    return this.resource.assetType === 'scripts';
+    return this.asset.assetType === 'scripts';
   }
 
   get isObjectEvent() {
-    return this.resource.assetType === 'objects';
+    return this.asset.assetType === 'objects';
   }
 
   get isCreateEvent() {
@@ -35,15 +34,27 @@ export class GmlFile {
   }
 
   get project() {
-    return this.resource.project;
+    return this.asset.project;
+  }
+
+  createType(type: string): Type {
+    const baseType =
+      this.project.native.types.get(type) ||
+      this.project.native.types.get('Unknown');
+    return baseType!.derive();
+  }
+
+  createStructType(): StructType {
+    const type = this.createType('Struct') as StructType;
+    return type;
   }
 
   getReferenceAt(offset: number): Reference | undefined {
     for (let i = 0; i < this.refs.length; i++) {
       const ref = this.refs[i];
-      if (ref.start <= offset && ref.end >= offset) {
+      if (ref.start.offset <= offset && ref.end.offset >= offset) {
         return ref;
-      } else if (ref.start > offset) {
+      } else if (ref.start.offset > offset) {
         return undefined;
       }
     }
@@ -52,8 +63,8 @@ export class GmlFile {
 
   getScopeRangeAt(offset: number): Scope | undefined {
     for (const scopeRange of this.scopes) {
-      if (offset >= scopeRange.start.startOffset) {
-        if (!scopeRange.end || offset <= scopeRange.end.startOffset) {
+      if (offset >= scopeRange.start.offset) {
+        if (!scopeRange.end || offset <= scopeRange.end.offset) {
           return scopeRange;
         }
       }
@@ -66,12 +77,11 @@ export class GmlFile {
     if (!scopeRange) {
       return [];
     }
-    const self = scopeRange.self;
     return [
-      ...scopeRange.local.symbols.values(), // Local
-      ...(self.kind !== 'global' ? self.symbols.values() : []), // Self (if not global)
-      ...this.project.self.symbols.values(), // Project globals
-      ...this.project.self.gml.values(), // GML globals
+      // ...scopeRange.local.symbols.values(), // Local
+      // ...(self.kind !== 'global' ? self.symbols.values() : []), // Self (if not global)
+      // ...this.project.self.symbols.values(), // Project globals
+      // ...this.project.self.gml.values(), // GML globals
     ];
   }
 
@@ -81,10 +91,6 @@ export class GmlFile {
       this._refsAreSorted = true;
     }
     return [...this._refs];
-  }
-
-  get self() {
-    return this.resource.self;
   }
 
   get name() {
@@ -147,28 +153,28 @@ export class GmlFile {
 
   protected initializeScopeRanges() {
     this.scopes.length = 0;
-    this.scopes.push(new Scope(this.self, new LocalScope(this), this));
+    const position = new Position(this.path.absolute, 0, 0, 0);
+    const self = this.asset.instanceType || this.project.self;
+    const local = this.createStructType();
+    this.scopes.push(new Scope(position, local, self));
   }
 
   clearRefs() {
     this.initializeScopeRanges();
     // Remove each reference in *this file* from its symbol.
-    const cleared = new Set<ProjectSymbolType | GmlSymbolType>();
+    const cleared = new Set<Symbol>();
     for (const ref of this._refs) {
       const symbol = ref.symbol;
       if (cleared.has(symbol) || !symbol.refs.size) {
         continue;
       }
       // If the symbol was declared in this file, remove its location
-      if (!(symbol instanceof GmlSymbol)) {
-        if (symbol.location?.file === this) {
-          symbol.location = undefined;
-        }
+      if (symbol.def?.file && this.path.equals(symbol.def.file)) {
+        symbol.def = undefined;
       }
       // Remove all references to this symbol found in this file
       for (const symbolRef of symbol.refs) {
-        if (symbolRef.location.file === this) {
-          // @ts-expect-error
+        if (this.path.equals(symbolRef.file)) {
           symbol.refs.delete(symbolRef);
         }
       }

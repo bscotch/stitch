@@ -8,11 +8,11 @@ import {
   yySchemas,
 } from '@bscotch/yy';
 import { ok } from 'assert';
-import { StructType } from './types.abstract.js';
 import { GmlFile } from './types.gml.js';
 import { PrimitiveName } from './types.primitives.js';
 import { Project } from './types.project.js';
 import { Symbol } from './types.symbol.js';
+import { StructType } from './types.type.js';
 
 export class Asset<T extends YyResourceType = YyResourceType> {
   readonly $tag = 'Asset';
@@ -22,8 +22,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   readonly yyPath: Pathy<YySchemas[T]>;
   readonly symbol: Symbol;
   /**
-   * For objects, their instance type.
-   */
+   * For objects, their instance type. */
   readonly instanceType: StructType | undefined;
 
   protected constructor(
