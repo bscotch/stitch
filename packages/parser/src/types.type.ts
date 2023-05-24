@@ -19,8 +19,18 @@ export type UnionType = Type<'Union'>;
 export type UnknownType = Type<'Unknown'>;
 
 export class TypeMember extends Flaggable {
+  description: string | undefined = undefined;
+  // For function params
+  idx: number | undefined = undefined;
+  optional: undefined | boolean = undefined;
+
   constructor(public name: string, public type: Type) {
     super();
+  }
+
+  describe(description: string | undefined) {
+    this.description = description;
+    return this;
   }
 }
 
@@ -31,6 +41,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   // E.g. `Array<String>` is not a name, but `Struct.MyStruct`
   // results in the name `MyStruct`.
   name: string | undefined = undefined;
+  description: string | undefined = undefined;
   /**
    * If set, then this Type is treated as a subset of the parent.
    * It will only "match" another type if that type is in its
@@ -48,15 +59,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   types: Type[] | undefined = undefined;
   // Applicable to Functions
   context: Type<'String'> | undefined = undefined;
-  params: undefined | { name: string; type: Type; optional: boolean }[] =
-    undefined;
+  params: TypeMember[] | undefined = undefined;
   returns: undefined | Type = undefined;
 
   constructor(readonly kind: T) {}
-
-  getMember(name: string): TypeMember | undefined {
-    return this.members?.find((m) => m.name === name);
-  }
 
   get canHaveMembers() {
     return ['Struct', 'Enum'].includes(this.kind);
@@ -68,8 +74,52 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     );
   }
 
+  addReturnType(type: Type) {
+    ok(this.kind === 'Function', `Cannot add return type to ${this.kind}`);
+    if (!this.returns) {
+      this.returns = type;
+      return this;
+    }
+    if (this.returns.kind !== 'Union') {
+      const union = new Type('Union').addUnionType(this.returns);
+      this.returns = union;
+    }
+    this.returns.addUnionType(type);
+    return this;
+  }
+
+  getParameter(name: string): TypeMember | undefined;
+  getParameter(idx: number): TypeMember | undefined;
+  getParameter(nameOrIdx: string | number): TypeMember | undefined {
+    if (!this.params) {
+      return undefined;
+    }
+    if (typeof nameOrIdx === 'string') {
+      return this.params.find((p) => p.name === nameOrIdx);
+    }
+    return this.params[nameOrIdx];
+  }
+
+  addParameter(idx: number, name: string, type: Type, optional = false) {
+    ok(this.kind === 'Function', `Cannot add param to ${this.kind}`);
+    this.params ??= [];
+    let param = this.params[idx];
+    if (!param) {
+      param = new TypeMember(name, type).writable(false);
+      this.params[idx] = param;
+    }
+    param.type = type;
+    param.optional = optional;
+    param.name = name;
+    return param;
+  }
+
+  getMember(name: string): TypeMember | undefined {
+    return this.members?.find((m) => m.name === name);
+  }
+
   /** For container types that have named members, like Structs and Enums */
-  addMemberType(name: string, type: Type, writable = true): this {
+  addMember(name: string, type: Type, writable = true): TypeMember {
     ok(
       this.canHaveMembers,
       `Cannot add member to non-struct/enum type ${this.kind}`,
@@ -86,7 +136,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       }
       member.type.addUnionType(type);
     }
-    return this;
+    return member;
   }
 
   addUnionType(type: Type): this {
@@ -124,6 +174,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   named(name: string): this {
     this.name = name;
+    return this;
+  }
+
+  describe(description: string | undefined): this {
+    this.description = description;
     return this;
   }
 

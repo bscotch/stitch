@@ -6,16 +6,11 @@ describe.only('GML', function () {
   it('can load the GML spec', async function () {
     const spec = await GmlTypes.from();
     expect(spec).to.exist;
-    // Check a few things that we expect to be in the spec.
+
+    // STRUCTS AND CONSTS
     const track = spec.types.get('Struct.Track');
     ok(track);
     ok(track.kind === 'Struct');
-
-    // <Field Name="name" Type="String" Get="true" Set="true" />
-    // <Field Name="type" Type="Constant.SequenceTrackType" Get="true" Set="true" />
-    // <Field Name="tracks" Type="Array[Struct.Track]" Get="true" Set="true" />
-    // <Field Name="visible" Type="Bool" Get="true" Set="true" />
-    // <Field Name="keyframes" Type="Array[Struct.Keyframe]" Get="true" Set="true" />
 
     const name = track.getMember('name');
     ok(name);
@@ -46,9 +41,28 @@ describe.only('GML', function () {
     ok(type.type === expectedTypeType);
     ok(expectedTypeType.kind === 'Real');
 
-    // Variables
+    // VARIABLES
     const depthSymbol = spec.instance.get('depth');
     ok(depthSymbol);
     expect(depthSymbol.type.kind).to.equal('Real');
+
+    // FUNCTIONS
+    const scriptExecuteType = spec.types.get('Function.script_execute');
+    const scriptExecuteSymbol = spec.global.get('script_execute');
+    ok(scriptExecuteSymbol);
+    ok(scriptExecuteSymbol.type === scriptExecuteType);
+    ok(scriptExecuteType.kind === 'Function');
+    expect(scriptExecuteType.params).to.have.lengthOf(2);
+    expect(scriptExecuteType.params![0].name).to.equal('scr');
+    expect(scriptExecuteType.params![0].type.kind).to.equal('Union');
+    expect(scriptExecuteType.params![0].type.types).to.have.lengthOf(3);
+    expect(scriptExecuteType.params![0].type.types![0].kind).to.equal('String');
+    expect(scriptExecuteType.params![0].type.types![1].kind).to.equal(
+      'Function',
+    );
+    expect(scriptExecuteType.params![0].type.types![2].kind).to.equal(
+      'Asset.GMScript',
+    );
+    expect(scriptExecuteType.params![1].name).to.equal('...');
   });
 });

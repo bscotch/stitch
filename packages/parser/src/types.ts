@@ -64,16 +64,29 @@ export class GmlTypes {
 
   protected loadFunctions() {
     for (const func of this.spec.functions) {
+      const typeName = `Function.${func.name}`;
       // Need a type and a symbol for each function.
-      const type = this.createFunctionType().named(func.name);
-      // TODO: Add parameters to the type.
-      // TODO: Add return type to the type.
+      const type = (
+        this.types.get(typeName) || this.createFunctionType().named(func.name)
+      ).describe(func.description);
+      this.types.set(typeName, type);
+
+      // Add parameters to the type.
+      for (let i = 0; i < func.parameters.length; i++) {
+        const param = func.parameters[i];
+        const paramType = Type.from(param.type, this.types);
+        type
+          .addParameter(i, param.name, paramType, param.optional)
+          .describe(param.description);
+      }
+      // Add return type to the type.
+      type.addReturnType(Type.from(func.returnType, this.types));
 
       const symbol = new Symbol(func.name)
-        .describe(func.description)
         .writable(false)
         .deprecate(func.deprecated)
         .addType(type);
+      this.global.set(symbol.name, symbol);
     }
   }
 
@@ -148,7 +161,6 @@ export class GmlTypes {
     // Create struct types. Each one extends the base Struct type.
     for (const struct of this.spec.structures) {
       if (!struct.name) {
-        console.warn(`Skipping unnamed struct`);
         continue;
       }
       const typeName = `Struct.${struct.name}`;
@@ -159,7 +171,9 @@ export class GmlTypes {
 
       for (const prop of struct.properties) {
         const type = Type.from(prop.type, this.types);
-        structType.addMemberType(prop.name, type, prop.writable);
+        structType
+          .addMember(prop.name, type, prop.writable)
+          .describe(prop.description);
       }
     }
   }
