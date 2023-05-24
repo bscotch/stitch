@@ -11,9 +11,14 @@ import { GmlFile } from './types.gml.js';
 import { Diagnostic } from './types.legacy.js';
 import { Native } from './types.native.js';
 import { Symbol } from './types.symbol.js';
-import { StructType, Type } from './types.type.js';
+import { StructType, Type, TypeMember } from './types.type.js';
 
 type AssetName = string;
+
+export interface SymbolInfo {
+  native: boolean;
+  symbol: Symbol | TypeMember | Type;
+}
 
 export interface ProjectOptions {
   /**
@@ -91,17 +96,73 @@ export class Project {
     return resource.getGmlFile(path);
   }
 
-  /** Add a symbol the the non-`global` struct, but still global, symbols */
-  addSymbol(symbol: Symbol) {
-    ok(!this.symbols.has(symbol.name), `Symbol ${symbol.name} already exists`);
-    this.symbols.set(symbol.name, symbol);
+  /**
+   * Get a named symbol from any global pool, including global
+   * struct members and global types, from the project and from
+   * native GML. */
+  getGlobal(name: string): SymbolInfo | undefined {
+    // Check symbols first, starting with project scope
+    // After that, check types.
+    const info: SymbolInfo = {
+      native: false,
+      // Only returned if found, so type-cheating for convenience.
+      symbol: undefined as unknown as Symbol,
+    };
+    let symbol: SymbolInfo['symbol'] | undefined = this.symbols.get(name);
+    if (symbol) {
+      info.symbol = symbol;
+      return info;
+    }
+    symbol = this.self.getMember(name);
+    if (symbol) {
+      info.symbol = symbol;
+      return info;
+    }
+    symbol = this.native.global.get(name);
+    if (symbol) {
+      info.native = true;
+      info.symbol = symbol;
+      return info;
+    }
+    // Check types
+    symbol = this.types.get(name);
+    if (symbol) {
+      info.symbol = symbol;
+      return info;
+    }
+    symbol = this.native.types.get(name);
+    if (symbol) {
+      info.native = true;
+      info.symbol = symbol;
+      return info;
+    }
   }
 
-  /** Add a globally accessible type, e.g. for use in JSDocs and type inference. */
-  addType(type: Type): void {
-    const name = type.name;
-    ok(name && !this.types.has(name), `Type ${type.name} already exists`);
-    this.types.set(name, type);
+  /**
+   * Add an entry to global tracking. Automatically adds
+   * the type of the item if appropriate. If the item should
+   * also be listed as a member of `global`, set `addToGlobalSelf`
+   *
+   */
+  addGlobal(item: Symbol, addToGlobalSelf = false) {
+    // Ensure it doesn't already exist
+    const existing = this.getGlobal(item.name);
+    ok(!existing, `Global ${item.name} already exists`);
+    const isFunction = item.type.kind === 'Function';
+    // If it is a function or enum, add its type to the global types
+    if (['Function', 'Enum']) {
+      this.types.set(`${item.type.kind}.${item.name}`, item.type);
+    }
+    // If it is a constructor, add its resulting struct type to the global types
+    if (isFunction && item.type.constructs) {
+      this.types.set(`Struct.${item.name}`, item.type.constructs);
+    }
+    // Add the symbol to the appropriate global pool
+    if (addToGlobalSelf) {
+      this.self.addMember(item.name, item.type);
+    } else {
+      this.symbols.set(item.name, item);
+    }
   }
 
   addResource(resource: Asset): void {

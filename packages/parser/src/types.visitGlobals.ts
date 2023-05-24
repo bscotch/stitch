@@ -8,10 +8,12 @@ import type {
   MacroStatementCstChildren,
 } from '../gml-cst.js';
 import { GmlVisitorBase } from './parser.js';
+import { GlobalFunction, GlobalVar, Macro } from './project.symbols.js';
 import type { GmlFile } from './types.gml.js';
-import { Position } from './types.location.js';
-import { StructType } from './types.type.js';
+import { Position, Range } from './types.location.js';
+import { PrimitiveName } from './types.primitives.js';
 import { Symbol } from './types.symbol.js';
+import { StructType, TypeMember } from './types.type.js';
 
 export function processGlobalSymbols(file: GmlFile) {
   const processor = new GlobalDeclarationsProcessor(file);
@@ -41,10 +43,6 @@ class GlobalDeclarationsProcessor {
     this.localScopeStack.pop();
   }
 
-  get globals() {
-    return this.project.self;
-  }
-
   get asset() {
     return this.file.asset;
   }
@@ -57,31 +55,40 @@ class GlobalDeclarationsProcessor {
 export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   static validated = false;
 
-  ADD_GLOBAL_SYMBOL(
+  ADD_GLOBAL_DECLARATION<T extends PrimitiveName>(
     children: { Identifier?: IToken[] },
-    klass: new (...args: any[]) => Symbol,
+    typeName: T,
+    addToGlobalSelf = false,
     /**
      * Variables set without globalvar, using only global.NAME,
      * have no definite declaration location. */
     isNotDeclaration = false,
-  ): Symbol | undefined {
+  ) {
     const name = children.Identifier?.[0];
     if (!name) return;
-    const location = this.PROCESSOR.start.at(name);
+    const range = Range.fromCst(this.PROCESSOR.start.file, name);
+
     // Only create it if it doesn't already exist.
-    let symbol = this.PROCESSOR.globals.getSymbol(name.image);
+    let symbol = this.PROCESSOR.project.getGlobal(name.image)?.symbol as
+      | Symbol
+      | TypeMember;
     if (!symbol) {
-      symbol = new klass(name.image, location, isNotDeclaration) as any;
-      this.PROCESSOR.globals.addSymbol(symbol as any);
+      symbol = new Symbol(name.image);
+      symbol.def = range;
+      const type = this.PROCESSOR.file.createType(typeName);
+      type.def = range;
+      symbol.addType(type);
+      // Add the symbol and type to the project.
+      this.PROCESSOR.project.addGlobal(symbol, addToGlobalSelf);
     } else {
       const isDeclaration = !isNotDeclaration;
       if (isDeclaration) {
         // Then we need to override the original location.
-        symbol.location = location;
+        symbol.def = range;
       }
-      symbol.addRef(location, isDeclaration);
+      symbol.addRef(range, isDeclaration);
     }
-    return symbol as any;
+    return symbol;
   }
 
   extractGlobalDeclarations(input: CstNode) {
@@ -90,20 +97,20 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override enumStatement(children: EnumStatementCstChildren) {
-    this.ADD_GLOBAL_SYMBOL(children, Enum)!;
+    this.ADD_GLOBAL_DECLARATION(children, 'Enum')!;
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {
     const isGlobal =
       this.PROCESSOR.currentLocalScope ===
         this.PROCESSOR.file.scopes[0].local &&
-      this.PROCESSOR.asset.type === 'scripts';
+      this.PROCESSOR.asset.assetType === 'scripts';
     // Functions create a new localscope
     this.PROCESSOR.pushLocalScope();
     const name = children.Identifier?.[0];
     // Add the function to a table of functions
     if (name && isGlobal) {
-      const _symbol = this.ADD_GLOBAL_SYMBOL(children, GlobalFunction)!;
+      const _symbol = this.ADD_GLOBAL_DECLARATION(children, GlobalFunction)!;
       if (children.constructorSuffix?.[0]) {
         _symbol.isConstructor = true;
       }
@@ -122,11 +129,11 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    this.ADD_GLOBAL_SYMBOL(children, GlobalVar)!;
+    this.ADD_GLOBAL_DECLARATION(children, GlobalVar)!;
   }
 
   override macroStatement(children: MacroStatementCstChildren) {
-    this.ADD_GLOBAL_SYMBOL(children, Macro)!;
+    this.ADD_GLOBAL_DECLARATION(children, Macro)!;
   }
 
   override identifierAccessor(children: IdentifierAccessorCstChildren) {
@@ -137,7 +144,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         children.accessorSuffixes?.[0].children.dotAccessSuffix?.[0].children
           .identifier[0].children;
       if (identifier?.Identifier) {
-        this.ADD_GLOBAL_SYMBOL(identifier, GlobalVar, false);
+        this.ADD_GLOBAL_DECLARATION(identifier, GlobalVar, false);
       }
     }
 

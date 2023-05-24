@@ -164,7 +164,7 @@ export class GmlFile {
     // Remove each reference in *this file* from its symbol.
     const cleared = new Set<Symbol>();
     for (const ref of this._refs) {
-      const symbol = ref.symbol;
+      const symbol = ref.item;
       if (cleared.has(symbol) || !symbol.refs.size) {
         continue;
       }

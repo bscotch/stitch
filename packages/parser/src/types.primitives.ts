@@ -1,7 +1,22 @@
+/** Base types, like Array, Real, Struct, etc */
+export type BaseName = (typeof baseNames)[number];
+export const baseNames = [
+  'Array',
+  'Bool',
+  'Enum',
+  'Function',
+  'Pointer',
+  'Real',
+  'String',
+  'Struct',
+  'Undefined',
+] as const;
+Object.freeze(Object.seal(baseNames));
+
 export type PrimitiveName = (typeof primitiveNames)[number];
 export const primitiveNames = [
+  ...baseNames,
   'Any',
-  'Array',
   'Asset.GMAnimCurve',
   'Asset.GMAudioGroup',
   'Asset.GMFont',
@@ -17,9 +32,6 @@ export const primitiveNames = [
   'Asset.GMTileSet',
   'Asset.GMTimeline',
   'Asset.Script',
-  'Bool',
-  'Enum',
-  'Function',
   'Id.AudioEmitter',
   'Id.AudioListener',
   'Id.AudioSyncGroup',
@@ -58,11 +70,6 @@ export const primitiveNames = [
   'Id.VertexBuffer',
   'Id.VertexFormat',
   'Mixed',
-  'Pointer',
-  'Real',
-  'String',
-  'Struct',
-  'Undefined',
   'Union',
   'Unknown',
 ] as const;

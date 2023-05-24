@@ -193,7 +193,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   protected async initiallyReadAndParseGml() {
     // If we are not a script, add ourselves to the global symbols.
     if (this.assetType !== 'scripts') {
-      this.project.addSymbol(this.symbol);
+      this.project.addGlobal(this.symbol);
     }
 
     const parseWaits: Promise<any>[] = [];

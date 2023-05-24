@@ -1,8 +1,8 @@
 import { ok } from 'assert';
 import { JsdocTypeCstNode, JsdocTypeUnionCstNode } from '../gml-cst.js';
 import { parser } from './parser.js';
-import * as t from './types.abstract.js';
 import { Flaggable } from './types.flags.js';
+import { Range, Reference } from './types.location.js';
 import { PrimitiveName, primitiveNames } from './types.primitives.js';
 
 export type AnyType = Type<'Any'>;
@@ -20,6 +20,7 @@ export type UnknownType = Type<'Unknown'>;
 
 export class TypeMember extends Flaggable {
   description: string | undefined = undefined;
+  def: Range | undefined = undefined;
   // For function params
   idx: number | undefined = undefined;
   optional: undefined | boolean = undefined;
@@ -45,19 +46,27 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   /**
    * If set, then this Type is treated as a subset of the parent.
    * It will only "match" another type if that type is in its
-   * parent somewhere. Useful for struct inheritence, as well
+   * parent somewhere. Useful for struct/constructor inheritence, as well
    * as for e.g. representing a subset of Real constants in a type. */
   parent: Type<T> | undefined = undefined;
 
-  def: t.Reference | undefined = undefined;
-  refs: t.Reference[] = [];
+  def: Range | undefined = undefined;
+  refs: Reference[] = [];
+
   // Applicable to Structs and Enums
   members: TypeMember[] | undefined = undefined;
+
   // Applicable to Arrays
   items: Type | undefined = undefined;
+
   // Applicable to Unions
   types: Type[] | undefined = undefined;
+
   // Applicable to Functions
+  /**
+   * If this is a constructor function, then this is the
+   * type of the struct that it constructs. */
+  constructs: Type<'Struct'> | undefined = undefined;
   context: Type<'String'> | undefined = undefined;
   params: TypeMember[] | undefined = undefined;
   returns: undefined | Type = undefined;
@@ -111,6 +120,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     param.type = type;
     param.optional = optional;
     param.name = name;
+    param.idx = idx;
     return param;
   }
 
