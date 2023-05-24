@@ -1,10 +1,10 @@
 import { ok } from 'assert';
 import { expect } from 'chai';
-import { GmlTypes } from './types.js';
+import { Native } from './types.native.js';
 
-describe.only('GML', function () {
+describe('GML', function () {
   it('can load the GML spec', async function () {
-    const spec = await GmlTypes.from();
+    const spec = await Native.from();
     expect(spec).to.exist;
 
     // STRUCTS AND CONSTS

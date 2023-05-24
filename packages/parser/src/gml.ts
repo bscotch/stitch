@@ -1,18 +1,18 @@
 import { readFile } from 'fs/promises';
 import { parseStringPromise } from 'xml2js';
-import {
-  gmlSpecSchema,
-  type GmlSpec,
-  type GmlSpecConstant,
-  type GmlSpecFunction,
-  type GmlSpecVariable,
-} from './gml.schema.js';
 import type { Location } from './project.locations.js';
 import type {
   GmlSymbolKind,
   SymbolBase,
   SymbolRefBase,
 } from './types.legacy.js';
+import {
+  gmlSpecSchema,
+  type GmlSpec,
+  type GmlSpecConstant,
+  type GmlSpecFunction,
+  type GmlSpecVariable,
+} from './types.spec.js';
 
 export type GmlSymbolType = GmlFunction | GmlVariable | GmlConstant | GmlType;
 

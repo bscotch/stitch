@@ -2,13 +2,12 @@ import { pathy } from '@bscotch/pathy';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
-import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './gml.schema.js';
-import * as t from './project.abstract.js';
-import { Flaggable } from './types.flags.js';
 import { primitiveNames } from './types.primitives.js';
+import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './types.spec.js';
+import { Symbol } from './types.symbol.js';
 import { Type, type FunctionType, type StructType } from './types.type.js';
 
-export class GmlTypes {
+export class Native {
   protected spec!: GmlSpec;
   /** Symbols available globally */
   readonly global: Map<string, Symbol> = new Map();
@@ -178,9 +177,9 @@ export class GmlTypes {
     }
   }
 
-  static async from(filePath: string = GmlTypes.fallbackGmlSpecPath.absolute) {
-    const parsedSpec = await GmlTypes.parse(filePath);
-    const spec = new GmlTypes(filePath);
+  static async from(filePath: string = Native.fallbackGmlSpecPath.absolute) {
+    const parsedSpec = await Native.parse(filePath);
+    const spec = new Native(filePath);
     spec.spec = parsedSpec;
     spec.load();
     return spec;
@@ -206,50 +205,4 @@ export class GmlTypes {
   static readonly fallbackGmlSpecPath = pathy(import.meta.url).resolveTo(
     '../../assets/GmlSpec.xml',
   );
-}
-
-export class Symbol extends Flaggable {
-  readonly $tag = 'Sym';
-  refs: t.Reference[] = [];
-  description: string | undefined = undefined;
-  range: t.Range | undefined = undefined;
-  type: Type = new Type('Unknown');
-
-  constructor(readonly name: string) {
-    super();
-  }
-
-  toJSON() {
-    return {
-      $tag: this.$tag,
-      name: this.name,
-      type: this.type,
-    };
-  }
-
-  describe(description: string | undefined): this {
-    this.description = description;
-    return this;
-  }
-
-  addRef(location: t.Range, type: t.Type): void {
-    throw new Error('Method not implemented.');
-  }
-
-  addType(newType: Type): this {
-    // We may have duplicate types, but that information is
-    // still useful since the same type information may have
-    // come from multiple assignment statements.
-    if (this.type.kind === 'Unknown') {
-      // Change the type to a this new type
-      this.type = newType;
-    } else if (this.type.kind !== 'Union') {
-      // Then we need to convert it into a union type
-      const originalType = this.type;
-      this.type = new Type('Union')
-        .addUnionType(originalType)
-        .addUnionType(newType);
-    }
-    return this;
-  }
 }

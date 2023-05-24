@@ -1,7 +1,7 @@
 import { ok } from 'assert';
 import { JsdocTypeCstNode, JsdocTypeUnionCstNode } from '../gml-cst.js';
 import { parser } from './parser.js';
-import * as t from './project.abstract.js';
+import * as t from './types.abstract.js';
 import { Flaggable } from './types.flags.js';
 import { PrimitiveName, primitiveNames } from './types.primitives.js';
 
