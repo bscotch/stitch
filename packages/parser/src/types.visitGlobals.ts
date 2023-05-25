@@ -1,5 +1,6 @@
 // CST Visitor for creating an AST etc
-import type { CstNode, IToken } from 'chevrotain';
+import { ok } from 'assert';
+import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
 import type {
   EnumStatementCstChildren,
   FunctionExpressionCstChildren,
@@ -8,7 +9,6 @@ import type {
   MacroStatementCstChildren,
 } from '../gml-cst.js';
 import { GmlVisitorBase } from './parser.js';
-import { GlobalFunction, GlobalVar, Macro } from './project.symbols.js';
 import type { GmlFile } from './types.gml.js';
 import { Position, Range } from './types.location.js';
 import { PrimitiveName } from './types.primitives.js';
@@ -28,6 +28,10 @@ class GlobalDeclarationsProcessor {
   constructor(readonly file: GmlFile) {
     this.localScopeStack.push(file.scopes[0].local);
     this.start = file.scopes[0].start;
+  }
+
+  range(loc: CstNodeLocation) {
+    return Range.fromCst(this.start.file, loc);
   }
 
   get currentLocalScope() {
@@ -63,31 +67,30 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
      * Variables set without globalvar, using only global.NAME,
      * have no definite declaration location. */
     isNotDeclaration = false,
-  ) {
+  ): Symbol | TypeMember | undefined {
     const name = children.Identifier?.[0];
     if (!name) return;
-    const range = Range.fromCst(this.PROCESSOR.start.file, name);
+    const range = this.PROCESSOR.range(name);
+    const type = this.PROCESSOR.file.createType(typeName).definedAt(range);
 
     // Only create it if it doesn't already exist.
     let symbol = this.PROCESSOR.project.getGlobal(name.image)?.symbol as
       | Symbol
       | TypeMember;
     if (!symbol) {
-      symbol = new Symbol(name.image);
-      symbol.def = range;
-      const type = this.PROCESSOR.file.createType(typeName);
-      type.def = range;
-      symbol.addType(type);
+      symbol = new Symbol(name.image).definedAt(range).addType(type);
       // Add the symbol and type to the project.
       this.PROCESSOR.project.addGlobal(symbol, addToGlobalSelf);
     } else {
-      const isDeclaration = !isNotDeclaration;
-      if (isDeclaration) {
+      // It might already exist due to reloading a file, or due
+      // to an ambiguous `global.` declaration, or due to a
+      // re-declaration.
+      if (!isNotDeclaration) {
         // Then we need to override the original location.
-        symbol.def = range;
+        symbol.definedAt(range);
       }
-      symbol.addRef(range, isDeclaration);
     }
+    symbol.addRef(range, type);
     return symbol;
   }
 
@@ -110,16 +113,26 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const name = children.Identifier?.[0];
     // Add the function to a table of functions
     if (name && isGlobal) {
-      const _symbol = this.ADD_GLOBAL_DECLARATION(children, GlobalFunction)!;
+      const _symbol = this.ADD_GLOBAL_DECLARATION(children, 'Function')!;
+      const functionType = _symbol.type;
+      ok(functionType.kind === 'Function');
       if (children.constructorSuffix?.[0]) {
-        _symbol.isConstructor = true;
+        // Ensure that the struct type exists for this constructor function
+        _symbol.type.constructs ||= this.PROCESSOR.file.createType('Struct');
       }
+
+      // TODO: Move this into the local processor
       // Add function signature components
+      functionType.clearParameters();
       const params =
         children.functionParameters?.[0]?.children.functionParameter || [];
       for (let i = 0; i < params.length; i++) {
         const param = params[i].children.Identifier[0];
-        _symbol.addParam(i, param, this.PROCESSOR.start.at(param));
+        const range = this.PROCESSOR.range(param);
+        // TODO: Use JSDocs to determine the type of the parameter
+        const type = this.PROCESSOR.file.createType('Unknown').definedAt(range);
+        const optional = !!params[i].children.Assign;
+        type.addParameter(i, param.image, type, optional);
       }
     }
     this.visit(children.blockStatement);
@@ -129,11 +142,11 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    this.ADD_GLOBAL_DECLARATION(children, GlobalVar)!;
+    this.ADD_GLOBAL_DECLARATION(children, 'Unknown', true)!;
   }
 
   override macroStatement(children: MacroStatementCstChildren) {
-    this.ADD_GLOBAL_DECLARATION(children, Macro)!;
+    this.ADD_GLOBAL_DECLARATION(children, 'Macro')!;
   }
 
   override identifierAccessor(children: IdentifierAccessorCstChildren) {
@@ -144,11 +157,11 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         children.accessorSuffixes?.[0].children.dotAccessSuffix?.[0].children
           .identifier[0].children;
       if (identifier?.Identifier) {
-        this.ADD_GLOBAL_DECLARATION(identifier, GlobalVar, false);
+        this.ADD_GLOBAL_DECLARATION(identifier, 'Unknown', false);
       }
     }
 
-    // Stil visit the rest
+    // Still visit the rest
     if (children.accessorSuffixes) {
       this.visit(children.accessorSuffixes);
     }

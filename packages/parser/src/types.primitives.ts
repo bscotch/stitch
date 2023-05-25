@@ -5,6 +5,7 @@ export const baseNames = [
   'Bool',
   'Enum',
   'Function',
+  'Macro',
   'Pointer',
   'Real',
   'String',

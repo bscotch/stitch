@@ -2,6 +2,7 @@ import type { CstNodeLocation } from 'chevrotain';
 import { ok } from 'node:assert';
 import type { Symbol } from './types.symbol.js';
 import { StructType, Type, TypeMember } from './types.type.js';
+import type { Constructor } from './util.js';
 
 export type CstLocation = Required<CstNodeLocation>;
 
@@ -100,15 +101,24 @@ export class Reference extends Range {
   }
 }
 
-/** A class to extend from for adding def/refs */
-export class Referenced {
-  def: Range | undefined = undefined;
-  refs = new Set<Reference>();
+/** Extend a class to add `def`, `refs`, and related fields and methods. */
+export function Refs<TBase extends Constructor>(Base: TBase) {
+  return class extends Base {
+    def: Range | undefined = undefined;
+    refs = new Set<Reference>();
 
-  addRef(location: Range, type: Type): this {
-    const ref = Reference.fromRange(location, this as any);
-    ref.type = type;
-    this.refs.add(ref);
-    return this;
-  }
+    addRef(location: Range, type: Type): this {
+      const ref = Reference.fromRange(location, this as any);
+      ref.type = type;
+      this.refs.add(ref);
+      return this;
+    }
+
+    definedAt(location: Range | undefined): this {
+      this.def = location;
+      return this;
+    }
+  };
 }
+
+export class Referenceable extends Refs(class {}) {}

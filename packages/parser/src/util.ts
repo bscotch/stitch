@@ -1,9 +1,9 @@
-let logging = false;
+export type Constructor<T = {}> = new (...args: any[]) => T;
 
+let logging = false;
 export function enableLogging() {
   logging = true;
 }
-
 export function disableLogging() {
   logging = false;
 }

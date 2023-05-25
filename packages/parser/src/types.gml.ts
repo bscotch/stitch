@@ -3,6 +3,7 @@ import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './types.asset.js';
 import { Diagnostic } from './types.legacy.js';
 import { Position, Reference, Scope } from './types.location.js';
+import { PrimitiveName } from './types.primitives.js';
 import type { Symbol } from './types.symbol.js';
 import type { StructType, Type } from './types.type.js';
 import { processGlobalSymbols } from './types.visitGlobals.js';
@@ -37,10 +38,9 @@ export class GmlFile {
     return this.asset.project;
   }
 
-  createType(type: string): Type {
-    const baseType =
-      this.project.native.types.get(type) ||
-      this.project.native.types.get('Unknown');
+  createType<T extends PrimitiveName>(type: T): Type<T> {
+    const baseType = (this.project.native.types.get(type) ||
+      this.project.native.types.get('Unknown')) as Type<T>;
     return baseType!.derive();
   }
 

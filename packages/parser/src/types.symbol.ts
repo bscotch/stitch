@@ -1,13 +1,10 @@
 import { Flaggable } from './types.flags.js';
-import { Range, Reference } from './types.location.js';
+import { Refs } from './types.location.js';
 import { Type } from './types.type.js';
 
-export class Symbol extends Flaggable {
+export class Symbol extends Refs(Flaggable) {
   readonly $tag = 'Sym';
-  refs = new Set<Reference>();
   description: string | undefined = undefined;
-  /** Where this symbol was declared, if it is a non-native symbol */
-  def: Range | undefined = undefined;
   type: Type = new Type('Unknown');
 
   constructor(readonly name: string) {
@@ -24,13 +21,6 @@ export class Symbol extends Flaggable {
 
   describe(description: string | undefined): this {
     this.description = description;
-    return this;
-  }
-
-  addRef(location: Range, type: Type): this {
-    const ref = Reference.fromRange(location, this);
-    ref.type = type;
-    this.refs.add(ref);
     return this;
   }
 

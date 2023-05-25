@@ -2,7 +2,7 @@ import { ok } from 'assert';
 import { JsdocTypeCstNode, JsdocTypeUnionCstNode } from '../gml-cst.js';
 import { parser } from './parser.js';
 import { Flaggable } from './types.flags.js';
-import { Range, Reference } from './types.location.js';
+import { Referenceable, Refs } from './types.location.js';
 import { PrimitiveName, primitiveNames } from './types.primitives.js';
 
 export type AnyType = Type<'Any'>;
@@ -18,9 +18,8 @@ export type UndefinedType = Type<'Undefined'>;
 export type UnionType = Type<'Union'>;
 export type UnknownType = Type<'Unknown'>;
 
-export class TypeMember extends Flaggable {
+export class TypeMember extends Refs(Flaggable) {
   description: string | undefined = undefined;
-  def: Range | undefined = undefined;
   // For function params
   idx: number | undefined = undefined;
   optional: undefined | boolean = undefined;
@@ -35,7 +34,9 @@ export class TypeMember extends Flaggable {
   }
 }
 
-export class Type<T extends PrimitiveName = PrimitiveName> {
+export class Type<
+  T extends PrimitiveName = PrimitiveName,
+> extends Referenceable {
   readonly $tag = 'Type';
   // Some types have names. It only counts as a name if it
   // cannot be parsed into types given the name alone.
@@ -49,9 +50,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * parent somewhere. Useful for struct/constructor inheritence, as well
    * as for e.g. representing a subset of Real constants in a type. */
   parent: Type<T> | undefined = undefined;
-
-  def: Range | undefined = undefined;
-  refs: Reference[] = [];
 
   // Applicable to Structs and Enums
   members: TypeMember[] | undefined = undefined;
@@ -71,7 +69,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   params: TypeMember[] | undefined = undefined;
   returns: undefined | Type = undefined;
 
-  constructor(readonly kind: T) {}
+  constructor(readonly kind: T) {
+    super();
+  }
 
   get canHaveMembers() {
     return ['Struct', 'Enum'].includes(this.kind);
@@ -122,6 +122,12 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     param.name = name;
     param.idx = idx;
     return param;
+  }
+
+  clearParameters() {
+    ok(this.kind === 'Function', `Cannot clear params of ${this.kind}`);
+    this.params = undefined;
+    return this;
   }
 
   getMember(name: string): TypeMember | undefined {
