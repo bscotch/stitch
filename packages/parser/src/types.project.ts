@@ -136,6 +136,7 @@ export class Project {
       info.symbol = symbol;
       return info;
     }
+    return;
   }
 
   /**

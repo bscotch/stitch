@@ -2,7 +2,12 @@ import type { Pathy } from '@bscotch/pathy';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './types.asset.js';
 import { Diagnostic } from './types.legacy.js';
-import { Position, Reference, Scope } from './types.location.js';
+import {
+  Position,
+  Reference,
+  ReferenceableType,
+  Scope,
+} from './types.location.js';
 import { PrimitiveName } from './types.primitives.js';
 import type { Symbol } from './types.symbol.js';
 import { Type, type StructType } from './types.type.js';
@@ -162,19 +167,20 @@ export class GmlFile {
   clearRefs() {
     this.initializeScopeRanges();
     // Remove each reference in *this file* from its symbol.
-    const cleared = new Set<Symbol>();
+    const cleared = new Set<ReferenceableType>();
     for (const ref of this._refs) {
       const symbol = ref.item;
       if (cleared.has(symbol) || !symbol.refs.size) {
         continue;
       }
+      const isInThisFile = symbol.def?.file && this === symbol.def.file;
       // If the symbol was declared in this file, remove its location
-      if (symbol.def?.file && this.path.equals(symbol.def.file)) {
+      if (isInThisFile) {
         symbol.def = undefined;
       }
       // Remove all references to this symbol found in this file
       for (const symbolRef of symbol.refs) {
-        if (this.path.equals(symbolRef.file)) {
+        if (this === symbolRef.file) {
           symbol.refs.delete(symbolRef);
         }
       }

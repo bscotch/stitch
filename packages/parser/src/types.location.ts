@@ -115,18 +115,20 @@ export class Scope extends Range {
   }
 }
 
+export type ReferenceableType = Symbol | Type | TypeMember;
+
 export class Reference extends Range {
   override readonly $tag = 'Ref';
   type: Type = new Type('Unknown');
   constructor(
-    readonly item: Symbol | Type | TypeMember,
+    readonly item: ReferenceableType,
     start: Position,
     end: Position,
   ) {
     super(start, end);
   }
 
-  static fromRange(range: Range, item: Symbol | Type | TypeMember) {
+  static fromRange(range: Range, item: ReferenceableType) {
     return new Reference(item, range.start, range.end);
   }
 }
