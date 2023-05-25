@@ -23,9 +23,14 @@ export class TypeMember extends Refs(Flaggable) {
   // For function params
   idx: number | undefined = undefined;
   optional: undefined | boolean = undefined;
+  // For struct members
+  isStatic: boolean | undefined = undefined;
+  /** The Type containing this member */
+  readonly parent: Type;
 
-  constructor(public name: string, public type: Type) {
+  constructor(parent: Type, public name: string, public type: Type) {
     super();
+    this.parent = parent;
   }
 
   describe(description: string | undefined) {
@@ -114,7 +119,7 @@ export class Type<
     this.params ??= [];
     let param = this.params[idx];
     if (!param) {
-      param = new TypeMember(name, type).writable(false);
+      param = new TypeMember(this, name, type).writable(false);
       this.params[idx] = param;
     }
     param.type = type;
@@ -122,12 +127,6 @@ export class Type<
     param.name = name;
     param.idx = idx;
     return param;
-  }
-
-  clearParameters() {
-    ok(this.kind === 'Function', `Cannot clear params of ${this.kind}`);
-    this.params = undefined;
-    return this;
   }
 
   getMember(name: string): TypeMember | undefined {
@@ -143,7 +142,7 @@ export class Type<
     this.members ??= [];
     let member = this.members.find((m) => m.name === name);
     if (!member) {
-      member = new TypeMember(name, type).writable(writable);
+      member = new TypeMember(this, name, type).writable(writable);
       this.members.push(member);
     } else {
       if (member.type.kind !== 'Union') {

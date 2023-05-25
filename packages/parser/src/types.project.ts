@@ -7,7 +7,7 @@ import chokidar from 'chokidar';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
 import { Asset } from './types.asset.js';
-import { GmlFile } from './types.gml.js';
+import { GmlFile } from './types.code.js';
 import { Diagnostic } from './types.legacy.js';
 import { Native } from './types.native.js';
 import { Symbol } from './types.symbol.js';

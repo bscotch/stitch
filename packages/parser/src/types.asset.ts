@@ -8,7 +8,7 @@ import {
   yySchemas,
 } from '@bscotch/yy';
 import { ok } from 'assert';
-import { GmlFile } from './types.gml.js';
+import { GmlFile } from './types.code.js';
 import { PrimitiveName } from './types.primitives.js';
 import { Project } from './types.project.js';
 import { Symbol } from './types.symbol.js';

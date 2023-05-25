@@ -1,38 +1,39 @@
 // CST Visitor for creating an AST etc
-import { assert } from '@bscotch/utility';
-import type { CstNode } from 'chevrotain';
+import { randomString } from '@bscotch/utility';
+import type { CstNode, CstNodeLocation } from 'chevrotain';
 import type {
-  EnumStatementCstChildren,
   FunctionArgumentsCstChildren,
   FunctionExpressionCstChildren,
-  FunctionParameterCstChildren,
-  IdentifierAccessorCstChildren,
   IdentifierCstChildren,
   LocalVarDeclarationCstChildren,
   StaticVarDeclarationsCstChildren,
   WithStatementCstChildren,
 } from '../gml-cst.js';
 import { GmlVisitorBase, identifierFrom } from './parser.js';
-import type { GmlFile } from './types.gml.js';
-
-type SelfType = InstanceSelf | StructSelf | GlobalSelf;
-type SymbolType = ProjectSymbolType | GlobalSymbolType | GmlSymbolType;
+import type { GmlFile } from './types.code.js';
+import { Position, Range, Scope } from './types.location.js';
+import { Symbol } from './types.symbol.js';
+import { StructType, Type, TypeMember } from './types.type.js';
 
 class SymbolProcessor {
-  protected readonly localScopeStack: LocalScope[] = [];
-  protected readonly selfStack: SelfType[] = [];
+  protected readonly localScopeStack: StructType[] = [];
+  protected readonly selfStack: StructType[] = [];
   /** The current ScopeRange, updated as we push/pop local and self */
-  protected scopeRange: ScopeRange;
-  readonly location: Location;
+  protected scope: Scope;
+  readonly position: Position;
 
   constructor(readonly file: GmlFile) {
-    this.scopeRange = file.scopeRanges[0];
-    this.localScopeStack.push(this.scopeRange.local);
-    this.location = this.scopeRange.start;
-    this.pushLocalScope({ startOffset: 0 });
+    this.scope = file.scopes[0];
+    this.localScopeStack.push(this.scope.local);
+    this.position = this.scope.start;
+    this.pushLocalScope({ startOffset: 0 }, false);
   }
 
-  get scope() {
+  range(loc: CstNodeLocation) {
+    return Range.fromCst(this.position.file, loc);
+  }
+
+  get fullScope() {
     return {
       local: this.currentLocalScope,
       self: this.currentSelf,
@@ -41,12 +42,12 @@ class SymbolProcessor {
     };
   }
 
-  get resource() {
-    return this.file.resource;
+  get asset() {
+    return this.file.asset;
   }
 
   get project() {
-    return this.resource.project;
+    return this.asset.project;
   }
 
   get currentLocalScope() {
@@ -57,50 +58,66 @@ class SymbolProcessor {
     return this.selfStack.at(-1) || this.project.self;
   }
 
-  getGlobalSymbol(name: string): GlobalSymbolType | undefined {
-    return this.project.self.getSymbol(name);
+  getGlobalSymbol(name: string) {
+    return this.project.getGlobal(name);
   }
 
-  protected nextScopeRange(token: RawLocation) {
-    this.scopeRange = this.scopeRange.createNext(token);
-    this.file.scopeRanges.push(this.scopeRange);
-    return this.scopeRange;
+  protected nextScope(token: CstNodeLocation, fromTokenEnd: boolean) {
+    this.scope = this.scope.createNext(token, fromTokenEnd);
+    this.file.scopes.push(this.scope);
+    return this.scope;
   }
 
-  pushScope(token: RawLocation, self: SelfType) {
-    const localScope = new LocalScope(this.location.at(token));
+  /**
+   * After parsing the entire file, the last scope might not
+   * have an appropriate end position. Set it here!
+   */
+  setLastScopeEnd(rootNode: CstNodeLocation) {
+    this.file.scopes.at(-1)!.end = this.scope.end.atEnd(rootNode);
+  }
+
+  createStruct(token: CstNodeLocation) {
+    return new Type('Struct').definedAt(this.range(token));
+  }
+
+  pushScope(token: CstNodeLocation, self: StructType, fromTokenEnd: boolean) {
+    const localScope = this.createStruct(token);
     this.localScopeStack.push(localScope);
-    this.nextScopeRange(token).local = localScope;
+    this.nextScope(token, fromTokenEnd).local = localScope;
     this.selfStack.push(self);
-    this.scopeRange.self = self;
+    this.scope.self = self;
   }
 
-  popScope(token: RawLocation) {
+  popScope(token: CstNodeLocation, fromTokenEnd: boolean) {
     this.localScopeStack.pop();
     this.selfStack.pop();
-    this.nextScopeRange(token).local = this.currentLocalScope;
-    this.scopeRange.self = this.currentSelf;
+    this.nextScope(token, fromTokenEnd).local = this.currentLocalScope;
+    this.scope.self = this.currentSelf;
   }
 
-  pushLocalScope(token: RawLocation) {
-    const localScope = new LocalScope(this.location.at(token));
+  pushLocalScope(token: CstNodeLocation, fromTokenEnd: boolean) {
+    const localScope = this.createStruct(token);
     this.localScopeStack.push(localScope);
-    this.nextScopeRange(token).local = localScope;
+    this.nextScope(token, fromTokenEnd).local = localScope;
   }
 
-  popLocalScope(token: RawLocation) {
+  popLocalScope(token: CstNodeLocation, fromTokenEnd: boolean) {
     this.localScopeStack.pop();
-    this.nextScopeRange(token).local = this.currentLocalScope;
+    this.nextScope(token, fromTokenEnd).local = this.currentLocalScope;
   }
 
-  pushSelfScope(token: RawLocation, self: SelfType) {
+  pushSelfScope(
+    token: CstNodeLocation,
+    self: StructType,
+    fromTokenEnd: boolean,
+  ) {
     this.selfStack.push(self);
-    this.nextScopeRange(token).self = self;
+    this.nextScope(token, fromTokenEnd).self = self;
   }
 
-  popSelfScope(token: RawLocation) {
+  popSelfScope(token: CstNodeLocation, fromTokenEnd: boolean) {
     this.selfStack.pop();
-    this.nextScopeRange(token).self = this.currentSelf;
+    this.nextScope(token, fromTokenEnd).self = this.currentSelf;
   }
 }
 
@@ -119,23 +136,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
   findSymbols(input: CstNode) {
     this.visit(input);
+    this.PROCESSOR.setLastScopeEnd(input.location!);
     return this.PROCESSOR;
-  }
-
-  override enumStatement(children: EnumStatementCstChildren) {
-    // During the global pass we will have already
-    // created the enum symbol, so just add the members
-    const enumName = identifierFrom(children);
-    const symbol = this.PROCESSOR.getGlobalSymbol(enumName.name) as Enum;
-    assert(
-      symbol,
-      `Enum symbol ${enumName.name} found onn local but not global pass.`,
-    );
-    for (let i = 0; i < children.enumMember.length; i++) {
-      const member = children.enumMember[i];
-      const name = member.children.Identifier[0];
-      symbol.addMember(i, name, this.PROCESSOR.location.at(name));
-    }
   }
 
   override withStatement(children: WithStatementCstChildren) {
@@ -147,45 +149,105 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const location = children.blockableStatement[0].location!;
     this.PROCESSOR.pushSelfScope(
       location,
-      new StructSelf(undefined, this.PROCESSOR.location.at(location)),
+      this.PROCESSOR.createStruct(location),
+      false,
     );
     this.visit(children.blockableStatement);
-    this.PROCESSOR.popSelfScope(this.PROCESSOR.location.atEnd(location));
+    this.PROCESSOR.popSelfScope(location, true);
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {
-    const location = this.PROCESSOR.location.at(
-      children.Identifier?.[0] || children.Function[0],
-    );
-    // Functions create a new localscope
-    // If this is a constructor, add a new self scope
-    // for it.
-    // TODO: If JSDocs specify a different scope, use that
-    let self = this.PROCESSOR.currentSelf;
-    if (children.constructorSuffix?.[0].children) {
-      self = new StructSelf(undefined, location);
-      self.addRef(location);
+    // Compute useful properties of this function to help figure out
+    // how to define its symbol, type, scope, etc.
+    const isAnonymous = !children.Identifier;
+    let functionName: string | undefined = children.Identifier?.[0]?.image;
+    const isConstructor = !!children.constructorSuffix;
+    const functionTypeName = isConstructor ? 'Constructor' : 'Function';
+    const isInRootLocalScope =
+      this.PROCESSOR.currentLocalScope === this.PROCESSOR.file.scopes[0].local;
+    const isInScript = this.PROCESSOR.asset.assetType === 'scripts';
+    const isInObject = this.PROCESSOR.asset.assetType === 'objects';
+    const isGlobal = isInRootLocalScope && isInScript;
+    const isInstance = isInRootLocalScope && isInObject;
+    const bodyLocation = children.blockStatement[0].location!;
+
+    // If this is global we should already have a symbol for it.
+    // If not, we should create a new symbol.
+    const symbol = (
+      isGlobal && !isAnonymous
+        ? this.PROCESSOR.getGlobalSymbol(functionName!)?.symbol
+        : new Symbol(
+            functionName || `anonymous_function_${randomString(8, 'base64')}`,
+          )
+    ) as Symbol | TypeMember;
+    functionName = symbol.name; // Might have been anonymous
+
+    // Get or create the function type
+    const functionType =
+      symbol.type || this.PROCESSOR.file.createType(functionTypeName);
+
+    // Ensure that constructors have an attached constructed type
+    if (isConstructor && !functionType.constructs) {
+      functionType.constructs =
+        this.PROCESSOR.createStruct(bodyLocation).named(functionName);
     }
+
+    // Identify the "self" struct. If this is a constructor, "self" is the
+    // constructed type. Otherwise, for now just create a new struct type
+    // for the self scope.
+    // TODO: Figure out the actual self scope (e.g. from JSDocs or type inference)
+    const self = (
+      isConstructor
+        ? functionType.constructs
+        : this.PROCESSOR.createStruct(bodyLocation)
+    )!;
+
+    // Functions have their own localscope as well as their self scope,
+    // so we need to push both.
     this.PROCESSOR.pushScope(
       children.functionParameters[0].children.StartParen[0],
       self,
+      false,
     );
+    const functionLocalScope = this.PROCESSOR.currentLocalScope;
 
-    // Add the parameters as local variables
-    this.visit(children.functionParameters);
-    if (children.constructorSuffix) {
-      this.visit(children.constructorSuffix);
+    // TODO: Handle constructor extensions. The `constructs` type should
+    // be based off of the parent.
+
+    // Add function signature components. We may be *updating*, e.g.
+    // if this was a global function and we're recomputing. So update
+    // instead of just adding or even clearing-then-adding.
+    const params =
+      children.functionParameters?.[0]?.children.functionParameter || [];
+    for (let i = 0; i < params.length; i++) {
+      const param = params[i].children.Identifier[0];
+      const range = this.PROCESSOR.range(param);
+      // TODO: Use JSDocs to determine the type of the parameter
+      const type = this.PROCESSOR.file.createType('Unknown').definedAt(range);
+      const optional = !!params[i].children.Assign;
+      type.addParameter(i, param.image, type, optional);
+
+      // Also add to the function's local scope.
+      functionLocalScope.addMember(param.image, type);
     }
+    // TODO: Remove any excess parameters, e.g. if we're updating a
+    // prior definition. This is tricky since we may need to do something
+    // about references to legacy params.
+
+    // TODO: Add this function to the scope in which it was defined.
+    // This is tricky because we need to know if it is being assigned to something, e.g. a var, static, etc, so that we can add it to the correct scope with the correct name.
+
+    // Process the function body
     this.visit(children.blockStatement);
 
     // End the scope
-    this.PROCESSOR.popScope(children.blockStatement[0].children.EndBrace[0]);
+    this.PROCESSOR.popScope(
+      children.blockStatement[0].children.EndBrace[0],
+      false,
+    );
   }
 
-  override functionParameter(children: FunctionParameterCstChildren) {
-    this.PROCESSOR.currentLocalScope.addSymbol(children.Identifier[0], true);
-  }
-
+  /** TODO: Handle function calls */
   override functionArguments(children: FunctionArgumentsCstChildren) {
     // TODO: Need to collect function argument ranges to provide function signature
     // helpers. Basically we need the ranges between each comma in the argument list.
@@ -203,98 +265,72 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     }
   }
 
+  /** Static params are unambiguously defined. */
   override staticVarDeclarations(children: StaticVarDeclarationsCstChildren) {
     // Add to the self scope.
-    const self = this.PROCESSOR.currentSelf as StructSelf;
-    self.addSymbol(this.PROCESSOR.file, children.Identifier[0]);
+    const self = this.PROCESSOR.currentSelf;
+    const member = self.addMember(
+      children.Identifier[0].image,
+      this.PROCESSOR.file
+        .createType('Unknown')
+        .definedAt(this.PROCESSOR.range(children.Identifier[0])),
+    );
+    member.isStatic = true;
     this.visit(children.assignmentRightHandSide);
   }
 
   override localVarDeclaration(children: LocalVarDeclarationCstChildren) {
-    this.PROCESSOR.currentLocalScope.addSymbol(children.Identifier[0]);
+    const local = this.PROCESSOR.currentLocalScope;
+    const member = local.addMember(
+      children.Identifier[0].image,
+      this.PROCESSOR.file
+        .createType('Unknown')
+        .definedAt(this.PROCESSOR.range(children.Identifier[0])),
+    );
     if (children.assignmentRightHandSide) {
       this.visit(children.assignmentRightHandSide);
     }
   }
 
-  override identifierAccessor(children: IdentifierAccessorCstChildren) {
-    // Identify struct-accessor chains
-    const accessing = this.visit(children.identifier[0]) as
-      | SymbolType
-      | undefined;
-
-    if (!children.accessorSuffixes) {
-      return;
-    }
-    // For each accessor suffix, figure out what we're accessing in turn
-    // TODO: Handle function calls
-    // TODO: Handle array access
-    // TODO: Handle dot access
-    // Start with one-level-deep dot access for SELF, GLOBAL, and ENUMs
-    const dotAccessWith =
-      children.accessorSuffixes[0].children.dotAccessSuffix?.[0].children;
-    if (dotAccessWith && accessing?.kind === 'enum') {
-      const identifier = identifierFrom(dotAccessWith);
-      const enumMember = accessing.getMember(identifier.name);
-      if (!enumMember) {
-        // TODO: Send a diagnostic
-      } else {
-        // TODO: Add the ref!
-        // enumMember.addRef(this.PROCESSOR.location.at(identifier.token));
-      }
-    } else {
-      // fallback
-      this.visit(children.accessorSuffixes);
-    }
-
-    // for (const suffix of children.accessorSuffixes) {
-    //   const suffixType = keysOf(suffix.children)[0];
-    //   switch (suffixType) {
-    //     case 'dotAccessSuffix':
-    //       identifiers.push(
-    //         identifierFrom(suffix.children.dotAccessSuffix![0]).name,
-    //       );
-    //       break;
-    //   }
-    // }
-    // console.log('identifiers', identifiers);
-  }
-
   /**
-   * Fallback identifier handler */
-  override identifier(children: IdentifierCstChildren): SymbolType | undefined {
+   * Fallback identifier handler. Figure out what a given
+   * identifier is referencing, and create appropriate references
+   * to make that work.*/
+  override identifier(children: IdentifierCstChildren) {
     const identifier = identifierFrom(children);
-    const scope = this.PROCESSOR.scope;
-    let symbol: SymbolType | undefined;
-    const location = this.PROCESSOR.location.at(identifier.token);
+    const scope = this.PROCESSOR.fullScope;
+    let item: Symbol | Type | TypeMember | undefined;
+    const range = this.PROCESSOR.range(identifier.token);
 
     switch (identifier.type) {
       case 'Global':
         // Global is a special case, it's a keyword and also
         // a globalvar.
-        symbol = scope.global.getSymbol('global');
+        item = scope.global;
         break;
       case 'Self':
         // Then we're reference our current self context
-        symbol = scope.self.getSymbol('self');
+        item = scope.self;
         break;
       case 'Identifier':
         const { name } = identifier;
         // Is it local?
-        if (scope.local.hasSymbol(name)) {
-          symbol = scope.local.getSymbol(name)!;
+        const local = scope.local.getMember(name);
+        if (local) {
+          item = local;
+          break;
         }
         // Is it a non-global selfvar?
-        else if (!scope.selfIsGlobal && scope.self.hasSymbol(name)) {
-          symbol = scope.self.getSymbol(name)!;
+        const selfvar = !scope.selfIsGlobal && scope.self.getMember(name);
+        if (selfvar) {
+          item = selfvar;
+          break;
         }
-        // Is it a globalvar?
-        else if (scope.global.hasSymbol(name)) {
-          symbol = this.PROCESSOR.project.self.getSymbol(name)!;
-        }
-        // Is it a builtin global?
-        else if (scope.global.gml.has(name)) {
-          symbol = scope.global.gml.get(name)!;
+        // Is it a global?
+        const globalvar = this.PROCESSOR.project.getGlobal(name);
+        if (globalvar) {
+          item = globalvar.symbol;
+          break;
         }
         // TODO: Emit error?
         else {
@@ -305,9 +341,9 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         // TODO: Handle `other` and `all` keywords
         break;
     }
-    if (symbol) {
-      symbol.addRef(location);
+    if (item) {
+      item.addRef(range);
     }
-    return symbol;
+    return item;
   }
 }

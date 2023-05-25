@@ -5,7 +5,7 @@ import { Diagnostic } from './types.legacy.js';
 import { Position, Reference, Scope } from './types.location.js';
 import { PrimitiveName } from './types.primitives.js';
 import type { Symbol } from './types.symbol.js';
-import type { StructType, Type } from './types.type.js';
+import { Type, type StructType } from './types.type.js';
 import { processGlobalSymbols } from './types.visitGlobals.js';
 import { processSymbols } from './types.visitLocals.js';
 
@@ -153,9 +153,9 @@ export class GmlFile {
 
   protected initializeScopeRanges() {
     this.scopes.length = 0;
-    const position = new Position(this.path.absolute, 0, 0, 0);
+    const position = new Position(this, 0, 0, 0);
     const self = this.asset.instanceType || this.project.self;
-    const local = this.createStructType();
+    const local = new Type('Struct');
     this.scopes.push(new Scope(position, local, self));
   }
 

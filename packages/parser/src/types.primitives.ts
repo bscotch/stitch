@@ -71,6 +71,9 @@ export const primitiveNames = [
   'Id.VertexBuffer',
   'Id.VertexFormat',
   'Mixed',
+  // Custom names (not in Feather)
+  'Constructor',
+  'EnumMember',
   'Union',
   'Unknown',
 ] as const;

@@ -1,5 +1,5 @@
 // CST Visitor for creating an AST etc
-import { ok } from 'assert';
+import assert, { ok } from 'assert';
 import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
 import type {
   EnumStatementCstChildren,
@@ -9,11 +9,11 @@ import type {
   MacroStatementCstChildren,
 } from '../gml-cst.js';
 import { GmlVisitorBase } from './parser.js';
-import type { GmlFile } from './types.gml.js';
+import type { GmlFile } from './types.code.js';
 import { Position, Range } from './types.location.js';
 import { PrimitiveName } from './types.primitives.js';
 import { Symbol } from './types.symbol.js';
-import { StructType, TypeMember } from './types.type.js';
+import { EnumType, StructType, TypeMember } from './types.type.js';
 
 export function processGlobalSymbols(file: GmlFile) {
   const processor = new GlobalDeclarationsProcessor(file);
@@ -56,6 +56,10 @@ class GlobalDeclarationsProcessor {
   }
 }
 
+/**
+ * Visits the CST and creates symbols and types for global
+ * declarations.
+ */
 export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   static validated = false;
 
@@ -90,7 +94,6 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         symbol.definedAt(range);
       }
     }
-    symbol.addRef(range, type);
     return symbol;
   }
 
@@ -99,10 +102,39 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     return this.PROCESSOR;
   }
 
+  /**
+   * Collect the enum symbol *and* its members, since all of those
+   * are globally visible.
+   */
   override enumStatement(children: EnumStatementCstChildren) {
-    this.ADD_GLOBAL_DECLARATION(children, 'Enum')!;
+    const symbol = this.ADD_GLOBAL_DECLARATION(children, 'Enum')! as Symbol;
+    const type = symbol.type as EnumType;
+    assert(type.kind === 'Enum', `Symbol ${symbol.name} is not an enum.`);
+    // Might be updating an existing enum, so mutate members instead
+    // of wholesale replacing to maintain cross-references.
+    for (let i = 0; i < children.enumMember.length; i++) {
+      const name = children.enumMember[i].children.Identifier[0];
+      const range = this.PROCESSOR.range(name);
+      const memberType = this.PROCESSOR.file
+        .createType('EnumMember')
+        .named(name.image);
+      // Does member already exist?
+      let member = type.getMember(name.image);
+      if (!member) {
+        member = type.addMember(name.image, memberType);
+      }
+      member.type = memberType;
+      member.idx = i;
+      member.definedAt(range);
+    }
+    // TODO: Remove any members that are not defined here.
   }
 
+  /**
+   * Identify global function declarations and store them as
+   * symbols or `global.` types. For constructors, add the
+   * corresponding types.
+   */
   override functionExpression(children: FunctionExpressionCstChildren) {
     const isGlobal =
       this.PROCESSOR.currentLocalScope ===
@@ -113,26 +145,16 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const name = children.Identifier?.[0];
     // Add the function to a table of functions
     if (name && isGlobal) {
-      const _symbol = this.ADD_GLOBAL_DECLARATION(children, 'Function')!;
+      const isConstructor = !!children.constructorSuffix?.[0];
+      const _symbol = this.ADD_GLOBAL_DECLARATION(
+        children,
+        isConstructor ? 'Constructor' : 'Function',
+      )!;
       const functionType = _symbol.type;
-      ok(functionType.kind === 'Function');
+      ok(['Constructor', 'Function'].includes(functionType.kind));
       if (children.constructorSuffix?.[0]) {
         // Ensure that the struct type exists for this constructor function
         _symbol.type.constructs ||= this.PROCESSOR.file.createType('Struct');
-      }
-
-      // TODO: Move this into the local processor
-      // Add function signature components
-      functionType.clearParameters();
-      const params =
-        children.functionParameters?.[0]?.children.functionParameter || [];
-      for (let i = 0; i < params.length; i++) {
-        const param = params[i].children.Identifier[0];
-        const range = this.PROCESSOR.range(param);
-        // TODO: Use JSDocs to determine the type of the parameter
-        const type = this.PROCESSOR.file.createType('Unknown').definedAt(range);
-        const optional = !!params[i].children.Assign;
-        type.addParameter(i, param.image, type, optional);
       }
     }
     this.visit(children.blockStatement);

@@ -26,6 +26,9 @@ export class Native {
     primitiveNames.forEach((name) => {
       this.types.set(name, new Type(name));
     });
+    // Implement useful custom derived types
+    this.types.set('Constructor', this.types.get('Function')!.derive());
+    this.types.set('EnumMember', this.types.get('Real')!.derive());
   }
 
   get version() {
