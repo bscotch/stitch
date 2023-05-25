@@ -42,17 +42,17 @@ export class Position {
     return new Position(
       fileName,
       location.startOffset,
-      location.startLine!,
-      location.startColumn!,
+      location.startLine || firstLineIndex,
+      location.startColumn || firstColumnIndex,
     );
   }
 
   static fromCstEnd(fileName: Code, location: CstNodeLocation) {
     return new Position(
       fileName,
-      location.endOffset!,
-      location.endLine!,
-      location.endColumn!,
+      location.endOffset || 0,
+      location.endLine || firstLineIndex,
+      location.endColumn || firstColumnIndex,
     );
   }
 }

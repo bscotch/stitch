@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
 
-describe('GML', function () {
+describe.only('Project', function () {
   it('can load the GML spec', async function () {
     const spec = await Native.from();
     expect(spec).to.exist;

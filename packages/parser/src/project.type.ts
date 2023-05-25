@@ -140,6 +140,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     );
   }
 
+  get isFunction() {
+    return ['Constructor', 'Function'].includes(this.kind);
+  }
+
   addReturnType(type: Type) {
     ok(this.kind === 'Function', `Cannot add return type to ${this.kind}`);
     if (!this.returns) {
@@ -167,7 +171,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   }
 
   addParameter(idx: number, name: string, type: Type, optional = false) {
-    ok(this.kind === 'Function', `Cannot add param to ${this.kind}`);
+    ok(this.isFunction, `Cannot add param to ${this.kind}`);
     this.params ??= [];
     let param = this.params[idx];
     if (!param) {

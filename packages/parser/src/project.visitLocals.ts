@@ -223,12 +223,14 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       const param = params[i].children.Identifier[0];
       const range = this.PROCESSOR.range(param);
       // TODO: Use JSDocs to determine the type of the parameter
-      const type = this.PROCESSOR.file.createType('Unknown').definedAt(range);
+      const paramType = this.PROCESSOR.file
+        .createType('Unknown')
+        .definedAt(range);
       const optional = !!params[i].children.Assign;
-      type.addParameter(i, param.image, type, optional);
+      functionType.addParameter(i, param.image, paramType, optional);
 
       // Also add to the function's local scope.
-      functionLocalScope.addMember(param.image, type);
+      functionLocalScope.addMember(param.image, paramType);
     }
     // TODO: Remove any excess parameters, e.g. if we're updating a
     // prior definition. This is tricky since we may need to do something

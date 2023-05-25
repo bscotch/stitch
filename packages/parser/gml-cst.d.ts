@@ -843,8 +843,8 @@ export type StructLiteralEntryCstChildren = {
   jsdoc?: JsdocCstNode[];
   Identifier?: IToken[];
   stringLiteral?: StringLiteralCstNode[];
-  Colon: IToken[];
-  assignmentRightHandSide: AssignmentRightHandSideCstNode[];
+  Colon?: IToken[];
+  assignmentRightHandSide?: AssignmentRightHandSideCstNode[];
 };
 
 export interface WhileStatementCstNode extends CstNode {
