@@ -8,16 +8,16 @@ import {
   yySchemas,
 } from '@bscotch/yy';
 import { ok } from 'assert';
-import { GmlFile } from './types.code.js';
-import { PrimitiveName } from './types.primitives.js';
-import { Project } from './types.project.js';
-import { Symbol } from './types.symbol.js';
-import { StructType } from './types.type.js';
+import { Code } from './project.code.js';
+import { Project } from './project.js';
+import { PrimitiveName } from './project.primitives.js';
+import { Symbol } from './project.symbol.js';
+import { StructType } from './project.type.js';
 
 export class Asset<T extends YyResourceType = YyResourceType> {
   readonly $tag = 'Asset';
   readonly assetType: T;
-  readonly gmlFiles: Map<string, GmlFile> = new Map();
+  readonly gmlFiles: Map<string, Code> = new Map();
   yy!: YyDataStrict<T>;
   readonly yyPath: Pathy<YySchemas[T]>;
   readonly symbol: Symbol;
@@ -141,7 +141,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   protected addGmlFile(path: Pathy<string>) {
     const gml =
       this.getGmlFile(path) ||
-      new GmlFile(this as Asset<'scripts' | 'objects'>, path);
+      new Code(this as Asset<'scripts' | 'objects'>, path);
     this.gmlFiles.set(path.absolute, gml);
   }
 

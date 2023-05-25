@@ -2,10 +2,10 @@ import { pathy } from '@bscotch/pathy';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
-import { primitiveNames } from './types.primitives.js';
-import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './types.spec.js';
-import { Symbol } from './types.symbol.js';
-import { Type, type FunctionType, type StructType } from './types.type.js';
+import { primitiveNames } from './project.primitives.js';
+import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
+import { Symbol } from './project.symbol.js';
+import { Type, type FunctionType, type StructType } from './project.type.js';
 
 export class Native {
   protected spec!: GmlSpec;

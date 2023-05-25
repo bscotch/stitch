@@ -9,13 +9,13 @@ import type {
   MacroStatementCstChildren,
 } from '../gml-cst.js';
 import { GmlVisitorBase } from './parser.js';
-import type { GmlFile } from './types.code.js';
-import { Position, Range } from './types.location.js';
-import { PrimitiveName } from './types.primitives.js';
-import { Symbol } from './types.symbol.js';
-import { EnumType, StructType, TypeMember } from './types.type.js';
+import type { Code } from './project.code.js';
+import { Position, Range } from './project.location.js';
+import { PrimitiveName } from './project.primitives.js';
+import { Symbol } from './project.symbol.js';
+import { EnumType, StructType, TypeMember } from './project.type.js';
 
-export function processGlobalSymbols(file: GmlFile) {
+export function processGlobalSymbols(file: Code) {
   const processor = new GlobalDeclarationsProcessor(file);
   const visitor = new GmlGlobalDeclarationsVisitor(processor);
   visitor.visit(file.cst);
@@ -25,7 +25,7 @@ class GlobalDeclarationsProcessor {
   protected readonly localScopeStack: StructType[] = [];
   readonly start: Position;
 
-  constructor(readonly file: GmlFile) {
+  constructor(readonly file: Code) {
     this.localScopeStack.push(file.scopes[0].local);
     this.start = file.scopes[0].start;
   }

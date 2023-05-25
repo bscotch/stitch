@@ -1,9 +1,9 @@
 import { ok } from 'assert';
 import { JsdocTypeCstNode, JsdocTypeUnionCstNode } from '../gml-cst.js';
 import { parser } from './parser.js';
-import { Flaggable } from './types.flags.js';
-import { Refs } from './types.location.js';
-import { PrimitiveName, primitiveNames } from './types.primitives.js';
+import { Flaggable } from './project.flags.js';
+import { Refs } from './project.location.js';
+import { PrimitiveName, primitiveNames } from './project.primitives.js';
 
 export type AnyType = Type<'Any'>;
 export type ArrayType = Type<'Array'>;

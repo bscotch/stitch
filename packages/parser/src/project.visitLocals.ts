@@ -10,10 +10,10 @@ import type {
   WithStatementCstChildren,
 } from '../gml-cst.js';
 import { GmlVisitorBase, identifierFrom } from './parser.js';
-import type { GmlFile } from './types.code.js';
-import { Position, Range, Scope } from './types.location.js';
-import { Symbol } from './types.symbol.js';
-import { StructType, Type, TypeMember } from './types.type.js';
+import type { Code } from './project.code.js';
+import { Position, Range, Scope } from './project.location.js';
+import { Symbol } from './project.symbol.js';
+import { StructType, Type, TypeMember } from './project.type.js';
 
 class SymbolProcessor {
   protected readonly localScopeStack: StructType[] = [];
@@ -22,7 +22,7 @@ class SymbolProcessor {
   protected scope: Scope;
   readonly position: Position;
 
-  constructor(readonly file: GmlFile) {
+  constructor(readonly file: Code) {
     this.scope = file.scopes[0];
     this.localScopeStack.push(this.scope.local);
     this.position = this.scope.start;
@@ -121,7 +121,7 @@ class SymbolProcessor {
   }
 }
 
-export function processSymbols(file: GmlFile) {
+export function processSymbols(file: Code) {
   const processor = new SymbolProcessor(file);
   const visitor = new GmlSymbolVisitor(processor);
   visitor.visit(file.cst);

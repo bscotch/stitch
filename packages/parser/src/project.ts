@@ -6,12 +6,12 @@ import { ok } from 'assert';
 import chokidar from 'chokidar';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
-import { Asset } from './types.asset.js';
-import { GmlFile } from './types.code.js';
-import { Diagnostic } from './types.diagnostics.js';
-import { Native } from './types.native.js';
-import { Symbol } from './types.symbol.js';
-import { StructType, Type, TypeMember } from './types.type.js';
+import { Asset } from './project.asset.js';
+import { Code } from './project.code.js';
+import { Diagnostic } from './project.diagnostics.js';
+import { Native } from './project.native.js';
+import { Symbol } from './project.symbol.js';
+import { StructType, Type, TypeMember } from './project.type.js';
 
 type AssetName = string;
 
@@ -88,7 +88,7 @@ export class Project {
     return this.assets.get(this.assetNameFromPath(path));
   }
 
-  getGmlFile(path: Pathy<any>): GmlFile | undefined {
+  getGmlFile(path: Pathy<any>): Code | undefined {
     const resource = this.getAsset(path);
     if (!resource) {
       return;

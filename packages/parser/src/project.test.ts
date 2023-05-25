@@ -1,7 +1,7 @@
 import { ok } from 'assert';
 import { expect } from 'chai';
-import { Native } from './types.native.js';
-import { Project } from './types.project.js';
+import { Project } from './project.js';
+import { Native } from './project.native.js';
 
 describe('GML', function () {
   it('can load the GML spec', async function () {

@@ -1,8 +1,8 @@
 import type { CstNodeLocation } from 'chevrotain';
 import { ok } from 'node:assert';
-import type { GmlFile } from './types.code.js';
-import type { Symbol } from './types.symbol.js';
-import { StructType, Type, TypeMember } from './types.type.js';
+import type { Code } from './project.code.js';
+import type { Symbol } from './project.symbol.js';
+import { StructType, Type, TypeMember } from './project.type.js';
 import type { Constructor } from './util.js';
 
 export const firstLineIndex = 1;
@@ -13,7 +13,7 @@ export type CstLocation = Required<CstNodeLocation>;
 export class Position {
   readonly $tag = 'Pos';
   constructor(
-    readonly file: GmlFile,
+    readonly file: Code,
     readonly offset: number,
     readonly line: number,
     readonly column: number,
@@ -34,11 +34,11 @@ export class Position {
     return Position.fromCstEnd(this.file, loc);
   }
 
-  static fromFileStart(fileName: GmlFile) {
+  static fromFileStart(fileName: Code) {
     return new Position(fileName, 0, firstLineIndex, firstColumnIndex);
   }
 
-  static fromCstStart(fileName: GmlFile, location: CstNodeLocation) {
+  static fromCstStart(fileName: Code, location: CstNodeLocation) {
     return new Position(
       fileName,
       location.startOffset,
@@ -47,7 +47,7 @@ export class Position {
     );
   }
 
-  static fromCstEnd(fileName: GmlFile, location: CstNodeLocation) {
+  static fromCstEnd(fileName: Code, location: CstNodeLocation) {
     return new Position(
       fileName,
       location.endOffset!,
@@ -70,11 +70,11 @@ export class Range {
     this.end = end ?? start;
   }
 
-  get file(): GmlFile {
+  get file(): Code {
     return this.start.file;
   }
 
-  static fromCst(fileName: GmlFile, location: CstNodeLocation) {
+  static fromCst(fileName: Code, location: CstNodeLocation) {
     return new Range(
       Position.fromCstStart(fileName, location),
       Position.fromCstEnd(fileName, location),

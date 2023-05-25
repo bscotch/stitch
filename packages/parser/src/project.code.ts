@@ -1,20 +1,20 @@
 import type { Pathy } from '@bscotch/pathy';
 import { parser, type GmlParsed } from './parser.js';
-import type { Asset } from './types.asset.js';
-import { Diagnostic } from './types.diagnostics.js';
+import type { Asset } from './project.asset.js';
+import { Diagnostic } from './project.diagnostics.js';
 import {
   Position,
   Reference,
   ReferenceableType,
   Scope,
-} from './types.location.js';
-import { PrimitiveName } from './types.primitives.js';
-import type { Symbol } from './types.symbol.js';
-import { Type, type StructType } from './types.type.js';
-import { processGlobalSymbols } from './types.visitGlobals.js';
-import { processSymbols } from './types.visitLocals.js';
+} from './project.location.js';
+import { PrimitiveName } from './project.primitives.js';
+import type { Symbol } from './project.symbol.js';
+import { Type, type StructType } from './project.type.js';
+import { processGlobalSymbols } from './project.visitGlobals.js';
+import { processSymbols } from './project.visitLocals.js';
 
-export class GmlFile {
+export class Code {
   readonly $tag = 'gmlFile';
   readonly scopes: Scope[] = [];
   /** List of all symbol references in this file, in order of appearance. */
