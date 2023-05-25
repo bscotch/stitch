@@ -8,7 +8,7 @@ import { EventEmitter } from 'events';
 import { z } from 'zod';
 import { Asset } from './types.asset.js';
 import { GmlFile } from './types.code.js';
-import { Diagnostic } from './types.legacy.js';
+import { Diagnostic } from './types.diagnostics.js';
 import { Native } from './types.native.js';
 import { Symbol } from './types.symbol.js';
 import { StructType, Type, TypeMember } from './types.type.js';

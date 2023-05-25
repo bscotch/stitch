@@ -24,7 +24,10 @@ export class Native {
     // Initialize all of the primitives so we can guarantee
     // they exist on any lookup.
     primitiveNames.forEach((name) => {
-      this.types.set(name, new Type(name));
+      const type = new Type(name);
+      type.native = true;
+      type.writable = false;
+      this.types.set(name, type);
     });
     // Implement useful custom derived types
     this.types.set('Constructor', this.types.get('Function')!.derive());
@@ -51,11 +54,15 @@ export class Native {
 
   protected loadVariables() {
     for (const variable of this.spec.variables) {
+      const type = Type.from(variable.type, this.types);
       const symbol = new Symbol(variable.name)
-        .writable(variable.writable)
         .describe(variable.description)
         .deprecate(variable.deprecated)
-        .addType(Type.from(variable.type, this.types));
+        .addType(type);
+      symbol.writable = variable.writable;
+      symbol.native = true;
+      symbol.global = !variable.instance;
+      symbol.instance = variable.instance;
       if (variable.instance) {
         this.instance.set(symbol.name, symbol);
       } else {
@@ -71,6 +78,8 @@ export class Native {
       const type = (
         this.types.get(typeName) || this.createFunctionType().named(func.name)
       ).describe(func.description);
+      type.native = true;
+      type.writable = false;
       this.types.set(typeName, type);
 
       // Add parameters to the type.
@@ -85,9 +94,10 @@ export class Native {
       type.addReturnType(Type.from(func.returnType, this.types));
 
       const symbol = new Symbol(func.name)
-        .writable(false)
         .deprecate(func.deprecated)
         .addType(type);
+      symbol.writable = false;
+      type.native = true;
       this.global.set(symbol.name, symbol);
     }
   }
@@ -115,9 +125,10 @@ export class Native {
       if (!klass) {
         for (const constant of constants) {
           const symbol = new Symbol(constant.name)
-            .writable(false)
             .describe(constant.description)
             .addType(Type.from(constant.type, this.types));
+          symbol.writable = false;
+          symbol.native = true;
           this.global.set(symbol.name, symbol);
         }
         continue;
@@ -150,9 +161,8 @@ export class Native {
       }
       // Create symbols for each class member.
       for (const constant of constants) {
-        const symbol = new Symbol(constant.name)
-          .writable(false)
-          .describe(constant.description);
+        const symbol = new Symbol(constant.name).describe(constant.description);
+        symbol.writable = false;
         symbol.addType(classType);
         this.global.set(symbol.name, symbol);
       }

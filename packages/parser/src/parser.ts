@@ -13,7 +13,7 @@ import type {
 } from '../gml-cst.js';
 import { GmlLexer } from './lexer.js';
 import { c, categories, t, tokens } from './tokens.js';
-import type { GmlParseError } from './types.legacy.js';
+import type { GmlParseError } from './types.diagnostics.js';
 import { normalizeTypeString } from './util.js';
 
 export interface GmlParsed {

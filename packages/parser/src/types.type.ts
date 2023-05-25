@@ -2,7 +2,7 @@ import { ok } from 'assert';
 import { JsdocTypeCstNode, JsdocTypeUnionCstNode } from '../gml-cst.js';
 import { parser } from './parser.js';
 import { Flaggable } from './types.flags.js';
-import { Referenceable, Refs } from './types.location.js';
+import { Refs } from './types.location.js';
 import { PrimitiveName, primitiveNames } from './types.primitives.js';
 
 export type AnyType = Type<'Any'>;
@@ -39,9 +39,9 @@ export class TypeMember extends Refs(Flaggable) {
   }
 }
 
-export class Type<
-  T extends PrimitiveName = PrimitiveName,
-> extends Referenceable {
+export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
+  Flaggable,
+) {
   readonly $tag = 'Type';
   // Some types have names. It only counts as a name if it
   // cannot be parsed into types given the name alone.
@@ -171,13 +171,15 @@ export class Type<
     this.params ??= [];
     let param = this.params[idx];
     if (!param) {
-      param = new TypeMember(this, name, type).writable(false);
+      param = new TypeMember(this, name, type);
+      param.writable = false;
       this.params[idx] = param;
     }
     param.type = type;
     param.optional = optional;
     param.name = name;
     param.idx = idx;
+    param.parameter = true;
     return param;
   }
 
@@ -194,7 +196,8 @@ export class Type<
     this.members ??= [];
     let member = this.members.find((m) => m.name === name);
     if (!member) {
-      member = new TypeMember(this, name, type).writable(writable);
+      member = new TypeMember(this, name, type);
+      member.writable = writable;
       this.members.push(member);
     } else {
       if (member.type.kind !== 'Union') {

@@ -1,7 +1,7 @@
 import type { Pathy } from '@bscotch/pathy';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './types.asset.js';
-import { Diagnostic } from './types.legacy.js';
+import { Diagnostic } from './types.diagnostics.js';
 import {
   Position,
   Reference,
