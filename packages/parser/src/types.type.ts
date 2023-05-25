@@ -78,6 +78,58 @@ export class Type<
     super();
   }
 
+  /** Get this type as a Feather-compatible string */
+  toFeatherString(): string {
+    // Functions, Structs, and Enums are the only types that can have names
+    if (['Function', 'Struct', 'Enum'].includes(this.kind)) {
+      if (this.name) {
+        return `${this.kind}.${this.name}`;
+      }
+      return this.kind;
+    }
+    // Arrays etc can contain items of a type
+    if (this.canHaveItems) {
+      if (this.items) {
+        return `${this.kind}<${this.items.toFeatherString()}>`;
+      }
+      return this.kind;
+    }
+    // Unions can list types
+    if (this.kind === 'Union') {
+      if (this.types) {
+        return this.types.map((t) => t.toFeatherString()).join(' | ');
+      }
+      return 'Mixed';
+    }
+    return this.kind;
+  }
+
+  get code() {
+    let code = '';
+    switch (this.kind) {
+      case 'Function':
+        code = `function ${this.name}(`;
+        const params = this.params || [];
+        for (let i = 0; i < params.length; i++) {
+          const param = params[i];
+          if (i > 0) {
+            code += ', ';
+          }
+          code += param.name;
+          if (param.optional) {
+            code += '?';
+          }
+          code += ': ' + param.type;
+        }
+        code += '): ' + (this.returns?.toFeatherString() || 'Unknown');
+        break;
+      default:
+        code = this.toFeatherString();
+        break;
+    }
+    return code;
+  }
+
   get canHaveMembers() {
     return ['Struct', 'Enum'].includes(this.kind);
   }
