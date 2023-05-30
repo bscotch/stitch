@@ -1,4 +1,5 @@
 import type { IRecognitionException } from 'chevrotain';
+import type { Range } from './project.location.js';
 
 export type GmlParseError = IRecognitionException;
 export interface Diagnostic {
@@ -6,14 +7,6 @@ export interface Diagnostic {
   kind: 'parser';
   message: string;
   severity: 'error' | 'warning' | 'info';
-  location: {
-    file: string;
-    startColumn: number;
-    endColumn: number;
-    startLine: number;
-    endLine: number;
-    startOffset: number;
-    endOffset: number;
-  };
+  location: Range;
   info?: GmlParseError;
 }

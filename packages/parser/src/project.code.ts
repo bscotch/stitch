@@ -5,6 +5,7 @@ import type { Asset } from './project.asset.js';
 import { Diagnostic } from './project.diagnostics.js';
 import {
   Position,
+  Range,
   Reference,
   ReferenceableType,
   Scope,
@@ -15,6 +16,7 @@ import { Type, type StructType } from './project.type.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
 import { processSymbols } from './project.visitLocals.js';
 
+/** Represenation of a GML code file. */
 export class Code {
   readonly $tag = 'gmlFile';
   readonly scopes: Scope[] = [];
@@ -133,15 +135,7 @@ export class Code {
         message: diagnostic.message,
         severity: 'error',
         info: diagnostic,
-        location: {
-          file: this.path.absolute,
-          startColumn: diagnostic.token.startColumn!,
-          startLine: diagnostic.token.startLine!,
-          startOffset: diagnostic.token.startOffset!,
-          endColumn: diagnostic.token.endColumn!,
-          endLine: diagnostic.token.endLine!,
-          endOffset: diagnostic.token.endOffset!,
-        },
+        location: Range.fromCst(this, diagnostic.token),
       });
     }
     if (diagnostics.length) {
