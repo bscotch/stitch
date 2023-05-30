@@ -1,4 +1,4 @@
-import { GmlSymbolType, ProjectSymbolType } from '@bscotch/gml-parser';
+import { ReferenceableType, Type } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
 import { locationOf } from './lib.mjs';
@@ -26,16 +26,16 @@ export class GameMakerSemanticTokenProvider
         semanticTokensLegend,
       );
       const cache = new Map<
-        ProjectSymbolType | GmlSymbolType,
+        ReferenceableType,
         { type: SemanticTokenType; mods: SemanticTokenModifier[] }
       >();
       for (const ref of file.refs) {
         // Get the location as a vscode range
-        const symbol = ref.symbol;
+        const item = ref.item;
         const range = locationOf(ref)!.range;
         // If we've already seen this symbol, use the cached semantic details
-        if (cache.has(symbol)) {
-          const { type, mods } = cache.get(symbol)!;
+        if (cache.has(item)) {
+          const { type, mods } = cache.get(item)!;
           try {
             tokensBuilder.push(range, type, mods);
           } catch (error) {
@@ -47,70 +47,16 @@ export class GameMakerSemanticTokenProvider
         }
 
         // Figure out what the semantic details are
-        let tokenType: SemanticTokenType | undefined;
-        const tokenModifiers: SemanticTokenModifier[] = [];
-        if ('isDeclaration' in ref && ref.isDeclaration) {
-          tokenModifiers.push('declaration');
-        }
-        if ('native' in symbol && symbol.native) {
-          tokenModifiers.push('defaultLibrary', 'global');
-        }
-        switch (symbol.kind) {
-          case 'enum':
-            tokenType = 'enum';
-            tokenModifiers.push('global');
-            break;
-          case 'enumMember':
-            tokenType = 'enumMember';
-            break;
-          case 'globalFunction':
-            tokenType = symbol.isConstructor ? 'class' : 'function';
-            tokenModifiers.push('global');
-            break;
-          case 'gmlConstant':
-            tokenType = 'variable';
-            tokenModifiers.push('readonly');
-            break;
-          case 'gmlFunction':
-            tokenType = 'function';
-            break;
-          case 'gmlVariable':
-            tokenType = 'variable';
-            if (symbol.definition.instance) {
-              tokenType = 'property';
-            }
-            if (!symbol.definition.writable) {
-              tokenModifiers.push('readonly');
-            }
-            break;
-          case 'macro':
-            tokenType = 'macro';
-            break;
-          case 'globalVariable':
-            tokenType = 'variable';
-            tokenModifiers.push('global');
-            break;
-          case 'gmlType':
-            tokenType = 'class';
-            break;
-          case 'localVariable':
-            tokenType = symbol.isParam ? 'parameter' : 'variable';
-            tokenModifiers.push('local');
-            break;
-          case 'selfVariable':
-            tokenType = 'property';
-            if (symbol.isStatic) {
-              tokenModifiers.push('static');
-            }
-            break;
-        }
+        const itemType = item.$tag === 'Type' ? item : item.type;
+        const tokenType = getSemanticTokenForType(itemType);
+        const tokenModifiers = getSemanticModifiersForType(itemType);
         if (!tokenType) {
-          console.warn('No token type for symbol', symbol);
+          console.warn('No token type for symbol', item);
           continue;
         }
         try {
           tokensBuilder.push(range, tokenType, tokenModifiers);
-          cache.set(symbol, { type: tokenType, mods: tokenModifiers });
+          cache.set(item, { type: tokenType, mods: tokenModifiers });
         } catch (err) {
           console.error(err);
           console.error('PUSH ERROR');
@@ -132,4 +78,46 @@ export class GameMakerSemanticTokenProvider
       semanticTokensLegend,
     );
   }
+}
+
+function getSemanticTokenForType(type: Type): SemanticTokenType {
+  switch (type.kind) {
+    case 'Enum':
+      return 'enum';
+    case 'EnumMember':
+      return 'enumMember';
+    case 'Constructor':
+      return 'class';
+    case 'Function':
+      return 'function';
+    case 'Macro':
+      return 'macro';
+  }
+  if (type.parameter) {
+    return 'parameter';
+  }
+  return 'variable';
+}
+
+function getSemanticModifiersForType(type: Type): SemanticTokenModifier[] {
+  const tokenModifiers: SemanticTokenModifier[] = [];
+  if (type.native) {
+    tokenModifiers.push('defaultLibrary');
+  }
+  if (type.global) {
+    tokenModifiers.push('global');
+  }
+  if (!type.writable) {
+    tokenModifiers.push('readonly');
+  }
+  if (type.local) {
+    tokenModifiers.push('local');
+  }
+  if (type.static) {
+    tokenModifiers.push('static');
+  }
+  if (type.kind.startsWith('Asset.')) {
+    tokenModifiers.push('asset');
+  }
+  return tokenModifiers;
 }
