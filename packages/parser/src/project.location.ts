@@ -82,6 +82,32 @@ export class Range {
   }
 }
 
+/** Extend a class to add `def`, `refs`, and related fields and methods. */
+export function Refs<TBase extends Constructor>(Base: TBase) {
+  return class extends Base {
+    def: Range | undefined = undefined;
+    refs = new Set<Reference>();
+
+    addRef(location: Range, type?: Type): this {
+      const ref = Reference.fromRange(location, this as any);
+      // TODO: Improve the type tracing!
+      if (type) {
+        ref.type = type;
+      }
+      this.refs.add(ref);
+      location.file.addRef(ref);
+      return this;
+    }
+
+    definedAt(location: Range | undefined): this {
+      this.def = location;
+      return this;
+    }
+  };
+}
+
+export class Referenceable extends Refs(class {}) {}
+
 export class Scope extends Range {
   override readonly $tag = 'Scope';
   /** The immediately adjacent ScopeRange */
@@ -132,28 +158,3 @@ export class Reference extends Range {
     return new Reference(item, range.start, range.end);
   }
 }
-
-/** Extend a class to add `def`, `refs`, and related fields and methods. */
-export function Refs<TBase extends Constructor>(Base: TBase) {
-  return class extends Base {
-    def: Range | undefined = undefined;
-    refs = new Set<Reference>();
-
-    addRef(location: Range, type?: Type): this {
-      const ref = Reference.fromRange(location, this as any);
-      // TODO: Improve the type tracing!
-      if (type) {
-        ref.type = type;
-      }
-      this.refs.add(ref);
-      return this;
-    }
-
-    definedAt(location: Range | undefined): this {
-      this.def = location;
-      return this;
-    }
-  };
-}
-
-export class Referenceable extends Refs(class {}) {}

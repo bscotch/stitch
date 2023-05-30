@@ -228,7 +228,11 @@ export class StitchProvider
   ): ReferenceableType | undefined {
     const offset = document.offsetAt(position);
     const file = this.getGmlFile(document);
-    const ref = file?.getReferenceAt(offset);
+    if (!file) {
+      console.error(`Could not find file for ${document}`);
+      return;
+    }
+    const ref = file.getReferenceAt(offset);
     if (!ref) {
       console.error(`Could not find reference at ${offset}`);
       return;

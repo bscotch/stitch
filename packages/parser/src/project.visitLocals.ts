@@ -27,7 +27,6 @@ class SymbolProcessor {
     this.scope = file.scopes[0];
     this.localScopeStack.push(this.scope.local);
     this.position = this.scope.start;
-    this.pushLocalScope({ startOffset: 0 }, false);
   }
 
   range(loc: CstNodeLocation) {

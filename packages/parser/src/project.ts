@@ -84,6 +84,10 @@ export class Project {
     this.emitter.emit('diagnostics', diagnostics);
   }
 
+  getAssetByName(name: string): Asset | undefined {
+    return this.assets.get(name.toLocaleLowerCase());
+  }
+
   getAsset(path: Pathy<any>): Asset | undefined {
     return this.assets.get(this.assetNameFromPath(path));
   }
@@ -166,13 +170,13 @@ export class Project {
     }
   }
 
-  addResource(resource: Asset): void {
+  addAsset(resource: Asset): void {
     const name = this.assetNameFromPath(resource.dir);
     ok(!this.assets.has(name), `Resource ${name} already exists`);
     this.assets.set(name, resource);
   }
 
-  removeResource(path: Pathy<any>): void {
+  removeAsset(path: Pathy<any>): void {
     const name = this.assetNameFromPath(path);
     const resource = this.assets.get(name);
     ok(resource, `Resource ${name} does not exist`);
@@ -222,7 +226,7 @@ export class Project {
           resourceInfo,
           assetNameToYy.get(resourceInfo.id.name.toLocaleLowerCase())!,
         ).then((r) => {
-          this.addResource(r);
+          this.addAsset(r);
         }),
       );
     }

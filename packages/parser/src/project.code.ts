@@ -159,7 +159,7 @@ export class Code {
 
   protected initializeScopeRanges() {
     this.scopes.length = 0;
-    const position = new Position(this, 0, 0, 0);
+    const position = Position.fromFileStart(this);
     const self = this.asset.instanceType || this.project.self;
     const local = new Type('Struct');
     this.scopes.push(new Scope(position, local, self));

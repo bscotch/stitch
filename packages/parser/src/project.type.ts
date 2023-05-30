@@ -128,7 +128,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
           if (param.optional) {
             code += '?';
           }
-          code += ': ' + param.type;
+          code += ': ' + param.type.toFeatherString();
         }
         code += '): ' + (this.returns?.toFeatherString() || 'Unknown');
         break;

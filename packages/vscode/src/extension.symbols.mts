@@ -16,19 +16,33 @@ export class GameMakerWorkspaceSymbolProvider
 
   updateCache() {
     for (const project of this.projects) {
-      this.updateProjectCache(project);
+      try {
+        this.updateProjectCache(project);
+      } catch (err) {
+        console.error(
+          `Error updating cache for project ${project.name}: ${err}`,
+        );
+      }
     }
   }
 
-  updateProjectCache(project: GameMakerProject) {
+  protected updateProjectCache(project: GameMakerProject) {
     this.resourceCache.set(project, new Map());
     for (const [, resource] of project.assets) {
-      this.updateResourceCache(project, resource);
+      try {
+        this.updateResourceCache(project, resource);
+      } catch (err) {
+        console.error(`Error updating cache for ${resource.name}: ${err}`);
+      }
     }
-    this.updateGlobalsCache(project);
+    try {
+      this.updateGlobalsCache(project);
+    } catch (err) {
+      console.error(`Error updating cache for globals: ${err}`);
+    }
   }
 
-  updateResourceCache(project: GameMakerProject, resource: Asset) {
+  protected updateResourceCache(project: GameMakerProject, resource: Asset) {
     const symbols: vscode.SymbolInformation[] = [];
     this.resourceCache.get(project)!.set(resource, symbols);
     // Then add the resource itself. Scripts and objects should point to their GML, while everything else should point to yy files.
@@ -67,11 +81,16 @@ export class GameMakerWorkspaceSymbolProvider
     }
   }
 
-  updateGlobalsCache(project: GameMakerProject) {
+  protected updateGlobalsCache(project: GameMakerProject) {
     const symbols: vscode.SymbolInformation[] = [];
     this.globalsCache.set(project, symbols);
-    for (const symbol of (project.self.members || []).values()) {
-      const type = symbol.type;
+    for (const item of (project.self.members || []).values()) {
+      const type = item.type;
+      const location = item.def || type.def;
+      if (!location) {
+        console.error(`No definition for global ${item.name}`);
+        continue;
+      }
       const kind =
         type.kind === 'Enum'
           ? vscode.SymbolKind.Enum
@@ -80,10 +99,10 @@ export class GameMakerWorkspaceSymbolProvider
           : vscode.SymbolKind.Variable;
       symbols.push(
         new vscode.SymbolInformation(
-          symbol.name!,
+          item.name!,
           kind,
           type.kind,
-          locationOf(symbol as any)!,
+          locationOf(location)!,
         ),
       );
     }
