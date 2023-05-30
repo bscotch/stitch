@@ -1,4 +1,5 @@
 import {
+  Asset,
   Code,
   type Diagnostic,
   type ReferenceableType,
@@ -8,6 +9,7 @@ import { debounce } from './debounce.mjs';
 import { inScopeSymbolsToCompletions } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
+import { GameMakerHoverProvider } from './extension.hover.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
@@ -34,7 +36,6 @@ const jsdocCompletions = [
 
 export class StitchProvider
   implements
-    vscode.HoverProvider,
     vscode.CompletionItemProvider,
     vscode.SignatureHelpProvider,
     vscode.DefinitionProvider,
@@ -128,32 +129,6 @@ export class StitchProvider
     return;
   }
 
-  provideHover(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-  ): vscode.ProviderResult<vscode.Hover> {
-    const item = this.getSymbol(document, position);
-    if (!item) {
-      return;
-    }
-    const type = item.$tag === 'Type' ? item : item.type;
-    const hoverContents = new vscode.MarkdownString();
-    let hasSomething = false;
-    if (type.code) {
-      hoverContents.appendCodeblock(type.code, 'gml');
-      hasSomething = true;
-    }
-    const description = item.description || type.description;
-    if (description) {
-      hoverContents.appendMarkdown(description);
-      hasSomething = true;
-    }
-    if (!hasSomething) {
-      return;
-    }
-    return new vscode.Hover(hoverContents);
-  }
-
   provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
@@ -245,6 +220,27 @@ export class StitchProvider
     return item;
   }
 
+  getSprite(
+    document: vscode.TextDocument,
+    name: string,
+  ): Asset<'sprites'> | undefined {
+    const asset = this.getAsset(document, name);
+    if (asset && asset.assetType === 'sprites') {
+      return asset as Asset<'sprites'>;
+    }
+    return;
+  }
+
+  getAsset(document: vscode.TextDocument, name: string): Asset | undefined {
+    const project = this.getProject(document);
+    if (!project) {
+      console.error(`Could not find project for ${document}`);
+      return;
+    }
+    const asset = project.getAssetByName(name);
+    return asset;
+  }
+
   getGmlFile(document: vscode.TextDocument | vscode.Uri): Code | undefined {
     const project = this.getProject(document);
     if (!project) {
@@ -309,7 +305,7 @@ export class StitchProvider
 
     ctx.subscriptions.push(
       // new GameMakerTreeProvider(this.provider.projects).register(),
-      vscode.languages.registerHoverProvider('gml', this.provider),
+      GameMakerHoverProvider.register(this.provider),
       vscode.languages.registerCompletionItemProvider(
         'gml',
         this.provider,
