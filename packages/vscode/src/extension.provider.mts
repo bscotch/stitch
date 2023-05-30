@@ -1,6 +1,11 @@
-import { Code, Diagnostic } from '@bscotch/gml-parser';
+import {
+  Code,
+  type Diagnostic,
+  type ReferenceableType,
+} from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
+import { inScopeSymbolsToCompletions } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { GameMakerProject } from './extension.project.mjs';
@@ -116,9 +121,9 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Definition | vscode.LocationLink[]> {
-    const symbol = this.getSymbol(document, position);
-    if (symbol && !symbol.native) {
-      return locationOf(symbol);
+    const item = this.getSymbol(document, position);
+    if (item && !item.native && item.def) {
+      return locationOf(item.def);
     }
     return;
   }
@@ -127,18 +132,20 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Hover> {
-    const symbol = this.getSymbol(document, position);
-    if (!symbol) {
+    const item = this.getSymbol(document, position);
+    if (!item) {
       return;
     }
+    const type = item.$tag === 'Type' ? item : item.type;
     const hoverContents = new vscode.MarkdownString();
     let hasSomething = false;
-    if (symbol.code) {
-      hoverContents.appendCodeblock(symbol.code, 'gml');
+    if (type.code) {
+      hoverContents.appendCodeblock(type.code, 'gml');
       hasSomething = true;
     }
-    if (symbol.description) {
-      hoverContents.appendMarkdown(symbol.description);
+    const description = item.description || type.description;
+    if (description) {
+      hoverContents.appendMarkdown(description);
       hasSomething = true;
     }
     if (!hasSomething) {
@@ -156,54 +163,8 @@ export class StitchProvider
     if (!gmlFile) {
       return [];
     }
-    const symbols = gmlFile.getInScopeSymbolsAt(offset);
-    const completions: vscode.CompletionItem[] = [];
-    for (const symbol of symbols) {
-      if (!symbol.name) {
-        continue;
-      }
-      const ignoredPrefix = config.autocompleteIgnoredPrefix;
-      const shouldHide =
-        ignoredPrefix &&
-        symbol.name!.startsWith(ignoredPrefix) &&
-        'location' in symbol &&
-        !symbol.location?.file.path.equals(document.uri.fsPath);
-      if (shouldHide) {
-        continue;
-      }
-      const item = new vscode.CompletionItem(
-        symbol.name!,
-        vscode.CompletionItemKind.Constant,
-      );
-      switch (symbol.kind) {
-        case 'enum':
-          item.kind = vscode.CompletionItemKind.Enum;
-          break;
-        case 'globalFunction':
-          item.kind = symbol.isConstructor
-            ? vscode.CompletionItemKind.Constructor
-            : vscode.CompletionItemKind.Function;
-          item.detail = 'global';
-          break;
-        case 'gmlFunction':
-          item.kind = vscode.CompletionItemKind.Function;
-          item.detail = 'gml';
-          break;
-        case 'globalVariable':
-          item.kind = vscode.CompletionItemKind.Variable;
-          item.detail = 'global';
-          break;
-        case 'localVariable':
-          item.kind = vscode.CompletionItemKind.Variable;
-          item.detail = 'local';
-          break;
-        case 'macro':
-          item.detail = 'macro';
-          break;
-      }
-      completions.push(item);
-    }
-    return completions;
+    const items = gmlFile.getInScopeSymbolsAt(offset);
+    return inScopeSymbolsToCompletions(document, items);
   }
 
   provideSignatureHelp(
@@ -264,7 +225,7 @@ export class StitchProvider
   getSymbol(
     document: vscode.TextDocument,
     position: vscode.Position,
-  ): GmlSymbolType | ProjectSymbolType | undefined {
+  ): ReferenceableType | undefined {
     const offset = document.offsetAt(position);
     const file = this.getGmlFile(document);
     const ref = file?.getReferenceAt(offset);
@@ -272,12 +233,12 @@ export class StitchProvider
       console.error(`Could not find reference at ${offset}`);
       return;
     }
-    const symbol = ref?.symbol;
-    if (!symbol) {
+    const item = ref.item;
+    if (!item) {
       console.error(`Could not find symbol for ${ref}`);
       return;
     }
-    return symbol;
+    return item;
   }
 
   getGmlFile(document: vscode.TextDocument | vscode.Uri): Code | undefined {

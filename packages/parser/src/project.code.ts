@@ -12,7 +12,7 @@ import {
 } from './project.location.js';
 import { PrimitiveName } from './project.primitives.js';
 import type { Symbol } from './project.symbol.js';
-import { Type, type StructType } from './project.type.js';
+import { Type, TypeMember, type StructType } from './project.type.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
 import { processSymbols } from './project.visitLocals.js';
 
@@ -80,16 +80,22 @@ export class Code {
     return undefined;
   }
 
-  getInScopeSymbolsAt(offset: number): Symbol[] {
+  getInScopeSymbolsAt(offset: number): (Symbol | TypeMember)[] {
     const scopeRange = this.getScopeRangeAt(offset);
     if (!scopeRange) {
       return [];
     }
     return [
-      // ...scopeRange.local.symbols.values(), // Local
-      // ...(self.kind !== 'global' ? self.symbols.values() : []), // Self (if not global)
-      // ...this.project.self.symbols.values(), // Project globals
-      // ...this.project.self.gml.values(), // GML globals
+      // Local variables
+      ...(scopeRange.local.members || []),
+      // Self variables, if not global
+      ...((scopeRange.self !== this.project.self
+        ? scopeRange.self.members
+        : []) || []),
+      // Project globals
+      ...(this.project.self.members || []),
+      // GML globals
+      ...[...this.project.native.global.values()],
     ];
   }
 
