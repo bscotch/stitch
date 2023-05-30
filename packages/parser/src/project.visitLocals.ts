@@ -1,5 +1,6 @@
 // CST Visitor for creating an AST etc
 import { randomString } from '@bscotch/utility';
+import { ok } from 'assert';
 import type { CstNode, CstNodeLocation } from 'chevrotain';
 import type {
   FunctionArgumentsCstChildren,
@@ -178,13 +179,19 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         ? this.PROCESSOR.getGlobalSymbol(functionName!)?.symbol
         : new Symbol(
             functionName || `anonymous_function_${randomString(8, 'base64')}`,
+            this.PROCESSOR.file.createType(functionTypeName),
           )
     ) as Symbol | TypeMember;
-    functionName = symbol.name; // Might have been anonymous
+    // Might have been anonymous, so get the random name
+    functionName = symbol.name;
+    // Make sure we have a proper type
+    if (symbol.type.kind === 'Unknown') {
+      symbol.type.kind = functionTypeName;
+    }
 
     // Get or create the function type
-    const functionType =
-      symbol.type || this.PROCESSOR.file.createType(functionTypeName);
+    const functionType = symbol.type;
+    ok(functionType.isFunction, 'Expected function type');
 
     // Ensure that constructors have an attached constructed type
     if (isConstructor && !functionType.constructs) {

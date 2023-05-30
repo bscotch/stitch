@@ -19,6 +19,7 @@ export type UnionType = Type<'Union'>;
 export type UnknownType = Type<'Unknown'>;
 
 export class TypeMember extends Refs(Flaggable) {
+  readonly $tag = 'TypeMember';
   description: string | undefined = undefined;
   // For function params
   idx: number | undefined = undefined;
@@ -74,8 +75,16 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   params: TypeMember[] | undefined = undefined;
   returns: undefined | Type = undefined;
 
-  constructor(readonly kind: T) {
+  constructor(protected _kind: T) {
     super();
+  }
+
+  get kind() {
+    return this._kind;
+  }
+  set kind(value: PrimitiveName) {
+    ok(this._kind === 'Unknown', 'Cannot change type kind');
+    this._kind = value as T;
   }
 
   /** Get this type as a Feather-compatible string */
@@ -171,7 +180,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   }
 
   addParameter(idx: number, name: string, type: Type, optional = false) {
-    ok(this.isFunction, `Cannot add param to ${this.kind}`);
+    ok(this.isFunction, `Cannot add param to ${this.kind} type`);
     this.params ??= [];
     let param = this.params[idx];
     if (!param) {
@@ -241,7 +250,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * Create a derived type: of the same kind, pointing to
    * this type as its parent. */
   derive(): Type<T> {
-    const derived = new Type(this.kind);
+    const derived = new Type(this.kind) as Type<T>;
     derived.parent = this;
     return derived;
   }

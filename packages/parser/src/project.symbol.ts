@@ -7,8 +7,11 @@ export class Symbol extends Refs(Flaggable) {
   description: string | undefined = undefined;
   type: Type = new Type('Unknown');
 
-  constructor(readonly name: string) {
+  constructor(readonly name: string, type?: Type) {
     super();
+    if (type) {
+      this.type = type;
+    }
   }
 
   toJSON() {

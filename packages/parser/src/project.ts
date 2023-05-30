@@ -336,15 +336,36 @@ export class Project {
 
     t = Date.now();
     // Discover all globals
-    for (const [, asset] of this.assets) {
+    // Sort assets by type, with objects 2nd to last and scripts last
+    // to minimize the number of things that need to be updated after
+    // loading.
+    const assets = [...this.assets.values()].sort((a, b) => {
+      if (a.assetType === b.assetType) {
+        return a.name.localeCompare(b.name);
+      }
+      if (a.assetType === 'scripts') {
+        return 1;
+      }
+      if (b.assetType === 'scripts') {
+        return -1;
+      }
+      if (a.assetType === 'objects') {
+        return 1;
+      }
+      if (b.assetType === 'objects') {
+        return -1;
+      }
+      return a.name.localeCompare(b.name);
+    });
+    for (const asset of assets) {
       asset.updateGlobals();
     }
     console.log('Globals discovered in', Date.now() - t, 'ms');
 
     t = Date.now();
     // Discover all symbols and their references
-    for (const [, resource] of this.assets) {
-      resource.updateAllSymbols();
+    for (const asset of assets) {
+      asset.updateAllSymbols();
     }
     console.log('Symbols discovered in', Date.now() - t, 'ms');
     if (options?.watch) {

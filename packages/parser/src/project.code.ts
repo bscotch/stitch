@@ -1,4 +1,5 @@
 import type { Pathy } from '@bscotch/pathy';
+import { ok } from 'node:assert';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
 import { Diagnostic } from './project.diagnostics.js';
@@ -44,8 +45,8 @@ export class Code {
   }
 
   createType<T extends PrimitiveName>(type: T): Type<T> {
-    const baseType = (this.project.native.types.get(type) ||
-      this.project.native.types.get('Unknown')) as Type<T>;
+    const baseType = this.project.native.types.get(type) as Type<T>;
+    ok(baseType, `Unknown type '${type}'`);
     return baseType!.derive();
   }
 
