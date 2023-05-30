@@ -69,6 +69,7 @@ export class GameMakerSemanticTokenProvider
       console.error(error);
       console.error('OUTER ERROR');
     }
+    return;
   }
 
   register() {

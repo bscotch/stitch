@@ -1,7 +1,6 @@
 import type { Asset } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import type { GameMakerProject } from './extension.project.mjs';
-import { GameMakerResource } from './extension.resource.mjs';
 import { locationOf } from './lib.mjs';
 
 export class GameMakerWorkspaceSymbolProvider
@@ -29,29 +28,29 @@ export class GameMakerWorkspaceSymbolProvider
     this.updateGlobalsCache(project);
   }
 
-  updateResourceCache(project: GameMakerProject, resource: GameMakerResource) {
+  updateResourceCache(project: GameMakerProject, resource: Asset) {
     const symbols: vscode.SymbolInformation[] = [];
     this.resourceCache.get(project)!.set(resource, symbols);
     // Then add the resource itself. Scripts and objects should point to their GML, while everything else should point to yy files.
     const start = new vscode.Position(0, 0);
-    if (resource.type === 'scripts') {
+    if (resource.assetType === 'scripts') {
       symbols.push(
         new vscode.SymbolInformation(
           resource.name,
           vscode.SymbolKind.Module,
-          resource.type,
+          resource.assetType,
           new vscode.Location(
             vscode.Uri.file(resource.gmlFile!.path.absolute),
             start,
           ),
         ),
       );
-    } else if (resource.type === 'objects') {
+    } else if (resource.assetType === 'objects') {
       for (const file of resource.gmlFiles.values()) {
         const symbol = new vscode.SymbolInformation(
           resource.name,
           vscode.SymbolKind.Class,
-          `${resource.type} (${file.path.name})`,
+          `${resource.assetType} (${file.path.name})`,
           new vscode.Location(vscode.Uri.file(file.path.absolute), start),
         );
         symbols.push(symbol);
@@ -61,7 +60,7 @@ export class GameMakerWorkspaceSymbolProvider
         new vscode.SymbolInformation(
           resource.name,
           vscode.SymbolKind.File,
-          resource.type,
+          resource.assetType,
           new vscode.Location(vscode.Uri.file(resource.yyPath.absolute), start),
         ),
       );
@@ -71,23 +70,19 @@ export class GameMakerWorkspaceSymbolProvider
   updateGlobalsCache(project: GameMakerProject) {
     const symbols: vscode.SymbolInformation[] = [];
     this.globalsCache.set(project, symbols);
-    for (const symbol of project.self.symbols.values()) {
-      if (['instance', 'asset'].includes(symbol.kind)) {
-        continue;
-      }
+    for (const symbol of (project.self.members || []).values()) {
+      const type = symbol.type;
       const kind =
-        symbol.kind === 'enum'
+        type.kind === 'Enum'
           ? vscode.SymbolKind.Enum
-          : symbol.kind === 'globalFunction'
+          : type.kind === 'Function'
           ? vscode.SymbolKind.Function
-          : symbol.kind === 'globalVariable'
-          ? vscode.SymbolKind.Variable
-          : vscode.SymbolKind.Constant;
+          : vscode.SymbolKind.Variable;
       symbols.push(
         new vscode.SymbolInformation(
           symbol.name!,
           kind,
-          symbol.kind,
+          type.kind,
           locationOf(symbol as any)!,
         ),
       );

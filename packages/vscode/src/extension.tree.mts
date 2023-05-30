@@ -152,7 +152,7 @@ export class GameMakerTreeProvider
         }
       }
       // Add all of the resources
-      for (const [, resource] of project.resources) {
+      for (const [, resource] of project.assets) {
         const path = (resource.yy.parent as any).path;
         if (!path) {
           console.error('Resource has no path', resource);
