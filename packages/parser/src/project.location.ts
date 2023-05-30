@@ -82,6 +82,20 @@ export class Range {
   }
 }
 
+/**
+ * A code range corresponding with a specific function argument.
+ * Useful for providing signature help.
+ */
+export class FunctionArgRange extends Range {
+  override $tag = 'ArgRange';
+  /** The type of the function whose argument we're in. */
+  param: TypeMember;
+  constructor(param: TypeMember, start: Position, end?: Position) {
+    super(start, end);
+    this.param = param;
+  }
+}
+
 /** Extend a class to add `def`, `refs`, and related fields and methods. */
 export function Refs<TBase extends Constructor>(Base: TBase) {
   return class extends Base {

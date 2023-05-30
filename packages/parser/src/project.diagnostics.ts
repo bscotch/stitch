@@ -3,7 +3,7 @@ import type { Range } from './project.location.js';
 
 export type GmlParseError = IRecognitionException;
 export interface Diagnostic {
-  type: 'diagnostic';
+  $tag: 'diagnostic';
   kind: 'parser';
   message: string;
   severity: 'error' | 'warning' | 'info';

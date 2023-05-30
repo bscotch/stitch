@@ -4,6 +4,7 @@ import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
 import { Diagnostic } from './project.diagnostics.js';
 import {
+  FunctionArgRange,
   Position,
   Range,
   Reference,
@@ -20,8 +21,10 @@ import { processSymbols } from './project.visitLocals.js';
 export class Code {
   readonly $tag = 'gmlFile';
   readonly scopes: Scope[] = [];
+  protected _diagnostics: Diagnostic[] = [];
   /** List of all symbol references in this file, in order of appearance. */
   protected _refs: Reference[] = [];
+  protected _functionArgRanges: FunctionArgRange[] = [];
   protected _refsAreSorted = false;
   protected _content!: string;
   protected _parsed!: GmlParsed;
@@ -107,6 +110,14 @@ export class Code {
     return [...this._refs];
   }
 
+  get functionArgRanges() {
+    if (!this._refsAreSorted) {
+      this.sortRefs();
+      this._refsAreSorted = true;
+    }
+    return [...this._functionArgRanges];
+  }
+
   get name() {
     return this.path.name;
   }
@@ -133,10 +144,9 @@ export class Code {
     this._content =
       typeof content === 'string' ? content : await this.path.read();
     this._parsed = parser.parse(this.content);
-    const diagnostics: Diagnostic[] = [];
     for (const diagnostic of this._parsed.errors) {
-      diagnostics.push({
-        type: 'diagnostic',
+      this._diagnostics.push({
+        $tag: 'diagnostic',
         kind: 'parser',
         message: diagnostic.message,
         severity: 'error',
@@ -144,17 +154,19 @@ export class Code {
         location: Range.fromCst(this, diagnostic.token),
       });
     }
-    if (diagnostics.length) {
-      this.project.emitDiagnostics(diagnostics);
-    }
   }
 
   addRef(ref: Reference) {
     this._refs.push(ref);
   }
 
+  addFunctionArgRange(range: FunctionArgRange) {
+    this._functionArgRanges.push(range);
+  }
+
   sortRefs() {
     this._refs.sort((a, b) => a.start.offset - b.start.offset);
+    this._functionArgRanges.sort((a, b) => a.start.offset - b.start.offset);
   }
 
   protected initializeScopeRanges() {
@@ -189,7 +201,9 @@ export class Code {
     }
     // Reset this file's refs list
     this._refs = [];
+    this._functionArgRanges = [];
     this._refsAreSorted = false;
+    this._diagnostics = [];
   }
 
   onRemove() {
@@ -212,6 +226,10 @@ export class Code {
   }
 
   updateAllSymbols() {
-    return processSymbols(this);
+    processSymbols(this);
+
+    if (this._diagnostics.length) {
+      this.project.emitDiagnostics(this._diagnostics);
+    }
   }
 }

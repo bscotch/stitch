@@ -3,8 +3,8 @@ import { randomString } from '@bscotch/utility';
 import { ok } from 'assert';
 import type { CstNode, CstNodeLocation } from 'chevrotain';
 import type {
-  FunctionArgumentsCstChildren,
   FunctionExpressionCstChildren,
+  IdentifierAccessorCstChildren,
   IdentifierCstChildren,
   LocalVarDeclarationCstChildren,
   StaticVarDeclarationsCstChildren,
@@ -12,7 +12,14 @@ import type {
 } from '../gml-cst.js';
 import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
-import { Position, Range, Scope } from './project.location.js';
+import { Diagnostic } from './project.diagnostics.js';
+import {
+  FunctionArgRange,
+  Position,
+  Range,
+  ReferenceableType,
+  Scope,
+} from './project.location.js';
 import { Symbol } from './project.symbol.js';
 import { StructType, Type, TypeMember } from './project.type.js';
 
@@ -22,6 +29,7 @@ class SymbolProcessor {
   /** The current ScopeRange, updated as we push/pop local and self */
   protected scope: Scope;
   readonly position: Position;
+  readonly diagnostics: Diagnostic[] = [];
 
   constructor(readonly file: Code) {
     this.scope = file.scopes[0];
@@ -31,6 +39,20 @@ class SymbolProcessor {
 
   range(loc: CstNodeLocation) {
     return Range.fromCst(this.position.file, loc);
+  }
+
+  addDiagnostic(
+    where: CstNodeLocation,
+    message: string,
+    severity: Diagnostic['severity'] = 'warning',
+  ) {
+    this.diagnostics.push({
+      $tag: 'diagnostic',
+      kind: 'parser',
+      message,
+      severity,
+      location: Range.fromCst(this.file, where),
+    });
   }
 
   get fullScope() {
@@ -255,21 +277,72 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     );
   }
 
-  /** TODO: Handle function calls */
-  override functionArguments(children: FunctionArgumentsCstChildren) {
-    // TODO: Need to collect function argument ranges to provide function signature
-    // helpers. Basically we need the ranges between each comma in the argument list.
-    const start = children.StartParen[0];
-    const end = children.EndParen[0];
-    const commas = children.Comma?.map((comma) => comma.startOffset) || [];
-    // console.log(
-    //   'functionArguments',
-    //   start.startOffset,
-    //   commas,
-    //   end.startOffset,
-    // );
-    if (children.functionArgument) {
-      this.visit(children.functionArgument);
+  override identifierAccessor(children: IdentifierAccessorCstChildren) {
+    const item = this.identifier(children.identifier[0].children);
+    const identifierLocation = children.identifier[0].location!;
+    if (!item) {
+      return;
+    }
+    const type = item.$tag === 'Type' ? item : item.type;
+    const suffixes = children.accessorSuffixes?.[0].children;
+    if (!suffixes) {
+      return;
+    }
+    const functionArguments = suffixes.functionArguments?.[0].children;
+    if (functionArguments) {
+      const toVisit: CstNode[] = [];
+      if (!type.isFunction) {
+        if (!['Unknown', 'Any', 'Mixed'].includes(type.kind)) {
+          // Then we can be pretty confident we have a type error
+          this.PROCESSOR.addDiagnostic(
+            suffixes.functionArguments![0].location!,
+            `Type ${type.toFeatherString()} is not callable`,
+          );
+        }
+        return;
+      }
+      // Create the argumentRanges between the parense and each comma
+      const params = type.params || [];
+      const args = functionArguments.functionArgument || [];
+      const positions = [
+        functionArguments.StartParen[0],
+        ...(functionArguments.Comma?.map((comma) => comma) || []),
+        functionArguments.EndParen[0],
+      ];
+      let restType: Type | undefined;
+      for (let i = 0; i < positions.length - 1; i++) {
+        const start = Position.fromCstEnd(this.PROCESSOR.file, positions[i]);
+        const end = Position.fromCstStart(
+          this.PROCESSOR.file,
+          positions[i + 1],
+        );
+        const arg = args[i];
+        const param = params[i];
+        if (param?.name === '...') {
+          restType = param.type;
+        }
+        toVisit.push(arg);
+        const location = arg?.location || identifierLocation;
+        if (!param && !restType) {
+          this.PROCESSOR.addDiagnostic(location, `Too many arguments`);
+          break;
+        }
+        if (!arg) {
+          if (!param.optional) {
+            this.PROCESSOR.addDiagnostic(
+              location,
+              `Missing required argument ${param.name}`,
+              'error',
+            );
+          }
+        }
+        const funcRange = new FunctionArgRange(param, start, end);
+        this.PROCESSOR.file.addFunctionArgRange(funcRange);
+      }
+      // Visit all of the arguments to ensure they are fully processed
+      this.visit(toVisit);
+    } else {
+      this.visit(children.accessorSuffixes || []);
     }
   }
 
@@ -304,10 +377,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
    * Fallback identifier handler. Figure out what a given
    * identifier is referencing, and create appropriate references
    * to make that work.*/
-  override identifier(children: IdentifierCstChildren) {
+  override identifier(
+    children: IdentifierCstChildren,
+  ): ReferenceableType | undefined {
     const identifier = identifierFrom(children);
     const scope = this.PROCESSOR.fullScope;
-    let item: Symbol | Type | TypeMember | undefined;
+    let item: ReferenceableType | undefined;
     const range = this.PROCESSOR.range(identifier.token);
 
     switch (identifier.type) {
