@@ -1,15 +1,14 @@
-import type { GameMakerResource } from '@bscotch/gml-parser';
+import type { Asset } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import type { GameMakerProject } from './extension.project.mjs';
+import { GameMakerResource } from './extension.resource.mjs';
 import { locationOf } from './lib.mjs';
 
 export class GameMakerWorkspaceSymbolProvider
   implements vscode.WorkspaceSymbolProvider
 {
-  resourceCache: Map<
-    GameMakerProject,
-    Map<GameMakerResource, vscode.SymbolInformation[]>
-  > = new Map();
+  resourceCache: Map<GameMakerProject, Map<Asset, vscode.SymbolInformation[]>> =
+    new Map();
   globalsCache: Map<GameMakerProject, vscode.SymbolInformation[]> = new Map();
 
   constructor(readonly projects: GameMakerProject[]) {
@@ -24,7 +23,7 @@ export class GameMakerWorkspaceSymbolProvider
 
   updateProjectCache(project: GameMakerProject) {
     this.resourceCache.set(project, new Map());
-    for (const [, resource] of project.resources) {
+    for (const [, resource] of project.assets) {
       this.updateResourceCache(project, resource);
     }
     this.updateGlobalsCache(project);

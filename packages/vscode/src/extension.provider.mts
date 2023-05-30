@@ -1,9 +1,4 @@
-import {
-  Diagnostic,
-  GmlFile,
-  GmlSymbolType,
-  ProjectSymbolType,
-} from '@bscotch/gml-parser';
+import { Code, Diagnostic } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
 import { config } from './extension.config.mjs';
@@ -12,7 +7,12 @@ import { GameMakerProject } from './extension.project.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { GameMakerFolder } from './extension.tree.mjs';
-import { locationOf, pathyFromUri, rangeFrom } from './lib.mjs';
+import {
+  locationOf,
+  pathyFromUri,
+  rangeFrom,
+  uriFromCodeFile,
+} from './lib.mjs';
 
 const jsdocCompletions = [
   '@param',
@@ -59,7 +59,7 @@ export class StitchProvider
     }
     const file = diagnostics[0].location.file;
     this.diagnosticCollection.set(
-      vscode.Uri.file(file),
+      uriFromCodeFile(file),
       diagnostics.map((d) => ({
         message: d.message,
         range: rangeFrom(d.location),
@@ -280,7 +280,7 @@ export class StitchProvider
     return symbol;
   }
 
-  getGmlFile(document: vscode.TextDocument | vscode.Uri): GmlFile | undefined {
+  getGmlFile(document: vscode.TextDocument | vscode.Uri): Code | undefined {
     const project = this.getProject(document);
     if (!project) {
       console.error(`Could not find project for ${document}`);
