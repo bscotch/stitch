@@ -113,9 +113,8 @@ export function Refs<TBase extends Constructor>(Base: TBase) {
     addRef(location: Range, type?: Type): this {
       const ref = Reference.fromRange(location, this as any);
       // TODO: Improve the type tracing!
-      if (type) {
-        ref.type = type;
-      }
+      const itemType = (this as any).type as Type | undefined;
+      ref.type = type || itemType || ref.type;
       this.refs.add(ref);
       location.file.addRef(ref);
       return this;

@@ -105,5 +105,8 @@ describe.only('Project', function () {
     const arg2 = file.getFunctionArgRangeAt(865);
     ok(arg2);
     expect(arg2.param.parent.name).to.equal('sin');
+
+    const quickStructSymbol = file.getReferenceAt(1100);
+    ok(quickStructSymbol);
   });
 });

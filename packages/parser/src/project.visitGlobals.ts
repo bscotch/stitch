@@ -75,7 +75,10 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const name = children.Identifier?.[0];
     if (!name) return;
     const range = this.PROCESSOR.range(name);
-    const type = this.PROCESSOR.file.createType(typeName).definedAt(range);
+    const type = this.PROCESSOR.file
+      .createType(typeName)
+      .definedAt(range)
+      .named(name.image);
 
     // Only create it if it doesn't already exist.
     let symbol = this.PROCESSOR.project.getGlobal(name.image)?.symbol as

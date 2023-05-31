@@ -307,7 +307,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         }
         return;
       }
-      log('Found function call', item.name, type.name);
       // Create the argumentRanges between the parense and each comma
       const argsAndSeps = [
         functionArguments.StartParen[0],
@@ -325,9 +324,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       });
       let argIdx = 0;
       let lastDelimiter: IToken;
-      if (log.enabled && type.name === 'sin') {
-        log('Found sin function call');
-      }
       for (let i = 0; i < argsAndSeps.length; i++) {
         const token = argsAndSeps[i];
         const isSep = 'image' in token;
