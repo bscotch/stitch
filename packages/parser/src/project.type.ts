@@ -117,7 +117,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     let code = '';
     switch (this.kind) {
       case 'Function':
-        code = `function ${this.name}(`;
+        code = `function ${this.name || ''}(`;
         const params = this.params || [];
         for (let i = 0; i < params.length; i++) {
           const param = params[i];
@@ -128,9 +128,14 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
           if (param.optional) {
             code += '?';
           }
-          code += ': ' + param.type.toFeatherString();
+          if (param.type.kind !== 'Unknown') {
+            code += ': ' + param.type.toFeatherString();
+          }
         }
-        code += '): ' + (this.returns?.toFeatherString() || 'Unknown');
+        code += ')';
+        if (this.returns && this.returns.kind !== 'Undefined') {
+          code += ': ' + (this.returns?.toFeatherString() || 'Unknown');
+        }
         break;
       default:
         code = this.toFeatherString();

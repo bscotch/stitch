@@ -88,11 +88,19 @@ export class Range {
  */
 export class FunctionArgRange extends Range {
   override $tag = 'ArgRange';
-  /** The type of the function whose argument we're in. */
-  param: TypeMember;
-  constructor(param: TypeMember, start: Position, end?: Position) {
+  constructor(
+    /** The function type this parameter belongs to */
+    readonly type: Type<'Function'>,
+    /** The index of the parameter we're in. */
+    readonly idx: number,
+    start: Position,
+    end?: Position,
+  ) {
     super(start, end);
-    this.param = param;
+  }
+
+  get param(): TypeMember {
+    return this.type.getParameter(this.idx)!;
   }
 }
 

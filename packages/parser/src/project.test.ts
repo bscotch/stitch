@@ -79,6 +79,12 @@ describe.only('Project', function () {
       'A dotenv file should provide a path to a full sample project, as env var GML_PARSER_SAMPLE_PROJECT_DIR',
     );
     const project = await Project.initialize(projectDir);
+
+    const asset = project.getAssetByName('button_cl2_confirmation');
+    ok(asset);
+    const create = asset.gmlFilesArray.find((f) => f.name === 'Draw_64');
+    ok(create);
+
     const sample = project.getAssetByName('ZoneDapples');
     ok(sample);
     const file = sample.gmlFile;
@@ -95,5 +101,9 @@ describe.only('Project', function () {
 
     const arg = file.getFunctionArgRangeAt(326);
     expect(arg?.param.name).to.equal('n1');
+
+    const arg2 = file.getFunctionArgRangeAt(865);
+    ok(arg2);
+    expect(arg2.param.parent.name).to.equal('sin');
   });
 });

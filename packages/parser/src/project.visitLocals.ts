@@ -278,12 +278,17 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   }
 
   override identifierAccessor(children: IdentifierAccessorCstChildren) {
+    if (
+      this.PROCESSOR.file.asset.name === 'button_cl2_confirmation' &&
+      this.PROCESSOR.file.name === 'Draw_64'
+    ) {
+      console.log('WUT');
+    }
     const item = this.identifier(children.identifier[0].children);
-    const identifierLocation = children.identifier[0].location!;
     if (!item) {
       return;
     }
-    const type = item.$tag === 'Type' ? item : item.type;
+    const type = (item.$tag === 'Type' ? item : item.type) as Type<'Function'>;
     const suffixes = children.accessorSuffixes?.[0].children;
     if (!suffixes) {
       return;
@@ -302,14 +307,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         return;
       }
       // Create the argumentRanges between the parense and each comma
-      const params = type.params || [];
       const args = functionArguments.functionArgument || [];
       const positions = [
         functionArguments.StartParen[0],
         ...(functionArguments.Comma || []),
         functionArguments.EndParen[0],
       ];
-      let restType: Type | undefined;
       for (let i = 0; i < positions.length - 1; i++) {
         // For some reason the end position is the same
         // as the start position for the commas and parens
@@ -323,28 +326,9 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           positions[i + 1],
         );
         const arg = args[i];
-        const param = params[i];
-        if (param?.name === '...') {
-          restType = param.type;
-        }
         toVisit.push(arg);
-        const location = arg?.location || identifierLocation;
-        if (!param && !restType) {
-          this.PROCESSOR.addDiagnostic(location, `Too many arguments`);
-        }
-        const funcRange = new FunctionArgRange(param, start, end);
+        const funcRange = new FunctionArgRange(type, i, start, end);
         this.PROCESSOR.file.addFunctionArgRange(funcRange);
-      }
-      // Add diagnostic if too few params.
-      const firstOptionalArgIdx = params.findIndex((p) => p.optional);
-      const minArgs =
-        firstOptionalArgIdx === -1 ? params.length : firstOptionalArgIdx;
-      if (args.length < minArgs) {
-        this.PROCESSOR.addDiagnostic(
-          identifierLocation,
-          `Missing required arguments`,
-          'error',
-        );
       }
       // Visit all of the arguments to ensure they are fully processed
       this.visit(toVisit);

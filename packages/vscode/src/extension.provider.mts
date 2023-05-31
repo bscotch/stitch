@@ -149,9 +149,8 @@ export class StitchProvider
     position: vscode.Position,
   ): vscode.SignatureHelp | undefined {
     const argRange = this.getFunctionArg(document, position);
-
     if (!argRange) {
-      console.log('No arg range found');
+      console.error('No arg range found');
       return;
     }
     const param = argRange.param;
@@ -169,7 +168,6 @@ export class StitchProvider
     help.signatures = [signature];
     help.activeSignature = 0;
     help.activeParameter = param.idx!;
-    console.log(help);
     return help;
   }
 
