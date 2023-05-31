@@ -1,18 +1,18 @@
 export type Constructor<T = {}> = new (...args: any[]) => T;
 
-let logging = false;
-export function enableLogging() {
-  logging = true;
-}
-export function disableLogging() {
-  logging = false;
+export interface Logger {
+  (...args: unknown[]): void;
+  enabled: boolean;
 }
 
-export function log(...args: unknown[]) {
-  if (logging) {
-    console.log(...args);
-  }
-}
+export const log: Logger = Object.assign(
+  (...args: unknown[]) => {
+    if (log.enabled) {
+      console.log(...args);
+    }
+  },
+  { enabled: false },
+);
 
 function jsonReplacer(key: string, value: unknown): unknown {
   if (value instanceof Map) {

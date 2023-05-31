@@ -1,7 +1,7 @@
 // CST Visitor for creating an AST etc
 import { randomString } from '@bscotch/utility';
 import { ok } from 'assert';
-import type { CstNode, CstNodeLocation } from 'chevrotain';
+import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
 import type {
   FunctionExpressionCstChildren,
   IdentifierAccessorCstChildren,
@@ -22,6 +22,7 @@ import {
 } from './project.location.js';
 import { Symbol } from './project.symbol.js';
 import { StructType, Type, TypeMember } from './project.type.js';
+import { log } from './util.js';
 
 class SymbolProcessor {
   protected readonly localScopeStack: StructType[] = [];
@@ -146,7 +147,7 @@ class SymbolProcessor {
 export function processSymbols(file: Code) {
   const processor = new SymbolProcessor(file);
   const visitor = new GmlSymbolVisitor(processor);
-  visitor.visit(file.cst);
+  visitor.findSymbols(file.cst);
 }
 
 export class GmlSymbolVisitor extends GmlVisitorBase {
@@ -157,7 +158,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   }
 
   findSymbols(input: CstNode) {
+    if (this.PROCESSOR.file.asset.name === 'ZoneDapples') {
+      log.enabled = true;
+    }
     this.visit(input);
+    log.enabled = false;
     this.PROCESSOR.setLastScopeEnd(input.location!);
     return this.PROCESSOR;
   }
@@ -195,22 +200,24 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
     // If this is global we should already have a symbol for it.
     // If not, we should create a new symbol.
+    const anonymousName = `anonymous_function_${randomString(8, 'base64')}`;
     const symbol = (
       isGlobal && !isAnonymous
         ? this.PROCESSOR.getGlobalSymbol(functionName!)?.symbol
         : new Symbol(
-            functionName || `anonymous_function_${randomString(8, 'base64')}`,
-            this.PROCESSOR.file.createType(functionTypeName),
+            functionName || anonymousName,
+            this.PROCESSOR.file
+              .createType(functionTypeName)
+              .named(functionName || anonymousName),
           )
     ) as Symbol | TypeMember;
     // Might have been anonymous, so get the random name
     functionName = symbol.name;
+
     // Make sure we have a proper type
     if (symbol.type.kind === 'Unknown') {
       symbol.type.kind = functionTypeName;
     }
-
-    // Get or create the function type
     const functionType = symbol.type;
     ok(functionType.isFunction, 'Expected function type');
 
@@ -277,13 +284,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     );
   }
 
+  /** Called on *naked* identifiers and those that have accessors/suffixes of various sorts. */
   override identifierAccessor(children: IdentifierAccessorCstChildren) {
-    if (
-      this.PROCESSOR.file.asset.name === 'button_cl2_confirmation' &&
-      this.PROCESSOR.file.name === 'Draw_64'
-    ) {
-      console.log('WUT');
-    }
     const item = this.identifier(children.identifier[0].children);
     if (!item) {
       return;
@@ -295,7 +297,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     }
     const functionArguments = suffixes.functionArguments?.[0].children;
     if (functionArguments) {
-      const toVisit: CstNode[] = [];
       if (!type.isFunction) {
         if (!['Unknown', 'Any', 'Mixed'].includes(type.kind)) {
           // Then we can be pretty confident we have a type error
@@ -306,32 +307,58 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         }
         return;
       }
+      log('Found function call', item.name, type.name);
       // Create the argumentRanges between the parense and each comma
-      const args = functionArguments.functionArgument || [];
-      const positions = [
+      const argsAndSeps = [
         functionArguments.StartParen[0],
+        ...(functionArguments.functionArgument || []),
         ...(functionArguments.Comma || []),
         functionArguments.EndParen[0],
-      ];
-      for (let i = 0; i < positions.length - 1; i++) {
-        // For some reason the end position is the same
-        // as the start position for the commas and parens
-        // Start on the RIGHT side of the first delimiter
-        const start = Position.fromCstStart(this.PROCESSOR.file, positions[i]);
-        start.offset += 1;
-        start.column += 1;
-        // end on the LEFT side of the second delimiter
-        const end = Position.fromCstStart(
-          this.PROCESSOR.file,
-          positions[i + 1],
-        );
-        const arg = args[i];
-        toVisit.push(arg);
-        const funcRange = new FunctionArgRange(type, i, start, end);
-        this.PROCESSOR.file.addFunctionArgRange(funcRange);
+      ].sort((a, b) => {
+        const aLocation = (
+          'location' in a ? a.location! : a
+        ) as CstNodeLocation;
+        const bLocation = (
+          'location' in b ? b.location! : b
+        ) as CstNodeLocation;
+        return aLocation.startOffset - bLocation.startOffset;
+      });
+      let argIdx = 0;
+      let lastDelimiter: IToken;
+      if (log.enabled && type.name === 'sin') {
+        log('Found sin function call');
       }
-      // Visit all of the arguments to ensure they are fully processed
-      this.visit(toVisit);
+      for (let i = 0; i < argsAndSeps.length; i++) {
+        const token = argsAndSeps[i];
+        const isSep = 'image' in token;
+        if (isSep) {
+          if (token.image === '(') {
+            lastDelimiter = token;
+            continue;
+          }
+
+          // Otherwise create the range
+          // For some reason the end position is the same
+          // as the start position for the commas and parens
+          // Start on the RIGHT side of the first delimiter
+          const start = Position.fromCstStart(
+            this.PROCESSOR.file,
+            lastDelimiter!,
+          );
+          start.offset += 1;
+          start.column += 1;
+          // end on the LEFT side of the second delimiter
+          const end = Position.fromCstStart(this.PROCESSOR.file, token);
+          const funcRange = new FunctionArgRange(type, argIdx, start, end);
+          this.PROCESSOR.file.addFunctionArgRange(funcRange);
+
+          // Increment the argument idx for the next one
+          lastDelimiter = token;
+          argIdx++;
+        } else {
+          this.visit(token);
+        }
+      }
     } else {
       this.visit(children.accessorSuffixes || []);
     }
