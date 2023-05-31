@@ -3,6 +3,7 @@ import { randomString } from '@bscotch/utility';
 import { ok } from 'assert';
 import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
 import type {
+  AssignmentRightHandSideCstChildren,
   FunctionExpressionCstChildren,
   IdentifierAccessorCstChildren,
   IdentifierCstChildren,
@@ -22,6 +23,7 @@ import {
 } from './project.location.js';
 import { Symbol } from './project.symbol.js';
 import { StructType, Type, TypeMember } from './project.type.js';
+import { c } from './tokens.categories.js';
 import { log } from './util.js';
 
 class SymbolProcessor {
@@ -147,7 +149,7 @@ class SymbolProcessor {
 export function processSymbols(file: Code) {
   const processor = new SymbolProcessor(file);
   const visitor = new GmlSymbolVisitor(processor);
-  visitor.findSymbols(file.cst);
+  visitor.FIND_SYMBOLS(file.cst);
 }
 
 export class GmlSymbolVisitor extends GmlVisitorBase {
@@ -157,7 +159,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     this.validateVisitor();
   }
 
-  findSymbols(input: CstNode) {
+  /** Entrypoint */
+  FIND_SYMBOLS(input: CstNode) {
     if (this.PROCESSOR.file.asset.name === 'ZoneDapples') {
       log.enabled = true;
     }
@@ -165,6 +168,94 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     log.enabled = false;
     this.PROCESSOR.setLastScopeEnd(input.location!);
     return this.PROCESSOR;
+  }
+
+  protected COMPUTE_TYPE(children: AssignmentRightHandSideCstChildren) {
+    if (children.structLiteral) {
+      return this.PROCESSOR.file.createStructType();
+    } else if (children.functionExpression) {
+      // TODO: Find the function's actual type
+      return this.PROCESSOR.file.createType('Function');
+    } else if (children.expression) {
+      const expr =
+        children.expression[0].children.primaryExpression?.[0].children;
+      if (expr) {
+        const isString =
+          expr.stringLiteral ||
+          expr.multilineDoubleStringLiteral ||
+          expr.multilineSingleStringLiteral ||
+          expr.templateLiteral;
+        const isArray = !isString && expr.arrayLiteral;
+        const isReal =
+          !isString &&
+          !isArray &&
+          (expr.UnaryPrefixOperator ||
+            expr.UnarySuffixOperator ||
+            expr.Literal?.[0].tokenType.CATEGORIES?.includes(c.NumericLiteral));
+        return this.PROCESSOR.file.createType(
+          isString ? 'String' : isArray ? 'Array' : isReal ? 'Real' : 'Unknown',
+        );
+      }
+    }
+    // TODO: Add more capabilities
+    return this.PROCESSOR.file.createType('Unknown');
+  }
+
+  /** Given an identifier in the current scope, find the corresponding item. */
+  protected FIND_ITEM(
+    children: IdentifierCstChildren,
+  ): { item: ReferenceableType; range: Range } | undefined {
+    const identifier = identifierFrom(children);
+    const scope = this.PROCESSOR.fullScope;
+    let item: ReferenceableType | undefined;
+    const range = this.PROCESSOR.range(identifier.token);
+
+    switch (identifier.type) {
+      case 'Global':
+        // Global is a special case, it's a keyword and also
+        // a globalvar.
+        item = scope.global;
+        break;
+      case 'Self':
+        // Then we're reference our current self context
+        item = scope.self;
+        break;
+      case 'Identifier':
+        const { name } = identifier;
+        // Is it local?
+        const local = scope.local.getMember(name);
+        if (local) {
+          item = local;
+          break;
+        }
+        // Is it a non-global selfvar?
+        const selfvar = !scope.selfIsGlobal && scope.self.getMember(name);
+        if (selfvar) {
+          item = selfvar;
+          break;
+        }
+        // Is it a global?
+        const globalvar = this.PROCESSOR.project.getGlobal(name);
+        if (globalvar) {
+          item = globalvar.symbol;
+          break;
+        }
+        // TODO: Emit error?
+        else {
+          // console.error('Unknown symbol', name);
+        }
+        break;
+      default:
+        // TODO: Handle `other` and `all` keywords
+        break;
+    }
+    if (item) {
+      return {
+        item,
+        range,
+      };
+    }
+    return;
   }
 
   override withStatement(children: WithStatementCstChildren) {
@@ -360,6 +451,41 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     }
   }
 
+  // override expression(children: ExpressionCstChildren) {
+  //   const lhs = children.primaryExpression;
+  //   this.visit(lhs);
+  //   if (children.variableAssignment) {
+  //     const accessor = lhs[0].children.identifierAccessor?.[0].children;
+  //     if (accessor && !accessor.accessorSuffixes) {
+  //       // Try to figure out what the right side's type is
+  //       const rhs =
+  //         children.variableAssignment?.[0].children.assignmentRightHandSide[0]
+  //           .children;
+  //       if (rhs) {
+  //         // Then this variable is being assigned and therefore exists.
+  //         // TODO: Add it to the self scope!
+  //         const type = this.COMPUTE_TYPE(rhs);
+  //         if (type.kind !== 'Unknown') {
+  //           // Then we can try to do a simple assignment check
+  //           const item = this.FIND_ITEM(accessor.identifier[0].children)?.item;
+  //           if (item) {
+  //             const itemType = 'type' in item ? item.type : item;
+  //             if (itemType.kind === 'Unknown') {
+  //               itemType.kind = type.kind;
+  //             }
+  //           }
+  //         }
+  //       }
+  //     } else {
+  //       this.visit(children.variableAssignment);
+  //     }
+  //   } else if (children.binaryExpression) {
+  //     this.visit(children.binaryExpression);
+  //   } else if (children.ternaryExpression) {
+  //     this.visit(children.ternaryExpression);
+  //   }
+  // }
+
   /** Static params are unambiguously defined. */
   override staticVarDeclarations(children: StaticVarDeclarationsCstChildren) {
     // Add to the self scope.
@@ -394,53 +520,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   override identifier(
     children: IdentifierCstChildren,
   ): ReferenceableType | undefined {
-    const identifier = identifierFrom(children);
-    const scope = this.PROCESSOR.fullScope;
-    let item: ReferenceableType | undefined;
-    const range = this.PROCESSOR.range(identifier.token);
-
-    switch (identifier.type) {
-      case 'Global':
-        // Global is a special case, it's a keyword and also
-        // a globalvar.
-        item = scope.global;
-        break;
-      case 'Self':
-        // Then we're reference our current self context
-        item = scope.self;
-        break;
-      case 'Identifier':
-        const { name } = identifier;
-        // Is it local?
-        const local = scope.local.getMember(name);
-        if (local) {
-          item = local;
-          break;
-        }
-        // Is it a non-global selfvar?
-        const selfvar = !scope.selfIsGlobal && scope.self.getMember(name);
-        if (selfvar) {
-          item = selfvar;
-          break;
-        }
-        // Is it a global?
-        const globalvar = this.PROCESSOR.project.getGlobal(name);
-        if (globalvar) {
-          item = globalvar.symbol;
-          break;
-        }
-        // TODO: Emit error?
-        else {
-          // console.error('Unknown symbol', name);
-        }
-        break;
-      default:
-        // TODO: Handle `other` and `all` keywords
-        break;
-    }
+    const item = this.FIND_ITEM(children);
     if (item) {
-      item.addRef(range);
+      item.item.addRef(item.range);
+      return item.item;
     }
-    return item;
+    return;
   }
 }

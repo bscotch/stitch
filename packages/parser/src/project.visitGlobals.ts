@@ -1,5 +1,5 @@
 // CST Visitor for creating an AST etc
-import assert, { ok } from 'assert';
+import assert from 'assert';
 import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
 import type {
   EnumStatementCstChildren,
@@ -86,6 +86,12 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       | TypeMember;
     if (!symbol) {
       symbol = new Symbol(name.image).definedAt(range).addType(type);
+      if (typeName === 'Constructor') {
+        // Ensure the constructed type exists
+        symbol.type.constructs = this.PROCESSOR.file
+          .createType('Struct')
+          .named(name.image);
+      }
       // Add the symbol and type to the project.
       this.PROCESSOR.project.addGlobal(symbol, addToGlobalSelf);
     } else {
@@ -149,16 +155,10 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     // Add the function to a table of functions
     if (name && isGlobal) {
       const isConstructor = !!children.constructorSuffix?.[0];
-      const _symbol = this.ADD_GLOBAL_DECLARATION(
+      this.ADD_GLOBAL_DECLARATION(
         children,
         isConstructor ? 'Constructor' : 'Function',
       )!;
-      const functionType = _symbol.type;
-      ok(['Constructor', 'Function'].includes(functionType.kind));
-      if (children.constructorSuffix?.[0]) {
-        // Ensure that the struct type exists for this constructor function
-        _symbol.type.constructs ||= this.PROCESSOR.file.createType('Struct');
-      }
     }
     this.visit(children.blockStatement);
 

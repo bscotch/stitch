@@ -133,7 +133,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
           }
         }
         code += ')';
-        if (this.returns && this.returns.kind !== 'Undefined') {
+        if (this.constructs && this.constructs.kind !== 'Undefined') {
+          code += ': ' + (this.constructs.toFeatherString() || 'Unknown');
+        } else if (this.returns && this.returns.kind !== 'Undefined') {
           code += ': ' + (this.returns?.toFeatherString() || 'Unknown');
         }
         break;
