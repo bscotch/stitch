@@ -1,3 +1,4 @@
+import { omit } from '@bscotch/utility';
 import { ok } from 'assert';
 import { expect } from 'chai';
 import { Project } from './project.js';
@@ -78,5 +79,21 @@ describe.only('Project', function () {
       'A dotenv file should provide a path to a full sample project, as env var GML_PARSER_SAMPLE_PROJECT_DIR',
     );
     const project = await Project.initialize(projectDir);
+    const sample = project.getAssetByName('ZoneDapples');
+    ok(sample);
+    const file = sample.gmlFile;
+    ok(file);
+    const scopes = file.scopes;
+    ok(scopes);
+    const positions = scopes.map((scope) => {
+      const start = omit(scope.start, ['file', '$tag']);
+      const end = omit(scope.end, ['file', '$tag']);
+      return { start, end };
+    });
+    const sym = file.getReferenceAt(206);
+    ok(sym);
+
+    const arg = file.getFunctionArgRangeAt(326);
+    expect(arg?.param.name).to.equal('n1');
   });
 });

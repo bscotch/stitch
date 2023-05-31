@@ -1,8 +1,10 @@
 import {
-  Asset,
-  Code,
+  type Asset,
+  type Code,
   type Diagnostic,
+  type FunctionArgRange,
   type ReferenceableType,
+  type Type,
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { debounce } from './debounce.mjs';
@@ -146,38 +148,29 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.SignatureHelp | undefined {
-    return;
-    // const project = this.getProject(document);
-    // let leftParensNeeded = 1;
-    // let offset = document.offsetAt(position);
-    // let param = 0;
-    // while (leftParensNeeded > 0 && offset > 0) {
-    //   if (!leftParensNeeded) {
-    //     break;
-    //   }
-    //   offset--;
-    //   const pos = document.positionAt(offset);
-    //   const char = document.getText(new vscode.Range(pos, pos.translate(0, 1)));
-    //   if (char === '(') {
-    //     leftParensNeeded--;
-    //   } else if (char === ')') {
-    //     leftParensNeeded++;
-    //   } else if (char === ',' && leftParensNeeded === 1) {
-    //     param++;
-    //   }
-    // }
-    // const func = StitchProvider.positionToWord(
-    //   document,
-    //   document.positionAt(offset),
-    // );
-    // const help =
-    //   this.globalSignatures.get(func) || project?.signatures.get(func);
-    // if (!help) {
-    //   return;
-    // }
-    // help.activeSignature = 0;
-    // help.activeParameter = param;
-    // return help;
+    const argRange = this.getFunctionArg(document, position);
+
+    if (!argRange) {
+      console.log('No arg range found');
+      return;
+    }
+    const param = argRange.param;
+    const func = param.parent as Type<'Function'>;
+    // Create the signature help
+    const signature = new vscode.SignatureInformation(
+      func.code,
+      func.description,
+    );
+    signature.activeParameter = param.idx!;
+    signature.parameters = (func.params || []).map((p) => {
+      return new vscode.ParameterInformation(p.name, p.description);
+    });
+    const help = new vscode.SignatureHelp();
+    help.signatures = [signature];
+    help.activeSignature = 0;
+    help.activeParameter = param.idx!;
+    console.log(help);
+    return help;
   }
 
   /**
@@ -195,6 +188,15 @@ export class StitchProvider
       return;
     }
     return this.projects.find((p) => p.includesFile(document));
+  }
+
+  getFunctionArg(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+  ): FunctionArgRange | undefined {
+    const offset = document.offsetAt(position);
+    console.log(`Getting function arg at ${offset}`);
+    return this.getGmlFile(document)?.getFunctionArgRangeAt(offset);
   }
 
   getSymbol(

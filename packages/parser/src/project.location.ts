@@ -14,9 +14,9 @@ export class Position {
   readonly $tag = 'Pos';
   constructor(
     readonly file: Code,
-    readonly offset: number,
+    public offset: number,
     readonly line: number,
-    readonly column: number,
+    public column: number,
   ) {}
 
   /**

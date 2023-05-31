@@ -72,6 +72,23 @@ export class Code {
     return undefined;
   }
 
+  getFunctionArgRangeAt(offset: number): FunctionArgRange | undefined {
+    let match: FunctionArgRange | undefined;
+    const ranges = this.functionArgRanges;
+    for (let i = 0; i < ranges.length; i++) {
+      const argRange = ranges[i];
+      if (offset >= argRange.start.offset && offset <= argRange.end.offset) {
+        // These could be nested, so an outer arg range might contain an inner one.
+        // Since these are sorted by start offset, we can return the *last* one to ensure that we're in the innermost range.
+        match = argRange;
+        continue;
+      } else if (argRange.start.offset > offset) {
+        return match;
+      }
+    }
+    return match;
+  }
+
   getScopeRangeAt(offset: number): Scope | undefined {
     for (const scopeRange of this.scopes) {
       if (offset >= scopeRange.start.offset) {
@@ -177,7 +194,7 @@ export class Code {
     this.scopes.push(new Scope(position, local, self));
   }
 
-  clearRefs() {
+  reset() {
     this.initializeScopeRanges();
     // Remove each reference in *this file* from its symbol.
     const cleared = new Set<ReferenceableType>();
@@ -207,7 +224,7 @@ export class Code {
   }
 
   onRemove() {
-    this.clearRefs();
+    this.reset();
   }
 
   /**
@@ -216,7 +233,7 @@ export class Code {
    */
   async reload(content?: string) {
     await this.parse(content);
-    this.clearRefs();
+    this.reset();
     this.updateGlobals();
     this.updateAllSymbols();
   }

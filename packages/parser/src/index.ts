@@ -3,6 +3,7 @@ export { Code } from './project.code.js';
 export type { Diagnostic } from './project.diagnostics.js';
 export { Project } from './project.js';
 export {
+  FunctionArgRange,
   Position,
   Range,
   Reference,

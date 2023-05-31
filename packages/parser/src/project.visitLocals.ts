@@ -306,12 +306,18 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       const args = functionArguments.functionArgument || [];
       const positions = [
         functionArguments.StartParen[0],
-        ...(functionArguments.Comma?.map((comma) => comma) || []),
+        ...(functionArguments.Comma || []),
         functionArguments.EndParen[0],
       ];
       let restType: Type | undefined;
       for (let i = 0; i < positions.length - 1; i++) {
-        const start = Position.fromCstEnd(this.PROCESSOR.file, positions[i]);
+        // For some reason the end position is the same
+        // as the start position for the commas and parens
+        // Start on the RIGHT side of the first delimiter
+        const start = Position.fromCstStart(this.PROCESSOR.file, positions[i]);
+        start.offset += 1;
+        start.column += 1;
+        // end on the LEFT side of the second delimiter
         const end = Position.fromCstStart(
           this.PROCESSOR.file,
           positions[i + 1],
@@ -325,19 +331,20 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         const location = arg?.location || identifierLocation;
         if (!param && !restType) {
           this.PROCESSOR.addDiagnostic(location, `Too many arguments`);
-          break;
-        }
-        if (!arg) {
-          if (!param.optional) {
-            this.PROCESSOR.addDiagnostic(
-              location,
-              `Missing required argument ${param.name}`,
-              'error',
-            );
-          }
         }
         const funcRange = new FunctionArgRange(param, start, end);
         this.PROCESSOR.file.addFunctionArgRange(funcRange);
+      }
+      // Add diagnostic if too few params.
+      const firstOptionalArgIdx = params.findIndex((p) => p.optional);
+      const minArgs =
+        firstOptionalArgIdx === -1 ? params.length : firstOptionalArgIdx;
+      if (args.length < minArgs) {
+        this.PROCESSOR.addDiagnostic(
+          identifierLocation,
+          `Missing required arguments`,
+          'error',
+        );
       }
       // Visit all of the arguments to ensure they are fully processed
       this.visit(toVisit);
