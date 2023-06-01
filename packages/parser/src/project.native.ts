@@ -29,9 +29,6 @@ export class Native {
       type.writable = false;
       this.types.set(name, type);
     });
-    // Implement useful custom derived types
-    this.types.set('Constructor', this.types.get('Function')!.derive());
-    this.types.set('EnumMember', this.types.get('Real')!.derive());
   }
 
   get version() {

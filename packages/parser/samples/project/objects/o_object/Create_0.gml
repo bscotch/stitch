@@ -8,7 +8,7 @@ function instance_function (){
 }
 
 anonymous_instance_function = function different_name(firstArg, secondArg){
-	var a_local_variable;
+	var a_local_variable = another_global_function();
 	
 	GLOBAL_FROM_INSTANCE = a_local_variable;
 	

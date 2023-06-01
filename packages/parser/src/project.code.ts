@@ -114,6 +114,7 @@ export class Code {
         : []) || []),
       // Project globals
       ...(this.project.self.members || []),
+      ...this.project.symbols.values(),
       // GML globals
       ...[...this.project.native.global.values()],
     ];

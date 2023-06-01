@@ -3,6 +3,8 @@ import { ok } from 'assert';
 import { expect } from 'chai';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
+import { Symbol } from './project.symbol.js';
+import { TypeMember } from './project.type.js';
 
 describe.only('Project', function () {
   it('can load the GML spec', async function () {
@@ -77,6 +79,7 @@ describe.only('Project', function () {
     const project = await Project.initialize(projectDir);
     ok(project);
 
+    //#region ASSETS
     const script = project.getAssetByName('Script1')!;
     const scriptFile = script.gmlFile;
     const obj = project.getAssetByName('o_object')!;
@@ -87,9 +90,9 @@ describe.only('Project', function () {
     ok(obj);
     ok(objCreate);
     ok(objStep);
+    //#endregion ASSETS
 
-    // Make sure we can find references and the definition
-    // for global variables.
+    //#region GLOBALVARS
     const globalVarName = 'GLOBAL_SCRIPT_VAR';
     const globalvarDef = scriptFile.getReferenceAt(83);
     const globalvarRef = scriptFile.getReferenceAt(97);
@@ -109,6 +112,45 @@ describe.only('Project', function () {
     ok(item.type.name === globalVarName);
     ok(item.global === true);
     ok(item.type.global === true);
+    //#endregion GLOBALVARS
+
+    //#region ROOT SCRIPT SCOPE
+    const inRootScriptScope = scriptFile.getInScopeSymbolsAt(762);
+    ok(inRootScriptScope.length);
+    // Local scope
+    const localConstructed = inRootScriptScope.find(
+      (id) => id.name === 'const',
+    );
+    ok(localConstructed);
+    ok(localConstructed.local);
+    ok(!localConstructed.global);
+    // Global scope
+    const globalConstructor = inRootScriptScope.find(
+      (id) => id.name === 'GlobalConstructor',
+    ) as Symbol;
+    ok(globalConstructor);
+    ok(!globalConstructor.local);
+    ok(globalConstructor.global);
+    ok(globalConstructor.name === 'GlobalConstructor');
+    ok(globalConstructor.type.constructs);
+    ok(globalConstructor.type.constructs.name === 'GlobalConstructor');
+    ok(globalConstructor.type.isFunction);
+    expect(globalConstructor.type.kind).to.equal('Constructor');
+    // Instance scope (should not be found)
+    ok(!inRootScriptScope.find((id) => id.name === 'instance_function'));
+    //#endregion ROOT SCRIPT SCOPE
+
+    //#region FUNCTION SCOPE
+    // Params
+    const paramName = '_name';
+    const paramRef = scriptFile.getReferenceAt(500);
+    ok(paramRef);
+    const param = paramRef.item as TypeMember;
+    ok(param);
+    ok(param.local);
+    ok(param.parameter);
+    expect(param.name).to.equal(paramName);
+    //#endregion FUNCTION SCOPE
   });
 
   xit('can parse sample project', async function () {

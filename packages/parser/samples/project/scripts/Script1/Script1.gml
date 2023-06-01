@@ -25,3 +25,9 @@ function GlobalConstructor (_name, _description) constructor {
 		GLOBAL_SCRIPT_VAR = first;
 	}
 }
+
+var const = new GlobalConstructor();
+
+function another_global_function(){
+
+}

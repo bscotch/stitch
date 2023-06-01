@@ -291,9 +291,12 @@ export class Project {
       .get('Struct')!
       .derive()
       .named('global') as StructType;
+    this.self.global = true;
     this.symbol = new Symbol('global').addType(this.self);
     this.symbols.set('global', this.symbol);
     console.log(`Loaded GML spec in ${Date.now() - t}ms`);
+    this.symbol.global = true;
+    this.symbol.writable = false;
   }
 
   protected watch(): void {
