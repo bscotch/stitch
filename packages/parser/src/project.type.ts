@@ -24,8 +24,6 @@ export class TypeMember extends Refs(Flaggable) {
   // For function params
   idx: number | undefined = undefined;
   optional: undefined | boolean = undefined;
-  // For struct members
-  isStatic: boolean | undefined = undefined;
   /** The Type containing this member */
   readonly parent: Type;
 

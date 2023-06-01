@@ -18,7 +18,7 @@ import { EnumType, StructType, TypeMember } from './project.type.js';
 export function processGlobalSymbols(file: Code) {
   const processor = new GlobalDeclarationsProcessor(file);
   const visitor = new GmlGlobalDeclarationsVisitor(processor);
-  visitor.visit(file.cst);
+  visitor.extractGlobalDeclarations(file.cst);
 }
 
 class GlobalDeclarationsProcessor {
@@ -63,14 +63,15 @@ class GlobalDeclarationsProcessor {
 export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   static validated = false;
 
+  /**
+   * Register a global identifier from its declaration. Note that
+   * global identifiers are not deleted when their definitions are,
+   * so we need to either create *or update* the corresponding symbol/typeMember.
+   */
   ADD_GLOBAL_DECLARATION<T extends PrimitiveName>(
     children: { Identifier?: IToken[] },
     typeName: T,
     addToGlobalSelf = false,
-    /**
-     * Variables set without globalvar, using only global.NAME,
-     * have no definite declaration location. */
-    isNotDeclaration = false,
   ): Symbol | TypeMember | undefined {
     const name = children.Identifier?.[0];
     if (!name) return;
@@ -79,30 +80,30 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       .createType(typeName)
       .definedAt(range)
       .named(name.image);
+    type.global = true;
 
-    // Only create it if it doesn't already exist.
+    // Create it if it doesn't already exist.
     let symbol = this.PROCESSOR.project.getGlobal(name.image)?.symbol as
       | Symbol
       | TypeMember;
     if (!symbol) {
-      symbol = new Symbol(name.image).definedAt(range).addType(type);
+      symbol = new Symbol(name.image).addType(type);
       if (typeName === 'Constructor') {
         // Ensure the constructed type exists
         symbol.type.constructs = this.PROCESSOR.file
           .createType('Struct')
+          .definedAt(range)
           .named(name.image);
+        symbol.type.constructs.global = true;
       }
       // Add the symbol and type to the project.
       this.PROCESSOR.project.addGlobal(symbol, addToGlobalSelf);
-    } else {
-      // It might already exist due to reloading a file, or due
-      // to an ambiguous `global.` declaration, or due to a
-      // re-declaration.
-      if (!isNotDeclaration) {
-        // Then we need to override the original location.
-        symbol.definedAt(range);
-      }
     }
+    // Ensure it's defined here.
+    symbol.definedAt(range);
+    symbol.global = true;
+    symbol.addRef(range, symbol.type);
+    type.addRef(range);
     return symbol;
   }
 
@@ -126,15 +127,15 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       const range = this.PROCESSOR.range(name);
       const memberType = this.PROCESSOR.file
         .createType('EnumMember')
+        .definedAt(range)
         .named(name.image);
       // Does member already exist?
-      let member = type.getMember(name.image);
-      if (!member) {
-        member = type.addMember(name.image, memberType);
-      }
-      member.type = memberType;
+      const member =
+        type.getMember(name.image) || type.addMember(name.image, memberType);
+      member.type ||= memberType;
       member.idx = i;
       member.definedAt(range);
+      member.addRef(range);
     }
     // TODO: Remove any members that are not defined here.
   }
@@ -149,7 +150,8 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       this.PROCESSOR.currentLocalScope ===
         this.PROCESSOR.file.scopes[0].local &&
       this.PROCESSOR.asset.assetType === 'scripts';
-    // Functions create a new localscope
+    // Functions create a new localscope. Keeping track of that is important
+    // for making sure that we're looking at a global function declaration.
     this.PROCESSOR.pushLocalScope();
     const name = children.Identifier?.[0];
     // Add the function to a table of functions
@@ -167,7 +169,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    this.ADD_GLOBAL_DECLARATION(children, 'Unknown', true)!;
+    this.ADD_GLOBAL_DECLARATION(children, 'Unknown') as TypeMember;
   }
 
   override macroStatement(children: MacroStatementCstChildren) {
@@ -182,7 +184,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         children.accessorSuffixes?.[0].children.dotAccessSuffix?.[0].children
           .identifier[0].children;
       if (identifier?.Identifier) {
-        this.ADD_GLOBAL_DECLARATION(identifier, 'Unknown', false);
+        this.ADD_GLOBAL_DECLARATION(identifier, 'Unknown', true);
       }
     }
 

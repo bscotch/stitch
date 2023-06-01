@@ -44,6 +44,11 @@ export class Project {
    * so they can vary between projects. */
   native!: Native;
   /**
+   * When resolved, the GML spec has been loaded and the
+   * `native` property has been populated.
+   */
+  nativeWaiter?: Promise<void>;
+  /**
    * The type of the 'global' struct, which contains all globalvars
    * and globally defined functions. */
   self!: StructType;
@@ -153,13 +158,12 @@ export class Project {
     // Ensure it doesn't already exist
     const existing = this.getGlobal(item.name);
     ok(!existing, `Global ${item.name} already exists`);
-    const isFunction = item.type.kind === 'Function';
     // If it is a function or enum, add its type to the global types
-    if (['Function', 'Enum']) {
+    if (['Function', 'Enum'].includes(item.type.kind)) {
       this.types.set(`${item.type.kind}.${item.name}`, item.type);
     }
     // If it is a constructor, add its resulting struct type to the global types
-    if (isFunction && item.type.constructs) {
+    if (item.type.kind === 'Constructor' && item.type.constructs) {
       this.types.set(`Struct.${item.name}`, item.type.constructs);
     }
     // Add the symbol to the appropriate global pool
@@ -281,6 +285,7 @@ export class Project {
     if (!this.native) {
       console.error('No spec found, using fallback');
       this.native = await Native.from();
+      ok(this.native, 'Failed to load fallback GML spec');
     }
     this.self = this.native.types
       .get('Struct')!
@@ -326,10 +331,10 @@ export class Project {
       this.onDiagnostics(options.onDiagnostics);
     }
     let t = Date.now();
+    this.nativeWaiter = this.loadGmlSpec();
     const fileLoader = this.loadAssets();
-    const specLoaderWait = this.loadGmlSpec();
 
-    await Promise.all([specLoaderWait, fileLoader]);
+    await Promise.all([this.nativeWaiter, fileLoader]);
     console.log(
       'Resources',
       this.assets.size,

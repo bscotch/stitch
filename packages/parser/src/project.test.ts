@@ -72,7 +72,46 @@ describe.only('Project', function () {
     await Project.fallbackGmlSpecPath.exists({ assert: true });
   });
 
-  it('can parse sample project', async function () {
+  it.only('can parse a representative project', async function () {
+    const projectDir = 'samples/project';
+    const project = await Project.initialize(projectDir);
+    ok(project);
+
+    const script = project.getAssetByName('Script1')!;
+    const scriptFile = script.gmlFile;
+    const obj = project.getAssetByName('o_object')!;
+    const objCreate = obj.gmlFilesArray.find((f) => f.name === 'Create_0');
+    const objStep = obj.gmlFilesArray.find((f) => f.name === 'Step_0');
+    ok(script);
+    ok(scriptFile);
+    ok(obj);
+    ok(objCreate);
+    ok(objStep);
+
+    // Make sure we can find references and the definition
+    // for global variables.
+    const globalVarName = 'GLOBAL_SCRIPT_VAR';
+    const globalvarDef = scriptFile.getReferenceAt(83);
+    const globalvarRef = scriptFile.getReferenceAt(97);
+    const otherGlobalvarRef = objStep.getReferenceAt(152);
+    ok(globalvarDef);
+    ok(globalvarRef);
+    // All refs should point to the same thing
+    ok(otherGlobalvarRef);
+    ok(globalvarDef.item === globalvarRef.item);
+    ok(globalvarDef.item === otherGlobalvarRef.item);
+    // The definition should exist and be named
+    const item = globalvarDef.item;
+    ok(item.def);
+    ok(item.name === globalVarName);
+    // The globalvar should have appropriate symbol and type info
+    ok(item.$tag === 'Sym');
+    ok(item.type.name === globalVarName);
+    ok(item.global === true);
+    ok(item.type.global === true);
+  });
+
+  xit('can parse sample project', async function () {
     const projectDir = process.env.GML_PARSER_SAMPLE_PROJECT_DIR;
     ok(
       projectDir,

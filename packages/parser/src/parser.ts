@@ -97,6 +97,7 @@ export class GmlParser extends CstParser {
       { ALT: () => this.SUBRULE(this.localVarDeclarationsStatement) },
       { ALT: () => this.SUBRULE(this.globalVarDeclarationsStatement) },
       { ALT: () => this.SUBRULE(this.staticVarDeclarationStatement) },
+      { ALT: () => this.SUBRULE(this.variableAssignmentStatement) },
       { ALT: () => this.SUBRULE(this.ifStatement) },
       { ALT: () => this.SUBRULE(this.tryStatement) },
       { ALT: () => this.SUBRULE(this.whileStatement) },
@@ -373,7 +374,7 @@ export class GmlParser extends CstParser {
     this.SUBRULE(this.primaryExpression);
     this.OPTION(() => {
       this.OR([
-        { ALT: () => this.SUBRULE(this.variableAssignment) },
+        { ALT: () => this.SUBRULE(this.assignment) },
         {
           ALT: () =>
             this.AT_LEAST_ONE(() => this.SUBRULE2(this.binaryExpression)),
@@ -673,7 +674,22 @@ export class GmlParser extends CstParser {
     this.SUBRULE(this.assignmentRightHandSide);
   });
 
+  // For simple variable assignments (no accessors on the LHS)
+  readonly variableAssignmentStatement = this.RULE(
+    'variableAssignmentStatement',
+    () => {
+      this.SUBRULE(this.variableAssignment);
+      this.optionallyConsumeSemicolon();
+    },
+  );
+
   readonly variableAssignment = this.RULE('variableAssignment', () => {
+    this.CONSUME(t.Identifier);
+    this.CONSUME(t.Assign);
+    this.SUBRULE(this.assignmentRightHandSide);
+  });
+
+  readonly assignment = this.RULE('assignment', () => {
     this.CONSUME(c.AssignmentOperator);
     this.SUBRULE(this.assignmentRightHandSide);
   });

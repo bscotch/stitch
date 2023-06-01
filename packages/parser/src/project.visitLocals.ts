@@ -9,6 +9,7 @@ import type {
   IdentifierCstChildren,
   LocalVarDeclarationCstChildren,
   StaticVarDeclarationsCstChildren,
+  VariableAssignmentCstChildren,
   WithStatementCstChildren,
 } from '../gml-cst.js';
 import { GmlVisitorBase, identifierFrom } from './parser.js';
@@ -206,10 +207,17 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     children: IdentifierCstChildren,
   ): { item: ReferenceableType; range: Range } | undefined {
     const identifier = identifierFrom(children);
+    console.log(
+      'LOOKING FOR',
+      identifier.name,
+      'from',
+      identifier.token.startOffset,
+      'in',
+      this.PROCESSOR.file.name,
+    );
     const scope = this.PROCESSOR.fullScope;
     let item: ReferenceableType | undefined;
     const range = this.PROCESSOR.range(identifier.token);
-
     switch (identifier.type) {
       case 'Global':
         // Global is a special case, it's a keyword and also
@@ -242,7 +250,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         }
         // TODO: Emit error?
         else {
-          // console.error('Unknown symbol', name);
+          console.error('Unknown symbol', name);
         }
         break;
       default:
@@ -275,41 +283,34 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {
+    // Get this identifier if we already have it.
+    const identifier = this.identifier(children);
+
     // Compute useful properties of this function to help figure out
     // how to define its symbol, type, scope, etc.
-    const isAnonymous = !children.Identifier;
     let functionName: string | undefined = children.Identifier?.[0]?.image;
     const isConstructor = !!children.constructorSuffix;
     const functionTypeName = isConstructor ? 'Constructor' : 'Function';
-    const isInRootLocalScope =
-      this.PROCESSOR.currentLocalScope === this.PROCESSOR.file.scopes[0].local;
-    const isInScript = this.PROCESSOR.asset.assetType === 'scripts';
-    const isInObject = this.PROCESSOR.asset.assetType === 'objects';
-    const isGlobal = isInRootLocalScope && isInScript;
-    const isInstance = isInRootLocalScope && isInObject;
     const bodyLocation = children.blockStatement[0].location!;
 
     // If this is global we should already have a symbol for it.
     // If not, we should create a new symbol.
     const anonymousName = `anonymous_function_${randomString(8, 'base64')}`;
-    const symbol = (
-      isGlobal && !isAnonymous
-        ? this.PROCESSOR.getGlobalSymbol(functionName!)?.symbol
-        : new Symbol(
-            functionName || anonymousName,
-            this.PROCESSOR.file
-              .createType(functionTypeName)
-              .named(functionName || anonymousName),
-          )
-    ) as Symbol | TypeMember;
+    const item = (identifier ||
+      new Symbol(
+        functionName || anonymousName,
+        this.PROCESSOR.file
+          .createType(functionTypeName)
+          .named(functionName || anonymousName),
+      )) as Symbol | TypeMember;
     // Might have been anonymous, so get the random name
-    functionName = symbol.name;
+    functionName = item.name;
 
     // Make sure we have a proper type
-    if (symbol.type.kind === 'Unknown') {
-      symbol.type.kind = functionTypeName;
+    if (item.type.kind === 'Unknown') {
+      item.type.kind = functionTypeName;
     }
-    const functionType = symbol.type;
+    const functionType = item.type;
     ok(functionType.isFunction, 'Expected function type');
 
     // Ensure that constructors have an attached constructed type
@@ -496,7 +497,10 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         .createType('Unknown')
         .definedAt(this.PROCESSOR.range(children.Identifier[0])),
     );
-    member.isStatic = true;
+    member.static = true;
+    member.instance = true;
+    // Ensur we have a reference to the definition
+    this.identifier(children);
     this.visit(children.assignmentRightHandSide);
   }
 
@@ -508,9 +512,34 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         .createType('Unknown')
         .definedAt(this.PROCESSOR.range(children.Identifier[0])),
     );
+    member.local = true;
+    // Ensure we have a reference to the definition
+    this.identifier(children);
     if (children.assignmentRightHandSide) {
       this.visit(children.assignmentRightHandSide);
     }
+  }
+
+  override variableAssignment(children: VariableAssignmentCstChildren) {
+    // See if this identifier is known.
+    const item = this.identifier(children);
+    if (!item) {
+      // Create a new member on the self scope, unless it's global
+      const fullScope = this.PROCESSOR.fullScope;
+      if (fullScope.self !== fullScope.global) {
+        // Then we can add a new member
+        const member = fullScope.self.addMember(
+          children.Identifier[0].image,
+          this.PROCESSOR.file
+            .createType('Unknown')
+            .definedAt(this.PROCESSOR.range(children.Identifier[0])),
+        );
+      } else {
+        // TODO: Add a diagnostic
+      }
+    }
+
+    this.visit(children.assignmentRightHandSide);
   }
 
   /**

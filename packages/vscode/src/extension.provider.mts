@@ -124,9 +124,15 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Definition | vscode.LocationLink[]> {
-    const item = this.getSymbol(document, position);
-    if (item && !item.native && item.def) {
-      return locationOf(item.def);
+    try {
+      const item = this.getSymbol(document, position);
+      if (item && !item.native && item.def) {
+        return locationOf(item.def);
+      } else {
+        console.log('No definition found for', item);
+      }
+    } catch (err) {
+      console.error(err);
     }
     return;
   }
@@ -150,7 +156,6 @@ export class StitchProvider
   ): vscode.SignatureHelp | undefined {
     const argRange = this.getFunctionArg(document, position);
     if (!argRange) {
-      console.error('No arg range found');
       return;
     }
     const param = argRange.param;
@@ -193,7 +198,6 @@ export class StitchProvider
     position: vscode.Position,
   ): FunctionArgRange | undefined {
     const offset = document.offsetAt(position);
-    console.log(`Getting function arg at ${offset}`);
     return this.getGmlFile(document)?.getFunctionArgRangeAt(offset);
   }
 

@@ -28,6 +28,7 @@ export type StatementCstChildren = {
   localVarDeclarationsStatement?: LocalVarDeclarationsStatementCstNode[];
   globalVarDeclarationsStatement?: GlobalVarDeclarationsStatementCstNode[];
   staticVarDeclarationStatement?: StaticVarDeclarationStatementCstNode[];
+  variableAssignmentStatement?: VariableAssignmentStatementCstNode[];
   ifStatement?: IfStatementCstNode[];
   tryStatement?: TryStatementCstNode[];
   whileStatement?: WhileStatementCstNode[];
@@ -392,7 +393,7 @@ export interface ExpressionCstNode extends CstNode {
 
 export type ExpressionCstChildren = {
   primaryExpression: PrimaryExpressionCstNode[];
-  variableAssignment?: VariableAssignmentCstNode[];
+  assignment?: AssignmentCstNode[];
   binaryExpression?: BinaryExpressionCstNode[];
   ternaryExpression?: TernaryExpressionCstNode[];
 };
@@ -789,12 +790,33 @@ export type StaticVarDeclarationsCstChildren = {
   assignmentRightHandSide: AssignmentRightHandSideCstNode[];
 };
 
+export interface VariableAssignmentStatementCstNode extends CstNode {
+  name: 'variableAssignmentStatement';
+  children: VariableAssignmentStatementCstChildren;
+}
+
+export type VariableAssignmentStatementCstChildren = {
+  variableAssignment: VariableAssignmentCstNode[];
+  Semicolon?: IToken[];
+};
+
 export interface VariableAssignmentCstNode extends CstNode {
   name: 'variableAssignment';
   children: VariableAssignmentCstChildren;
 }
 
 export type VariableAssignmentCstChildren = {
+  Identifier: IToken[];
+  Assign: IToken[];
+  assignmentRightHandSide: AssignmentRightHandSideCstNode[];
+};
+
+export interface AssignmentCstNode extends CstNode {
+  name: 'assignment';
+  children: AssignmentCstChildren;
+}
+
+export type AssignmentCstChildren = {
   AssignmentOperator: IToken[];
   assignmentRightHandSide: AssignmentRightHandSideCstNode[];
 };
@@ -1081,7 +1103,12 @@ export interface GmlVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
     children: StaticVarDeclarationsCstChildren,
     param?: IN,
   ): OUT;
+  variableAssignmentStatement(
+    children: VariableAssignmentStatementCstChildren,
+    param?: IN,
+  ): OUT;
   variableAssignment(children: VariableAssignmentCstChildren, param?: IN): OUT;
+  assignment(children: AssignmentCstChildren, param?: IN): OUT;
   assignmentRightHandSide(
     children: AssignmentRightHandSideCstChildren,
     param?: IN,

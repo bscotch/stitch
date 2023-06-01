@@ -1,7 +1,6 @@
 /// @desc This is a global variable defined at a script root.
 globalvar GLOBAL_SCRIPT_VAR; GLOBAL_SCRIPT_VAR = "HELLO";
 
-
 /// @desc A global function!
 /// @param {Enum.SurpriseEnum} something
 function global_function(something, something_else=undefined){

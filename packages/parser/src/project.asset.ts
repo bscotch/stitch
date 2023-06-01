@@ -33,39 +33,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     this.assetType = resource.id.path.split(/[/\\]/)[0] as T;
     this.yyPath = yyPath.withValidator(yySchemas[this.assetType]) as any;
     this.symbol = new Symbol(this.name);
-    let assetType: PrimitiveName;
-    switch (this.assetType) {
-      case 'objects':
-        assetType = 'Asset.GMObject';
-        break;
-      case 'rooms':
-        assetType = 'Asset.GMRoom';
-        break;
-      case 'scripts':
-        assetType = 'Asset.GMScript';
-        break;
-      case 'sprites':
-        assetType = 'Asset.GMSprite';
-        break;
-      case 'sounds':
-        assetType = 'Asset.GMSound';
-        break;
-      case 'paths':
-        assetType = 'Asset.GMPath';
-        break;
-      case 'shaders':
-        assetType = 'Asset.GMShader';
-        break;
-      case 'timelines':
-        assetType = 'Asset.GMTimeline';
-        break;
-      case 'fonts':
-        assetType = 'Asset.GMFont';
-        break;
-      default:
-        assetType = 'Unknown';
-    }
-    this.symbol.addType(this.project.native.types.get(assetType)!);
   }
 
   /**
@@ -191,11 +158,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   }
 
   protected async initiallyReadAndParseGml() {
-    // If we are not a script, add ourselves to the global symbols.
-    if (this.assetType !== 'scripts') {
-      this.project.addGlobal(this.symbol);
-    }
-
     const parseWaits: Promise<any>[] = [];
     for (const file of this.gmlFilesArray) {
       parseWaits.push(file.parse());
@@ -208,8 +170,50 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     resource: YypResource,
     yyPath: Pathy,
   ): Promise<Asset<T>> {
-    const item = new Asset(project, resource, yyPath);
+    const item = new Asset(project, resource, yyPath) as Asset<T>;
     await item.load();
-    return item as any;
+    // Setting the asset type depends on the GML Spec having been
+    // loaded, so we do it after the other stuff and ensure that
+    // the spec has been fully loaded
+    await item.project.nativeWaiter;
+    let assetType: PrimitiveName;
+    switch (item.assetType) {
+      case 'objects':
+        assetType = 'Asset.GMObject';
+        break;
+      case 'rooms':
+        assetType = 'Asset.GMRoom';
+        break;
+      case 'scripts':
+        assetType = 'Asset.GMScript';
+        break;
+      case 'sprites':
+        assetType = 'Asset.GMSprite';
+        break;
+      case 'sounds':
+        assetType = 'Asset.GMSound';
+        break;
+      case 'paths':
+        assetType = 'Asset.GMPath';
+        break;
+      case 'shaders':
+        assetType = 'Asset.GMShader';
+        break;
+      case 'timelines':
+        assetType = 'Asset.GMTimeline';
+        break;
+      case 'fonts':
+        assetType = 'Asset.GMFont';
+        break;
+      default:
+        assetType = 'Unknown';
+    }
+    item.symbol.addType(item.project.native.types.get(assetType)!);
+
+    // If we are not a script, add ourselves to the global symbols.
+    if (item.assetType !== 'scripts') {
+      item.project.addGlobal(item.symbol);
+    }
+    return item;
   }
 }
