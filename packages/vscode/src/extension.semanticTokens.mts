@@ -1,4 +1,4 @@
-import { ReferenceableType, Type } from '@bscotch/gml-parser';
+import { Flaggable, ReferenceableType, Type } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
 import { locationOf } from './lib.mjs';
@@ -27,17 +27,25 @@ export class GameMakerSemanticTokenProvider
       );
       const cache = new Map<
         ReferenceableType,
-        { type: SemanticTokenType; mods: SemanticTokenModifier[] }
+        { type: SemanticTokenType; mods: Set<SemanticTokenModifier> }
       >();
       for (const ref of file.refs) {
         // Get the location as a vscode range
         const item = ref.item;
+
+        // Exclude some types that don't make sense to override
+        if (
+          item.name &&
+          ['self', 'other', 'noone', 'all', 'global'].includes(item.name)
+        ) {
+          continue;
+        }
         const range = locationOf(ref)!.range;
         // If we've already seen this symbol, use the cached semantic details
         if (cache.has(item)) {
           const { type, mods } = cache.get(item)!;
           try {
-            tokensBuilder.push(range, type, mods);
+            tokensBuilder.push(range, type, [...mods]);
           } catch (error) {
             console.error(error);
             console.error('CACHE ERROR');
@@ -49,13 +57,20 @@ export class GameMakerSemanticTokenProvider
         // Figure out what the semantic details are
         const itemType = item.$tag === 'Type' ? item : item.type;
         const tokenType = getSemanticTokenForType(itemType);
-        const tokenModifiers = getSemanticModifiersForType(itemType);
+        const tokenModifiers = getSemanticModifiers(itemType);
+        if (itemType.kind.startsWith('Asset.')) {
+          tokenModifiers.add('asset');
+        }
+        if (item.$tag !== 'Type') {
+          // Then we may have additional modifiers from the symbol
+          getSemanticModifiers(item, tokenModifiers);
+        }
         if (!tokenType) {
           console.warn('No token type for symbol', item);
           continue;
         }
         try {
-          tokensBuilder.push(range, tokenType, tokenModifiers);
+          tokensBuilder.push(range, tokenType, [...tokenModifiers]);
           cache.set(item, { type: tokenType, mods: tokenModifiers });
         } catch (err) {
           console.error(err);
@@ -100,25 +115,24 @@ function getSemanticTokenForType(type: Type): SemanticTokenType {
   return 'variable';
 }
 
-function getSemanticModifiersForType(type: Type): SemanticTokenModifier[] {
-  const tokenModifiers: SemanticTokenModifier[] = [];
+function getSemanticModifiers(
+  type: Flaggable,
+  modifiers = new Set<SemanticTokenModifier>(),
+): Set<SemanticTokenModifier> {
   if (type.native) {
-    tokenModifiers.push('defaultLibrary');
+    modifiers.add('defaultLibrary');
   }
   if (type.global) {
-    tokenModifiers.push('global');
+    modifiers.add('global');
   }
   if (!type.writable) {
-    tokenModifiers.push('readonly');
+    modifiers.add('readonly');
   }
   if (type.local) {
-    tokenModifiers.push('local');
+    modifiers.add('local');
   }
   if (type.static) {
-    tokenModifiers.push('static');
+    modifiers.add('static');
   }
-  if (type.kind.startsWith('Asset.')) {
-    tokenModifiers.push('asset');
-  }
-  return tokenModifiers;
+  return modifiers;
 }

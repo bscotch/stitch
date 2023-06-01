@@ -1,5 +1,4 @@
 import type { Pathy } from '@bscotch/pathy';
-import { ok } from 'node:assert';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
 import { Diagnostic } from './project.diagnostics.js';
@@ -11,9 +10,8 @@ import {
   ReferenceableType,
   Scope,
 } from './project.location.js';
-import { PrimitiveName } from './project.primitives.js';
 import type { Symbol } from './project.symbol.js';
-import { Type, TypeMember, type StructType } from './project.type.js';
+import { Type, TypeMember } from './project.type.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
 import { processSymbols } from './project.visitLocals.js';
 
@@ -47,17 +45,6 @@ export class Code {
 
   get project() {
     return this.asset.project;
-  }
-
-  createType<T extends PrimitiveName>(type: T): Type<T> {
-    const baseType = this.project.native.types.get(type) as Type<T>;
-    ok(baseType, `Unknown type '${type}'`);
-    return baseType!.derive();
-  }
-
-  createStructType(): StructType {
-    const type = this.createType('Struct') as StructType;
-    return type;
   }
 
   getReferenceAt(offset: number): Reference | undefined {
@@ -113,8 +100,8 @@ export class Code {
         ? scopeRange.self.members
         : []) || []),
       // Project globals
-      ...(this.project.self.members || []),
       ...this.project.symbols.values(),
+      ...(this.project.self.members || []),
       // GML globals
       ...[...this.project.native.global.values()],
     ];

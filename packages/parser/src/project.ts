@@ -10,6 +10,7 @@ import { Asset } from './project.asset.js';
 import { Code } from './project.code.js';
 import { Diagnostic } from './project.diagnostics.js';
 import { Native } from './project.native.js';
+import { PrimitiveName } from './project.primitives.js';
 import { Symbol } from './project.symbol.js';
 import { StructType, Type, TypeMember } from './project.type.js';
 
@@ -76,6 +77,23 @@ export class Project {
 
   get projectDir(): Pathy {
     return pathy(this.yypPath).up();
+  }
+
+  createType<T extends PrimitiveName>(type: T): Type<T> {
+    const baseType = this.native.types.get(type) as Type<T>;
+    ok(baseType, `Unknown type '${type}'`);
+    return baseType!.derive();
+  }
+
+  createStructType(subtype?: 'self' | 'instance'): StructType {
+    const type = this.createType('Struct') as StructType;
+    if (subtype) {
+      type.addMember('self', type);
+    }
+    if (subtype === 'instance') {
+      type.instance = true;
+    }
+    return type;
   }
 
   /**

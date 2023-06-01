@@ -173,10 +173,10 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
   protected COMPUTE_TYPE(children: AssignmentRightHandSideCstChildren) {
     if (children.structLiteral) {
-      return this.PROCESSOR.file.createStructType();
+      return this.PROCESSOR.project.createStructType('self');
     } else if (children.functionExpression) {
       // TODO: Find the function's actual type
-      return this.PROCESSOR.file.createType('Function');
+      return this.PROCESSOR.project.createType('Function');
     } else if (children.expression) {
       const expr =
         children.expression[0].children.primaryExpression?.[0].children;
@@ -193,13 +193,13 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           (expr.UnaryPrefixOperator ||
             expr.UnarySuffixOperator ||
             expr.Literal?.[0].tokenType.CATEGORIES?.includes(c.NumericLiteral));
-        return this.PROCESSOR.file.createType(
+        return this.PROCESSOR.project.createType(
           isString ? 'String' : isArray ? 'Array' : isReal ? 'Real' : 'Unknown',
         );
       }
     }
     // TODO: Add more capabilities
-    return this.PROCESSOR.file.createType('Unknown');
+    return this.PROCESSOR.project.createType('Unknown');
   }
 
   /** Given an identifier in the current scope, find the corresponding item. */
@@ -299,7 +299,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const item = (identifier ||
       new Symbol(
         functionName || anonymousName,
-        this.PROCESSOR.file
+        this.PROCESSOR.project
           .createType(functionTypeName)
           .named(functionName || anonymousName),
       )) as Symbol | TypeMember;
@@ -350,15 +350,18 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       const param = params[i].children.Identifier[0];
       const range = this.PROCESSOR.range(param);
       // TODO: Use JSDocs to determine the type of the parameter
-      const paramType = this.PROCESSOR.file
+      const paramType = this.PROCESSOR.project
         .createType('Unknown')
         .definedAt(range);
       const optional = !!params[i].children.Assign;
-      functionType.addParameter(i, param.image, paramType, optional);
+      functionType
+        .addParameter(i, param.image, paramType, optional)
+        .definedAt(range);
 
       // Also add to the function's local scope.
       const member = functionLocalScope
         .addMember(param.image, paramType)
+        .definedAt(range)
         .addRef(range);
       member.local = true;
       member.parameter = true;
@@ -495,12 +498,14 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   override staticVarDeclarations(children: StaticVarDeclarationsCstChildren) {
     // Add to the self scope.
     const self = this.PROCESSOR.currentSelf;
-    const member = self.addMember(
-      children.Identifier[0].image,
-      this.PROCESSOR.file
-        .createType('Unknown')
-        .definedAt(this.PROCESSOR.range(children.Identifier[0])),
-    );
+    const range = this.PROCESSOR.range(children.Identifier[0]);
+    const member = self
+      .addMember(
+        children.Identifier[0].image,
+        this.PROCESSOR.project.createType('Unknown').definedAt(range),
+      )
+      .definedAt(range);
+    member.addRef(range);
     member.static = true;
     member.instance = true;
     // Ensur we have a reference to the definition
@@ -510,13 +515,15 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
   override localVarDeclaration(children: LocalVarDeclarationCstChildren) {
     const local = this.PROCESSOR.currentLocalScope;
-    const member = local.addMember(
-      children.Identifier[0].image,
-      this.PROCESSOR.file
-        .createType('Unknown')
-        .definedAt(this.PROCESSOR.range(children.Identifier[0])),
-    );
+    const range = this.PROCESSOR.range(children.Identifier[0]);
+    const member = local
+      .addMember(
+        children.Identifier[0].image,
+        this.PROCESSOR.project.createType('Unknown').definedAt(range),
+      )
+      .definedAt(range);
     member.local = true;
+    member.addRef(range);
     // Ensure we have a reference to the definition
     this.identifier(children);
     if (children.assignmentRightHandSide) {
@@ -528,13 +535,15 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // See if this identifier is known.
     const item = this.identifier(children);
     if (!item) {
+      const identifier = identifierFrom(children);
+      console.log('Possible struct property', identifier.name);
       // Create a new member on the self scope, unless it's global
       const fullScope = this.PROCESSOR.fullScope;
       if (fullScope.self !== fullScope.global) {
         // Then we can add a new member
         const member = fullScope.self.addMember(
           children.Identifier[0].image,
-          this.PROCESSOR.file
+          this.PROCESSOR.project
             .createType('Unknown')
             .definedAt(this.PROCESSOR.range(children.Identifier[0])),
         );

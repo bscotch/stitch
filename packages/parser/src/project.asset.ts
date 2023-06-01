@@ -23,7 +23,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   readonly symbol: Symbol;
   /**
    * For objects, their instance type. */
-  readonly instanceType: StructType | undefined;
+  instanceType: StructType | undefined;
 
   protected constructor(
     readonly project: Project,
@@ -209,6 +209,9 @@ export class Asset<T extends YyResourceType = YyResourceType> {
         assetType = 'Unknown';
     }
     item.symbol.addType(item.project.native.types.get(assetType)!);
+    if (item.assetType === 'objects') {
+      item.instanceType = item.project.createStructType('instance');
+    }
 
     // If we are not a script, add ourselves to the global symbols.
     if (item.assetType !== 'scripts') {

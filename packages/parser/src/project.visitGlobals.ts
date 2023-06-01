@@ -39,7 +39,7 @@ class GlobalDeclarationsProcessor {
   }
 
   pushLocalScope() {
-    const localScope = this.file.createStructType();
+    const localScope = this.project.createStructType();
     this.localScopeStack.push(localScope);
   }
 
@@ -76,7 +76,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const name = children.Identifier?.[0];
     if (!name) return;
     const range = this.PROCESSOR.range(name);
-    const type = this.PROCESSOR.file
+    const type = this.PROCESSOR.project
       .createType(typeName)
       .definedAt(range)
       .named(name.image);
@@ -90,8 +90,8 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       symbol = new Symbol(name.image).addType(type);
       if (typeName === 'Constructor') {
         // Ensure the constructed type exists
-        symbol.type.constructs = this.PROCESSOR.file
-          .createType('Struct')
+        symbol.type.constructs = this.PROCESSOR.project
+          .createStructType('self')
           .definedAt(range)
           .named(name.image);
         symbol.type.constructs.global = true;
@@ -125,7 +125,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     for (let i = 0; i < children.enumMember.length; i++) {
       const name = children.enumMember[i].children.Identifier[0];
       const range = this.PROCESSOR.range(name);
-      const memberType = this.PROCESSOR.file
+      const memberType = this.PROCESSOR.project
         .createType('EnumMember')
         .definedAt(range)
         .named(name.image);
