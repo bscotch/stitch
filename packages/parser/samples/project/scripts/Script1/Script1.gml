@@ -18,7 +18,7 @@ global.global_function();
 function GlobalConstructor (_name, _description) constructor {
 	name = _name;
 	description = _description;
-	
+	var local;
 	enum SurpriseEnum { surprise }
 	
 	static something_static = function different_name (first,second){

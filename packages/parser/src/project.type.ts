@@ -190,7 +190,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     let param = this.params[idx];
     if (!param) {
       param = new TypeMember(this, name, type);
-      param.writable = false;
       this.params[idx] = param;
     }
     param.type = type;
@@ -198,6 +197,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     param.name = name;
     param.idx = idx;
     param.parameter = true;
+    param.local = true;
     return param;
   }
 

@@ -138,6 +138,8 @@ describe.only('Project', function () {
     expect(globalConstructor.type.kind).to.equal('Constructor');
     // Instance scope (should not be found)
     ok(!inRootScriptScope.find((id) => id.name === 'instance_function'));
+    // Deeper local scope (should not be found)
+    ok(!inRootScriptScope.find((id) => id.name === '_name'));
     //#endregion ROOT SCRIPT SCOPE
 
     //#region FUNCTION SCOPE
@@ -150,6 +152,16 @@ describe.only('Project', function () {
     ok(param.local);
     ok(param.parameter);
     expect(param.name).to.equal(paramName);
+    // Params should be visible in the function scope
+    const inFunctionScope = scriptFile.getInScopeSymbolsAt(546);
+    ok(inFunctionScope.length);
+    ok(inFunctionScope.find((id) => id.name === paramName));
+    // And so should local vars
+    const inFunctionLocalvar = inFunctionScope.find(
+      (id) => id.name === 'local',
+    );
+    ok(inFunctionLocalvar);
+    ok(scriptFile.getReferenceAt(585)!.item === inFunctionLocalvar);
     //#endregion FUNCTION SCOPE
   });
 

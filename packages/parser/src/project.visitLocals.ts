@@ -357,7 +357,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       functionType.addParameter(i, param.image, paramType, optional);
 
       // Also add to the function's local scope.
-      functionLocalScope.addMember(param.image, paramType);
+      const member = functionLocalScope
+        .addMember(param.image, paramType)
+        .addRef(range);
+      member.local = true;
+      member.parameter = true;
     }
     // TODO: Remove any excess parameters, e.g. if we're updating a
     // prior definition. This is tricky since we may need to do something
