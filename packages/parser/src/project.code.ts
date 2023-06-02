@@ -27,9 +27,7 @@ export class Code {
   protected _content!: string;
   protected _parsed!: GmlParsed;
 
-  constructor(readonly asset: Asset, readonly path: Pathy<string>) {
-    this.initializeScopeRanges();
-  }
+  constructor(readonly asset: Asset, readonly path: Pathy<string>) {}
 
   get isScript() {
     return this.asset.assetType === 'scripts';
@@ -221,12 +219,12 @@ export class Code {
    */
   async reload(content?: string) {
     await this.parse(content);
-    this.reset();
     this.updateGlobals();
     this.updateAllSymbols();
   }
 
   updateGlobals() {
+    this.reset();
     return processGlobalSymbols(this);
   }
 

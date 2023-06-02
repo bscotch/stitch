@@ -163,6 +163,15 @@ describe.only('Project', function () {
     ok(inFunctionLocalvar);
     ok(scriptFile.getReferenceAt(585)!.item === inFunctionLocalvar);
     //#endregion FUNCTION SCOPE
+
+    //#region INSTANCE SCOPE
+    const instanceVarName = 'instance_variable';
+    const inInstanceScope = objStep.getReferenceAt(174);
+    ok(inInstanceScope);
+    ok(inInstanceScope.item.name === instanceVarName);
+    ok(inInstanceScope.item.instance);
+
+    //#endregion INSTANCE SCOPE
   });
 
   xit('can parse sample project', async function () {

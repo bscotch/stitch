@@ -27,6 +27,12 @@ import { StructType, Type, TypeMember } from './project.type.js';
 import { c } from './tokens.categories.js';
 import { log } from './util.js';
 
+export function processSymbols(file: Code) {
+  const processor = new SymbolProcessor(file);
+  const visitor = new GmlSymbolVisitor(processor);
+  visitor.FIND_SYMBOLS(file.cst);
+}
+
 class SymbolProcessor {
   protected readonly localScopeStack: StructType[] = [];
   protected readonly selfStack: StructType[] = [];
@@ -38,6 +44,7 @@ class SymbolProcessor {
   constructor(readonly file: Code) {
     this.scope = file.scopes[0];
     this.localScopeStack.push(this.scope.local);
+    this.selfStack.push(this.scope.self);
     this.position = this.scope.start;
   }
 
@@ -145,12 +152,6 @@ class SymbolProcessor {
     this.selfStack.pop();
     this.nextScope(token, fromTokenEnd).self = this.currentSelf;
   }
-}
-
-export function processSymbols(file: Code) {
-  const processor = new SymbolProcessor(file);
-  const visitor = new GmlSymbolVisitor(processor);
-  visitor.FIND_SYMBOLS(file.cst);
 }
 
 export class GmlSymbolVisitor extends GmlVisitorBase {
@@ -324,9 +325,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // for the self scope.
     // TODO: Figure out the actual self scope (e.g. from JSDocs or type inference)
     const self = (
-      isConstructor
-        ? functionType.constructs
-        : this.PROCESSOR.createStruct(bodyLocation)
+      isConstructor ? functionType.constructs : this.PROCESSOR.currentSelf
     )!;
 
     // Functions have their own localscope as well as their self scope,
@@ -534,6 +533,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   override variableAssignment(children: VariableAssignmentCstChildren) {
     // See if this identifier is known.
     const item = this.identifier(children);
+    const range = this.PROCESSOR.range(children.Identifier[0]);
     if (!item) {
       const identifier = identifierFrom(children);
       console.log('Possible struct property', identifier.name);
@@ -541,15 +541,19 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       const fullScope = this.PROCESSOR.fullScope;
       if (fullScope.self !== fullScope.global) {
         // Then we can add a new member
-        const member = fullScope.self.addMember(
-          children.Identifier[0].image,
-          this.PROCESSOR.project
-            .createType('Unknown')
-            .definedAt(this.PROCESSOR.range(children.Identifier[0])),
-        );
+        const member = fullScope.self
+          .addMember(
+            children.Identifier[0].image,
+            this.PROCESSOR.project.createType('Unknown').definedAt(range),
+          )
+          .definedAt(range);
+        member.addRef(range);
+        member.instance = true;
       } else {
         // TODO: Add a diagnostic
       }
+    } else {
+      item.addRef(range);
     }
 
     this.visit(children.assignmentRightHandSide);

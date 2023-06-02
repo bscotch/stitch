@@ -210,7 +210,9 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     }
     item.symbol.addType(item.project.native.types.get(assetType)!);
     if (item.assetType === 'objects') {
-      item.instanceType = item.project.createStructType('instance');
+      item.instanceType = item.project
+        .createStructType('instance')
+        .named(item.name);
     }
 
     // If we are not a script, add ourselves to the global symbols.

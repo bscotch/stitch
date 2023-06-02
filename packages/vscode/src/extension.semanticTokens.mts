@@ -1,4 +1,4 @@
-import { Flaggable, ReferenceableType, Type } from '@bscotch/gml-parser';
+import { Flaggable, ReferenceableType } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
 import { locationOf } from './lib.mjs';
@@ -56,7 +56,10 @@ export class GameMakerSemanticTokenProvider
 
         // Figure out what the semantic details are
         const itemType = item.$tag === 'Type' ? item : item.type;
-        const tokenType = getSemanticTokenForType(itemType);
+        let tokenType = getSemanticToken(item);
+        if (tokenType === 'variable' && item.instance) {
+          tokenType = 'property';
+        }
         const tokenModifiers = getSemanticModifiers(itemType);
         if (itemType.kind.startsWith('Asset.')) {
           tokenModifiers.add('asset');
@@ -96,7 +99,8 @@ export class GameMakerSemanticTokenProvider
   }
 }
 
-function getSemanticTokenForType(type: Type): SemanticTokenType {
+function getSemanticToken(item: ReferenceableType): SemanticTokenType {
+  const type = item.$tag === 'Type' ? item : item.type;
   switch (type.kind) {
     case 'Enum':
       return 'enum';
@@ -109,8 +113,11 @@ function getSemanticTokenForType(type: Type): SemanticTokenType {
     case 'Macro':
       return 'macro';
   }
-  if (type.parameter) {
+  if (item.parameter) {
     return 'parameter';
+  }
+  if (item.instance) {
+    return 'property';
   }
   return 'variable';
 }
