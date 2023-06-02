@@ -170,8 +170,25 @@ describe.only('Project', function () {
     ok(inInstanceScope);
     ok(inInstanceScope.item.name === instanceVarName);
     ok(inInstanceScope.item.instance);
-
     //#endregion INSTANCE SCOPE
+
+    //#region ENUMS
+    const enumName = 'SurpriseEnum';
+    const enumMemberName = 'another_surprise';
+    const enumDef = scriptFile.getReferenceAt(603);
+    const enumMemberDef = scriptFile.getReferenceAt(630);
+    ok(enumDef);
+    ok(enumDef.item.name === enumName);
+    ok(enumMemberDef);
+    ok(enumMemberDef.item.name === enumMemberName);
+
+    const enumRef = objCreate.getReferenceAt(48);
+    const enumMemberRef = objCreate.getReferenceAt(63);
+    ok(enumRef);
+    ok(enumRef.item.name === enumName);
+    ok(enumMemberRef);
+    ok(enumMemberRef.item.name === enumMemberName);
+    //#endregion ENUMS
   });
 
   xit('can parse sample project', async function () {

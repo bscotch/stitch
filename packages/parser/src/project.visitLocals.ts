@@ -32,8 +32,8 @@ import {
 import { Symbol } from './project.symbol.js';
 import {
   Type,
-  isType,
   typeIs,
+  type EnumType,
   type StructType,
   type TypeMember,
 } from './project.type.js';
@@ -48,7 +48,7 @@ export function processSymbols(file: Code) {
 
 class SymbolProcessor {
   protected readonly localScopeStack: StructType[] = [];
-  protected readonly selfStack: StructType[] = [];
+  protected readonly selfStack: (StructType | EnumType)[] = [];
   /** The current ScopeRange, updated as we push/pop local and self */
   protected scope: Scope;
   readonly position: Position;
@@ -126,7 +126,11 @@ class SymbolProcessor {
     return new Type('Struct').definedAt(this.range(token));
   }
 
-  pushScope(token: CstNodeLocation, self: StructType, fromTokenEnd: boolean) {
+  pushScope(
+    token: CstNodeLocation,
+    self: StructType | EnumType,
+    fromTokenEnd: boolean,
+  ) {
     const localScope = this.createStruct(token);
     this.localScopeStack.push(localScope);
     this.nextScope(token, fromTokenEnd).local = localScope;
@@ -154,7 +158,7 @@ class SymbolProcessor {
 
   pushSelfScope(
     token: CstNodeLocation,
-    self: StructType,
+    self: StructType | EnumType,
     fromTokenEnd: boolean,
   ) {
     this.selfStack.push(self);
@@ -398,19 +402,16 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       return;
     }
 
-    console.log('SUFFIX LOOP');
-
     // TODO: Rework to overwrite the found identifier with each subsequent suffix.
 
     suffixLoop: for (const suffix of suffixes) {
       const currentType = currentItem ? getType(currentItem) : null;
-      console.log('  ', suffix.name, currentType?.name);
       switch (suffix.name) {
         case 'dotAccessSuffix':
           // Then we need to change self-scope to be inside
           // the prior struct.
           const dotAccessor = suffix.children;
-          if (typeIs(currentType, 'Struct')) {
+          if (typeIs(currentType, 'Struct') || typeIs(currentType, 'Enum')) {
             this.PROCESSOR.pushSelfScope(
               fixITokenLocation(dotAccessor.Dot[0]),
               currentType,
@@ -429,20 +430,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           }
           break;
         case 'functionArguments':
-          if (!typeIs(currentType, 'Function')) {
-            if (
-              isType(currentType) &&
-              !typeIs(currentType, 'Unknown', 'Any', 'Mixed')
-            ) {
-              // Then we can be pretty confident we have a type error
-              this.PROCESSOR.addDiagnostic(
-                currentLocation,
-                `Type ${currentType.toFeatherString()} is not callable`,
-              );
-            }
-            currentItem = undefined;
-            continue suffixLoop;
-          }
           // Create the argumentRanges between the parense and each comma
           const argsAndSeps = sortedFunctionCallParts(suffix);
           let argIdx = 0;
@@ -484,7 +471,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           }
           // Set the current item to the return type,
           // so that we can chain suffixes.
-          currentItem = currentType.returns;
+          currentItem = currentType?.returns;
           break;
         default:
           this.visit(suffix);
@@ -569,8 +556,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const item = this.identifier(children);
     const range = this.PROCESSOR.range(children.Identifier[0]);
     if (!item) {
-      const identifier = identifierFrom(children);
-      console.log('Possible struct property', identifier.name);
       // Create a new member on the self scope, unless it's global
       const fullScope = this.PROCESSOR.fullScope;
       if (fullScope.self !== fullScope.global) {

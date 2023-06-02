@@ -19,7 +19,7 @@ function GlobalConstructor (_name, _description) constructor {
 	name = _name;
 	description = _description;
 	var local;
-	enum SurpriseEnum { surprise }
+	enum SurpriseEnum { surprise, another_surprise }
 	
 	static something_static = function different_name (first,second){
 		GLOBAL_SCRIPT_VAR = first;

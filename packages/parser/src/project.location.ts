@@ -2,7 +2,13 @@ import type { CstNodeLocation, IToken } from 'chevrotain';
 import { ok } from 'node:assert';
 import type { Code } from './project.code.js';
 import type { Symbol } from './project.symbol.js';
-import { StructType, Type, TypeMember, isType } from './project.type.js';
+import {
+  EnumType,
+  StructType,
+  Type,
+  TypeMember,
+  isType,
+} from './project.type.js';
 import type { Constructor } from './util.js';
 
 export const firstLineIndex = 1;
@@ -152,7 +158,7 @@ export class Scope extends Range {
   constructor(
     start: Position,
     public local: StructType,
-    public self: StructType,
+    public self: StructType | EnumType,
   ) {
     super(start);
   }

@@ -1,6 +1,6 @@
 instance_variable = 10;
 
-global_function(SurpriseEnum.surprise);
+global_function(SurpriseEnum.another_surprise);
 global.global_function(SurpriseEnum.surprise);
 
 function instance_function (){
