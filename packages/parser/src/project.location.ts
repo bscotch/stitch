@@ -1,14 +1,30 @@
-import type { CstNodeLocation } from 'chevrotain';
+import type { CstNodeLocation, IToken } from 'chevrotain';
 import { ok } from 'node:assert';
 import type { Code } from './project.code.js';
 import type { Symbol } from './project.symbol.js';
-import { StructType, Type, TypeMember } from './project.type.js';
+import { StructType, Type, TypeMember, isType } from './project.type.js';
 import type { Constructor } from './util.js';
 
 export const firstLineIndex = 1;
 export const firstColumnIndex = 1;
 
 export type CstLocation = Required<CstNodeLocation>;
+
+/**
+ * Single-character tokens do not have correct end
+ * location information. This function checks the `image`
+ * of the token and fixes the end location if necessary.
+ */
+export function fixITokenLocation(token: IToken) {
+  const length = token.image.length;
+  if (token.endOffset === token.startOffset) {
+    token.endOffset += length;
+  }
+  if (token.endColumn === token.startColumn) {
+    token.endColumn! += length;
+  }
+  return token;
+}
 
 export class Position {
   readonly $tag = 'Pos';
@@ -163,6 +179,13 @@ export class Scope extends Range {
 }
 
 export type ReferenceableType = Symbol | Type | TypeMember;
+
+export function getType(ref: ReferenceableType): Type {
+  if (isType(ref)) {
+    return ref;
+  }
+  return ref.type;
+}
 
 export class Reference extends Range {
   override readonly $tag = 'Ref';

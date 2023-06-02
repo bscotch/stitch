@@ -31,3 +31,5 @@ var const = new GlobalConstructor();
 function another_global_function(){
 
 }
+
+const.name.hello[0].nope();

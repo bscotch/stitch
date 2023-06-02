@@ -1,11 +1,17 @@
 import { keysOf } from '@bscotch/utility';
+import { ok } from 'assert';
 import {
   CstParser,
-  IToken,
   type CstNode,
+  type CstNodeLocation,
   type ILexingResult,
+  type IToken,
 } from 'chevrotain';
 import type {
+  AccessorSuffixesCstChildren,
+  AccessorSuffixesCstNode,
+  FunctionArgumentCstNode,
+  FunctionArgumentsCstNode,
   GmlVisitor,
   IdentifierCstChildren,
   IdentifierCstNode,
@@ -28,6 +34,46 @@ export type IdentifierSource =
   | IdentifierCstNode[]
   | { identifier: IdentifierCstNode[] }
   | { children: { identifier: IdentifierCstNode[] } };
+
+type AccessorSuffixName = keyof AccessorSuffixesCstChildren;
+export type SortedAccessorSuffix<
+  T extends AccessorSuffixName = AccessorSuffixName,
+> = Required<AccessorSuffixesCstChildren>[T][0];
+
+export function sortedFunctionCallParts(
+  node: FunctionArgumentsCstNode,
+): (IToken | FunctionArgumentCstNode)[] {
+  return [
+    node.children.StartParen[0],
+    ...(node.children.functionArgument || []),
+    ...(node.children.Comma || []),
+    node.children.EndParen[0],
+  ].sort((a, b) => {
+    const aLocation = ('location' in a ? a.location! : a) as CstNodeLocation;
+    const bLocation = ('location' in b ? b.location! : b) as CstNodeLocation;
+    return aLocation.startOffset - bLocation.startOffset;
+  });
+}
+
+export function sortedAccessorSuffixes(
+  suffixNodes: AccessorSuffixesCstNode[] | undefined,
+): SortedAccessorSuffix[] {
+  // Convert into a flat array of suffixes, sorted by their position in the source code.
+  const sorted: SortedAccessorSuffix[] = [];
+  if (!suffixNodes) {
+    return sorted;
+  }
+  for (const node of suffixNodes) {
+    const { children } = node;
+    const suffixKinds = keysOf(children);
+    for (const kind of suffixKinds) {
+      ok(children[kind]!.length === 1);
+      sorted.push(children[kind]![0]);
+    }
+  }
+  sorted.sort((a, b) => a.location!.startOffset - b.location!.startOffset);
+  return sorted;
+}
 
 export function identifierFrom(nodes: IdentifierSource): {
   token: IToken;

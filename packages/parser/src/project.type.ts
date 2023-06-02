@@ -38,6 +38,17 @@ export class TypeMember extends Refs(Flaggable) {
   }
 }
 
+export function typeIs<T extends PrimitiveName[]>(
+  item: any,
+  ...kinds: T
+): item is Type<T[number]> {
+  return isType(item) && kinds.includes(item.kind);
+}
+
+export function isType(item: any): item is Type {
+  return item instanceof Type;
+}
+
 export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   Flaggable,
 ) {

@@ -12,18 +12,31 @@ import type {
   VariableAssignmentCstChildren,
   WithStatementCstChildren,
 } from '../gml-cst.js';
-import { GmlVisitorBase, identifierFrom } from './parser.js';
+import {
+  GmlVisitorBase,
+  identifierFrom,
+  sortedAccessorSuffixes,
+  sortedFunctionCallParts,
+} from './parser.js';
 import type { Code } from './project.code.js';
-import { Diagnostic } from './project.diagnostics.js';
+import type { Diagnostic } from './project.diagnostics.js';
 import {
   FunctionArgRange,
   Position,
   Range,
-  ReferenceableType,
-  Scope,
+  fixITokenLocation,
+  getType,
+  type ReferenceableType,
+  type Scope,
 } from './project.location.js';
 import { Symbol } from './project.symbol.js';
-import { StructType, Type, TypeMember } from './project.type.js';
+import {
+  Type,
+  isType,
+  typeIs,
+  type StructType,
+  type TypeMember,
+} from './project.type.js';
 import { c } from './tokens.categories.js';
 import { log } from './util.js';
 
@@ -208,14 +221,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     children: IdentifierCstChildren,
   ): { item: ReferenceableType; range: Range } | undefined {
     const identifier = identifierFrom(children);
-    console.log(
-      'LOOKING FOR',
-      identifier.name,
-      'from',
-      identifier.token.startOffset,
-      'in',
-      this.PROCESSOR.file.name,
-    );
     const scope = this.PROCESSOR.fullScope;
     let item: ReferenceableType | undefined;
     const range = this.PROCESSOR.range(identifier.token);
@@ -251,7 +256,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         }
         // TODO: Emit error?
         else {
-          console.error('Unknown symbol', name);
         }
         break;
       default:
@@ -384,77 +388,107 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
   /** Called on *naked* identifiers and those that have accessors/suffixes of various sorts. */
   override identifierAccessor(children: IdentifierAccessorCstChildren) {
-    const item = this.identifier(children.identifier[0].children);
-    if (!item) {
+    let currentItem = this.identifier(children.identifier[0].children);
+    if (!currentItem) {
       return;
     }
-    const type = (item.$tag === 'Type' ? item : item.type) as Type<'Function'>;
-    const suffixes = children.accessorSuffixes?.[0].children;
-    if (!suffixes) {
+    let currentLocation = children.identifier[0].location!;
+    const suffixes = sortedAccessorSuffixes(children.accessorSuffixes);
+    if (!suffixes.length) {
       return;
     }
-    const functionArguments = suffixes.functionArguments?.[0].children;
-    if (functionArguments) {
-      if (!type.isFunction) {
-        if (!['Unknown', 'Any', 'Mixed'].includes(type.kind)) {
-          // Then we can be pretty confident we have a type error
-          this.PROCESSOR.addDiagnostic(
-            suffixes.functionArguments![0].location!,
-            `Type ${type.toFeatherString()} is not callable`,
-          );
-        }
-        return;
-      }
-      // Create the argumentRanges between the parense and each comma
-      const argsAndSeps = [
-        functionArguments.StartParen[0],
-        ...(functionArguments.functionArgument || []),
-        ...(functionArguments.Comma || []),
-        functionArguments.EndParen[0],
-      ].sort((a, b) => {
-        const aLocation = (
-          'location' in a ? a.location! : a
-        ) as CstNodeLocation;
-        const bLocation = (
-          'location' in b ? b.location! : b
-        ) as CstNodeLocation;
-        return aLocation.startOffset - bLocation.startOffset;
-      });
-      let argIdx = 0;
-      let lastDelimiter: IToken;
-      for (let i = 0; i < argsAndSeps.length; i++) {
-        const token = argsAndSeps[i];
-        const isSep = 'image' in token;
-        if (isSep) {
-          if (token.image === '(') {
-            lastDelimiter = token;
-            continue;
+
+    console.log('SUFFIX LOOP');
+
+    // TODO: Rework to overwrite the found identifier with each subsequent suffix.
+
+    suffixLoop: for (const suffix of suffixes) {
+      const currentType = currentItem ? getType(currentItem) : null;
+      console.log('  ', suffix.name, currentType?.name);
+      switch (suffix.name) {
+        case 'dotAccessSuffix':
+          // Then we need to change self-scope to be inside
+          // the prior struct.
+          const dotAccessor = suffix.children;
+          if (typeIs(currentType, 'Struct')) {
+            this.PROCESSOR.pushSelfScope(
+              fixITokenLocation(dotAccessor.Dot[0]),
+              currentType,
+              true,
+            );
+            // Visit the type.
+            currentItem = this.identifier(dotAccessor.identifier[0].children);
+            currentLocation = dotAccessor.identifier[0].location!;
+            this.PROCESSOR.popSelfScope(currentLocation, true);
+          } else {
+            this.PROCESSOR.addDiagnostic(
+              currentLocation,
+              `Type ${currentType?.toFeatherString()} is not a struct`,
+            );
+            continue suffixLoop;
           }
+          break;
+        case 'functionArguments':
+          if (!typeIs(currentType, 'Function')) {
+            if (
+              isType(currentType) &&
+              !typeIs(currentType, 'Unknown', 'Any', 'Mixed')
+            ) {
+              // Then we can be pretty confident we have a type error
+              this.PROCESSOR.addDiagnostic(
+                currentLocation,
+                `Type ${currentType.toFeatherString()} is not callable`,
+              );
+            }
+            currentItem = undefined;
+            continue suffixLoop;
+          }
+          // Create the argumentRanges between the parense and each comma
+          const argsAndSeps = sortedFunctionCallParts(suffix);
+          let argIdx = 0;
+          let lastDelimiter: IToken;
+          argLoop: for (let i = 0; i < argsAndSeps.length; i++) {
+            const token = argsAndSeps[i];
+            const isSep = 'image' in token;
+            if (isSep) {
+              fixITokenLocation(token);
+              if (token.image === '(') {
+                lastDelimiter = token;
+                continue argLoop;
+              }
 
-          // Otherwise create the range
-          // For some reason the end position is the same
-          // as the start position for the commas and parens
-          // Start on the RIGHT side of the first delimiter
-          const start = Position.fromCstStart(
-            this.PROCESSOR.file,
-            lastDelimiter!,
-          );
-          start.offset += 1;
-          start.column += 1;
-          // end on the LEFT side of the second delimiter
-          const end = Position.fromCstStart(this.PROCESSOR.file, token);
-          const funcRange = new FunctionArgRange(type, argIdx, start, end);
-          this.PROCESSOR.file.addFunctionArgRange(funcRange);
+              // Otherwise create the range
+              // For some reason the end position is the same
+              // as the start position for the commas and parens
+              // Start on the RIGHT side of the first delimiter
+              const start = Position.fromCstEnd(
+                this.PROCESSOR.file,
+                lastDelimiter!,
+              );
+              // end on the LEFT side of the second delimiter
+              const end = Position.fromCstStart(this.PROCESSOR.file, token);
+              const funcRange = new FunctionArgRange(
+                currentType as Type<'Function'>,
+                argIdx,
+                start,
+                end,
+              );
+              this.PROCESSOR.file.addFunctionArgRange(funcRange);
 
-          // Increment the argument idx for the next one
-          lastDelimiter = token;
-          argIdx++;
-        } else {
-          this.visit(token);
-        }
+              // Increment the argument idx for the next one
+              lastDelimiter = token;
+              argIdx++;
+            } else {
+              this.visit(token);
+            }
+          }
+          // Set the current item to the return type,
+          // so that we can chain suffixes.
+          currentItem = currentType.returns;
+          break;
+        default:
+          this.visit(suffix);
       }
-    } else {
-      this.visit(children.accessorSuffixes || []);
     }
   }
 
