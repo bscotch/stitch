@@ -150,17 +150,21 @@ export class Code {
    * is useful for editors that want to provide a live preview.
    */
   async parse(content?: string) {
+    this._diagnostics = [];
     this._content =
       typeof content === 'string' ? content : await this.path.read();
     this._parsed = parser.parse(this.content);
     for (const diagnostic of this._parsed.errors) {
+      const fromToken = isNaN(diagnostic.token.startOffset)
+        ? diagnostic.previousToken
+        : diagnostic.token;
       this._diagnostics.push({
         $tag: 'diagnostic',
         kind: 'parser',
         message: diagnostic.message,
         severity: 'error',
         info: diagnostic,
-        location: Range.fromCst(this, diagnostic.token),
+        location: Range.fromCst(this, fromToken || diagnostic.token),
       });
     }
   }
@@ -212,7 +216,6 @@ export class Code {
     this._refs = [];
     this._functionArgRanges = [];
     this._refsAreSorted = false;
-    this._diagnostics = [];
   }
 
   onRemove() {

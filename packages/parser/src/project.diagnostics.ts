@@ -1,7 +1,7 @@
-import type { IRecognitionException } from 'chevrotain';
+import type { IRecognitionException, IToken } from 'chevrotain';
 import type { Range } from './project.location.js';
 
-export type GmlParseError = IRecognitionException;
+export type GmlParseError = IRecognitionException & { previousToken?: IToken };
 export interface Diagnostic {
   $tag: 'diagnostic';
   kind: 'parser';
