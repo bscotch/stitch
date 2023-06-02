@@ -1,12 +1,37 @@
 import { Flaggable, ReferenceableType } from '@bscotch/gml-parser';
+import { literal } from '@bscotch/utility';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
 import { locationOf } from './lib.mjs';
-import {
-  SemanticTokenModifier,
-  SemanticTokenType,
-  semanticTokensLegend,
-} from './semanticTokens.mjs';
+
+export type SemanticTokenType = (typeof semanticTokenTypes)[number];
+export type SemanticTokenModifier = (typeof semanticTokenModifiers)[number];
+
+const semanticTokenTypes = literal([
+  'function',
+  'variable',
+  'enum',
+  'macro',
+  'class',
+  'enumMember',
+  'parameter',
+  'property', // Self/instance variables
+]);
+const semanticTokenModifiers = literal([
+  'readonly',
+  'defaultLibrary',
+  'declaration',
+  'static',
+  // Custom
+  'local',
+  'asset',
+  'global',
+]);
+
+export const semanticTokensLegend = new vscode.SemanticTokensLegend(
+  semanticTokenTypes,
+  semanticTokenModifiers,
+);
 
 export class GameMakerSemanticTokenProvider
   implements vscode.DocumentSemanticTokensProvider
