@@ -77,18 +77,24 @@ export class Code {
   getScopeRangeAt(offset: number): Scope | undefined {
     for (const scopeRange of this.scopes) {
       if (offset >= scopeRange.start.offset) {
-        if (!scopeRange.end || offset <= scopeRange.end.offset) {
+        if (!scopeRange.end || offset < scopeRange.end.offset) {
           return scopeRange;
         }
       }
     }
-    return undefined;
+    // Default to the last scope,
+    // since we can end up with wonkiness with EOF trailing whitespace
+    return this.scopes.at(-1);
   }
 
   getInScopeSymbolsAt(offset: number): (Symbol | TypeMember)[] {
     const scopeRange = this.getScopeRangeAt(offset);
     if (!scopeRange) {
       return [];
+    }
+    if (scopeRange.isDotAccessor) {
+      // Then only return self variables
+      return scopeRange.self.members || [];
     }
     return [
       // Local variables

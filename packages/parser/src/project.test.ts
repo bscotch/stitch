@@ -82,6 +82,8 @@ describe.only('Project', function () {
     //#region ASSETS
     const script = project.getAssetByName('Script1')!;
     const scriptFile = script.gmlFile;
+    const recoveryScript = project.getAssetByName('Recovery')!;
+    const recoveryScriptFile = recoveryScript.gmlFile;
     const obj = project.getAssetByName('o_object')!;
     const objCreate = obj.gmlFilesArray.find((f) => f.name === 'Create_0');
     const objStep = obj.gmlFilesArray.find((f) => f.name === 'Step_0');
@@ -90,6 +92,8 @@ describe.only('Project', function () {
     ok(obj);
     ok(objCreate);
     ok(objStep);
+    ok(recoveryScript);
+    ok(recoveryScriptFile);
     //#endregion ASSETS
 
     //#region GLOBALVARS
@@ -189,6 +193,14 @@ describe.only('Project', function () {
     ok(enumMemberRef);
     ok(enumMemberRef.item.name === enumMemberName);
     //#endregion ENUMS
+
+    //#region RECOVERY
+    const enumAutocompleteScope = recoveryScriptFile.getScopeRangeAt(55);
+    ok(enumAutocompleteScope);
+    const enumAutocompleteList = recoveryScriptFile.getInScopeSymbolsAt(55);
+    ok(enumAutocompleteList);
+    expect(enumAutocompleteList.length).to.equal(2);
+    //#endregion RECOVERY
   });
 
   xit('can parse sample project', async function () {

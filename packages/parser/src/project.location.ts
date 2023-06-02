@@ -37,7 +37,7 @@ export class Position {
   constructor(
     readonly file: Code,
     public offset: number,
-    readonly line: number,
+    public line: number,
     public column: number,
   ) {}
 
@@ -63,18 +63,18 @@ export class Position {
   static fromCstStart(fileName: Code, location: CstNodeLocation) {
     return new Position(
       fileName,
-      location.startOffset,
-      location.startLine || firstLineIndex,
-      location.startColumn || firstColumnIndex,
+      location.startOffset ?? 0,
+      location.startLine ?? firstLineIndex,
+      location.startColumn ?? firstColumnIndex,
     );
   }
 
   static fromCstEnd(fileName: Code, location: CstNodeLocation) {
     return new Position(
       fileName,
-      location.endOffset || 0,
-      location.endLine || firstLineIndex,
-      location.endColumn || firstColumnIndex,
+      location.endOffset ?? 0,
+      location.endLine ?? firstLineIndex,
+      location.endColumn ?? firstColumnIndex,
     );
   }
 }
@@ -85,11 +85,14 @@ export class Range {
   public end: Position;
 
   constructor(start: Position, end?: Position) {
+    // We can get into some weird cases when recovering
+    // from parse errors, so do some checks with graceful
+    // recovery.
     this.start = start;
-    if (end) {
-      ok(end.offset >= start.offset, 'Range end must be after start');
-    }
     this.end = end ?? start;
+    if (this.end.offset < this.start.offset) {
+      this.end = this.start;
+    }
   }
 
   get file(): Code {
@@ -151,16 +154,32 @@ export function Refs<TBase extends Constructor>(Base: TBase) {
 
 export class Referenceable extends Refs(class {}) {}
 
+export const enum ScopeFlag {
+  DotAccessor = 1 << 0,
+}
+
 export class Scope extends Range {
   override readonly $tag = 'Scope';
   /** The immediately adjacent ScopeRange */
   protected _next: Scope | undefined = undefined;
+  public flags = 0;
   constructor(
     start: Position,
     public local: StructType,
     public self: StructType | EnumType,
   ) {
     super(start);
+  }
+
+  set isDotAccessor(value: boolean) {
+    if (value) {
+      this.flags |= ScopeFlag.DotAccessor;
+    } else {
+      this.flags &= ~ScopeFlag.DotAccessor;
+    }
+  }
+  get isDotAccessor(): boolean {
+    return !!(this.flags & ScopeFlag.DotAccessor);
   }
 
   /**

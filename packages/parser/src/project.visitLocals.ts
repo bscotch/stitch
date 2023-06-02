@@ -15,6 +15,7 @@ import type {
 import {
   GmlVisitorBase,
   identifierFrom,
+  isEmpty,
   sortedAccessorSuffixes,
   sortedFunctionCallParts,
 } from './parser.js';
@@ -119,7 +120,11 @@ class SymbolProcessor {
    * have an appropriate end position. Set it here!
    */
   setLastScopeEnd(rootNode: CstNodeLocation) {
-    this.file.scopes.at(-1)!.end = this.scope.end.atEnd(rootNode);
+    const lastScope = this.file.scopes.at(-1)!;
+    lastScope.end = this.scope.end.atEnd(rootNode);
+    if (lastScope.end.offset < lastScope.start.offset) {
+      lastScope.end = lastScope.start;
+    }
   }
 
   createStruct(token: CstNodeLocation) {
@@ -160,9 +165,14 @@ class SymbolProcessor {
     token: CstNodeLocation,
     self: StructType | EnumType,
     fromTokenEnd: boolean,
+    options?: { accessorScope?: boolean },
   ) {
     this.selfStack.push(self);
-    this.nextScope(token, fromTokenEnd).self = self;
+    const nextScope = this.nextScope(token, fromTokenEnd);
+    nextScope.self = self;
+    if (options?.accessorScope) {
+      nextScope.isDotAccessor = true;
+    }
   }
 
   popSelfScope(token: CstNodeLocation, fromTokenEnd: boolean) {
@@ -180,7 +190,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
   /** Entrypoint */
   FIND_SYMBOLS(input: CstNode) {
-    if (this.PROCESSOR.file.asset.name === 'ZoneDapples') {
+    if (this.PROCESSOR.file.asset.name === 'Recovery') {
       log.enabled = true;
     }
     this.visit(input);
@@ -225,6 +235,9 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     children: IdentifierCstChildren,
   ): { item: ReferenceableType; range: Range } | undefined {
     const identifier = identifierFrom(children);
+    if (!identifier) {
+      return;
+    }
     const scope = this.PROCESSOR.fullScope;
     let item: ReferenceableType | undefined;
     const range = this.PROCESSOR.range(identifier.token);
@@ -411,16 +424,22 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           // Then we need to change self-scope to be inside
           // the prior struct.
           const dotAccessor = suffix.children;
+          const dot = fixITokenLocation(dotAccessor.Dot[0]);
           if (typeIs(currentType, 'Struct') || typeIs(currentType, 'Enum')) {
-            this.PROCESSOR.pushSelfScope(
-              fixITokenLocation(dotAccessor.Dot[0]),
-              currentType,
-              true,
-            );
-            // Visit the type.
-            currentItem = this.identifier(dotAccessor.identifier[0].children);
-            currentLocation = dotAccessor.identifier[0].location!;
-            this.PROCESSOR.popSelfScope(currentLocation, true);
+            this.PROCESSOR.pushSelfScope(dot, currentType, true, {
+              accessorScope: true,
+            });
+            // While editing a user will dot into something
+            // prior to actually adding the new identifier.
+            // To provide autocomplete options, we need to
+            // still add a scopeRange for the dot.
+            if (isEmpty(dotAccessor.identifier[0].children)) {
+              this.PROCESSOR.popSelfScope(dot, true);
+            } else {
+              currentItem = this.identifier(dotAccessor.identifier[0].children);
+              currentLocation = dotAccessor.identifier[0].location!;
+              this.PROCESSOR.popSelfScope(currentLocation, true);
+            }
           } else {
             this.PROCESSOR.addDiagnostic(
               currentLocation,

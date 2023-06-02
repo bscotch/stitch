@@ -40,6 +40,10 @@ export type SortedAccessorSuffix<
   T extends AccessorSuffixName = AccessorSuffixName,
 > = Required<AccessorSuffixesCstChildren>[T][0];
 
+export function isEmpty(obj: {}) {
+  return Object.keys(obj).length === 0;
+}
+
 export function sortedFunctionCallParts(
   node: FunctionArgumentsCstNode,
 ): (IToken | FunctionArgumentCstNode)[] {
@@ -75,11 +79,13 @@ export function sortedAccessorSuffixes(
   return sorted;
 }
 
-export function identifierFrom(nodes: IdentifierSource): {
-  token: IToken;
-  type: keyof IdentifierCstChildren;
-  name: string;
-} {
+export function identifierFrom(nodes: IdentifierSource):
+  | {
+      token: IToken;
+      type: keyof IdentifierCstChildren;
+      name: string;
+    }
+  | undefined {
   let node: IdentifierCstNode;
   if (Array.isArray(nodes)) {
     node = nodes[0];
@@ -93,6 +99,12 @@ export function identifierFrom(nodes: IdentifierSource): {
   const children = 'children' in node ? node.children : node;
 
   const type = keysOf(children)[0];
+  if (!type) {
+    return;
+  }
+  if (!children[type]) {
+    console.log('WYUT');
+  }
   const token = children[type]![0];
   return { token, type, name: token.image };
 }
