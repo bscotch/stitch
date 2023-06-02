@@ -51,7 +51,7 @@ class SymbolProcessor {
   protected readonly localScopeStack: StructType[] = [];
   protected readonly selfStack: (StructType | EnumType)[] = [];
   /** The current ScopeRange, updated as we push/pop local and self */
-  protected scope: Scope;
+  public scope: Scope;
   readonly position: Position;
   readonly diagnostics: Diagnostic[] = [];
 
@@ -132,52 +132,49 @@ class SymbolProcessor {
   }
 
   pushScope(
-    token: CstNodeLocation,
+    startToken: CstNodeLocation,
     self: StructType | EnumType,
     fromTokenEnd: boolean,
   ) {
-    const localScope = this.createStruct(token);
+    const localScope = this.createStruct(startToken);
     this.localScopeStack.push(localScope);
-    this.nextScope(token, fromTokenEnd).local = localScope;
+    this.nextScope(startToken, fromTokenEnd).local = localScope;
     this.selfStack.push(self);
     this.scope.self = self;
   }
 
-  popScope(token: CstNodeLocation, fromTokenEnd: boolean) {
+  popScope(
+    nextScopeToken: CstNodeLocation,
+    nextScopeStartsFromTokenEnd: boolean,
+  ) {
     this.localScopeStack.pop();
     this.selfStack.pop();
-    this.nextScope(token, fromTokenEnd).local = this.currentLocalScope;
+    this.nextScope(nextScopeToken, nextScopeStartsFromTokenEnd).local =
+      this.currentLocalScope;
     this.scope.self = this.currentSelf;
   }
 
-  pushLocalScope(token: CstNodeLocation, fromTokenEnd: boolean) {
-    const localScope = this.createStruct(token);
-    this.localScopeStack.push(localScope);
-    this.nextScope(token, fromTokenEnd).local = localScope;
-  }
-
-  popLocalScope(token: CstNodeLocation, fromTokenEnd: boolean) {
-    this.localScopeStack.pop();
-    this.nextScope(token, fromTokenEnd).local = this.currentLocalScope;
-  }
-
   pushSelfScope(
-    token: CstNodeLocation,
+    startToken: CstNodeLocation,
     self: StructType | EnumType,
     fromTokenEnd: boolean,
     options?: { accessorScope?: boolean },
   ) {
     this.selfStack.push(self);
-    const nextScope = this.nextScope(token, fromTokenEnd);
+    const nextScope = this.nextScope(startToken, fromTokenEnd);
     nextScope.self = self;
     if (options?.accessorScope) {
       nextScope.isDotAccessor = true;
     }
   }
 
-  popSelfScope(token: CstNodeLocation, fromTokenEnd: boolean) {
+  popSelfScope(
+    nextScopeToken: CstNodeLocation,
+    nextScopeStartsFromTokenEnd: boolean,
+  ) {
     this.selfStack.pop();
-    this.nextScope(token, fromTokenEnd).self = this.currentSelf;
+    this.nextScope(nextScopeToken, nextScopeStartsFromTokenEnd).self =
+      this.currentSelf;
   }
 }
 
@@ -294,14 +291,18 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // For now, just create a new self scope
     // TODO: Figure out the actual self scope
     this.visit(children.expression);
-    const location = children.blockableStatement[0].location!;
+    const blockLocation = children.blockableStatement[0].location!;
+    this.PROCESSOR.scope.setEnd(children.expression[0].location!, true);
     this.PROCESSOR.pushSelfScope(
-      location,
-      this.PROCESSOR.createStruct(location),
+      blockLocation,
+      this.PROCESSOR.createStruct(blockLocation),
       false,
     );
+
     this.visit(children.blockableStatement);
-    this.PROCESSOR.popSelfScope(location, true);
+
+    this.PROCESSOR.scope.setEnd(blockLocation, true);
+    this.PROCESSOR.popSelfScope(blockLocation, true);
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {
@@ -351,11 +352,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
     // Functions have their own localscope as well as their self scope,
     // so we need to push both.
-    this.PROCESSOR.pushScope(
+    const startParen = fixITokenLocation(
       children.functionParameters[0].children.StartParen[0],
-      self,
-      false,
     );
+    this.PROCESSOR.scope.setEnd(startParen);
+    this.PROCESSOR.pushScope(startParen, self, true);
     const functionLocalScope = this.PROCESSOR.currentLocalScope;
 
     // TODO: Handle constructor extensions. The `constructs` type should
@@ -397,10 +398,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     this.visit(children.blockStatement);
 
     // End the scope
-    this.PROCESSOR.popScope(
+    const endBrace = fixITokenLocation(
       children.blockStatement[0].children.EndBrace[0],
-      false,
     );
+    this.PROCESSOR.scope.setEnd(endBrace);
+    this.PROCESSOR.popScope(endBrace, true);
   }
 
   /** Called on *naked* identifiers and those that have accessors/suffixes of various sorts. */
@@ -426,6 +428,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           const dotAccessor = suffix.children;
           const dot = fixITokenLocation(dotAccessor.Dot[0]);
           if (typeIs(currentType, 'Struct') || typeIs(currentType, 'Enum')) {
+            this.PROCESSOR.scope.setEnd(dot);
             this.PROCESSOR.pushSelfScope(dot, currentType, true, {
               accessorScope: true,
             });
@@ -434,10 +437,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
             // To provide autocomplete options, we need to
             // still add a scopeRange for the dot.
             if (isEmpty(dotAccessor.identifier[0].children)) {
+              this.PROCESSOR.scope.setEnd(dot, true);
               this.PROCESSOR.popSelfScope(dot, true);
             } else {
               currentItem = this.identifier(dotAccessor.identifier[0].children);
               currentLocation = dotAccessor.identifier[0].location!;
+              this.PROCESSOR.scope.setEnd(currentLocation, true);
               this.PROCESSOR.popSelfScope(currentLocation, true);
             }
           } else {

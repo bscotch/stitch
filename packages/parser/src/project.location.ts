@@ -56,6 +56,19 @@ export class Position {
     return Position.fromCstEnd(this.file, loc);
   }
 
+  static from(
+    file: Code,
+    loc: CstNodeLocation | Position,
+    fromTokenEnd = false,
+  ): Position {
+    if (loc instanceof Position) {
+      return loc;
+    }
+    return fromTokenEnd
+      ? Position.fromCstEnd(file, loc)
+      : Position.fromCstStart(file, loc);
+  }
+
   static fromFileStart(fileName: Code) {
     return new Position(fileName, 0, firstLineIndex, firstColumnIndex);
   }
@@ -182,6 +195,10 @@ export class Scope extends Range {
     return !!(this.flags & ScopeFlag.DotAccessor);
   }
 
+  setEnd(atToken: CstNodeLocation | Position, fromTokenEnd = false) {
+    this.end = Position.from(this.file, atToken, fromTokenEnd);
+  }
+
   /**
    * Create the next ScopeRange, adjacent to this one.
    * This sets the end location of this scope range to
@@ -190,15 +207,16 @@ export class Scope extends Range {
    * so at least one will need to be changed!
    */
   createNext(atToken: CstNodeLocation, fromTokenEnd = false): Scope {
-    this.end = fromTokenEnd
-      ? this.start.atEnd(atToken)
-      : this.start.at(atToken);
+    ok(
+      this.end,
+      'Cannot create a next scope range without an end to this one.',
+    );
     ok(
       !this._next,
       'Cannot create a next scope range when one already exists.',
     );
-    this._next = new Scope(this.end, this.local, this.self);
-
+    const start = Position.from(this.file, atToken, fromTokenEnd);
+    this._next = new Scope(start, this.local, this.self);
     return this._next;
   }
 }

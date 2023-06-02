@@ -77,7 +77,7 @@ export class Code {
   getScopeRangeAt(offset: number): Scope | undefined {
     for (const scopeRange of this.scopes) {
       if (offset >= scopeRange.start.offset) {
-        if (!scopeRange.end || offset < scopeRange.end.offset) {
+        if (!scopeRange.end || offset <= scopeRange.end.offset) {
           return scopeRange;
         }
       }
