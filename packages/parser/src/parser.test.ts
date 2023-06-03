@@ -1,80 +1,185 @@
+import { pathy } from '@bscotch/pathy';
 import { undent } from '@bscotch/utility';
 import { ok } from 'assert';
 import { expect } from 'chai';
+import type { IRecognitionException } from 'chevrotain';
+import dotenv from 'dotenv';
 import fs from 'fs/promises';
-import { Parser } from './parser.js';
-import {
-  ConstructorDeclaration,
-  FunctionDeclaration,
-  SyntaxKind,
-} from './parser.types.js';
+import { GmlParser } from './parser.js';
+import { Type } from './project.type.js';
 
-describe('GML Parser', function () {
-  it('can identify top-level functions and macros', function () {
-    const sample = undent`
-      // This is a comment
-      function foo() {
-        function ignoredInnerFunction(){}
-        return "hello";
-      }
-      #macro hello "world"
-      function bar() {}
-      function hasParams(a, b, c) {}
-      #macro goodbye hello + "!"
-      function hasDefaultParams(a = 1, b = 2, c = 3) {
-        #macro internalMacro "hello"
-        globalvar INTERNAL_GLOBAL;
-      }
-      globalvar GLOBAL_VAR;
-      function isStruct(_) constructor {}
-      function hasComplexDefaultParams(a = 1 + 2, b = 2 * 3, c = 3 / 4) {}
-    `;
-    const parser = new Parser(sample);
-    parser.parse();
+dotenv.config();
 
-    const paramNames = (func: FunctionDeclaration | ConstructorDeclaration) =>
-      func.info.map((p) => p.name);
+function showErrors(
+  parser: GmlParser | IRecognitionException[],
+  filepath?: string,
+) {
+  const errors = Array.isArray(parser) ? parser : parser.errors;
+  if (!errors.length) return;
+  console.error(
+    errors.map((e) => ({
+      loc: `${filepath || ''}:${e.token.startLine}:${e.token.startColumn}`,
+      msg: e.message,
+      token: e.token.image,
+      resynced: e.resyncedTokens.map((t) => ({
+        image: t.image,
+        startLine: t.startLine,
+        startColumn: t.startColumn,
+      })),
+    })),
+  );
+}
 
-    ok(parser.functions.get('foo'));
-    ok(parser.functions.get('bar'));
+describe('Parser', function () {
+  it('can parse Feather types', function () {
+    const parser = new GmlParser();
+    let { cst } = parser.parseTypeString('Array');
+    expect(
+      cst.children.jsdocType[0].children.JsdocIdentifier[0].image,
+    ).to.equal('Array');
+    expect(parser.errors.length).to.equal(0);
 
-    const hasParams = parser.functions.get('hasParams');
-    ok(hasParams);
-    expect(paramNames(hasParams)).to.eql(['a', 'b', 'c']);
-
-    const hasDefaultParams = parser.functions.get('hasDefaultParams');
-    ok(hasDefaultParams);
-    expect(paramNames(hasDefaultParams)).to.eql(['a', 'b', 'c']);
-
-    const isStruct = parser.functions.get('isStruct');
-    ok(isStruct);
-    expect(paramNames(isStruct)).to.eql(['_']);
-    expect(isStruct.kind).to.equal(SyntaxKind.ConstructorDeclaration);
-
-    const hasComplexDefaultParams = parser.functions.get(
-      'hasComplexDefaultParams',
-    );
-    ok(hasComplexDefaultParams);
-    expect(paramNames(hasComplexDefaultParams)).to.eql(['a', 'b', 'c']);
-
-    ok(parser.macros.get('hello'));
-    ok(parser.macros.get('goodbye'));
-    ok(parser.macros.get('internalMacro'));
-    ok(parser.globalvars.get('GLOBAL_VAR'));
-    ok(parser.globalvars.get('INTERNAL_GLOBAL'));
+    ({ cst } = parser.parseTypeString(
+      'Array<string OR Array<Real>> or Struct.Hello or Id.Map<String,Real>',
+    ));
+    expect(parser.errors.length).to.equal(0);
+    expect(cst.children.jsdocType.length).to.equal(3);
+    const [first, second, third] = cst.children.jsdocType;
+    expect(first.children.JsdocIdentifier[0].image).to.equal('Array');
+    const firstTypes = first.children.jsdocTypeUnion![0].children.jsdocType;
+    expect(firstTypes.length).to.equal(2);
+    expect(second.children.JsdocIdentifier[0].image).to.equal('Struct.Hello');
+    expect(third.children.JsdocIdentifier[0].image).to.equal('Id.Map');
   });
 
-  it('can parse samples without choking', async function () {
+  it('can get types from typestrings', function () {
+    expect(Type.from('Array', new Map()).kind).to.equal('Array');
+    const stringArray = Type.from('Array<string>', new Map());
+    expect(stringArray.kind).to.equal('Array');
+    expect(stringArray.items!.kind).to.equal('String');
+    const dsMap = Type.from('Id.DsMap[String,Real]', new Map());
+    expect(dsMap.kind).to.equal('Id.DsMap');
+    expect(dsMap.items!.kind).to.equal('Union');
+    expect(dsMap.items!.types!.length).to.equal(2);
+    expect(dsMap.items!.types![0].kind).to.equal('String');
+    expect(dsMap.items!.types![1].kind).to.equal('Real');
+  });
+
+  it('can parse cross-referencing types', function () {
+    const knownTypes = new Map();
+    const arrayOfStructs = Type.from('Array<Struct.Hello>', knownTypes);
+    const structType = Type.from('Struct.Hello', knownTypes);
+
+    ok(knownTypes.get('Struct.Hello') === structType);
+    expect(arrayOfStructs.kind).to.equal('Array');
+    expect(arrayOfStructs.items!.kind).to.equal('Struct');
+    ok(arrayOfStructs.items === structType);
+    expect(arrayOfStructs.items!.name).to.equal('Hello');
+  });
+
+  it('can parse complex typestrings', function () {
+    const complexType = Type.from(
+      'Array<string OR Array<Real>>|Struct.Hello OR Id.DsMap[String,Real]',
+      new Map(),
+    );
+    expect(complexType.kind).to.equal('Union');
+    const types = complexType.types!;
+    expect(types.length).to.equal(3);
+    expect(types[0].kind).to.equal('Array');
+    expect(types[0].items!.kind).to.equal('Union');
+    expect(types[0].items!.types!.length).to.equal(2);
+    expect(types[0].items!.types![0].kind).to.equal('String');
+    expect(types[0].items!.types![1].kind).to.equal('Array');
+    expect(types[0].items!.types![1].items!.kind).to.equal('Real');
+  });
+
+  it('can parse simple expressions', function () {
+    const parser = new GmlParser();
+    const { cst } = parser.parse(
+      '(1 + 2 * 3) + (hello / (world || undefined))',
+    );
+    expect(parser.errors.length).to.equal(0);
+    expect(cst).to.exist;
+  });
+
+  it('can get errors for invalid simple expressions', function () {
+    const parser = new GmlParser();
+    const { cst, errors } = parser.parse(
+      '(1 + 2 * 3) + hello / world || undefined +',
+    );
+    expect(parser.errors.length).to.equal(1);
+    expect(errors.length).to.equal(1);
+  });
+
+  it('can parse complex expressions', function () {
+    const parser = new GmlParser();
+    const { cst } = parser.parse(
+      '1 + 2 * 3 + hello / world[no+true] || undefined + (1 + 2 * 3 + hello / world || undefined ^^ functionCall(10+3,undefined,,))',
+    );
+    expect(parser.errors.length).to.equal(0);
+    expect(cst).to.exist;
+    // console.log(
+    //   GmlParser.jsonify(
+    //     // @ts-expect-error
+    //     cst!.children.statement[0].children.expressionStatement[0].children
+    //       .expression[0],
+    //   ),
+    // );
+  });
+
+  it('can parse GML style JSDocs', function () {
+    const parser = new GmlParser();
+    const { cst } = parser.parse(
+      undent`
+        /// @description This is a description
+        /// @param {string} a
+        /// @param {number} b
+        /// @returns {string}
+        function myFunc(a, b) {}
+      `,
+    );
+    showErrors(parser);
+    expect(parser.errors.length).to.equal(0);
+    expect(cst).to.exist;
+  });
+
+  it('can parse sample files', async function () {
+    const parser = new GmlParser();
     const samples = await fs.readdir('./samples');
     for (const sample of samples) {
+      console.log('Parsing', sample);
       const filePath = `./samples/${sample}`;
       const code = await fs.readFile(filePath, 'utf-8');
-      const parser = new Parser(code, { filePath });
-      parser.parse();
-      console.log('SAMPLE', sample);
-      // console.log('FUNCTIONS', parser.functions);
-      // console.log('MACROS', parser.macros);
-      console.log('ENUMS', parser.enums);
+      const { cst } = parser.parse(code);
+      showErrors(parser, filePath);
+      expect(cst).to.exist;
+      expect(parser.errors).to.have.length(0);
+      // console.log(cst);
+    }
+  });
+
+  it('can parse sample project', async function () {
+    const projectDir = process.env.GML_PARSER_SAMPLE_PROJECT_DIR;
+    expect(
+      projectDir,
+      'A dotenv file should provide a path to a full sample project, as env var GML_PARSER_SAMPLE_PROJECT_DIR',
+    ).to.exist;
+    const dir = pathy(projectDir);
+    const files = await dir.listChildrenRecursively({
+      includeExtension: ['.gml'],
+    });
+    expect(files.length).to.be.greaterThan(0);
+
+    const parser = new GmlParser();
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      console.log(i, 'Parsing:', file.relative);
+      const code = await file.read<string>();
+      const { cst } = parser.parse(code);
+      showErrors(parser, file.absolute);
+      expect(cst).to.exist;
+      expect(parser.errors).to.have.length(0);
+      // console.log(cst);
     }
   });
 });

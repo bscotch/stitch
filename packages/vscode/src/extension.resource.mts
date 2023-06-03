@@ -14,32 +14,6 @@ import { GmlFile } from './extension.gml.mjs';
 import { StitchTreeItemBase } from './extension.tree.mjs';
 import { getEventName } from './spec.events.mjs';
 
-export class GameMakerSpriteFrame extends StitchTreeItemBase {
-  readonly kind = 'sprite-frame';
-  constructor(readonly imagePath: string, readonly idx: number) {
-    super(`[${idx}] ${path.basename(imagePath, '.png')}`);
-    this.iconPath = vscode.Uri.file(imagePath);
-    this.command = {
-      command: 'vscode.open',
-      title: 'Open',
-      arguments: [this.iconPath],
-    };
-  }
-}
-
-export class GameMakerShaderFile extends StitchTreeItemBase {
-  readonly kind = 'shader-file';
-  constructor(readonly uri: vscode.Uri) {
-    super(uri.fsPath.endsWith('.vsh') ? 'Vertex' : 'Fragment');
-    this.command = {
-      command: 'vscode.open',
-      title: 'Open',
-      arguments: [uri],
-    };
-    this.setFileIcon('shader');
-  }
-}
-
 export class GameMakerResource<
   T extends YyResourceType = YyResourceType,
 > extends StitchTreeItemBase {
@@ -175,7 +149,7 @@ export class GameMakerResource<
   }
 
   get yyPath() {
-    return path.join(this.project.rootPath, this.resource.id.path);
+    return path.join(this.project.projectDir.absolute, this.resource.id.path);
   }
 
   get dir() {

@@ -2,17 +2,35 @@ import type { Pathy } from '@bscotch/pathy';
 import { z } from 'zod';
 import type { GameMakerChannel } from './GameMakerFeeds.types.js';
 export {
-  gameMakerKnownPathSchema,
-  type GameMakerKnownPath,
-  type GameMakerKnownPathId,
-} from './GameMakerComponent.js';
-export {
   gameMakerChannelSchema,
   gameMakerFeedOptionsSchema,
   type GameMakerChannel,
   type GameMakerFeedOptions,
   type GameMakerSearch,
 } from './GameMakerFeeds.types.js';
+
+export type GameMakerKnownPathId = z.infer<typeof gameMakerKnownPathIdSchema>;
+const gameMakerKnownPathIdSchema = z.enum([
+  'gameMakerDataDir',
+  'defaultMacrosFile',
+  'runtimeFeedsConfigFile',
+  'initialDefaultMacrosFile',
+  'runtimesCacheDir',
+  'gameMakerIdeDir',
+  'gameMakerIdeExe',
+  'gameMakerUserDir',
+  'activeUserFile',
+  'uiLogFile',
+  'activeRuntimeConfigFile',
+]);
+
+export type GameMakerKnownPath = z.infer<typeof gameMakerKnownPathSchema>;
+export const gameMakerKnownPathSchema = z.object({
+  id: gameMakerKnownPathIdSchema,
+  path: z.string(),
+  name: z.string(),
+  description: z.string(),
+});
 
 /**
  * The subset of Stitch's `Gms2Project`

@@ -1,4 +1,3 @@
-import { ParsedNode, Parser, SyntaxKind } from '@bscotch/gml-parser';
 import { YyResourceType } from '@bscotch/yy';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -7,14 +6,15 @@ import type { GameMakerResource } from './extension.resource.mjs';
 import { StitchTreeItemBase } from './extension.tree.mjs';
 import { getEventName } from './spec.events.mjs';
 
-// TODO: Add command to open the current project in GameMaker
+// TODO: Add command to open the current project in GameMaker;
+
+const SyntaxKind: any = {}; // LEGACY
 
 export class GmlFile extends StitchTreeItemBase {
   readonly kind = 'gmlFile';
   readonly dir: string;
   readonly resourceType: YyResourceType;
   readonly resourceName: string;
-  readonly globalFunctions: Map<string, ParsedNode> = new Map();
 
   // Track any globals defined in this file
   readonly globals: Set<string> = new Set();
@@ -75,14 +75,8 @@ export class GmlFile extends StitchTreeItemBase {
   }
 
   async load(doc?: vscode.TextDocument) {
-    this.clearGlobals();
     const text = doc?.getText() || (await readFile(this.uri.fsPath, 'utf8'));
-    const parser = new Parser(text);
-    try {
-      parser.parse();
-    } catch (e) {
-      console.error(`Error parsing ${this.uri.fsPath}: ${e}`);
-    }
+    const parser: any = undefined;
     // Add all identifiers to project-wide identifiers
     for (const [, nodes] of parser.identifiers) {
       for (const node of nodes) {
@@ -124,9 +118,8 @@ export class GmlFile extends StitchTreeItemBase {
         if (!node.name) {
           continue;
         }
-        this.globalFunctions.set(name, node);
 
-        const paramNames = node.info.map((p) => p.name);
+        const paramNames = node.info.map((p: any) => p.name);
         this.addProjectCompletion(
           node,
           node.kind === SyntaxKind.ConstructorDeclaration
@@ -145,39 +138,16 @@ export class GmlFile extends StitchTreeItemBase {
         const help = new vscode.SignatureHelp();
         const signature = new vscode.SignatureInformation(signatureString);
         signature.parameters = paramNames.map(
-          (p) => new vscode.ParameterInformation(p),
+          (p: any) => new vscode.ParameterInformation(p),
         );
         help.signatures.push(signature);
-        this.resource.project.signatures.set(node.name, help);
 
         // TODO: Add definition location lookup
       }
     }
   }
 
-  protected clearGlobals() {
-    for (const name of this.globals) {
-      this.resource.project.completions.delete(name);
-      this.resource.project.hovers.delete(name);
-      this.resource.project.signatures.delete(name);
-      this.resource.project.definitions.delete(name);
-    }
-    this.globals.clear();
-    this.globalDefinitions.clear();
-    this.globalFunctions.clear();
-    // Clear all identifier references
-    for (const [name] of this.identifiers) {
-      const refs = this.resource.project.identifiers.get(name) ?? [];
-      for (let i = refs.length - 1; i >= 0; i--) {
-        if (refs[i].uri.toString() === this.uri.toString()) {
-          refs.splice(i, 1);
-        }
-      }
-    }
-    this.identifiers.clear();
-  }
-
-  addIdentifierLocation(info: ParsedNode) {
+  addIdentifierLocation(info: any) {
     if (!info.name) {
       return;
     }
@@ -194,7 +164,7 @@ export class GmlFile extends StitchTreeItemBase {
     this.identifiers.get(info.name)!.push(location);
   }
 
-  addProjectIdentifierReference(info: ParsedNode) {
+  addProjectIdentifierReference(info: any) {
     this.addIdentifierLocation(info);
     if (!info.name) {
       return;
@@ -207,14 +177,9 @@ export class GmlFile extends StitchTreeItemBase {
       ),
     );
     const location = new vscode.Location(this.uri, range);
-
-    // Add to the project identifiers
-    const ids = this.resource.project.identifiers;
-    ids.set(info.name, ids.get(info.name) ?? []);
-    ids.get(info.name)!.push(location);
   }
 
-  addProjectDefinition(info: ParsedNode) {
+  addProjectDefinition(info: any) {
     if (!info.name) {
       return;
     }
@@ -222,11 +187,10 @@ export class GmlFile extends StitchTreeItemBase {
       this.uri,
       new vscode.Position(info.position.line - 1, info.position.column),
     );
-    this.resource.project.definitions.set(info.name, location);
   }
 
   addProjectCompletion(
-    node: ParsedNode,
+    node: any,
     type: vscode.CompletionItemKind,
     name?: string,
   ) {
@@ -236,17 +200,17 @@ export class GmlFile extends StitchTreeItemBase {
     }
     this.addIdentifierLocation(node);
     this.globals.add(name);
-    this.resource.project.completions.set(
-      name,
-      new vscode.CompletionItem(name, type),
-    );
+    // this.resource.project.completions.set(
+    //   name,
+    //   new vscode.CompletionItem(name, type),
+    // );
   }
 
   addProjectHover(name: string, code: string) {
     // Add hover
     const docs = new vscode.MarkdownString();
     docs.appendCodeblock(code, 'gml');
-    this.resource.project.hovers.set(name, new vscode.Hover(docs));
+    // this.resource.project.hovers.set(name, new vscode.Hover(docs));
   }
 
   toJSON() {

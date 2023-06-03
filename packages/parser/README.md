@@ -1,15 +1,18 @@
 # GameMaker Language (GML) Parser
 
-A basic parser for [GameMaker](https://gamemaker.io/) code.
+A parser for [GameMaker](https://gamemaker.io/) code, focused on use cases of the Stitch for VSCode extension.
 
 ## TODO
 
-- Parse `global` property definitions
+- Color-coding of:
+  - macros
+  - globals
+  - vars
+  - assets (all one color)
+- Asset browser
+- Easy running
+- Easy cache-cleaning
 
-## Features
+### DATA MODEL
 
-This is *not* a comprehensive parser. It includes features needed by the [Butterscotch Shenanigans](https://www.bscotch.net) team to address various development tasks.
-
-- Collect names and locations of all identifiers
-- Collect names and locations of all root-level function definitions
-- Collect names and locations of all `#macro` definitions
+The current goal of the parser is to generate a collection of data structures that include all of the identifiers we want to be able to use for navigation, autocomplete, and documentation while editing a GameMaker project.

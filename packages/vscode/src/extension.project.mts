@@ -1,3 +1,4 @@
+import { Project, type Diagnostic } from '@bscotch/gml-parser';
 import { pathy } from '@bscotch/pathy';
 import {
   GameMakerIde,
@@ -5,78 +6,20 @@ import {
   GameMakerRuntime,
   stringifyGameMakerBuildCommand,
 } from '@bscotch/stitch-launcher';
-import { Yy, Yyp, YypResource } from '@bscotch/yy';
 import path from 'path';
 import vscode from 'vscode';
 import { StitchConfig } from './extension.config.mjs';
-import { GmlFile } from './extension.gml.mjs';
-import { GameMakerResource } from './extension.resource.mjs';
 
-export class GameMakerProject {
+export class GameMakerProject extends Project {
   readonly kind = 'project';
   static config = new StitchConfig();
 
-  /**
-   * Globally available completions specific to this project,
-   * such as resource names, macros, and script functions. */
-  completions: Map<string, vscode.CompletionItem> = new Map();
-  hovers: Map<string, vscode.Hover> = new Map();
-  signatures: Map<string, vscode.SignatureHelp> = new Map();
-  definitions: Map<string, vscode.Location> = new Map();
-  identifiers: Map<string, vscode.Location[]> = new Map();
-
-  /** The key is the resource path, e.g. `scripts/my_script` */
-  resources: Map<string, GameMakerResource> = new Map();
-  /** The key is just the name */
-  resourceNames: Map<string, GameMakerResource> = new Map();
-  yypWatcher: vscode.FileSystemWatcher;
-  gmlWatcher: vscode.FileSystemWatcher;
-  yyp!: Yyp;
-
-  protected constructor(readonly yypPath: vscode.Uri) {
-    this.yypWatcher = vscode.workspace.createFileSystemWatcher(
-      this.yypPath.fsPath,
-    );
-    this.gmlWatcher = vscode.workspace.createFileSystemWatcher(
-      path.join(this.rootPath, '**', '*.gml'),
-    );
-    this.yypWatcher.onDidChange(() => this.loadYyp());
-    this.gmlWatcher.onDidChange((uri) => this.updateFile(uri));
+  protected constructor(yypPath: vscode.Uri) {
+    super(pathy(yypPath.fsPath));
   }
 
   get name() {
     return this.yyp.name;
-  }
-
-  get ideVersion() {
-    return this.yyp.MetaData.IDEVersion;
-  }
-  protected gmlFiles: Map<string, GmlFile> = new Map();
-
-  /**
-   * Generate a GML-parseable string showing how all global
-   * functions map to their scripts, in the format:
-   * `func1:script1,func2:script2,func3:script3`
-   */
-  createFunctionScriptString() {
-    const asString = [...this.resources]
-      .reduce((acc, [, resource]) => {
-        if (resource.type !== 'scripts') {
-          return acc;
-        }
-        resource.gmlFiles.forEach((gmlFile) => {
-          gmlFile.globalFunctions.forEach((func) => {
-            if (!func.name) {
-              return;
-            }
-            acc.push(`${func.name}:${resource.name}`);
-          });
-        });
-
-        return acc;
-      }, [] as string[])
-      .join(',');
-    return asString;
   }
 
   async openInIde() {
@@ -94,7 +37,7 @@ export class GameMakerProject {
         );
       });
     }
-    const runner = GameMakerLauncher.openProject(this.yypPath.fsPath, {
+    const runner = GameMakerLauncher.openProject(this.yypPath.absolute, {
       ideVersion: this.yyp.MetaData.IDEVersion,
     });
     runner.catch((err) => {
@@ -127,7 +70,7 @@ export class GameMakerProject {
       return;
     }
     const cmd = await stringifyGameMakerBuildCommand(runtime, {
-      project: this.yypPath.fsPath,
+      project: this.yypPath.absolute,
       config: config || undefined,
       yyc: compiler === 'yyc',
       noCache: false,
@@ -149,13 +92,9 @@ export class GameMakerProject {
     return;
   }
 
-  get rootPath(): string {
-    return path.dirname(this.yypPath.fsPath);
-  }
-
   includesFile(document: vscode.Uri | vscode.TextDocument): boolean {
     const file = document instanceof vscode.Uri ? document : document.uri;
-    const relative = path.relative(this.rootPath, file.fsPath);
+    const relative = path.relative(this.projectDir.absolute, file.fsPath);
     return !relative || !relative.startsWith('..');
   }
 
@@ -164,71 +103,21 @@ export class GameMakerProject {
    * and pass an update request to that resource.
    */
   async updateFile(doc: vscode.Uri | vscode.TextDocument): Promise<void> {
-    const uri = doc instanceof vscode.Uri ? doc : doc.uri;
-    const resourceId = this.filepathToResourceId(uri);
-    const resource = this.resources.get(resourceId);
+    const uri = pathy((doc instanceof vscode.Uri ? doc : doc.uri).fsPath);
+    const resource = this.getAsset(uri);
     if (!resource) {
       console.error(`Could not find resource for file ${uri}`);
     } else {
-      await resource.loadGml(doc);
+      await resource.reloadFile(uri);
     }
   }
 
-  async registerResource(
-    info: YypResource,
-  ): Promise<GameMakerResource | undefined> {
-    const resourceId = this.filepathToResourceId(info.id.path);
-    if (this.resources.has(resourceId)) {
-      return this.resources.get(resourceId)!;
-    }
-    const resource = await GameMakerResource.from(this, info);
-    if (!resource) {
-      console.warn(`Could not find resource files for ${resourceId}`);
-      return;
-    }
-    this.resources.set(resourceId, resource);
-    this.resourceNames.set(resource.name, resource);
-    this.completions.set(resourceId, resource.completion);
-    this.hovers.set(resource.name, await resource.createHover());
-    return resource;
-  }
-
-  filepathToResource(doc: vscode.TextDocument | vscode.Uri | string) {
-    const resourceId = this.filepathToResourceId(doc);
-    return this.resources.get(resourceId);
-  }
-
-  /**
-   * Given a document, return the expected path identifier that
-   * the resource it belongs to would have.
-   */
-  filepathToResourceId(doc: vscode.TextDocument | vscode.Uri | string): string {
-    const uri =
-      typeof doc === 'string'
-        ? doc
-        : doc instanceof vscode.Uri
-        ? doc.fsPath
-        : doc.uri.fsPath;
-    const normalized = pathy(this.rootPath).relativeTo(
-      path.resolve(this.rootPath, uri),
-    );
-    const resourceId = normalized.split('/').slice(0, 2).join('/');
-    return resourceId;
-  }
-
-  async loadYyp() {
-    this.yyp = await Yy.read(this.yypPath.fsPath, 'project');
-    const waits: Promise<any>[] = [];
-
-    for (const resource of this.yyp.resources) {
-      waits.push(this.registerResource(resource));
-    }
-    await Promise.all(waits);
-  }
-
-  static async from(yypPath: vscode.Uri) {
+  static async from(
+    yypPath: vscode.Uri,
+    onDiagnostics: (diagnostics: Diagnostic[]) => void,
+  ) {
     const project = new GameMakerProject(yypPath);
-    await project.loadYyp();
+    await project.initialize({ watch: true, onDiagnostics });
     return project;
   }
 }

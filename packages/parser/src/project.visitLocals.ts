@@ -1,0 +1,619 @@
+// CST Visitor for creating an AST etc
+import { randomString } from '@bscotch/utility';
+import { ok } from 'assert';
+import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
+import type {
+  AssignmentRightHandSideCstChildren,
+  FunctionExpressionCstChildren,
+  IdentifierAccessorCstChildren,
+  IdentifierCstChildren,
+  LocalVarDeclarationCstChildren,
+  StaticVarDeclarationsCstChildren,
+  VariableAssignmentCstChildren,
+  WithStatementCstChildren,
+} from '../gml-cst.js';
+import {
+  GmlVisitorBase,
+  identifierFrom,
+  isEmpty,
+  sortedAccessorSuffixes,
+  sortedFunctionCallParts,
+} from './parser.js';
+import type { Code } from './project.code.js';
+import type { Diagnostic } from './project.diagnostics.js';
+import {
+  FunctionArgRange,
+  Position,
+  Range,
+  fixITokenLocation,
+  getType,
+  type ReferenceableType,
+  type Scope,
+} from './project.location.js';
+import { Symbol } from './project.symbol.js';
+import {
+  Type,
+  typeIs,
+  type EnumType,
+  type StructType,
+  type TypeMember,
+} from './project.type.js';
+import { c } from './tokens.categories.js';
+import { log } from './util.js';
+
+export function processSymbols(file: Code) {
+  const processor = new SymbolProcessor(file);
+  const visitor = new GmlSymbolVisitor(processor);
+  visitor.FIND_SYMBOLS(file.cst);
+}
+
+class SymbolProcessor {
+  protected readonly localScopeStack: StructType[] = [];
+  protected readonly selfStack: (StructType | EnumType)[] = [];
+  /** The current ScopeRange, updated as we push/pop local and self */
+  public scope: Scope;
+  readonly position: Position;
+  readonly diagnostics: Diagnostic[] = [];
+
+  constructor(readonly file: Code) {
+    this.scope = file.scopes[0];
+    this.localScopeStack.push(this.scope.local);
+    this.selfStack.push(this.scope.self);
+    this.position = this.scope.start;
+  }
+
+  range(loc: CstNodeLocation) {
+    return Range.fromCst(this.position.file, loc);
+  }
+
+  addDiagnostic(
+    where: CstNodeLocation,
+    message: string,
+    severity: Diagnostic['severity'] = 'warning',
+  ) {
+    this.diagnostics.push({
+      $tag: 'diagnostic',
+      kind: 'parser',
+      message,
+      severity,
+      location: Range.fromCst(this.file, where),
+    });
+  }
+
+  get fullScope() {
+    return {
+      local: this.currentLocalScope,
+      self: this.currentSelf,
+      global: this.project.self,
+      selfIsGlobal: this.currentSelf === this.project.self,
+    };
+  }
+
+  get asset() {
+    return this.file.asset;
+  }
+
+  get project() {
+    return this.asset.project;
+  }
+
+  get currentLocalScope() {
+    return this.localScopeStack.at(-1)!;
+  }
+
+  get currentSelf() {
+    return this.selfStack.at(-1) || this.project.self;
+  }
+
+  getGlobalSymbol(name: string) {
+    return this.project.getGlobal(name);
+  }
+
+  protected nextScope(token: CstNodeLocation, fromTokenEnd: boolean) {
+    this.scope = this.scope.createNext(token, fromTokenEnd);
+    this.file.scopes.push(this.scope);
+    return this.scope;
+  }
+
+  /**
+   * After parsing the entire file, the last scope might not
+   * have an appropriate end position. Set it here!
+   */
+  setLastScopeEnd(rootNode: CstNodeLocation) {
+    const lastScope = this.file.scopes.at(-1)!;
+    lastScope.end = this.scope.end.atEnd(rootNode);
+    if (lastScope.end.offset < lastScope.start.offset) {
+      lastScope.end = lastScope.start;
+    }
+  }
+
+  createStruct(token: CstNodeLocation) {
+    return new Type('Struct').definedAt(this.range(token));
+  }
+
+  pushScope(
+    startToken: CstNodeLocation,
+    self: StructType | EnumType,
+    fromTokenEnd: boolean,
+  ) {
+    const localScope = this.createStruct(startToken);
+    this.localScopeStack.push(localScope);
+    this.nextScope(startToken, fromTokenEnd).local = localScope;
+    this.selfStack.push(self);
+    this.scope.self = self;
+  }
+
+  popScope(
+    nextScopeToken: CstNodeLocation,
+    nextScopeStartsFromTokenEnd: boolean,
+  ) {
+    this.localScopeStack.pop();
+    this.selfStack.pop();
+    this.nextScope(nextScopeToken, nextScopeStartsFromTokenEnd).local =
+      this.currentLocalScope;
+    this.scope.self = this.currentSelf;
+  }
+
+  pushSelfScope(
+    startToken: CstNodeLocation,
+    self: StructType | EnumType,
+    fromTokenEnd: boolean,
+    options?: { accessorScope?: boolean },
+  ) {
+    this.selfStack.push(self);
+    const nextScope = this.nextScope(startToken, fromTokenEnd);
+    nextScope.self = self;
+    if (options?.accessorScope) {
+      nextScope.isDotAccessor = true;
+    }
+  }
+
+  popSelfScope(
+    nextScopeToken: CstNodeLocation,
+    nextScopeStartsFromTokenEnd: boolean,
+  ) {
+    this.selfStack.pop();
+    this.nextScope(nextScopeToken, nextScopeStartsFromTokenEnd).self =
+      this.currentSelf;
+  }
+}
+
+export class GmlSymbolVisitor extends GmlVisitorBase {
+  static validated = false;
+  constructor(readonly PROCESSOR: SymbolProcessor) {
+    super();
+    this.validateVisitor();
+  }
+
+  /** Entrypoint */
+  FIND_SYMBOLS(input: CstNode) {
+    if (this.PROCESSOR.file.asset.name === 'Recovery') {
+      log.enabled = true;
+    }
+    this.visit(input);
+    log.enabled = false;
+    this.PROCESSOR.setLastScopeEnd(input.location!);
+    return this.PROCESSOR;
+  }
+
+  protected COMPUTE_TYPE(children: AssignmentRightHandSideCstChildren) {
+    if (children.structLiteral) {
+      return this.PROCESSOR.project.createStructType('self');
+    } else if (children.functionExpression) {
+      // TODO: Find the function's actual type
+      return this.PROCESSOR.project.createType('Function');
+    } else if (children.expression) {
+      const expr =
+        children.expression[0].children.primaryExpression?.[0].children;
+      if (expr) {
+        const isString =
+          expr.stringLiteral ||
+          expr.multilineDoubleStringLiteral ||
+          expr.multilineSingleStringLiteral ||
+          expr.templateLiteral;
+        const isArray = !isString && expr.arrayLiteral;
+        const isReal =
+          !isString &&
+          !isArray &&
+          (expr.UnaryPrefixOperator ||
+            expr.UnarySuffixOperator ||
+            expr.Literal?.[0].tokenType.CATEGORIES?.includes(c.NumericLiteral));
+        return this.PROCESSOR.project.createType(
+          isString ? 'String' : isArray ? 'Array' : isReal ? 'Real' : 'Unknown',
+        );
+      }
+    }
+    // TODO: Add more capabilities
+    return this.PROCESSOR.project.createType('Unknown');
+  }
+
+  /** Given an identifier in the current scope, find the corresponding item. */
+  protected FIND_ITEM(
+    children: IdentifierCstChildren,
+  ): { item: ReferenceableType; range: Range } | undefined {
+    const identifier = identifierFrom(children);
+    if (!identifier) {
+      return;
+    }
+    const scope = this.PROCESSOR.fullScope;
+    let item: ReferenceableType | undefined;
+    const range = this.PROCESSOR.range(identifier.token);
+    switch (identifier.type) {
+      case 'Global':
+        // Global is a special case, it's a keyword and also
+        // a globalvar.
+        item = scope.global;
+        break;
+      case 'Self':
+        // Then we're reference our current self context
+        item = scope.self;
+        break;
+      case 'Identifier':
+        const { name } = identifier;
+        // Is it local?
+        const local = scope.local.getMember(name);
+        if (local) {
+          item = local;
+          break;
+        }
+        // Is it a non-global selfvar?
+        const selfvar = !scope.selfIsGlobal && scope.self.getMember(name);
+        if (selfvar) {
+          item = selfvar;
+          break;
+        }
+        // Is it a global?
+        const globalvar = this.PROCESSOR.project.getGlobal(name);
+        if (globalvar) {
+          item = globalvar.symbol;
+          break;
+        }
+        // TODO: Emit error?
+        else {
+        }
+        break;
+      default:
+        // TODO: Handle `other` and `all` keywords
+        break;
+    }
+    if (item) {
+      return {
+        item,
+        range,
+      };
+    }
+    return;
+  }
+
+  override withStatement(children: WithStatementCstChildren) {
+    // With statements change the self scope to
+    // whatever their expression evaluates to.
+    // For now, just create a new self scope
+    // TODO: Figure out the actual self scope
+    this.visit(children.expression);
+    const blockLocation = children.blockableStatement[0].location!;
+    this.PROCESSOR.scope.setEnd(children.expression[0].location!, true);
+    this.PROCESSOR.pushSelfScope(
+      blockLocation,
+      this.PROCESSOR.createStruct(blockLocation),
+      false,
+    );
+
+    this.visit(children.blockableStatement);
+
+    this.PROCESSOR.scope.setEnd(blockLocation, true);
+    this.PROCESSOR.popSelfScope(blockLocation, true);
+  }
+
+  override functionExpression(children: FunctionExpressionCstChildren) {
+    // Get this identifier if we already have it.
+    const identifier = this.identifier(children);
+
+    // Compute useful properties of this function to help figure out
+    // how to define its symbol, type, scope, etc.
+    let functionName: string | undefined = children.Identifier?.[0]?.image;
+    const isConstructor = !!children.constructorSuffix;
+    const functionTypeName = isConstructor ? 'Constructor' : 'Function';
+    const bodyLocation = children.blockStatement[0].location!;
+
+    // If this is global we should already have a symbol for it.
+    // If not, we should create a new symbol.
+    const anonymousName = `anonymous_function_${randomString(8, 'base64')}`;
+    const item = (identifier ||
+      new Symbol(
+        functionName || anonymousName,
+        this.PROCESSOR.project
+          .createType(functionTypeName)
+          .named(functionName || anonymousName),
+      )) as Symbol | TypeMember;
+    // Might have been anonymous, so get the random name
+    functionName = item.name;
+
+    // Make sure we have a proper type
+    if (item.type.kind === 'Unknown') {
+      item.type.kind = functionTypeName;
+    }
+    const functionType = item.type;
+    ok(functionType.isFunction, 'Expected function type');
+
+    // Ensure that constructors have an attached constructed type
+    if (isConstructor && !functionType.constructs) {
+      functionType.constructs =
+        this.PROCESSOR.createStruct(bodyLocation).named(functionName);
+    }
+
+    // Identify the "self" struct. If this is a constructor, "self" is the
+    // constructed type. Otherwise, for now just create a new struct type
+    // for the self scope.
+    // TODO: Figure out the actual self scope (e.g. from JSDocs or type inference)
+    const self = (
+      isConstructor ? functionType.constructs : this.PROCESSOR.currentSelf
+    )!;
+
+    // Functions have their own localscope as well as their self scope,
+    // so we need to push both.
+    const startParen = fixITokenLocation(
+      children.functionParameters[0].children.StartParen[0],
+    );
+    this.PROCESSOR.scope.setEnd(startParen);
+    this.PROCESSOR.pushScope(startParen, self, true);
+    const functionLocalScope = this.PROCESSOR.currentLocalScope;
+
+    // TODO: Handle constructor extensions. The `constructs` type should
+    // be based off of the parent.
+
+    // Add function signature components. We may be *updating*, e.g.
+    // if this was a global function and we're recomputing. So update
+    // instead of just adding or even clearing-then-adding.
+    const params =
+      children.functionParameters?.[0]?.children.functionParameter || [];
+    for (let i = 0; i < params.length; i++) {
+      const param = params[i].children.Identifier[0];
+      const range = this.PROCESSOR.range(param);
+      // TODO: Use JSDocs to determine the type of the parameter
+      const paramType = this.PROCESSOR.project
+        .createType('Unknown')
+        .definedAt(range);
+      const optional = !!params[i].children.Assign;
+      functionType
+        .addParameter(i, param.image, paramType, optional)
+        .definedAt(range);
+
+      // Also add to the function's local scope.
+      const member = functionLocalScope
+        .addMember(param.image, paramType)
+        .definedAt(range)
+        .addRef(range);
+      member.local = true;
+      member.parameter = true;
+    }
+    // TODO: Remove any excess parameters, e.g. if we're updating a
+    // prior definition. This is tricky since we may need to do something
+    // about references to legacy params.
+
+    // TODO: Add this function to the scope in which it was defined.
+    // This is tricky because we need to know if it is being assigned to something, e.g. a var, static, etc, so that we can add it to the correct scope with the correct name.
+
+    // Process the function body
+    this.visit(children.blockStatement);
+
+    // End the scope
+    const endBrace = fixITokenLocation(
+      children.blockStatement[0].children.EndBrace[0],
+    );
+    this.PROCESSOR.scope.setEnd(endBrace);
+    this.PROCESSOR.popScope(endBrace, true);
+  }
+
+  /** Called on *naked* identifiers and those that have accessors/suffixes of various sorts. */
+  override identifierAccessor(children: IdentifierAccessorCstChildren) {
+    let currentItem = this.identifier(children.identifier[0].children);
+    if (!currentItem) {
+      return;
+    }
+    let currentLocation = children.identifier[0].location!;
+    const suffixes = sortedAccessorSuffixes(children.accessorSuffixes);
+    if (!suffixes.length) {
+      return;
+    }
+
+    // TODO: Rework to overwrite the found identifier with each subsequent suffix.
+
+    suffixLoop: for (const suffix of suffixes) {
+      const currentType = currentItem ? getType(currentItem) : null;
+      switch (suffix.name) {
+        case 'dotAccessSuffix':
+          // Then we need to change self-scope to be inside
+          // the prior struct.
+          const dotAccessor = suffix.children;
+          const dot = fixITokenLocation(dotAccessor.Dot[0]);
+          if (typeIs(currentType, 'Struct') || typeIs(currentType, 'Enum')) {
+            this.PROCESSOR.scope.setEnd(dot);
+            this.PROCESSOR.pushSelfScope(dot, currentType, true, {
+              accessorScope: true,
+            });
+            // While editing a user will dot into something
+            // prior to actually adding the new identifier.
+            // To provide autocomplete options, we need to
+            // still add a scopeRange for the dot.
+            if (isEmpty(dotAccessor.identifier[0].children)) {
+              this.PROCESSOR.scope.setEnd(dot, true);
+              this.PROCESSOR.popSelfScope(dot, true);
+            } else {
+              currentItem = this.identifier(dotAccessor.identifier[0].children);
+              currentLocation = dotAccessor.identifier[0].location!;
+              this.PROCESSOR.scope.setEnd(currentLocation, true);
+              this.PROCESSOR.popSelfScope(currentLocation, true);
+            }
+          } else {
+            this.PROCESSOR.addDiagnostic(
+              currentLocation,
+              `Type ${currentType?.toFeatherString()} is not a struct`,
+            );
+            continue suffixLoop;
+          }
+          break;
+        case 'functionArguments':
+          // Create the argumentRanges between the parense and each comma
+          const argsAndSeps = sortedFunctionCallParts(suffix);
+          let argIdx = 0;
+          let lastDelimiter: IToken;
+          argLoop: for (let i = 0; i < argsAndSeps.length; i++) {
+            const token = argsAndSeps[i];
+            const isSep = 'image' in token;
+            if (isSep) {
+              fixITokenLocation(token);
+              if (token.image === '(') {
+                lastDelimiter = token;
+                continue argLoop;
+              }
+
+              // Otherwise create the range
+              // For some reason the end position is the same
+              // as the start position for the commas and parens
+              // Start on the RIGHT side of the first delimiter
+              const start = Position.fromCstEnd(
+                this.PROCESSOR.file,
+                lastDelimiter!,
+              );
+              // end on the LEFT side of the second delimiter
+              const end = Position.fromCstStart(this.PROCESSOR.file, token);
+              const funcRange = new FunctionArgRange(
+                currentType as Type<'Function'>,
+                argIdx,
+                start,
+                end,
+              );
+              this.PROCESSOR.file.addFunctionArgRange(funcRange);
+
+              // Increment the argument idx for the next one
+              lastDelimiter = token;
+              argIdx++;
+            } else {
+              this.visit(token);
+            }
+          }
+          // Set the current item to the return type,
+          // so that we can chain suffixes.
+          currentItem = currentType?.returns;
+          break;
+        default:
+          this.visit(suffix);
+      }
+    }
+  }
+
+  // override expression(children: ExpressionCstChildren) {
+  //   const lhs = children.primaryExpression;
+  //   this.visit(lhs);
+  //   if (children.variableAssignment) {
+  //     const accessor = lhs[0].children.identifierAccessor?.[0].children;
+  //     if (accessor && !accessor.accessorSuffixes) {
+  //       // Try to figure out what the right side's type is
+  //       const rhs =
+  //         children.variableAssignment?.[0].children.assignmentRightHandSide[0]
+  //           .children;
+  //       if (rhs) {
+  //         // Then this variable is being assigned and therefore exists.
+  //         // TODO: Add it to the self scope!
+  //         const type = this.COMPUTE_TYPE(rhs);
+  //         if (type.kind !== 'Unknown') {
+  //           // Then we can try to do a simple assignment check
+  //           const item = this.FIND_ITEM(accessor.identifier[0].children)?.item;
+  //           if (item) {
+  //             const itemType = 'type' in item ? item.type : item;
+  //             if (itemType.kind === 'Unknown') {
+  //               itemType.kind = type.kind;
+  //             }
+  //           }
+  //         }
+  //       }
+  //     } else {
+  //       this.visit(children.variableAssignment);
+  //     }
+  //   } else if (children.binaryExpression) {
+  //     this.visit(children.binaryExpression);
+  //   } else if (children.ternaryExpression) {
+  //     this.visit(children.ternaryExpression);
+  //   }
+  // }
+
+  /** Static params are unambiguously defined. */
+  override staticVarDeclarations(children: StaticVarDeclarationsCstChildren) {
+    // Add to the self scope.
+    const self = this.PROCESSOR.currentSelf;
+    const range = this.PROCESSOR.range(children.Identifier[0]);
+    const member = self
+      .addMember(
+        children.Identifier[0].image,
+        this.PROCESSOR.project.createType('Unknown').definedAt(range),
+      )
+      .definedAt(range);
+    member.addRef(range);
+    member.static = true;
+    member.instance = true;
+    // Ensur we have a reference to the definition
+    this.identifier(children);
+    this.visit(children.assignmentRightHandSide);
+  }
+
+  override localVarDeclaration(children: LocalVarDeclarationCstChildren) {
+    const local = this.PROCESSOR.currentLocalScope;
+    const range = this.PROCESSOR.range(children.Identifier[0]);
+    const member = local
+      .addMember(
+        children.Identifier[0].image,
+        this.PROCESSOR.project.createType('Unknown').definedAt(range),
+      )
+      .definedAt(range);
+    member.local = true;
+    member.addRef(range);
+    // Ensure we have a reference to the definition
+    this.identifier(children);
+    if (children.assignmentRightHandSide) {
+      this.visit(children.assignmentRightHandSide);
+    }
+  }
+
+  override variableAssignment(children: VariableAssignmentCstChildren) {
+    // See if this identifier is known.
+    const item = this.identifier(children);
+    const range = this.PROCESSOR.range(children.Identifier[0]);
+    if (!item) {
+      // Create a new member on the self scope, unless it's global
+      const fullScope = this.PROCESSOR.fullScope;
+      if (fullScope.self !== fullScope.global) {
+        // Then we can add a new member
+        const member = fullScope.self
+          .addMember(
+            children.Identifier[0].image,
+            this.PROCESSOR.project.createType('Unknown').definedAt(range),
+          )
+          .definedAt(range);
+        member.addRef(range);
+        member.instance = true;
+      } else {
+        // TODO: Add a diagnostic
+      }
+    } else {
+      item.addRef(range);
+    }
+
+    this.visit(children.assignmentRightHandSide);
+  }
+
+  /**
+   * Fallback identifier handler. Figure out what a given
+   * identifier is referencing, and create appropriate references
+   * to make that work.*/
+  override identifier(
+    children: IdentifierCstChildren,
+  ): ReferenceableType | undefined {
+    const item = this.FIND_ITEM(children);
+    if (item) {
+      item.item.addRef(item.range);
+      return item.item;
+    }
+    return;
+  }
+}

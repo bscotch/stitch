@@ -45,16 +45,16 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/pathy": "^2.7.2",
-    "@bscotch/utility": "^6.8.2",
-    "entities": "^4.4.0",
-    "fast-xml-parser": "^4.2.0",
+    "@bscotch/pathy": "^2.7.3",
+    "@bscotch/utility": "^6.8.3",
+    "entities": "^4.5.0",
+    "fast-xml-parser": "^4.2.2",
     "node-fetch": "^3.3.1",
     "tslib": "^2.5.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.4",
+    "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
     "@types/rimraf": "^3",
     "chai": "^4.3.7",

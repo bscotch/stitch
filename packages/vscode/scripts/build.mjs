@@ -4,7 +4,7 @@ import { $ } from 'zx';
 // CREATE THE BUNDLE
 
 const builder = esbuild.build({
-  entryPoints: ['./src/extension.js'],
+  entryPoints: ['./src/extension.ts'],
   bundle: true,
   outfile: './dist/extension.js',
   target: 'esnext',

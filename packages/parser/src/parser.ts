@@ -1,365 +1,913 @@
-import { CharacterStream } from './parser.character.js';
-import { Token, TokenStream } from './parser.token.js';
+import { keysOf } from '@bscotch/utility';
+import { ok } from 'assert';
 import {
-  ConstructorDeclaration,
-  EnumDeclaration,
-  EnumEntry,
-  FunctionDeclaration,
-  FunctionParameter,
-  GlobalVarDeclaration,
-  Identifier,
-  MacroDeclaration,
-  Node,
-  SyntaxKind,
-  TokenKind,
-} from './parser.types.js';
+  CstParser,
+  type CstNode,
+  type CstNodeLocation,
+  type ILexingResult,
+  type IToken,
+} from 'chevrotain';
+import type {
+  AccessorSuffixesCstChildren,
+  AccessorSuffixesCstNode,
+  FunctionArgumentCstNode,
+  FunctionArgumentsCstNode,
+  GmlVisitor,
+  IdentifierCstChildren,
+  IdentifierCstNode,
+  JsdocTypeUnionCstNode,
+} from '../gml-cst.js';
+import { GmlLexer } from './lexer.js';
+import type { GmlParseError } from './project.diagnostics.js';
+import { c, categories, t, tokens } from './tokens.js';
+import { normalizeTypeString } from './util.js';
 
-/**
- * A basic parser for GML scripts and objects, with
- * a focus on global functions, macros, and variables.
- */
-export class Parser {
-  readonly input: TokenStream;
-  readonly functions: Map<
-    string,
-    FunctionDeclaration | ConstructorDeclaration
-  > = new Map();
-  readonly macros: Map<string, MacroDeclaration> = new Map();
-  readonly identifiers: Map<string, Identifier[]> = new Map();
-  readonly enums: Map<string, EnumDeclaration> = new Map();
-  readonly globalvars: Map<string, GlobalVarDeclaration> = new Map();
+export interface GmlParsed {
+  lexed: ILexingResult;
+  cst: CstNode;
+  errors: GmlParseError[];
+}
 
-  constructor(
-    protected code: string,
-    readonly options?: { filePath?: string },
-  ) {
-    this.input = new TokenStream(new CharacterStream(code));
+export type IdentifierSource =
+  | IdentifierCstChildren
+  | IdentifierCstNode
+  | IdentifierCstNode[]
+  | { identifier: IdentifierCstNode[] }
+  | { children: { identifier: IdentifierCstNode[] } };
+
+type AccessorSuffixName = keyof AccessorSuffixesCstChildren;
+export type SortedAccessorSuffix<
+  T extends AccessorSuffixName = AccessorSuffixName,
+> = Required<AccessorSuffixesCstChildren>[T][0];
+
+export function isEmpty(obj: {}) {
+  return Object.keys(obj).length === 0;
+}
+
+export function sortedFunctionCallParts(
+  node: FunctionArgumentsCstNode,
+): (IToken | FunctionArgumentCstNode)[] {
+  return [
+    node.children.StartParen[0],
+    ...(node.children.functionArgument || []),
+    ...(node.children.Comma || []),
+    node.children.EndParen[0],
+  ].sort((a, b) => {
+    const aLocation = ('location' in a ? a.location! : a) as CstNodeLocation;
+    const bLocation = ('location' in b ? b.location! : b) as CstNodeLocation;
+    return aLocation.startOffset - bLocation.startOffset;
+  });
+}
+
+export function sortedAccessorSuffixes(
+  suffixNodes: AccessorSuffixesCstNode[] | undefined,
+): SortedAccessorSuffix[] {
+  // Convert into a flat array of suffixes, sorted by their position in the source code.
+  const sorted: SortedAccessorSuffix[] = [];
+  if (!suffixNodes) {
+    return sorted;
   }
-
-  get end() {
-    return this.code.length;
+  for (const node of suffixNodes) {
+    const { children } = node;
+    const suffixKinds = keysOf(children);
+    for (const kind of suffixKinds) {
+      ok(children[kind]!.length === 1);
+      sorted.push(children[kind]![0]);
+    }
   }
+  sorted.sort((a, b) => a.location!.startOffset - b.location!.startOffset);
+  return sorted;
+}
 
-  parse(): void {
-    const token = this.input.peek();
-    if (!token) {
-      return;
+export function identifierFrom(nodes: IdentifierSource):
+  | {
+      token: IToken;
+      type: keyof IdentifierCstChildren;
+      name: string;
     }
-    // Short-circuit eval
-    const next =
-      this.parseFunction() ||
-      this.parseMacro() ||
-      this.parseEnum() ||
-      this.parseGlobalVarDefinition() ||
-      this.parseIdentifier();
-    if (!next) {
-      if (
-        [
-          TokenKind.LeftBrace,
-          TokenKind.LeftBracket,
-          TokenKind.LeftParen,
-        ].includes(token.type)
-      ) {
-        this.skipStatement();
-      } else {
-        this.input.next();
-      }
-    }
-
-    return this.parse();
+  | undefined {
+  let node: IdentifierCstNode;
+  if (Array.isArray(nodes)) {
+    node = nodes[0];
+  } else if ('children' in nodes && 'identifier' in nodes.children) {
+    node = nodes.children.identifier[0];
+  } else if ('identifier' in nodes) {
+    node = nodes.identifier[0];
+  } else {
+    node = nodes as IdentifierCstNode;
   }
+  const children = 'children' in node ? node.children : node;
 
-  protected parseGlobalVarDefinition(): GlobalVarDeclaration | null {
-    if (!this.skipNextIfIs(TokenKind.Keyword, 'globalvar')) {
-      return null;
-    }
-    this.assertNextIs(TokenKind.Identifier);
-    const nameToken = this.input.next()!;
-    const declaration: GlobalVarDeclaration = createNode(
-      SyntaxKind.GlobalVarDeclaration,
-      nameToken,
-    );
-    this.globalvars.set(declaration.name, declaration);
-    while (this.nextIs(TokenKind.Comma) && this.input.next()) {
-      const anotherGlobal = this.input.next();
-      if (!anotherGlobal) {
-        break;
-      }
-      const anotherDeclaration: GlobalVarDeclaration = createNode(
-        SyntaxKind.GlobalVarDeclaration,
-        anotherGlobal,
-      );
-      this.globalvars.set(anotherDeclaration.name, anotherDeclaration);
-    }
-    return declaration;
+  const type = keysOf(children)[0];
+  if (!type) {
+    return;
   }
-
-  protected parseIdentifier(): Identifier | null {
-    if (!this.nextIs(TokenKind.Identifier)) {
-      return null;
-    }
-    const idToken = this.input.next()!;
-    const identifier = createNode<Identifier>(SyntaxKind.Identifier, idToken);
-    this.identifiers.set(
-      identifier.name,
-      this.identifiers.get(identifier.name) || [],
-    );
-    this.identifiers.get(identifier.name)!.push(identifier);
-    return identifier;
+  if (!children[type]) {
+    console.log('WYUT');
   }
+  const token = children[type]![0];
+  return { token, type, name: token.image };
+}
 
-  protected parseEnum(): EnumDeclaration | null {
-    if (!this.nextIs(TokenKind.Keyword, 'enum')) {
-      return null;
-    }
-    // consume the 'enum' keyword
-    this.skipNext();
-    this.assertNextIs(TokenKind.Identifier);
-    const nameToken = this.input.next()!;
-    this.assertNextIs(TokenKind.LeftBrace).skipNext();
-    const values: Map<string, EnumEntry> = new Map();
-    while (true) {
-      if (
-        this.skipNextIfIs(TokenKind.RightBrace) ||
-        !this.nextIs(TokenKind.Identifier)
-      ) {
-        break;
-      }
-      const entryToken = this.input.next()!;
-      values.set(
-        entryToken.value,
-        createNode(SyntaxKind.EnumEntry, entryToken),
-      );
-      if (this.skipNextIfIs(TokenKind.Equals)) {
-        // Consume the value it's set to
-        this.skipStatement();
-      }
-      this.skipNextIfIs(TokenKind.Comma);
-    }
-    const enumDeclaration: EnumDeclaration = {
-      ...createNode(SyntaxKind.EnumDeclaration, nameToken),
-      info: values,
+export class GmlParser extends CstParser {
+  /** Parse GML Code, e.g. from a file. */
+  parse(code: string): GmlParsed {
+    const lexed = this.lexer.tokenize(code);
+    this.input = lexed.tokens;
+    const cst = this.file();
+    return {
+      lexed,
+      cst,
+      errors: this.errors,
     };
-    this.enums.set(enumDeclaration.name, enumDeclaration);
-    return enumDeclaration;
   }
 
-  protected parseMacro(): MacroDeclaration | null {
-    if (!this.skipNextIfIs(TokenKind.Keyword, '#macro')) {
-      return null;
-    }
-    this.assertNextIs(TokenKind.Identifier);
-    const nameToken = this.input.next()!;
-    // Value can span multiple lines, if the line ends with a `\`
-    let lastMacroLine = nameToken.location.line;
-    const macroValueTokens: Token[] = [];
-    while (true) {
-      const peek = this.input.peek();
-      if (!peek || peek.location.line > lastMacroLine) {
-        break;
-      }
-      macroValueTokens.push(this.input.next()!);
-      if (peek.type === TokenKind.Punctuation && peek.value === '\\') {
-        lastMacroLine++;
-      }
-    }
-
-    const macro: MacroDeclaration = {
-      ...createNode(SyntaxKind.MacroDeclaration, nameToken),
-      info: macroValueTokens.map((t) => t.value).join(' '),
-    };
-    this.macros.set(macro.name, macro);
-    return macro;
+  /** Parse a Feather Typestring. */
+  parseTypeString(typeString: string) {
+    typeString = normalizeTypeString(typeString);
+    const lexed = this.lexer.tokenize(typeString, 'jsdocGml');
+    this.input = lexed.tokens;
+    const cst = this.jsdocTypeUnion() as JsdocTypeUnionCstNode;
+    return {
+      lexed,
+      cst,
+      errors: this.errors,
+    } satisfies GmlParsed;
   }
 
-  protected parseFunction(
-    ignore = false,
-  ): FunctionDeclaration | ConstructorDeclaration | null {
-    if (!this.skipNextIfIs(TokenKind.Keyword, 'function')) {
-      return null;
-    }
-    const params: FunctionParameter[] = [];
-    const func = createNode<FunctionDeclaration | ConstructorDeclaration>(
-      SyntaxKind.FunctionDeclaration,
-      this.input.peek()!,
-      params,
+  readonly lexer = GmlLexer;
+
+  readonly file = this.RULE('file', () => {
+    this.SUBRULE(this.statements);
+  });
+
+  optionallyConsumeSemicolon() {
+    this.OPTION9(() => this.CONSUME(t.Semicolon));
+  }
+
+  readonly statements = this.RULE('statements', () => {
+    this.MANY(() => this.SUBRULE(this.statement));
+  });
+
+  readonly statement = this.RULE('statement', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.functionStatement) },
+      { ALT: () => this.SUBRULE(this.localVarDeclarationsStatement) },
+      { ALT: () => this.SUBRULE(this.globalVarDeclarationsStatement) },
+      { ALT: () => this.SUBRULE(this.staticVarDeclarationStatement) },
+      { ALT: () => this.SUBRULE(this.variableAssignmentStatement) },
+      { ALT: () => this.SUBRULE(this.ifStatement) },
+      { ALT: () => this.SUBRULE(this.tryStatement) },
+      { ALT: () => this.SUBRULE(this.whileStatement) },
+      { ALT: () => this.SUBRULE(this.forStatement) },
+      { ALT: () => this.SUBRULE(this.doUntilStatement) },
+      { ALT: () => this.SUBRULE(this.switchStatement) },
+      { ALT: () => this.SUBRULE(this.breakStatement) },
+      { ALT: () => this.SUBRULE(this.continueStatement) },
+      { ALT: () => this.SUBRULE(this.returnStatement) },
+      { ALT: () => this.SUBRULE(this.exitStatement) },
+      { ALT: () => this.SUBRULE(this.withStatement) },
+      { ALT: () => this.SUBRULE(this.enumStatement) },
+      { ALT: () => this.SUBRULE(this.macroStatement) },
+      { ALT: () => this.SUBRULE(this.emptyStatement) },
+      { ALT: () => this.SUBRULE(this.repeatStatement) },
+      { ALT: () => this.SUBRULE(this.expressionStatement) },
+      { ALT: () => this.SUBRULE(this.jsdoc) },
+    ]);
+  });
+
+  readonly jsdoc = this.RULE('jsdoc', () => {
+    this.OR2([
+      { ALT: () => this.SUBRULE(this.jsdocGml) },
+      { ALT: () => this.SUBRULE(this.jsdocJs) },
+    ]);
+  });
+
+  readonly jsdocGml = this.RULE('jsdocGml', () => {
+    this.AT_LEAST_ONE(() => {
+      this.CONSUME(t.JsdocGmlStart);
+      this.SUBRULE(this.jsdocLine);
+      this.CONSUME(t.JsdocGmlLineEnd);
+    });
+  });
+
+  readonly jsdocJs = this.RULE('jsdocJs', () => {
+    this.CONSUME(t.JsdocJsStart);
+    this.MANY(() => {
+      this.SUBRULE(this.jsdocLine);
+      this.OPTION(() => this.CONSUME(t.JsdocJsLineStart));
+    });
+    this.CONSUME(t.JsdocJsEnd);
+  });
+
+  readonly jsdocType = this.RULE('jsdocType', () => {
+    this.CONSUME(t.JsdocIdentifier);
+    this.OPTION(() => {
+      this.CONSUME(t.JsdocStartAngleBracket);
+      this.SUBRULE(this.jsdocTypeUnion);
+      this.CONSUME(t.JsdocEndAngleBracket);
+    });
+  });
+
+  readonly jsdocTypeUnion = this.RULE('jsdocTypeUnion', () => {
+    this.SUBRULE1(this.jsdocType);
+    this.MANY(() => {
+      this.CONSUME(t.JsdocPipe);
+      this.SUBRULE2(this.jsdocType);
+    });
+  });
+
+  readonly jsdocTypeGroup = this.RULE('jsdocTypeGroup', () => {
+    this.CONSUME(t.JsdocStartBrace);
+    this.SUBRULE1(this.jsdocTypeUnion);
+    this.CONSUME(t.JsdocEndBrace);
+  });
+
+  /** Unstructured content following a structured tag */
+  readonly jsdocUnstructuredContent = this.RULE(
+    'jsdocUnstructuredContent',
+    () => {
+      this.MANY(() =>
+        this.OR([
+          { ALT: () => this.CONSUME(c.Jsdoc) },
+          { ALT: () => this.CONSUME(c.Literal) },
+          { ALT: () => this.CONSUME(c.JsdocTag) },
+        ]),
+      );
+    },
+  );
+
+  readonly jsdocParamTag = this.RULE('jsdocParamTag', () => {
+    this.CONSUME(t.JsdocParamTag);
+    // Optional type info
+    this.OPTION1(() => {
+      this.SUBRULE1(this.jsdocTypeGroup);
+    });
+    // Required name
+    this.OR1([
+      { ALT: () => this.CONSUME1(t.JsdocIdentifier) },
+      {
+        ALT: () => {
+          this.CONSUME(t.JsdocStartSquareBracket);
+          this.OR2([
+            { ALT: () => this.SUBRULE2(this.jsdocRemainingParams) },
+            {
+              ALT: () => {
+                this.CONSUME2(t.JsdocIdentifier);
+                this.OPTION2(() => {
+                  this.CONSUME(t.JsdocEquals);
+                  this.OR3([
+                    { ALT: () => this.CONSUME(c.Literal) },
+                    { ALT: () => this.CONSUME3(t.JsdocIdentifier) },
+                  ]);
+                });
+              },
+            },
+          ]);
+          this.CONSUME(t.JsdocEndSquareBracket);
+        },
+      },
+    ]);
+  });
+
+  readonly jsdocReturnTag = this.RULE('jsdocReturnTag', () => {
+    this.CONSUME(t.JsdocReturnTag);
+    this.OPTION(() => this.SUBRULE(this.jsdocTypeGroup));
+  });
+
+  readonly jsdocSelfTag = this.RULE('jsdocSelfTag', () => {
+    this.CONSUME(t.JsdocSelfTag);
+    this.CONSUME(t.JsdocIdentifier);
+  });
+
+  readonly jsdocDescriptionTag = this.RULE('jsdocDescriptionTag', () => {
+    this.CONSUME(t.JsdocDescriptionTag);
+  });
+
+  readonly jsdocFunctionTag = this.RULE('jsdocFunctionTag', () => {
+    this.CONSUME(t.JsdocFunctionTag);
+  });
+
+  readonly jsdocPureTag = this.RULE('jsdocPureTag', () => {
+    this.CONSUME(t.JsdocPureTag);
+  });
+
+  readonly jsdocIgnoreTag = this.RULE('jsdocIgnoreTag', () => {
+    this.CONSUME(t.JsdocIgnoreTag);
+  });
+
+  readonly jsdocDeprecatedTag = this.RULE('jsdocDeprecatedTag', () => {
+    this.CONSUME(t.JsdocDeprecatedTag);
+  });
+
+  readonly jsdocUnknownTag = this.RULE('jsdocUnknownTag', () => {
+    this.CONSUME(t.JsdocUnknownTag);
+  });
+
+  readonly jsdocRemainingParams = this.RULE('jsdocRemainingParams', () => {
+    this.CONSUME1(t.JsdocDot);
+    this.CONSUME2(t.JsdocDot);
+    this.CONSUME3(t.JsdocDot);
+  });
+
+  readonly jsdocTag = this.RULE('jsdocTag', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.jsdocParamTag) },
+      { ALT: () => this.SUBRULE(this.jsdocReturnTag) },
+      { ALT: () => this.SUBRULE(this.jsdocSelfTag) },
+      { ALT: () => this.SUBRULE(this.jsdocDescriptionTag) },
+      { ALT: () => this.SUBRULE(this.jsdocFunctionTag) },
+      { ALT: () => this.SUBRULE(this.jsdocPureTag) },
+      { ALT: () => this.SUBRULE(this.jsdocIgnoreTag) },
+      { ALT: () => this.SUBRULE(this.jsdocDeprecatedTag) },
+      { ALT: () => this.SUBRULE(this.jsdocUnknownTag) },
+    ]);
+  });
+
+  readonly jsdocLine = this.RULE('jsdocLine', () => {
+    this.OPTION(() => this.SUBRULE(this.jsdocTag));
+    this.SUBRULE(this.jsdocUnstructuredContent);
+  });
+
+  readonly stringLiteral = this.RULE('stringLiteral', () => {
+    this.CONSUME(t.StringStart);
+    this.MANY(() => {
+      this.CONSUME(c.Substring);
+    });
+    this.CONSUME(t.StringEnd);
+  });
+
+  readonly multilineDoubleStringLiteral = this.RULE(
+    'multilineDoubleStringLiteral',
+    () => {
+      this.CONSUME(t.MultilineDoubleStringStart);
+      this.MANY(() => {
+        this.CONSUME(c.Substring);
+      });
+      this.CONSUME(t.MultilineDoubleStringEnd);
+    },
+  );
+
+  readonly multilineSingleStringLiteral = this.RULE(
+    'multilineSingleStringLiteral',
+    () => {
+      this.CONSUME(t.MultilineSingleStringStart);
+      this.MANY(() => {
+        this.CONSUME(c.Substring);
+      });
+      this.CONSUME(t.MultilineSingleStringEnd);
+    },
+  );
+
+  readonly templateLiteral = this.RULE('templateLiteral', () => {
+    this.CONSUME(t.TemplateStart);
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(c.Substring) },
+        {
+          ALT: () => {
+            this.CONSUME(t.TemplateInterpStart);
+            this.SUBRULE(this.expression);
+            this.CONSUME(t.EndBrace);
+          },
+        },
+      ]);
+    });
+    this.CONSUME(t.TemplateStringEnd);
+  });
+
+  readonly repeatStatement = this.RULE('repeatStatement', () => {
+    this.CONSUME(t.Repeat);
+    this.SUBRULE(this.expression);
+    this.SUBRULE(this.blockableStatement);
+  });
+
+  readonly returnStatement = this.RULE('returnStatement', () => {
+    this.CONSUME(t.Return);
+    this.OPTION1(() => this.SUBRULE(this.assignmentRightHandSide));
+    this.OPTION2(() => this.CONSUME(t.Semicolon));
+  });
+
+  readonly ifStatement = this.RULE('ifStatement', () => {
+    this.CONSUME(t.If);
+    this.SUBRULE(this.expression);
+    this.SUBRULE(this.blockableStatement);
+    this.MANY(() => this.SUBRULE2(this.elseIfStatement));
+    this.OPTION(() => {
+      this.SUBRULE(this.elseStatement);
+    });
+  });
+
+  readonly elseIfStatement = this.RULE('elseIfStatement', () => {
+    this.CONSUME(t.Else);
+    this.CONSUME(t.If);
+    this.SUBRULE(this.expression);
+    this.SUBRULE(this.blockableStatement);
+  });
+
+  readonly elseStatement = this.RULE('elseStatement', () => {
+    this.CONSUME(t.Else);
+    this.SUBRULE2(this.blockableStatement);
+  });
+
+  readonly blockableStatement = this.RULE('blockableStatement', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.statement) },
+      { ALT: () => this.SUBRULE(this.blockStatement) },
+    ]);
+  });
+
+  readonly blockStatement = this.RULE('blockStatement', () => {
+    this.CONSUME(t.StartBrace);
+    this.MANY(() => this.SUBRULE(this.statement));
+    this.CONSUME(t.EndBrace);
+  });
+
+  readonly expressionStatement = this.RULE('expressionStatement', () => {
+    this.SUBRULE(this.expression);
+    this.optionallyConsumeSemicolon();
+  });
+
+  readonly expression = this.RULE('expression', () => {
+    this.SUBRULE(this.primaryExpression);
+    this.OPTION(() => {
+      this.OR([
+        { ALT: () => this.SUBRULE(this.assignment) },
+        {
+          ALT: () =>
+            this.AT_LEAST_ONE(() => this.SUBRULE2(this.binaryExpression)),
+        },
+        { ALT: () => this.SUBRULE(this.ternaryExpression) },
+      ]);
+    });
+  });
+
+  readonly binaryExpression = this.RULE('binaryExpression', () => {
+    this.CONSUME(c.BinaryOperator);
+    this.SUBRULE(this.assignmentRightHandSide);
+  });
+
+  readonly ternaryExpression = this.RULE('ternaryExpression', () => {
+    this.CONSUME(t.QuestionMark);
+    this.SUBRULE(this.assignmentRightHandSide);
+    this.CONSUME(t.Colon);
+    this.SUBRULE2(this.assignmentRightHandSide);
+  });
+
+  readonly primaryExpression = this.RULE('primaryExpression', () => {
+    this.OPTION1(() => this.CONSUME(c.UnaryPrefixOperator));
+    this.OR1([
+      { ALT: () => this.CONSUME(c.Literal) },
+      { ALT: () => this.SUBRULE(this.stringLiteral) },
+      { ALT: () => this.SUBRULE(this.multilineDoubleStringLiteral) },
+      { ALT: () => this.SUBRULE(this.multilineSingleStringLiteral) },
+      { ALT: () => this.SUBRULE(this.templateLiteral) },
+      { ALT: () => this.SUBRULE(this.identifierAccessor) },
+      { ALT: () => this.SUBRULE(this.parenthesizedExpression) },
+      { ALT: () => this.SUBRULE(this.arrayLiteral) },
+    ]);
+    this.OPTION2(() => this.CONSUME(c.UnarySuffixOperator));
+  });
+
+  readonly identifier = this.RULE('identifier', () => {
+    this.OR([
+      { ALT: () => this.CONSUME(t.Identifier) },
+      { ALT: () => this.CONSUME(t.Self) },
+      { ALT: () => this.CONSUME(t.Other) },
+      { ALT: () => this.CONSUME(t.Global) },
+      { ALT: () => this.CONSUME(t.Noone) },
+      { ALT: () => this.CONSUME(t.All) },
+    ]);
+  });
+
+  readonly identifierAccessor = this.RULE('identifierAccessor', () => {
+    this.SUBRULE(this.identifier);
+    this.MANY(() => {
+      this.SUBRULE(this.accessorSuffixes);
+    });
+  });
+
+  readonly parenthesizedExpression = this.RULE(
+    'parenthesizedExpression',
+    () => {
+      this.CONSUME(t.StartParen);
+      this.SUBRULE(this.expression);
+      this.CONSUME(t.EndParen);
+    },
+  );
+
+  readonly accessorSuffixes = this.RULE('accessorSuffixes', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.arrayAccessSuffix) },
+      { ALT: () => this.SUBRULE(this.structAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.listAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.mapAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.gridAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.arrayMutationAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.dotAccessSuffix) },
+      { ALT: () => this.SUBRULE(this.functionArguments) },
+    ]);
+  });
+
+  readonly dotAccessSuffix = this.RULE('dotAccessSuffix', () => {
+    this.CONSUME(t.Dot);
+    this.SUBRULE(this.identifier);
+  });
+
+  readonly arrayAccessSuffix = this.RULE('arrayAccessSuffix', () => {
+    this.CONSUME(t.StartBracket);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly structAccessorSuffix = this.RULE('structAccessSuffix', () => {
+    this.CONSUME(t.StructAccessorStart);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly listAccessorSuffix = this.RULE('listAccessSuffix', () => {
+    this.CONSUME(t.DsListAccessorStart);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly mapAccessorSuffix = this.RULE('mapAccessSuffix', () => {
+    this.CONSUME(t.DsMapAccessorStart);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly gridAccessorSuffix = this.RULE('gridAccessSuffix', () => {
+    this.CONSUME(t.DsGridAccessorStart);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly arrayMutationAccessorSuffix = this.RULE(
+    'arrayMutationAccessorSuffix',
+    () => {
+      this.CONSUME(t.ArrayMutateAccessorStart);
+      this.SUBRULE(this.expression);
+      this.CONSUME(t.EndBracket);
+    },
+  );
+
+  readonly functionArguments = this.RULE('functionArguments', () => {
+    this.CONSUME(t.StartParen);
+    this.OPTION1(() => {
+      this.SUBRULE(this.functionArgument);
+    });
+    this.MANY(() => {
+      this.CONSUME(t.Comma);
+      this.OPTION2(() => this.SUBRULE2(this.functionArgument));
+    });
+    this.CONSUME(t.EndParen);
+  });
+
+  readonly functionArgument = this.RULE('functionArgument', () => {
+    this.OPTION1(() => {
+      this.SUBRULE(this.jsdoc);
+    });
+    this.SUBRULE(this.assignmentRightHandSide);
+  });
+
+  readonly emptyStatement = this.RULE('emptyStatement', () => {
+    this.CONSUME(t.Semicolon);
+  });
+
+  readonly enumStatement = this.RULE('enumStatement', () => {
+    this.CONSUME(t.Enum);
+    this.CONSUME1(t.Identifier);
+    this.CONSUME(t.StartBrace);
+    this.SUBRULE(this.enumMember);
+    this.MANY(() => {
+      this.CONSUME2(t.Comma);
+      this.SUBRULE2(this.enumMember);
+    });
+    this.OPTION(() => this.CONSUME3(t.Comma));
+    this.CONSUME(t.EndBrace);
+  });
+
+  readonly enumMember = this.RULE('enumMember', () => {
+    this.CONSUME(t.Identifier);
+    this.OPTION(() => {
+      this.CONSUME(t.Assign);
+      this.OPTION2(() => this.CONSUME(t.Minus));
+      this.CONSUME(c.NumericLiteral);
+    });
+  });
+
+  readonly constructorSuffix = this.RULE('constructorSuffix', () => {
+    this.OPTION(() => {
+      this.CONSUME(t.Colon);
+      this.CONSUME(t.Identifier);
+      this.SUBRULE(this.functionArguments);
+    });
+    this.CONSUME(t.Constructor);
+  });
+
+  readonly functionExpression = this.RULE('functionExpression', () => {
+    this.CONSUME(t.Function);
+    this.OPTION1(() => this.CONSUME1(t.Identifier));
+    this.SUBRULE1(this.functionParameters);
+    this.OPTION2(() => {
+      this.SUBRULE2(this.constructorSuffix);
+    });
+    this.SUBRULE(this.blockStatement);
+  });
+
+  readonly functionStatement = this.RULE('functionStatement', () => {
+    this.SUBRULE(this.functionExpression);
+    this.OPTION(() => this.CONSUME(t.Semicolon));
+  });
+
+  readonly functionParameters = this.RULE('functionParameters', () => {
+    this.CONSUME(t.StartParen);
+    this.MANY_SEP({
+      SEP: t.Comma,
+      DEF: () => this.SUBRULE(this.functionParameter),
+    });
+    this.CONSUME(t.EndParen);
+  });
+
+  readonly functionParameter = this.RULE('functionParameter', () => {
+    this.CONSUME(t.Identifier);
+    this.OPTION(() => {
+      this.CONSUME(t.Assign);
+      this.SUBRULE(this.assignmentRightHandSide);
+    });
+  });
+
+  readonly macroStatement = this.RULE('macroStatement', () => {
+    this.CONSUME(t.Macro);
+    this.CONSUME(t.Identifier);
+    this.OPTION(() => {
+      this.CONSUME(t.Escape);
+    });
+    this.SUBRULE(this.assignmentRightHandSide);
+    this.MANY(() => {
+      this.CONSUME2(t.Escape);
+      this.SUBRULE2(this.assignmentRightHandSide);
+    });
+  });
+
+  readonly forStatement = this.RULE('forStatement', () => {
+    this.CONSUME(t.For);
+    this.CONSUME(t.StartParen);
+    this.OPTION1(() =>
+      this.OR([
+        { ALT: () => this.SUBRULE(this.localVarDeclarations) },
+        { ALT: () => this.SUBRULE(this.expression) },
+      ]),
     );
-    func.name = null; // Default to for anonymous functions
-    if (this.nextIs(TokenKind.Identifier)) {
-      const nameToken = this.input.next()!;
-      func.name = nameToken.value;
-    }
-    this.assertNextIs(TokenKind.LeftParen).skipNext();
-    let param = this.nextParam();
-    while (param) {
-      params.push(param);
-      param = this.nextParam();
-    }
-    this.assertNextIs(TokenKind.RightParen).skipNext();
-    if (this.skipNextIfIs(TokenKind.Punctuation, ':')) {
-      // Then we're extending another constructor
-      func.kind = SyntaxKind.ConstructorDeclaration;
-      this.skipStatement();
-    } else if (this.skipNextIfIs(TokenKind.Keyword, 'constructor')) {
-      func.kind = SyntaxKind.ConstructorDeclaration;
-    }
+    this.CONSUME2(t.Semicolon);
+    this.OPTION2(() => this.SUBRULE2(this.expression));
+    this.CONSUME3(t.Semicolon);
+    this.OPTION3(() => this.SUBRULE3(this.expression));
+    this.CONSUME(t.EndParen);
+    this.SUBRULE(this.blockableStatement);
+  });
 
-    // Skip the body for now
-    this.skipStatement();
-    if (func.name && !ignore) {
-      this.functions.set(func.name, func);
-    }
-    return func;
+  readonly globalVarDeclarationsStatement = this.RULE(
+    'globalVarDeclarationsStatement',
+    () => {
+      this.SUBRULE(this.globalVarDeclarations);
+      this.optionallyConsumeSemicolon();
+    },
+  );
+
+  readonly globalVarDeclarations = this.RULE('globalVarDeclarations', () => {
+    this.CONSUME(t.GlobalVar);
+    this.AT_LEAST_ONE_SEP({
+      SEP: t.Comma,
+      DEF: () => {
+        this.SUBRULE(this.globalVarDeclaration);
+      },
+    });
+  });
+
+  readonly globalVarDeclaration = this.RULE('globalVarDeclaration', () => {
+    this.CONSUME(t.Identifier);
+  });
+
+  readonly localVarDeclarationsStatement = this.RULE(
+    'localVarDeclarationsStatement',
+    () => {
+      this.SUBRULE(this.localVarDeclarations);
+      this.optionallyConsumeSemicolon();
+    },
+  );
+
+  readonly localVarDeclarations = this.RULE('localVarDeclarations', () => {
+    this.CONSUME(t.Var);
+    this.AT_LEAST_ONE_SEP({
+      SEP: t.Comma,
+      DEF: () => {
+        this.SUBRULE(this.localVarDeclaration);
+      },
+    });
+  });
+
+  readonly localVarDeclaration = this.RULE('localVarDeclaration', () => {
+    this.CONSUME(t.Identifier);
+    this.OPTION(() => {
+      this.CONSUME(t.Assign);
+      this.SUBRULE(this.assignmentRightHandSide);
+    });
+  });
+
+  readonly staticVarDeclarationStatement = this.RULE(
+    'staticVarDeclarationStatement',
+    () => {
+      this.SUBRULE(this.staticVarDeclaration);
+      this.optionallyConsumeSemicolon();
+    },
+  );
+
+  readonly staticVarDeclaration = this.RULE('staticVarDeclarations', () => {
+    this.CONSUME(t.Static);
+    this.CONSUME(t.Identifier);
+    this.CONSUME(t.Assign);
+    this.SUBRULE(this.assignmentRightHandSide);
+  });
+
+  // For simple variable assignments (no accessors on the LHS)
+  readonly variableAssignmentStatement = this.RULE(
+    'variableAssignmentStatement',
+    () => {
+      this.SUBRULE(this.variableAssignment);
+      this.optionallyConsumeSemicolon();
+    },
+  );
+
+  readonly variableAssignment = this.RULE('variableAssignment', () => {
+    this.CONSUME(t.Identifier);
+    this.CONSUME(t.Assign);
+    this.SUBRULE(this.assignmentRightHandSide);
+  });
+
+  readonly assignment = this.RULE('assignment', () => {
+    this.CONSUME(c.AssignmentOperator);
+    this.SUBRULE(this.assignmentRightHandSide);
+  });
+
+  readonly assignmentRightHandSide = this.RULE(
+    'assignmentRightHandSide',
+    () => {
+      this.OR([
+        { ALT: () => this.SUBRULE(this.expression) },
+        { ALT: () => this.SUBRULE(this.structLiteral) },
+        { ALT: () => this.SUBRULE(this.functionExpression) },
+      ]);
+    },
+  );
+
+  readonly arrayLiteral = this.RULE('arrayLiteral', () => {
+    this.CONSUME(t.StartBracket);
+    this.OPTION(() => {
+      this.SUBRULE(this.assignmentRightHandSide);
+      this.MANY(() => {
+        this.CONSUME1(t.Comma);
+        this.SUBRULE2(this.assignmentRightHandSide);
+      });
+      this.OPTION2(() => this.CONSUME2(t.Comma));
+    });
+    this.CONSUME(t.EndBracket);
+  });
+
+  readonly structLiteral = this.RULE('structLiteral', () => {
+    this.CONSUME(t.StartBrace);
+    this.OPTION1(() => {
+      this.SUBRULE1(this.structLiteralEntry);
+      this.MANY(() => {
+        this.CONSUME1(t.Comma);
+        this.SUBRULE2(this.structLiteralEntry);
+      });
+      this.OPTION2(() => this.CONSUME2(t.Comma));
+    });
+    this.CONSUME(t.EndBrace);
+  });
+
+  readonly structLiteralEntry = this.RULE('structLiteralEntry', () => {
+    this.OR([
+      {
+        ALT: () => {
+          this.OPTION(() => {
+            this.SUBRULE(this.jsdoc);
+          });
+          this.CONSUME(t.Identifier);
+        },
+      },
+      { ALT: () => this.SUBRULE(this.stringLiteral) },
+    ]);
+    this.OPTION1(() => {
+      this.CONSUME(t.Colon);
+      this.SUBRULE(this.assignmentRightHandSide);
+    });
+  });
+
+  readonly whileStatement = this.RULE('whileStatement', () => {
+    this.CONSUME(t.While);
+    this.SUBRULE(this.expression);
+    this.SUBRULE(this.blockableStatement);
+  });
+
+  readonly doUntilStatement = this.RULE('doUntilStatement', () => {
+    this.CONSUME(t.Do);
+    this.SUBRULE(this.blockableStatement);
+    this.CONSUME(t.Until);
+    this.SUBRULE(this.expression);
+  });
+
+  readonly switchStatement = this.RULE('switchStatement', () => {
+    this.CONSUME(t.Switch);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.StartBrace);
+    this.MANY(() => this.SUBRULE(this.caseStatement));
+    this.OPTION(() => this.SUBRULE(this.defaultStatement));
+    this.CONSUME(t.EndBrace);
+  });
+
+  readonly caseStatement = this.RULE('caseStatement', () => {
+    this.CONSUME(t.Case);
+    this.SUBRULE(this.expression);
+    this.CONSUME(t.Colon);
+    this.SUBRULE(this.statements);
+  });
+
+  readonly defaultStatement = this.RULE('defaultStatement', () => {
+    this.CONSUME(t.Default);
+    this.CONSUME(t.Colon);
+    this.SUBRULE(this.statements);
+  });
+
+  readonly breakStatement = this.RULE('breakStatement', () => {
+    this.CONSUME(t.Break);
+    this.optionallyConsumeSemicolon();
+  });
+
+  readonly continueStatement = this.RULE('continueStatement', () => {
+    this.CONSUME(t.Continue);
+    this.optionallyConsumeSemicolon();
+  });
+
+  readonly exitStatement = this.RULE('exitStatement', () => {
+    this.CONSUME(t.Exit);
+    this.optionallyConsumeSemicolon();
+  });
+
+  readonly withStatement = this.RULE('withStatement', () => {
+    this.CONSUME(t.With);
+    this.SUBRULE(this.expression);
+    this.SUBRULE(this.blockableStatement);
+  });
+
+  readonly tryStatement = this.RULE('tryStatement', () => {
+    this.CONSUME(t.Try);
+    this.SUBRULE(this.blockStatement);
+    this.OPTION1(() => {
+      this.CONSUME(t.Catch);
+      this.CONSUME(t.StartParen);
+      this.CONSUME(t.Identifier);
+      this.CONSUME(t.EndParen);
+      this.SUBRULE2(this.blockStatement);
+    });
+    this.OPTION2(() => {
+      this.CONSUME(t.Finally);
+      this.SUBRULE3(this.blockStatement);
+    });
+  });
+
+  constructor() {
+    super([...tokens, ...categories], {
+      nodeLocationTracking: 'full',
+      recoveryEnabled: true,
+      skipValidations: true,
+    });
+    this.performSelfAnalysis();
   }
 
-  protected nextParam(): FunctionParameter | null {
-    if (!this.nextIs(TokenKind.Identifier)) {
-      return null;
-    }
-    // Then consume the identifier
-    const nameToken = this.input.next()!;
-    let optional = false;
-    if (this.skipNextIfIs(TokenKind.Equals)) {
-      // Skip the default value
-      optional = true;
-      this.skipStatement();
-    }
-    this.skipNextIfIs(TokenKind.Comma);
-    return createNode<FunctionParameter>(
-      SyntaxKind.FunctionParameter,
-      nameToken,
-      { optional },
-    );
-  }
-
-  protected skipStatement() {
-    let depth = 0;
-    while (true) {
-      const next = this.input.peek();
-      if (!next) {
-        return;
-      }
-      // Consume any macros, identifiers, and functions
-      if (
-        this.parseMacro() ||
-        this.parseEnum() ||
-        this.parseGlobalVarDefinition() ||
-        this.parseIdentifier() ||
-        this.parseFunction(true)
-      ) {
-        continue;
-      }
-      if (
-        [
-          TokenKind.LeftBrace,
-          TokenKind.LeftBracket,
-          TokenKind.LeftParen,
-        ].includes(next.type)
-      ) {
-        depth++;
-        this.input.next();
-      } else if (
-        depth &&
-        [
-          TokenKind.RightBrace,
-          TokenKind.RightBracket,
-          TokenKind.RightParen,
-        ].includes(next.type)
-      ) {
-        depth--;
-        this.input.next();
-        if (!depth) {
-          return;
+  static jsonify(cst: CstNode): string {
+    return JSON.stringify(
+      cst,
+      (key, val) => {
+        if (key === 'tokenType') {
+          return {
+            name: val.name,
+            categories: val.CATEGORIES.map((c: any) => c.name),
+            isParent: val.isParent,
+          };
         }
-      } else if (depth) {
-        // Skip the token
-        this.input.next();
-      } else if (next.type === TokenKind.Semicolon) {
-        // Consume the semi-colon, since it's part of the statement
-        this.input.next();
-        return;
-      } else if (
-        [
-          TokenKind.RightBrace,
-          TokenKind.RightBracket,
-          TokenKind.RightParen,
-          TokenKind.Comma,
-        ].includes(next.type)
-      ) {
-        // Then we should be done with the statement but don't want
-        // to consume the token
-        return;
-      } else {
-        this.input.next();
-      }
-    }
-  }
-
-  protected skipNext(): this {
-    this.input.next();
-    return this;
-  }
-  protected nextIs(kind: TokenKind, value?: string): boolean {
-    const peek = this.input.peek();
-    return peek?.type === kind && (!value || value === peek?.value);
-  }
-  /**
-   * Skips the next token if it matches the given kind and value.
-   * Returns `true` if the next token matched and was skipped, else
-   * `false`.
-   */
-  protected skipNextIfIs(kind: TokenKind, value?: string): boolean {
-    if (this.nextIs(kind, value)) {
-      this.skipNext();
-      return true;
-    }
-    return false;
-  }
-
-  public assert(condition: any, message: string): asserts condition {
-    if (!condition) {
-      throw new ParseError(message, this);
-    }
-  }
-
-  protected assertNextIs(type: TokenKind, value?: string): this {
-    this.assert(
-      this.nextIs(type),
-      `Expected a ${type} but got ${this.input.peek()?.type}`,
+        return val;
+      },
+      2,
     );
-    return this;
   }
 }
 
-function createNode<T extends Node>(
-  kind: T['kind'],
-  token: Token,
-  info: T['info'] = undefined,
-): T {
-  return {
-    kind,
-    name: token.value,
-    range: token.range,
-    position: token.position,
-    info,
-    children: [],
-  } as any;
-}
-
-export class ParseError extends Error {
-  readonly file?: string;
-  readonly line?: number;
-  readonly column?: number;
-
-  constructor(message: string, parser: Parser) {
-    const loc = parser.input.peek()?.location;
-    const filePath = parser.options?.filePath;
-    let fullpath = filePath ? filePath + ':' : '';
-    if (loc) {
-      fullpath += `${loc.line}:${loc.col}`;
-    }
-    super(message + `\n${fullpath}`);
-    this.name = 'ParseError';
-    Error.captureStackTrace(this, parser.assert);
-  }
-}
+export const parser = new GmlParser();
+export const GmlVisitorBase =
+  parser.getBaseCstVisitorConstructorWithDefaults() as new (
+    ...args: any[]
+  ) => GmlVisitor<unknown, unknown>;

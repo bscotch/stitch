@@ -1,11 +1,11 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "GML",
+  "name": "Script1",
   "isCompatibility": false,
   "isDnD": false,
   "parent": {
-    "name": "experiments",
-    "path": "experiments.yyp",
+    "name": "Scripts",
+    "path": "folders/Scripts.yy",
   },
 }

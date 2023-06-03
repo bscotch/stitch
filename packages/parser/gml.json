@@ -1,0 +1,501 @@
+{
+  "filePath": "c:/Users/coste/CODE/BSCOTCH/stitch/packages/parser/assets/GmlSpec.xml",
+  "symbols": {},
+  "functions": [],
+  "variables": [],
+  "constants": [],
+  "types": {
+    "Any": {
+      "$tag": "Type",
+      "kind": "Any"
+    },
+    "Array": {
+      "$tag": "Type",
+      "kind": "Array"
+    },
+    "Asset.GMAnimCurve": {
+      "$tag": "Type",
+      "kind": "Asset.GMAnimCurve"
+    },
+    "Asset.GMAudioGroup": {
+      "$tag": "Type",
+      "kind": "Asset.GMAudioGroup"
+    },
+    "Asset.GMFont": {
+      "$tag": "Type",
+      "kind": "Asset.GMFont"
+    },
+    "Asset.GMObject": {
+      "$tag": "Type",
+      "kind": "Asset.GMObject"
+    },
+    "Asset.GMParticleSystem": {
+      "$tag": "Type",
+      "kind": "Asset.GMParticleSystem"
+    },
+    "Asset.GMPath": {
+      "$tag": "Type",
+      "kind": "Asset.GMPath"
+    },
+    "Asset.GMRoom": {
+      "$tag": "Type",
+      "kind": "Asset.GMRoom"
+    },
+    "Asset.GMScript": {
+      "$tag": "Type",
+      "kind": "Asset.GMScript"
+    },
+    "Asset.GMSequence": {
+      "$tag": "Type",
+      "kind": "Asset.GMSequence"
+    },
+    "Asset.GMShader": {
+      "$tag": "Type",
+      "kind": "Asset.GMShader"
+    },
+    "Asset.GMSound": {
+      "$tag": "Type",
+      "kind": "Asset.GMSound"
+    },
+    "Asset.GMSprite": {
+      "$tag": "Type",
+      "kind": "Asset.GMSprite"
+    },
+    "Asset.GMTileSet": {
+      "$tag": "Type",
+      "kind": "Asset.GMTileSet"
+    },
+    "Asset.GMTimeline": {
+      "$tag": "Type",
+      "kind": "Asset.GMTimeline"
+    },
+    "Asset.Script": {
+      "$tag": "Type",
+      "kind": "Asset.Script"
+    },
+    "Bool": {
+      "$tag": "Type",
+      "kind": "Bool"
+    },
+    "Enum": {
+      "$tag": "Type",
+      "kind": "Enum"
+    },
+    "Function": {
+      "$tag": "Type",
+      "kind": "Function"
+    },
+    "Id.AudioEmitter": {
+      "$tag": "Type",
+      "kind": "Id.AudioEmitter"
+    },
+    "Id.AudioListener": {
+      "$tag": "Type",
+      "kind": "Id.AudioListener"
+    },
+    "Id.AudioSyncGroup": {
+      "$tag": "Type",
+      "kind": "Id.AudioSyncGroup"
+    },
+    "Id.BackgroundElement": {
+      "$tag": "Type",
+      "kind": "Id.BackgroundElement"
+    },
+    "Id.BinaryFile": {
+      "$tag": "Type",
+      "kind": "Id.BinaryFile"
+    },
+    "Id.Buffer": {
+      "$tag": "Type",
+      "kind": "Id.Buffer"
+    },
+    "Id.Camera": {
+      "$tag": "Type",
+      "kind": "Id.Camera"
+    },
+    "Id.DsGrid": {
+      "$tag": "Type",
+      "kind": "Id.DsGrid"
+    },
+    "Id.DsList": {
+      "$tag": "Type",
+      "kind": "Id.DsList"
+    },
+    "Id.DsMap": {
+      "$tag": "Type",
+      "kind": "Id.DsMap"
+    },
+    "Id.DsPriority": {
+      "$tag": "Type",
+      "kind": "Id.DsPriority"
+    },
+    "Id.DsQueue": {
+      "$tag": "Type",
+      "kind": "Id.DsQueue"
+    },
+    "Id.DsStack": {
+      "$tag": "Type",
+      "kind": "Id.DsStack"
+    },
+    "Id.ExternalCall": {
+      "$tag": "Type",
+      "kind": "Id.ExternalCall"
+    },
+    "Id.Gif": {
+      "$tag": "Type",
+      "kind": "Id.Gif"
+    },
+    "Id.Instance": {
+      "$tag": "Type",
+      "kind": "Id.Instance"
+    },
+    "Id.Layer": {
+      "$tag": "Type",
+      "kind": "Id.Layer"
+    },
+    "Id.MpGrid": {
+      "$tag": "Type",
+      "kind": "Id.MpGrid"
+    },
+    "Id.ParticleEmitter": {
+      "$tag": "Type",
+      "kind": "Id.ParticleEmitter"
+    },
+    "Id.ParticleSystem": {
+      "$tag": "Type",
+      "kind": "Id.ParticleSystem"
+    },
+    "Id.ParticleType": {
+      "$tag": "Type",
+      "kind": "Id.ParticleType"
+    },
+    "Id.PhysicsIndex": {
+      "$tag": "Type",
+      "kind": "Id.PhysicsIndex"
+    },
+    "Id.PhysicsParticleGroup": {
+      "$tag": "Type",
+      "kind": "Id.PhysicsParticleGroup"
+    },
+    "Id.Sampler": {
+      "$tag": "Type",
+      "kind": "Id.Sampler"
+    },
+    "Id.SequenceElement": {
+      "$tag": "Type",
+      "kind": "Id.SequenceElement"
+    },
+    "Id.Socket": {
+      "$tag": "Type",
+      "kind": "Id.Socket"
+    },
+    "Id.Sound": {
+      "$tag": "Type",
+      "kind": "Id.Sound"
+    },
+    "Id.SpriteElement": {
+      "$tag": "Type",
+      "kind": "Id.SpriteElement"
+    },
+    "Id.Surface": {
+      "$tag": "Type",
+      "kind": "Id.Surface"
+    },
+    "Id.TextFile": {
+      "$tag": "Type",
+      "kind": "Id.TextFile"
+    },
+    "Id.Texture": {
+      "$tag": "Type",
+      "kind": "Id.Texture"
+    },
+    "Id.TileElementId": {
+      "$tag": "Type",
+      "kind": "Id.TileElementId"
+    },
+    "Id.TileMapElement": {
+      "$tag": "Type",
+      "kind": "Id.TileMapElement"
+    },
+    "Id.TimeSource": {
+      "$tag": "Type",
+      "kind": "Id.TimeSource"
+    },
+    "Id.Uniform": {
+      "$tag": "Type",
+      "kind": "Id.Uniform"
+    },
+    "Id.VertexBuffer": {
+      "$tag": "Type",
+      "kind": "Id.VertexBuffer"
+    },
+    "Id.VertexFormat": {
+      "$tag": "Type",
+      "kind": "Id.VertexFormat"
+    },
+    "Mixed": {
+      "$tag": "Type",
+      "kind": "Mixed"
+    },
+    "Pointer": {
+      "$tag": "Type",
+      "kind": "Pointer"
+    },
+    "Real": {
+      "$tag": "Type",
+      "kind": "Real"
+    },
+    "String": {
+      "$tag": "Type",
+      "kind": "String"
+    },
+    "Struct": {
+      "$tag": "Type",
+      "kind": "Struct"
+    },
+    "Undefined": {
+      "$tag": "Type",
+      "kind": "Undefined"
+    },
+    "Union": {
+      "$tag": "Type",
+      "kind": "Union"
+    },
+    "Unknown": {
+      "$tag": "Type",
+      "kind": "Unknown"
+    },
+    "Struct.Sequence": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.SequenceInstance": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.Track": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.Keyframe": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.KeyChannel": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.GraphicTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.SequenceTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.AudioTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.SpriteTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.BoolTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.StringTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.ColourTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.ColorTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.RealTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.InstanceTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.TextTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.MessageEvent": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.Moment": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.AnimCurve": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.AnimCurveChannel": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.AnimCurvePoint": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.ActiveTrack": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.GCStats": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.WeakRef": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.FontInfo": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.FontInfoGlyph": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.Exception": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.AudioBus": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    },
+    "Struct.AudioEffect": {
+      "$tag": "Type",
+      "kind": "Struct",
+      "parent": {
+        "$tag": "Type",
+        "kind": "Struct"
+      }
+    }
+  }
+}

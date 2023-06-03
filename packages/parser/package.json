@@ -18,15 +18,29 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --build && pnpm build:cst-dts",
+    "build:cst-dts": "node ./scripts/generate-cst-dts.mjs && prettier -w ./gml-cst.d.ts",
     "test": "mocha --config ../../config/.mocharc.cjs",
     "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
     "watch": "tsc --build --watch"
   },
+  "dependencies": {
+    "@bscotch/gamemaker-releases": "workspace:*",
+    "@bscotch/pathy": "^2.7.3",
+    "@bscotch/stitch-launcher": "workspace:*",
+    "@bscotch/utility": "^6.8.3",
+    "@bscotch/yy": "workspace:*",
+    "chevrotain": "10.5.0",
+    "chokidar": "3.5.3",
+    "xml2js": "0.5.0",
+    "zod": "^3.21.4"
+  },
   "devDependencies": {
-    "@bscotch/utility": "^6.8.2",
+    "@types/xml2js": "0.4.11",
     "chai": "^4.3.7",
+    "dotenv": "16.0.3",
     "mocha": "^10.2.0",
+    "prettier": "^2.8.8",
     "typescript": "5.0.4"
   }
 }

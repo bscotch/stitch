@@ -32,7 +32,7 @@
     "package": "vsce package --pre-release --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
     "vscode:publish": "vsce publish --pre-release --no-dependencies --githubBranch develop",
-    "watch": "nodemon -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --exec \"npm run build\"",
+    "watch": "nodemon -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --watch ../parser/dist --exec \"npm run build\"",
     "watch:grammar": "nodemon --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
@@ -43,11 +43,6 @@
         "shortTitle": "Open in GameMaker",
         "enablement": "resourceExtname =~ /\\.(yy|yyp|gml)$/",
         "icon": "$(edit)"
-      },
-      {
-        "command": "stitch.createProject",
-        "title": "Stitch: New GameMaker Project",
-        "enablement": "explorerResourceIsFolder"
       },
       {
         "command": "stitch.run",
@@ -71,6 +66,15 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.editing.autocomplete.ignoredPrefix": {
+          "title": "Ignore autocomplete prefix",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Variables with this prefix will be skipped in autocomplete suggestions, unless those variables are within the same scope or file as the cursor."
+        },
         "stitch.editing.signatureStatus.enable": {
           "title": "Enable signature status",
           "type": "boolean",
@@ -109,50 +113,6 @@
           "type": "boolean",
           "default": true,
           "description": "Enable/disable formatting of GameMaker `.yy` and `.yyp` files."
-        },
-        "stitch.template.path": {
-          "title": "GameMaker Project Template",
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Specifies the path to a GameMaker project to use as a template to clone when creating a new project via the explorer context menu. Defaults to a simple project with a single room and a single object."
-        },
-        "stitch.gm.channel": {
-          "title": "GameMaker Channel",
-          "type": [
-            "string"
-          ],
-          "enum": [
-            "GameMakerStudio2",
-            "GameMakerStudio2-Beta",
-            "GameMakerStudio2-LTS"
-          ],
-          "default": "GameMakerStudio2",
-          "description": "Manually specify the channel of GameMaker, default is Stable channel (GameMakerStudio2) \nNote: only \"GameMakerStudio2-Beta\" can be used in Linux"
-        },
-        "stitch.gmlSpec.source": {
-          "title": "GameMaker GmlSpec.xml file source",
-          "type": [
-            "string"
-          ],
-          "enum": [
-            "internal",
-            "localRuntime",
-            "external"
-          ],
-          "default": "internal",
-          "description": "Specifies the GmlSpec.xml source. Obtained by default from the installed runtime. Falls back to `internal`, an internal copy of a recent version of the GmlSpec.xml. \nNote: It needs to restart vscode after modification to take effect. "
-        },
-        "stitch.gmlSpec.path": {
-          "title": "GameMaker GmlSpec.xml file path",
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Specifies the path to a GmlSpec.xml file when \"gmlSpec.source\" is \"external\"."
         }
       }
     },
@@ -243,11 +203,6 @@
           "command": "stitch.openIde",
           "group": "navigation@3",
           "when": "resourceExtname =~ /\\.(yy|yyp|gml)$/"
-        },
-        {
-          "command": "stitch.createProject",
-          "group": "navigation@3",
-          "when": "explorerResourceIsFolder"
         }
       ],
       "commandPalette": [
@@ -273,6 +228,10 @@
       {
         "id": "asset",
         "description": "A subset of global variables representing a GameMaker asset."
+      },
+      {
+        "id": "local",
+        "description": "A local variable."
       }
     ],
     "snippets": [
@@ -303,31 +262,30 @@
   },
   "activationEvents": [
     "onLanguage:gml",
-    "onCommand:stitch.openIde",
-    "onCommand:stitch.createProject"
+    "onCommand:stitch.openIde"
   ],
   "devDependencies": {
     "@bscotch/gml-parser": "workspace:*",
-    "@bscotch/pathy": "^2.7.2",
+    "@bscotch/pathy": "^2.7.3",
     "@bscotch/stitch": "workspace:*",
     "@bscotch/stitch-launcher": "workspace:*",
-    "@bscotch/utility": "^6.8.2",
+    "@bscotch/utility": "^6.8.3",
     "@bscotch/yy": "workspace:*",
     "@types/plist": "3.0.2",
-    "@types/vscode": "1.77.0",
+    "@types/vscode": "1.78.1",
     "@types/xml2js": "0.4.11",
     "@vscode/vsce": "2.19.0",
-    "esbuild": "^0.17.16",
-    "glob": "10.0.0",
+    "esbuild": "^0.17.19",
+    "glob": "10.2.6",
     "nodemon": "^2.0.22",
     "plist": "3.0.6",
-    "turbo": "^1.9.1",
+    "turbo": "^1.9.9",
     "typescript": "5.0.4",
-    "xml2js": "0.5.0",
-    "yaml": "2.2.1",
+    "xml2js": "0.6.0",
+    "yaml": "2.3.1",
     "zod": "^3.21.4",
-    "zod-to-json-schema": "3.20.4",
-    "zx": "^7.2.1"
+    "zod-to-json-schema": "3.21.1",
+    "zx": "^7.2.2"
   },
   "engines": {
     "vscode": "^1.77.0"
