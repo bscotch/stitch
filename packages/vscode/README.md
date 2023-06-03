@@ -14,15 +14,19 @@ You're also welcome to make feature requests, but keep in mind that we're focusi
 
 ### 🤖 Intellisense
 
-Stitch provides Intellisense (auto-complete, hovertext, function signature helpers, go-to-definition, find-references, etc) for:
+Stitch provides Intellisense (auto-complete, hovertext, function signature helpers, go-to-definition, find-references, etc) for all built-in and user-defined symbols.
 
-- Built-in functions and constants
-- Your project's global symbols, such as macros, enums, globalvars, and global functions
-- Your project's resources, such as sprite IDs, object IDs, etc
+### 🔍 Navigating your project
+
+Stitch provides a tree view that mirrors the project resources in the GameMaker IDE. You can open it by clicking the Stitch icon in the Activity Bar.
+
+Stitch also provides support for symbol search <kbd><kbd>Ctrl</kbd>+<kbd>T</kbd></kbd> via the command palette, which finds where all of your project's globals are defined. It will also pull up your asset and your object events, so you can find everything in one place.
+
+Finally, the Intellisense features (go-to-definition, find-references, etc) make it easy to navigate the code in your project.
 
 ### 🦋 Syntax highlighting
 
-Stitch provides context-aware "semantic highlighting" for global symbols, such as built-in functions and your macros, enums, globalvars, global functions, and assets.
+Stitch provides context-aware "semantic highlighting" for all symbols.
 
 Depending on your VSCode Theme, you may need to enable semantic highlighting to get the full effect. Additionally, you may want to tweak the colors for the different symbol types.
 
@@ -38,15 +42,20 @@ Here's an example of how you might update your `settings.json`:
       "rules": {
         "macro": "#A600FF",
         "enum": "#FF0055",
-        "enumMember": "#00ADD9",
+        "enumMember": "#e97400",
+        // Instance and struct variables
+        "property": "#FF00A5",
+        "property.static": "#FFF899",
+        "variable.local": "#00FFFF",
+        "parameter": "#10c3eb",
         // Built-in variables and constants
         "variable.defaultLibrary": "#58E55A",
-        // Your project's global variables and constants
+        // Your project's global variables
         "variable.global": "#96FF4C",
         // Built-in functions
         "function.defaultLibrary": "#FFB871",
         // Asset identifiers (like sprite IDs)
-        "variable.asset": "#FF8500"
+        "variable.asset": "#d9760c"
       }
     }
   },
@@ -78,11 +87,6 @@ Check out Stitch settings to configure how your project is run. In particular:
 - `stitch.run.defaultConfig`: Choose a run configuration to use as the default (defaults to "Default")
 - `stitch.run.defaultCompiler`: Choose whether to use the VM or YYC compiler (defaults to "VM")
 
-### 🔍 Navigating your project
-
-Stitch provides a tree view that mirrors the project resources in the GameMaker IDE. You can open it by clicking the Stitch icon in the Activity Bar.
-
-Stitch also provides support for symbol search <kbd><kbd>Ctrl</kbd>+<kbd>T</kbd></kbd> via the command palette, which finds where all of your project's globals are defined. It will also pull up your asset and your object events, so you can find everything in one place.
 
 ### 📝 Opening the correct GameMaker version
 
@@ -100,12 +104,16 @@ This extension uses the GameMaker syntax definitions provided by the `GmlSpec.xm
 
 ## 🛣️ Roadmap
 
-- Add the ability to create, delete, and rename resources (sprites, etc) from the tree view
-- Provide full autocomplete, find-reference, go-to-definition, etc, even for non-globals
-- Symbol rename support
-- Loading the GameMaker syntax configuration that match the GameMaker version your project uses.
+- [x] Provide full autocomplete, find-reference, go-to-definition, etc, even for non-globals
+- [x] Loading the GameMaker syntax configuration that match the GameMaker version your project uses.
+- [ ] Symbol rename support
+- [ ] Add the ability to create, delete, and rename resources (sprites, etc) from the tree view
+- [ ] Add JSDoc support for comments
+- [ ] Add JSDoc support for types
+- [ ] Add inferred type support
 
 ## 🤔 FAQ, Tips, and Known Issues
 
-- 🔥 **`Find all references` is incomplete**. This will be fixed in the future with a new GML parser, as the current one is very incomplete.
+- 🔥 **`Go To Definition` sometimes doesn't fire**. "Find all references" works well most of the time, but "Go To Definition" is a little cagey.
+- 🔥 **Nested symbols are not always referenced**. When dot-accessing variables, sometimes the accessed variable does not get a reference during initial load. This is often resolved upon editing a file, but not always.
 - ⁉️ **Unexpected projects appear in the tree view**. If you're seeing extra projects in your tree view, it's likely that these are being discovered inside `node_modules` or other normally-hidden locations. Stitch excludes the same files that your VSCode setup does via the `files.exclude` setting, so if you want to prevent those projects from appearing add their parent folders to your excluded files.
