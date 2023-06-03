@@ -103,8 +103,8 @@ describe('Project', function () {
     const otherGlobalvarRef = objStep.getReferenceAt(2, 36);
     ok(globalvarDef);
     ok(globalvarRef);
-    // All refs should point to the same thing
     ok(otherGlobalvarRef);
+    // All refs should point to the same thing
     ok(globalvarDef.item === globalvarRef.item);
     ok(globalvarDef.item === otherGlobalvarRef.item);
     // The definition should exist and be named
@@ -157,6 +157,7 @@ describe('Project', function () {
     ok(param.parameter);
     expect(param.name).to.equal(paramName);
     // Params should be visible in the function scope
+    const functionScope = scriptFile.getScopeRangeAt(19, 16);
     const inFunctionScope = scriptFile.getInScopeSymbolsAt(19, 16);
     ok(inFunctionScope.length);
     ok(inFunctionScope.find((id) => id.name === paramName));
@@ -179,15 +180,15 @@ describe('Project', function () {
     //#region ENUMS
     const enumName = 'SurpriseEnum';
     const enumMemberName = 'another_surprise';
-    const enumDef = scriptFile.getReferenceAt(603);
-    const enumMemberDef = scriptFile.getReferenceAt(630);
+    const enumDef = scriptFile.getReferenceAt(22, 12);
+    const enumMemberDef = scriptFile.getReferenceAt(22, 40);
     ok(enumDef);
     ok(enumDef.item.name === enumName);
     ok(enumMemberDef);
     ok(enumMemberDef.item.name === enumMemberName);
 
-    const enumRef = objCreate.getReferenceAt(48);
-    const enumMemberRef = objCreate.getReferenceAt(63);
+    const enumRef = objCreate.getReferenceAt(3, 23);
+    const enumMemberRef = objCreate.getReferenceAt(3, 38);
     ok(enumRef);
     ok(enumRef.item.name === enumName);
     ok(enumMemberRef);
@@ -195,9 +196,9 @@ describe('Project', function () {
     //#endregion ENUMS
 
     //#region RECOVERY
-    const enumAutocompleteScope = recoveryScriptFile.getScopeRangeAt(55);
+    const enumAutocompleteScope = recoveryScriptFile.getScopeRangeAt(3, 22);
     ok(enumAutocompleteScope);
-    const enumAutocompleteList = recoveryScriptFile.getInScopeSymbolsAt(55);
+    const enumAutocompleteList = recoveryScriptFile.getInScopeSymbolsAt(3, 22);
     ok(enumAutocompleteList);
     expect(enumAutocompleteList.length).to.equal(2);
     //#endregion RECOVERY
