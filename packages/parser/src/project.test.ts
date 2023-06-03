@@ -6,7 +6,7 @@ import { Native } from './project.native.js';
 import { Symbol } from './project.symbol.js';
 import { TypeMember } from './project.type.js';
 
-describe.only('Project', function () {
+describe('Project', function () {
   it('can load the GML spec', async function () {
     const spec = await Native.from();
     expect(spec).to.exist;
@@ -74,7 +74,7 @@ describe.only('Project', function () {
     await Project.fallbackGmlSpecPath.exists({ assert: true });
   });
 
-  it.only('can parse a representative project', async function () {
+  it('can parse a representative project', async function () {
     const projectDir = 'samples/project';
     const project = await Project.initialize(projectDir);
     ok(project);

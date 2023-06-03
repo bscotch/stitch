@@ -65,6 +65,9 @@ describe('Lexer', function () {
     const samples = await fs.readdir('./samples');
     for (const sample of samples) {
       const filePath = `./samples/${sample}`;
+      if (await fs.stat(filePath).then((s) => s.isDirectory())) {
+        continue;
+      }
       const code = await fs.readFile(filePath, 'utf-8');
       const result = GmlLexer.tokenize(code);
       if (result.errors.length) {
