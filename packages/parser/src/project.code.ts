@@ -15,6 +15,7 @@ import type { Symbol } from './project.symbol.js';
 import { Type, TypeMember } from './project.type.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
 import { processSymbols } from './project.visitLocals.js';
+import { isBeforeRange, isInRange } from './util.js';
 
 /** Represenation of a GML code file. */
 export class Code {
@@ -46,27 +47,15 @@ export class Code {
     return this.asset.project;
   }
 
-  protected isInRange(range: Range, offset: number | LinePosition) {
-    if (typeof offset === 'number') {
-      return range.start.offset <= offset && range.end.offset >= offset;
-    } else {
-      return (
-        range.start.line === offset.line &&
-        range.start.column <= offset.column &&
-        range.end.column >= offset.column
-      );
-    }
+  protected isInRange(
+    range: { start: Position; end: Position },
+    offset: number | LinePosition,
+  ) {
+    return isInRange(range, offset);
   }
 
   protected isBeforeRange(range: Range, offset: number | LinePosition) {
-    if (typeof offset === 'number') {
-      return offset < range.end.offset;
-    } else {
-      return (
-        offset.line < range.start.line ||
-        (offset.line === range.start.line && offset.column < range.start.column)
-      );
-    }
+    return isBeforeRange(range, offset);
   }
 
   getReferenceAt(offset: number): Reference | undefined;
@@ -109,7 +98,13 @@ export class Code {
     return match;
   }
 
-  getScopeRangeAt(offset: number | LinePosition): Scope | undefined {
+  getScopeRangeAt(
+    offset: number | LinePosition,
+    column?: number,
+  ): Scope | undefined {
+    if (typeof offset === 'number' && typeof column === 'number') {
+      offset = { line: offset, column };
+    }
     for (const scopeRange of this.scopes) {
       if (this.isInRange(scopeRange, offset)) {
         return scopeRange;

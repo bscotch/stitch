@@ -15,6 +15,16 @@ export const firstLineIndex = 1;
 export const firstColumnIndex = 1;
 
 export type CstLocation = Required<CstNodeLocation>;
+export interface IPosition {
+  offset: number;
+  line: number;
+  column: number;
+}
+
+export interface IRange {
+  start: IPosition;
+  end: IPosition;
+}
 
 /**
  * Single-character tokens do not have correct end
@@ -34,7 +44,7 @@ export function fixITokenLocation(token: IToken) {
 
 export type LinePosition = { line: number; column: number };
 
-export class Position {
+export class Position implements IPosition {
   readonly $tag = 'Pos';
   constructor(
     readonly file: Code,
@@ -94,7 +104,7 @@ export class Position {
   }
 }
 
-export class Range {
+export class Range implements IRange {
   $tag = 'Range';
   public start: Position;
   public end: Position;

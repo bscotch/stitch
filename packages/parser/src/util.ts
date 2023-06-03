@@ -1,3 +1,5 @@
+import type { IRange, LinePosition } from './project.location.js';
+
 export type Constructor<T = {}> = new (...args: any[]) => T;
 
 export interface Logger {
@@ -45,4 +47,45 @@ export function normalizeTypeString(typeString: string): string {
   // instead of Array<String>. Normalize those.
   typeString = typeString.replace(/^Array\.([A-Z][A-Z0-9]*)/gi, 'Array<$1>');
   return typeString;
+}
+
+export function isInRange(range: IRange, offset: number | LinePosition) {
+  if (typeof offset === 'number') {
+    return range.start.offset <= offset && range.end.offset >= offset;
+  } else {
+    const isSingleLineRange = range.start.line === range.end.line;
+    // If we're on the start line, we must be at or after the start column
+    if (offset.line === range.start.line) {
+      const isAfterStartColumn = offset.column >= range.start.column;
+      return (
+        isAfterStartColumn &&
+        (!isSingleLineRange || offset.column <= range.end.column)
+      );
+    }
+    // If we're on the end line, we must be at or before the end column
+    if (offset.line === range.end.line) {
+      return offset.column <= range.end.column;
+    }
+    // If we're on a line in between, we're in range
+    if (offset.line > range.start.line && offset.line < range.end.line) {
+      return true;
+    }
+    return false;
+  }
+}
+
+export function isBeforeRange(range: IRange, offset: number | LinePosition) {
+  if (typeof offset === 'number') {
+    return offset < range.end.offset;
+  } else {
+    // If we're before the start line, definitely before the range
+    if (offset.line < range.start.line) {
+      return true;
+    }
+    // If we're on the start line, we must be before the start column
+    if (offset.line === range.start.line) {
+      return offset.column < range.start.column;
+    }
+    return false;
+  }
 }
