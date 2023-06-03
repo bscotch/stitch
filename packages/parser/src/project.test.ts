@@ -98,9 +98,9 @@ describe('Project', function () {
 
     //#region GLOBALVARS
     const globalVarName = 'GLOBAL_SCRIPT_VAR';
-    const globalvarDef = scriptFile.getReferenceAt(83);
-    const globalvarRef = scriptFile.getReferenceAt(97);
-    const otherGlobalvarRef = objStep.getReferenceAt(152);
+    const globalvarDef = scriptFile.getReferenceAt(2, 18);
+    const globalvarRef = scriptFile.getReferenceAt(2, 37);
+    const otherGlobalvarRef = objStep.getReferenceAt(2, 36);
     ok(globalvarDef);
     ok(globalvarRef);
     // All refs should point to the same thing
@@ -149,7 +149,7 @@ describe('Project', function () {
     //#region FUNCTION SCOPE
     // Params
     const paramName = '_name';
-    const paramRef = scriptFile.getReferenceAt(500);
+    const paramRef = scriptFile.getReferenceAt({ line: 18, column: 32 });
     ok(paramRef);
     const param = paramRef.item as TypeMember;
     ok(param);
@@ -157,7 +157,7 @@ describe('Project', function () {
     ok(param.parameter);
     expect(param.name).to.equal(paramName);
     // Params should be visible in the function scope
-    const inFunctionScope = scriptFile.getInScopeSymbolsAt(546);
+    const inFunctionScope = scriptFile.getInScopeSymbolsAt(19, 16);
     ok(inFunctionScope.length);
     ok(inFunctionScope.find((id) => id.name === paramName));
     // And so should local vars
@@ -165,12 +165,12 @@ describe('Project', function () {
       (id) => id.name === 'local',
     );
     ok(inFunctionLocalvar);
-    ok(scriptFile.getReferenceAt(585)!.item === inFunctionLocalvar);
+    ok(scriptFile.getReferenceAt(21, 10)!.item === inFunctionLocalvar);
     //#endregion FUNCTION SCOPE
 
     //#region INSTANCE SCOPE
     const instanceVarName = 'instance_variable';
-    const inInstanceScope = objStep.getReferenceAt(174);
+    const inInstanceScope = objStep.getReferenceAt(4, 9);
     ok(inInstanceScope);
     ok(inInstanceScope.item.name === instanceVarName);
     ok(inInstanceScope.item.instance);

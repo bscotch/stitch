@@ -4,6 +4,7 @@ import type { Asset } from './project.asset.js';
 import { Diagnostic } from './project.diagnostics.js';
 import {
   FunctionArgRange,
+  LinePosition,
   Position,
   Range,
   Reference,
@@ -45,41 +46,73 @@ export class Code {
     return this.asset.project;
   }
 
-  getReferenceAt(offset: number): Reference | undefined {
+  protected isInRange(range: Range, offset: number | LinePosition) {
+    if (typeof offset === 'number') {
+      return range.start.offset <= offset && range.end.offset >= offset;
+    } else {
+      return (
+        range.start.line === offset.line &&
+        range.start.column <= offset.column &&
+        range.end.column >= offset.column
+      );
+    }
+  }
+
+  protected isBeforeRange(range: Range, offset: number | LinePosition) {
+    if (typeof offset === 'number') {
+      return offset < range.end.offset;
+    } else {
+      return (
+        offset.line < range.start.line ||
+        (offset.line === range.start.line && offset.column < range.start.column)
+      );
+    }
+  }
+
+  getReferenceAt(offset: number): Reference | undefined;
+  getReferenceAt(position: LinePosition): Reference | undefined;
+  getReferenceAt(line: number, column: number): Reference | undefined;
+  getReferenceAt(
+    offset: number | LinePosition,
+    column?: number,
+  ): Reference | undefined {
+    if (typeof offset === 'number' && typeof column === 'number') {
+      offset = { line: offset, column };
+    }
     for (let i = 0; i < this.refs.length; i++) {
       const ref = this.refs[i];
-      if (ref.start.offset <= offset && ref.end.offset >= offset) {
+      if (this.isInRange(ref, offset)) {
         return ref;
-      } else if (ref.start.offset > offset) {
+      } else if (this.isBeforeRange(ref, offset)) {
         return undefined;
       }
     }
     return undefined;
   }
 
-  getFunctionArgRangeAt(offset: number): FunctionArgRange | undefined {
+  getFunctionArgRangeAt(
+    offset: number | LinePosition,
+  ): FunctionArgRange | undefined {
     let match: FunctionArgRange | undefined;
     const ranges = this.functionArgRanges;
     for (let i = 0; i < ranges.length; i++) {
       const argRange = ranges[i];
-      if (offset >= argRange.start.offset && offset <= argRange.end.offset) {
+      if (this.isInRange(argRange, offset)) {
         // These could be nested, so an outer arg range might contain an inner one.
         // Since these are sorted by start offset, we can return the *last* one to ensure that we're in the innermost range.
         match = argRange;
         continue;
-      } else if (argRange.start.offset > offset) {
+      } else if (this.isBeforeRange(argRange, offset)) {
         return match;
       }
     }
     return match;
   }
 
-  getScopeRangeAt(offset: number): Scope | undefined {
+  getScopeRangeAt(offset: number | LinePosition): Scope | undefined {
     for (const scopeRange of this.scopes) {
-      if (offset >= scopeRange.start.offset) {
-        if (!scopeRange.end || offset <= scopeRange.end.offset) {
-          return scopeRange;
-        }
+      if (this.isInRange(scopeRange, offset)) {
+        return scopeRange;
       }
     }
     // Default to the last scope,
@@ -87,7 +120,13 @@ export class Code {
     return this.scopes.at(-1);
   }
 
-  getInScopeSymbolsAt(offset: number): (Symbol | TypeMember)[] {
+  getInScopeSymbolsAt(
+    offset: number | LinePosition,
+    column?: number,
+  ): (Symbol | TypeMember)[] {
+    if (typeof offset === 'number' && typeof column === 'number') {
+      offset = { line: offset, column };
+    }
     const scopeRange = this.getScopeRangeAt(offset);
     if (!scopeRange) {
       return [];

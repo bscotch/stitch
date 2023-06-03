@@ -32,6 +32,8 @@ export function fixITokenLocation(token: IToken) {
   return token;
 }
 
+export type LinePosition = { line: number; column: number };
+
 export class Position {
   readonly $tag = 'Pos';
   constructor(
