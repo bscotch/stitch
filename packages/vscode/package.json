@@ -38,10 +38,22 @@
   "contributes": {
     "commands": [
       {
+        "command": "stitch.assets.newFolder",
+        "title": "New Folder...",
+        "icon": "$(new-folder)",
+        "enablement": "view == bscotch-stitch-resources && stitch.projectCount == -1"
+      },
+      {
+        "command": "stitch.assets.new",
+        "title": "New Asset...",
+        "icon": "$(new-file)",
+        "enablement": "view == bscotch-stitch-resources && stitch.projectCount == -1"
+      },
+      {
         "command": "stitch.openIde",
         "title": "Stitch: Open in GameMaker",
         "shortTitle": "Open in GameMaker",
-        "enablement": "resourceExtname =~ /\\.(yy|yyp|gml)$/",
+        "enablement": "(resourceExtname =~ /\\.(yy|yyp|gml)$/) || (view == bscotch-stitch-resources && stitch.projectCount > 0)",
         "icon": "$(edit)"
       },
       {
@@ -186,12 +198,32 @@
     "menus": {
       "view/title": [
         {
+          "command": "stitch.openIde",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
+          "group": "navigation"
+        },
+        {
           "command": "stitch.run",
           "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
           "group": "navigation"
         }
       ],
       "view/item/context": [
+        {
+          "command": "stitch.assets.new",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount == -1",
+          "group": "navigation@1"
+        },
+        {
+          "command": "stitch.assets.newFolder",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount == -1",
+          "group": "navigation@2"
+        },
+        {
+          "command": "stitch.openIde",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
+          "group": "inline"
+        },
         {
           "command": "stitch.run",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",

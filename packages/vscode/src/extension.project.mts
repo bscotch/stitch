@@ -23,27 +23,42 @@ export class GameMakerProject extends Project {
   }
 
   async openInIde() {
-    vscode.window.showInformationMessage(
-      `Opening project with GameMaker v${this.ideVersion}...`,
-    );
-    const ide = await GameMakerIde.findInstalled(this.ideVersion);
-    if (!ide) {
-      vscode.window.showWarningMessage(
-        `GameMaker v${this.ideVersion} not found. Attempting to install (this may take a while)...`,
-      );
-      await GameMakerIde.install(this.ideVersion).catch((err) => {
-        vscode.window.showErrorMessage(
-          `Failed to install GameMaker v${this.ideVersion}: ${err}`,
+    return vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Opening in GameMaker`,
+        cancellable: false,
+      },
+      async (progress) => {
+        progress.report({
+          increment: 0,
+          message: `Searching IDE installs...`,
+        });
+        const ide = await GameMakerIde.findInstalled(this.ideVersion);
+        if (!ide) {
+          progress.report({
+            increment: 10,
+            message: 'Version not found. Installing...',
+          });
+          await GameMakerIde.install(this.ideVersion);
+        }
+        progress.report({
+          increment: 90,
+          message: `Opening project...`,
+        });
+        const runner = await GameMakerLauncher.openProject(
+          this.yypPath.absolute,
+          {
+            ideVersion: this.yyp.MetaData.IDEVersion,
+          },
         );
-      });
-    }
-    const runner = GameMakerLauncher.openProject(this.yypPath.absolute, {
-      ideVersion: this.yyp.MetaData.IDEVersion,
-    });
-    runner.catch((err) => {
-      vscode.window.showErrorMessage(`Failed to open project: ${err}`);
-    });
-    return runner;
+        progress.report({
+          increment: 100,
+          message: `Project opened!`,
+        });
+        return runner;
+      },
+    );
   }
 
   async run(options?: { config?: string | null; compiler?: 'yyc' | 'vm' }) {
