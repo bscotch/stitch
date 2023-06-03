@@ -16,7 +16,7 @@ export class GameMakerHoverProvider implements vscode.HoverProvider {
     const type = item.$tag === 'Type' ? item : item.type;
     const hoverContents = new vscode.MarkdownString();
     let hasSomething = false;
-    if (type.code) {
+    if (type.code && type.code !== 'Unknown') {
       hoverContents.appendCodeblock(type.code, 'gml');
       hasSomething = true;
     }

@@ -4,6 +4,7 @@ import {
   YyDataStrict,
   YyResourceType,
   YySchemas,
+  YySprite,
   YypResource,
   yySchemas,
 } from '@bscotch/yy';
@@ -51,6 +52,30 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       }
       return 0;
     });
+  }
+
+  get shaderPaths(): T extends 'shaders'
+    ? { [K in 'vertex' | 'fragment']: Pathy<string> }
+    : undefined {
+    if (this.assetType !== 'shaders') {
+      return undefined as any;
+    }
+    return {
+      vertex: this.yyPath.changeExtension('vsh'),
+      fragment: this.yyPath.changeExtension('fsh'),
+    } as any;
+  }
+
+  get framePaths(): Pathy<Buffer>[] {
+    const paths: Pathy<Buffer>[] = [];
+    if (this.assetType !== 'sprites') {
+      return paths;
+    }
+    const yy = this.yy as YySprite;
+    for (const frame of yy.frames || []) {
+      paths.push(this.dir.join<Buffer>(`${frame.name}.png`));
+    }
+    return paths;
   }
 
   protected async readYy(): Promise<YyDataStrict<T>> {
