@@ -25,7 +25,7 @@ const builder = esbuild.build({
 // Copy the template project from current stitch-core
 await $`rm -rf ./assets/templates`;
 await $`mkdir -p ./assets/templates`;
-await $`cp -r ../core/assets/issue-template ./assets/templates/`;
+await $`cp -r ../parser/assets/GmlSpec.xml ./assets/`;
 
 // Update the icon theme file
 await import('./sync-icons.mjs');
