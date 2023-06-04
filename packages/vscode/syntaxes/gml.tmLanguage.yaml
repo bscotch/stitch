@@ -158,7 +158,7 @@ repository:
   operators:
     patterns:
       - name: keyword.operator.arithmetic.gml
-        match: '([-+*/%]|mod|div)'
+        match: '([-+*/%]|\b(mod|div)\b)'
       - name: keyword.operator.comparison.gml
         match: '(?:<|>|<=|>=|==|!=)'
       - name: keyword.operator.logical.gml
