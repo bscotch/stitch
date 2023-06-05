@@ -34,8 +34,12 @@
     "IDEVersion": "2023.600.0.334",
   },
   "resources": [
+    {"id":{"name":"o_child1_child","path":"objects/o_child1_child/o_child1_child.yy",},},
+    {"id":{"name":"o_parent","path":"objects/o_parent/o_parent.yy",},},
+    {"id":{"name":"o_child2","path":"objects/o_child2/o_child2.yy",},},
     {"id":{"name":"Recovery","path":"scripts/Recovery/Recovery.yy",},},
     {"id":{"name":"o_object","path":"objects/o_object/o_object.yy",},},
+    {"id":{"name":"o_child1","path":"objects/o_child1/o_child1.yy",},},
     {"id":{"name":"Script1","path":"scripts/Script1/Script1.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
   ],
