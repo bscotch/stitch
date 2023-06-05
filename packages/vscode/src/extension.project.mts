@@ -22,7 +22,7 @@ export class GameMakerProject extends Project {
     return this.yyp.name;
   }
 
-  async openInIde() {
+  openInIde() {
     return vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,

@@ -1,14 +1,16 @@
 # Stitch for VSCode
 
-This extension provides language features for GameMaker Language (GML), among other helpers for GameMaker project development.
+Edit your [GameMaker](https://gamemaker.io/en) projects in VSCode! This extension provides Intellisense and other features for GameMaker projects.
 
 *Stitch and its logo are trademarks of [Butterscotch Shenanigans](https://www.bscotch.net) (a.k.a. "Bscotch"). Stitch and Bscotch are unaffiliated with GameMaker.*
 
 ## 🐛 Project Status
 
-Stitch for VSCode is in active development. Expect bugs, missing features, and frequent breaking changes. If you find a bug, please [file an issue](https://github.com/bscotch/stitch/issues/new).
+Stitch for VSCode is in active development. Expect bugs, missing features, and frequent breaking changes. To see the current list of known issues and feature requests, check out the [issues page](https://github.com/bscotch/stitch/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Akeyboard%3A+vscode%22).
 
-You're also welcome to make feature requests, but keep in mind that we're focusing our limited time on features that we need for our own projects.
+Stitch will be kept in "pre-release" status until it has [sufficient features and stability](https://github.com/bscotch/stitch/milestone/2) that we find ourselves extensively using it for our own projects.
+
+You're also welcome to report issues and make feature requests, but keep in mind that we're focusing our limited time on features that we need for our own projects.
 
 ## 💡 Features
 
@@ -94,13 +96,9 @@ Stitch provides context-menu entries and a command palette command (`Stitch: Ope
 
 ## ⚙️ Supported GameMaker versions
 
-Different GameMaker versions may have different features and built-in functions, constants, etc. This extension will still work with many other GameMaker project versions, but it might give you incorrect autocompletes or surprising command outcomes!
+Stitch supports GameMaker projects that use recent versions of GameMaker, and makes no effort to support older versions.
 
-This extension uses the GameMaker syntax definitions provided by the `GmlSpec.xml` file from GameMaker Runtime `2023.200.0.312`. You can configure this extension to use a different spec file.
-
-## Requirements
-
-- A GameMaker project created with a recent version of GameMaker
+Different GameMaker versions may have different features and built-in functions, constants, etc. This extension tries to infer the correct features for your project's GameMaker version, but it might give you incorrect autocompletes or surprising command outcomes if it cannot find a match!
 
 ## 🛣️ Roadmap
 
@@ -113,6 +111,8 @@ This extension uses the GameMaker syntax definitions provided by the `GmlSpec.xm
 - [ ] Add inferred type support
 
 ## 🤔 FAQ, Tips, and Known Issues
+
+To see the current list of known issues and feature requests, check out the [issues page](https://github.com/bscotch/stitch/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Akeyboard%3A+vscode%22).
 
 - 🔥 **`Go To Definition` sometimes doesn't fire**. "Find all references" works well most of the time, but "Go To Definition" is a little cagey.
 - 🔥 **Nested symbols are not always referenced**. When dot-accessing variables, sometimes the accessed variable does not get a reference during initial load. This is often resolved upon editing a file, but not always.
