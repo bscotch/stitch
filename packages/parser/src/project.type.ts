@@ -67,7 +67,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   parent: Type<T> | undefined = undefined;
 
   // Applicable to Structs and Enums
-  members: TypeMember[] | undefined = undefined;
+  protected members: TypeMember[] | undefined = undefined;
 
   // Applicable to Arrays
   items: Type | undefined = undefined;
@@ -212,8 +212,18 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return param;
   }
 
+  listMembers(excludeParents = false): TypeMember[] {
+    const members = this.members || [];
+    if (excludeParents || !this.parent) {
+      return members;
+    }
+    return [...members, ...this.parent.listMembers()];
+  }
+
   getMember(name: string): TypeMember | undefined {
-    return this.members?.find((m) => m.name === name);
+    return (
+      this.members?.find((m) => m.name === name) || this.parent?.getMember(name)
+    );
   }
 
   /** For container types that have named members, like Structs and Enums */

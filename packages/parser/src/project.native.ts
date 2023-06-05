@@ -175,7 +175,7 @@ export class Native {
       const typeName = `Struct.${struct.name}`;
       const structType =
         this.types.get(typeName) || this.createStructType().named(struct.name);
-      ok(!structType.members?.length, `Type ${typeName} already exists`);
+      ok(!structType.listMembers().length, `Type ${typeName} already exists`);
       this.types.set(typeName, structType);
 
       for (const prop of struct.properties) {

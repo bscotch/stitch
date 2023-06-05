@@ -253,6 +253,23 @@ export class Project {
       );
     }
     await Promise.all(resourceWaits);
+    // TODO: Link up object parent-child relationships
+    for (const asset of this.assets.values()) {
+      if (asset.assetType !== 'objects') {
+        continue;
+      }
+      const obj = asset as Asset<'objects'>;
+      if (!obj.yy.parentObjectId) {
+        continue;
+      }
+      const parent = this.getAssetByName(obj.yy.parentObjectId.name);
+      if (!parent) {
+        // TODO: Add diagnostic if parent missing
+        continue;
+      }
+      // Set the parent
+      obj.parent = parent as Asset<'objects'>;
+    }
     console.log(`Loaded ${this.assets.size} resources in ${Date.now() - t}ms`);
   }
 

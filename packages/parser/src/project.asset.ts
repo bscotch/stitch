@@ -11,7 +11,6 @@ import {
 import { ok } from 'assert';
 import { Code } from './project.code.js';
 import { Project } from './project.js';
-import { PrimitiveName } from './project.primitives.js';
 import { Symbol } from './project.symbol.js';
 import { StructType } from './project.type.js';
 
@@ -22,9 +21,10 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   yy!: YyDataStrict<T>;
   readonly yyPath: Pathy<YySchemas[T]>;
   readonly symbol: Symbol;
-  /**
-   * For objects, their instance type. */
+  /** For objects, their instance type. */
   instanceType: StructType | undefined;
+  /** For objects, their parent */
+  protected _parent: Asset<'objects'> | undefined = undefined;
 
   protected constructor(
     readonly project: Project,
@@ -34,6 +34,16 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     this.assetType = resource.id.path.split(/[/\\]/)[0] as T;
     this.yyPath = yyPath.withValidator(yySchemas[this.assetType]) as any;
     this.symbol = new Symbol(this.name);
+  }
+
+  get parent() {
+    return this._parent;
+  }
+  set parent(parent: Asset<'objects'> | undefined) {
+    this._parent = parent;
+    if (parent) {
+      this.instanceType!.parent = parent.instanceType;
+    }
   }
 
   /**
@@ -190,6 +200,31 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return await Promise.all(parseWaits);
   }
 
+  get instanceTypeName() {
+    switch (this.assetType) {
+      case 'objects':
+        return 'Asset.GMObject';
+      case 'rooms':
+        return 'Asset.GMRoom';
+      case 'scripts':
+        return 'Asset.GMScript';
+      case 'sprites':
+        return 'Asset.GMSprite';
+      case 'sounds':
+        return 'Asset.GMSound';
+      case 'paths':
+        return 'Asset.GMPath';
+      case 'shaders':
+        return 'Asset.GMShader';
+      case 'timelines':
+        return 'Asset.GMTimeline';
+      case 'fonts':
+        return 'Asset.GMFont';
+      default:
+        return 'Unknown';
+    }
+  }
+
   static async from<T extends YyResourceType>(
     project: Project,
     resource: YypResource,
@@ -201,38 +236,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     // loaded, so we do it after the other stuff and ensure that
     // the spec has been fully loaded
     await item.project.nativeWaiter;
-    let assetType: PrimitiveName;
-    switch (item.assetType) {
-      case 'objects':
-        assetType = 'Asset.GMObject';
-        break;
-      case 'rooms':
-        assetType = 'Asset.GMRoom';
-        break;
-      case 'scripts':
-        assetType = 'Asset.GMScript';
-        break;
-      case 'sprites':
-        assetType = 'Asset.GMSprite';
-        break;
-      case 'sounds':
-        assetType = 'Asset.GMSound';
-        break;
-      case 'paths':
-        assetType = 'Asset.GMPath';
-        break;
-      case 'shaders':
-        assetType = 'Asset.GMShader';
-        break;
-      case 'timelines':
-        assetType = 'Asset.GMTimeline';
-        break;
-      case 'fonts':
-        assetType = 'Asset.GMFont';
-        break;
-      default:
-        assetType = 'Unknown';
-    }
+    const assetType = item.instanceTypeName;
     item.symbol.addType(item.project.native.types.get(assetType)!);
     if (item.assetType === 'objects') {
       item.instanceType = item.project

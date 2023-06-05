@@ -128,18 +128,18 @@ export class Code {
     }
     if (scopeRange.isDotAccessor) {
       // Then only return self variables
-      return scopeRange.self.members || [];
+      return scopeRange.self.listMembers() || [];
     }
     return [
       // Local variables
-      ...(scopeRange.local.members || []),
+      ...(scopeRange.local.listMembers() || []),
       // Self variables, if not global
       ...((scopeRange.self !== this.project.self
-        ? scopeRange.self.members
+        ? scopeRange.self.listMembers()
         : []) || []),
       // Project globals
       ...this.project.symbols.values(),
-      ...(this.project.self.members || []),
+      ...(this.project.self.listMembers() || []),
       // GML globals
       ...[...this.project.native.global.values()],
     ];
