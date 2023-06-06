@@ -79,6 +79,15 @@ export function sortedAccessorSuffixes(
   return sorted;
 }
 
+const identifierCstNames = [
+  'All',
+  'Global',
+  'Identifier',
+  'Noone',
+  'Other',
+  'Self',
+] as const satisfies readonly (keyof IdentifierCstChildren)[];
+
 export function identifierFrom(nodes: IdentifierSource):
   | {
       token: IToken;
@@ -98,12 +107,9 @@ export function identifierFrom(nodes: IdentifierSource):
   }
   const children = 'children' in node ? node.children : node;
 
-  const type = keysOf(children)[0];
+  const type = identifierCstNames.find((name) => children[name]);
   if (!type) {
     return;
-  }
-  if (!children[type]) {
-    console.log('WYUT');
   }
   const token = children[type]![0];
   return { token, type, name: token.image };
@@ -487,6 +493,9 @@ export class GmlParser extends CstParser {
     this.SUBRULE(this.identifier);
     this.MANY(() => {
       this.SUBRULE(this.accessorSuffixes);
+    });
+    this.OPTION2(() => {
+      this.SUBRULE(this.assignment);
     });
   });
 

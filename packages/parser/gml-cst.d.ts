@@ -460,6 +460,7 @@ export type IdentifierAccessorCstChildren = {
   New?: IToken[];
   identifier: IdentifierCstNode[];
   accessorSuffixes?: AccessorSuffixesCstNode[];
+  assignment?: AssignmentCstNode[];
 };
 
 export interface ParenthesizedExpressionCstNode extends CstNode {

@@ -104,39 +104,6 @@ describe('Project', function () {
     ok(child2);
     //#endregion ASSETS
 
-    //#region CONSTRUCTORS
-    const constructorName = 'GlobalConstructor';
-    const constructorDef = scriptFile.getReferenceAt(18, 17);
-    const constructorSymbol = constructorDef!.item as Symbol;
-    const constructorType = constructorSymbol.type as Type<'Constructor'>;
-    ok(constructorDef);
-    ok(constructorSymbol);
-    ok(constructorType);
-    ok(constructorSymbol.name === constructorName);
-    ok(constructorSymbol instanceof Symbol);
-    expect(constructorSymbol.type.kind).to.equal('Constructor');
-    expect(constructorType.name).to.equal(constructorName);
-    expect(constructorType.params).to.have.lengthOf(2);
-    expect(constructorType.returns).to.exist;
-    expect(constructorType.returns!.kind).to.equal('Struct');
-    expect(constructorType.returns!.name).to.equal(constructorName);
-    expect(project.getGlobal(constructorName)).to.equal(constructorSymbol);
-    expect(project.types.get(`Constructor.${constructorName}`)).to.equal(
-      constructorType,
-    );
-
-    //#endregion CONSTRUCTORS
-
-    //#region FUNCTION CALLS
-    const constructorArg = recoveryScriptFile.getFunctionArgRangeAt(6, 33);
-    ok(constructorArg);
-    ok(constructorArg.ref.item === constructorDef.item);
-    ok(constructorArg.hasExpression);
-    const struct_get_arg = recoveryScriptFile.getFunctionArgRangeAt(7, 12);
-    ok(struct_get_arg);
-    ok(!struct_get_arg.hasExpression);
-    //#endregion
-
     //#region OBJECT INHERITANCE
     // Child1 and Child2 both inherit from Parent
     // Child1Child inherits from Child1
@@ -279,6 +246,35 @@ describe('Project', function () {
     ok(enumAutocompleteList);
     expect(enumAutocompleteList.length).to.equal(2);
     //#endregion RECOVERY
+
+    //#region CONSTRUCTORS
+    const constructorName = 'GlobalConstructor';
+    const constructorDef = scriptFile.getReferenceAt(18, 17);
+    const constructorSymbol = constructorDef!.item as Symbol;
+    const constructorType = constructorSymbol.type as Type<'Constructor'>;
+    ok(constructorDef);
+    ok(constructorSymbol);
+    ok(constructorType);
+    ok(constructorSymbol.name === constructorName);
+    ok(constructorSymbol instanceof Symbol);
+    expect(constructorSymbol.type.kind).to.equal('Constructor');
+    expect(constructorType.name).to.equal(constructorName);
+    expect(constructorType.params).to.have.lengthOf(2);
+    expect(constructorType.constructs).to.exist;
+    expect(constructorType.constructs!.kind).to.equal('Struct');
+    expect(constructorType.constructs!.name).to.equal(constructorName);
+    ok(project.getGlobal(constructorName)?.symbol === constructorSymbol);
+    ok(
+      project.types.get(`Struct.${constructorName}`) ===
+        constructorType.constructs,
+    );
+
+    //#endregion CONSTRUCTORS
+
+    //#region FUNCTION CALLS
+    ok(!scriptFile.getFunctionArgRangeAt(29, 35)!.hasExpression);
+    ok(scriptFile.getFunctionArgRangeAt(41, 50)!.hasExpression);
+    //#endregion FUNCTION CALLS
   });
 
   xit('can parse sample project', async function () {
