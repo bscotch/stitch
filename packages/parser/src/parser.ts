@@ -481,6 +481,9 @@ export class GmlParser extends CstParser {
   });
 
   readonly identifierAccessor = this.RULE('identifierAccessor', () => {
+    this.OPTION(() => {
+      this.CONSUME(t.New);
+    });
     this.SUBRULE(this.identifier);
     this.MANY(() => {
       this.SUBRULE(this.accessorSuffixes);

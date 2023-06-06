@@ -323,7 +323,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // If this is global we should already have a symbol for it.
     // If not, we should create a new symbol.
     const anonymousName = `anonymous_function_${randomString(8, 'base64')}`;
-    const item = (identifier ||
+    const item = (identifier?.item ||
       new Symbol(
         functionName || anonymousName,
         this.PROCESSOR.project

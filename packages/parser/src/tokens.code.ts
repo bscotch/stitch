@@ -251,11 +251,7 @@ export const codeTokens = [
   createToken({
     name: 'New',
     pattern: /\bnew\b/,
-    categories: [
-      c.Keyword,
-      c.UnaryPrefixOperator,
-      c.UnaryPrefixOperatorNotPlusMinus,
-    ],
+    categories: [c.Keyword],
   }),
   createToken({
     name: 'Delete',

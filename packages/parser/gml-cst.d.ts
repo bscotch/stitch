@@ -457,6 +457,7 @@ export interface IdentifierAccessorCstNode extends CstNode {
 }
 
 export type IdentifierAccessorCstChildren = {
+  New?: IToken[];
   identifier: IdentifierCstNode[];
   accessorSuffixes?: AccessorSuffixesCstNode[];
 };

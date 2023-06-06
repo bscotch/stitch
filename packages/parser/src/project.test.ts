@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
 import { Symbol } from './project.symbol.js';
-import { TypeMember } from './project.type.js';
+import { Type, TypeMember } from './project.type.js';
 
 describe('Project', function () {
   it('can load the GML spec', async function () {
@@ -104,9 +104,33 @@ describe('Project', function () {
     ok(child2);
     //#endregion ASSETS
 
+    //#region CONSTRUCTORS
+    const constructorName = 'GlobalConstructor';
+    const constructorDef = scriptFile.getReferenceAt(18, 17);
+    const constructorSymbol = constructorDef!.item as Symbol;
+    const constructorType = constructorSymbol.type as Type<'Constructor'>;
+    ok(constructorDef);
+    ok(constructorSymbol);
+    ok(constructorType);
+    ok(constructorSymbol.name === constructorName);
+    ok(constructorSymbol instanceof Symbol);
+    expect(constructorSymbol.type.kind).to.equal('Constructor');
+    expect(constructorType.name).to.equal(constructorName);
+    expect(constructorType.params).to.have.lengthOf(2);
+    expect(constructorType.returns).to.exist;
+    expect(constructorType.returns!.kind).to.equal('Struct');
+    expect(constructorType.returns!.name).to.equal(constructorName);
+    expect(project.getGlobal(constructorName)).to.equal(constructorSymbol);
+    expect(project.types.get(`Constructor.${constructorName}`)).to.equal(
+      constructorType,
+    );
+
+    //#endregion CONSTRUCTORS
+
     //#region FUNCTION CALLS
     const constructorArg = recoveryScriptFile.getFunctionArgRangeAt(6, 33);
     ok(constructorArg);
+    ok(constructorArg.ref.item === constructorDef.item);
     ok(constructorArg.hasExpression);
     const struct_get_arg = recoveryScriptFile.getFunctionArgRangeAt(7, 12);
     ok(struct_get_arg);
@@ -205,7 +229,6 @@ describe('Project', function () {
     ok(param.parameter);
     expect(param.name).to.equal(paramName);
     // Params should be visible in the function scope
-    const functionScope = scriptFile.getScopeRangeAt(19, 16);
     const inFunctionScope = scriptFile.getInScopeSymbolsAt(19, 16);
     ok(inFunctionScope.length);
     ok(inFunctionScope.find((id) => id.name === paramName));
