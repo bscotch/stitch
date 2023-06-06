@@ -24,7 +24,12 @@ export class Code {
   protected _diagnostics: Diagnostic[] = [];
   /** List of all symbol references in this file, in order of appearance. */
   protected _refs: Reference[] = [];
+  /** Ranges representing function call arguments,
+   * in order of appearance. Useful for signature help. */
   protected _functionArgRanges: FunctionArgRange[] = [];
+  /** List of function calls, where each root item is a list
+   * of argument ranges for that call. Useful for diagnostics.*/
+  protected _functionCalls: FunctionArgRange[][] = [];
   protected _refsAreSorted = false;
   protected _content!: string;
   protected _parsed!: GmlParsed;
@@ -94,7 +99,11 @@ export class Code {
 
   getFunctionArgRangeAt(
     offset: number | LinePosition,
+    column?: number,
   ): FunctionArgRange | undefined {
+    if (typeof offset === 'number' && typeof column === 'number') {
+      offset = { line: offset, column };
+    }
     let match: FunctionArgRange | undefined;
     const ranges = this.functionArgRanges;
     for (let i = 0; i < ranges.length; i++) {
@@ -224,6 +233,10 @@ export class Code {
     this._functionArgRanges.push(range);
   }
 
+  addFunctionCall(call: FunctionArgRange[]) {
+    this._functionCalls.push(call);
+  }
+
   sortRefs() {
     this._refs.sort((a, b) => a.start.offset - b.start.offset);
     this._functionArgRanges.sort((a, b) => a.start.offset - b.start.offset);
@@ -262,6 +275,7 @@ export class Code {
     // Reset this file's refs list
     this._refs = [];
     this._functionArgRanges = [];
+    this._functionCalls = [];
     this._refsAreSorted = false;
   }
 
@@ -306,6 +320,56 @@ export class Code {
     }
   }
 
+  protected computeFunctionCallDiagnostics() {
+    // Look through the function call ranges to see if we have too many or too few arguments.
+
+    calls: for (let i = 0; i < this._functionCalls.length; i++) {
+      const args = this._functionCalls[i];
+      const func = args[0].type;
+      const params = func.params || [];
+      const ref = args[0].ref;
+      // Handle missing arguments
+      for (let j = 0; j < params.length; j++) {
+        const param = params[j];
+        const arg = args[j] as FunctionArgRange | undefined;
+        const argIsEmpty = !arg?.hasExpression;
+        if (!param.optional && argIsEmpty) {
+          this._diagnostics.push({
+            $tag: 'diagnostic',
+            kind: 'parser',
+            message: `Missing required argument \`${param.name}\` for function \`${func.name}\`.`,
+            severity: 'error',
+            location: arg || ref,
+          });
+          // There may be more missing args but
+          // that just starts to get noisy.
+          continue calls;
+        }
+      }
+      if (params.at(-1)?.name === '...') {
+        // Then we can't have too many arguments
+        continue;
+      }
+      if (!params?.length && args.length === 1 && !args[0].hasExpression) {
+        // Then this is a zero-arg function and we aren't providing any args.
+        continue;
+      }
+      // Handle extra arguments.
+      for (let j = params.length; j < args.length; j++) {
+        const arg = args[j];
+        this._diagnostics.push({
+          $tag: 'diagnostic',
+          kind: 'parser',
+          message: `Extra argument for function \`${func.name}\`.`,
+          // Use a warning since this could be due to
+          // missing docs or legacy argument_count approaches
+          severity: 'warning',
+          location: arg,
+        });
+      }
+    }
+  }
+
   updateGlobals() {
     this.reset();
     return processGlobalSymbols(this);
@@ -314,6 +378,7 @@ export class Code {
   updateAllSymbols() {
     processSymbols(this);
     this.handleEventInheritance();
+    this.computeFunctionCallDiagnostics();
 
     if (this._diagnostics.length) {
       this.project.emitDiagnostics(this._diagnostics);

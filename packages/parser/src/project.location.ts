@@ -138,15 +138,20 @@ export class Range implements IRange {
  */
 export class FunctionArgRange extends Range {
   override $tag = 'ArgRange';
+  hasExpression = false;
   constructor(
-    /** The function type this parameter belongs to */
-    readonly type: Type<'Function'>,
+    /** The function reference this call belongs to */
+    readonly ref: Reference,
     /** The index of the parameter we're in. */
     readonly idx: number,
     start: Position,
     end?: Position,
   ) {
     super(start, end);
+  }
+
+  get type(): Type<'Function'> {
+    return this.ref.type as Type<'Function'>;
   }
 
   get param(): TypeMember {
@@ -160,14 +165,14 @@ export function Refs<TBase extends Constructor>(Base: TBase) {
     def: Range | undefined = undefined;
     refs = new Set<Reference>();
 
-    addRef(location: Range, type?: Type): this {
+    addRef(location: Range, type?: Type): Reference {
       const ref = Reference.fromRange(location, this as any);
       // TODO: Improve the type tracing!
       const itemType = (this as any).type as Type | undefined;
       ref.type = type || itemType || ref.type;
       this.refs.add(ref);
       location.file.addRef(ref);
-      return this;
+      return ref;
     }
 
     definedAt(location: Range | undefined): this {
@@ -242,14 +247,12 @@ export function getType(ref: ReferenceableType): Type {
   return ref.type;
 }
 
-export class Reference extends Range {
+export class Reference<
+  T extends ReferenceableType = ReferenceableType,
+> extends Range {
   override readonly $tag = 'Ref';
   type: Type = new Type('Unknown');
-  constructor(
-    readonly item: ReferenceableType,
-    start: Position,
-    end: Position,
-  ) {
+  constructor(readonly item: T, start: Position, end: Position) {
     super(start, end);
   }
 

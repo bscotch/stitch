@@ -20,7 +20,7 @@ function GlobalConstructor (_name, _description) constructor {
 	description = _description;
 	var local;
 	enum SurpriseEnum { surprise, another_surprise }
-	
+
 	static something_static = function different_name (first,second){
 		GLOBAL_SCRIPT_VAR = first;
 	}
@@ -33,3 +33,10 @@ function another_global_function(){
 }
 
 const.name.hello[0].nope();
+
+/// @param {Real} _whatever
+function AnotherConstructor (_whatever){
+	self.whatever = _whatever;
+
+	constructed = new GlobalConstructor("nerp", "derp");
+}

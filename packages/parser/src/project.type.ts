@@ -204,7 +204,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
       this.params[idx] = param;
     }
     param.type = type;
-    param.optional = optional;
+    param.optional = optional || name === '...';
     param.name = name;
     param.idx = idx;
     param.parameter = true;

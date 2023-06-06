@@ -106,6 +106,12 @@ export class Project {
   }
 
   emitDiagnostics(diagnostics: Diagnostic[]): void {
+    // Ensure they are valid diagnostics
+    for (const diagnostic of diagnostics) {
+      ok(diagnostic.$tag === 'diagnostic');
+      ok(diagnostic.location);
+      ok(diagnostic.location.file);
+    }
     this.emitter.emit('diagnostics', diagnostics);
   }
 

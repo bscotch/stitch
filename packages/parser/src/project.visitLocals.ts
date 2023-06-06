@@ -25,6 +25,7 @@ import {
   FunctionArgRange,
   Position,
   Range,
+  Reference,
   fixITokenLocation,
   getType,
   type ReferenceableType,
@@ -391,8 +392,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       // Also add to the function's local scope.
       const member = functionLocalScope
         .addMember(param.image, paramType)
-        .definedAt(range)
-        .addRef(range);
+        .definedAt(range);
+      member.addRef(range);
       member.local = true;
       member.parameter = true;
     }
@@ -429,7 +430,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // TODO: Rework to overwrite the found identifier with each subsequent suffix.
 
     suffixLoop: for (const suffix of suffixes) {
-      const currentType = currentItem ? getType(currentItem) : null;
+      const currentType = currentItem ? getType(currentItem.item) : null;
       switch (suffix.name) {
         case 'dotAccessSuffix':
           // Then we need to change self-scope to be inside
@@ -467,6 +468,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           const argsAndSeps = sortedFunctionCallParts(suffix);
           let argIdx = 0;
           let lastDelimiter: IToken;
+          let lastTokenWasDelimiter = true;
+          const ranges: FunctionArgRange[] = [];
           argLoop: for (let i = 0; i < argsAndSeps.length; i++) {
             const token = argsAndSeps[i];
             const isSep = 'image' in token;
@@ -488,23 +491,31 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
               // end on the LEFT side of the second delimiter
               const end = Position.fromCstStart(this.PROCESSOR.file, token);
               const funcRange = new FunctionArgRange(
-                currentType as Type<'Function'>,
+                currentItem!.ref,
                 argIdx,
                 start,
                 end,
               );
+              if (!lastTokenWasDelimiter) {
+                funcRange.hasExpression = true;
+              }
               this.PROCESSOR.file.addFunctionArgRange(funcRange);
+              ranges.push(funcRange);
 
               // Increment the argument idx for the next one
               lastDelimiter = token;
+              lastTokenWasDelimiter = true;
               argIdx++;
             } else {
+              lastTokenWasDelimiter = false;
               this.visit(token);
             }
           }
           // Set the current item to the return type,
           // so that we can chain suffixes.
-          currentItem = currentType?.returns;
+          currentItem = { item: currentType!.returns!, ref: currentItem!.ref };
+          // Add the function call to the file for diagnostics
+          this.PROCESSOR.file.addFunctionCall(ranges);
           break;
         default:
           this.visit(suffix);
@@ -586,7 +597,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
   override variableAssignment(children: VariableAssignmentCstChildren) {
     // See if this identifier is known.
-    const item = this.identifier(children);
+    const identified = this.identifier(children);
+    const item = identified?.item;
     const range = this.PROCESSOR.range(children.Identifier[0]);
     if (!item) {
       // Create a new member on the self scope, unless it's global
@@ -617,11 +629,14 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
    * to make that work.*/
   override identifier(
     children: IdentifierCstChildren,
-  ): ReferenceableType | undefined {
+  ): { item: ReferenceableType; ref: Reference } | undefined {
     const item = this.FIND_ITEM(children);
     if (item) {
-      item.item.addRef(item.range);
-      return item.item;
+      const ref = item.item.addRef(item.range);
+      return {
+        item: item.item,
+        ref,
+      };
     }
     return;
   }

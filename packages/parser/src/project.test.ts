@@ -79,22 +79,48 @@ describe('Project', function () {
     const project = await Project.initialize(projectDir);
     ok(project);
 
-    //#region OBJECT INHERITANCE
-    // Child1 and Child2 both inherit from Parent
-    // Child1Child inherits from Child1
-    // Child2 does not call event_inherited in its Create event
+    //#region ASSETS
+    const script = project.getAssetByName('Script1')!;
+    const scriptFile = script.gmlFile;
+    const recoveryScript = project.getAssetByName('Recovery')!;
+    const recoveryScriptFile = recoveryScript.gmlFile;
+    const obj = project.getAssetByName('o_object')!;
+    const objCreate = obj.gmlFilesArray.find((f) => f.name === 'Create_0');
+    const objStep = obj.gmlFilesArray.find((f) => f.name === 'Step_0');
     const parent = project.getAssetByName('o_parent')!;
-    const parentVars = ['parent_var'];
     const child = project.getAssetByName('o_child1')!;
-    const childVars = ['child1_var'];
     const grandchild = project.getAssetByName('o_child1_child')!;
-    const grandchildVars = ['child1_child_var'];
     const child2 = project.getAssetByName('o_child2')!;
-    const child2Vars = ['child2_var'];
+    ok(script);
+    ok(scriptFile);
+    ok(obj);
+    ok(objCreate);
+    ok(objStep);
+    ok(recoveryScript);
+    ok(recoveryScriptFile);
     ok(parent);
     ok(child);
     ok(grandchild);
     ok(child2);
+    //#endregion ASSETS
+
+    //#region FUNCTION CALLS
+    const constructorArg = recoveryScriptFile.getFunctionArgRangeAt(6, 33);
+    ok(constructorArg);
+    ok(constructorArg.hasExpression);
+    const struct_get_arg = recoveryScriptFile.getFunctionArgRangeAt(7, 12);
+    ok(struct_get_arg);
+    ok(!struct_get_arg.hasExpression);
+    //#endregion
+
+    //#region OBJECT INHERITANCE
+    // Child1 and Child2 both inherit from Parent
+    // Child1Child inherits from Child1
+    // Child2 does not call event_inherited in its Create event
+    const parentVars = ['parent_var'];
+    const childVars = ['child1_var'];
+    const grandchildVars = ['child1_child_var'];
+    const child2Vars = ['child2_var'];
     // Check inheritance links
     ok(child.parent === parent);
     ok(grandchild.parent === child);
@@ -117,23 +143,6 @@ describe('Project', function () {
     ).not.to.include.members(parentVars);
 
     //#endregion OBJECT INHERITANCE
-
-    //#region ASSETS
-    const script = project.getAssetByName('Script1')!;
-    const scriptFile = script.gmlFile;
-    const recoveryScript = project.getAssetByName('Recovery')!;
-    const recoveryScriptFile = recoveryScript.gmlFile;
-    const obj = project.getAssetByName('o_object')!;
-    const objCreate = obj.gmlFilesArray.find((f) => f.name === 'Create_0');
-    const objStep = obj.gmlFilesArray.find((f) => f.name === 'Step_0');
-    ok(script);
-    ok(scriptFile);
-    ok(obj);
-    ok(objCreate);
-    ok(objStep);
-    ok(recoveryScript);
-    ok(recoveryScriptFile);
-    //#endregion ASSETS
 
     //#region GLOBALVARS
     const globalVarName = 'GLOBAL_SCRIPT_VAR';
