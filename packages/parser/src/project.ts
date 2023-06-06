@@ -1,6 +1,5 @@
-import { fetchReleasesSummaryWithNotes } from '@bscotch/gamemaker-releases';
 import { pathy, Pathy } from '@bscotch/pathy';
-import { GameMakerLauncher } from '@bscotch/stitch-launcher';
+import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { Yy, Yyp } from '@bscotch/yy';
 import { ok } from 'assert';
 import chokidar from 'chokidar';
@@ -37,6 +36,9 @@ export interface ProjectOptions {
 
 export class Project {
   yyp!: Yyp;
+  /** Until this resolves, assume that this.yyp is not yet read */
+  yypWaiter?: Promise<any>;
+
   readonly assets = new Map<AssetName, Asset>();
   /**
    * Store the "native" functions, constants, and enums on
@@ -296,10 +298,14 @@ export class Project {
     if (!runtimeVersion) {
       console.error('No stitch config found, looking up runtime version');
       // Look up the runtime version that matches the project's IDE version.
-      const releases = await fetchReleasesSummaryWithNotes();
-      const usingRelease = releases.find(
-        (r) => r.ide.version === this.ideVersion,
-      );
+      await this.yypWaiter;
+      const usingRelease = await GameMakerIde.findRelease({
+        ideVersion: this.ideVersion,
+      });
+      // const releases = await fetchReleasesSummaryWithNotes();
+      // const usingRelease = releases.find(
+      //   (r) => r.ide.version === this.ideVersion,
+      // );
       // Look up the GML Spec file that matches the project's runtime version.
       runtimeVersion = usingRelease?.runtime.version;
     }
@@ -370,6 +376,9 @@ export class Project {
     }
     let t = Date.now();
     this.nativeWaiter = this.loadGmlSpec();
+    this.yypWaiter = Yy.read(this.yypPath.absolute, 'project').then(
+      (yyp) => (this.yyp = yyp),
+    );
     const fileLoader = this.loadAssets();
 
     await Promise.all([this.nativeWaiter, fileLoader]);
