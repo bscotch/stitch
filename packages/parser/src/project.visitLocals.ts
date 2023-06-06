@@ -312,6 +312,9 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // Compute useful properties of this function to help figure out
     // how to define its symbol, type, scope, etc.
     let functionName: string | undefined = children.Identifier?.[0]?.image;
+    const nameLocation = functionName
+      ? this.PROCESSOR.range(children.Identifier![0])
+      : undefined;
     const isConstructor = !!children.constructorSuffix;
     const functionTypeName = isConstructor ? 'Constructor' : 'Function';
     const bodyLocation = children.blockStatement[0].location!;
@@ -349,6 +352,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const self = (
       isConstructor ? functionType.constructs : this.PROCESSOR.currentSelf
     )!;
+    // Make sure this function is a member of the self struct
+    if (!self.getMember(functionName)) {
+      const member = self.addMember(functionName, item.type);
+      member.definedAt(nameLocation!);
+      member.addRef(nameLocation!);
+    }
 
     // Functions have their own localscope as well as their self scope,
     // so we need to push both.

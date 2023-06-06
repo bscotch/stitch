@@ -211,9 +211,15 @@ describe('Project', function () {
     //#region INSTANCE SCOPE
     const instanceVarName = 'instance_variable';
     const inInstanceScope = objStep.getReferenceAt(4, 9);
+    const objectType = obj.instanceType;
+    ok(objectType);
     ok(inInstanceScope);
     ok(inInstanceScope.item.name === instanceVarName);
     ok(inInstanceScope.item.instance);
+    // Are functions properly added to self?
+    const instanceFunctionName = 'instance_function';
+    const instanceFunction = objectType.getMember(instanceFunctionName);
+    ok(instanceFunction);
     //#endregion INSTANCE SCOPE
 
     //#region ENUMS
