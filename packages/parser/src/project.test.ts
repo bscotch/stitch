@@ -79,6 +79,45 @@ describe('Project', function () {
     const project = await Project.initialize(projectDir);
     ok(project);
 
+    //#region OBJECT INHERITANCE
+    // Child1 and Child2 both inherit from Parent
+    // Child1Child inherits from Child1
+    // Child2 does not call event_inherited in its Create event
+    const parent = project.getAssetByName('o_parent')!;
+    const parentVars = ['parent_var'];
+    const child = project.getAssetByName('o_child1')!;
+    const childVars = ['child1_var'];
+    const grandchild = project.getAssetByName('o_child1_child')!;
+    const grandchildVars = ['child1_child_var'];
+    const child2 = project.getAssetByName('o_child2')!;
+    const child2Vars = ['child2_var'];
+    ok(parent);
+    ok(child);
+    ok(grandchild);
+    ok(child2);
+    // Check inheritance links
+    ok(child.parent === parent);
+    ok(grandchild.parent === child);
+    ok(child2.parent === parent);
+    // Check that variables are propery inherited
+    expect(
+      parent.instanceType?.listMembers().map((m) => m.name),
+    ).to.include.members(parentVars);
+    expect(
+      child.instanceType?.listMembers().map((m) => m.name),
+    ).to.include.members([...parentVars, ...childVars]);
+    expect(
+      grandchild.instanceType?.listMembers().map((m) => m.name),
+    ).to.include.members([...parentVars, ...childVars, ...grandchildVars]);
+    expect(
+      child2.instanceType?.listMembers().map((m) => m.name),
+    ).to.include.members(child2Vars);
+    expect(
+      child2.instanceType?.listMembers().map((m) => m.name),
+    ).not.to.include.members(parentVars);
+
+    //#endregion OBJECT INHERITANCE
+
     //#region ASSETS
     const script = project.getAssetByName('Script1')!;
     const scriptFile = script.gmlFile;

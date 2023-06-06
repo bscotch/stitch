@@ -29,6 +29,10 @@ export class Code {
   protected _content!: string;
   protected _parsed!: GmlParsed;
 
+  // Metadata
+  /** For object events, whether or not `event_inherited` is unambiguously being called */
+  public callsSuper = false;
+
   constructor(readonly asset: Asset, readonly path: Pathy<string>) {}
 
   get isScript() {
@@ -45,6 +49,15 @@ export class Code {
 
   get project() {
     return this.asset.project;
+  }
+
+  get startPosition() {
+    return Position.fromFileStart(this);
+  }
+
+  /** A zero-length range at the start of the file. */
+  get startRange() {
+    return new Range(this.startPosition, this.startPosition);
   }
 
   protected isInRange(
@@ -266,6 +279,33 @@ export class Code {
     this.updateAllSymbols();
   }
 
+  protected handleEventInheritance() {
+    if (
+      this.asset.assetType !== 'objects' ||
+      !this.isCreateEvent ||
+      !this.asset.parent
+    ) {
+      return;
+    }
+    // Then the type will have been set up to inherit from the parent.
+    // BUT. If this event does not call `event_inherited()`, then we
+    // need to unlink the type.
+    if (!this.callsSuper) {
+      this.asset.instanceType!.parent = undefined;
+      this._diagnostics.push({
+        $tag: 'diagnostic',
+        kind: 'parser',
+        message: `Event does not call \`event_inherited()\`, so it will not inherit from its parent.`,
+        severity: 'warning',
+        location: this.startRange,
+      });
+    } else {
+      // Ensure that the type is set as the parent by re-assigning it.
+      // eslint-disable-next-line no-self-assign
+      this.asset.parent = this.asset.parent;
+    }
+  }
+
   updateGlobals() {
     this.reset();
     return processGlobalSymbols(this);
@@ -273,6 +313,7 @@ export class Code {
 
   updateAllSymbols() {
     processSymbols(this);
+    this.handleEventInheritance();
 
     if (this._diagnostics.length) {
       this.project.emitDiagnostics(this._diagnostics);

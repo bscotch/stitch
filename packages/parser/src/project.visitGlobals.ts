@@ -8,7 +8,7 @@ import type {
   IdentifierAccessorCstChildren,
   MacroStatementCstChildren,
 } from '../gml-cst.js';
-import { GmlVisitorBase } from './parser.js';
+import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
 import { Position, Range } from './project.location.js';
 import { PrimitiveName } from './project.primitives.js';
@@ -108,6 +108,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   extractGlobalDeclarations(input: CstNode) {
+    this.PROCESSOR.file.callsSuper = false;
     this.visit(input);
     return this.PROCESSOR;
   }
@@ -178,13 +179,21 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
 
   override identifierAccessor(children: IdentifierAccessorCstChildren) {
     // Add global.whatever symbols
-    const isGlobal = children.identifier[0].children.Global?.[0];
-    if (isGlobal) {
-      const identifier =
+    const identifier = identifierFrom(children);
+    if (identifier?.type === 'Global') {
+      const globalIdentifier =
         children.accessorSuffixes?.[0].children.dotAccessSuffix?.[0].children
           .identifier[0].children;
-      if (identifier?.Identifier) {
-        this.ADD_GLOBAL_DECLARATION(identifier, 'Unknown', true);
+      if (globalIdentifier?.Identifier) {
+        this.ADD_GLOBAL_DECLARATION(globalIdentifier, 'Unknown', true);
+      }
+    } else if (
+      identifier?.type === 'Identifier' &&
+      children.accessorSuffixes?.[0].children.functionArguments
+    ) {
+      // See if this is a function call for `event_inherited()`
+      if (identifier.name === 'event_inherited') {
+        this.PROCESSOR.file.callsSuper = true;
       }
     }
 

@@ -43,6 +43,8 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     this._parent = parent;
     if (parent) {
       this.instanceType!.parent = parent.instanceType;
+    } else {
+      this.instanceType!.parent = undefined;
     }
   }
 
