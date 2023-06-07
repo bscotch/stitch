@@ -427,10 +427,25 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       return;
     }
 
-    // TODO: Rework to overwrite the found identifier with each subsequent suffix.
+    // Compute useful metadata
+    /** If true, then the `new` keyword prefixes this. */
+    const usesNew = !!children.New?.length;
+    /** If not `undefined`, this is the assignment node */
+    const assignment = children.assignment?.[0];
+    /** If there is an assignment, the inferred type of said assignment. */
+    const assignmentType =
+      assignment &&
+      this.COMPUTE_TYPE(
+        assignment.children.assignmentRightHandSide[0].children,
+      );
 
-    suffixLoop: for (const suffix of suffixes) {
+    // For each suffix in turn, try to figure out how it changes the scope,
+    // find the corresponding symbol, etc.
+
+    suffixLoop: for (let s = 0; s < suffixes.length; s++) {
+      const suffix = suffixes[s];
       const currentType = currentItem ? getType(currentItem.item) : null;
+      const isLastSuffix = s === suffixes.length - 1;
       switch (suffix.name) {
         case 'dotAccessSuffix':
           // Then we need to change self-scope to be inside
@@ -450,8 +465,39 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
               this.PROCESSOR.scope.setEnd(dot, true);
               this.PROCESSOR.popSelfScope(dot, true);
             } else {
-              currentItem = this.identifier(dotAccessor.identifier[0].children);
-              currentLocation = dotAccessor.identifier[0].location!;
+              const nextIdentity = identifierFrom(dotAccessor);
+              const nextItem = this.identifier(
+                dotAccessor.identifier[0].children,
+              );
+              const nextItemLocation = dotAccessor.identifier[0].location!;
+              if (!nextItem && typeIs(currentType, 'Struct')) {
+                ok(nextIdentity, 'Could not get next identity');
+                const range = this.PROCESSOR.range(nextItemLocation);
+                const newMemberType =
+                  this.PROCESSOR.project.createType('Unknown');
+                newMemberType.addRef(range);
+                // Add this member to the struct
+                const newMember = currentType.addMember(
+                  nextIdentity.name,
+                  newMemberType,
+                );
+                newMember.addRef(range);
+                // If this is the last suffix and this is
+                // an assignment, then also set the `def` of the
+                // new member.
+                if (isLastSuffix && assignment) {
+                  newMember.definedAt(range);
+                } else {
+                  // TODO: Else emit a warning that this member is
+                  // not definitely defined.
+                  this.PROCESSOR.addDiagnostic(
+                    nextItemLocation,
+                    `Member ${nextIdentity.name} is not definitely defined`,
+                  );
+                }
+              }
+              currentItem = nextItem;
+              currentLocation = nextItemLocation;
               this.PROCESSOR.scope.setEnd(currentLocation, true);
               this.PROCESSOR.popSelfScope(currentLocation, true);
             }
@@ -513,7 +559,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           }
           // Set the current item to the return type,
           // so that we can chain suffixes.
-          currentItem = { item: currentType!.returns!, ref: currentItem!.ref };
+          const returnType =
+            usesNew && isLastSuffix
+              ? currentType?.constructs
+              : currentType?.returns;
+          currentItem = { item: returnType!, ref: currentItem!.ref };
           // Add the function call to the file for diagnostics
           this.PROCESSOR.file.addFunctionCall(ranges);
           break;
@@ -522,41 +572,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       }
     }
   }
-
-  // override expression(children: ExpressionCstChildren) {
-  //   const lhs = children.primaryExpression;
-  //   this.visit(lhs);
-  //   if (children.variableAssignment) {
-  //     const accessor = lhs[0].children.identifierAccessor?.[0].children;
-  //     if (accessor && !accessor.accessorSuffixes) {
-  //       // Try to figure out what the right side's type is
-  //       const rhs =
-  //         children.variableAssignment?.[0].children.assignmentRightHandSide[0]
-  //           .children;
-  //       if (rhs) {
-  //         // Then this variable is being assigned and therefore exists.
-  //         // TODO: Add it to the self scope!
-  //         const type = this.COMPUTE_TYPE(rhs);
-  //         if (type.kind !== 'Unknown') {
-  //           // Then we can try to do a simple assignment check
-  //           const item = this.FIND_ITEM(accessor.identifier[0].children)?.item;
-  //           if (item) {
-  //             const itemType = 'type' in item ? item.type : item;
-  //             if (itemType.kind === 'Unknown') {
-  //               itemType.kind = type.kind;
-  //             }
-  //           }
-  //         }
-  //       }
-  //     } else {
-  //       this.visit(children.variableAssignment);
-  //     }
-  //   } else if (children.binaryExpression) {
-  //     this.visit(children.binaryExpression);
-  //   } else if (children.ternaryExpression) {
-  //     this.visit(children.ternaryExpression);
-  //   }
-  // }
 
   /** Static params are unambiguously defined. */
   override staticVarDeclarations(children: StaticVarDeclarationsCstChildren) {
