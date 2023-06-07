@@ -16,6 +16,7 @@ import type {
   IdentifierCstChildren,
   IdentifierCstNode,
   JsdocTypeUnionCstNode,
+  JsdocUnstructuredContentCstChildren,
 } from '../gml-cst.js';
 import { GmlLexer } from './lexer.js';
 import type { GmlParseError } from './project.diagnostics.js';
@@ -57,6 +58,35 @@ export function sortedFunctionCallParts(
     const bLocation = ('location' in b ? b.location! : b) as CstNodeLocation;
     return aLocation.startOffset - bLocation.startOffset;
   });
+}
+
+function sortItokenRecords(records: Record<string, IToken[]>): IToken[] {
+  const sorted: IToken[] = [];
+  for (const key of keysOf(records)) {
+    sorted.push(...records[key]);
+  }
+  sorted.sort((a, b) => a.startOffset - b.startOffset);
+  return sorted;
+}
+
+export function jsdocUnstructuredContentToString(
+  content: JsdocUnstructuredContentCstChildren,
+): string {
+  const sorted = sortItokenRecords(content);
+  sorted.map((token) => token.image).join(' ');
+  let result = '';
+  for (let i = 0; i < sorted.length; i++) {
+    const { image } = sorted[i];
+    if (i === 0) {
+      result = image;
+      continue;
+    }
+    if (!image[0].match(/[\s,.!;-_]/)) {
+      result += ' ';
+    }
+    result += image;
+  }
+  return result;
 }
 
 export function sortedAccessorSuffixes(

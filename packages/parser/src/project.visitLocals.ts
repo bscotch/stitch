@@ -7,6 +7,9 @@ import type {
   FunctionExpressionCstChildren,
   IdentifierAccessorCstChildren,
   IdentifierCstChildren,
+  JsdocGmlCstChildren,
+  JsdocJsCstChildren,
+  JsdocLineCstNode,
   LocalVarDeclarationCstChildren,
   StaticVarDeclarationsCstChildren,
   VariableAssignmentCstChildren,
@@ -16,6 +19,7 @@ import {
   GmlVisitorBase,
   identifierFrom,
   isEmpty,
+  jsdocUnstructuredContentToString,
   sortedAccessorSuffixes,
   sortedFunctionCallParts,
 } from './parser.js';
@@ -31,6 +35,7 @@ import {
   type ReferenceableType,
   type Scope,
 } from './project.location.js';
+import { PrimitiveName } from './project.primitives.js';
 import { Symbol } from './project.symbol.js';
 import {
   Type,
@@ -304,6 +309,92 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
     this.PROCESSOR.scope.setEnd(blockLocation, true);
     this.PROCESSOR.popSelfScope(blockLocation, true);
+  }
+
+  override jsdocJs(children: JsdocJsCstChildren) {
+    this.TYPE_FROM_JSDOC(children.jsdocLine || []);
+  }
+
+  override jsdocGml(children: JsdocGmlCstChildren) {
+    this.TYPE_FROM_JSDOC(children.jsdocLine || []);
+  }
+
+  TYPE_FROM_JSDOC(lines: JsdocLineCstNode[]) {
+    const rootType = this.PROCESSOR.project.createType('Unknown');
+    let describing: { description: string | undefined } = rootType;
+    const appendDescription = (description: string) => {
+      describing.description ||= '';
+      if (describing.description.length > 0) {
+        describing.description += ' ';
+      }
+      describing.description += description;
+    };
+    const ensureKind = (kind: PrimitiveName) => {
+      if (rootType.kind === 'Unknown') {
+        rootType.kind = kind;
+      } else if (rootType.kind !== kind) {
+        // TODO: Emit a diagnostic
+      }
+    };
+
+    for (const line of lines) {
+      const tag = line.children.jsdocTag?.[0]?.children;
+      const description = jsdocUnstructuredContentToString(
+        line.children.jsdocUnstructuredContent?.[0].children,
+      );
+      const isFunction =
+        tag &&
+        (tag?.jsdocFunctionTag ||
+          tag?.jsdocParamTag ||
+          tag?.jsdocReturnTag ||
+          tag?.jsdocSelfTag);
+      if (isFunction) {
+        ensureKind('Function');
+      }
+
+      if (!tag || tag.jsdocDescriptionTag) {
+        appendDescription(description);
+      } else if (tag.jsdocDeprecatedTag) {
+        rootType.deprecated = true;
+      } else if (tag.jsdocParamTag) {
+        const jsdocTag = tag.jsdocParamTag[0].children;
+        const typeUnion =
+          jsdocTag.jsdocTypeGroup?.[0].children.jsdocTypeUnion[0];
+        const paramType = typeUnion
+          ? Type.fromCst(typeUnion, this.PROCESSOR.project.types)
+          : Type.from('Any', this.PROCESSOR.project.types);
+        const paramName =
+          jsdocTag.JsdocIdentifier?.[0].image ||
+          (jsdocTag.jsdocRemainingParams && '...');
+        if (!paramName) {
+          continue;
+        }
+        const paramNameLocation = this.PROCESSOR.range(
+          (jsdocTag.JsdocIdentifier?.[0] ||
+            jsdocTag.jsdocRemainingParams?.[0].location)!,
+        );
+
+        const member = rootType
+          .addParameter(rootType.params?.length || 0, paramName, paramType)
+          .definedAt(paramNameLocation)
+          .describe(description);
+        member.addRef(paramNameLocation);
+        member.optional = !!jsdocTag.JsdocEquals;
+        describing = member;
+      }
+    }
+    if (rootType.kind === 'Function') {
+      console.log('JSDOC FUNCTION', rootType.description);
+      for (const param of rootType.params || []) {
+        console.log(
+          '  PARAM',
+          param.name,
+          param.optional,
+          param.type.kind,
+          param.description,
+        );
+      }
+    }
   }
 
   override functionExpression(children: FunctionExpressionCstChildren) {

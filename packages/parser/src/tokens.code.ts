@@ -14,15 +14,17 @@ export const codeTokens = [
   // Add separate parser modes for comments
   createToken({
     name: 'JsdocGmlStart',
-    pattern: /\/\/\//,
+    pattern: /\/\/\/[\r\n\s]*/,
     start_chars_hint: ['/'],
+    line_breaks: true,
     categories: [c.Jsdoc],
     push_mode: 'jsdocGml',
   }),
   createToken({
     name: 'JsdocJsStart',
-    pattern: /\/\*\*/,
+    pattern: /\/\*\*[\r\n\s]*/,
     start_chars_hint: ['/'],
+    line_breaks: true,
     categories: [c.Jsdoc],
     push_mode: 'jsdocJs',
   }),

@@ -53,6 +53,12 @@ const jsdocLineTokens = [
     categories: [c.JsdocTag],
   }),
   createToken({
+    name: 'JsdocTypeTag',
+    pattern: /@type\b/,
+    start_chars_hint: ['@'],
+    categories: [c.JsdocTag],
+  }),
+  createToken({
     name: 'JsdocUnknownTag',
     pattern: /@[a-zA-Z_]+\b/,
     start_chars_hint: ['@'],
@@ -120,19 +126,19 @@ export const jsdocsJsTokens = [
   ...jsdocLineTokens,
   createToken({
     name: 'JsdocJsEnd',
-    pattern: /\*\//,
+    pattern: /(\r?\n)?\s*\*\//,
+    line_breaks: true,
     pop_mode: true,
   }),
   createToken({
     name: 'JsdocJsLineStart',
-    pattern: /\r?\n\s*\*\s+/,
+    pattern: /\r?\n\s*(\*\s+)?/,
     line_breaks: true,
     categories: [c.Separators],
   }),
   createToken({
     name: 'JsdocJsDescription',
-    pattern: /.*\r?\n/,
-    line_breaks: true,
+    pattern: /[^\r\n]+/,
     categories: [c.Jsdoc],
   }),
 ];
