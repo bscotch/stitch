@@ -275,6 +275,16 @@ describe('Project', function () {
     ok(!scriptFile.getFunctionArgRangeAt(29, 35)!.hasExpression);
     ok(scriptFile.getFunctionArgRangeAt(41, 50)!.hasExpression);
     //#endregion FUNCTION CALLS
+
+    //#region DOT ASSIGNMENTS
+    const dotAssignedRefName = 'another_instance_variable';
+    const dotAssignedRef = objCreate.getReferenceAt(20, 14);
+    const dotAssignedType = dotAssignedRef?.item as TypeMember;
+    ok(dotAssignedRef);
+    ok(dotAssignedRef.item.name === dotAssignedRefName);
+    ok(dotAssignedType);
+    ok(dotAssignedType.parent === obj.instanceType);
+    //#endregion DOT ASSIGNMENTS
   });
 
   xit('can parse sample project', async function () {

@@ -466,7 +466,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
               this.PROCESSOR.popSelfScope(dot, true);
             } else {
               const nextIdentity = identifierFrom(dotAccessor);
-              const nextItem = this.identifier(
+              let nextItem = this.identifier(
                 dotAccessor.identifier[0].children,
               );
               const nextItemLocation = dotAccessor.identifier[0].location!;
@@ -475,13 +475,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
                 const range = this.PROCESSOR.range(nextItemLocation);
                 const newMemberType =
                   this.PROCESSOR.project.createType('Unknown');
-                newMemberType.addRef(range);
                 // Add this member to the struct
-                const newMember = currentType.addMember(
+                const newMember: TypeMember = currentType.addMember(
                   nextIdentity.name,
                   newMemberType,
                 );
-                newMember.addRef(range);
+                const ref = newMember.addRef(range);
                 // If this is the last suffix and this is
                 // an assignment, then also set the `def` of the
                 // new member.
@@ -495,6 +494,10 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
                     `Member ${nextIdentity.name} is not definitely defined`,
                   );
                 }
+                nextItem = {
+                  item: newMember,
+                  ref,
+                };
               }
               currentItem = nextItem;
               currentLocation = nextItemLocation;
