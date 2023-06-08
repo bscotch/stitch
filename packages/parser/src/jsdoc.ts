@@ -35,7 +35,7 @@ const patterns = {
 };
 const typeGroupPattern = `(?<typeGroup>{\\s*(?<typeUnion>[^}]*?)?\\s*})`;
 const linePrefixPattern = `^(\\s*(?<delim>///|\\*)\\s*)?`;
-const descriptionPattern = `(?<info>.*)$`;
+const descriptionPattern = `(?<info>.*)`;
 const paramNamePattern = `(?<name>[a-zA-Z_]+)`;
 const paramDefaultPattern = `(?:\\s*=\\s*(?<default>[^\\]]+?)\\s*)`;
 const dotdotdot = `\\.\\.\\.`;
@@ -62,8 +62,8 @@ patterns.param = `${patterns.param}(\\s+${typeGroupPattern})?\\s+(${paramNamePat
 patterns.self = `${patterns.self}\\s+(?<type>[a-zA-Z_.]+)`;
 
 // Descriptions
-for (const tagName of ['description', 'returns', 'param'] as const) {
-  patterns[tagName] = `${patterns[tagName]}\\s+${descriptionPattern}`;
+for (const tagName of names) {
+  patterns[tagName] = `${patterns[tagName]}(\\s+${descriptionPattern})?`;
 }
 const descriptionLine = `${linePrefixPattern}\\s*${descriptionPattern}`;
 
@@ -77,7 +77,13 @@ const regexes: Record<(typeof names)[number], RegExp> = names.reduce(
 
 export type JsdocTagKind = keyof typeof patterns;
 
-export type JsdocKind = 'function' | 'description' | 'type' | 'self' | 'param';
+export type JsdocKind =
+  | 'function'
+  | 'description'
+  | 'type'
+  | 'param'
+  | 'self'
+  | 'returns';
 
 export interface Jsdoc<T extends JsdocKind = JsdocKind> {
   kind: T;
@@ -86,21 +92,26 @@ export interface Jsdoc<T extends JsdocKind = JsdocKind> {
   deprecated?: boolean;
   params?: Jsdoc<'param'>[];
   /** Return type as GML typestring */
-  returns?: string;
+  returns?: Jsdoc<'returns'>;
   /** Parameter name */
   name?: string;
   /** If is an optional param */
   optional?: boolean;
-  /** Parameter, Type, or Self */
+  /** Parameter, or Type */
   type?: string;
+  /** For functions or self docs */
+  self?: string;
 }
 
 export function parseJsdocString(jsdocString: string) {
   const lines = jsdocString.split(/\r?\n/);
   // Default to a description-only doc, and update its type
   // if we can infer it based on the tags.
-  const doc: Jsdoc = { kind: 'description', description: '' };
-  let describing: Jsdoc = doc;
+  const doc: Jsdoc<'description' | 'function' | 'type' | 'self'> = {
+    kind: 'description',
+    description: '',
+  };
+  let describing: Jsdoc | null = doc;
   const appendDescription = (
     currentDescription: string,
     newDescription?: string,
@@ -128,6 +139,12 @@ export function parseJsdocString(jsdocString: string) {
         doc.description = appendDescription(doc.description, parts.info);
         break;
       }
+      // If it's an unfamiliar tag, just skip it
+      if (parts.unknown) {
+        // Unset the describe target
+        describing = null;
+        break;
+      }
 
       // Based on the tag type, update the doc
       const impliesFunction =
@@ -149,6 +166,33 @@ export function parseJsdocString(jsdocString: string) {
         // Update the current describing object in case the next line is a description
         describing = param;
       }
+      // Handle returns
+      if (parts.returns) {
+        if (doc.returns) {
+          // Then we don't want to overwrite.
+          break;
+        }
+        const returns: Jsdoc<'returns'> = {
+          kind: 'returns',
+          type: parts.typeUnion,
+          description: parts.info || '',
+        };
+        doc.returns = returns;
+        // Update the current describing object in case the next line is a description
+        describing = returns;
+        break;
+      }
+      // Handle Self
+      if (parts.self) {
+        doc.self = parts.type;
+        break;
+      }
+      // Handle Type
+      if (parts.type) {
+        doc.kind = 'type';
+        doc.type = parts.typeUnion;
+        doc.description = appendDescription(doc.description, parts.info);
+      }
 
       // Handle modifiers
       if (parts.deprecated) {
@@ -162,7 +206,7 @@ export function parseJsdocString(jsdocString: string) {
     // If we haven't found a tag, then this is a description line
     // Then this is a description-only line (or something invalid).
     // Apply it to the current describing object.
-    if (!match) {
+    if (!match && describing) {
       const descriptionMatch = line.match(descriptionLine);
       if (descriptionMatch) {
         describing.description = appendDescription(
@@ -171,6 +215,11 @@ export function parseJsdocString(jsdocString: string) {
         );
       }
     }
+  }
+  if (doc.kind === 'description' && doc.self) {
+    // Then we don't know for sure what this context is for,
+    // but it's useful to call it a self doc.
+    doc.kind = 'self';
   }
   return doc;
 }
