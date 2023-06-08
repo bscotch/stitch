@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { parseJsdocString } from './jsdoc.js';
+import { parseJsdocTypeString } from './jsdoc.typestring.js';
 
 const functionJsdoc = `
 /// @desc This is a multiline
@@ -30,6 +31,13 @@ const functionJsdocJs = `
 * @deprecated`;
 
 describe.only('JSDocs', function () {
+  it('can parse Feather typestrings', function () {
+    const complexType =
+      'Array<string OR Array<Real>> or Struct.Hello or Id.Map<String,Real>';
+    const parsed = parseJsdocTypeString(complexType);
+    console.log(parsed);
+  });
+
   it('can parse GML-style Function JSDocs', function () {
     const jsdoc = functionJsdoc;
     const parsed = parseJsdocString(jsdoc);
