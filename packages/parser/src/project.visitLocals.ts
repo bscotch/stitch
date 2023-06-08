@@ -379,7 +379,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           .definedAt(paramNameLocation)
           .describe(description);
         member.addRef(paramNameLocation);
-        member.optional = !!jsdocTag.JsdocEquals;
+        member.optional = !!jsdocTag.JsdocStartSquareBracket;
         describing = member;
       }
     }

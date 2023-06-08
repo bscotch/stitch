@@ -7,14 +7,14 @@
 /// @param {Bool} [...] And so is this one, but there can be as many as you want!
 /// @returns {Struct} And here is a multiline
 ///  description of the return type.
-/// @self {Struct.AnotherConstructor}
+/// @self Struct.AnotherConstructor
 /// @deprecated
 function Jsdocs(){
 	/// @type {String}
 	var a_string;
 	
 	/** This one is a Real
-	 * @type {Real{
+	 * @type {Real}
 	 */
 	var a_real;
 }

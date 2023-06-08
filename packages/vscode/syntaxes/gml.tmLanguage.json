@@ -302,7 +302,7 @@
       "patterns": [
         {
           "name": "comment.block.documentation.gml",
-          "match": "(///)\\s*(@(?:description|desc|deprecated|ignore|pure))\\b.*$\\n?",
+          "match": "(///|\\*)\\s*(@(?:description|desc|deprecated|ignore|pure))\\b.*$\\n?",
           "captures": {
             "1": {
               "name": "punctuation.definition.comment.gml"
@@ -314,7 +314,23 @@
         },
         {
           "name": "comment.block.documentation.gml",
-          "begin": "(///)\\s*(@(?:returns?|self|context))\\b(?:\\s*(?:(\\{)\\s*([^}]+)\\s*(\\})))?",
+          "begin": "(///|\\*)\\s*(@(?:self|context))\\s+([^\\s]+)",
+          "end": "$",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.comment.gml"
+            },
+            "2": {
+              "name": "storage.type.class.gml"
+            },
+            "3": {
+              "name": "entity.name.type.instance.gml"
+            }
+          }
+        },
+        {
+          "name": "comment.block.documentation.gml",
+          "begin": "(///|\\*)\\s*(@(?:returns?|type))\\b(?:\\s*(?:(\\{)\\s*([^}]+)\\s*(\\})))?",
           "end": "$",
           "beginCaptures": {
             "1": {
@@ -336,7 +352,7 @@
         },
         {
           "name": "comment.block.documentation.gml",
-          "begin": "(///)\\s*(@(?:param|arg|argument|parameter))\\b(?:\\s*(?:(\\{)\\s*([^}]+)\\s*(\\})))?(?:\\s*(?:(\\[)?\\s*([_$[:alpha:]][_$[:alnum:]]*)\\s*(\\])?))?",
+          "begin": "(///|\\*)\\s*(@(?:param|arg|argument|parameter))\\b(?:\\s*(?:(\\{)\\s*([^}]+)\\s*(\\})))?(?:\\s*(?:(\\[)?\\s*([_$[:alpha:]][_$[:alnum:]]*)\\s*(\\])?))?",
           "end": "$",
           "beginCaptures": {
             "1": {

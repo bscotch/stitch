@@ -242,13 +242,21 @@ repository:
   jsdoc:
     patterns:
       - name: comment.block.documentation.gml
-        match: (///)\s*(@(?:description|desc|deprecated|ignore|pure))\b.*$\n?
+        match: (///|\*)\s*(@(?:description|desc|deprecated|ignore|pure))\b.*$\n?
         captures:
           '1': { name: punctuation.definition.comment.gml }
           '2': { name: storage.type.class.gml }
-      # The @return tag only has a type
+      # The @self tag has a type but no brackets or description
       - name: comment.block.documentation.gml
-        begin: (///)\s*(@(?:returns?|self|context))\b(?:\s*(?:(\{)\s*([^}]+)\s*(\})))?
+        begin: (///|\*)\s*(@(?:self|context))\s+([^\s]+)
+        end: $
+        beginCaptures:
+          '1': { name: punctuation.definition.comment.gml }
+          '2': { name: storage.type.class.gml }
+          '3': { name: entity.name.type.instance.gml }
+      # The @return and some other tags only has a type and no name
+      - name: comment.block.documentation.gml
+        begin: (///|\*)\s*(@(?:returns?|type))\b(?:\s*(?:(\{)\s*([^}]+)\s*(\})))?
         end: $
         beginCaptures:
           '1': { name: punctuation.definition.comment.gml }
@@ -257,7 +265,7 @@ repository:
           '4': { name: entity.name.type.instance.gml }
           '5': { name: punctuation.definition.bracket.curly.end.gml }
       - name: comment.block.documentation.gml
-        begin: (///)\s*(@(?:param|arg|argument|parameter))\b(?:\s*(?:(\{)\s*([^}]+)\s*(\})))?(?:\s*(?:(\[)?\s*([_$[:alpha:]][_$[:alnum:]]*)\s*(\])?))?
+        begin: (///|\*)\s*(@(?:param|arg|argument|parameter))\b(?:\s*(?:(\{)\s*([^}]+)\s*(\})))?(?:\s*(?:(\[)?\s*([_$[:alpha:]][_$[:alnum:]]*)\s*(\])?))?
         end: $
         beginCaptures:
           '1': { name: punctuation.definition.comment.gml }
