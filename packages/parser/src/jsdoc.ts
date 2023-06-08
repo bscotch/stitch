@@ -1,4 +1,5 @@
 import { keysOf } from '@bscotch/utility';
+import type { IPosition, IRange } from './project.location.js';
 
 interface MatchGroups {
   param?: string;
@@ -20,6 +21,8 @@ interface MatchGroups {
   optionalName?: string;
   tag?: string;
 }
+type MatchIndex = [start: number, end: number];
+type MatchIndices = { [K in keyof MatchGroups]?: MatchIndex };
 
 const patterns = {
   param: `@(param(eter)?|arg(ument)?)\\b`,
@@ -85,8 +88,14 @@ export type JsdocKind =
   | 'self'
   | 'returns';
 
-export interface Jsdoc<T extends JsdocKind = JsdocKind> {
+export interface JsdocComponent extends IRange {
+  /** The string content of this token */
+  content: string;
+}
+
+export interface Jsdoc<T extends JsdocKind = JsdocKind> extends IRange {
   kind: T;
+  tag?: JsdocComponent;
   description: string;
   ignore?: boolean;
   deprecated?: boolean;
@@ -94,22 +103,48 @@ export interface Jsdoc<T extends JsdocKind = JsdocKind> {
   /** Return type as GML typestring */
   returns?: Jsdoc<'returns'>;
   /** Parameter name */
-  name?: string;
+  name?: JsdocComponent;
   /** If is an optional param */
   optional?: boolean;
   /** Parameter, or Type */
-  type?: string;
+  type?: JsdocComponent;
   /** For functions or self docs */
-  self?: string;
+  self?: JsdocComponent;
 }
 
-export function parseJsdocString(jsdocString: string) {
-  const lines = jsdocString.split(/\r?\n/);
+export interface JsdocSummary
+  extends Jsdoc<'description' | 'function' | 'type' | 'self'> {
+  /**
+   * The list of all tags found in this block, and their
+   * respective locations, for use e.g. syntax highlighting.
+   */
+  tags: JsdocComponent[];
+}
+
+export function parseJsdocString(
+  jsdocString: string,
+  /**
+   * The position of the first character of the jsdoc string,
+   * if it has been parsed out of a larger document. This is
+   * used to offset the positions of discovered tag components.
+   */
+  startPosition?: IPosition,
+): JsdocSummary {
+  const currentPosition = startPosition || {
+    line: 1,
+    column: 1,
+    offset: 0,
+  };
+  const lines = jsdocString.split(/(\r?\n)/);
   // Default to a description-only doc, and update its type
   // if we can infer it based on the tags.
-  const doc: Jsdoc<'description' | 'function' | 'type' | 'self'> = {
+  const doc: JsdocSummary = {
     kind: 'description',
     description: '',
+    start: { ...currentPosition },
+    // TODO: Update this!
+    end: { ...currentPosition },
+    tags: [],
   };
   let describing: Jsdoc | null = doc;
   const appendDescription = (
@@ -125,26 +160,40 @@ export function parseJsdocString(jsdocString: string) {
 
   for (let l = 0; l < lines.length; l++) {
     const line = lines[l];
+    currentPosition.column = 1;
+    // Update the end position
+    doc.end.line = currentPosition.line;
+    doc.end.column = 1 + line.length;
+    doc.end.offset += line.length;
+
+    if (!line) {
+      continue;
+    }
+    // If the line is just a newline, update the counters and continue
+    if (line.match(/\r?\n/)) {
+      currentPosition.line++;
+      doc.end.line = currentPosition.line;
+      currentPosition.offset += line.length;
+      continue;
+    }
+
+    // Check for a match against each of the tag patterns
+    // until we fined one. If we don't then `match` will
+    // stay null, and we can use the line as a description.
     let match: RegExpMatchArray | null = null;
     for (const tagName of names) {
-      match = line.match(regexes[tagName]) as RegExpMatchArray | null;
+      match = line.match(regexes[tagName]) as RegExpMatchArray;
       const parts = match?.groups as MatchGroups;
+      const indices = match?.indices?.groups as MatchIndices;
       if (!match) {
         // Then we haven't found a tag yet
         continue;
       }
-      // If this uses an @description tag, then apply that description
-      // to the root doc.
-      if (parts.description) {
-        doc.description = appendDescription(doc.description, parts.info);
-        break;
-      }
-      // If it's an unfamiliar tag, just skip it
-      if (parts.unknown) {
-        // Unset the describe target
-        describing = null;
-        break;
-      }
+      // Add the tag to the list of tags
+      doc.tags.push({
+        content: parts.tag!,
+        ...matchIndexToRange(currentPosition, indices.tag!),
+      });
 
       // Based on the tag type, update the doc
       const impliesFunction =
@@ -152,14 +201,35 @@ export function parseJsdocString(jsdocString: string) {
       if (impliesFunction) {
         doc.kind = 'function';
       }
+
+      const entireMatchRange = matchIndexToRange(
+        currentPosition,
+        match.indices![0],
+      );
+
+      // If this uses an @description tag, then apply that description
+      // to the root doc.
+      if (parts.description) {
+        doc.description = appendDescription(doc.description, parts.info);
+      }
+      // If it's an unfamiliar tag, just skip it
+      else if (parts.unknown) {
+        // Unset the describe target
+        describing = null;
+      }
       // Handle params
-      if (parts.param) {
+      else if (parts.param) {
         const param: Jsdoc<'param'> = {
           kind: 'param',
-          name: (parts.name || parts.optionalName)!,
+          name: matchToComponent(
+            match,
+            parts.name ? 'name' : 'optionalName',
+            currentPosition,
+          ),
           optional: !!parts.optionalName,
-          type: parts.typeUnion,
+          type: matchToComponent(match, 'typeUnion', currentPosition),
           description: parts.info || '',
+          ...entireMatchRange,
         };
         doc.params = doc.params || [];
         doc.params.push(param);
@@ -167,38 +237,35 @@ export function parseJsdocString(jsdocString: string) {
         describing = param;
       }
       // Handle returns
-      if (parts.returns) {
+      else if (parts.returns) {
         if (doc.returns) {
           // Then we don't want to overwrite.
           break;
         }
         const returns: Jsdoc<'returns'> = {
           kind: 'returns',
-          type: parts.typeUnion,
+          type: matchToComponent(match, 'typeUnion', currentPosition),
           description: parts.info || '',
+          ...entireMatchRange,
         };
         doc.returns = returns;
         // Update the current describing object in case the next line is a description
         describing = returns;
-        break;
       }
       // Handle Self
-      if (parts.self) {
-        doc.self = parts.type;
-        break;
+      else if (parts.self) {
+        doc.self = matchToComponent(match, 'type', currentPosition);
       }
       // Handle Type
-      if (parts.type) {
+      else if (parts.type) {
         doc.kind = 'type';
-        doc.type = parts.typeUnion;
+        doc.type = matchToComponent(match, 'typeUnion', currentPosition);
         doc.description = appendDescription(doc.description, parts.info);
       }
-
       // Handle modifiers
-      if (parts.deprecated) {
+      else if (parts.deprecated) {
         doc.deprecated = true;
-      }
-      if (parts.ignore) {
+      } else if (parts.ignore) {
         doc.ignore = true;
       }
       break;
@@ -215,6 +282,7 @@ export function parseJsdocString(jsdocString: string) {
         );
       }
     }
+    currentPosition.offset += line.length;
   }
   if (doc.kind === 'description' && doc.self) {
     // Then we don't know for sure what this context is for,
@@ -222,4 +290,31 @@ export function parseJsdocString(jsdocString: string) {
     doc.kind = 'self';
   }
   return doc;
+}
+
+function matchToComponent(
+  match: RegExpMatchArray,
+  groupName: string,
+  startPosition: IPosition,
+): JsdocComponent {
+  return {
+    content: match.groups![groupName]!,
+    ...matchIndexToRange(startPosition, match.indices!.groups![groupName]!),
+  };
+}
+
+function matchIndexToRange(
+  startPosition: IPosition,
+  index: MatchIndex,
+): IRange {
+  // Note that the IRange uses column and line indexes that start at 1, while the offset starts at 0.
+  const range: IRange = {
+    start: { ...startPosition },
+    end: { ...startPosition },
+  };
+  range.start.column += index[0];
+  range.start.offset += index[0];
+  range.end.column += index[1];
+  range.end.offset += index[1];
+  return range;
 }
