@@ -1,6 +1,10 @@
 import { ok } from 'assert';
-import { JsdocTypeCstNode, JsdocTypeUnionCstNode } from '../gml-cst.js';
-import { parser } from './parser.js';
+import type { JsdocSummary } from './jsdoc.js';
+import {
+  parseFeatherTypeString,
+  type FeatherType,
+  type FeatherTypeUnion,
+} from './jsdoc.typestring.js';
 import { Flaggable } from './project.flags.js';
 import { Refs } from './project.location.js';
 import { PrimitiveName, primitiveNames } from './project.primitives.js';
@@ -80,7 +84,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * If this is a constructor function, then this is the
    * type of the struct that it constructs. */
   constructs: Type<'Struct'> | undefined = undefined;
-  context: Type<'String'> | undefined = undefined;
+  context: Type | undefined = undefined;
   params: TypeMember[] | undefined = undefined;
   returns: undefined | Type = undefined;
 
@@ -334,21 +338,23 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   }
 
   /** Given a Feather-compatible type string, get a fully parsed type. */
-  static from(typeString: string, knownTypes: Map<string, Type>): Type {
-    const parsed = parser.parseTypeString(typeString);
-    return Type.fromCst(parsed.cst, knownTypes);
-  }
-
-  static fromCst(
-    node: JsdocTypeUnionCstNode | JsdocTypeCstNode,
+  static fromFeatherString(
+    typeString: string,
     knownTypes: Map<string, Type>,
   ): Type {
-    if (node.name === 'jsdocType') {
-      const identifier = node.children.JsdocIdentifier[0].image;
+    const parsed = parseFeatherTypeString(typeString);
+    return Type.fromParsedFeatherString(parsed, knownTypes);
+  }
+
+  static fromParsedFeatherString(
+    node: FeatherTypeUnion | FeatherType,
+    knownTypes: Map<string, Type>,
+  ): Type {
+    if (node.kind === 'type') {
+      const identifier = node.name;
       let type = Type.fromIdentifier(identifier, knownTypes);
-      const subtypeNode = node.children.jsdocTypeUnion?.[0];
-      if (subtypeNode) {
-        const subtype = Type.fromCst(subtypeNode, knownTypes);
+      if (node.of) {
+        const subtype = Type.fromParsedFeatherString(node.of, knownTypes);
         // Then we need to create a new type instead of mutating
         // the one we found.
         type = type.derive();
@@ -358,19 +364,71 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
         // TODO: Else create a diagnostic?
       }
       return type;
-    } else if (node.name === 'jsdocTypeUnion') {
-      const unionOf = node.children.jsdocType;
+    } else if (node.kind === 'union') {
+      const unionOf = node.types;
       if (unionOf.length === 1) {
-        return Type.fromCst(unionOf[0], knownTypes);
+        return Type.fromParsedFeatherString(unionOf[0], knownTypes);
       }
       const type = new Type('Union');
       for (const child of unionOf) {
-        const subtype = Type.fromCst(child, knownTypes);
+        const subtype = Type.fromParsedFeatherString(child, knownTypes);
         type.addUnionType(subtype);
       }
       return type;
     }
     throw new Error(`Unknown node type ${node['name']}`);
+  }
+
+  static fromParsedJsdocs(
+    jsdoc: JsdocSummary,
+    knownTypes: Map<string, Type>,
+  ): Type {
+    if (jsdoc.kind === 'description') {
+      // Then we have no type info but have a description to add.
+      return Type.fromIdentifier('Unknown', knownTypes).describe(
+        jsdoc.description,
+      );
+    } else if (jsdoc.kind === 'type') {
+      // Then this was purely a type annotation. Create the type and
+      // add any metadata.
+      return Type.fromFeatherString(jsdoc.type!.content, knownTypes).describe(
+        jsdoc.description,
+      );
+    } else if (jsdoc.kind === 'self') {
+      return Type.fromFeatherString(jsdoc.self!.content, knownTypes).describe(
+        jsdoc.description,
+      );
+    } else if (jsdoc.kind === 'function') {
+      const type = Type.fromIdentifier('Function', knownTypes);
+      let i = 0;
+      if (jsdoc.deprecated) {
+        type.deprecated = true;
+      }
+      if (jsdoc.self) {
+        type.context = Type.fromFeatherString(jsdoc.self!.content, knownTypes);
+      }
+      if (jsdoc.returns) {
+        const returnType = Type.fromFeatherString(
+          jsdoc.returns.type!.content,
+          knownTypes,
+        ).describe(jsdoc.returns.description);
+        type.addReturnType(returnType);
+      }
+      for (const param of jsdoc.params || []) {
+        const paramType = Type.fromFeatherString(
+          param.type!.content,
+          knownTypes,
+        )
+          .named(param.name!.content)
+          .describe(param.description);
+        const member = type.addParameter(i, param.name!.content, paramType);
+        i++;
+        member.optional = param.optional;
+        member.describe(param.description);
+      }
+      return type;
+    }
+    throw new Error(`Unknown JSDoc kind ${jsdoc.kind}`);
   }
 
   /**

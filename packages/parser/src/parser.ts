@@ -15,13 +15,10 @@ import type {
   GmlVisitor,
   IdentifierCstChildren,
   IdentifierCstNode,
-  JsdocTypeUnionCstNode,
-  JsdocUnstructuredContentCstChildren,
 } from '../gml-cst.js';
 import { GmlLexer } from './lexer.js';
 import type { GmlParseError } from './project.diagnostics.js';
 import { c, categories, t, tokens } from './tokens.js';
-import { normalizeTypeString } from './util.js';
 
 export interface GmlParsed {
   lexed: ILexingResult;
@@ -67,26 +64,6 @@ function sortItokenRecords(records: Record<string, IToken[]>): IToken[] {
   }
   sorted.sort((a, b) => a.startOffset - b.startOffset);
   return sorted;
-}
-
-export function jsdocUnstructuredContentToString(
-  content: JsdocUnstructuredContentCstChildren,
-): string {
-  const sorted = sortItokenRecords(content);
-  sorted.map((token) => token.image).join(' ');
-  let result = '';
-  for (let i = 0; i < sorted.length; i++) {
-    const { image } = sorted[i];
-    if (i === 0) {
-      result = image;
-      continue;
-    }
-    if (!image[0].match(/[\s,.!;-_]/)) {
-      result += ' ';
-    }
-    result += image;
-  }
-  return result;
 }
 
 export function sortedAccessorSuffixes(
@@ -158,19 +135,6 @@ export class GmlParser extends CstParser {
     };
   }
 
-  /** Parse a Feather Typestring. */
-  parseTypeString(typeString: string) {
-    typeString = normalizeTypeString(typeString);
-    const lexed = this.lexer.tokenize(typeString, 'jsdocGml');
-    this.input = lexed.tokens;
-    const cst = this.jsdocTypeUnion() as JsdocTypeUnionCstNode;
-    return {
-      lexed,
-      cst,
-      errors: this.errors,
-    } satisfies GmlParsed;
-  }
-
   readonly lexer = GmlLexer;
 
   readonly file = this.RULE('file', () => {
@@ -221,148 +185,12 @@ export class GmlParser extends CstParser {
 
   readonly jsdocGml = this.RULE('jsdocGml', () => {
     this.AT_LEAST_ONE(() => {
-      this.CONSUME(t.JsdocGmlStart);
-      this.SUBRULE(this.jsdocLine);
-      this.CONSUME(t.JsdocGmlLineEnd);
+      this.CONSUME(t.JsdocGmlLine);
     });
   });
 
   readonly jsdocJs = this.RULE('jsdocJs', () => {
-    this.CONSUME(t.JsdocJsStart);
-    this.MANY(() => {
-      this.SUBRULE(this.jsdocLine);
-      this.OPTION(() => this.CONSUME(t.JsdocJsLineStart));
-    });
-    this.CONSUME(t.JsdocJsEnd);
-  });
-
-  readonly jsdocType = this.RULE('jsdocType', () => {
-    this.CONSUME(t.JsdocIdentifier);
-    this.OPTION(() => {
-      this.CONSUME(t.JsdocStartAngleBracket);
-      this.SUBRULE(this.jsdocTypeUnion);
-      this.CONSUME(t.JsdocEndAngleBracket);
-    });
-  });
-
-  readonly jsdocTypeUnion = this.RULE('jsdocTypeUnion', () => {
-    this.SUBRULE1(this.jsdocType);
-    this.MANY(() => {
-      this.CONSUME(t.JsdocPipe);
-      this.SUBRULE2(this.jsdocType);
-    });
-  });
-
-  readonly jsdocTypeGroup = this.RULE('jsdocTypeGroup', () => {
-    this.CONSUME(t.JsdocStartBrace);
-    this.SUBRULE1(this.jsdocTypeUnion);
-    this.CONSUME(t.JsdocEndBrace);
-  });
-
-  /** Unstructured content following a structured tag */
-  readonly jsdocUnstructuredContent = this.RULE(
-    'jsdocUnstructuredContent',
-    () => {
-      this.MANY(() =>
-        this.OR([
-          { ALT: () => this.CONSUME(c.Jsdoc) },
-          { ALT: () => this.CONSUME(c.Literal) },
-          { ALT: () => this.CONSUME(c.JsdocTag) },
-        ]),
-      );
-    },
-  );
-
-  readonly jsdocParamTag = this.RULE('jsdocParamTag', () => {
-    this.CONSUME(t.JsdocParamTag);
-    // Optional type info
-    this.OPTION1(() => {
-      this.SUBRULE1(this.jsdocTypeGroup);
-    });
-    // Required name
-    this.OR1([
-      { ALT: () => this.CONSUME1(t.JsdocIdentifier) },
-      {
-        ALT: () => {
-          this.CONSUME(t.JsdocStartSquareBracket);
-          this.OR2([
-            { ALT: () => this.SUBRULE2(this.jsdocRemainingParams) },
-            {
-              ALT: () => {
-                this.CONSUME2(t.JsdocIdentifier);
-                this.OPTION2(() => {
-                  this.CONSUME(t.JsdocEquals);
-                  this.OR3([
-                    { ALT: () => this.CONSUME(c.Literal) },
-                    { ALT: () => this.CONSUME3(t.JsdocIdentifier) },
-                  ]);
-                });
-              },
-            },
-          ]);
-          this.CONSUME(t.JsdocEndSquareBracket);
-        },
-      },
-    ]);
-  });
-
-  readonly jsdocReturnTag = this.RULE('jsdocReturnTag', () => {
-    this.CONSUME(t.JsdocReturnTag);
-    this.OPTION(() => this.SUBRULE(this.jsdocTypeGroup));
-  });
-
-  readonly jsdocSelfTag = this.RULE('jsdocSelfTag', () => {
-    this.CONSUME(t.JsdocSelfTag);
-    this.CONSUME(t.JsdocIdentifier);
-  });
-
-  readonly jsdocDescriptionTag = this.RULE('jsdocDescriptionTag', () => {
-    this.CONSUME(t.JsdocDescriptionTag);
-  });
-
-  readonly jsdocFunctionTag = this.RULE('jsdocFunctionTag', () => {
-    this.CONSUME(t.JsdocFunctionTag);
-  });
-
-  readonly jsdocPureTag = this.RULE('jsdocPureTag', () => {
-    this.CONSUME(t.JsdocPureTag);
-  });
-
-  readonly jsdocIgnoreTag = this.RULE('jsdocIgnoreTag', () => {
-    this.CONSUME(t.JsdocIgnoreTag);
-  });
-
-  readonly jsdocDeprecatedTag = this.RULE('jsdocDeprecatedTag', () => {
-    this.CONSUME(t.JsdocDeprecatedTag);
-  });
-
-  readonly jsdocUnknownTag = this.RULE('jsdocUnknownTag', () => {
-    this.CONSUME(t.JsdocUnknownTag);
-  });
-
-  readonly jsdocRemainingParams = this.RULE('jsdocRemainingParams', () => {
-    this.CONSUME1(t.JsdocDot);
-    this.CONSUME2(t.JsdocDot);
-    this.CONSUME3(t.JsdocDot);
-  });
-
-  readonly jsdocTag = this.RULE('jsdocTag', () => {
-    this.OR([
-      { ALT: () => this.SUBRULE(this.jsdocParamTag) },
-      { ALT: () => this.SUBRULE(this.jsdocReturnTag) },
-      { ALT: () => this.SUBRULE(this.jsdocSelfTag) },
-      { ALT: () => this.SUBRULE(this.jsdocDescriptionTag) },
-      { ALT: () => this.SUBRULE(this.jsdocFunctionTag) },
-      { ALT: () => this.SUBRULE(this.jsdocPureTag) },
-      { ALT: () => this.SUBRULE(this.jsdocIgnoreTag) },
-      { ALT: () => this.SUBRULE(this.jsdocDeprecatedTag) },
-      { ALT: () => this.SUBRULE(this.jsdocUnknownTag) },
-    ]);
-  });
-
-  readonly jsdocLine = this.RULE('jsdocLine', () => {
-    this.OPTION(() => this.SUBRULE(this.jsdocTag));
-    this.SUBRULE(this.jsdocUnstructuredContent);
+    this.CONSUME(t.JsdocJs);
   });
 
   readonly stringLiteral = this.RULE('stringLiteral', () => {

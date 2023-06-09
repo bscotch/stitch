@@ -11,18 +11,18 @@
 
 import { ok } from 'assert';
 
-interface JsdocTypeUnion {
+export interface FeatherTypeUnion {
   kind: 'union';
-  types: JsdocType[];
+  types: FeatherType[];
 }
 
-interface JsdocType {
+export interface FeatherType {
   kind: 'type';
   name: string;
-  of?: JsdocTypeUnion;
+  of?: FeatherTypeUnion;
 }
 
-export function parseJsdocTypeString(typeString: string): JsdocTypeUnion {
+export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
   // Patterns
   const whitespace = /\s+/y;
   const leftBracket = /[<[]/y;
@@ -40,11 +40,11 @@ export function parseJsdocTypeString(typeString: string): JsdocTypeUnion {
     currentPosition = pattern.lastIndex;
     return match;
   };
-  const rootUnion: JsdocTypeUnion = { kind: 'union', types: [] };
-  const typeUnionStack: JsdocTypeUnion[] = [rootUnion];
+  const rootUnion: FeatherTypeUnion = { kind: 'union', types: [] };
+  const typeUnionStack: FeatherTypeUnion[] = [rootUnion];
   0;
-  const currentUnion = (): JsdocTypeUnion => typeUnionStack.at(-1)!;
-  let currentType: JsdocType | undefined;
+  const currentUnion = (): FeatherTypeUnion => typeUnionStack.at(-1)!;
+  let currentType: FeatherType | undefined;
 
   // Lex the string
   while (currentPosition < typeString.length) {
@@ -54,7 +54,7 @@ export function parseJsdocTypeString(typeString: string): JsdocTypeUnion {
     if (match) {
       ok(currentType, 'Unexpected left bracket');
       // Create a new union
-      const union: JsdocTypeUnion = { kind: 'union', types: [] };
+      const union: FeatherTypeUnion = { kind: 'union', types: [] };
       // Add it to the current type
       currentType.of = union;
       // Push it onto the stack
@@ -79,7 +79,7 @@ export function parseJsdocTypeString(typeString: string): JsdocTypeUnion {
     match = lex(identifier);
     if (match) {
       // Create a new type
-      const type: JsdocType = {
+      const type: FeatherType = {
         kind: 'type',
         name: match[0],
       };

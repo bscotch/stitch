@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { parseJsdocString } from './jsdoc.js';
-import { parseJsdocTypeString } from './jsdoc.typestring.js';
+import { parseJsdoc } from './jsdoc.js';
+import { parseFeatherTypeString } from './jsdoc.typestring.js';
 
 const functionJsdoc = `
 /// @desc This is a multiline
@@ -30,11 +30,11 @@ const functionJsdocJs = `
 * @self Struct.AnotherConstructor
 * @deprecated`;
 
-describe.only('JSDocs', function () {
+describe('JSDocs', function () {
   it('can parse Feather typestrings', function () {
     const complexType =
       'Array<string OR Array<Real>> or Struct.Hello or Id.Map<String,Real>';
-    const parsed = parseJsdocTypeString(complexType);
+    const parsed = parseFeatherTypeString(complexType);
     expect(parsed.kind).to.equal('union');
     expect(parsed.types).to.have.lengthOf(3);
     expect(parsed.types[0].kind).to.equal('type');
@@ -63,7 +63,7 @@ describe.only('JSDocs', function () {
 
   it('can parse GML-style Function JSDocs', function () {
     const jsdoc = functionJsdoc;
-    const parsed = parseJsdocString(jsdoc);
+    const parsed = parseJsdoc(jsdoc);
     expect(parsed.kind).to.equal('function');
     expect(parsed.deprecated).to.equal(true);
     expect(parsed.self?.content).to.equal('Struct.AnotherConstructor');
@@ -101,7 +101,7 @@ describe.only('JSDocs', function () {
 
   it('can parse JS-style Function JSDocs', function () {
     const jsdoc = functionJsdocJs;
-    const parsed = parseJsdocString(jsdoc);
+    const parsed = parseJsdoc(jsdoc);
     expect(parsed.kind).to.equal('function');
     expect(parsed.deprecated).to.equal(true);
     expect(parsed.self?.content).to.equal('Struct.AnotherConstructor');
@@ -139,7 +139,7 @@ describe.only('JSDocs', function () {
 
   it('can parse a GML type tag', function () {
     const jsdoc = '/// @type {String} This is a string';
-    const parsed = parseJsdocString(jsdoc);
+    const parsed = parseJsdoc(jsdoc);
     expect(parsed.kind).to.equal('type');
     expect(parsed.type?.content).to.equal('String');
     expect(parsed.description).to.equal('This is a string');
@@ -147,7 +147,7 @@ describe.only('JSDocs', function () {
 
   it('can parse a JS type tag', function () {
     const jsdoc = '@type {String} This is a string';
-    const parsed = parseJsdocString(jsdoc);
+    const parsed = parseJsdoc(jsdoc);
     expect(parsed.kind).to.equal('type');
     expect(parsed.type?.content).to.equal('String');
     expect(parsed.description).to.equal('This is a string');
@@ -155,7 +155,7 @@ describe.only('JSDocs', function () {
 
   it('can parse a self tag', function () {
     const jsdoc = '/// @self Struct.Hello';
-    const parsed = parseJsdocString(jsdoc);
+    const parsed = parseJsdoc(jsdoc);
     expect(parsed.kind).to.equal('self');
     expect(parsed.self?.content).to.equal('Struct.Hello');
   });

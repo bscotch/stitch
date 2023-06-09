@@ -10,10 +10,6 @@ export const categories = [
     pattern: Lexer.NA,
   }),
   createToken({
-    name: 'JsdocTag',
-    pattern: Lexer.NA,
-  }),
-  createToken({
     name: 'Comment',
     pattern: Lexer.NA,
   }),

@@ -51,7 +51,7 @@ export class Native {
 
   protected loadVariables() {
     for (const variable of this.spec.variables) {
-      const type = Type.from(variable.type, this.types);
+      const type = Type.fromFeatherString(variable.type, this.types);
       const symbol = new Symbol(variable.name)
         .describe(variable.description)
         .deprecate(variable.deprecated)
@@ -82,13 +82,13 @@ export class Native {
       // Add parameters to the type.
       for (let i = 0; i < func.parameters.length; i++) {
         const param = func.parameters[i];
-        const paramType = Type.from(param.type, this.types);
+        const paramType = Type.fromFeatherString(param.type, this.types);
         type
           .addParameter(i, param.name, paramType, param.optional)
           .describe(param.description);
       }
       // Add return type to the type.
-      type.addReturnType(Type.from(func.returnType, this.types));
+      type.addReturnType(Type.fromFeatherString(func.returnType, this.types));
 
       const symbol = new Symbol(func.name)
         .deprecate(func.deprecated)
@@ -123,7 +123,7 @@ export class Native {
         for (const constant of constants) {
           const symbol = new Symbol(constant.name)
             .describe(constant.description)
-            .addType(Type.from(constant.type, this.types));
+            .addType(Type.fromFeatherString(constant.type, this.types));
           symbol.writable = false;
           symbol.native = true;
           this.global.set(symbol.name, symbol);
@@ -141,7 +141,7 @@ export class Native {
       // Create the base type for the class.
       const classTypeName = `Constant.${klass}`;
       const typeString = [...typeNames.values()].join('|');
-      let classType = Type.from(typeString, this.types)
+      let classType = Type.fromFeatherString(typeString, this.types)
         .derive()
         .named(classTypeName);
       const existingType = this.types.get(classTypeName);
@@ -179,7 +179,7 @@ export class Native {
       this.types.set(typeName, structType);
 
       for (const prop of struct.properties) {
-        const type = Type.from(prop.type, this.types);
+        const type = Type.fromFeatherString(prop.type, this.types);
         structType
           .addMember(prop.name, type, prop.writable)
           .describe(prop.description);

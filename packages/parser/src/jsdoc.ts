@@ -1,4 +1,5 @@
 import { keysOf } from '@bscotch/utility';
+import type { IToken } from 'chevrotain';
 import type { IPosition, IRange } from './project.location.js';
 
 interface MatchGroups {
@@ -121,7 +122,109 @@ export interface JsdocSummary
   tags: JsdocComponent[];
 }
 
-export function parseJsdocString(
+interface JsdocLine {
+  content: string;
+  start: IPosition;
+}
+
+/**
+ * Given an IToken containing an entire JSDoc block,
+ * convert it to a list of lines, each with its own position.
+ */
+function jsdocBlockToLines(raw: {
+  image: string;
+  startLine?: number;
+  startColumn?: number;
+  startOffset: number;
+}): JsdocLine[] {
+  raw = { ...raw }; // Clone so we don't mutate the original
+  const startPosition: IPosition = {
+    line: raw.startLine!,
+    column: raw.startColumn!,
+    offset: raw.startOffset,
+  };
+  // If this starts with a /**, remove that.
+  if (raw.image.startsWith('/**')) {
+    raw.image = raw.image.slice(3);
+    startPosition.column += 3;
+    startPosition.offset += 3;
+  }
+  // If this ends with a */, remove that.
+  if (raw.image.endsWith('*/')) {
+    raw.image = raw.image.slice(0, -2);
+  }
+
+  const rawLines = raw.image.split(/(\r?\n)/);
+  const jsdocLines: JsdocLine[] = [];
+
+  let jsdocLine: JsdocLine = {
+    content: '',
+    start: startPosition,
+  };
+  for (let l = 0; l < rawLines.length; l++) {
+    const line = rawLines[l];
+    if (!line) continue;
+    if (line.match(/\r?\n/)) {
+      // Then we need to add more space to the current jsdocline
+      // start position
+      jsdocLine.start.line++;
+      jsdocLine.start.column = 1;
+      jsdocLine.start.offset += line.length;
+      continue;
+    }
+    jsdocLine.content += line;
+    jsdocLines.push(jsdocLine);
+    // Create the next jsdoc line
+    jsdocLine = {
+      content: '',
+      start: {
+        line: jsdocLine.start.line,
+        column: jsdocLine.start.column + line.length,
+        offset: jsdocLine.start.offset + line.length,
+      },
+    };
+  }
+  return jsdocLines;
+}
+
+/**
+ * Given an array of ITokens, each containing a single line
+ * from a block of ///-style JSDoc comments, convert it to
+ * a common format.
+ */
+function jsdocGmlToLines(raw: IToken[]): JsdocLine[] {
+  // We already have lines as required, so just convert formats
+  return raw.map((token) => ({
+    content: token.image,
+    start: {
+      line: token.startLine!,
+      column: token.startColumn!,
+      offset: token.startOffset,
+    },
+  }));
+}
+
+/**
+ * Given a raw string containing a JSDoc block in either GML
+ * or JS style, convert it
+ * to a list of lines, each with its own position.
+ */
+function jsdocStringToLines(
+  raw: string,
+  startPosition?: IPosition,
+): JsdocLine[] {
+  const asIToken = {
+    image: raw,
+    startLine: startPosition?.line || 1,
+    startColumn: startPosition?.column || 1,
+    startOffset: startPosition?.offset || 0,
+  };
+  return jsdocBlockToLines(asIToken);
+}
+
+export function parseJsdoc(gmlLines: IToken[]): JsdocSummary;
+export function parseJsdoc(jsBlock: IToken): JsdocSummary;
+export function parseJsdoc(
   jsdocString: string,
   /**
    * The position of the first character of the jsdoc string,
@@ -129,21 +232,36 @@ export function parseJsdocString(
    * used to offset the positions of discovered tag components.
    */
   startPosition?: IPosition,
-): JsdocSummary {
-  const currentPosition = startPosition || {
-    line: 1,
-    column: 1,
-    offset: 0,
-  };
-  const lines = jsdocString.split(/(\r?\n)/);
+): JsdocSummary;
+export function parseJsdoc(
+  raw: string | IToken | IToken[],
+  /**
+   * The position of the first character of the jsdoc string,
+   * if it has been parsed out of a larger document. This is
+   * used to offset the positions of discovered tag components.
+   */
+  startPosition?: IPosition,
+): JsdocSummary | undefined {
+  const lines: JsdocLine[] =
+    typeof raw === 'string'
+      ? jsdocStringToLines(raw, startPosition)
+      : Array.isArray(raw)
+      ? jsdocGmlToLines(raw)
+      : jsdocBlockToLines(raw);
+  if (!lines.length) return undefined;
+
+  const start: IPosition = lines[0].start;
+  const end: IPosition = lines.at(-1)!.start;
+  end.column += lines.at(-1)!.content.length;
+  end.offset += lines.at(-1)!.content.length;
+
   // Default to a description-only doc, and update its type
   // if we can infer it based on the tags.
   const doc: JsdocSummary = {
     kind: 'description',
     description: '',
-    start: { ...currentPosition },
-    // TODO: Update this!
-    end: { ...currentPosition },
+    start,
+    end,
     tags: [],
   };
   let describing: Jsdoc | null = doc;
@@ -158,31 +276,13 @@ export function parseJsdocString(
     return newDescription;
   };
 
-  for (let l = 0; l < lines.length; l++) {
-    const line = lines[l];
-    currentPosition.column = 1;
-    // Update the end position
-    doc.end.line = currentPosition.line;
-    doc.end.column = 1 + line.length;
-    doc.end.offset += line.length;
-
-    if (!line) {
-      continue;
-    }
-    // If the line is just a newline, update the counters and continue
-    if (line.match(/\r?\n/)) {
-      currentPosition.line++;
-      doc.end.line = currentPosition.line;
-      currentPosition.offset += line.length;
-      continue;
-    }
-
+  for (const line of lines) {
     // Check for a match against each of the tag patterns
     // until we fined one. If we don't then `match` will
     // stay null, and we can use the line as a description.
     let match: RegExpMatchArray | null = null;
     for (const tagName of names) {
-      match = line.match(regexes[tagName]) as RegExpMatchArray;
+      match = line.content.match(regexes[tagName]) as RegExpMatchArray;
       const parts = match?.groups as MatchGroups;
       const indices = match?.indices?.groups as MatchIndices;
       if (!match) {
@@ -192,7 +292,7 @@ export function parseJsdocString(
       // Add the tag to the list of tags
       doc.tags.push({
         content: parts.tag!,
-        ...matchIndexToRange(currentPosition, indices.tag!),
+        ...matchIndexToRange(line.start, indices.tag!),
       });
 
       // Based on the tag type, update the doc
@@ -202,10 +302,7 @@ export function parseJsdocString(
         doc.kind = 'function';
       }
 
-      const entireMatchRange = matchIndexToRange(
-        currentPosition,
-        match.indices![0],
-      );
+      const entireMatchRange = matchIndexToRange(line.start, match.indices![0]);
 
       // If this uses an @description tag, then apply that description
       // to the root doc.
@@ -224,10 +321,10 @@ export function parseJsdocString(
           name: matchToComponent(
             match,
             parts.name ? 'name' : 'optionalName',
-            currentPosition,
+            line.start,
           ),
           optional: !!parts.optionalName,
-          type: matchToComponent(match, 'typeUnion', currentPosition),
+          type: matchToComponent(match, 'typeUnion', line.start),
           description: parts.info || '',
           ...entireMatchRange,
         };
@@ -244,7 +341,7 @@ export function parseJsdocString(
         }
         const returns: Jsdoc<'returns'> = {
           kind: 'returns',
-          type: matchToComponent(match, 'typeUnion', currentPosition),
+          type: matchToComponent(match, 'typeUnion', line.start),
           description: parts.info || '',
           ...entireMatchRange,
         };
@@ -254,12 +351,12 @@ export function parseJsdocString(
       }
       // Handle Self
       else if (parts.self) {
-        doc.self = matchToComponent(match, 'type', currentPosition);
+        doc.self = matchToComponent(match, 'type', line.start);
       }
       // Handle Type
       else if (parts.type) {
         doc.kind = 'type';
-        doc.type = matchToComponent(match, 'typeUnion', currentPosition);
+        doc.type = matchToComponent(match, 'typeUnion', line.start);
         doc.description = appendDescription(doc.description, parts.info);
       }
       // Handle modifiers
@@ -274,7 +371,7 @@ export function parseJsdocString(
     // Then this is a description-only line (or something invalid).
     // Apply it to the current describing object.
     if (!match && describing) {
-      const descriptionMatch = line.match(descriptionLine);
+      const descriptionMatch = line.content.match(descriptionLine);
       if (descriptionMatch) {
         describing.description = appendDescription(
           describing.description,
@@ -282,7 +379,6 @@ export function parseJsdocString(
         );
       }
     }
-    currentPosition.offset += line.length;
   }
   if (doc.kind === 'description' && doc.self) {
     // Then we don't know for sure what this context is for,

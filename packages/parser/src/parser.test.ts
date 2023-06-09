@@ -31,33 +31,12 @@ function showErrors(
 }
 
 describe('Parser', function () {
-  it('can parse Feather types', function () {
-    const parser = new GmlParser();
-    let { cst } = parser.parseTypeString('Array');
-    expect(
-      cst.children.jsdocType[0].children.JsdocIdentifier[0].image,
-    ).to.equal('Array');
-    expect(parser.errors.length).to.equal(0);
-
-    ({ cst } = parser.parseTypeString(
-      'Array<string OR Array<Real>> or Struct.Hello or Id.Map<String,Real>',
-    ));
-    expect(parser.errors.length).to.equal(0);
-    expect(cst.children.jsdocType.length).to.equal(3);
-    const [first, second, third] = cst.children.jsdocType;
-    expect(first.children.JsdocIdentifier[0].image).to.equal('Array');
-    const firstTypes = first.children.jsdocTypeUnion![0].children.jsdocType;
-    expect(firstTypes.length).to.equal(2);
-    expect(second.children.JsdocIdentifier[0].image).to.equal('Struct.Hello');
-    expect(third.children.JsdocIdentifier[0].image).to.equal('Id.Map');
-  });
-
   it('can get types from typestrings', function () {
-    expect(Type.from('Array', new Map()).kind).to.equal('Array');
-    const stringArray = Type.from('Array<string>', new Map());
+    expect(Type.fromFeatherString('Array', new Map()).kind).to.equal('Array');
+    const stringArray = Type.fromFeatherString('Array<string>', new Map());
     expect(stringArray.kind).to.equal('Array');
     expect(stringArray.items!.kind).to.equal('String');
-    const dsMap = Type.from('Id.DsMap[String,Real]', new Map());
+    const dsMap = Type.fromFeatherString('Id.DsMap[String,Real]', new Map());
     expect(dsMap.kind).to.equal('Id.DsMap');
     expect(dsMap.items!.kind).to.equal('Union');
     expect(dsMap.items!.types!.length).to.equal(2);
@@ -67,8 +46,11 @@ describe('Parser', function () {
 
   it('can parse cross-referencing types', function () {
     const knownTypes = new Map();
-    const arrayOfStructs = Type.from('Array<Struct.Hello>', knownTypes);
-    const structType = Type.from('Struct.Hello', knownTypes);
+    const arrayOfStructs = Type.fromFeatherString(
+      'Array<Struct.Hello>',
+      knownTypes,
+    );
+    const structType = Type.fromFeatherString('Struct.Hello', knownTypes);
 
     ok(knownTypes.get('Struct.Hello') === structType);
     expect(arrayOfStructs.kind).to.equal('Array');
@@ -78,7 +60,7 @@ describe('Parser', function () {
   });
 
   it('can parse complex typestrings', function () {
-    const complexType = Type.from(
+    const complexType = Type.fromFeatherString(
       'Array<string OR Array<Real>>|Struct.Hello OR Id.DsMap[String,Real]',
       new Map(),
     );

@@ -10,8 +10,6 @@ export type GmlLexerMode =
   | 'string'
   | 'multilineDoubleString'
   | 'multilineSingleString'
-  | 'jsdocGml'
-  | 'jsdocJs'
   | 'template';
 
 export interface TokenType<Name extends string = string> extends TokenTypeBase {

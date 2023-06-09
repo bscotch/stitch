@@ -1,5 +1,4 @@
 import { codeTokens } from './tokens.code.js';
-import { jsdocsGmlTokens, jsdocsJsTokens } from './tokens.jsdocs.js';
 import { tokenListToObject } from './tokens.lib.js';
 import {
   multilineDoubleStringTokens,
@@ -15,8 +14,6 @@ export const tokens = [
   ...multilineDoubleStringTokens,
   ...multilineSingleStringTokens,
   ...templateTokens,
-  ...jsdocsGmlTokens,
-  ...jsdocsJsTokens,
 ];
 
 export const t = tokenListToObject(tokens);
