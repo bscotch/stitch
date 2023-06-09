@@ -35,7 +35,30 @@ describe.only('JSDocs', function () {
     const complexType =
       'Array<string OR Array<Real>> or Struct.Hello or Id.Map<String,Real>';
     const parsed = parseJsdocTypeString(complexType);
-    console.log(parsed);
+    expect(parsed.kind).to.equal('union');
+    expect(parsed.types).to.have.lengthOf(3);
+    expect(parsed.types[0].kind).to.equal('type');
+    expect(parsed.types[0].name).to.equal('Array');
+    expect(parsed.types[0].of?.kind).to.equal('union');
+    expect(parsed.types[0].of?.types).to.have.lengthOf(2);
+    expect(parsed.types[0].of?.types[0].kind).to.equal('type');
+    expect(parsed.types[0].of?.types[0].name).to.equal('string');
+    expect(parsed.types[0].of?.types[1].kind).to.equal('type');
+    expect(parsed.types[0].of?.types[1].name).to.equal('Array');
+    expect(parsed.types[0].of?.types[1].of?.kind).to.equal('union');
+    expect(parsed.types[0].of?.types[1].of?.types).to.have.lengthOf(1);
+    expect(parsed.types[0].of?.types[1].of?.types[0].kind).to.equal('type');
+    expect(parsed.types[0].of?.types[1].of?.types[0].name).to.equal('Real');
+    expect(parsed.types[1].kind).to.equal('type');
+    expect(parsed.types[1].name).to.equal('Struct.Hello');
+    expect(parsed.types[2].kind).to.equal('type');
+    expect(parsed.types[2].name).to.equal('Id.Map');
+    expect(parsed.types[2].of?.kind).to.equal('union');
+    expect(parsed.types[2].of?.types).to.have.lengthOf(2);
+    expect(parsed.types[2].of?.types[0].kind).to.equal('type');
+    expect(parsed.types[2].of?.types[0].name).to.equal('String');
+    expect(parsed.types[2].of?.types[1].kind).to.equal('type');
+    expect(parsed.types[2].of?.types[1].name).to.equal('Real');
   });
 
   it('can parse GML-style Function JSDocs', function () {

@@ -85,6 +85,7 @@ export function parseJsdocTypeString(typeString: string): JsdocTypeUnion {
       };
       // Add it to the current union
       currentUnion().types.push(type);
+      currentType = type;
       continue;
     }
 
