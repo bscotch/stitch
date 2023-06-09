@@ -2,6 +2,8 @@ import type { IRange, LinePosition } from './project.location.js';
 
 export type Constructor<T = {}> = new (...args: any[]) => T;
 
+export const runningInVscode = !!process.env.VSCODE_IPC_HOOK;
+
 export interface Logger {
   (...args: unknown[]): void;
   enabled: boolean;

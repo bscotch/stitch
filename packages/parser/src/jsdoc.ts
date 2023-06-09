@@ -1,6 +1,7 @@
 import { keysOf } from '@bscotch/utility';
 import type { IToken } from 'chevrotain';
 import type { IPosition, IRange } from './project.location.js';
+import { runningInVscode } from './util.js';
 
 interface MatchGroups {
   param?: string;
@@ -73,15 +74,8 @@ const descriptionLine = `${linePrefixPattern}\\s*${descriptionPattern}`;
 
 const regexes: Record<(typeof names)[number], RegExp> = names.reduce(
   (acc, tagName) => {
-    // TODO: Once VSCode supports Node 18+, remove the try/catch
-    try {
-      acc[tagName] = new RegExp(patterns[tagName], 'd');
-      // We only get the flag error once we use the regex,
-      // so we need to do that here.
-      acc[tagName].exec('');
-    } catch {
-      acc[tagName] = new RegExp(patterns[tagName]);
-    }
+    // The 'd' flag is only supported in Node 18+, which VSCode doesn't support yet.
+    acc[tagName] = new RegExp(patterns[tagName], runningInVscode ? '' : 'd');
     return acc;
   },
   {} as any,

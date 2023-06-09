@@ -399,7 +399,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
         jsdoc.description,
       );
     } else if (jsdoc.kind === 'function') {
-      const type = Type.fromIdentifier('Function', knownTypes);
+      const type = Type.fromIdentifier('Function', knownTypes).describe(
+        jsdoc.description,
+      );
       let i = 0;
       if (jsdoc.deprecated) {
         type.deprecated = true;
