@@ -84,7 +84,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * If this is a constructor function, then this is the
    * type of the struct that it constructs. */
   constructs: Type<'Struct'> | undefined = undefined;
-  context: Type | undefined = undefined;
+  context: Type<'Struct'> | undefined = undefined;
   params: TypeMember[] | undefined = undefined;
   returns: undefined | Type = undefined;
 
@@ -405,7 +405,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
         type.deprecated = true;
       }
       if (jsdoc.self) {
-        type.context = Type.fromFeatherString(jsdoc.self!.content, knownTypes);
+        type.context = Type.fromFeatherString(
+          jsdoc.self!.content,
+          knownTypes,
+        ) as Type<any>;
       }
       if (jsdoc.returns) {
         const returnType = Type.fromFeatherString(

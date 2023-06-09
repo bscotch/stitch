@@ -58,13 +58,19 @@ class SymbolProcessor {
   public scope: Scope;
   readonly position: Position;
   readonly diagnostics: Diagnostic[] = [];
-  public unusedJsdocs: { type: Type; jsdoc: JsdocSummary } | undefined;
+  public unusedJsdoc: { type: Type; jsdoc: JsdocSummary } | undefined;
 
   constructor(readonly file: Code) {
     this.scope = file.scopes[0];
     this.localScopeStack.push(this.scope.local);
     this.selfStack.push(this.scope.self);
     this.position = this.scope.start;
+  }
+
+  useJsdoc() {
+    const docs = this.unusedJsdoc;
+    this.unusedJsdoc = undefined;
+    return docs;
   }
 
   range(loc: CstNodeLocation) {
@@ -232,6 +238,15 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return this.PROCESSOR.project.createType('Unknown');
   }
 
+  protected FIND_ITEM_BY_NAME(name: string): ReferenceableType | undefined {
+    const scope = this.PROCESSOR.fullScope;
+    return (
+      scope.local.getMember(name) ||
+      (!scope.selfIsGlobal && scope.self.getMember(name)) ||
+      this.PROCESSOR.project.getGlobal(name)?.symbol
+    );
+  }
+
   /** Given an identifier in the current scope, find the corresponding item. */
   protected FIND_ITEM(
     children: IdentifierCstChildren,
@@ -255,27 +270,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         break;
       case 'Identifier':
         const { name } = identifier;
-        // Is it local?
-        const local = scope.local.getMember(name);
-        if (local) {
-          item = local;
-          break;
-        }
-        // Is it a non-global selfvar?
-        const selfvar = !scope.selfIsGlobal && scope.self.getMember(name);
-        if (selfvar) {
-          item = selfvar;
-          break;
-        }
-        // Is it a global?
-        const globalvar = this.PROCESSOR.project.getGlobal(name);
-        if (globalvar) {
-          item = globalvar.symbol;
-          break;
-        }
-        // TODO: Emit error?
-        else {
-        }
+        item = this.FIND_ITEM_BY_NAME(name);
         break;
       default:
         // TODO: Handle `other` and `all` keywords
@@ -316,7 +311,18 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
    */
   PREPARE_JSDOC(jsdoc: JsdocSummary) {
     const type = Type.fromParsedJsdocs(jsdoc, this.PROCESSOR.project.types);
-    this.PROCESSOR.unusedJsdocs = {
+    // There might be named types we can swap out.
+    if (type.context && type.context.name) {
+      const matchingItem = this.FIND_ITEM_BY_NAME(type.context.name);
+      if (matchingItem) {
+        const contextType =
+          'type' in matchingItem ? matchingItem.type : matchingItem;
+        if (contextType.kind === 'Struct') {
+          type.context = contextType as StructType;
+        }
+      }
+    }
+    this.PROCESSOR.unusedJsdoc = {
       jsdoc,
       type,
     };
@@ -333,6 +339,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   override functionExpression(children: FunctionExpressionCstChildren) {
     // Get this identifier if we already have it.
     const identifier = this.identifier(children);
+    // Consume the most recent jsdoc
+    let docs = this.PROCESSOR.useJsdoc();
+    if (!docs?.type.isFunction && docs?.type.kind !== 'Unknown') {
+      // Then these docs are not applicable, so toss them.
+      docs = undefined;
+    }
 
     // Compute useful properties of this function to help figure out
     // how to define its symbol, type, scope, etc.
@@ -362,7 +374,15 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       item.type.kind = functionTypeName;
     }
     const functionType = item.type;
+
+    // Use JSDocs to fill in any missing top-level information
     ok(functionType.isFunction, 'Expected function type');
+    functionType.describe(functionType.description || docs?.type.description);
+    functionType.context =
+      docs?.type.context || (this.PROCESSOR.currentSelf as StructType);
+    if (docs?.type.deprecated) {
+      functionType.deprecated = docs.type.deprecated;
+    }
 
     // Ensure that constructors have an attached constructed type
     if (isConstructor && !functionType.constructs) {
@@ -373,10 +393,10 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // Identify the "self" struct. If this is a constructor, "self" is the
     // constructed type. Otherwise, for now just create a new struct type
     // for the self scope.
-    // TODO: Figure out the actual self scope (e.g. from JSDocs or type inference)
     const self = (
-      isConstructor ? functionType.constructs : this.PROCESSOR.currentSelf
+      isConstructor ? functionType.constructs : functionType.context
     )!;
+
     // Make sure this function is a member of the self struct
     if (!self.getMember(functionName)) {
       const member = self.addMember(functionName, item.type);
@@ -404,11 +424,18 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     for (let i = 0; i < params.length; i++) {
       const param = params[i].children.Identifier[0];
       const range = this.PROCESSOR.range(param);
-      // TODO: Use JSDocs to determine the type of the parameter
-      const paramType = this.PROCESSOR.project
-        .createType('Unknown')
-        .definedAt(range);
-      const optional = !!params[i].children.Assign;
+
+      // Use JSDocs to determine the type, description, etc of the parameter
+      let fromJsdoc = docs?.type.getParameter(i);
+      if (fromJsdoc && param.image !== fromJsdoc.name) {
+        this.PROCESSOR.addDiagnostic(param, `Parameter name mismatch`);
+        // Unset it so we don't accidentally use it!
+        fromJsdoc = undefined;
+      }
+      const paramType =
+        fromJsdoc?.type ||
+        this.PROCESSOR.project.createType('Unknown').definedAt(range);
+      const optional = fromJsdoc?.optional || !!params[i].children.Assign;
       functionType
         .addParameter(i, param.image, paramType, optional)
         .definedAt(range);
@@ -421,6 +448,20 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       member.local = true;
       member.parameter = true;
     }
+    // If we have more args defined in JSDocs, add them!
+    if ((docs?.type?.params?.length || 0) > params.length) {
+      const extraParams = docs!.type.params!.slice(params.length);
+      for (let i = 0; i < extraParams.length; i++) {
+        const idx = params.length + i;
+        const param = extraParams[i];
+        const paramType = param.type;
+        const optional = param.optional;
+        functionType.addParameter(idx, param.name, paramType, optional);
+        // Do not add to local scope, since if it's only defined
+        // in the JSDoc it's not a real parameter.
+      }
+    }
+
     // TODO: Remove any excess parameters, e.g. if we're updating a
     // prior definition. This is tricky since we may need to do something
     // about references to legacy params.
