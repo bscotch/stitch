@@ -73,7 +73,15 @@ const descriptionLine = `${linePrefixPattern}\\s*${descriptionPattern}`;
 
 const regexes: Record<(typeof names)[number], RegExp> = names.reduce(
   (acc, tagName) => {
-    acc[tagName] = new RegExp(patterns[tagName], 'd');
+    // TODO: Once VSCode supports Node 18+, remove the try/catch
+    try {
+      acc[tagName] = new RegExp(patterns[tagName], 'd');
+      // We only get the flag error once we use the regex,
+      // so we need to do that here.
+      acc[tagName].exec('');
+    } catch {
+      acc[tagName] = new RegExp(patterns[tagName]);
+    }
     return acc;
   },
   {} as any,
@@ -284,7 +292,9 @@ export function parseJsdoc(
     for (const tagName of names) {
       match = line.content.match(regexes[tagName]) as RegExpMatchArray;
       const parts = match?.groups as MatchGroups;
-      const indices = match?.indices?.groups as MatchIndices;
+      // TODO: In Node <18, this will be undefined. Once VSCode
+      // updates to use Node 18+ we can remove the `undefined` union.
+      const indices = match?.indices?.groups as MatchIndices | undefined;
       if (!match) {
         // Then we haven't found a tag yet
         continue;
@@ -292,7 +302,7 @@ export function parseJsdoc(
       // Add the tag to the list of tags
       doc.tags.push({
         content: parts.tag!,
-        ...matchIndexToRange(line.start, indices.tag!),
+        ...matchIndexToRange(line.start, indices?.tag),
       });
 
       // Based on the tag type, update the doc
@@ -401,16 +411,16 @@ function matchToComponent(
 
 function matchIndexToRange(
   startPosition: IPosition,
-  index: MatchIndex,
+  index: MatchIndex | undefined,
 ): IRange {
   // Note that the IRange uses column and line indexes that start at 1, while the offset starts at 0.
   const range: IRange = {
     start: { ...startPosition },
     end: { ...startPosition },
   };
-  range.start.column += index[0];
-  range.start.offset += index[0];
-  range.end.column += index[1];
-  range.end.offset += index[1];
+  range.start.column += index?.[0] || 0;
+  range.start.offset += index?.[0] || 0;
+  range.end.column += index?.[1] || 0;
+  range.end.offset += index?.[1] || 0;
   return range;
 }
