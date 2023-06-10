@@ -1,7 +1,6 @@
 import { keysOf } from '@bscotch/utility';
 import type { IToken } from 'chevrotain';
 import type { IPosition, IRange } from './project.location.js';
-import { runningInVscode } from './util.js';
 
 interface MatchGroups {
   param?: string;
@@ -23,7 +22,7 @@ interface MatchGroups {
   optionalName?: string;
   tag?: string;
 }
-type MatchIndex = [start: number, end: number];
+type MatchIndex = readonly [start: number, end: number];
 type MatchIndices = { [K in keyof MatchGroups]?: MatchIndex };
 
 const patterns = {
@@ -75,7 +74,7 @@ const descriptionLine = `${linePrefixPattern}\\s*${descriptionPattern}`;
 const regexes: Record<(typeof names)[number], RegExp> = names.reduce(
   (acc, tagName) => {
     // The 'd' flag is only supported in Node 18+, which VSCode doesn't support yet.
-    acc[tagName] = new RegExp(patterns[tagName], runningInVscode ? '' : 'd');
+    acc[tagName] = new RegExp(patterns[tagName]);
     return acc;
   },
   {} as any,
@@ -288,15 +287,20 @@ export function parseJsdoc(
       const parts = match?.groups as MatchGroups;
       // TODO: In Node <18, this will be undefined. Once VSCode
       // updates to use Node 18+ we can remove the `undefined` union.
-      const indices = match?.indices?.groups as MatchIndices | undefined;
+      // const indices = match?.indices?.groups as MatchIndices | undefined;
       if (!match) {
         // Then we haven't found a tag yet
         continue;
       }
       // Add the tag to the list of tags
+      const tagMatch = line.content.match(/@\w+\b/)!;
+      const tagIndices = [
+        tagMatch.index!,
+        tagMatch.index! + tagMatch[0].length,
+      ] as const;
       doc.tags.push({
         content: parts.tag!,
-        ...matchIndexToRange(line.start, indices?.tag),
+        ...matchIndexToRange(line.start, tagIndices),
       });
 
       // Based on the tag type, update the doc
@@ -306,7 +310,11 @@ export function parseJsdoc(
         doc.kind = 'function';
       }
 
-      const entireMatchRange = matchIndexToRange(line.start, match.indices![0]);
+      const matchIndices = [
+        match.index!,
+        match.index! + match[0].length,
+      ] as const;
+      const entireMatchRange = matchIndexToRange(line.start, matchIndices);
 
       // If this uses an @description tag, then apply that description
       // to the root doc.
@@ -397,9 +405,10 @@ function matchToComponent(
   groupName: string,
   startPosition: IPosition,
 ): JsdocComponent {
+  const indices = [match.index!, match.index! + match[0].length] as const;
   return {
     content: match.groups![groupName]!,
-    ...matchIndexToRange(startPosition, match.indices!.groups![groupName]!),
+    ...matchIndexToRange(startPosition, indices),
   };
 }
 
