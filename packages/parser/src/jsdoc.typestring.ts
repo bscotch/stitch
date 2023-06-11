@@ -46,6 +46,11 @@ export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
   const currentUnion = (): FeatherTypeUnion => typeUnionStack.at(-1)!;
   let currentType: FeatherType | undefined;
 
+  if (!typeString?.trim()) {
+    rootUnion.types.push({ kind: 'type', name: 'Any' });
+    return rootUnion;
+  }
+
   // Lex the string
   while (currentPosition < typeString.length) {
     let match: RegExpExecArray | undefined;

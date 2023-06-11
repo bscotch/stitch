@@ -31,6 +31,7 @@ export interface IRange {
  * of the token and fixes the end location if necessary.
  */
 export function fixITokenLocation(token: IToken) {
+  assert(typeof token.image === 'string', 'Token must have an image');
   const length = token.image.length;
   if (token.endOffset === token.startOffset) {
     token.endOffset += length;
@@ -150,10 +151,12 @@ export class FunctionArgRange extends Range {
   }
 
   get type(): Type<'Function'> {
+    assert(this.ref, 'FunctionArgRange must have a reference');
     return this.ref.type as Type<'Function'>;
   }
 
   get param(): TypeMember {
+    assert(this.type, 'FunctionArgRange must have a type');
     return this.type.getParameter(this.idx)!;
   }
 }
@@ -240,6 +243,7 @@ export class Scope extends Range {
 export type ReferenceableType = Symbol | Type | TypeMember;
 
 export function getType(ref: ReferenceableType): Type {
+  assert(ref, 'Cannot get the type of an undefined reference.');
   if (isType(ref)) {
     return ref;
   }

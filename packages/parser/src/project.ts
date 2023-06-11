@@ -182,6 +182,7 @@ export class Project {
    */
   addGlobal(item: Symbol, addToGlobalSelf = false) {
     // Ensure it doesn't already exist
+    ok(item, 'Cannot add undefined item');
     const existing = this.getGlobal(item.name);
     ok(!existing, `Global ${item.name} already exists`);
     // If it is a function or enum, add its type to the global types

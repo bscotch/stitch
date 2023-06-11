@@ -120,10 +120,12 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
    */
   override enumStatement(children: EnumStatementCstChildren) {
     const symbol = this.ADD_GLOBAL_DECLARATION(children, 'Enum')! as Symbol;
+    assert(symbol, 'Enum symbol should exist');
     const type = symbol.type as EnumType;
     assert(type.kind === 'Enum', `Symbol ${symbol.name} is not an enum.`);
     // Might be updating an existing enum, so mutate members instead
     // of wholesale replacing to maintain cross-references.
+    assert(children.enumMember, 'Enum must have members');
     for (let i = 0; i < children.enumMember.length; i++) {
       const name = children.enumMember[i].children.Identifier[0];
       const range = this.PROCESSOR.range(name);

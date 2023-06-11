@@ -250,6 +250,7 @@ export function parseJsdoc(
       : Array.isArray(raw)
       ? jsdocGmlToLines(raw)
       : jsdocBlockToLines(raw);
+  assert(lines, 'Lines must be an array');
   if (!lines.length) return undefined;
   assert(lines[0], 'No lines found in jsdoc block');
   const start: IPosition = lines[0].start;
@@ -296,6 +297,8 @@ export function parseJsdoc(
       }
       // Add the tag to the list of tags
       const tagMatch = line.content.match(/@\w+\b/)!;
+      assert(tagMatch, 'Tag match should exist');
+      assert(tagMatch[0], 'Tag match must be an array');
       const tagIndices = [
         tagMatch.index!,
         tagMatch.index! + tagMatch[0].length,

@@ -1,6 +1,7 @@
 import { sortKeysByReference } from '@bscotch/utility';
 import { Yy, type YyResourceType } from '@bscotch/yy';
 import vscode from 'vscode';
+import { logThrown } from './assert.mjs';
 import { config } from './extension.config.mjs';
 
 export class StitchYyFormatProvider
@@ -18,7 +19,7 @@ export class StitchYyFormatProvider
     const type = name.endsWith('.yyp')
       ? 'project'
       : (parts.at(-3) as YyResourceType);
-    const text = document.getText();
+    const text = logThrown(() => document.getText());
     const start = document.positionAt(0);
     const end = document.positionAt(text.length);
     const parsed = sortKeysByReference(Yy.parse(text, type), Yy.parse(text));

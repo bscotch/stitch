@@ -7,7 +7,7 @@ import {
   type Type,
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
-import { swallowThrown } from './assert.mjs';
+import { assert, swallowThrown } from './assert.mjs';
 import { debounce } from './debounce.mjs';
 import { inScopeSymbolsToCompletions } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
@@ -63,6 +63,7 @@ export class StitchProvider
   /**
    * Emit a collection of diagnostics for a particular file. */
   emitDiagnostics(diagnostics: Diagnostic[]) {
+    assert(diagnostics, 'diagnostics must be an array');
     if (!diagnostics.length) {
       return;
     }

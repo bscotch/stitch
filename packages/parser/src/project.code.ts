@@ -86,6 +86,7 @@ export class Code {
     if (typeof offset === 'number' && typeof column === 'number') {
       offset = { line: offset, column };
     }
+    assert(this.refs, 'Refs must be an array');
     for (let i = 0; i < this.refs.length; i++) {
       const ref = this.refs[i];
       if (this.isInRange(ref, offset)) {
@@ -106,6 +107,7 @@ export class Code {
     }
     let match: FunctionArgRange | undefined;
     const ranges = this.functionArgRanges;
+    assert(ranges, 'Function arg ranges must be an array');
     for (let i = 0; i < ranges.length; i++) {
       const argRange = ranges[i];
       if (this.isInRange(argRange, offset)) {
@@ -252,6 +254,7 @@ export class Code {
   }
 
   protected initializeScopeRanges() {
+    assert(this.scopes, 'Scopes must be initialized');
     this.scopes.length = 0;
     const position = Position.fromFileStart(this);
     const self = this.asset.instanceType || this.project.self;
@@ -331,9 +334,12 @@ export class Code {
 
   protected computeFunctionCallDiagnostics() {
     // Look through the function call ranges to see if we have too many or too few arguments.
+    assert(this._functionCalls, 'Function calls must be initialized');
 
     calls: for (let i = 0; i < this._functionCalls.length; i++) {
       const args = this._functionCalls[i];
+      assert(args, 'Function call args must be initialized');
+      assert(args[0], 'Function call must have a function');
       const func = args[0].type;
       const params = func.params || [];
       const ref = args[0].ref;
@@ -359,7 +365,7 @@ export class Code {
         // Then we can't have too many arguments
         continue;
       }
-      if (!params?.length && args.length === 1 && !args[0].hasExpression) {
+      if (!params.length && args.length === 1 && !args[0].hasExpression) {
         // Then this is a zero-arg function and we aren't providing any args.
         continue;
       }
@@ -388,7 +394,7 @@ export class Code {
     processSymbols(this);
     this.handleEventInheritance();
     this.computeFunctionCallDiagnostics();
-
+    assert(this._diagnostics, 'Diagnostics must be initialized');
     if (this._diagnostics.length) {
       this.project.emitDiagnostics(this._diagnostics);
     }

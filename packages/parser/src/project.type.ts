@@ -7,7 +7,7 @@ import {
 import { Flaggable } from './project.flags.js';
 import { Refs } from './project.location.js';
 import { PrimitiveName, primitiveNames } from './project.primitives.js';
-import { ok } from './util.js';
+import { assert, ok } from './util.js';
 
 export type AnyType = Type<'Any'>;
 export type ArrayType = Type<'Array'>;
@@ -134,6 +134,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
         const params = this.params || [];
         for (let i = 0; i < params.length; i++) {
           const param = params[i];
+          assert(param, 'Param is undefined');
           if (i > 0) {
             code += ', ';
           }
@@ -420,6 +421,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
         type.addReturnType(returnType);
       }
       for (const param of jsdoc.params || []) {
+        if (!param.type?.content) {
+          console.log(jsdoc);
+        }
         const paramType = Type.fromFeatherString(
           param.type!.content,
           knownTypes,
@@ -452,7 +456,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     __isRootRequest = true,
   ): Type {
     ok(
-      identifier.match(/^[A-Z][A-Z0-9.]*$/i),
+      identifier.match(/^[A-Z][A-Z0-9._]*$/i),
       `Invalid type name ${identifier}`,
     );
     const knownType = knownTypes.get(identifier);

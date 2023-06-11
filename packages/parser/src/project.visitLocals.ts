@@ -403,8 +403,10 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // Make sure this function is a member of the self struct
     if (!self.getMember(functionName)) {
       const member = self.addMember(functionName, item.type);
-      member.definedAt(nameLocation!);
-      member.addRef(nameLocation!);
+      if (nameLocation) {
+        member.definedAt(nameLocation);
+        member.addRef(nameLocation);
+      }
     }
 
     // Functions have their own localscope as well as their self scope,
@@ -454,9 +456,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // If we have more args defined in JSDocs, add them!
     if ((docs?.type?.params?.length || 0) > params.length) {
       const extraParams = docs!.type.params!.slice(params.length);
+      assert(extraParams, 'Expected extra params');
       for (let i = 0; i < extraParams.length; i++) {
         const idx = params.length + i;
         const param = extraParams[i];
+        assert(param, 'Expected extra param');
         const paramType = param.type;
         const optional = param.optional;
         functionType.addParameter(idx, param.name, paramType, optional);
@@ -491,6 +495,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     }
     let currentLocation = children.identifier[0].location!;
     const suffixes = sortedAccessorSuffixes(children.accessorSuffixes);
+    assert(suffixes, 'Expected suffixes');
     if (!suffixes.length) {
       return;
     }
@@ -512,7 +517,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
     suffixLoop: for (let s = 0; s < suffixes.length; s++) {
       const suffix = suffixes[s];
-      const currentType = currentItem ? getType(currentItem.item) : null;
+      const currentType = currentItem?.item ? getType(currentItem.item) : null;
       const isLastSuffix = s === suffixes.length - 1;
       switch (suffix.name) {
         case 'dotAccessSuffix':

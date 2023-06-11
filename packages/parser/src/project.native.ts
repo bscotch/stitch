@@ -6,6 +6,7 @@ import { primitiveNames } from './project.primitives.js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
 import { Symbol } from './project.symbol.js';
 import { Type, type FunctionType, type StructType } from './project.type.js';
+import { assert } from './util.js';
 
 export class Native {
   protected spec!: GmlSpec;
@@ -51,6 +52,7 @@ export class Native {
 
   protected loadVariables() {
     for (const variable of this.spec.variables) {
+      assert(variable, 'Variable must be defined');
       const type = Type.fromFeatherString(variable.type, this.types);
       const symbol = new Symbol(variable.name)
         .describe(variable.description)
@@ -80,8 +82,10 @@ export class Native {
       this.types.set(typeName, type);
 
       // Add parameters to the type.
+      assert(func.parameters, 'Function must have parameters');
       for (let i = 0; i < func.parameters.length; i++) {
         const param = func.parameters[i];
+        assert(param, 'Parameter must be defined');
         const paramType = Type.fromFeatherString(param.type, this.types);
         type
           .addParameter(i, param.name, paramType, param.optional)
@@ -121,6 +125,7 @@ export class Native {
     for (const [klass, constants] of constantsByClass) {
       if (!klass) {
         for (const constant of constants) {
+          assert(constant, 'Constant must be defined');
           const symbol = new Symbol(constant.name)
             .describe(constant.description)
             .addType(Type.fromFeatherString(constant.type, this.types));
@@ -134,6 +139,7 @@ export class Native {
       // Figure out what types are in use by this class.
       const typeNames = new Set<string>();
       for (const constant of constants) {
+        assert(constant, 'Constant must be defined');
         typeNames.add(constant.type);
       }
       ok(typeNames.size, `Class ${klass} has no types`);
@@ -179,6 +185,7 @@ export class Native {
       this.types.set(typeName, structType);
 
       for (const prop of struct.properties) {
+        assert(prop, 'Property must be defined');
         const type = Type.fromFeatherString(prop.type, this.types);
         structType
           .addMember(prop.name, type, prop.writable)

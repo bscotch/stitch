@@ -84,7 +84,7 @@ export class GameMakerWorkspaceSymbolProvider
   protected updateGlobalsCache(project: GameMakerProject) {
     const symbols: vscode.SymbolInformation[] = [];
     this.globalsCache.set(project, symbols);
-    for (const item of (project.self.members || []).values()) {
+    for (const item of (project.self.listMembers() || []).values()) {
       const type = item.type;
       const location = item.def || type.def;
       if (!location) {
