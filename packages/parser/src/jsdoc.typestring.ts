@@ -9,7 +9,7 @@
 //  - `Array<String>`
 //  - `Array[String|Real]`
 
-import { ok } from 'assert';
+import { ok } from './util.js';
 
 export interface FeatherTypeUnion {
   kind: 'union';

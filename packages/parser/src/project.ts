@@ -1,7 +1,6 @@
 import { pathy, Pathy } from '@bscotch/pathy';
 import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { Yy, Yyp } from '@bscotch/yy';
-import { ok } from 'assert';
 import chokidar from 'chokidar';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
@@ -12,6 +11,7 @@ import { Native } from './project.native.js';
 import { PrimitiveName } from './project.primitives.js';
 import { Symbol } from './project.symbol.js';
 import { StructType, Type, TypeMember } from './project.type.js';
+import { ok } from './util.js';
 
 type AssetName = string;
 

@@ -6,10 +6,10 @@ import {
   YypResource,
   type YyDataStrict,
 } from '@bscotch/yy';
-import { ok } from 'assert';
 import { GameMakerProject } from 'extension.project.mjs';
 import path from 'path';
 import vscode from 'vscode';
+import { assert } from './assert.mjs';
 import { GmlFile } from './extension.gml.mjs';
 import { StitchTreeItemBase } from './extension.tree.mjs';
 import { getEventName } from './spec.events.mjs';
@@ -143,7 +143,7 @@ export class GameMakerResource<
       const paths = await pathy(this.dir).listChildren();
       asPath = paths.find((x) => filePattern.test(x.basename));
     }
-    ok(asPath, `Could not find a .yy file for ${this.name}`);
+    assert(asPath, `Could not find a .yy file for ${this.name}`);
     this.yy = await Yy.read(asPath.absolute, this.type);
     return this.yy;
   }

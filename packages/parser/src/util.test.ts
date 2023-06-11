@@ -1,5 +1,4 @@
-import { ok } from 'assert';
-import { isBeforeRange, isInRange } from './util.js';
+import { isBeforeRange, isInRange, ok } from './util.js';
 describe('Util', function () {
   it('can determine if a position is within a range', function () {
     const range = {

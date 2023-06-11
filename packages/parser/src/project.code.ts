@@ -15,7 +15,7 @@ import type { Symbol } from './project.symbol.js';
 import { Type, TypeMember } from './project.type.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
 import { processSymbols } from './project.visitLocals.js';
-import { isBeforeRange, isInRange } from './util.js';
+import { assert, isBeforeRange, isInRange } from './util.js';
 
 /** Represenation of a GML code file. */
 export class Code {
@@ -238,8 +238,17 @@ export class Code {
   }
 
   sortRefs() {
-    this._refs.sort((a, b) => a.start.offset - b.start.offset);
-    this._functionArgRanges.sort((a, b) => a.start.offset - b.start.offset);
+    interface Offset {
+      start: { offset: number };
+    }
+    const sorter = (a: Offset, b: Offset) => {
+      assert(a, 'Ref a does not exist');
+      assert(b, 'Ref b does not exist');
+      assert(a.start && b.start, 'Ref does not have a start');
+      return a.start.offset - b.start.offset;
+    };
+    this._refs.sort(sorter);
+    this._functionArgRanges.sort(sorter);
   }
 
   protected initializeScopeRanges() {

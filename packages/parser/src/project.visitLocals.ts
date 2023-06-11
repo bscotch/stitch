@@ -1,6 +1,5 @@
 // CST Visitor for creating an AST etc
 import { randomString } from '@bscotch/utility';
-import { ok } from 'assert';
 import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
 import type {
   AssignmentRightHandSideCstChildren,
@@ -43,7 +42,7 @@ import {
   type TypeMember,
 } from './project.type.js';
 import { c } from './tokens.categories.js';
-import { log } from './util.js';
+import { assert, log, ok } from './util.js';
 
 export function processSymbols(file: Code) {
   const processor = new SymbolProcessor(file);
@@ -62,6 +61,10 @@ class SymbolProcessor {
 
   constructor(readonly file: Code) {
     this.scope = file.scopes[0];
+    assert(
+      this.scope,
+      'SymbolProcessor constructor: File must have a global scope',
+    );
     this.localScopeStack.push(this.scope.local);
     this.selfStack.push(this.scope.self);
     this.position = this.scope.start;

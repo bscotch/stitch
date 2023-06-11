@@ -1,10 +1,10 @@
 import { omit } from '@bscotch/utility';
-import { ok } from 'assert';
 import { expect } from 'chai';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
 import { Symbol } from './project.symbol.js';
 import { Type, TypeMember } from './project.type.js';
+import { ok } from './util.js';
 
 describe('Project', function () {
   it('can load the GML spec', async function () {

@@ -1,5 +1,4 @@
 // CST Visitor for creating an AST etc
-import assert from 'assert';
 import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
 import type {
   EnumStatementCstChildren,
@@ -14,6 +13,7 @@ import { Position, Range } from './project.location.js';
 import { PrimitiveName } from './project.primitives.js';
 import { Symbol } from './project.symbol.js';
 import { EnumType, StructType, TypeMember } from './project.type.js';
+import { assert } from './util.js';
 
 export function processGlobalSymbols(file: Code) {
   const processor = new GlobalDeclarationsProcessor(file);
@@ -27,6 +27,7 @@ class GlobalDeclarationsProcessor {
 
   constructor(readonly file: Code) {
     this.localScopeStack.push(file.scopes[0].local);
+    assert(file.scopes[0], 'File must have a global scope');
     this.start = file.scopes[0].start;
   }
 

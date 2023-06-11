@@ -1,5 +1,4 @@
 import { keysOf } from '@bscotch/utility';
-import { ok } from 'assert';
 import {
   CstParser,
   type CstNode,
@@ -19,6 +18,7 @@ import type {
 import { GmlLexer } from './lexer.js';
 import type { GmlParseError } from './project.diagnostics.js';
 import { c, categories, t, tokens } from './tokens.js';
+import { ok } from './util.js';
 
 export interface GmlParsed {
   lexed: ILexingResult;

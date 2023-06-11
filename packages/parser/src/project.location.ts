@@ -1,5 +1,4 @@
 import type { CstNodeLocation, IToken } from 'chevrotain';
-import { ok } from 'node:assert';
 import type { Code } from './project.code.js';
 import type { Symbol } from './project.symbol.js';
 import {
@@ -9,7 +8,7 @@ import {
   TypeMember,
   isType,
 } from './project.type.js';
-import type { Constructor } from './util.js';
+import { assert, type Constructor } from './util.js';
 
 export const firstLineIndex = 1;
 export const firstColumnIndex = 1;
@@ -224,11 +223,11 @@ export class Scope extends Range {
    * so at least one will need to be changed!
    */
   createNext(atToken: CstNodeLocation, fromTokenEnd = false): Scope {
-    ok(
+    assert(
       this.end,
       'Cannot create a next scope range without an end to this one.',
     );
-    ok(
+    assert(
       !this._next,
       'Cannot create a next scope range when one already exists.',
     );
@@ -257,6 +256,7 @@ export class Reference<
   }
 
   static fromRange(range: Range, item: ReferenceableType) {
+    assert(range, 'Cannot create a reference from an undefined range.');
     return new Reference(item, range.start, range.end);
   }
 }

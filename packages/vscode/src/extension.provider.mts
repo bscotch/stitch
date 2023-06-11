@@ -7,6 +7,7 @@ import {
   type Type,
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
+import { swallowThrown } from './assert.mjs';
 import { debounce } from './debounce.mjs';
 import { inScopeSymbolsToCompletions } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
@@ -123,18 +124,16 @@ export class StitchProvider
   provideDefinition(
     document: vscode.TextDocument,
     position: vscode.Position,
-  ): vscode.ProviderResult<vscode.Definition | vscode.LocationLink[]> {
-    try {
+  ): vscode.Location | undefined {
+    return swallowThrown(() => {
       const item = this.getSymbol(document, position);
       if (item && !item.native && item.def) {
         return locationOf(item.def);
       } else {
         console.log('No definition found for', item);
       }
-    } catch (err) {
-      console.error(err);
-    }
-    return;
+      return;
+    });
   }
 
   provideCompletionItems(
@@ -381,9 +380,12 @@ export class StitchProvider
           return;
         }
         // Get the signature helper.
-        const signatureHelp = this.provider.provideSignatureHelp(
-          e.textEditor.document,
-          e.selections[0].start,
+        const signatureHelp = swallowThrown(
+          () =>
+            this.provider.provideSignatureHelp(
+              e.textEditor.document,
+              e.selections[0].start,
+            )!,
         );
         if (!signatureHelp) {
           return;

@@ -1,4 +1,3 @@
-import { ok } from 'assert';
 import type { JsdocSummary } from './jsdoc.js';
 import {
   parseFeatherTypeString,
@@ -8,6 +7,7 @@ import {
 import { Flaggable } from './project.flags.js';
 import { Refs } from './project.location.js';
 import { PrimitiveName, primitiveNames } from './project.primitives.js';
+import { ok } from './util.js';
 
 export type AnyType = Type<'Any'>;
 export type ArrayType = Type<'Array'>;

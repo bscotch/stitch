@@ -18,6 +18,19 @@ export const log: Logger = Object.assign(
   { enabled: false },
 );
 
+export function assert(condition: any, message?: string): asserts condition {
+  if (!condition) {
+    const err = new Error(message);
+    if (runningInVscode) {
+      // VSCode swallows error messages, so we need to log them
+      console.error(err);
+    }
+    throw err;
+  }
+}
+/** @alias assert */
+export const ok: typeof assert = assert;
+
 function jsonReplacer(key: string, value: unknown): unknown {
   if (value instanceof Map) {
     const obj: Record<string, unknown> = {};
@@ -52,6 +65,7 @@ export function normalizeTypeString(typeString: string): string {
 }
 
 export function isInRange(range: IRange, offset: number | LinePosition) {
+  assert(range !== undefined, 'Range must be defined');
   if (typeof offset === 'number') {
     return range.start.offset <= offset && range.end.offset >= offset;
   } else {
@@ -77,6 +91,7 @@ export function isInRange(range: IRange, offset: number | LinePosition) {
 }
 
 export function isBeforeRange(range: IRange, offset: number | LinePosition) {
+  assert(range !== undefined, 'isBeforeRange: Range must be defined');
   if (typeof offset === 'number') {
     return offset < range.end.offset;
   } else {

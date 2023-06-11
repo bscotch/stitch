@@ -1,6 +1,7 @@
 import { keysOf } from '@bscotch/utility';
 import type { IToken } from 'chevrotain';
 import type { IPosition, IRange } from './project.location.js';
+import { assert } from './util.js';
 
 interface MatchGroups {
   param?: string;
@@ -250,7 +251,7 @@ export function parseJsdoc(
       ? jsdocGmlToLines(raw)
       : jsdocBlockToLines(raw);
   if (!lines.length) return undefined;
-
+  assert(lines[0], 'No lines found in jsdoc block');
   const start: IPosition = lines[0].start;
   const end: IPosition = lines.at(-1)!.start;
   end.column += lines.at(-1)!.content.length;
@@ -278,6 +279,7 @@ export function parseJsdoc(
   };
 
   for (const line of lines) {
+    assert(line, 'Line does not exist');
     // Check for a match against each of the tag patterns
     // until we fined one. If we don't then `match` will
     // stay null, and we can use the line as a description.
