@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/gml-parser",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/parser#readme",
   "repository": {
