@@ -251,7 +251,11 @@ export interface PrimaryExpressionCstNode extends CstNode {
 
 export type PrimaryExpressionCstChildren = {
   UnaryPrefixOperator?: IToken[];
-  Literal?: IToken[];
+  BooleanLiteral?: IToken[];
+  NumericLiteral?: IToken[];
+  PointerLiteral?: IToken[];
+  Undefined?: IToken[];
+  NaN?: IToken[];
   stringLiteral?: StringLiteralCstNode[];
   multilineDoubleStringLiteral?: MultilineDoubleStringLiteralCstNode[];
   multilineSingleStringLiteral?: MultilineSingleStringLiteralCstNode[];

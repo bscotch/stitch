@@ -14,11 +14,11 @@ export const categories = [
     pattern: Lexer.NA,
   }),
   createToken({
-    name: 'Literal',
+    name: 'BooleanLiteral',
     pattern: Lexer.NA,
   }),
   createToken({
-    name: 'BooleanLiteral',
+    name: 'PointerLiteral',
     pattern: Lexer.NA,
   }),
   createToken({

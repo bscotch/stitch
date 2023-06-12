@@ -2,14 +2,23 @@
 import { randomString } from '@bscotch/utility';
 import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
 import type {
+  ArrayLiteralCstChildren,
   AssignmentRightHandSideCstChildren,
+  ExpressionCstChildren,
   FunctionExpressionCstChildren,
   IdentifierAccessorCstChildren,
   IdentifierCstChildren,
   JsdocGmlCstChildren,
   JsdocJsCstChildren,
   LocalVarDeclarationCstChildren,
+  MultilineDoubleStringLiteralCstChildren,
+  MultilineSingleStringLiteralCstChildren,
+  ParenthesizedExpressionCstChildren,
+  PrimaryExpressionCstChildren,
   StaticVarDeclarationsCstChildren,
+  StringLiteralCstChildren,
+  StructLiteralCstChildren,
+  TemplateLiteralCstChildren,
   VariableAssignmentCstChildren,
   WithStatementCstChildren,
 } from '../gml-cst.js';
@@ -20,6 +29,7 @@ import {
   isEmpty,
   sortedAccessorSuffixes,
   sortedFunctionCallParts,
+  stringLiteralAsString,
 } from './parser.js';
 import type { Code } from './project.code.js';
 import type { Diagnostic } from './project.diagnostics.js';
@@ -35,13 +45,13 @@ import {
 } from './project.location.js';
 import { Symbol } from './project.symbol.js';
 import {
+  FunctionType,
   Type,
   typeIs,
   type EnumType,
   type StructType,
   type TypeMember,
 } from './project.type.js';
-import { c } from './tokens.categories.js';
 import { assert, ok } from './util.js';
 
 export function processSymbols(file: Code) {
@@ -76,8 +86,15 @@ class SymbolProcessor {
     return docs;
   }
 
-  range(loc: CstNodeLocation) {
-    return Range.fromCst(this.position.file, loc);
+  /**
+   * If a single node is provided, create a range from it.
+   * If two are provided, use the start of the first and end
+   * of the second to create the range.
+   */
+  range(loc: CstNodeLocation, endLoc?: CstNodeLocation) {
+    const start = this.position.at(loc);
+    const end = this.position.atEnd(endLoc || loc);
+    return new Range(start, end);
   }
 
   addDiagnostic(
@@ -141,8 +158,8 @@ class SymbolProcessor {
     }
   }
 
-  createStruct(token: CstNodeLocation) {
-    return new Type('Struct').definedAt(this.range(token));
+  createStruct(token: CstNodeLocation, endToken?: CstNodeLocation) {
+    return new Type('Struct').definedAt(this.range(token, endToken));
   }
 
   pushScope(
@@ -206,37 +223,6 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return this.PROCESSOR;
   }
 
-  protected COMPUTE_TYPE(children: AssignmentRightHandSideCstChildren) {
-    if (children.structLiteral) {
-      return this.PROCESSOR.project.createStructType('self');
-    } else if (children.functionExpression) {
-      // TODO: Find the function's actual type
-      return this.PROCESSOR.project.createType('Function');
-    } else if (children.expression) {
-      const expr =
-        children.expression[0].children.primaryExpression?.[0].children;
-      if (expr) {
-        const isString =
-          expr.stringLiteral ||
-          expr.multilineDoubleStringLiteral ||
-          expr.multilineSingleStringLiteral ||
-          expr.templateLiteral;
-        const isArray = !isString && expr.arrayLiteral;
-        const isReal =
-          !isString &&
-          !isArray &&
-          (expr.UnaryPrefixOperator ||
-            expr.UnarySuffixOperator ||
-            expr.Literal?.[0].tokenType.CATEGORIES?.includes(c.NumericLiteral));
-        return this.PROCESSOR.project.createType(
-          isString ? 'String' : isArray ? 'Array' : isReal ? 'Real' : 'Unknown',
-        );
-      }
-    }
-    // TODO: Add more capabilities
-    return this.PROCESSOR.project.createType('Unknown');
-  }
-
   protected FIND_ITEM_BY_NAME(name: string): ReferenceableType | undefined {
     const scope = this.PROCESSOR.fullScope;
     return (
@@ -284,13 +270,29 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return;
   }
 
+  get UNKNOWN() {
+    return this.PROCESSOR.project.createType('Unknown');
+  }
+
+  UPDATE_TYPE_WITH_DOCS(type: Type) {
+    const docs = this.PROCESSOR.useJsdoc();
+    if (!docs || docs.jsdoc.kind === 'self') {
+      return type;
+    }
+    type.description = docs.type.description || type.description;
+    if (docs.jsdoc.kind === 'description') {
+      return type;
+    }
+    // TODO: Handle conflict between docs and type
+    return Type.merge(type, docs.type);
+  }
+
   override withStatement(children: WithStatementCstChildren) {
     // With statements change the self scope to
     // whatever their expression evaluates to.
     // TODO: Evaluate the expression and try to use its type as the self scope
     this.visit(children.expression);
     const blockLocation = children.blockableStatement[0].location!;
-    this.PROCESSOR.scope.setEnd(children.expression[0].location!, true);
 
     const docs = this.PROCESSOR.useJsdoc();
     const self =
@@ -298,12 +300,14 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         ? (docs.type as StructType)
         : this.PROCESSOR.createStruct(blockLocation);
 
+    this.PROCESSOR.scope.setEnd(children.expression[0].location!, true);
     this.PROCESSOR.pushSelfScope(blockLocation, self, false);
 
     this.visit(children.blockableStatement);
 
     this.PROCESSOR.scope.setEnd(blockLocation, true);
     this.PROCESSOR.popSelfScope(blockLocation, true);
+    return;
   }
 
   /**
@@ -337,7 +341,9 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     this.PREPARE_JSDOC(parseJsdoc(children.JsdocGmlLine));
   }
 
-  override functionExpression(children: FunctionExpressionCstChildren) {
+  override functionExpression(
+    children: FunctionExpressionCstChildren,
+  ): Type<'Function'> {
     // Get this identifier if we already have it.
     const identifier = this.identifier(children);
     // Consume the most recent jsdoc
@@ -374,7 +380,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     if (item.type.kind === 'Unknown') {
       item.type.kind = functionTypeName;
     }
-    const functionType = item.type;
+    const functionType = item.type as FunctionType;
 
     // Use JSDocs to fill in any missing top-level information
     ok(
@@ -440,9 +446,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         // Unset it so we don't accidentally use it!
         fromJsdoc = undefined;
       }
-      const paramType =
-        fromJsdoc?.type ||
-        this.PROCESSOR.project.createType('Unknown').definedAt(range);
+      const paramType = fromJsdoc?.type || this.UNKNOWN.definedAt(range);
       const optional = fromJsdoc?.optional || !!params[i].children.Assign;
       functionType
         .addParameter(i, param.image, paramType, optional)
@@ -488,19 +492,21 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     );
     this.PROCESSOR.scope.setEnd(endBrace);
     this.PROCESSOR.popScope(endBrace, true);
+    return functionType;
   }
 
   /** Called on *naked* identifiers and those that have accessors/suffixes of various sorts. */
-  override identifierAccessor(children: IdentifierAccessorCstChildren) {
+  override identifierAccessor(children: IdentifierAccessorCstChildren): Type {
+    let finalType: Type = this.UNKNOWN;
     let currentItem = this.identifier(children.identifier[0].children);
     if (!currentItem) {
-      return;
+      return finalType;
     }
     let currentLocation = children.identifier[0].location!;
     const suffixes = sortedAccessorSuffixes(children.accessorSuffixes);
     assert(suffixes, 'Expected suffixes');
     if (!suffixes.length) {
-      return;
+      return finalType;
     }
 
     // Compute useful metadata
@@ -508,13 +514,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const usesNew = !!children.New?.length;
     /** If not `undefined`, this is the assignment node */
     const assignment = children.assignment?.[0];
-    /** If there is an assignment, the inferred type of said assignment. */
-    const assignmentType =
-      assignment &&
-      this.COMPUTE_TYPE(
-        assignment.children.assignmentRightHandSide[0].children,
-      );
-    const docs = this.PROCESSOR.useJsdoc();
+    const assignmentType = assignment?.children.assignmentRightHandSide
+      ? this.assignmentRightHandSide(
+          assignment.children.assignmentRightHandSide[0].children,
+        )
+      : this.UNKNOWN;
+    this.UPDATE_TYPE_WITH_DOCS(assignmentType);
 
     // For each suffix in turn, try to figure out how it changes the scope,
     // find the corresponding symbol, etc.
@@ -542,6 +547,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
               this.PROCESSOR.scope.setEnd(dot, true);
               this.PROCESSOR.popSelfScope(dot, true);
               currentItem = undefined;
+              finalType = this.UNKNOWN;
             } else {
               const nextIdentity = identifierFrom(dotAccessor);
               let nextItem = this.identifier(
@@ -549,12 +555,13 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
               );
               const nextItemLocation = dotAccessor.identifier[0].location!;
               if (!nextItem && typeIs(currentType, 'Struct')) {
+                // Then this variable is not yet defined on this struct.
+                // We need to add it!
                 ok(nextIdentity, 'Could not get next identity');
                 const range = this.PROCESSOR.range(nextItemLocation);
-                const newMemberType =
-                  isLastSuffix && assignment && docs
-                    ? docs.type
-                    : this.PROCESSOR.project.createType('Unknown');
+                const newMemberType = isLastSuffix
+                  ? assignmentType
+                  : this.UNKNOWN;
                 // Add this member to the struct
                 const newMember: TypeMember = currentType.addMember(
                   nextIdentity.name,
@@ -578,6 +585,10 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
                   item: newMember,
                   ref,
                 };
+              } else {
+                finalType = nextItem?.item
+                  ? getType(nextItem.item)
+                  : this.UNKNOWN;
               }
               currentItem = nextItem;
               currentLocation = nextItemLocation;
@@ -589,6 +600,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
               currentLocation,
               `Type ${currentType?.toFeatherString()} is not a struct`,
             );
+            finalType = this.UNKNOWN;
             continue suffixLoop;
           }
           break;
@@ -649,22 +661,13 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           currentItem = { item: returnType!, ref: currentItem!.ref };
           // Add the function call to the file for diagnostics
           this.PROCESSOR.file.addFunctionCall(ranges);
+          finalType = returnType || this.UNKNOWN;
           break;
         default:
           this.visit(suffix);
       }
     }
-  }
-
-  CREATE_VAR_TYPE(range: Range) {
-    let type = this.PROCESSOR.project
-      .createType('Unknown')
-      .definedAt(range) as Type;
-    const docs = this.PROCESSOR.useJsdoc();
-    if (docs && ['function', 'type', 'description'].includes(docs.jsdoc.kind)) {
-      type = docs.type;
-    }
-    return type;
+    return finalType;
   }
 
   /** Static params are unambiguously defined. */
@@ -673,35 +676,36 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const self = this.PROCESSOR.currentSelf;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
-    const type = this.CREATE_VAR_TYPE(range);
+    const type =
+      this.assignmentRightHandSide(
+        children.assignmentRightHandSide[0].children,
+      ) || this.UNKNOWN;
+    this.UPDATE_TYPE_WITH_DOCS(type);
+
     const member = self
       .addMember(children.Identifier[0].image, type)
       .definedAt(range);
     member.addRef(range);
     member.static = true;
     member.instance = true;
-    // Ensur we have a reference to the definition
-    this.identifier(children);
-    // TODO: Use the return type of the assignment as the type of the member
-    this.visit(children.assignmentRightHandSide);
   }
 
   override localVarDeclaration(children: LocalVarDeclarationCstChildren) {
     const local = this.PROCESSOR.currentLocalScope;
     const range = this.PROCESSOR.range(children.Identifier[0]);
-    const type = this.CREATE_VAR_TYPE(range);
+
+    const type = children.assignmentRightHandSide
+      ? this.assignmentRightHandSide(
+          children.assignmentRightHandSide[0].children,
+        )
+      : this.UNKNOWN;
+    this.UPDATE_TYPE_WITH_DOCS(type);
+
     const member = local
       .addMember(children.Identifier[0].image, type)
       .definedAt(range);
     member.local = true;
     member.addRef(range);
-    // Ensure we have a reference to the definition
-    this.identifier(children);
-    if (children.assignmentRightHandSide) {
-      // TODO: Use the return type of the assignment as the type of the member
-
-      this.visit(children.assignmentRightHandSide);
-    }
   }
 
   override variableAssignment(children: VariableAssignmentCstChildren) {
@@ -709,16 +713,19 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const identified = this.identifier(children);
     const item = identified?.item;
     const range = this.PROCESSOR.range(children.Identifier[0]);
+
+    const assignedType = this.assignmentRightHandSide(
+      children.assignmentRightHandSide[0].children,
+    );
+    this.UPDATE_TYPE_WITH_DOCS(assignedType);
+
     if (!item) {
       // Create a new member on the self scope, unless it's global
       const fullScope = this.PROCESSOR.fullScope;
       if (fullScope.self !== fullScope.global) {
         // Then we can add a new member
         const member = fullScope.self
-          .addMember(
-            children.Identifier[0].image,
-            this.PROCESSOR.project.createType('Unknown').definedAt(range),
-          )
+          .addMember(children.Identifier[0].image, assignedType)
           .definedAt(range);
         member.addRef(range);
         member.instance = true;
@@ -726,10 +733,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         // TODO: Add a diagnostic
       }
     } else {
-      item.addRef(range);
+      item.addRef(range, assignedType);
     }
-
-    this.visit(children.assignmentRightHandSide);
   }
 
   /**
@@ -749,4 +754,154 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     }
     return;
   }
+
+  //#region LITERALS and TYPES
+  override assignmentRightHandSide(
+    children: AssignmentRightHandSideCstChildren,
+  ): Type {
+    if (children.expression) {
+      return this.expression(children.expression[0].children);
+    } else if (children.structLiteral) {
+      return this.structLiteral(children.structLiteral[0].children);
+    } else if (children.functionExpression) {
+      return this.functionExpression(children.functionExpression[0].children);
+    }
+    return this.UNKNOWN;
+  }
+
+  override expression(children: ExpressionCstChildren): Type {
+    const lhs = this.primaryExpression(children.primaryExpression[0].children);
+    if (children.binaryExpression) {
+      // TODO: Check the rhs type and the operator and emit a diagnostic if needed. For now just return the lhs since any operator shouldn't change the type.
+      return lhs;
+    } else if (children.ternaryExpression) {
+      // Get the types of the two expression and create a union
+      const ternary =
+        children.ternaryExpression[0].children.assignmentRightHandSide;
+      const leftType = this.assignmentRightHandSide(ternary[0].children);
+      const rightType = this.assignmentRightHandSide(ternary[1].children);
+      return Type.merge(leftType, rightType);
+    } else if (children.assignment) {
+      // We shouldn't really end up here since well-formed code
+      // should have assignments that get caught by other rules.
+      return this.PROCESSOR.project.createType('Undefined');
+    }
+    return lhs; // Shouldn't happpen unless the parser gets changed.
+  }
+
+  override primaryExpression(children: PrimaryExpressionCstChildren): Type {
+    let type!: Type;
+    if (children.BooleanLiteral) {
+      type = this.PROCESSOR.project.createType('Bool');
+    } else if (children.NumericLiteral) {
+      type = this.PROCESSOR.project.createType('Real');
+    } else if (children.NaN) {
+      type = this.PROCESSOR.project.createType('Real');
+    } else if (children.PointerLiteral) {
+      type = this.PROCESSOR.project.createType('Pointer');
+    } else if (children.Undefined) {
+      type = this.PROCESSOR.project.createType('Undefined');
+    } else if (children.arrayLiteral) {
+      type = this.arrayLiteral(children.arrayLiteral[0].children);
+    } else if (children.identifierAccessor) {
+      type = this.identifierAccessor(children.identifierAccessor[0].children);
+    } else if (children.stringLiteral) {
+      type = this.stringLiteral(children.stringLiteral[0].children);
+    } else if (children.multilineDoubleStringLiteral) {
+      type = this.multilineDoubleStringLiteral(
+        children.multilineDoubleStringLiteral[0].children,
+      );
+    } else if (children.multilineSingleStringLiteral) {
+      type = this.multilineSingleStringLiteral(
+        children.multilineSingleStringLiteral[0].children,
+      );
+    } else if (children.templateLiteral) {
+      type = this.templateLiteral(children.templateLiteral[0].children);
+    } else if (children.parenthesizedExpression) {
+      type = this.parenthesizedExpression(
+        children.parenthesizedExpression[0].children,
+      );
+    }
+    assert(type, 'No type found for primary expression');
+    // TODO: Check unary operators etc to make sure types make sense
+    return type;
+  }
+
+  override parenthesizedExpression(
+    children: ParenthesizedExpressionCstChildren,
+  ): Type {
+    return this.expression(children.expression[0].children);
+  }
+
+  override structLiteral(children: StructLiteralCstChildren): Type<'Struct'> {
+    const struct = this.PROCESSOR.createStruct(
+      children.StartBrace[0],
+      children.EndBrace[0],
+    );
+
+    // Change the self scope to the struct
+    this.PROCESSOR.scope.setEnd(children.StartBrace[0], false);
+    this.PROCESSOR.pushSelfScope(children.StartBrace[0], struct, true);
+    for (const entry of children.structLiteralEntry || []) {
+      const parts = entry.children;
+      // The name is either a direct variable name or a string literal.
+      let name: string;
+      let range: Range;
+      if (parts.Identifier) {
+        name = parts.Identifier[0].image;
+        range = this.PROCESSOR.range(parts.Identifier[0]);
+      } else {
+        name = stringLiteralAsString(parts.stringLiteral![0].children);
+        range = this.PROCESSOR.range(
+          parts.stringLiteral![0].children.StringStart[0],
+          parts.stringLiteral![0].children.StringEnd[0],
+        );
+      }
+      if (parts.assignmentRightHandSide) {
+        const type = this.assignmentRightHandSide(
+          parts.assignmentRightHandSide[0].children,
+        );
+        this.UPDATE_TYPE_WITH_DOCS(type);
+        if (type instanceof Type) {
+          const member = struct.addMember(name, type).definedAt(range);
+          member.addRef(range);
+        }
+      }
+    }
+
+    this.PROCESSOR.scope.setEnd(children.EndBrace[0], false);
+    this.PROCESSOR.popSelfScope(children.EndBrace[0], true);
+    return struct;
+  }
+  override stringLiteral(children: StringLiteralCstChildren): Type<'String'> {
+    return this.PROCESSOR.project.createType('String');
+  }
+  override multilineDoubleStringLiteral(
+    children: MultilineDoubleStringLiteralCstChildren,
+  ): Type<'String'> {
+    return this.PROCESSOR.project.createType('String');
+  }
+  override multilineSingleStringLiteral(
+    children: MultilineSingleStringLiteralCstChildren,
+  ): Type<'String'> {
+    return this.PROCESSOR.project.createType('String');
+  }
+  override templateLiteral(
+    children: TemplateLiteralCstChildren,
+  ): Type<'String'> {
+    // Make sure that the code content is still visited
+    if (children.expression) {
+      this.visit(children.expression);
+    }
+    return this.PROCESSOR.project.createType('String');
+  }
+  override arrayLiteral(children: ArrayLiteralCstChildren): Type<'Array'> {
+    // TODO: Infer the content type of the array
+
+    // Make sure that the content is visited
+    this.visit(children.assignmentRightHandSide || []);
+    return this.PROCESSOR.project.createType('Array');
+  }
+
+  //#endregion
 }

@@ -97,42 +97,42 @@ export const codeTokens = [
   createToken({
     name: 'NullPointer',
     pattern: /\bpointer_null\b/,
-    categories: [c.Keyword, c.Literal],
+    categories: [c.Keyword, c.PointerLiteral],
   }),
   createToken({
     name: 'InvalidPointer',
     pattern: /\bpointer_invalid\b/,
-    categories: [c.Keyword, c.Literal],
+    categories: [c.Keyword, c.PointerLiteral],
   }),
   createToken({
     name: 'Undefined',
     pattern: /\bundefined\b/,
-    categories: [c.Keyword, c.Literal],
+    categories: [c.Keyword],
   }),
   createToken({
     name: 'Infinity',
     pattern: /\binfinity\b/,
-    categories: [c.Keyword, c.Literal, c.NumericLiteral],
+    categories: [c.Keyword, c.NumericLiteral],
   }),
   createToken({
     name: 'Pi',
     pattern: /\bpi\b/,
-    categories: [c.Keyword, c.Literal, c.NumericLiteral],
+    categories: [c.Keyword, c.NumericLiteral],
   }),
   createToken({
     name: 'NaN',
     pattern: /\bNaN\b/,
-    categories: [c.Keyword, c.Literal],
+    categories: [c.Keyword],
   }),
   createToken({
     name: 'True',
     pattern: /\btrue\b/,
-    categories: [c.Keyword, c.Literal, c.BooleanLiteral],
+    categories: [c.Keyword, c.BooleanLiteral],
   }),
   createToken({
     name: 'False',
     pattern: /\bfalse\b/,
-    categories: [c.Keyword, c.Literal, c.BooleanLiteral],
+    categories: [c.Keyword, c.BooleanLiteral],
   }),
   //#endregion
 

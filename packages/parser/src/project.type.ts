@@ -88,6 +88,22 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   protected params: TypeMember[] | undefined = undefined;
   returns: undefined | Type = undefined;
 
+  /** Create a shallow-ish clone */
+  clone(): Type<T> {
+    const clone = new Type<T>(this.kind as T);
+    clone.name = this.name;
+    clone.description = this.description;
+    clone.parent = this.parent;
+    clone.members = this.members ? [...this.members] : undefined;
+    clone.items = this.items?.clone();
+    clone.types = this.types ? [...this.types] : undefined;
+    clone.constructs = this.constructs?.clone();
+    clone.context = this.context?.clone();
+    clone.params = this.params ? [...this.params] : undefined;
+    clone.returns = this.returns?.clone();
+    return clone;
+  }
+
   constructor(protected _kind: T) {
     super();
   }
@@ -128,34 +144,34 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
 
   get code() {
     let code = '';
-    switch (this.kind) {
-      case 'Function':
-        code = `function ${this.name || ''}(`;
-        const params = this.params || [];
-        for (let i = 0; i < params.length; i++) {
-          const param = params[i];
-          assert(param, 'Param is undefined');
-          if (i > 0) {
-            code += ', ';
-          }
-          code += param.name;
-          if (param.optional) {
-            code += '?';
-          }
-          if (param.type.kind !== 'Unknown') {
-            code += ': ' + param.type.toFeatherString();
-          }
+    if (this.isFunction) {
+      code = `function ${this.name || ''}(`;
+      const params = this.params || [];
+      for (let i = 0; i < params.length; i++) {
+        const param = params[i];
+        assert(param, 'Param is undefined');
+        if (i > 0) {
+          code += ', ';
         }
-        code += ')';
-        if (this.constructs && this.constructs.kind !== 'Undefined') {
-          code += ': ' + (this.constructs.toFeatherString() || 'Unknown');
-        } else if (this.returns && this.returns.kind !== 'Undefined') {
-          code += ': ' + (this.returns?.toFeatherString() || 'Unknown');
+        code += param.name;
+        if (param.optional) {
+          code += '?';
         }
-        break;
-      default:
-        code = this.toFeatherString();
-        break;
+        if (param.type.kind !== 'Unknown') {
+          code += ': ' + param.type.toFeatherString();
+        }
+      }
+      code += ')';
+      if (this.kind === 'Constructor') {
+        code += ` constructor`;
+      }
+      if (this.constructs && this.constructs.kind !== 'Undefined') {
+        code += ': ' + (this.constructs.toFeatherString() || 'Unknown');
+      } else if (this.returns && this.returns.kind !== 'Undefined') {
+        code += ': ' + (this.returns?.toFeatherString() || 'Unknown');
+      }
+    } else {
+      code = this.toFeatherString();
     }
     return code;
   }
@@ -297,10 +313,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   /**
    * If this type is unknown, change it to the provided Type.
    * If it is a union, add the provided Type to the union.
-   * If it is not a union, convert it to a union and add the
-   * provided Type to the union.
+   * If it is not a union, create a union and return that.
    *
-   * In all cases the original instance is mutated unless it was undefined.
+   * **WARNING**: This method sometimes mutates the original type, and sometimes returns a new type.
    */
   static merge(original: Type | undefined, withType: Type): Type {
     // If the incoming type is unknown, toss it.
@@ -322,10 +337,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     }
     // Otherwise we're going to add a type to a union. If we aren't a union, convert to one.
     if (original.kind !== 'Union') {
-      // Get a copy of the current type to add to the new union
-      const preUnionType = structuredClone(original);
-      // Then convert it to a union
       const unionType = new Type('Union');
+      // Get a copy of the current type to add to the new union
+      const preUnionType = original.clone();
+      // Then convert it to a union
       Object.assign(original, unionType);
       // Then add the previous type to the union
       original.types = [preUnionType];

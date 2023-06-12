@@ -14,9 +14,14 @@ import type {
   GmlVisitor,
   IdentifierCstChildren,
   IdentifierCstNode,
+  MultilineDoubleStringLiteralCstChildren,
+  MultilineSingleStringLiteralCstChildren,
+  StringLiteralCstChildren,
 } from '../gml-cst.js';
 import { GmlLexer } from './lexer.js';
 import type { GmlParseError } from './project.diagnostics.js';
+import { Reference, ReferenceableType } from './project.location.js';
+import { Type } from './project.type.js';
 import { c, categories, t, tokens } from './tokens.js';
 import { ok } from './util.js';
 
@@ -55,6 +60,29 @@ export function sortedFunctionCallParts(
     const bLocation = ('location' in b ? b.location! : b) as CstNodeLocation;
     return aLocation.startOffset - bLocation.startOffset;
   });
+}
+
+export function stringLiteralAsString(
+  children:
+    | StringLiteralCstChildren
+    | MultilineSingleStringLiteralCstChildren
+    | MultilineDoubleStringLiteralCstChildren,
+): string {
+  const start =
+    'StringStart' in children
+      ? children.StringStart[0].image
+      : 'MultilineSingleStringStart' in children
+      ? children.MultilineSingleStringStart[0].image
+      : children.MultilineDoubleStringStart[0].image;
+  const end =
+    'StringEnd' in children
+      ? children.StringEnd[0].image
+      : 'MultilineSingleStringEnd' in children
+      ? children.MultilineSingleStringEnd[0].image
+      : children.MultilineDoubleStringEnd[0].image;
+  return `${start}${(children.Substring || [])
+    .map((s) => s.image)
+    .join('')}${end}`;
 }
 
 function sortItokenRecords(records: Record<string, IToken[]>): IToken[] {
@@ -321,7 +349,11 @@ export class GmlParser extends CstParser {
   readonly primaryExpression = this.RULE('primaryExpression', () => {
     this.OPTION1(() => this.CONSUME(c.UnaryPrefixOperator));
     this.OR1([
-      { ALT: () => this.CONSUME(c.Literal) },
+      { ALT: () => this.CONSUME(c.BooleanLiteral) },
+      { ALT: () => this.CONSUME(c.NumericLiteral) },
+      { ALT: () => this.CONSUME(c.PointerLiteral) },
+      { ALT: () => this.CONSUME(t.Undefined) },
+      { ALT: () => this.CONSUME(t.NaN) },
       { ALT: () => this.SUBRULE(this.stringLiteral) },
       { ALT: () => this.SUBRULE(this.multilineDoubleStringLiteral) },
       { ALT: () => this.SUBRULE(this.multilineSingleStringLiteral) },
@@ -780,4 +812,7 @@ export const parser = new GmlParser();
 export const GmlVisitorBase =
   parser.getBaseCstVisitorConstructorWithDefaults() as new (
     ...args: any[]
-  ) => GmlVisitor<unknown, unknown>;
+  ) => GmlVisitor<
+    unknown,
+    undefined | void | Type | { item: ReferenceableType; ref: Reference }
+  >;
