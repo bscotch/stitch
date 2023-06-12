@@ -5,9 +5,9 @@ import {
   StitchProjectConfig,
 } from '@bscotch/stitch';
 import {
+  AssetSourcesConfig,
   type AudioAsset,
   type DeletedAsset,
-  AssetSourcesConfig,
 } from '@bscotch/stitch/asset-sources';
 import {
   MaxAge,
@@ -218,10 +218,15 @@ export class StitchDesktopProject {
   }
 
   @MaxAge(600, 300)
-  protected static async findDisplayName(yypPath: string) {
+  protected static async findDisplayName(
+    yypPath: string,
+  ): Promise<string | undefined> {
     const projectDir = pathy(yypPath).up();
     const optionsDir = pathy('options', projectDir);
     let name: string | undefined;
+    if (!(await optionsDir.exists())) {
+      return name;
+    }
     await optionsDir.listChildrenRecursively({
       softLimit: 1,
       async filter(path) {
@@ -252,6 +257,9 @@ export class StitchDesktopProject {
   protected static async listIcons(yypPath: string) {
     const projectDir = pathy(yypPath).up();
     const optionsDir = pathy('options', projectDir);
+    if (!(await optionsDir.exists())) {
+      return [];
+    }
     const icons = (
       await listImages(optionsDir, { maxResults: 36, relative: true })
     )
