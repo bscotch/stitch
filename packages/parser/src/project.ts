@@ -430,6 +430,10 @@ export class Project {
     for (const asset of assets) {
       asset.updateAllSymbols();
     }
+    // Update diagnostics
+    for (const asset of assets) {
+      asset.updateDiagnostics();
+    }
     console.log('Symbols discovered in', Date.now() - t, 'ms');
     if (options?.watch) {
       this.watch();

@@ -142,6 +142,12 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     }
   }
 
+  updateDiagnostics() {
+    for (const gml of this.gmlFilesArray) {
+      gml.updateDiagnostics();
+    }
+  }
+
   protected addGmlFile(path: Pathy<string>) {
     const gml =
       this.getGmlFile(path) ||

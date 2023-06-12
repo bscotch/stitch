@@ -303,6 +303,7 @@ export class Code {
     await this.parse(content);
     this.updateGlobals();
     this.updateAllSymbols();
+    this.updateDiagnostics();
   }
 
   protected handleEventInheritance() {
@@ -392,9 +393,11 @@ export class Code {
 
   updateAllSymbols() {
     processSymbols(this);
+  }
+
+  updateDiagnostics() {
     this.handleEventInheritance();
     this.computeFunctionCallDiagnostics();
-    assert(this._diagnostics, 'Diagnostics must be initialized');
     if (this._diagnostics.length) {
       this.project.emitDiagnostics(this._diagnostics);
     }

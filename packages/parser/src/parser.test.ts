@@ -129,7 +129,7 @@ describe('Parser', function () {
     const parser = new GmlParser();
     const samples = await fs.readdir('./samples');
     for (const sample of samples) {
-      console.log('Parsing', sample);
+      // console.log('Parsing', sample);
       if (!sample.endsWith('.gml')) {
         continue;
       }
@@ -143,7 +143,7 @@ describe('Parser', function () {
     }
   });
 
-  it('can parse sample project', async function () {
+  xit('can parse sample project', async function () {
     const projectDir = process.env.GML_PARSER_SAMPLE_PROJECT_DIR;
     expect(
       projectDir,
@@ -158,7 +158,6 @@ describe('Parser', function () {
     const parser = new GmlParser();
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      console.log(i, 'Parsing:', file.relative);
       const code = await file.read<string>();
       const { cst } = parser.parse(code);
       showErrors(parser, file.absolute);

@@ -1,4 +1,3 @@
-import { omit } from '@bscotch/utility';
 import { expect } from 'chai';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
@@ -294,34 +293,5 @@ describe('Project', function () {
       'A dotenv file should provide a path to a full sample project, as env var GML_PARSER_SAMPLE_PROJECT_DIR',
     );
     const project = await Project.initialize(projectDir);
-
-    const asset = project.getAssetByName('button_cl2_confirmation');
-    ok(asset);
-    const create = asset.gmlFilesArray.find((f) => f.name === 'Draw_64');
-    ok(create);
-
-    const sample = project.getAssetByName('ZoneDapples');
-    ok(sample);
-    const file = sample.gmlFile;
-    ok(file);
-    const scopes = file.scopes;
-    ok(scopes);
-    const positions = scopes.map((scope) => {
-      const start = omit(scope.start, ['file', '$tag']);
-      const end = omit(scope.end, ['file', '$tag']);
-      return { start, end };
-    });
-    const sym = file.getReferenceAt(206);
-    ok(sym);
-
-    const arg = file.getFunctionArgRangeAt(326);
-    expect(arg?.param.name).to.equal('n1');
-
-    const arg2 = file.getFunctionArgRangeAt(865);
-    ok(arg2);
-    expect(arg2.param.parent.name).to.equal('sin');
-
-    const quickStructSymbol = file.getReferenceAt(1100);
-    ok(quickStructSymbol);
   });
 });

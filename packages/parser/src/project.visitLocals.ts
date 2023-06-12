@@ -379,10 +379,15 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const functionType = item.type;
 
     // Use JSDocs to fill in any missing top-level information
-    ok(functionType.isFunction, 'Expected function type');
+    ok(
+      functionType.isFunction,
+      `Expected function type, got ${functionType.kind}`,
+    );
     functionType.describe(functionType.description || docs?.type.description);
     functionType.context =
-      docs?.type.context || (this.PROCESSOR.currentSelf as StructType);
+      docs?.type.context?.kind === 'Struct'
+        ? docs.type.context
+        : (this.PROCESSOR.currentSelf as StructType);
     if (docs?.type.deprecated) {
       functionType.deprecated = docs.type.deprecated;
     }

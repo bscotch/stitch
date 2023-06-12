@@ -243,12 +243,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
       member = new TypeMember(this, name, type);
       member.writable = writable;
       this.members.push(member);
-    } else {
-      if (member.type.kind !== 'Union') {
-        const oldType = member.type;
-        member.type = new Type('Union').addUnionType(oldType);
-      }
-      member.type.addUnionType(type);
     }
     return member;
   }
@@ -421,9 +415,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
         type.addReturnType(returnType);
       }
       for (const param of jsdoc.params || []) {
-        if (!param.type?.content) {
-          console.log(jsdoc);
-        }
         const paramType = Type.fromFeatherString(
           param.type!.content,
           knownTypes,

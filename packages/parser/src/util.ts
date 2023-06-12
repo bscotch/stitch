@@ -1,5 +1,13 @@
 import type { IRange, LinePosition } from './project.location.js';
 
+export class StitchParserError extends Error {
+  constructor(message?: string, assertion?: Function) {
+    super(message);
+    this.name = 'StitchParserError';
+    Error.captureStackTrace(this, assertion || this.constructor);
+  }
+}
+
 export type Constructor<T = {}> = new (...args: any[]) => T;
 
 export const runningInVscode = !!process.env.VSCODE_IPC_HOOK;
@@ -20,7 +28,7 @@ export const log: Logger = Object.assign(
 
 export function assert(condition: any, message?: string): asserts condition {
   if (!condition) {
-    const err = new Error(message);
+    const err = new StitchParserError(message, assert);
     if (runningInVscode) {
       // VSCode swallows error messages, so we need to log them
       console.error(err);
