@@ -518,6 +518,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       this.COMPUTE_TYPE(
         assignment.children.assignmentRightHandSide[0].children,
       );
+    const docs = this.PROCESSOR.useJsdoc();
 
     // For each suffix in turn, try to figure out how it changes the scope,
     // find the corresponding symbol, etc.
@@ -554,7 +555,9 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
                 ok(nextIdentity, 'Could not get next identity');
                 const range = this.PROCESSOR.range(nextItemLocation);
                 const newMemberType =
-                  this.PROCESSOR.project.createType('Unknown');
+                  isLastSuffix && assignment && docs
+                    ? docs.type
+                    : this.PROCESSOR.project.createType('Unknown');
                 // Add this member to the struct
                 const newMember: TypeMember = currentType.addMember(
                   nextIdentity.name,
@@ -656,39 +659,50 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     }
   }
 
+  CREATE_VAR_TYPE(range: Range) {
+    let type = this.PROCESSOR.project
+      .createType('Unknown')
+      .definedAt(range) as Type;
+    const docs = this.PROCESSOR.useJsdoc();
+    if (docs && ['function', 'type', 'description'].includes(docs.jsdoc.kind)) {
+      type = docs.type;
+    }
+    return type;
+  }
+
   /** Static params are unambiguously defined. */
   override staticVarDeclarations(children: StaticVarDeclarationsCstChildren) {
     // Add to the self scope.
     const self = this.PROCESSOR.currentSelf;
     const range = this.PROCESSOR.range(children.Identifier[0]);
+
+    const type = this.CREATE_VAR_TYPE(range);
     const member = self
-      .addMember(
-        children.Identifier[0].image,
-        this.PROCESSOR.project.createType('Unknown').definedAt(range),
-      )
+      .addMember(children.Identifier[0].image, type)
       .definedAt(range);
     member.addRef(range);
     member.static = true;
     member.instance = true;
     // Ensur we have a reference to the definition
     this.identifier(children);
+    // TODO: Use the return type of the assignment as the type of the member
     this.visit(children.assignmentRightHandSide);
   }
 
   override localVarDeclaration(children: LocalVarDeclarationCstChildren) {
     const local = this.PROCESSOR.currentLocalScope;
     const range = this.PROCESSOR.range(children.Identifier[0]);
+    const type = this.CREATE_VAR_TYPE(range);
     const member = local
-      .addMember(
-        children.Identifier[0].image,
-        this.PROCESSOR.project.createType('Unknown').definedAt(range),
-      )
+      .addMember(children.Identifier[0].image, type)
       .definedAt(range);
     member.local = true;
     member.addRef(range);
     // Ensure we have a reference to the definition
     this.identifier(children);
     if (children.assignmentRightHandSide) {
+      // TODO: Use the return type of the assignment as the type of the member
+
       this.visit(children.assignmentRightHandSide);
     }
   }
