@@ -171,7 +171,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
         code += ': ' + (this.returns?.toFeatherString() || 'Unknown');
       }
     } else {
-      code = this.toFeatherString();
+      if (this.name) {
+        code = `${this.name}: `;
+      }
+      code += this.toFeatherString();
     }
     return code;
   }
@@ -300,7 +303,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return derived;
   }
 
-  named(name: string): this {
+  named(name: string | undefined): this {
     this.name = name;
     return this;
   }
