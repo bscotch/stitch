@@ -10,6 +10,7 @@
 /// @self Struct.AnotherConstructor
 /// @deprecated
 function Jsdocs(){
+	/// This one is a string
 	/// @type {String}
 	var a_string;
 	

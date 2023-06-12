@@ -42,7 +42,7 @@ import {
   type TypeMember,
 } from './project.type.js';
 import { c } from './tokens.categories.js';
-import { assert, log, ok } from './util.js';
+import { assert, ok } from './util.js';
 
 export function processSymbols(file: Code) {
   const processor = new SymbolProcessor(file);
@@ -201,11 +201,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
   /** Entrypoint */
   FIND_SYMBOLS(input: CstNode) {
-    if (this.PROCESSOR.file.asset.name === 'Recovery') {
-      log.enabled = true;
-    }
     this.visit(input);
-    log.enabled = false;
     this.PROCESSOR.setLastScopeEnd(input.location!);
     return this.PROCESSOR;
   }
@@ -461,8 +457,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       member.parameter = true;
     }
     // If we have more args defined in JSDocs, add them!
-    if ((docs?.type?.params?.length || 0) > params.length) {
-      const extraParams = docs!.type.params!.slice(params.length);
+    if ((docs?.type?.listParameters().length || 0) > params.length) {
+      const extraParams = docs!.type.listParameters().slice(params.length);
       assert(extraParams, 'Expected extra params');
       for (let i = 0; i < extraParams.length; i++) {
         const idx = params.length + i;
@@ -545,6 +541,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
             if (isEmpty(dotAccessor.identifier[0].children)) {
               this.PROCESSOR.scope.setEnd(dot, true);
               this.PROCESSOR.popSelfScope(dot, true);
+              currentItem = undefined;
             } else {
               const nextIdentity = identifierFrom(dotAccessor);
               let nextItem = this.identifier(

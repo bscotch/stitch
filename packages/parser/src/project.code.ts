@@ -342,7 +342,7 @@ export class Code {
       assert(args, 'Function call args must be initialized');
       assert(args[0], 'Function call must have a function');
       const func = args[0].type;
-      const params = func.params || [];
+      const params = func.listParameters() || [];
       const ref = args[0].ref;
       // Handle missing arguments
       for (let j = 0; j < params.length; j++) {

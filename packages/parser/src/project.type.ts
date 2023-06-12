@@ -85,7 +85,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * type of the struct that it constructs. */
   constructs: Type<'Struct'> | undefined = undefined;
   context: Type<'Struct'> | undefined = undefined;
-  params: TypeMember[] | undefined = undefined;
+  protected params: TypeMember[] | undefined = undefined;
   returns: undefined | Type = undefined;
 
   constructor(protected _kind: T) {
@@ -186,6 +186,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     }
     this.returns.addUnionType(type);
     return this;
+  }
+
+  listParameters(): TypeMember[] {
+    return this.params ? [...this.params] : [];
   }
 
   getParameter(name: string): TypeMember | undefined;

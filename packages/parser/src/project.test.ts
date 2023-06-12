@@ -55,18 +55,22 @@ describe('Project', function () {
     ok(scriptExecuteSymbol);
     ok(scriptExecuteSymbol.type === scriptExecuteType);
     ok(scriptExecuteType.kind === 'Function');
-    expect(scriptExecuteType.params).to.have.lengthOf(2);
-    expect(scriptExecuteType.params![0].name).to.equal('scr');
-    expect(scriptExecuteType.params![0].type.kind).to.equal('Union');
-    expect(scriptExecuteType.params![0].type.types).to.have.lengthOf(3);
-    expect(scriptExecuteType.params![0].type.types![0].kind).to.equal('String');
-    expect(scriptExecuteType.params![0].type.types![1].kind).to.equal(
+    expect(scriptExecuteType.listParameters()).to.have.lengthOf(2);
+    expect(scriptExecuteType.listParameters()![0].name).to.equal('scr');
+    expect(scriptExecuteType.listParameters()![0].type.kind).to.equal('Union');
+    expect(scriptExecuteType.listParameters()![0].type.types).to.have.lengthOf(
+      3,
+    );
+    expect(scriptExecuteType.listParameters()![0].type.types![0].kind).to.equal(
+      'String',
+    );
+    expect(scriptExecuteType.listParameters()![0].type.types![1].kind).to.equal(
       'Function',
     );
-    expect(scriptExecuteType.params![0].type.types![2].kind).to.equal(
+    expect(scriptExecuteType.listParameters()![0].type.types![2].kind).to.equal(
       'Asset.GMScript',
     );
-    expect(scriptExecuteType.params![1].name).to.equal('...');
+    expect(scriptExecuteType.listParameters()![1].name).to.equal('...');
   });
 
   it('can has fallback GmlSpec', async function () {
@@ -258,7 +262,7 @@ describe('Project', function () {
     ok(constructorSymbol instanceof Symbol);
     expect(constructorSymbol.type.kind).to.equal('Constructor');
     expect(constructorType.name).to.equal(constructorName);
-    expect(constructorType.params).to.have.lengthOf(2);
+    expect(constructorType.listParameters()).to.have.lengthOf(2);
     expect(constructorType.constructs).to.exist;
     expect(constructorType.constructs!.kind).to.equal('Struct');
     expect(constructorType.constructs!.name).to.equal(constructorName);
@@ -286,7 +290,7 @@ describe('Project', function () {
     //#endregion DOT ASSIGNMENTS
   });
 
-  xit('can parse sample project', async function () {
+  it('can parse sample project', async function () {
     const projectDir = process.env.GML_PARSER_SAMPLE_PROJECT_DIR;
     ok(
       projectDir,
