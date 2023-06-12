@@ -291,16 +291,18 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   override withStatement(children: WithStatementCstChildren) {
     // With statements change the self scope to
     // whatever their expression evaluates to.
-    // For now, just create a new self scope
-    // TODO: Figure out the actual self scope
+    // TODO: Evaluate the expression and try to use its type as the self scope
     this.visit(children.expression);
     const blockLocation = children.blockableStatement[0].location!;
     this.PROCESSOR.scope.setEnd(children.expression[0].location!, true);
-    this.PROCESSOR.pushSelfScope(
-      blockLocation,
-      this.PROCESSOR.createStruct(blockLocation),
-      false,
-    );
+
+    const docs = this.PROCESSOR.useJsdoc();
+    const self =
+      docs?.jsdoc.kind === 'self' && docs.type.kind === 'Struct'
+        ? (docs.type as StructType)
+        : this.PROCESSOR.createStruct(blockLocation);
+
+    this.PROCESSOR.pushSelfScope(blockLocation, self, false);
 
     this.visit(children.blockableStatement);
 
