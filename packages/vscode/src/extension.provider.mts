@@ -24,19 +24,6 @@ import {
   uriFromCodeFile,
 } from './lib.mjs';
 
-const jsdocCompletions = [
-  '@param',
-  '@returns',
-  '@description',
-  '@self',
-  '@function',
-  '@ignore',
-  '@pure',
-  '@deprecated',
-].map(
-  (tag) => new vscode.CompletionItem(tag, vscode.CompletionItemKind.Property),
-);
-
 export class StitchProvider
   implements
     vscode.CompletionItemProvider,
@@ -166,7 +153,7 @@ export class StitchProvider
       func.description,
     );
     signature.activeParameter = param.idx!;
-    signature.parameters = (func.params || []).map((p) => {
+    signature.parameters = func.listParameters().map((p) => {
       return new vscode.ParameterInformation(p.name, p.description);
     });
     const help = new vscode.SignatureHelp();
@@ -313,7 +300,7 @@ export class StitchProvider
       vscode.languages.registerCompletionItemProvider(
         'gml',
         this.provider,
-        // '.',
+        '.',
         // '"',
       ),
       vscode.languages.registerSignatureHelpProvider(

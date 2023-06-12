@@ -334,7 +334,9 @@
     "documentFormattingProvider": "true",
     "completionProvider": {
       "resolveProvider": "true",
-      "triggerCharacters": []
+      "triggerCharacters": [
+        "."
+      ]
     },
     "signatureHelpProvider": {
       "triggerCharacters": [
