@@ -119,25 +119,20 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   /** Get this type as a Feather-compatible string */
   toFeatherString(): string {
     // Functions, Structs, and Enums are the only types that can have names
-    if (['Function', 'Struct', 'Enum'].includes(this.kind)) {
-      if (this.name) {
-        return `${this.kind}.${this.name}`;
-      }
-      return this.kind;
+    if (['Function', 'Struct', 'Enum'].includes(this.kind) && this.name) {
+      return `${this.kind}.${this.name}`;
     }
-    // Arrays etc can contain items of a type
-    if (this.canHaveItems) {
-      if (this.items) {
-        return `${this.kind}<${this.items.toFeatherString()}>`;
-      }
-      return this.kind;
+    // Arrays etc can contain items of a type) {
+    if (this.items) {
+      return `${this.kind}<${this.items.toFeatherString()}>`;
     }
     // Unions can list types
     if (this.kind === 'Union') {
       if (this.types) {
         return this.types.map((t) => t.toFeatherString()).join(' | ');
+      } else {
+        return 'Mixed';
       }
-      return 'Mixed';
     }
     return this.kind;
   }
@@ -332,11 +327,20 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     ) {
       return original;
     }
-    // If the original type is unknow, now we know it! So just replace it.
+    // If the original type is unknown, now we know it! So just replace it.
     if (original.kind === 'Unknown') {
       // Then change it to the provided type
-      Object.assign(original, withType);
-      return original as any;
+      original.kind = withType.kind;
+      original.description ||= withType.description;
+      original.parent = withType.parent;
+      original.members = withType.members;
+      original.items = withType.items;
+      original.types = withType.types ? [...withType.types] : undefined;
+      original.constructs = withType.constructs;
+      original.context = withType.context;
+      original.params = withType.params;
+      original.returns = withType.returns;
+      return original;
     }
     // Otherwise we're going to add a type to a union. If we aren't a union, convert to one.
     if (original.kind !== 'Union') {

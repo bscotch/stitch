@@ -1,3 +1,29 @@
 {
-  "typescript.tsdk": "node_modules\\typescript\\lib"
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "editor.semanticTokenColorCustomizations": {
+    "[Default Dark Modern]": {
+      "enabled": true,
+      "rules": {
+        "macro": "#A600FF",
+        "enum": "#FF0055",
+        "enumMember": "#e97400",
+        "property": "#FF00A5",
+        "property.static": "#FFF899",
+        "variable.local": "#00FFFF",
+        "parameter": "#10c3eb",
+        "variable.defaultLibrary": "#58E55A",
+        "variable.global": "#96FF4C",
+        "function.defaultLibrary": "#FFB871",
+        "variable.asset": "#d9760c"
+      }
+    }
+  },
+  "editor.tokenColorCustomizations": {
+    "[Default Dark Modern]": {
+      "comments": "#7d7d7d",
+      "strings": "#FFFF00",
+      "numbers": "#FFFF00",
+      "textMateRules": []
+    }
+  }
 }

@@ -172,6 +172,9 @@ export function Refs<TBase extends Constructor>(Base: TBase) {
       // TODO: Improve the type tracing!
       const itemType = (this as any).type as Type | undefined;
       ref.type = type || itemType || ref.type;
+      if (type && 'type' in this && (this.type as Type).kind === 'Unknown') {
+        Type.merge(this.type as Type, type);
+      }
       this.refs.add(ref);
       location.file.addRef(ref);
       return ref;

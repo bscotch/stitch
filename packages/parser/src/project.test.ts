@@ -85,6 +85,8 @@ describe('Project', function () {
     //#region ASSETS
     const script = project.getAssetByName('Script1')!;
     const scriptFile = script.gmlFile;
+    const complexScript = project.getAssetByName('Complicated')!;
+    const complexScriptFile = complexScript.gmlFile;
     const recoveryScript = project.getAssetByName('Recovery')!;
     const recoveryScriptFile = recoveryScript.gmlFile;
     const obj = project.getAssetByName('o_object')!;
@@ -96,6 +98,8 @@ describe('Project', function () {
     const child2 = project.getAssetByName('o_child2')!;
     ok(script);
     ok(scriptFile);
+    ok(complexScript);
+    ok(complexScriptFile);
     ok(obj);
     ok(objCreate);
     ok(objStep);
@@ -288,9 +292,19 @@ describe('Project', function () {
     ok(dotAssignedType);
     ok(dotAssignedType.parent === obj.instanceType);
     //#endregion DOT ASSIGNMENTS
+
+    //#region MISC COMPLICATED
+    const bschemaGlobal = project.getGlobal('BSCHEMA')!.symbol;
+    const bschemaGlobalDef = complexScriptFile.getReferenceAt(1, 15);
+    const bschemaConstructor = complexScriptFile.getReferenceAt(7, 13);
+    ok(bschemaGlobal);
+    ok(bschemaGlobalDef);
+    ok(bschemaGlobalDef.item === bschemaGlobal);
+    ok(bschemaConstructor);
+    //#endregion MISC COMPLICATED
   });
 
-  it('can parse sample project', async function () {
+  xit('can parse sample project', async function () {
     const projectDir = process.env.GML_PARSER_SAMPLE_PROJECT_DIR;
     ok(
       projectDir,

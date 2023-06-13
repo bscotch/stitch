@@ -122,7 +122,10 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const symbol = this.ADD_GLOBAL_DECLARATION(children, 'Enum')! as Symbol;
     assert(symbol, 'Enum symbol should exist');
     const type = symbol.type as EnumType;
-    assert(type.kind === 'Enum', `Symbol ${symbol.name} is not an enum.`);
+    assert(
+      type.kind === 'Enum',
+      `Symbol ${symbol.name} is a ${type.kind} instead of an enum.`,
+    );
     // Might be updating an existing enum, so mutate members instead
     // of wholesale replacing to maintain cross-references.
     assert(children.enumMember, 'Enum must have members');
