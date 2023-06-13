@@ -289,14 +289,16 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   override withStatement(children: WithStatementCstChildren) {
     // With statements change the self scope to
     // whatever their expression evaluates to.
-    // TODO: Evaluate the expression and try to use its type as the self scope
-    this.visit(children.expression);
+    // Evaluate the expression and try to use its type as the self scope
+    const conditionType = this.expression(children.expression[0].children);
     const blockLocation = children.blockableStatement[0].location!;
 
     const docs = this.PROCESSOR.useJsdoc();
     const self =
       docs?.jsdoc.kind === 'self' && docs.type.kind === 'Struct'
         ? (docs.type as StructType)
+        : conditionType.kind === 'Struct'
+        ? (conditionType as StructType)
         : this.PROCESSOR.createStruct(blockLocation);
 
     this.PROCESSOR.scope.setEnd(children.expression[0].location!, true);
@@ -422,7 +424,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     this.PROCESSOR.pushScope(startParen, self, true);
     const functionLocalScope = this.PROCESSOR.currentLocalScope;
 
-    // TODO: Handle constructor extensions. The `constructs` type should
+    // TODO: Handle constructor inheritance. The `constructs` type should
     // be based off of the parent.
 
     // Add function signature components. We may be *updating*, e.g.
@@ -571,7 +573,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
                 if (isLastSuffix && assignment) {
                   newMember.definedAt(range);
                 } else {
-                  // TODO: Else emit a warning that this member is
+                  // Else emit a warning that this member is
                   // not definitely defined.
                   this.PROCESSOR.addDiagnostic(
                     nextItemLocation,
@@ -894,11 +896,18 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return this.PROCESSOR.project.createType('String');
   }
   override arrayLiteral(children: ArrayLiteralCstChildren): Type<'Array'> {
-    // TODO: Infer the content type of the array
-
+    // Infer the content type of the array
     // Make sure that the content is visited
-    this.visit(children.assignmentRightHandSide || []);
-    return this.PROCESSOR.project.createType('Array');
+    const types: Type[] = [];
+    const arrayType = this.PROCESSOR.project.createType('Array');
+    for (const item of children.assignmentRightHandSide || []) {
+      const type = this.assignmentRightHandSide(item.children);
+      if (!types.find((t) => t.kind === type.kind && t.name === type.name)) {
+        types.push(type);
+        arrayType.addItemType(type);
+      }
+    }
+    return arrayType;
   }
 
   //#endregion

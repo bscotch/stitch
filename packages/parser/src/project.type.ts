@@ -111,9 +111,12 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   get kind() {
     return this._kind;
   }
-  set kind(value: PrimitiveName) {
-    ok(this._kind === 'Unknown', 'Cannot change type kind');
-    this._kind = value as T;
+  set kind(newKind: PrimitiveName) {
+    ok(
+      this._kind === 'Unknown' || this._kind === newKind,
+      'Cannot change type kind',
+    );
+    this._kind = newKind as T;
   }
 
   /** Get this type as a Feather-compatible string */
@@ -135,9 +138,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     // Unions can list types
     if (this.kind === 'Union') {
       if (this.types) {
-        return this.types
-          .map((t) => t.toFeatherString(_already_stringified))
-          .join(' | ');
+        const typeStrings = this.types.map((t) =>
+          t.toFeatherString(_already_stringified),
+        );
+        const uniqueTypeStrings = [...typeStrings].sort().join(' | ');
+        return uniqueTypeStrings;
       } else {
         return 'Mixed';
       }
@@ -332,18 +337,22 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
       return original;
     }
     // If the original type is unknown, now we know it! So just replace it.
-    if (original.kind === 'Unknown') {
-      // Then change it to the provided type
+    // Similarly, if both types are the same kind we'll need to merge some fields.
+    if (
+      original.kind === 'Unknown' ||
+      (original.kind === withType.kind && original.kind !== 'Union')
+    ) {
       original.kind = withType.kind;
+      original.name ||= withType.name;
       original.description ||= withType.description;
-      original.parent = withType.parent;
-      original.members = withType.members;
-      original.items = withType.items;
-      original.types = withType.types ? [...withType.types] : undefined;
-      original.constructs = withType.constructs;
-      original.context = withType.context;
-      original.params = withType.params;
-      original.returns = withType.returns;
+      original.parent ||= withType.parent;
+      original.members ||= withType.members;
+      original.items ||= withType.items;
+      original.types ||= withType.types;
+      original.constructs ||= withType.constructs;
+      original.context ||= withType.context;
+      original.params ||= withType.params;
+      original.returns ||= withType.returns;
       return original;
     }
     // Otherwise we're going to add a type to a union. If we aren't a union, convert to one.

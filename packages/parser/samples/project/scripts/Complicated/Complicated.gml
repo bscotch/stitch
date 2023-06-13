@@ -27,11 +27,11 @@ function Bschema (project_setup_function, _commit_id_prefix) constructor {
 		uid_pools	: {},
 		changes		: new BschemaChanges(),
 	};
-	/// @type {String|Undefined}
+	/// @type {String}
 	latest_commitId = undefined;
-	/// @type {String|Undefined}
+	/// @type {String}
 	packed_commitId = undefined;
-	/// @type {String|Undefined}
+	/// @type {String}
 	latest = undefined;
 
 	#region METHODS
