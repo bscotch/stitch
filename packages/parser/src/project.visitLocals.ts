@@ -65,7 +65,6 @@ class SymbolProcessor {
   /** The current ScopeRange, updated as we push/pop local and self */
   public scope: Scope;
   readonly position: Position;
-  readonly diagnostics: Diagnostic[] = [];
   public unusedJsdoc: { type: Type; jsdoc: JsdocSummary } | undefined;
 
   constructor(readonly file: Code) {
@@ -101,7 +100,7 @@ class SymbolProcessor {
     message: string,
     severity: Diagnostic['severity'] = 'warning',
   ) {
-    this.diagnostics.push({
+    this.file.addDiagnostic({
       $tag: 'diagnostic',
       kind: 'parser',
       message,
@@ -497,6 +496,15 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     let finalType: Type = this.UNKNOWN;
     let currentItem = this.identifier(children.identifier[0].children);
     if (!currentItem) {
+      const identity = identifierFrom(children);
+      if (identity) {
+        console.log('Unknown identifier', identity.token.image);
+        this.PROCESSOR.addDiagnostic(
+          children.identifier[0].location!,
+          `Unknown identifier`,
+          'error',
+        );
+      }
       return finalType;
     } else {
       finalType = getType(currentItem.item);

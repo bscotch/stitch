@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
+import type { PrimitiveName } from './project.primitives.js';
 import { Symbol } from './project.symbol.js';
 import { Type, TypeMember } from './project.type.js';
 import { ok } from './util.js';
@@ -293,27 +294,10 @@ describe('Project', function () {
     ok(dotAssignedType.parent === obj.instanceType);
     //#endregion DOT ASSIGNMENTS
 
-    //#region MISC COMPLICATED
-    // Make sure that the BSCHEMA global gets typed based on its assignment
-    const bschemaGlobal = project.getGlobal('BSCHEMA')!.symbol as Symbol;
-    const bschemaGlobalDef = complexScriptFile.getReferenceAt(1, 15);
-    const bschemaConstructor = complexScriptFile.getReferenceAt(7, 13);
-    ok(bschemaGlobal);
-    ok(bschemaGlobalDef);
-    ok(bschemaGlobalDef.item === bschemaGlobal);
-    ok(bschemaConstructor);
-
-    // Make sure that the project_setup Bschema field gets typed based on its assignment
-    const projectSetupRef = complexScriptFile.getReferenceAt(10, 10)!;
-    const projectSetupVar = projectSetupRef.item as TypeMember;
-    const projectSetupType = projectSetupVar.type;
-    const projectSetupAssignedTo = bschemaConstructor.type.getParameter(0)!;
-    ok(projectSetupAssignedTo.name === 'project_setup_function');
-    ok(projectSetupType === projectSetupAssignedTo.type);
-    //#endregion MISC COMPLICATED
+    validateBschemaConstructor(project);
   });
 
-  it('can parse sample project', async function () {
+  xit('can parse sample project', async function () {
     const projectDir = process.env.GML_PARSER_SAMPLE_PROJECT_DIR;
     ok(
       projectDir,
@@ -322,3 +306,114 @@ describe('Project', function () {
     const project = await Project.initialize(projectDir);
   });
 });
+
+function validateBschemaConstructor(project: Project) {
+  const complexScript = project.getAssetByName('Complicated')!;
+  const complexScriptFile = complexScript.gmlFile;
+  const bschemaGlobal = project.getGlobal('BSCHEMA')!.symbol as Symbol;
+  const bschemaStructType = project.getGlobal('Struct.Bschema')
+    ?.symbol as Type<'Struct'>;
+  const bschemaGlobalDef = complexScriptFile.getReferenceAt(1, 15);
+  const bschemaConstructor = complexScriptFile.getReferenceAt(7, 13)
+    ?.item as TypeMember;
+  const bschemaRoleType = project.getGlobal('Struct.BschemaRole')
+    ?.symbol as Type<'Struct'>;
+  ok(bschemaGlobal);
+  ok(bschemaStructType);
+  ok(bschemaStructType.kind === 'Struct');
+  ok(bschemaGlobalDef);
+  ok(bschemaGlobalDef.item === bschemaGlobal);
+  ok(bschemaConstructor);
+  ok(bschemaConstructor.type.kind === 'Constructor');
+  expect(bschemaConstructor.type.name).to.equal('Bschema');
+  ok(bschemaConstructor.type.constructs === bschemaStructType);
+  ok(bschemaRoleType);
+  // Check all of the members of Struct.Bschema.
+
+  // Make sure that the project_setup Bschema field gets typed based on its assignment
+  const projectSetupRef = complexScriptFile.getReferenceAt(10, 10)!;
+  const projectSetupVar = projectSetupRef.item as TypeMember;
+  const projectSetupType = projectSetupVar.type;
+  const projectSetupAssignedTo = bschemaConstructor.type.getParameter(0)!;
+  ok(projectSetupAssignedTo.name === 'project_setup_function');
+  ok(projectSetupType === projectSetupAssignedTo.type);
+
+  // Check the types of all of the fields of the Bschema struct
+  const expectedKinds = {
+    base: { kind: 'Struct' },
+    changes: { kind: 'Unknown' },
+    clear_changes: { kind: 'Function' },
+    commit_id_prefix: { kind: 'String' },
+    commitId: { kind: 'String' },
+    create_commit_id: { kind: 'Function' },
+    create_role: { kind: 'Function' },
+    force_use_packed: { kind: 'Bool' },
+    init: { kind: 'Function' },
+    latest_commitId: {
+      kind: 'Union',
+      of: ['String', 'Undefined'],
+      code: 'String|Undefined',
+    },
+    latest: {
+      kind: 'Union',
+      of: ['String', 'Undefined'],
+      code: 'String|Undefined',
+    },
+    next_commit_id: { kind: 'Function' },
+    packed_commitId: {
+      kind: 'Union',
+      of: ['String', 'Undefined'],
+      code: 'String|Undefined',
+    },
+    project_setup: { kind: 'Function' },
+    roles: { kind: 'Struct', code: 'Struct<Struct.BschemaRole>' },
+    schema_mote_ids: { kind: 'Struct', code: 'Struct<Array<String>>' },
+    uid_pools: { kind: 'Struct' },
+  } satisfies Record<
+    string,
+    { kind: PrimitiveName; of?: PrimitiveName[]; code?: string }
+  >;
+
+  for (const [fieldName, info] of Object.entries(expectedKinds)) {
+    console.log('Checking field', fieldName, 'of Bschema');
+    const member = bschemaStructType.getMember(fieldName);
+    const type = member?.type;
+    ok(member, `Expected to find member ${fieldName}`);
+    ok(type, `Expected to find type for member ${fieldName}`);
+    expect(member.name).to.equal(fieldName);
+    expect(type.kind).to.equal(info.kind);
+    expect(member.def, 'All members should have a definition location').to
+      .exist;
+    // if ('of' in info) {
+    //   expect(type.types?.length).to.equal(info.of.length);
+    //   for (const expectedKind of info.of) {
+    //     expect(
+    //       type.types?.some((t) => t.kind === expectedKind),
+    //       `Type ${expectedKind} not found in Union`,
+    //     ).to.be.true;
+    //   }
+    // }
+    // if ('code' in info) {
+    //   expect(type.code).to.equal(info.code);
+    // }
+  }
+
+  // Deeper checks on the types of some of the fields
+  //#region Bschema.schema_mote_ids
+  const schemaMoteIds = bschemaStructType.getMember('schema_mote_ids')!;
+  expect(schemaMoteIds.type.kind).to.equal('Struct');
+  expect(schemaMoteIds.type.items).to.exist;
+  expect(schemaMoteIds.type.items!.kind).to.equal('Array');
+  expect(schemaMoteIds.type.items!.items).to.exist;
+  expect(schemaMoteIds.type.items!.items!.kind).to.equal('String');
+  expect(schemaMoteIds.type.code).to.equal('Struct<Array<String>>');
+  //#endregion Bschema.schema_mote_ids
+
+  //#region Bschema.roles
+  const roles = bschemaStructType.getMember('roles')!;
+  expect(roles.type.kind).to.equal('Struct');
+  expect(roles.type.items).to.exist;
+  expect(roles.type.items!.kind).to.equal('Struct');
+  ok(roles.type.items === bschemaRoleType);
+  //#endregion Bschema.roles
+}

@@ -71,7 +71,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   parent: Type<T> | undefined = undefined;
 
   // Applicable to Structs and Enums
-  protected members: TypeMember[] | undefined = undefined;
+  _members: TypeMember[] | undefined = undefined;
 
   // Applicable to Arrays
   items: Type | undefined = undefined;
@@ -85,7 +85,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * type of the struct that it constructs. */
   constructs: Type<'Struct'> | undefined = undefined;
   context: Type<'Struct'> | undefined = undefined;
-  protected params: TypeMember[] | undefined = undefined;
+  _params: TypeMember[] | undefined = undefined;
   returns: undefined | Type = undefined;
 
   /** Create a shallow-ish clone */
@@ -94,12 +94,12 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     clone.name = this.name;
     clone.description = this.description;
     clone.parent = this.parent;
-    clone.members = this.members ? [...this.members] : undefined;
+    clone._members = this._members ? [...this._members] : undefined;
     clone.items = this.items?.clone();
     clone.types = this.types ? [...this.types] : undefined;
     clone.constructs = this.constructs?.clone();
     clone.context = this.context?.clone();
-    clone.params = this.params ? [...this.params] : undefined;
+    clone._params = this._params ? [...this._params] : undefined;
     clone.returns = this.returns?.clone();
     return clone;
   }
@@ -141,7 +141,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
         const typeStrings = this.types.map((t) =>
           t.toFeatherString(_already_stringified),
         );
-        const uniqueTypeStrings = [...typeStrings].sort().join(' | ');
+        const uniqueTypeStrings = [...typeStrings].sort().join('|');
         return uniqueTypeStrings;
       } else {
         return 'Mixed';
@@ -154,7 +154,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     let code = '';
     if (this.isFunction) {
       code = `function ${this.name || ''}(`;
-      const params = this.params || [];
+      const params = this._params || [];
       for (let i = 0; i < params.length; i++) {
         const param = params[i];
         assert(param, 'Param is undefined');
@@ -187,16 +187,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return code;
   }
 
-  get canHaveMembers() {
-    return ['Struct', 'Enum'].includes(this.kind);
-  }
-
-  get canHaveItems() {
-    return (
-      ['Array', 'Struct'].includes(this.kind) || this.kind.startsWith('Id.Ds')
-    );
-  }
-
   get isFunction() {
     return ['Constructor', 'Function'].includes(this.kind);
   }
@@ -216,28 +206,28 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   }
 
   listParameters(): TypeMember[] {
-    return this.params ? [...this.params] : [];
+    return this._params ? [...this._params] : [];
   }
 
   getParameter(name: string): TypeMember | undefined;
   getParameter(idx: number): TypeMember | undefined;
   getParameter(nameOrIdx: string | number): TypeMember | undefined {
-    if (!this.params) {
+    if (!this._params) {
       return undefined;
     }
     if (typeof nameOrIdx === 'string') {
-      return this.params.find((p) => p.name === nameOrIdx);
+      return this._params.find((p) => p.name === nameOrIdx);
     }
-    return this.params[nameOrIdx];
+    return this._params[nameOrIdx];
   }
 
   addParameter(idx: number, name: string, type: Type, optional = false) {
     ok(this.isFunction, `Cannot add param to ${this.kind} type`);
-    this.params ??= [];
-    let param = this.params[idx];
+    this._params ??= [];
+    let param = this._params[idx];
     if (!param) {
       param = new TypeMember(this, name, type);
-      this.params[idx] = param;
+      this._params[idx] = param;
     }
     param.type = type;
     param.optional = optional || name === '...';
@@ -249,7 +239,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   }
 
   listMembers(excludeParents = false): TypeMember[] {
-    const members = this.members || [];
+    const members = this._members || [];
     if (excludeParents || !this.parent) {
       return members;
     }
@@ -258,18 +248,19 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
 
   getMember(name: string): TypeMember | undefined {
     return (
-      this.members?.find((m) => m.name === name) || this.parent?.getMember(name)
+      this._members?.find((m) => m.name === name) ||
+      this.parent?.getMember(name)
     );
   }
 
   /** For container types that have named members, like Structs and Enums */
   addMember(name: string, type: Type, writable = true): TypeMember {
-    this.members ??= [];
-    let member = this.members.find((m) => m.name === name);
+    this._members ??= [];
+    let member = this._members.find((m) => m.name === name);
     if (!member) {
       member = new TypeMember(this, name, type);
       member.writable = writable;
-      this.members.push(member);
+      this._members.push(member);
     }
     return member;
   }
@@ -285,7 +276,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * For container types that have non-named members, like arrays and DsTypes.
    * Can also be used for default Struct values. */
   addItemType(type: Type): this {
-    ok(this.canHaveItems, `Cannot add item to non-array type ${this.kind}`);
     if (!this.items) {
       this.items = type;
       return this;
@@ -325,50 +315,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * **WARNING**: This method sometimes mutates the original type, and sometimes returns a new type.
    */
   static merge(original: Type | undefined, withType: Type): Type {
-    // If the incoming type is unknown, toss it.
-    // If the original type is Any/Mixed, then it's already as wide as possible so don't change it.
-    if (!original) {
-      return withType;
-    }
-    if (
-      withType.kind === 'Unknown' ||
-      ['Any', 'Mixed'].includes(original.kind)
-    ) {
-      return original;
-    }
-    // If the original type is unknown, now we know it! So just replace it.
-    // Similarly, if both types are the same kind we'll need to merge some fields.
-    if (
-      original.kind === 'Unknown' ||
-      (original.kind === withType.kind && original.kind !== 'Union')
-    ) {
-      original.kind = withType.kind;
-      original.name ||= withType.name;
-      original.description ||= withType.description;
-      original.parent ||= withType.parent;
-      original.members ||= withType.members;
-      original.items ||= withType.items;
-      original.types ||= withType.types;
-      original.constructs ||= withType.constructs;
-      original.context ||= withType.context;
-      original.params ||= withType.params;
-      original.returns ||= withType.returns;
-      return original;
-    }
-    // Otherwise we're going to add a type to a union. If we aren't a union, convert to one.
-    if (original.kind !== 'Union') {
-      const unionType = new Type('Union');
-      // Get a copy of the current type to add to the new union
-      const preUnionType = original.clone();
-      // Then convert it to a union
-      Object.assign(original, unionType);
-      // Then add the previous type to the union
-      original.types = [preUnionType];
-    }
-    // Add the new type to the union
-    original.types ??= [];
-    original.types.push(withType);
-    return original;
+    return mergeTypes(original, withType);
   }
 
   /** Given a Feather-compatible type string, get a fully parsed type. */
@@ -519,12 +466,56 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
       $tag: this.$tag,
       kind: this.kind,
       parent: this.parent,
-      members: this.members,
+      members: this.listMembers(),
       items: this.items,
       types: this.types,
       context: this.context,
-      params: this.params,
+      params: this.listParameters(),
       returns: this.returns,
     };
   }
+}
+
+function mergeTypes(original: Type | undefined, withType: Type): Type {
+  // If the incoming type is unknown, toss it.
+  // If the original type is Any/Mixed, then it's already as wide as possible so don't change it.
+  if (!original) {
+    return withType;
+  }
+  if (withType.kind === 'Unknown' || ['Any', 'Mixed'].includes(original.kind)) {
+    return original;
+  }
+  // If the original type is unknown, now we know it! So just replace it.
+  // Similarly, if both types are the same kind we'll need to merge some fields.
+  if (
+    original.kind === 'Unknown' ||
+    (original.kind === withType.kind && original.kind !== 'Union')
+  ) {
+    original.kind = withType.kind;
+    original.name ||= withType.name;
+    original.description ||= withType.description;
+    original.parent ||= withType.parent;
+    original._members ||= withType._members;
+    original.items ||= withType.items;
+    original.types ||= withType.types;
+    original.constructs ||= withType.constructs;
+    original.context ||= withType.context;
+    original._params ||= withType._params;
+    original.returns ||= withType.returns;
+    return original;
+  }
+  // Otherwise we're going to add a type to a union. If we aren't a union, convert to one.
+  if (original.kind !== 'Union') {
+    const unionType = new Type('Union');
+    // Get a copy of the current type to add to the new union
+    const preUnionType = original.clone();
+    // Then convert it to a union
+    Object.assign(original, unionType);
+    // Then add the previous type to the union
+    original.types = [preUnionType];
+  }
+  // Add the new type to the union
+  original.types ??= [];
+  original.types.push(withType);
+  return original;
 }

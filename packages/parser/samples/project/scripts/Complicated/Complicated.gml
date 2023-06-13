@@ -27,9 +27,9 @@ function Bschema (project_setup_function, _commit_id_prefix) constructor {
 		uid_pools	: {},
 		changes		: new BschemaChanges(),
 	};
-	/// @type {String}
+	/// @type {String|Undefined}
 	latest_commitId = undefined;
-	/// @type {String}
+	/// @type {String|Undefined}
 	packed_commitId = undefined;
 	/// @type {String}
 	latest = undefined;

@@ -216,7 +216,7 @@ export class Code {
       const fromToken = isNaN(diagnostic.token.startOffset)
         ? diagnostic.previousToken
         : diagnostic.token;
-      this._diagnostics.push({
+      this.addDiagnostic({
         $tag: 'diagnostic',
         kind: 'parser',
         message: diagnostic.message,
@@ -225,6 +225,10 @@ export class Code {
         location: Range.fromCst(this, fromToken || diagnostic.token),
       });
     }
+  }
+
+  addDiagnostic(diagnostic: Diagnostic) {
+    this._diagnostics.push(diagnostic);
   }
 
   addRef(ref: Reference) {
