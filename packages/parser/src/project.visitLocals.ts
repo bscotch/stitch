@@ -496,6 +496,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     let currentItem = this.identifier(children.identifier[0].children);
     if (!currentItem) {
       return finalType;
+    } else {
+      finalType = getType(currentItem.item);
     }
     let currentLocation = children.identifier[0].location!;
     const suffixes = sortedAccessorSuffixes(children.accessorSuffixes);
@@ -706,6 +708,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   override variableAssignment(children: VariableAssignmentCstChildren) {
     // See if this identifier is known.
     const identified = this.identifier(children);
+    const name = children.Identifier[0].image;
     const item = identified?.item;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
@@ -720,7 +723,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       if (fullScope.self !== fullScope.global) {
         // Then we can add a new member
         const member = fullScope.self
-          .addMember(children.Identifier[0].image, assignedType)
+          .addMember(name, assignedType)
           .definedAt(range);
         member.addRef(range);
         member.instance = true;

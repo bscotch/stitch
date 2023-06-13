@@ -117,19 +117,27 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   }
 
   /** Get this type as a Feather-compatible string */
-  toFeatherString(): string {
+  toFeatherString(_already_stringified = new Set<Type>()): string {
     // Functions, Structs, and Enums are the only types that can have names
+    if (_already_stringified.has(this)) {
+      return 'Circular';
+    }
+    _already_stringified.add(this);
     if (['Function', 'Struct', 'Enum'].includes(this.kind) && this.name) {
       return `${this.kind}.${this.name}`;
     }
     // Arrays etc can contain items of a type) {
     if (this.items) {
-      return `${this.kind}<${this.items.toFeatherString()}>`;
+      return `${this.kind}<${this.items.toFeatherString(
+        _already_stringified,
+      )}>`;
     }
     // Unions can list types
     if (this.kind === 'Union') {
       if (this.types) {
-        return this.types.map((t) => t.toFeatherString()).join(' | ');
+        return this.types
+          .map((t) => t.toFeatherString(_already_stringified))
+          .join(' | ');
       } else {
         return 'Mixed';
       }
@@ -251,10 +259,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
 
   /** For container types that have named members, like Structs and Enums */
   addMember(name: string, type: Type, writable = true): TypeMember {
-    ok(
-      this.canHaveMembers,
-      `Cannot add member to non-struct/enum type ${this.kind}`,
-    );
     this.members ??= [];
     let member = this.members.find((m) => m.name === name);
     if (!member) {

@@ -294,17 +294,26 @@ describe('Project', function () {
     //#endregion DOT ASSIGNMENTS
 
     //#region MISC COMPLICATED
-    const bschemaGlobal = project.getGlobal('BSCHEMA')!.symbol;
+    // Make sure that the BSCHEMA global gets typed based on its assignment
+    const bschemaGlobal = project.getGlobal('BSCHEMA')!.symbol as Symbol;
     const bschemaGlobalDef = complexScriptFile.getReferenceAt(1, 15);
     const bschemaConstructor = complexScriptFile.getReferenceAt(7, 13);
     ok(bschemaGlobal);
     ok(bschemaGlobalDef);
     ok(bschemaGlobalDef.item === bschemaGlobal);
     ok(bschemaConstructor);
+
+    // Make sure that the project_setup Bschema field gets typed based on its assignment
+    const projectSetupRef = complexScriptFile.getReferenceAt(10, 10)!;
+    const projectSetupVar = projectSetupRef.item as TypeMember;
+    const projectSetupType = projectSetupVar.type;
+    const projectSetupAssignedTo = bschemaConstructor.type.getParameter(0)!;
+    ok(projectSetupAssignedTo.name === 'project_setup_function');
+    ok(projectSetupType === projectSetupAssignedTo.type);
     //#endregion MISC COMPLICATED
   });
 
-  xit('can parse sample project', async function () {
+  it('can parse sample project', async function () {
     const projectDir = process.env.GML_PARSER_SAMPLE_PROJECT_DIR;
     ok(
       projectDir,
