@@ -10,7 +10,7 @@ import { Diagnostic } from './project.diagnostics.js';
 import { Native } from './project.native.js';
 import { PrimitiveName } from './project.primitives.js';
 import { Symbol } from './project.symbol.js';
-import { StructType, Type, TypeMember } from './project.type.js';
+import { StructType, Type, TypeMember } from './types.js';
 import { ok } from './util.js';
 
 type AssetName = string;

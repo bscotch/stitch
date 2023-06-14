@@ -21,8 +21,8 @@ import type {
 import { GmlLexer } from './lexer.js';
 import type { GmlParseError } from './project.diagnostics.js';
 import { Reference, ReferenceableType } from './project.location.js';
-import { Type } from './project.type.js';
 import { c, categories, t, tokens } from './tokens.js';
+import { Type } from './types.js';
 import { ok } from './util.js';
 
 export interface GmlParsed {

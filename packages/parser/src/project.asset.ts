@@ -11,7 +11,7 @@ import {
 import { Code } from './project.code.js';
 import { Project } from './project.js';
 import { Symbol } from './project.symbol.js';
-import { StructType } from './project.type.js';
+import { StructType } from './types.js';
 import { ok } from './util.js';
 
 export class Asset<T extends YyResourceType = YyResourceType> {

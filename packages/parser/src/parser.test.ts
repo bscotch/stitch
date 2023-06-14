@@ -5,7 +5,7 @@ import type { IRecognitionException } from 'chevrotain';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { GmlParser } from './parser.js';
-import { Type } from './project.type.js';
+import { Type } from './types.js';
 import { ok } from './util.js';
 
 dotenv.config();

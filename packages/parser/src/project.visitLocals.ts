@@ -50,7 +50,7 @@ import {
   type EnumType,
   type StructType,
   type TypeMember,
-} from './project.type.js';
+} from './types.js';
 import { assert, ok } from './util.js';
 
 export function processSymbols(file: Code) {

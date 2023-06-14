@@ -1,6 +1,6 @@
 import { expect } from 'chai';
+import { parseFeatherTypeString } from './jsdoc.feather.js';
 import { parseJsdoc } from './jsdoc.js';
-import { parseFeatherTypeString } from './jsdoc.typestring.js';
 
 const functionJsdoc = `
 /// @desc This is a multiline

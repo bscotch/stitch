@@ -12,4 +12,4 @@ export {
   type ReferenceableType,
 } from './project.location.js';
 export { Symbol } from './project.symbol.js';
-export type * from './project.type.js';
+export type * from './types.js';

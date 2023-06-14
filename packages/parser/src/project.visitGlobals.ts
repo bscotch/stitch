@@ -12,7 +12,7 @@ import type { Code } from './project.code.js';
 import { Position, Range } from './project.location.js';
 import { PrimitiveName } from './project.primitives.js';
 import { Symbol } from './project.symbol.js';
-import { EnumType, StructType, TypeMember } from './project.type.js';
+import { EnumType, StructType, TypeMember } from './types.js';
 import { assert } from './util.js';
 
 export function processGlobalSymbols(file: Code) {

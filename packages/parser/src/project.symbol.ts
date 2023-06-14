@@ -1,6 +1,6 @@
 import { Flaggable } from './project.flags.js';
 import { Refs } from './project.location.js';
-import { Type } from './project.type.js';
+import { Type } from './types.js';
 
 export class Symbol extends Refs(Flaggable) {
   readonly $tag = 'Sym';

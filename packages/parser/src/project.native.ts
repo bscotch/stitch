@@ -5,7 +5,7 @@ import { parseStringPromise } from 'xml2js';
 import { primitiveNames } from './project.primitives.js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
 import { Symbol } from './project.symbol.js';
-import { Type, type FunctionType, type StructType } from './project.type.js';
+import { Type, type FunctionType, type StructType } from './types.js';
 import { assert } from './util.js';
 
 export class Native {
