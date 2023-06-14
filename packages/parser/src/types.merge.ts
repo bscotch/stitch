@@ -6,6 +6,9 @@ export function mergeTypes(original: Type | undefined, withType: Type): Type {
   if (!original) {
     return withType;
   }
+  original.name ||= withType.name;
+  original.description ||= withType.description;
+
   if (withType.kind === 'Unknown' || ['Any', 'Mixed'].includes(original.kind)) {
     return original;
   }
@@ -16,8 +19,6 @@ export function mergeTypes(original: Type | undefined, withType: Type): Type {
     (original.kind === withType.kind && original.kind !== 'Union')
   ) {
     original.kind = withType.kind;
-    original.name ||= withType.name;
-    original.description ||= withType.description;
     original.parent ||= withType.parent;
     original._members ||= withType._members;
     original.items ||= withType.items;
@@ -28,6 +29,7 @@ export function mergeTypes(original: Type | undefined, withType: Type): Type {
     original.returns ||= withType.returns;
     return original;
   }
+
   // Otherwise we're going to add a type to a union. If we aren't a union, convert to one.
   if (original.kind !== 'Union') {
     const unionType = new Type('Union');

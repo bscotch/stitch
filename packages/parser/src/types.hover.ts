@@ -1,5 +1,16 @@
-import type { Type } from './types.js';
+import type { Type, TypeMember } from './types.js';
 import { assert } from './util.js';
+
+export function typeMemberToHoverText(member: TypeMember) {
+  let code = member.name;
+  if (member.optional) {
+    code += '?';
+  }
+  if (member.type.kind !== 'Unknown') {
+    code += ': ' + member.type.toFeatherString();
+  }
+  return code;
+}
 
 export function typeToHoverText(type: Type) {
   let code = '';
@@ -12,13 +23,7 @@ export function typeToHoverText(type: Type) {
       if (i > 0) {
         code += ', ';
       }
-      code += param.name;
-      if (param.optional) {
-        code += '?';
-      }
-      if (param.type.kind !== 'Unknown') {
-        code += ': ' + param.type.toFeatherString();
-      }
+      code += typeMemberToHoverText(param);
     }
     code += ')';
     if (type.kind === 'Constructor') {
@@ -30,9 +35,6 @@ export function typeToHoverText(type: Type) {
       code += ': ' + (type.returns?.toFeatherString() || 'Unknown');
     }
   } else {
-    if (type.name) {
-      code = `${type.name}: `;
-    }
     code += type.toFeatherString();
   }
   return code;

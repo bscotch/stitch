@@ -110,7 +110,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return this.PROCESSOR.project.createType('Unknown');
   }
 
-  UPDATE_TYPE_WITH_DOCS(type: Type) {
+  /**
+   * Given a type, cohsume any current JSDocs and compute
+   * the combined type. May return the original type (+/- mutation)
+   * or a new type, depending on the scenario.
+   */
+  UPDATED_TYPE_WITH_DOCS(type: Type) {
     const docs = this.PROCESSOR.useJsdoc();
     if (!docs || docs.jsdoc.kind === 'self') {
       return type;
@@ -119,6 +124,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     if (docs.jsdoc.kind === 'description') {
       return type;
     }
+    // If the type is narrower (or the same as) the docs, return the docs
+    // (i.e. the docs get precedence when there is no conflict).
+    if (type.narrows(docs.type)) {
+      return docs.type;
+    }
+    // Otherwise merge the two types
     // TODO: Handle conflict between docs and type
     return Type.merge(type, docs.type);
   }
@@ -196,11 +207,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const self = this.PROCESSOR.currentSelf;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
-    const type =
+    const type = this.UPDATED_TYPE_WITH_DOCS(
       this.assignmentRightHandSide(
         children.assignmentRightHandSide[0].children,
-      ) || this.UNKNOWN;
-    this.UPDATE_TYPE_WITH_DOCS(type);
+      ) || this.UNKNOWN,
+    );
 
     const member = self
       .addMember(children.Identifier[0].image, type)
@@ -214,12 +225,13 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const local = this.PROCESSOR.currentLocalScope;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
-    const type = children.assignmentRightHandSide
-      ? this.assignmentRightHandSide(
-          children.assignmentRightHandSide[0].children,
-        )
-      : this.UNKNOWN;
-    this.UPDATE_TYPE_WITH_DOCS(type);
+    const type = this.UPDATED_TYPE_WITH_DOCS(
+      children.assignmentRightHandSide
+        ? this.assignmentRightHandSide(
+            children.assignmentRightHandSide[0].children,
+          )
+        : this.UNKNOWN,
+    );
 
     const member = local
       .addMember(children.Identifier[0].image, type)
@@ -235,10 +247,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const item = identified?.item;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
-    const assignedType = this.assignmentRightHandSide(
-      children.assignmentRightHandSide[0].children,
+    const assignedType = this.UPDATED_TYPE_WITH_DOCS(
+      this.assignmentRightHandSide(
+        children.assignmentRightHandSide[0].children,
+      ),
     );
-    this.UPDATE_TYPE_WITH_DOCS(assignedType);
 
     if (!item) {
       // Create a new member on the self scope, unless it's global
@@ -379,10 +392,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         );
       }
       if (parts.assignmentRightHandSide) {
-        const type = this.assignmentRightHandSide(
-          parts.assignmentRightHandSide[0].children,
+        const type = this.UPDATED_TYPE_WITH_DOCS(
+          this.assignmentRightHandSide(
+            parts.assignmentRightHandSide[0].children,
+          ),
         );
-        this.UPDATE_TYPE_WITH_DOCS(type);
         if (type instanceof Type) {
           const member = struct.addMember(name, type).definedAt(range);
           member.addRef(range);

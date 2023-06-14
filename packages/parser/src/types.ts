@@ -6,7 +6,7 @@ import {
 import type { JsdocSummary } from './jsdoc.js';
 import { Flaggable } from './project.flags.js';
 import { Refs } from './project.location.js';
-import { PrimitiveName } from './project.primitives.js';
+import { narrows } from './types.checks.js';
 import {
   typeFromFeatherString,
   typeFromIdentifier,
@@ -51,17 +51,6 @@ export class TypeMember extends Refs(Flaggable) {
   }
 }
 
-export function typeIs<T extends PrimitiveName>(
-  item: any,
-  kind: T,
-): item is Type<T> {
-  return isType(item) && item.kind === kind;
-}
-
-export function isType(item: any): item is Type {
-  return item instanceof Type;
-}
-
 export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   Flaggable,
 ) {
@@ -79,13 +68,13 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * as for e.g. representing a subset of Real constants in a type. */
   parent: Type<T> | undefined = undefined;
 
-  // Applicable to Structs and Enums
+  /** Named members of Structs and Enums */
   _members: TypeMember[] | undefined = undefined;
 
-  // Applicable to Arrays
+  /** Types of the items found in arrays and various ds types, or the fallback type found in Structs */
   items: Type | undefined = undefined;
 
-  // Applicable to Unions
+  /** The types making up a union */
   types: Type[] | undefined = undefined;
 
   // Applicable to Functions
@@ -126,6 +115,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
       'Cannot change type kind',
     );
     this._kind = newKind as T;
+  }
+
+  /** If this type narrows `other` type, returns `true` */
+  narrows(other: Type): boolean {
+    return narrows(this, other);
   }
 
   /** Get this type as a Feather-compatible string */

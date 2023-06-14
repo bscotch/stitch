@@ -12,7 +12,8 @@ import {
   fixITokenLocation,
   getType,
 } from './project.location.js';
-import { Type, TypeMember, typeIs } from './types.js';
+import { isTypeOfKind } from './types.checks.js';
+import { Type, TypeMember } from './types.js';
 import { assert, ok } from './util.js';
 import type { GmlSymbolVisitor } from './visitor.js';
 
@@ -53,7 +54,7 @@ export function visitIdentifierAccessor(
         assignment.children.assignmentRightHandSide[0].children,
       )
     : this.UNKNOWN;
-  this.UPDATE_TYPE_WITH_DOCS(assignmentType);
+  this.UPDATED_TYPE_WITH_DOCS(assignmentType);
 
   // For each suffix in turn, try to figure out how it changes the scope,
   // find the corresponding symbol, etc.
@@ -68,7 +69,10 @@ export function visitIdentifierAccessor(
         // the prior struct.
         const dotAccessor = suffix.children;
         const dot = fixITokenLocation(dotAccessor.Dot[0]);
-        if (typeIs(currentType, 'Struct') || typeIs(currentType, 'Enum')) {
+        if (
+          isTypeOfKind(currentType, 'Struct') ||
+          isTypeOfKind(currentType, 'Enum')
+        ) {
           this.PROCESSOR.scope.setEnd(dot);
           this.PROCESSOR.pushSelfScope(dot, currentType, true, {
             accessorScope: true,
@@ -86,7 +90,7 @@ export function visitIdentifierAccessor(
             const nextIdentity = identifierFrom(dotAccessor);
             let nextItem = this.identifier(dotAccessor.identifier[0].children);
             const nextItemLocation = dotAccessor.identifier[0].location!;
-            if (!nextItem && typeIs(currentType, 'Struct')) {
+            if (!nextItem && isTypeOfKind(currentType, 'Struct')) {
               // Then this variable is not yet defined on this struct.
               // We need to add it!
               ok(nextIdentity, 'Could not get next identity');

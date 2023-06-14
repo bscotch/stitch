@@ -10,9 +10,9 @@ import type {
 import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
 import { Position, Range } from './project.location.js';
-import { PrimitiveName } from './project.primitives.js';
 import { Symbol } from './project.symbol.js';
 import { EnumType, StructType, TypeMember } from './types.js';
+import { PrimitiveName } from './types.primitives.js';
 import { assert } from './util.js';
 
 export function processGlobalSymbols(file: Code) {

@@ -384,18 +384,18 @@ function validateBschemaConstructor(project: Project) {
     expect(type.kind).to.equal(info.kind);
     expect(member.def, 'All members should have a definition location').to
       .exist;
-    // if ('of' in info) {
-    //   expect(type.types?.length).to.equal(info.of.length);
-    //   for (const expectedKind of info.of) {
-    //     expect(
-    //       type.types?.some((t) => t.kind === expectedKind),
-    //       `Type ${expectedKind} not found in Union`,
-    //     ).to.be.true;
-    //   }
-    // }
-    // if ('code' in info) {
-    //   expect(type.code).to.equal(info.code);
-    // }
+    if ('of' in info) {
+      expect(type.types?.length).to.equal(info.of.length);
+      for (const expectedKind of info.of) {
+        expect(
+          type.types?.some((t) => t.kind === expectedKind),
+          `Type ${expectedKind} not found in Union`,
+        ).to.be.true;
+      }
+    }
+    if ('code' in info) {
+      expect(type.code).to.equal(info.code);
+    }
   }
 
   // Deeper checks on the types of some of the fields
