@@ -37,6 +37,5 @@ const.name.hello[0].nope();
 /// @param {Real} _whatever
 function AnotherConstructor (_whatever){
 	self.whatever = _whatever;
-
 	constructed = new GlobalConstructor("nerp", "derp");
 }

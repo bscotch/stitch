@@ -8,7 +8,6 @@ import {
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { assert, swallowThrown } from './assert.mjs';
-import { debounce } from './debounce.mjs';
 import { inScopeSymbolsToCompletions } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
@@ -42,6 +41,8 @@ export class StitchProvider
 
   protected projects: GameMakerProject[] = [];
   static config = config;
+
+  readonly processingFiles = new Map<string, Promise<any>>();
 
   protected constructor() {
     this.signatureHelpStatus.hide();
@@ -124,10 +125,12 @@ export class StitchProvider
     });
   }
 
-  provideCompletionItems(
+  async provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
-  ): vscode.CompletionItem[] | vscode.CompletionList {
+  ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
+    // If we're already processing this file, wait for it to finish so that we get up-to-date completions.
+    await this.processingFiles.get(document.uri.fsPath);
     const gmlFile = this.getGmlFile(document);
     const offset = document.offsetAt(position);
     if (!gmlFile) {
@@ -267,16 +270,28 @@ export class StitchProvider
     this.ctx ||= ctx;
     if (!this.provider) {
       this.provider = new StitchProvider();
-      const onChangeDoc = debounce((event: vscode.TextDocumentChangeEvent) => {
-        const doc = event.document;
+      const onChangeDoc = (
+        event: vscode.TextDocumentChangeEvent | vscode.TextDocument,
+      ) => {
+        const doc = 'document' in event ? event.document : event;
         if (doc.languageId !== 'gml') {
           return;
         }
         this.provider.diagnosticCollection.delete(doc.uri);
-        void StitchProvider.provider.updateFile(event.document);
-      }, 50);
-
+        // Add the processing promise to a map so
+        // that other functionality can wait for it
+        // to complete.
+        this.provider.processingFiles.set(
+          doc.uri.fsPath,
+          StitchProvider.provider.updateFile(doc),
+        );
+        this.provider.processingFiles.get(doc.uri.fsPath)!.then(() => {
+          this.provider.processingFiles.delete(doc.uri.fsPath);
+        });
+      };
+      // Ensure that things stay up to date!
       vscode.workspace.onDidChangeTextDocument(onChangeDoc);
+      vscode.workspace.onDidOpenTextDocument(onChangeDoc);
     }
 
     // Dispose any existing subscriptions
