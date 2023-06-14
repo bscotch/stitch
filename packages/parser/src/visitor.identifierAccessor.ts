@@ -9,8 +9,10 @@ import {
 import {
   FunctionArgRange,
   Position,
+  ReferenceableType,
   fixITokenLocation,
   getType,
+  type Reference,
 } from './project.location.js';
 import { isTypeOfKind } from './types.checks.js';
 import { Type, TypeMember } from './types.js';
@@ -24,7 +26,12 @@ export function visitIdentifierAccessor(
   const identity = identifierFrom(children);
   /** The type that this node evaluates to as an expression. */
   let finalType: Type = this.UNKNOWN;
-  let currentItem = this.identifier(children.identifier[0].children);
+  let currentItem:
+    | {
+        item: ReferenceableType;
+        ref?: Reference<ReferenceableType>;
+      }
+    | undefined = this.identifier(children.identifier[0].children);
   if (!currentItem) {
     if (identity) {
       this.PROCESSOR.addDiagnostic(
@@ -61,9 +68,31 @@ export function visitIdentifierAccessor(
 
   suffixLoop: for (let s = 0; s < suffixes.length; s++) {
     const suffix = suffixes[s];
-    const currentType = currentItem?.item ? getType(currentItem.item) : null;
+    const currentType: Type | null = currentItem?.item
+      ? getType(currentItem.item)
+      : null;
     const isLastSuffix = s === suffixes.length - 1;
     switch (suffix.name) {
+      case 'arrayMutationAccessorSuffix':
+      case 'arrayAccessSuffix':
+        // Return the items contained by the array type.
+        if (isTypeOfKind(currentType, 'Array')) {
+          currentItem = {
+            item: currentType.items ?? this.UNKNOWN,
+          };
+          finalType = getType(currentItem.item);
+        }
+        break;
+      case 'structAccessSuffix':
+        // TODO: Handle known keys
+        // Use the fallback type if there is one
+        if (isTypeOfKind(currentType, 'Struct')) {
+          currentItem = {
+            item: currentType.items ?? this.UNKNOWN,
+          };
+          finalType = getType(currentItem.item);
+        }
+        break;
       case 'dotAccessSuffix':
         // Then we need to change self-scope to be inside
         // the prior struct.
@@ -172,7 +201,7 @@ export function visitIdentifierAccessor(
             // end on the LEFT side of the second delimiter
             const end = Position.fromCstStart(this.PROCESSOR.file, token);
             const funcRange = new FunctionArgRange(
-              currentItem!.ref,
+              currentItem!.ref!,
               argIdx,
               start,
               end,
