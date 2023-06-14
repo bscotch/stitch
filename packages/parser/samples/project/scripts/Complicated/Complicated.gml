@@ -34,6 +34,8 @@ function Bschema (project_setup_function, _commit_id_prefix) constructor {
 	/// @type {String}
 	latest = undefined;
 
+	base.commitId = "an id";
+
 	#region METHODS
 	
 		#region COMMIT IDS

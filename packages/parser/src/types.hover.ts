@@ -12,6 +12,30 @@ export function typeMemberToHoverText(member: TypeMember) {
   return code;
 }
 
+export function typeToHoverDetails(type: Type) {
+  let code = '';
+  if (type.isFunction) {
+    for (const param of type.listParameters()) {
+      if (param.description || param.type.description) {
+        code += `\n\n*@param* \`${param.name}\` - ${
+          param.description || param.type.description
+        }`;
+      }
+    }
+  } else if (type.kind === 'Struct') {
+    const members = type.listMembers();
+    if (!members.length) {
+      return '`{}`';
+    }
+    code = '```ts\n{\n';
+    for (const member of members) {
+      code += `  ${member.name}: ${member.type.toFeatherString()},\n`;
+    }
+    code += '}\n```';
+  }
+  return code;
+}
+
 export function typeToHoverText(type: Type) {
   let code = '';
   if (type.isFunction) {

@@ -13,7 +13,7 @@ import {
   typeFromParsedFeatherString,
   typeFromParsedJsdocs,
 } from './types.feather.js';
-import { typeToHoverText } from './types.hover.js';
+import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
 import { mergeTypes } from './types.merge.js';
 import { PrimitiveName } from './types.primitives.js';
 import { ok } from './util.js';
@@ -129,6 +129,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
 
   get code() {
     return typeToHoverText(this);
+  }
+
+  get details() {
+    return typeToHoverDetails(this);
   }
 
   get isFunction() {

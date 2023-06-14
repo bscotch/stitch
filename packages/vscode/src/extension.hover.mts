@@ -26,6 +26,10 @@ export class GameMakerHoverProvider implements vscode.HoverProvider {
       hoverContents.appendMarkdown(description);
       hasSomething = true;
     }
+    if (type.details) {
+      hoverContents.appendMarkdown(type.details);
+      hasSomething = true;
+    }
     // If it's a sprite, add preview images
     const sprite =
       type.kind === 'Asset.GMSprite' &&
