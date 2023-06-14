@@ -68,6 +68,7 @@ export function visitIdentifierAccessor(
 
   suffixLoop: for (let s = 0; s < suffixes.length; s++) {
     const suffix = suffixes[s];
+    const suffixRange = this.PROCESSOR.range(suffix.location!);
     const currentType: Type | null = currentItem?.item
       ? getType(currentItem.item)
       : null;
@@ -75,23 +76,14 @@ export function visitIdentifierAccessor(
     switch (suffix.name) {
       case 'arrayMutationAccessorSuffix':
       case 'arrayAccessSuffix':
-        // Return the items contained by the array type.
-        if (isTypeOfKind(currentType, 'Array')) {
-          currentItem = {
-            item: currentType.items ?? this.UNKNOWN,
-          };
-          finalType = getType(currentItem.item);
-        }
-        break;
       case 'structAccessSuffix':
-        // TODO: Handle known keys
-        // Use the fallback type if there is one
-        if (isTypeOfKind(currentType, 'Struct')) {
-          currentItem = {
-            item: currentType.items ?? this.UNKNOWN,
-          };
-          finalType = getType(currentItem.item);
-        }
+        const type: Type = currentType?.items ?? this.UNKNOWN;
+        const ref = type.addRef(suffixRange);
+        currentItem = {
+          item: type,
+          ref,
+        };
+        finalType = getType(currentItem.item);
         break;
       case 'dotAccessSuffix':
         // Then we need to change self-scope to be inside
@@ -234,6 +226,10 @@ export function visitIdentifierAccessor(
         break;
       default:
         this.visit(suffix);
+        const defaultType = this.UNKNOWN;
+        const defaultRef = defaultType.addRef(suffixRange);
+        currentItem = { item: defaultType, ref: defaultRef };
+        finalType = this.UNKNOWN;
     }
   }
   return finalType;
