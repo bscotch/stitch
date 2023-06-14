@@ -13,9 +13,9 @@ import {
 } from './project.location.js';
 import type { Symbol } from './project.symbol.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
-import { processSymbols } from './project.visitLocals.js';
 import { Type, TypeMember } from './types.js';
 import { assert, isBeforeRange, isInRange } from './util.js';
+import { processSymbols } from './visitor.js';
 
 /** Represenation of a GML code file. */
 export class Code {
