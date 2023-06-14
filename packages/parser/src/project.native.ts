@@ -71,6 +71,26 @@ export class Native {
   }
 
   protected loadFunctions() {
+    // As of writing, the `throw` function was not in the spec.
+    this.spec.functions.push({
+      name: 'throw',
+      description: 'Throws an error with the given message.',
+      parameters: [
+        {
+          name: 'message',
+          type: 'Any',
+          description: 'The message to throw. Can be any type.',
+          optional: false,
+          coerce: undefined,
+        },
+      ],
+      returnType: 'Never',
+      deprecated: false,
+      locale: undefined,
+      featureFlag: undefined,
+      pure: true,
+    });
+
     for (const func of this.spec.functions) {
       const typeName = `Function.${func.name}`;
       // Need a type and a symbol for each function.
