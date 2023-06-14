@@ -96,7 +96,7 @@
 		</Function>
 		<Function Name="audio_exists" Deprecated="false" ReturnType="Bool" Pure="true">
 			<Description>This function returns whether a sound exists (true) or not (false). Note that if the index you search for has not been initialised previously, this function will cause an error as it is searching for non-existent asset indices. The sound to check can either be a single instance of a sound (the index for individual sounds being played can be stored in a variable when using the audio_play_sound() or audio_play_sound_at() functions) or a sound asset.</Description>
-			<Parameter Name="index" Type="Asset.GMSound" Optional="false">The index of the sound to check the existence of.</Parameter>
+			<Parameter Name="index" Type="Asset.GMSound,Id.Sound" Optional="false">The index of the sound to check the existence of.</Parameter>
 		</Function>
 		<Function Name="audio_falloff_set_model" Deprecated="false" ReturnType="Undefined" Pure="false">
 			<Description>To add more versatility to the audio engine, GameMaker permits you to select the falloff model that suits your game. This model will be used for all the audio functions in the game or app, and so you should make sure that the model you choose is the correct one, as each one will affect how the listener perceives the sounds you play through emitters or with the function audio_play_sound_at.</Description>
@@ -573,6 +573,14 @@
 		<Function Name="audio_bus_clear_emitters" Deprecated="false" ReturnType="Undefined" Pure="false">
 			<Description>This function relinks all of the emitters linked to the given bus back to the main bus.</Description>
 			<Parameter Name="bus" Type="Struct.AudioBus" Optional="false">The audio bus whose emitters should be cleared.</Parameter>
+		</Function>
+		<Function Name="lin_to_db" Deprecated="false" ReturnType="Real" Pure="true">
+			<Description>Converts a linear gain to a gain in decibels (dB).</Description>
+			<Parameter Name="x" Type="Real" Optional="false">The value to convert.</Parameter>
+		</Function>
+		<Function Name="db_to_lin" Deprecated="false" ReturnType="Real" Pure="true">
+			<Description>Converts a gain in decibels (dB) to a linear gain.</Description>
+			<Parameter Name="x" Type="Real" Optional="false">The value to convert.</Parameter>
 		</Function>
 		<Function Name="font_add" Deprecated="false" ReturnType="Asset.GMFont" Pure="false">
 			<Description>This function can be used to add a font to your game from a font file present in the Included Files. You can define the size of the font (in points), as well as whether the font should be bold or italic, and you can also define the range of characters to include. The function returns an index value that should be stored in a variable as this will be needed in all further code that refer to this font, or it will return -1 if the function fails for any reason.</Description>
@@ -2356,6 +2364,14 @@
 			<Parameter Name="xorig" Type="Real" Optional="false">Indicate the x position of the origin in the sprite.</Parameter>
 			<Parameter Name="yorig" Type="Real" Optional="false">Indicate the y position of the origin in the sprite.</Parameter>
 		</Function>
+		<Function Name="sprite_add_ext" Deprecated="false" ReturnType="Asset.GMSprite" Pure="false">
+			<Description>With this function you can asynchronously add an image as a sprite, loading it from an external source where the image file to be loaded should always be in either *.png, *.gif, *.jpg/jpeg or *.json format (*json files are used for loading skeleton animation sprites made with Spine). The function returns the new sprite index which must then be used in all further code that relates to the sprite. This function will generate an Image Loaded asynchronous event when the sprite has been loaded. See this page for more information.</Description>
+			<Parameter Name="fname" Type="String" Optional="false">The name (a string file path) of the file to add.</Parameter>
+			<Parameter Name="imgnum" Type="Real" Optional="false">Use to indicate the number of sub-images (1 for a single image or for a *.gif).</Parameter>			
+			<Parameter Name="xorig" Type="Real" Optional="false">Indicate the x position of the origin in the sprite.</Parameter>
+			<Parameter Name="yorig" Type="Real" Optional="false">Indicate the y position of the origin in the sprite.</Parameter>
+			<Parameter Name="prefetch" Type="Bool" Optional="false">Indicates whether the sprite should be loaded to GPU memory.</Parameter>
+		</Function>
 		<Function Name="sprite_add_from_surface" Deprecated="false" ReturnType="Undefined" Pure="false">
 			<Description>This function works in exactly the same way as sprite_create_from_surface() only instead of creating a new sprite from the area of the indexed surface that you select, it adds the defined area of the surface as a new sub-image to a previously created sprite (this means that you cannot add it directly to a sprite from the resource tree, but rather only to one previously created from a surface, or one that has been duplicated from a resource sprite using sprite_duplicate()).</Description>
 			<Parameter Name="index" Type="Asset.GMSprite" Optional="false">The index of the sprite to add the new image to.</Parameter>
@@ -3038,6 +3054,11 @@
 			<Description>This function will apply the given camera settings to the current camera view being rendered immediately. While you can set any view camera using the specific camera_set_* functions, the new settings will not be used for rendering until the next game frame, but with this function you can make those changes immediately. If you are using multiple views then the function should be used in the Draw Event and you can use the variable view_current to selectively apply the given camera only to the camera view currently being rendered. Note that this does NOT change the camera ID value, only the settings for that camera, and that if you use this function on the default camera (ie: the internal camera GameMaker uses when no view cameras are active) the changes will be overwritten the very next game frame by the internal settings for drawing the room.</Description>
 			<Parameter Name="camera_id" Type="Id.Camera" Optional="false">The unique camera ID value returned when you created the camera.</Parameter>
 		</Function>
+		<Function Name="camera_copy_transforms" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>This function will copy the transforms from one camera to another.</Description>
+			<Parameter Name="dest_camera_id" Type="Id.Camera" Optional="false">The unique camera ID value for the camera the values will be copied to.</Parameter>
+			<Parameter Name="src_camera_id" Type="Id.Camera" Optional="false">The unique camera ID value for the camera the values will be copied from.</Parameter>
+		</Function>
 		<Function Name="camera_create" Deprecated="false" ReturnType="Id.Camera" Pure="true">
 			<Description>This function will create an &quot;empty&quot; camera, ie: a camera with no view or projection settings defined. Once you have created the camera you can then use the different matrix functions to set the view and projection matrices. You can also use this function to create the camera and then use the different camera_set_* functions to set up the view, however note that you must provide at least a position and view size, otherwise the resulting camera will not be valid and give odd results if applied to a view port (if you do not set the object following, borders or move speed these will be set to the default values for a view camera in the Room Editor).</Description>
 		</Function>
@@ -3256,6 +3277,9 @@
 		<Function Name="window_device" Deprecated="false" ReturnType="Pointer" Pure="true">
 			<Description>This function will return the current d3d device pointer, which you can then (for example) pass through to a DLL or Dylib on Windows and macOS.</Description>
 		</Function>
+		<Function Name="window_get_showborder" Deprecated="false" ReturnType="Bool" Pure="true">
+			<Description>Returns whether the border around the window is shown in windowed mode.</Description>
+		</Function>
 		<Function Name="window_get_caption" Deprecated="false" ReturnType="String" Pure="true">
 			<Description>This function returns the caption of the window (this is the text that appears on the top of the window, beside its icon) and by default this shows the caption of the room you&apos;re currently in.</Description>
 		</Function>
@@ -3303,6 +3327,10 @@
 			<Description>With this function you can change or set the position of the mouse within the game window which can be useful for FPS games, for example. The function will only work while the game is in focus and using alt + tab will unlock the mouse.</Description>
 			<Parameter Name="x" Type="Real" Optional="false">The x coordinate in the window.</Parameter>
 			<Parameter Name="y" Type="Real" Optional="false">The y coordinate in the window.</Parameter>
+		</Function>
+		<Function Name="window_set_showborder" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>Sets whether the border around the window is shown in windowed mode.</Description>
+			<Parameter Name="show" Type="Bool" Optional="false">Whether to show the window border (true) or not (false).</Parameter>
 		</Function>
 		<Function Name="window_set_caption" Deprecated="false" ReturnType="Undefined" Pure="false">
 			<Description>With this function you can change or set the windows caption for the room that you are currently in. This caption appears at the top of the window, beside the game icon, when the game is not in full screen mode.</Description>
@@ -4799,6 +4827,10 @@
 		<Function Name="part_system_clear" Deprecated="false" ReturnType="Undefined" Pure="false">
 			<Description>With this function you can clear the indexed system to its default state, removing all emitters and resetting the depth and position (if they had been changed). Be careful using this function as if you have any instance setting or bursting or any other action using an emitter associated with this system, you will get an error unless you are using the part_emitter_exists() function to check. There is also no need to call the part_emitter_destroy() function as this is taken care of automatically too.</Description>
 			<Parameter Name="ind" Type="Id.ParticleSystem" Optional="false">The index of the particle system to clear.</Parameter>
+		</Function>
+		<Function Name="particle_get_info" Deprecated="false" ReturnType="Struct" Pure="true">
+			<Description>This function is used to retrieve information for the given particle system. You supply a particle system index (an asset added through the Asset Browser) and the function returns a struct with the following variables:</Description>
+			<Parameter Name="partsys" Type="Asset.GMParticleSystem" Optional="false">The particle system for which information should be retrieved.</Parameter>
 		</Function>
 		<Function Name="part_system_create" Deprecated="false" ReturnType="Id.ParticleSystem" Pure="true">
 			<Description>This function is used to create a new particle system and will return a unique index number that should be stored and used in all further functions relating to that system. The system will be assigned a managed layer and will be set to have a depth of 0. Managed layers are not accessible to the user and used only for internal management when depth is used instead of layers. Normally you would use the function part_system_create_layer() instead of this one.</Description>
@@ -8546,6 +8578,10 @@
 			<Parameter Name="array" Type="Array" Optional="false">The variable that holds the array.</Parameter>
 			<Parameter Name="sorttype_or_function" Type="Any" Optional="false">The sort type (true for ascending or false for descending) or a function reference to use for sorting.</Parameter>
 		</Function>
+		<Function Name="array_shift" Deprecated="false" ReturnType="ArgumentIdentity" Pure="false">
+			<Description>This function will remove the first element in the given array and return its value. If the array is empty undefined is returned.</Description>
+			<Parameter Name="array" Type="Array" Optional="false">The variable that holds the array.</Parameter>
+		</Function>
 		<Function Name="array_shuffle" Deprecated="false" ReturnType="Array" Pure="true">
 			<Description>With this function you can shuffle an array (or subsection), a new array is returned that is a copy of the original with the entries shuffled.</Description>
 			<Parameter Name="array" Type="Array" Optional="false">The variable that holds the array.</Parameter>
@@ -8809,6 +8845,15 @@
 			<Description>This function returns the data type of any given variable as a string. The possible return values are listed in the table below:</Description>
 			<Parameter Name="variable" Type="Any" Optional="false">The variable to get the data type of.</Parameter>
 		</Function>
+		<Function Name="variable_clone" Deprecated="false" ReturnType="Any" Pure="true">
+			<Description>This function can accept any kind of data as its first parameter, which represents the variable or data structure to be cloned (won't work for instances). The second parameter, "depth" is applicable only for arrays and structs and sets the level of depth to which the cloning process should be performed (with a maximum value of 128)</Description>
+			<Parameter Name="value" Type="Any" Optional="false">The value to be cloned</Parameter>
+			<Parameter Name="depth" Type="Real" Optional="true">The depth to be used during the cloning process (defaults to the maxiumum of 128)</Parameter>
+		</Function>
+		<Function Name="variable_get_hash" Deprecated="false" ReturnType="Real" Pure="true">
+			<Description>With this function you can compute the hash of a given struct or instance member allowing for faster access (see 'struct_get_from_hash' and 'struct_set_from_hash').</Description>
+			<Parameter Name="name" Type="Any" Optional="false">The name of the variable to compute the hash of</Parameter>
+		</Function>
 		<Function Name="variable_global_exists" Deprecated="false" ReturnType="Bool" Pure="true">
 			<Description>With this function you can check whether a global scope variable exists or not. You supply the global variable name to check for as a string (see example code below) and the function will return true if a global variable with the given name exists or false otherwise.</Description>
 			<Parameter Name="name" Type="String" Optional="false">The name of the global variable to check for (as a string)</Parameter>
@@ -8873,6 +8918,51 @@
 			<Description>With this function you can set the value of a given variable in a struct. You supply the struct reference as well as the name of the variable to set the value of as a string (see example code below), and then finally the value to set (can be any valid data type). If the variable does not exist already in the struct it will be created and then assigned the value.</Description>
 			<Parameter Name="struct" Type="Struct" Optional="false">The struct reference to set</Parameter>
 			<Parameter Name="name" Type="Any" Optional="false">The name of the variable to set (as a string)</Parameter>
+			<Parameter Name="val" Type="Any" Optional="false">The value to set the variable to</Parameter>
+		</Function>
+		<Function Name="struct_exists" Deprecated="false" ReturnType="Bool" Pure="true">
+			<Description>With this function you can check whether a variable exists within the given struct or not. You supply the struct reference to use as well as the variable name to check for as a string (see example code below). The function will return true if a variable with the given name exists for the struct and false otherwise.</Description>
+			<Parameter Name="struct" Type="Struct" Optional="false">The struct reference to check</Parameter>
+			<Parameter Name="name" Type="Any" Optional="false">The name of the struct variable to check for (as a string)</Parameter>
+		</Function>
+		<Function Name="struct_foreach" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>With this function you can execute a method on all of the members in the struct.</Description>
+			<Parameter Name="struct" Type="Struct" Optional="false">The variable that holds the struct.</Parameter>
+			<Parameter Name="func" Type="Function" Optional="false">The name of the struct variable to check for (as a string)</Parameter>
+		</Function>
+		<Function Name="struct_get" Deprecated="false" ReturnType="Any" Pure="true">
+			<Description>With this function you can get the value from a given named variable within a struct. You supply the struct reference as well as the name of the variable to get the value of as a string (see example code below). The function will return the value held by the variable or undefined if the named variable does not exist.</Description>
+			<Parameter Name="struct" Type="Struct" Optional="false">The struct reference to use</Parameter>
+			<Parameter Name="name" Type="Any" Optional="false">The name of the variable to get (as a string)</Parameter>
+		</Function>
+		<Function Name="struct_get_from_hash" Deprecated="false" ReturnType="Any" Pure="true">
+			<Description>With this function you can get the value from a given named variable within a struct. You supply the struct reference as well as the hash of the variable to get the value of (returned from 'variable_get_hash'). The function will return the value held by the variable or undefined if the named variable does not exist.</Description>
+			<Parameter Name="struct" Type="Struct" Optional="false">The struct reference to use</Parameter>
+			<Parameter Name="hash" Type="Real" Optional="false">The hash of the variable to get (returned from 'variable_get_hash')</Parameter>
+		</Function>
+		<Function Name="struct_get_names" Deprecated="false" ReturnType="Array[String]" Pure="true">
+			<Description>With this function you can retrieve an array populated with the variable names from a struct. You pass in the struct reference to check, and each entry in the array will be a string of the variable names that the struct contains.</Description>
+			<Parameter Name="struct" Type="Struct" Optional="false">The struct reference to check.</Parameter>
+		</Function>
+		<Function Name="struct_names_count" Deprecated="false" ReturnType="Real" Pure="true">
+			<Description>With this function you can find the total number number of variables defined for a struct. You supply the struct ID to check, and the function will return an integer value for the number of variables encountered, or (if no struct of the given ID exists) -1.</Description>
+			<Parameter Name="struct_id" Type="Struct" Optional="false">The unique ID value of the struct to check.</Parameter>
+		</Function>
+		<Function Name="struct_remove" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>With this function you can remove a variable from a struct. You supply the struct ID to remove the variable from and the string name of the variable to be removed.</Description>
+			<Parameter Name="struct" Type="Struct" Optional="false">The struct reference to remove the variable from</Parameter>
+			<Parameter Name="name" Type="Any" Optional="false">The name of the variable to remove (as a string)</Parameter>
+		</Function>
+		<Function Name="struct_set" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>With this function you can set the value of a given variable in a struct. You supply the struct reference as well as the name of the variable to set the value of as a string (see example code below), and then finally the value to set (can be any valid data type). If the variable does not exist already in the struct it will be created and then assigned the value.</Description>
+			<Parameter Name="struct" Type="Struct" Optional="false">The struct reference to set</Parameter>
+			<Parameter Name="name" Type="Any" Optional="false">The name of the variable to set (as a string)</Parameter>
+			<Parameter Name="val" Type="Any" Optional="false">The value to set the variable to</Parameter>
+		</Function>
+		<Function Name="struct_set_from_hash" Deprecated="false" ReturnType="Undefined" Pure="false">
+			<Description>With this function you can set the value of a given variable in a struct. You supply the struct reference as well as the hash of the variable to set the value of (returned from 'variable_get_hash'), and then finally the value to set (can be any valid data type). If the variable does not exist already in the struct it will be created and then assigned the value.</Description>
+			<Parameter Name="struct" Type="Struct" Optional="false">The struct reference to set</Parameter>
+			<Parameter Name="hash" Type="Real" Optional="false">The hash of the variable to set (returned from 'variable_get_hash')</Parameter>
 			<Parameter Name="val" Type="Any" Optional="false">The value to set the variable to</Parameter>
 		</Function>
 		<Function Name="analytics_event" Deprecated="true" ReturnType="Undefined" Pure="false">
@@ -9825,19 +9915,28 @@
 			<Parameter Name="asset_type" Type="Constant.AssetType" Optional="true" />
 		</Function>
 		<Function Name="extension_get_option_count" Deprecated="false" ReturnType="Real" Pure="true">
+			<Description>This function returns the number of options a given extension has.</Description>
 			<Parameter Name="ext_name" Type="String" Optional="false" />
 		</Function>
 		<Function Name="extension_get_option_names" Deprecated="false" ReturnType="Array.String" Pure="true">
+			<Description>This function returns an array with all the extension options that this extension exposes.</Description>
 			<Parameter Name="ext_name" Type="String" Optional="false" />
 		</Function>
 		<Function Name="extension_get_option_value" Deprecated="false" ReturnType="Mixed" Pure="true">
+			<Description>This function returns value for a given extension option.</Description>
 			<Parameter Name="ext_name" Type="String" Optional="false" />
 			<Parameter Name="option_name" Type="String" Optional="false" />
 		</Function>
 		<Function Name="extension_get_options" Deprecated="false" ReturnType="Struct" Pure="true">
+			<Description>This function returns a struct of key-value pairs with information on each extension option and it's value.</Description>
 			<Parameter Name="ext_name" Type="String" Optional="false" />
 		</Function>
 		<Function Name="extension_exists" Deprecated="false" ReturnType="Real" Pure="true">
+			<Description>This function returns whether or not an extension with a given name exists.</Description>
+			<Parameter Name="ext_name" Type="String" Optional="false" />
+		</Function>
+		<Function Name="extension_get_version" Deprecated="false" ReturnType="String" Pure="true">
+			<Description>This function returns the version of a given extension in string format.</Description>
 			<Parameter Name="ext_name" Type="String" Optional="false" />
 		</Function>
 		<Function Name="animcurve_exists" Deprecated="false" ReturnType="Bool" Pure="true">
@@ -9985,6 +10084,10 @@
 		</Function>
 		<Function Name="rollback_sync_on_frame" Deprecated="false" ReturnType="Bool" Pure="false" FeatureFlag="rollback">
 			<Description>Synchronize the rollback game on the current frame. This means that we will only proceed past the current frame if all inputs are confirmed. Returns true if successful, false if the current frame will be rerun.</Description>
+		</Function>
+		<Function Name="wallpaper_set_config" Deprecated="false" ReturnType="Undefined" Pure="false" FeatureFlag="rollback">
+			<Parameter Name="default" Type="Any" Optional="false">Config</Parameter>
+			<Description>Set config for live wallpaper</Description>
 		</Function>
 		<Function Name="time_source_create" Deprecated="false" ReturnType="Id.TimeSource" Pure="true">
 			<Description>Creates a new time source, returning its index.</Description>
@@ -10284,6 +10387,7 @@
 		<Variable Name="player_avatar_sprite" Type="Asset.GMSprite" Deprecated="false" Get="true" Set="false" Instance="true" FeatureFlag="rollback">A sprite of the avatar associated with this player in Opera GX, for rollback networking.</Variable>
 		<Variable Name="player_type" Type="String" Deprecated="false" Get="true" Set="false" Instance="true" FeatureFlag="rollback">This identifies if this instance belongs a Guest or User account in the rollback networking system.</Variable>
 		<Variable Name="player_user_id" Type="String" Deprecated="false" Get="true" Set="false" Instance="true" FeatureFlag="rollback">This is the user id in Opera GX in the rollback networking system.</Variable>
+		<Variable Name="wallpaper_config" Type="Asset.GMObject" Deprecated="false" Get="true" Set="false" Instance="false" FeatureFlag="rollback">This global variable contains a struct with parameters for the last Wallpaper Config event that was fired</Variable>
 	</Variables>
 	<Constants>
 		<Constant Name="$$implicit_argument$$" Type="Undefined"></Constant>
@@ -10408,6 +10512,7 @@
 		<Constant Name="ev_async_save_load" Class="AsyncEventType" Type="Real" Deprecated="false">Save/Load Event</Constant>
 		<Constant Name="ev_async_audio_recording" Class="AsyncEventType" Type="Real" Deprecated="false">Audio Recording event</Constant>
 		<Constant Name="ev_async_audio_playback" Class="AsyncEventType" Type="Real" Deprecated="false">Audio Playback event</Constant>
+		<Constant Name="ev_async_audio_playback_ended" Class="AsyncEventType" Type="Real" Deprecated="false">Audio Playback Ended event</Constant>
 		<Constant Name="ev_async_system_event" Class="AsyncEventType" Type="Real" Deprecated="false">System event</Constant>
 		<Constant Name="ev_async_dialog" Class="AsyncEventType" Type="Real" Deprecated="false">Dialog event</Constant>
 		<Constant Name="ev_async_web" Class="AsyncEventType" Type="Real" Deprecated="false">Web event</Constant>
@@ -10594,6 +10699,8 @@
 		<Constant Name="ef_snow" Class="EffectType" Type="Real" Deprecated="false"/>
 		<Constant Name="ef_spark" Class="EffectType" Type="Real" Deprecated="false"/>
 		<Constant Name="ef_star" Class="EffectType" Type="Real" Deprecated="false"/>
+		<Constant Name="ps_mode_stream" Class="ParticleEmitterMode" Type="Real" Deprecated="false">Emitter streams new particles each frame.</Constant>
+		<Constant Name="ps_mode_burst" Class="ParticleEmitterMode" Type="Real" Deprecated="false">Emitter burst particles just once.</Constant>
 		<Constant Name="ps_shape_rectangle" Class="ParticleRegionShape" Type="Real" Deprecated="false">A rectangular shape that fills the given area.</Constant>
 		<Constant Name="ps_shape_ellipse" Class="ParticleRegionShape" Type="Real" Deprecated="false">An ellipse, with the width and height defined by the area.</Constant>
 		<Constant Name="ps_shape_diamond" Class="ParticleRegionShape" Type="Real" Deprecated="false">A diamond shape with the points at half width and half height.</Constant>
@@ -10850,6 +10957,9 @@
 		<Constant Name="GM_runtime_version" Type="String" Deprecated="false" />
 		<Constant Name="GM_project_filename" Type="String" Deprecated="false">full path and filename of the YYP project</Constant>
 		<Constant Name="GM_build_type" Type="String" Deprecated="false">compile time constant of current build type either "exe" (for create executable) or "run" (for a run)</Constant>
+		<Constant Name="_GM_LINE_" Type="Real" Deprecated="false">compile time constant that returns the current line number</Constant>
+		<Constant Name="_GM_FUNCTION_" Type="String" Deprecated="false">compile time constant that returns the current function name</Constant>
+		<Constant Name="_GM_FILE_" Type="String" Deprecated="false">compile time constant that returns the current filename</Constant>
 		<Constant Name="ev_keypress" Class="EventType" Type="Real" Deprecated="false" />
 		<Constant Name="ev_keyrelease" Class="EventType" Type="Real" Deprecated="false" />
 		<Constant Name="ev_trigger" Class="EventType" Type="Real" Deprecated="true" />
@@ -10921,6 +11031,7 @@
 		<Constant Name="ev_push_notification" Class="EventNumber" Type="Real" Deprecated="true" />
 		<Constant Name="ev_audio_recording" Class="EventNumber" Type="Real" Deprecated="true" />
 		<Constant Name="ev_audio_playback" Class="EventNumber" Type="Real" Deprecated="true" />
+		<Constant Name="ev_audio_playback_ended" Class="EventNumber" Type="Real" Deprecated="true" />
 		<Constant Name="ev_system_event" Class="EventNumber" Type="Real" Deprecated="true" />
 		<Constant Name="vk_return" Class="VirtualKey" Type="Real" Deprecated="false" />
 		<Constant Name="vk_f2" Type="Real" Class="VirtualKey" Deprecated="false" />
@@ -11093,6 +11204,12 @@
 		<Constant Name="rollback_connect_info" Type="Real" Deprecated="false" FeatureFlag="rollback">Fired when you get info of where players should connect (in rollback_event_param) share_url</Constant>
 		<Constant Name="rollback_connect_error" Type="Real" Deprecated="false" FeatureFlag="rollback">Fired when you fail to connect to the backend</Constant>
 		<Constant Name="audio_bus_main" Type="Struct.AudioBus" Deprecated="false" FeatureFlag="audio-fx">The main audio bus</Constant>
+		<Constant Name="sprite_add_ext_error_unknown" Type="Real" Deprecated="false" />
+		<Constant Name="sprite_add_ext_error_cancelled" Type="Real" Deprecated="false" />
+		<Constant Name="sprite_add_ext_error_spritenotfound" Type="Real" Deprecated="false" />
+		<Constant Name="sprite_add_ext_error_loadfailed" Type="Real" Deprecated="false" />
+		<Constant Name="sprite_add_ext_error_decompressfailed" Type="Real" Deprecated="false" />
+		<Constant Name="sprite_add_ext_error_setupfailed" Type="Real" Deprecated="false" />
     </Constants>
 	<Structures>
 		<Structure Name="Sequence">
@@ -11264,6 +11381,21 @@
 		</Structure>
 		<Structure Name="AudioEffect" FeatureFlag="audio-fx">
 			<Field Name="bypass" Type="Bool" Get="true" Set="true">Whether to bypass the effect.</Field>
+			<Field Name="cutoff" Type="Real" Get="true" Set="true">The cutoff frequency of the filter.</Field>
+			<Field Name="damp" Type="Real" Get="true" Set="true">The amount of higher frequency damping.</Field>
+			<Field Name="factor" Type="Real" Get="true" Set="true">The factor by which the signal is downsampled.</Field>
+			<Field Name="feedback" Type="Real" Get="true" Set="true">The proportion of the signal which is fed back into the delay line.</Field>
+			<Field Name="gain" Type="Real" Get="true" Set="true">The gain applied to the input signal.</Field>
+			<Field Name="intensity" Type="Real" Get="true" Set="true">The propertion of the signal which is affected by the LFO.</Field>
+			<Field Name="mix" Type="Real" Get="true" Set="true">The proportion of the affected signal to output.</Field>
+			<Field Name="offset" Type="Real" Get="true" Set="true">The proportion of the LFO period that the LFOs should be desynced by.</Field>
+			<Field Name="q" Type="Real" Get="true" Set="true">The quality factor of the filter.</Field>
+			<Field Name="rate" Type="Real" Get="true" Set="true">The frequency of the modulating LFO.</Field>
+			<Field Name="resolution" Type="Real" Get="true" Set="true">The bit depth at which the signal is resampled.</Field>
+			<Field Name="shape" Type="Enum.AudioLFOType" Get="true" Set="true">The waveshape of the LFO.</Field>
+			<Field Name="size" Type="Real" Get="true" Set="true">The size of the space.</Field>
+			<Field Name="time" Type="Real" Get="true" Set="true">The duration of the delay.</Field>
+			<Field Name="type" Type="Enum.AudioEffectType" Get="true" Set="false">The type of the effect.</Field>
 		</Structure>
 	</Structures>
 	<Enumerations>
@@ -11274,6 +11406,14 @@
 			<Member Name="HPF2" Value="3" Deprecated="false">High-pass Filter</Member>
 			<Member Name="LPF2" Value="4" Deprecated="false">Low-pass Filter</Member>
 			<Member Name="Reverb1" Value="5" Deprecated="false">Reverberation, an echo.</Member>
+			<Member Name="Tremolo" Value="6" Deprecated="false">Gain modulator</Member>
+		</Enumeration>
+		<Enumeration Name="AudioLFOType">
+			<Member Name="InvSawtooth" Value="0" Deprecated="false">An inverted sawtooth waveshape.</Member>
+			<Member Name="Sawtooth" Value="1" Deprecated="false">A sawtooth waveshape.</Member>
+			<Member Name="Sine" Value="2" Deprecated="false">A sine waveshape.</Member>
+			<Member Name="Square" Value="3" Deprecated="false">A square waveshape.</Member>
+			<Member Name="Triangle" Value="4" Deprecated="false">A triangle waveshape.</Member>
 		</Enumeration>
 	</Enumerations>
 </GameMakerLanguageSpec>
