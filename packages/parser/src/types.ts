@@ -102,6 +102,22 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return clone;
   }
 
+  /** Force-convert this type to another, even if those are incompatible. */
+  coerceTo(type: Type): Type {
+    this.name = type.name;
+    this.description = type.description;
+    this.parent = type.parent as any;
+    this._members = type._members;
+    this.items = type.items;
+    this.types = type.types;
+    this.constructs = type.constructs;
+    this.context = type.context;
+    this._params = type._params;
+    this.returns = type.returns;
+    this.def = type.def;
+    return this;
+  }
+
   constructor(protected _kind: T) {
     super();
   }
@@ -182,7 +198,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     param.name = name;
     param.optional = optional || name === '...';
     param.parameter = true;
-    param.type = type;
+    if (param.type) {
+      param.type.coerceTo(type);
+    } else {
+      param.type = type;
+    }
     return param;
   }
 
@@ -209,6 +229,8 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
       member = new TypeMember(this, name, type);
       member.writable = writable;
       this._members.push(member);
+    } else {
+      member.type.coerceTo(type);
     }
     return member;
   }

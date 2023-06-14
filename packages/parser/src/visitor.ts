@@ -88,6 +88,14 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       case 'Self':
         // Then we're reference our current self context
         item = scope.self;
+        // If this self scope is also global, emit a diagnostic
+        // (should not use self to refer to global)
+        if (scope.selfIsGlobal) {
+          this.PROCESSOR.addDiagnostic(
+            children.Self![0],
+            '`self` refers to the global scope here, which is probably unintentional.',
+          );
+        }
         break;
       case 'Identifier':
         const { name } = identifier;

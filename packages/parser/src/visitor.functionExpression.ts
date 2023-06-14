@@ -71,12 +71,13 @@ export function visitFunctionExpression(
   )!;
 
   // Make sure this function is a member of the self struct
-  if (!self.getMember(functionName)) {
-    const member = self.addMember(functionName, item.type);
-    if (nameLocation) {
-      member.definedAt(nameLocation);
-      member.addRef(nameLocation);
-    }
+  let asSelfMember = self.getMember(functionName);
+  if (!asSelfMember) {
+    asSelfMember = self.addMember(functionName, item.type);
+  }
+  if (nameLocation) {
+    asSelfMember.definedAt(nameLocation);
+    asSelfMember.addRef(nameLocation);
   }
 
   // Functions have their own localscope as well as their self scope,
