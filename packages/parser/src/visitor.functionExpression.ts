@@ -1,4 +1,3 @@
-0;
 import type { FunctionExpressionCstChildren } from '../gml-cst.js';
 import { fixITokenLocation } from './project.location.js';
 import { Symbol } from './project.symbol.js';

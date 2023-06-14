@@ -275,9 +275,9 @@ export class Code {
       if (cleared.has(symbol) || !symbol.refs.size) {
         continue;
       }
-      const isInThisFile = symbol.def?.file && this === symbol.def.file;
+      const isDefinedInThisFile = this === symbol.def?.file;
       // If the symbol was declared in this file, remove its location
-      if (isInThisFile) {
+      if (isDefinedInThisFile) {
         symbol.def = undefined;
       }
       // Remove all references to this symbol found in this file

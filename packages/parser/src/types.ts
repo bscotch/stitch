@@ -177,12 +177,12 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
       param = new TypeMember(this, name, type);
       this._params[idx] = param;
     }
-    param.type = type;
-    param.optional = optional || name === '...';
-    param.name = name;
     param.idx = idx;
-    param.parameter = true;
     param.local = true;
+    param.name = name;
+    param.optional = optional || name === '...';
+    param.parameter = true;
+    param.type = type;
     return param;
   }
 

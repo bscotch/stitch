@@ -295,6 +295,10 @@ describe('Project', function () {
     //#endregion DOT ASSIGNMENTS
 
     validateBschemaConstructor(project);
+    // Reprocess a file and ensure that the tests still pass
+    await complexScriptFile.reload();
+    console.log('Re-running after reload...');
+    validateBschemaConstructor(project);
   });
 
   xit('can parse sample project', async function () {

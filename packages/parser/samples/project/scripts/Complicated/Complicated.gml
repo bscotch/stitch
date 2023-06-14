@@ -92,7 +92,7 @@ function Bschema (project_setup_function, _commit_id_prefix) constructor {
 }
 
 function BschemaRole () constructor {
-	/// @type {Array<String>}
+	/// @type {Array<String>} 
 	users = [];
 	/// @type {Array<String>}
 	usertypes = [];

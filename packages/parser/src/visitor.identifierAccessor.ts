@@ -21,12 +21,12 @@ export function visitIdentifierAccessor(
   this: GmlSymbolVisitor,
   children: IdentifierAccessorCstChildren,
 ): Type {
+  const identity = identifierFrom(children);
+  /** The type that this node evaluates to as an expression. */
   let finalType: Type = this.UNKNOWN;
   let currentItem = this.identifier(children.identifier[0].children);
   if (!currentItem) {
-    const identity = identifierFrom(children);
     if (identity) {
-      console.log('Unknown identifier', identity.token.image);
       this.PROCESSOR.addDiagnostic(
         children.identifier[0].location!,
         `Unknown identifier`,
@@ -90,11 +90,11 @@ export function visitIdentifierAccessor(
             const nextIdentity = identifierFrom(dotAccessor);
             let nextItem = this.identifier(dotAccessor.identifier[0].children);
             const nextItemLocation = dotAccessor.identifier[0].location!;
+            const range = this.PROCESSOR.range(nextItemLocation);
             if (!nextItem && isTypeOfKind(currentType, 'Struct')) {
               // Then this variable is not yet defined on this struct.
               // We need to add it!
               ok(nextIdentity, 'Could not get next identity');
-              const range = this.PROCESSOR.range(nextItemLocation);
               const newMemberType = isLastSuffix
                 ? assignmentType
                 : this.UNKNOWN;
@@ -122,10 +122,13 @@ export function visitIdentifierAccessor(
                 item: newMember,
                 ref,
               };
+            } else if (nextItem) {
+              // Make sure we still have a definition
+              nextItem.item.def ||= range;
+              nextItem.item.addRef(range);
+              finalType = getType(nextItem.item);
             } else {
-              finalType = nextItem?.item
-                ? getType(nextItem.item)
-                : this.UNKNOWN;
+              finalType = this.UNKNOWN;
             }
             currentItem = nextItem;
             currentLocation = nextItemLocation;

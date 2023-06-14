@@ -267,6 +267,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         // TODO: Add a diagnostic
       }
     } else {
+      item.def ||= range;
       item.addRef(range, assignedType);
     }
   }
