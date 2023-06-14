@@ -6,9 +6,7 @@ export function typeMemberToHoverText(member: TypeMember) {
   if (member.optional) {
     code += '?';
   }
-  if (member.type.kind !== 'Unknown') {
-    code += ': ' + member.type.toFeatherString();
-  }
+  code += ': ' + member.type.toFeatherString();
   return code;
 }
 
@@ -25,7 +23,7 @@ export function typeToHoverDetails(type: Type) {
   } else if (type.kind === 'Struct') {
     const members = type.listMembers().filter((x) => x.name !== 'self');
     if (!members.length) {
-      return '`{}`';
+      return '';
     }
     code = '```ts\n{\n';
     for (const member of members) {
@@ -53,11 +51,11 @@ export function typeToHoverText(type: Type) {
     if (type.kind === 'Constructor') {
       code += ` constructor`;
     }
-    if (type.constructs && type.constructs.kind !== 'Undefined') {
-      code += ': ' + (type.constructs.toFeatherString() || 'Unknown');
-    } else if (type.returns && type.returns.kind !== 'Undefined') {
-      code += ': ' + (type.returns?.toFeatherString() || 'Unknown');
-    }
+    code += `: ${
+      type.constructs
+        ? type.constructs.toFeatherString()
+        : type.returns?.toFeatherString() || 'Unknown'
+    }`;
   } else {
     code += type.toFeatherString();
   }

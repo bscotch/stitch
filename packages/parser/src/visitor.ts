@@ -400,6 +400,9 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           parts.stringLiteral![0].children.StringEnd[0],
         );
       }
+      if (parts.jsdoc) {
+        this.visit(parts.jsdoc);
+      }
       if (parts.assignmentRightHandSide) {
         const type = this.UPDATED_TYPE_WITH_DOCS(
           this.assignmentRightHandSide(
