@@ -85,13 +85,13 @@ export class GameMakerSemanticTokenProvider
         if (tokenType === 'variable' && item.instance) {
           tokenType = 'property';
         }
-        const tokenModifiers = getSemanticModifiers(itemType);
+        const tokenModifiers = updateSemanticModifiers(itemType);
         if (itemType.kind.startsWith('Asset.')) {
           tokenModifiers.add('asset');
         }
         if (item.$tag !== 'Type') {
           // Then we may have additional modifiers from the symbol
-          getSemanticModifiers(item, tokenModifiers);
+          updateSemanticModifiers(item, tokenModifiers);
         }
         if (!tokenType) {
           console.warn('No token type for symbol', item);
@@ -126,6 +126,13 @@ export class GameMakerSemanticTokenProvider
 
 function getSemanticToken(item: ReferenceableType): SemanticTokenType {
   const type = item.$tag === 'Type' ? item : item.type;
+  // These take priority over the type
+  if (item.parameter) {
+    return 'parameter';
+  }
+  if (item.instance) {
+    return 'property';
+  }
   switch (type.kind) {
     case 'Enum':
       return 'enum';
@@ -138,33 +145,39 @@ function getSemanticToken(item: ReferenceableType): SemanticTokenType {
     case 'Macro':
       return 'macro';
   }
-  if (item.parameter) {
-    return 'parameter';
-  }
-  if (item.instance) {
-    return 'property';
-  }
   return 'variable';
 }
 
-function getSemanticModifiers(
+/** Clobbers conflicting, allowing e.g. overriding type modifiers with symbol modifiers. */
+function updateSemanticModifiers(
   type: Flaggable,
   modifiers = new Set<SemanticTokenModifier>(),
 ): Set<SemanticTokenModifier> {
   if (type.native) {
     modifiers.add('defaultLibrary');
+  } else {
+    modifiers.delete('defaultLibrary');
   }
+
   if (type.global) {
     modifiers.add('global');
-  }
-  if (!type.writable) {
-    modifiers.add('readonly');
+    modifiers.delete('local');
   }
   if (type.local) {
     modifiers.add('local');
+    modifiers.delete('global');
   }
+
+  if (!type.writable) {
+    modifiers.add('readonly');
+  } else {
+    modifiers.delete('readonly');
+  }
+
   if (type.static) {
     modifiers.add('static');
+  } else {
+    modifiers.delete('static');
   }
   return modifiers;
 }

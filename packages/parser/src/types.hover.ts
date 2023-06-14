@@ -23,7 +23,7 @@ export function typeToHoverDetails(type: Type) {
       }
     }
   } else if (type.kind === 'Struct') {
-    const members = type.listMembers();
+    const members = type.listMembers().filter((x) => x.name !== 'self');
     if (!members.length) {
       return '`{}`';
     }

@@ -35,7 +35,7 @@ function another_global_function(){
 const.name.hello[0].nope();
 
 /// @param {Real} _whatever
-function AnotherConstructor (_whatever){
+function AnotherConstructor (_whatever) constructor{
 	self.whatever = _whatever;
 	constructed = new GlobalConstructor("nerp", "derp");
 }

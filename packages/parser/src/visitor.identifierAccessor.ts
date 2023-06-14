@@ -103,6 +103,7 @@ export function visitIdentifierAccessor(
                 nextIdentity.name,
                 newMemberType,
               );
+              newMember.instance = true;
               const ref = newMember.addRef(range);
               // If this is the last suffix and this is
               // an assignment, then also set the `def` of the

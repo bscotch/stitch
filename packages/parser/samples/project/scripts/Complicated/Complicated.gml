@@ -17,7 +17,7 @@ function Bschema (project_setup_function, _commit_id_prefix) constructor {
 	#region Working copy
 	commitId = "";
 	/// @type {Struct<Array<Real>>}
-	uid_pools = {};
+	uid_pools = {}; 
 	changes = new BschemaChanges();
 	#endregion
 

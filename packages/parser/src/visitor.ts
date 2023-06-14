@@ -399,6 +399,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         );
         if (type instanceof Type) {
           const member = struct.addMember(name, type).definedAt(range);
+          member.instance = true;
           member.addRef(range);
         }
       }
