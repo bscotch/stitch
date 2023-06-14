@@ -76,5 +76,6 @@ export const primitiveNames = [
   'EnumMember',
   'Union',
   'Unknown',
+  'Never', // For things that throw
 ] as const;
 Object.freeze(Object.seal(primitiveNames));

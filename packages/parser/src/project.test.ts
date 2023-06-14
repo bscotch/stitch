@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
-import type { PrimitiveName } from './project.primitives.js';
 import { Symbol } from './project.symbol.js';
 import { Type, TypeMember } from './types.js';
+import type { PrimitiveName } from './types.primitives.js';
 import { ok } from './util.js';
 
 describe('Project', function () {

@@ -15,6 +15,7 @@ import {
 } from './types.feather.js';
 import { typeToHoverText } from './types.hover.js';
 import { mergeTypes } from './types.merge.js';
+import { PrimitiveName } from './types.primitives.js';
 import { ok } from './util.js';
 
 export type AnyType = Type<'Any'>;

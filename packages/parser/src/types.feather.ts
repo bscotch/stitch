@@ -4,8 +4,8 @@ import {
   type FeatherTypeUnion,
 } from './jsdoc.feather.js';
 import type { JsdocSummary } from './jsdoc.js';
-import { primitiveNames } from './project.primitives.js';
 import { Type } from './types.js';
+import { primitiveNames } from './types.primitives.js';
 import { ok } from './util.js';
 
 export function typeFromFeatherString(

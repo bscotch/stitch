@@ -1,7 +1,8 @@
 import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
 import type { Symbol } from './project.symbol.js';
-import { EnumType, StructType, Type, TypeMember, isType } from './types.js';
+import { isTypeInstance } from './types.checks.js';
+import { EnumType, StructType, Type, TypeMember } from './types.js';
 import { assert, type Constructor } from './util.js';
 
 export const firstLineIndex = 1;
@@ -241,7 +242,7 @@ export type ReferenceableType = Symbol | Type | TypeMember;
 
 export function getType(ref: ReferenceableType): Type {
   assert(ref, 'Cannot get the type of an undefined reference.');
-  if (isType(ref)) {
+  if (isTypeInstance(ref)) {
     return ref;
   }
   return ref.type;
