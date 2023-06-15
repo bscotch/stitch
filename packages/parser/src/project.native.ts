@@ -26,7 +26,6 @@ export class Native {
     // they exist on any lookup.
     primitiveNames.forEach((name) => {
       const type = new Type(name);
-      type.native = true;
       type.writable = false;
       this.types.set(name, type);
     });

@@ -76,6 +76,9 @@ export function visitIdentifierAccessor(
     switch (suffix.name) {
       case 'arrayMutationAccessorSuffix':
       case 'arrayAccessSuffix':
+      case 'mapAccessSuffix':
+      case 'gridAccessSuffix':
+      case 'listAccessSuffix':
       case 'structAccessSuffix':
         const type: Type = currentType?.items ?? this.UNKNOWN;
         const ref = type.addRef(suffixRange);

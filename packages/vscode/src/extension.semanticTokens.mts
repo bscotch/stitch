@@ -157,7 +157,7 @@ function updateSemanticModifiers(
   if (type.native) {
     modifiers.add('defaultLibrary');
   } else {
-    modifiers.delete('defaultLibrary');
+    // modifiers.delete('defaultLibrary');
   }
 
   if (type.global) {

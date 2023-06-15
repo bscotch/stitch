@@ -326,6 +326,10 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const lhs = this.primaryExpression(children.primaryExpression[0].children);
     if (children.binaryExpression) {
       // TODO: Check the rhs type and the operator and emit a diagnostic if needed. For now just return the lhs since any operator shouldn't change the type.
+      this.assignmentRightHandSide(
+        children.binaryExpression[0].children.assignmentRightHandSide[0]
+          .children,
+      );
       return lhs;
     } else if (children.ternaryExpression) {
       // Get the types of the two expression and create a union
