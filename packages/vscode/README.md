@@ -12,6 +12,12 @@ Stitch will be kept in "pre-release" status until it has [sufficient features an
 
 You're also welcome to report issues and make feature requests, but keep in mind that we're focusing our limited time on features that we need for our own projects.
 
+## 🤔 Why tho?
+
+We've used GameMaker for the entire 10+ year history of our studio. While the GameMaker IDE has been rapidly improving, VSCode is able to improve even faster due to its enormous community, stellar extension APIs, and use of accessible web technologies.
+
+Once we got the chance to use GitHub Copilot for other projects, we wanted to be able to use it while working on our games. This extension is an effort to implement enough GameMaker code editing features that we can do most of our game programming in it, and thus leverage new tools like Copilot.
+
 ## 💡 Features
 
 ### 🤖 Intellisense
@@ -100,20 +106,9 @@ Stitch supports GameMaker projects that use recent versions of GameMaker, and ma
 
 Different GameMaker versions may have different features and built-in functions, constants, etc. This extension tries to infer the correct features for your project's GameMaker version, but it might give you incorrect autocompletes or surprising command outcomes if it cannot find a match!
 
-## 🛣️ Roadmap
-
-- [x] Provide full autocomplete, find-reference, go-to-definition, etc, even for non-globals
-- [x] Loading the GameMaker syntax configuration that match the GameMaker version your project uses.
-- [ ] Symbol rename support
-- [ ] Add the ability to create, delete, and rename resources (sprites, etc) from the tree view
-- [ ] Add JSDoc support for comments
-- [ ] Add JSDoc support for types
-- [ ] Add inferred type support
-
 ## 🤔 FAQ, Tips, and Known Issues
 
 To see the current list of known issues and feature requests, check out the [issues page](https://github.com/bscotch/stitch/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Akeyboard%3A+vscode%22).
 
-- 🔥 **`Go To Definition` sometimes doesn't fire**. "Find all references" works well most of the time, but "Go To Definition" is a little cagey.
-- 🔥 **Nested symbols are not always referenced**. When dot-accessing variables, sometimes the accessed variable does not get a reference during initial load. This is often resolved upon editing a file, but not always.
+- 🪵 **How to view logs**. If you run into trouble, you can view the extension's logs by opening the Output panel and selecting "Stitch" from the dropdown menu. These are particularly helpful for providing context when leaving bug reports!
 - ⁉️ **Unexpected projects appear in the tree view**. If you're seeing extra projects in your tree view, it's likely that these are being discovered inside `node_modules` or other normally-hidden locations. Stitch excludes the same files that your VSCode setup does via the `files.exclude` setting, so if you want to prevent those projects from appearing add their parent folders to your excluded files.
