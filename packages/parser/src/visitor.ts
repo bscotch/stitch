@@ -97,12 +97,9 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           );
         }
         break;
-      case 'Identifier':
+      default:
         const { name } = identifier;
         item = this.FIND_ITEM_BY_NAME(name);
-        break;
-      default:
-        // TODO: Handle `other` and `all` keywords
         break;
     }
     if (item) {

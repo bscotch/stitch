@@ -276,7 +276,7 @@ export class Project {
       );
     }
     await Promise.all(resourceWaits);
-    options?.onLoadProgress?.(0, `Loaded ${this.assets.size} resources`);
+    options?.onLoadProgress?.(1, `Loaded ${this.assets.size} resources`);
     // TODO: Link up object parent-child relationships
     for (const asset of this.assets.values()) {
       if (asset.assetType !== 'objects') {
@@ -421,7 +421,7 @@ export class Project {
     // Sort assets by type, with objects 2nd to last and scripts last
     // to minimize the number of things that need to be updated after
     // loading.
-    options?.onLoadProgress?.(0, 'Parsing resource code...');
+    options?.onLoadProgress?.(1, 'Parsing resource code...');
     const assets = [...this.assets.values()].sort((a, b) => {
       if (a.assetType === b.assetType) {
         return a.name.localeCompare(b.name);

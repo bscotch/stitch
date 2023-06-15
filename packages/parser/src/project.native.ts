@@ -64,6 +64,9 @@ export class Native {
       symbol.instance = variable.instance;
       if (variable.instance) {
         this.instance.set(symbol.name, symbol);
+        // For now also add to global, since we aren't making use of
+        // the distinction yet.
+        this.global.set(symbol.name, symbol);
       } else {
         this.global.set(symbol.name, symbol);
       }
