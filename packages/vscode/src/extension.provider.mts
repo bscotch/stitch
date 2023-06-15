@@ -6,6 +6,7 @@ import {
   type ReferenceableType,
   type Type,
 } from '@bscotch/gml-parser';
+import { GameMakerFolder } from 'tree.base.mjs';
 import vscode from 'vscode';
 import { assert, swallowThrown } from './assert.mjs';
 import { inScopeSymbolsToCompletions } from './extension.completions.mjs';
@@ -15,7 +16,6 @@ import { GameMakerHoverProvider } from './extension.hover.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
-import { GameMakerFolder, GameMakerTreeProvider } from './extension.tree.mjs';
 import {
   locationOf,
   pathyFromUri,
@@ -23,6 +23,7 @@ import {
   uriFromCodeFile,
 } from './lib.mjs';
 import { Timer, info, warn } from './log.mjs';
+import { GameMakerTreeProvider } from './tree.mjs';
 
 export class StitchProvider
   implements
@@ -348,8 +349,14 @@ export class StitchProvider
       pt.seconds('Loaded project in');
     }
 
+    const treeProvider = new GameMakerTreeProvider(this.provider.projects);
+
     ctx.subscriptions.push(
-      new GameMakerTreeProvider(this.provider.projects).register(),
+      treeProvider.register(),
+      vscode.commands.registerCommand(
+        'stitch.assets.newFolder',
+        treeProvider.createFolder.bind(treeProvider),
+      ),
       GameMakerHoverProvider.register(this.provider),
       vscode.languages.registerCompletionItemProvider(
         'gml',

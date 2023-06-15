@@ -2,8 +2,6 @@ import { Asset, Code } from '@bscotch/gml-parser';
 import { Pathy } from '@bscotch/pathy';
 import path from 'path';
 import vscode from 'vscode';
-import type { GameMakerProject } from './extension.project.mjs';
-import { warn } from './log.mjs';
 import { getEventName } from './spec.events.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
@@ -43,7 +41,11 @@ export class GameMakerFolder extends StitchTreeItemBase {
   folders: GameMakerFolder[] = [];
   resources: TreeAsset[] = [];
 
-  constructor(readonly name: string, readonly isProject = false) {
+  constructor(
+    readonly parent: GameMakerFolder | undefined,
+    readonly name: string,
+    readonly isProject = false,
+  ) {
     super(name);
     this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
@@ -54,6 +56,16 @@ export class GameMakerFolder extends StitchTreeItemBase {
     }
   }
 
+  /**
+   * Get the set of parents, ending with this folder, as a flat array.
+   */
+  get heirarchy(): GameMakerFolder[] {
+    if (this.parent && !this.isProject) {
+      return [...this.parent.heirarchy, this];
+    }
+    return [this];
+  }
+
   getFolder(name: string): GameMakerFolder | undefined {
     return this.folders.find((x) => x.name === name) as GameMakerFolder;
   }
@@ -61,7 +73,7 @@ export class GameMakerFolder extends StitchTreeItemBase {
   addFolder(name: string, isRoot = false): GameMakerFolder {
     let folder = this.getFolder(name);
     if (!folder) {
-      folder = new GameMakerFolder(name, isRoot);
+      folder = new GameMakerFolder(this, name, isRoot);
       this.folders.push(folder);
     }
     return folder;
@@ -85,97 +97,11 @@ export type Treeable =
   | TreeShaderFile
   | GameMakerFolder;
 
-export class GameMakerTreeProvider
-  implements vscode.TreeDataProvider<Treeable>
-{
-  tree: GameMakerFolder = new GameMakerFolder('root');
-
-  constructor(readonly projects: GameMakerProject[]) {}
-
-  getTreeItem(element: Treeable): vscode.TreeItem {
-    return element;
-  }
-
-  getChildren(element?: Treeable | undefined) {
-    if (!element) {
-      // Then we're at the root.
-      // If there is only one project (folder), we can return its tree.
-      // If there is more than one project,  we return the projects.
-      let root = this.tree;
-      if (this.projects.length === 1) {
-        root = this.tree.folders[0];
-      }
-      return [...root.folders, ...root.resources];
-    }
-    if (element instanceof GameMakerFolder) {
-      return [...element.folders, ...element.resources];
-    } else if (element instanceof TreeAsset) {
-      if (element.asset.assetType === 'objects') {
-        return element.asset.gmlFilesArray.map((f) => new TreeCode(f));
-      } else if (element.asset.assetType === 'sprites') {
-        return element.asset.framePaths.map(
-          (p, i) => new TreeSpriteFrame(p, i),
-        );
-      } else if (element.asset.assetType === 'shaders') {
-        const paths = element.asset.shaderPaths!;
-        return [
-          new TreeShaderFile(paths.fragment),
-          new TreeShaderFile(paths.vertex),
-        ];
-      }
-    }
-    return;
-  }
-
-  refresh() {
-    const folderPathToParts = (folderPath: string) =>
-      folderPath
-        .replace(/^folders[\\/]/, '')
-        .replace(/\.yy$/, '')
-        .split(/[\\/]/);
-
-    this.tree = new GameMakerFolder('root');
-    for (const project of this.projects) {
-      const projectFolder = this.tree.addFolder(project.name, true);
-      // Add all of the folders
-      for (const folder of project.yyp.Folders) {
-        const pathParts = folderPathToParts(folder.folderPath);
-        let parent = projectFolder;
-        for (let i = 0; i < pathParts.length; i++) {
-          parent = parent.addFolder(pathParts[i]);
-        }
-      }
-      // Add all of the resources
-      for (const [, resource] of project.assets) {
-        const path = (resource.yy.parent as any).path;
-        if (!path) {
-          warn('Resource has no path', resource);
-          continue;
-        }
-        const pathParts = folderPathToParts(path);
-        let parent = projectFolder;
-        for (let i = 0; i < pathParts.length; i++) {
-          parent = parent.addFolder(pathParts[i]);
-        }
-        parent.addResource(new TreeAsset(resource));
-      }
-    }
-    return this;
-  }
-
-  register() {
-    return vscode.window.registerTreeDataProvider(
-      'bscotch-stitch-resources',
-      this.refresh(),
-    );
-  }
-}
-
 export class TreeAsset extends StitchTreeItemBase {
   readonly kind = 'asset';
   readonly asset: Asset;
 
-  constructor(asset: Asset) {
+  constructor(readonly parent: GameMakerFolder, asset: Asset) {
     super(asset.name);
     this.asset = asset;
     this.refreshTreeItem();
@@ -241,7 +167,7 @@ export class TreeAsset extends StitchTreeItemBase {
 export class TreeCode extends StitchTreeItemBase {
   readonly kind = 'code';
 
-  constructor(readonly code: Code) {
+  constructor(readonly parent: TreeAsset, readonly code: Code) {
     super(code.name);
 
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
@@ -289,7 +215,11 @@ export class TreeCode extends StitchTreeItemBase {
 
 export class TreeSpriteFrame extends StitchTreeItemBase {
   readonly kind = 'sprite-frame';
-  constructor(readonly imagePath: Pathy<Buffer>, readonly idx: number) {
+  constructor(
+    readonly parent: TreeAsset,
+    readonly imagePath: Pathy<Buffer>,
+    readonly idx: number,
+  ) {
     super(`[${idx}] ${imagePath.name}`);
     this.iconPath = vscode.Uri.file(imagePath.absolute);
     this.command = {
@@ -302,7 +232,7 @@ export class TreeSpriteFrame extends StitchTreeItemBase {
 
 export class TreeShaderFile extends StitchTreeItemBase {
   readonly kind = 'shader-file';
-  constructor(readonly path: Pathy<string>) {
+  constructor(readonly parent: TreeAsset, readonly path: Pathy<string>) {
     super(path.hasExtension('vsh') ? 'Vertex' : 'Fragment');
     this.command = {
       command: 'vscode.open',

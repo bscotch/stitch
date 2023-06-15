@@ -8,10 +8,10 @@ import {
 } from '@bscotch/yy';
 import { GameMakerProject } from 'extension.project.mjs';
 import path from 'path';
+import { StitchTreeItemBase } from 'tree.base.mjs';
 import vscode from 'vscode';
 import { assert } from './assert.mjs';
 import { GmlFile } from './extension.gml.mjs';
-import { StitchTreeItemBase } from './extension.tree.mjs';
 import { getEventName } from './spec.events.mjs';
 
 export class GameMakerResource<

@@ -1,9 +1,9 @@
 import { YyResourceType } from '@bscotch/yy';
 import { readFile } from 'fs/promises';
 import path from 'path';
+import { StitchTreeItemBase } from 'tree.base.mjs';
 import vscode from 'vscode';
 import type { GameMakerResource } from './extension.resource.mjs';
-import { StitchTreeItemBase } from './extension.tree.mjs';
 import { getEventName } from './spec.events.mjs';
 
 // TODO: Add command to open the current project in GameMaker;
