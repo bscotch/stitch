@@ -56,6 +56,9 @@ export function visitFunctionExpression(
   if (docs?.type.deprecated) {
     functionType.deprecated = docs.type.deprecated;
   }
+  if (docs?.type.returns) {
+    functionType.returns = docs.type.returns;
+  }
 
   // Ensure that constructors have an attached constructed type
   if (isConstructor && !functionType.constructs) {
