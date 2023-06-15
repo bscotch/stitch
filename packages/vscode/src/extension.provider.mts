@@ -22,6 +22,7 @@ import {
   rangeFrom,
   uriFromCodeFile,
 } from './lib.mjs';
+import { Timer, info, warn } from './log.mjs';
 
 export class StitchProvider
   implements
@@ -85,7 +86,9 @@ export class StitchProvider
     yypPath: vscode.Uri,
     onDiagnostics: (diagnostics: Diagnostic[]) => void,
   ) {
+    const t = Timer.start();
     const project = await GameMakerProject.from(yypPath, onDiagnostics);
+    t.seconds('Loaded project in');
     this.projects.push(project);
     void vscode.commands.executeCommand(
       'setContext',
@@ -119,7 +122,7 @@ export class StitchProvider
       if (item && !item.native && item.def) {
         return locationOf(item.def);
       } else {
-        console.log('No definition found for', item);
+        info('No definition found for', item);
       }
       return;
     });
@@ -129,6 +132,7 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
+    info('provideCompletionItems', document, position);
     // If we're already processing this file, wait for it to finish so that we get up-to-date completions.
     await this.processingFiles.get(document.uri.fsPath);
     const gmlFile = this.getGmlFile(document);
@@ -144,6 +148,7 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.SignatureHelp | undefined {
+    info('provideSignatureHelp', document, position);
     const argRange = this.getFunctionArg(document, position);
     if (!argRange) {
       return;
@@ -171,6 +176,7 @@ export class StitchProvider
    * and pass an update request to that project.
    */
   async updateFile(document: vscode.TextDocument) {
+    info('updateFile', document);
     await this.getGmlFile(document)?.reload(document.getText());
   }
 
@@ -187,6 +193,7 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): FunctionArgRange | undefined {
+    info('getFunctionArg', document);
     const offset = document.offsetAt(position);
     return this.getGmlFile(document)?.getFunctionArgRangeAt(offset);
   }
@@ -196,19 +203,20 @@ export class StitchProvider
     position: vscode.Position,
   ): ReferenceableType | undefined {
     const offset = document.offsetAt(position);
+    info('getSymbol', document, offset);
     const file = this.getGmlFile(document);
     if (!file) {
-      console.error(`Could not find file for ${document}`);
+      warn(`Could not find file for ${document}`);
       return;
     }
     const ref = file.getReferenceAt(offset);
     if (!ref) {
-      console.error(`Could not find reference at ${offset}`);
+      warn(`Could not find reference at ${offset}`);
       return;
     }
     const item = ref.item;
     if (!item) {
-      console.error(`Could not find symbol for ${ref}`);
+      warn(`Could not find symbol for ${ref}`);
       return;
     }
     return item;
@@ -228,7 +236,7 @@ export class StitchProvider
   getAsset(document: vscode.TextDocument, name: string): Asset | undefined {
     const project = this.getProject(document);
     if (!project) {
-      console.error(`Could not find project for ${document}`);
+      warn(`getAsset: Could not find project for`, document);
       return;
     }
     const asset = project.getAssetByName(name);
@@ -236,14 +244,15 @@ export class StitchProvider
   }
 
   getGmlFile(document: vscode.TextDocument | vscode.Uri): Code | undefined {
+    const path = pathyFromUri(document);
     const project = this.getProject(document);
     if (!project) {
-      console.error(`Could not find project for ${document}`);
+      warn(`getGmlFile: Could not find project for`, path);
       return;
     }
-    const file = project.getGmlFile(pathyFromUri(document));
+    const file = project.getGmlFile(path);
     if (!file) {
-      console.error(`Could not find file for ${document}`);
+      warn(`getGmlFile: Could not find file for ${path.absolute}`);
       return;
     }
     return file;
@@ -267,6 +276,8 @@ export class StitchProvider
   protected static ctx: vscode.ExtensionContext;
 
   static async activate(ctx: vscode.ExtensionContext) {
+    info('Activating extension...');
+    const t = Timer.start();
     this.ctx ||= ctx;
     if (!this.provider) {
       this.provider = new StitchProvider();
@@ -300,13 +311,16 @@ export class StitchProvider
 
     this.provider.clearProjects();
 
+    info('Loading projects...');
     const yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
-
     for (const yypFile of yypFiles) {
+      info('Loading project', yypFile);
+      const pt = Timer.start();
       await StitchProvider.provider.loadProject(
         yypFile,
         this.provider.emitDiagnostics.bind(this.provider),
       );
+      pt.seconds('Loaded project in');
     }
 
     ctx.subscriptions.push(
@@ -371,6 +385,10 @@ export class StitchProvider
       new GameMakerSemanticTokenProvider(this.provider).register(),
       this.provider.signatureHelpStatus,
       vscode.window.onDidChangeTextEditorSelection((e) => {
+        // This includes events from the output window, so skip those
+        if (e.textEditor.document.uri.scheme !== 'file') {
+          return;
+        }
         this.provider.signatureHelpStatus.text = '';
         this.provider.signatureHelpStatus.hide();
         if (!config.enableFunctionSignatureStatus) {
@@ -419,6 +437,7 @@ export class StitchProvider
       this.provider.diagnosticCollection,
     );
 
+    t.seconds('Extension activated in');
     return this.provider;
   }
 }

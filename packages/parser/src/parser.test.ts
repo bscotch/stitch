@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import type { IRecognitionException } from 'chevrotain';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
+import { logger } from './logger.js';
 import { GmlParser } from './parser.js';
 import { Type } from './types.js';
 import { ok } from './util.js';
@@ -16,7 +17,7 @@ function showErrors(
 ) {
   const errors = Array.isArray(parser) ? parser : parser.errors;
   if (!errors.length) return;
-  console.error(
+  logger.error(
     errors.map((e) => ({
       loc: `${filepath || ''}:${e.token.startLine}:${e.token.startColumn}`,
       msg: e.message,
@@ -100,7 +101,7 @@ describe('Parser', function () {
     );
     expect(parser.errors.length).to.equal(0);
     expect(cst).to.exist;
-    // console.log(
+    // logger.log(
     //   GmlParser.jsonify(
     //     // @ts-expect-error
     //     cst!.children.statement[0].children.expressionStatement[0].children
@@ -129,7 +130,7 @@ describe('Parser', function () {
     const parser = new GmlParser();
     const samples = await fs.readdir('./samples');
     for (const sample of samples) {
-      // console.log('Parsing', sample);
+      // logger.log('Parsing', sample);
       if (!sample.endsWith('.gml')) {
         continue;
       }
@@ -139,7 +140,7 @@ describe('Parser', function () {
       showErrors(parser, filePath);
       expect(cst).to.exist;
       expect(parser.errors).to.have.length(0);
-      // console.log(cst);
+      // logger.log(cst);
     }
   });
 
@@ -163,7 +164,7 @@ describe('Parser', function () {
       showErrors(parser, file.absolute);
       expect(cst).to.exist;
       expect(parser.errors).to.have.length(0);
-      // console.log(cst);
+      // logger.log(cst);
     }
   });
 });

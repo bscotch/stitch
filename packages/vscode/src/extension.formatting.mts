@@ -3,6 +3,7 @@ import { Yy, type YyResourceType } from '@bscotch/yy';
 import vscode from 'vscode';
 import { logThrown } from './assert.mjs';
 import { config } from './extension.config.mjs';
+import { warn } from './log.mjs';
 
 export class StitchYyFormatProvider
   implements vscode.DocumentFormattingEditProvider
@@ -11,7 +12,7 @@ export class StitchYyFormatProvider
     document: vscode.TextDocument,
   ): vscode.ProviderResult<vscode.TextEdit[]> {
     if (document.languageId !== 'yy' || !config.enableYyFormatting) {
-      console.warn("Not a yy file, shouldn't format");
+      warn("Not a yy file, shouldn't format");
       return;
     }
     const parts = document.uri.path.split(/[\\/]+/);

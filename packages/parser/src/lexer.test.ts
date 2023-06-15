@@ -2,6 +2,7 @@ import { undent } from '@bscotch/utility';
 import { ILexingResult } from 'chevrotain';
 import fs from 'fs/promises';
 import { GmlLexer } from './lexer.js';
+import { logger } from './logger.js';
 
 describe('Lexer', function () {
   it('can lex strings', function () {
@@ -15,7 +16,7 @@ describe('Lexer', function () {
     `;
     const result = GmlLexer.tokenize(sample);
     if (result.errors.length) {
-      console.dir(result, { depth: null });
+      logger.dir(result, { depth: null });
       throw new Error('Lexer failed to lex sample file: ' + sample);
     }
   });
@@ -24,7 +25,7 @@ describe('Lexer', function () {
     const sample = '$"a template {woo+3}!"';
     const result = GmlLexer.tokenize(sample);
     if (result.errors.length) {
-      console.dir(result, { depth: null });
+      logger.dir(result, { depth: null });
       throw new Error('Lexer failed to lex sample: ' + sample);
     }
   });
@@ -39,7 +40,7 @@ describe('Lexer', function () {
     `;
     const result = GmlLexer.tokenize(sample);
     if (result.errors.length) {
-      console.dir(result, { depth: null });
+      logger.dir(result, { depth: null });
       throw new Error('Lexer failed to lex sample: ' + sample);
     }
   });
@@ -56,7 +57,7 @@ describe('Lexer', function () {
     `;
     const result = GmlLexer.tokenize(sample);
     if (result.errors.length) {
-      console.dir(result.errors, { depth: null });
+      logger.dir(result.errors, { depth: null });
       throw new Error('Lexer failed to lex sample: ' + sample);
     }
   });
@@ -71,7 +72,7 @@ describe('Lexer', function () {
       const code = await fs.readFile(filePath, 'utf-8');
       const result = GmlLexer.tokenize(code);
       if (result.errors.length) {
-        console.dir(result, { depth: null });
+        logger.dir(result, { depth: null });
         throw new Error('Lexer failed to lex sample file: ' + filePath);
       }
     }
@@ -79,7 +80,7 @@ describe('Lexer', function () {
 });
 
 function logResult(result: ILexingResult) {
-  console.log(
+  logger.log(
     JSON.stringify(
       result.tokens,
       ['image', 'startOffset', 'tokenType', 'name', 'PUSH_MODE', 'POP_MODE'],

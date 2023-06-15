@@ -3,6 +3,7 @@ import { Pathy } from '@bscotch/pathy';
 import path from 'path';
 import vscode from 'vscode';
 import type { GameMakerProject } from './extension.project.mjs';
+import { warn } from './log.mjs';
 import { getEventName } from './spec.events.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
@@ -148,7 +149,7 @@ export class GameMakerTreeProvider
       for (const [, resource] of project.assets) {
         const path = (resource.yy.parent as any).path;
         if (!path) {
-          console.error('Resource has no path', resource);
+          warn('Resource has no path', resource);
           continue;
         }
         const pathParts = folderPathToParts(path);

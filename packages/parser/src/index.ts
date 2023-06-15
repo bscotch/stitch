@@ -2,7 +2,7 @@ export { Asset } from './project.asset.js';
 export { Code } from './project.code.js';
 export type { Diagnostic } from './project.diagnostics.js';
 export * from './project.flags.js';
-export { Project } from './project.js';
+export { Project, setLogger } from './project.js';
 export {
   FunctionArgRange,
   Position,

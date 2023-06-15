@@ -3,6 +3,7 @@ import { literal } from '@bscotch/utility';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
 import { locationOf } from './lib.mjs';
+import { warn } from './log.mjs';
 
 export type SemanticTokenType = (typeof semanticTokenTypes)[number];
 export type SemanticTokenModifier = (typeof semanticTokenModifiers)[number];
@@ -72,8 +73,8 @@ export class GameMakerSemanticTokenProvider
           try {
             tokensBuilder.push(range, type, [...mods]);
           } catch (error) {
-            console.error(error);
-            console.error('CACHE ERROR');
+            warn(error);
+            warn('CACHE ERROR');
             console.dir({ range, type, mods });
           }
           continue;
@@ -94,23 +95,23 @@ export class GameMakerSemanticTokenProvider
           updateSemanticModifiers(item, tokenModifiers);
         }
         if (!tokenType) {
-          console.warn('No token type for symbol', item);
+          warn('No token type for symbol', item);
           continue;
         }
         try {
           tokensBuilder.push(range, tokenType, [...tokenModifiers]);
           cache.set(item, { type: tokenType, mods: tokenModifiers });
         } catch (err) {
-          console.error(err);
-          console.error('PUSH ERROR');
+          warn(err);
+          warn('PUSH ERROR');
           console.dir({ range, tokenType, tokenModifiers });
         }
       }
       const tokens = tokensBuilder.build();
       return tokens;
     } catch (error) {
-      console.error(error);
-      console.error('OUTER ERROR');
+      warn(error);
+      warn('OUTER ERROR');
     }
     return;
   }

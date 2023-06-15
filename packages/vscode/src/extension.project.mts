@@ -1,4 +1,4 @@
-import { Project, type Diagnostic } from '@bscotch/gml-parser';
+import { Project, setLogger, type Diagnostic } from '@bscotch/gml-parser';
 import { pathy } from '@bscotch/pathy';
 import {
   GameMakerIde,
@@ -9,6 +9,9 @@ import {
 import path from 'path';
 import vscode from 'vscode';
 import { StitchConfig } from './extension.config.mjs';
+import { logger, warn } from './log.mjs';
+
+setLogger(logger.withPrefix('PARSER'));
 
 export class GameMakerProject extends Project {
   readonly kind = 'project';
@@ -121,7 +124,7 @@ export class GameMakerProject extends Project {
     const uri = pathy((doc instanceof vscode.Uri ? doc : doc.uri).fsPath);
     const resource = this.getAsset(uri);
     if (!resource) {
-      console.error(`Could not find resource for file ${uri}`);
+      warn(`Could not find resource for file ${uri}`);
     } else {
       await resource.reloadFile(uri);
     }

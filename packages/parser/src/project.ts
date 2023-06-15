@@ -4,6 +4,7 @@ import { Yy, Yyp } from '@bscotch/yy';
 import chokidar from 'chokidar';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
+import { logger } from './logger.js';
 import { Asset } from './project.asset.js';
 import { Code } from './project.code.js';
 import { Diagnostic } from './project.diagnostics.js';
@@ -12,6 +13,7 @@ import { Symbol } from './project.symbol.js';
 import { StructType, Type, TypeMember } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import { ok } from './util.js';
+export { setLogger, type Logger } from './logger.js';
 
 type AssetName = string;
 
@@ -279,7 +281,7 @@ export class Project {
       // Set the parent
       obj.parent = parent as Asset<'objects'>;
     }
-    console.log(`Loaded ${this.assets.size} resources in ${Date.now() - t}ms`);
+    logger.log(`Loaded ${this.assets.size} resources in ${Date.now() - t}ms`);
   }
 
   /**
@@ -298,12 +300,12 @@ export class Project {
         z.object({ runtimeVersion: z.string().optional() }).passthrough(),
       );
     if (await stitchConfig.exists()) {
-      console.error('Found stitch config');
+      logger.error('Found stitch config');
       const config = await stitchConfig.read();
       runtimeVersion = config.runtimeVersion;
     }
     if (!runtimeVersion) {
-      console.error('No stitch config found, looking up runtime version');
+      logger.error('No stitch config found, looking up runtime version');
       // Look up the runtime version that matches the project's IDE version.
       await this.yypWaiter;
       const usingRelease = await GameMakerIde.findRelease({
@@ -331,7 +333,7 @@ export class Project {
     }
     // If we don't have a spec yet, use the fallback
     if (!this.native) {
-      console.error('No spec found, using fallback');
+      logger.error('No spec found, using fallback');
       this.native = await Native.from();
       ok(this.native, 'Failed to load fallback GML spec');
     }
@@ -342,7 +344,7 @@ export class Project {
     this.self.global = true;
     this.symbol = new Symbol('global').addType(this.self);
     this.symbols.set('global', this.symbol);
-    console.log(`Loaded GML spec in ${Date.now() - t}ms`);
+    logger.log(`Loaded GML spec in ${Date.now() - t}ms`);
     this.symbol.global = true;
     this.symbol.writable = false;
   }
@@ -389,7 +391,7 @@ export class Project {
     const fileLoader = this.loadAssets();
 
     await Promise.all([this.nativeWaiter, fileLoader]);
-    console.log(
+    logger.log(
       'Resources',
       this.assets.size,
       'loaded files in',
@@ -423,7 +425,7 @@ export class Project {
     for (const asset of assets) {
       asset.updateGlobals();
     }
-    console.log('Globals discovered in', Date.now() - t, 'ms');
+    logger.log('Globals discovered in', Date.now() - t, 'ms');
 
     t = Date.now();
     // Discover all symbols and their references
@@ -434,7 +436,7 @@ export class Project {
     for (const asset of assets) {
       asset.updateDiagnostics();
     }
-    console.log('Symbols discovered in', Date.now() - t, 'ms');
+    logger.log('Symbols discovered in', Date.now() - t, 'ms');
     if (options?.watch) {
       this.watch();
     }

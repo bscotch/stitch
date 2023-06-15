@@ -1,4 +1,5 @@
 import vscode from 'vscode';
+import { warn } from './log.mjs';
 
 /**
  * Call a function with its arguments. If
@@ -13,7 +14,7 @@ export function logThrown<A extends any[], T extends (...args: A) => any>(
   try {
     return fn(...args);
   } catch (err) {
-    console.error(err);
+    warn(err);
     throw err;
   }
 }
@@ -25,7 +26,7 @@ export function swallowThrown<A extends any[], T extends (...args: A) => any>(
   try {
     return fn(...args);
   } catch (err) {
-    console.error(err);
+    warn(err);
   }
   return;
 }
@@ -34,7 +35,7 @@ export function assert(condition: any, message?: string): asserts condition {
   if (!condition) {
     const err = new Error(message);
     // VSCode swallows error messages, so we need to log them
-    console.error(err);
+    warn(err);
     throw err;
   }
 }

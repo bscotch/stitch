@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { logger } from './logger.js';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
 import { Symbol } from './project.symbol.js';
@@ -297,7 +298,7 @@ describe('Project', function () {
     validateBschemaConstructor(project);
     // Reprocess a file and ensure that the tests still pass
     await complexScriptFile.reload();
-    console.log('Re-running after reload...');
+    logger.log('Re-running after reload...');
     validateBschemaConstructor(project);
   });
 
@@ -379,7 +380,7 @@ function validateBschemaConstructor(project: Project) {
   >;
 
   for (const [fieldName, info] of Object.entries(expectedKinds)) {
-    console.log('Checking field', fieldName, 'of Bschema');
+    logger.log('Checking field', fieldName, 'of Bschema');
     const member = bschemaStructType.getMember(fieldName);
     const type = member?.type;
     ok(member, `Expected to find member ${fieldName}`);

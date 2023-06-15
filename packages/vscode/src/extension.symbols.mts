@@ -2,6 +2,7 @@ import type { Asset } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import type { GameMakerProject } from './extension.project.mjs';
 import { locationOf } from './lib.mjs';
+import { info, warn } from './log.mjs';
 
 export class GameMakerWorkspaceSymbolProvider
   implements vscode.WorkspaceSymbolProvider
@@ -19,9 +20,7 @@ export class GameMakerWorkspaceSymbolProvider
       try {
         this.updateProjectCache(project);
       } catch (err) {
-        console.error(
-          `Error updating cache for project ${project.name}: ${err}`,
-        );
+        warn(`Error updating cache for project ${project.name}: ${err}`);
       }
     }
   }
@@ -32,13 +31,13 @@ export class GameMakerWorkspaceSymbolProvider
       try {
         this.updateResourceCache(project, resource);
       } catch (err) {
-        console.error(`Error updating cache for ${resource.name}: ${err}`);
+        warn(`Error updating cache for ${resource.name}: ${err}`);
       }
     }
     try {
       this.updateGlobalsCache(project);
     } catch (err) {
-      console.error(`Error updating cache for globals: ${err}`);
+      warn(`Error updating cache for globals: ${err}`);
     }
   }
 
@@ -88,7 +87,7 @@ export class GameMakerWorkspaceSymbolProvider
       const type = item.type;
       const location = item.def || type.def;
       if (!location) {
-        console.error(`No definition for global ${item.name}`);
+        warn(`No definition for global ${item.name}`);
         continue;
       }
       const kind =
@@ -133,13 +132,11 @@ export class GameMakerWorkspaceSymbolProvider
       }
       // Sort by match quality and then only return the top results.
       filteredSymbols.sort(this.resultSorter(query, pattern));
-      console.log(
-        `Found ${filteredSymbols.length} symbols matching "${query}"`,
-      );
+      info(`Found ${filteredSymbols.length} symbols matching "${query}"`);
       const results = filteredSymbols.slice(0, 20);
       return results;
     } catch (error) {
-      console.error(error);
+      warn(error);
       return [];
     }
   }

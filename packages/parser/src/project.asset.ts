@@ -8,6 +8,7 @@ import {
   YypResource,
   yySchemas,
 } from '@bscotch/yy';
+import { logger } from './logger.js';
 import { Code } from './project.code.js';
 import { Project } from './project.js';
 import { Symbol } from './project.symbol.js';
@@ -192,7 +193,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
         `${this.name.toLocaleLowerCase()}.gml`,
     );
     if (matches.length !== 1) {
-      console.error(
+      logger.error(
         `Script ${this.name} has ${matches.length} GML files. Expected 1.`,
       );
     } else {

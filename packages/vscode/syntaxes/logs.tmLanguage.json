@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "GameMaker Language",
+  "scopeName": "source.stitch-logs",
+  "patterns": [
+    {
+      "include": "#startline"
+    }
+  ],
+  "repository": {
+    "startline": {
+      "patterns": [
+        {
+          "match": "^(?:(WARN)|(INFO)|(ERROR))\\s+(?<time>[^\\s]+)(?:\\s+(?<prefix>\\[.*?\\]))?\\s+(?<message>.*)$",
+          "captures": {
+            "1": {
+              "name": "token.warn-token.stitch-logs"
+            },
+            "2": {
+              "name": "token.info-token.stitch-logs"
+            },
+            "3": {
+              "name": "token.error-token.stitch-logs"
+            },
+            "4": {
+              "name": "comment.line.stitch-logs"
+            },
+            "5": {
+              "name": "variable.other.stitch-logs"
+            },
+            "6": {
+              "name": "string.message.stitch-logs"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

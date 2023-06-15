@@ -138,6 +138,11 @@
         "language": "gml",
         "scopeName": "source.gml",
         "path": "./syntaxes/gml.tmLanguage.json"
+      },
+      {
+        "language": "stitch-logs",
+        "scopeName": "source.stitch-logs",
+        "path": "./syntaxes/logs.tmLanguage.json"
       }
     ],
     "iconThemes": [
@@ -193,6 +198,10 @@
           ".gml"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "stitch-logs",
+        "configuration": "./logger-config.json"
       }
     ],
     "menus": {

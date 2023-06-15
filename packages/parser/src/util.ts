@@ -1,3 +1,4 @@
+import { logger } from './logger.js';
 import type { IRange, LinePosition } from './project.location.js';
 
 export class StitchParserError extends Error {
@@ -20,7 +21,7 @@ export interface Logger {
 export const log: Logger = Object.assign(
   (...args: unknown[]) => {
     if (log.enabled) {
-      console.log(...args);
+      logger.log(...args);
     }
   },
   { enabled: false },
@@ -31,7 +32,7 @@ export function assert(condition: any, message?: string): asserts condition {
     const err = new StitchParserError(message, assert);
     if (runningInVscode) {
       // VSCode swallows error messages, so we need to log them
-      console.error(err);
+      logger.error(err);
     }
     throw err;
   }
