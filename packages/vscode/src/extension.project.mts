@@ -133,9 +133,14 @@ export class GameMakerProject extends Project {
   static async from(
     yypPath: vscode.Uri,
     onDiagnostics: (diagnostics: Diagnostic[]) => void,
+    onProgress: (increment: number, message?: string) => void,
   ) {
     const project = new GameMakerProject(yypPath);
-    await project.initialize({ watch: true, onDiagnostics });
+    await project.initialize({
+      watch: true,
+      onDiagnostics,
+      onLoadProgress: onProgress,
+    });
     return project;
   }
 }

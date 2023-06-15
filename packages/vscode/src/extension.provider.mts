@@ -87,8 +87,33 @@ export class StitchProvider
     onDiagnostics: (diagnostics: Diagnostic[]) => void,
   ) {
     const t = Timer.start();
-    const project = await GameMakerProject.from(yypPath, onDiagnostics);
-    t.seconds('Loaded project in');
+    let project!: GameMakerProject;
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Stitch: Loading project from ${pathyFromUri(yypPath).basename}`,
+        cancellable: false,
+      },
+      async (progress) => {
+        progress.report({
+          increment: 0,
+        });
+        project = await GameMakerProject.from(
+          yypPath,
+          onDiagnostics,
+          (percent, message) => {
+            progress.report({
+              increment: percent,
+              message,
+            });
+          },
+        );
+        progress.report({
+          increment: 100,
+          message: 'Done!',
+        });
+      },
+    );
     this.projects.push(project);
     void vscode.commands.executeCommand(
       'setContext',

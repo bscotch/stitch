@@ -34,6 +34,11 @@ export interface ProjectOptions {
    * from the initial parse.
    */
   onDiagnostics?: (diagnostics: Diagnostic[]) => void;
+  /**
+   * If registered, this callback will be used to report
+   * when progress has been made towards loading the project.
+   */
+  onLoadProgress?: (increment: number, message?: string) => void;
 }
 
 export class Project {
@@ -235,7 +240,7 @@ export class Project {
    * yyp, yy, and gml files for scripts and objects. For other asset types
    * we just need their names and yyp filepaths.
    */
-  protected async loadAssets(): Promise<void> {
+  protected async loadAssets(options?: ProjectOptions): Promise<void> {
     // TODO: Allow for reloading of resources, so that we only need to keep track of new/deleted resources.
     const t = Date.now();
 
@@ -251,6 +256,9 @@ export class Project {
       }),
     ]);
     this.yyp = yyp;
+    // We'll say that resources take 80% of loading,
+    // and distribute that across the number of resources.
+    const perAssetIncrement = this.yyp.resources.length / 80;
     const resourceWaits: Promise<any>[] = [];
     for (const resourceInfo of this.yyp.resources) {
       resourceWaits.push(
@@ -260,10 +268,15 @@ export class Project {
           assetNameToYy.get(resourceInfo.id.name.toLocaleLowerCase())!,
         ).then((r) => {
           this.addAsset(r);
+          options?.onLoadProgress?.(
+            perAssetIncrement,
+            `Loaded asset ${r.name}`,
+          );
         }),
       );
     }
     await Promise.all(resourceWaits);
+    options?.onLoadProgress?.(0, `Loaded ${this.assets.size} resources`);
     // TODO: Link up object parent-child relationships
     for (const asset of this.assets.values()) {
       if (asset.assetType !== 'objects') {
@@ -385,10 +398,14 @@ export class Project {
     }
     let t = Date.now();
     this.nativeWaiter = this.loadGmlSpec();
-    this.yypWaiter = Yy.read(this.yypPath.absolute, 'project').then(
-      (yyp) => (this.yyp = yyp),
-    );
-    const fileLoader = this.loadAssets();
+    this.yypWaiter = Yy.read(this.yypPath.absolute, 'project').then((yyp) => {
+      this.yyp = yyp;
+      options?.onLoadProgress?.(5, 'Loaded project file');
+    });
+    void this.nativeWaiter.then(() => {
+      options?.onLoadProgress?.(5, 'Loaded GML spec');
+    });
+    const fileLoader = this.loadAssets(options);
 
     await Promise.all([this.nativeWaiter, fileLoader]);
     logger.log(
@@ -404,6 +421,7 @@ export class Project {
     // Sort assets by type, with objects 2nd to last and scripts last
     // to minimize the number of things that need to be updated after
     // loading.
+    options?.onLoadProgress?.(0, 'Parsing resource code...');
     const assets = [...this.assets.values()].sort((a, b) => {
       if (a.assetType === b.assetType) {
         return a.name.localeCompare(b.name);
