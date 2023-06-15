@@ -33,6 +33,7 @@ import {
   Reference,
   type ReferenceableType,
 } from './project.location.js';
+import { isTypeOfKind } from './types.checks.js';
 import { Type, type StructType } from './types.js';
 import { assert } from './util.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
@@ -147,12 +148,24 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const blockLocation = children.blockableStatement[0].location!;
 
     const docs = this.PROCESSOR.useJsdoc();
-    const self =
-      docs?.jsdoc.kind === 'self' && docs.type.kind === 'Struct'
-        ? (docs.type as StructType)
-        : conditionType.kind === 'Struct'
-        ? (conditionType as StructType)
-        : this.PROCESSOR.createStruct(blockLocation);
+    let self: StructType;
+    if (docs?.jsdoc.kind === 'self' && isTypeOfKind(docs.type, 'Struct')) {
+      self = docs.type;
+    } else if (isTypeOfKind(conditionType, 'Struct')) {
+      self = conditionType;
+    } else if (
+      isTypeOfKind(conditionType, 'Asset.GMObject') &&
+      conditionType.name
+    ) {
+      // Then we want to use the associated instance struct as the self
+      const instanceStruct = this.PROCESSOR.project.getAssetByName(
+        conditionType.name,
+      )?.instanceType;
+      if (instanceStruct) {
+        self = instanceStruct;
+      }
+    }
+    self ||= this.PROCESSOR.createStruct(blockLocation);
 
     this.PROCESSOR.scope.setEnd(children.expression[0].location!, true);
     this.PROCESSOR.pushSelfScope(blockLocation, self, false);

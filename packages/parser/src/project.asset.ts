@@ -246,7 +246,10 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     // the spec has been fully loaded
     await item.project.nativeWaiter;
     const assetType = item.instanceTypeName;
-    item.symbol.addType(item.project.native.types.get(assetType)!);
+
+    item.symbol.addType(
+      item.project.native.types.get(assetType)!.derive().named(item.name),
+    );
     if (item.assetType === 'objects') {
       item.instanceType = item.project
         .createStructType('instance')

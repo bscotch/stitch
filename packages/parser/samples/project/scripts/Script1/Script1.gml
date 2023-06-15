@@ -40,3 +40,7 @@ function AnotherConstructor (_whatever) {
 	
 	constructed = new GlobalConstructor("nerp", "derp");
 }
+
+with o_parent {
+	parent_var = "hello";
+}
