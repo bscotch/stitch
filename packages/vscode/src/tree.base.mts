@@ -2,6 +2,7 @@ import { Asset, Code } from '@bscotch/gml-parser';
 import { Pathy } from '@bscotch/pathy';
 import path from 'path';
 import vscode from 'vscode';
+import type { GameMakerProject } from './extension.project.mjs';
 import { getEventName } from './spec.events.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
@@ -44,36 +45,48 @@ export class GameMakerFolder extends StitchTreeItemBase {
   constructor(
     readonly parent: GameMakerFolder | undefined,
     readonly name: string,
-    readonly isProject = false,
+    /** If this is the root node, the associated project. */
+    readonly _project: GameMakerProject | undefined = undefined,
   ) {
     super(name);
     this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
     this.contextValue = 'folder';
-    if (isProject) {
+    if (_project) {
       this.setGameMakerIcon('gamemaker');
       this.contextValue = 'project';
     }
+  }
+
+  get project(): GameMakerProject {
+    return (this._project || this.parent?.project)!;
   }
 
   /**
    * Get the set of parents, ending with this folder, as a flat array.
    */
   get heirarchy(): GameMakerFolder[] {
-    if (this.parent && !this.isProject) {
+    if (this.parent && !this._project) {
       return [...this.parent.heirarchy, this];
     }
     return [this];
+  }
+
+  get path(): string {
+    return this.heirarchy
+      .filter((f) => !f._project)
+      .map((x) => x.name)
+      .join('/');
   }
 
   getFolder(name: string): GameMakerFolder | undefined {
     return this.folders.find((x) => x.name === name) as GameMakerFolder;
   }
 
-  addFolder(name: string, isRoot = false): GameMakerFolder {
+  addFolder(name: string, project?: GameMakerProject): GameMakerFolder {
     let folder = this.getFolder(name);
     if (!folder) {
-      folder = new GameMakerFolder(this, name, isRoot);
+      folder = new GameMakerFolder(this, name, project);
       this.folders.push(folder);
     }
     return folder;

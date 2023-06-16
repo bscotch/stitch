@@ -50,11 +50,11 @@ const yypRoomOrderNodeSchema = z.object({
 });
 
 export type YypFolder = z.infer<typeof yypFolderSchema>;
-const yypFolderSchema = z.object({
+export const yypFolderSchema = z.object({
   name: z.string(),
   tags: z.array(z.string()).optional(),
   folderPath: z.string(),
-  order: z.number().default(1),
+  order: z.number().optional(),
   resourceType: z.literal('GMFolder').default('GMFolder'),
   resourceVersion: z.literal('1.0').default('1.0'),
 });

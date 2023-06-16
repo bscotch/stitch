@@ -1,6 +1,6 @@
 import { pathy, Pathy } from '@bscotch/pathy';
 import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
-import { Yy, Yyp } from '@bscotch/yy';
+import { Yy, Yyp, YypFolder, yypFolderSchema } from '@bscotch/yy';
 import chokidar from 'chokidar';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
@@ -12,7 +12,7 @@ import { Native } from './project.native.js';
 import { Symbol } from './project.symbol.js';
 import { StructType, Type, TypeMember } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
-import { ok } from './util.js';
+import { assert, ok } from './util.js';
 export { setLogger, type Logger } from './logger.js';
 
 type AssetName = string;
@@ -223,6 +223,109 @@ export class Project {
   }
 
   /**
+   * Add a script to the yyp file. The string can include separators,
+   * in which case folders will be ensured up to the final component.
+   */
+  async addScript(path: string) {
+    const parts = path.split(/[/\\]+/);
+    const name = parts.pop()!;
+    if (!name) {
+      logger.error(`Attempted to add script with no name: ${path}`);
+      return;
+    }
+    const existingAsset = this.getAssetByName(name);
+    if (existingAsset) {
+      logger.error(
+        `An asset named ${path} (${existingAsset.assetType}) already exists`,
+      );
+      return;
+    }
+    if (!parts.length) {
+      logger.error(`Adding scripts to the root directory is not supported.`);
+      return;
+    }
+    const folder = (await this.addFolder(parts))!;
+
+    // Create the yy file
+    const scriptDir = this.projectDir.join(`scripts/${name}`);
+    await scriptDir.ensureDirectory();
+    const scriptYy = scriptDir.join(`${name}.yy`);
+    await Yy.write(
+      scriptYy.absolute,
+      {
+        name,
+        parent: {
+          name: folder.name,
+          path: folder.folderPath,
+        },
+      },
+      'scripts',
+    );
+
+    // Create the gml file
+    const scriptGml = scriptYy.changeExtension('gml');
+    await scriptGml.write('');
+
+    // Update the yyp file
+    await this.addAssetToYyp(scriptYy.absolute);
+  }
+
+  /**
+   * Given the path to a yy file for an asset, ensure
+   * it has an entry in the yyp file. */
+  async addAssetToYyp(yyPath: string) {
+    assert(yyPath.endsWith('.yy'), `Expected yy file, got ${yyPath}`);
+    const parts = yyPath.split(/[/\\]+/).slice(-3);
+    assert(
+      parts.length === 3,
+      `Expected path with at least 3 parts, got ${yyPath}`,
+    );
+    const [type, name, basename] = parts;
+    this.yyp.resources.push({
+      id: {
+        name,
+        path: `${type}/${name}/${basename}`,
+      },
+    });
+    await this.saveYyp();
+  }
+
+  /**
+   * Add a folder to the yyp file. The string can include separators,
+   * in which case nested folders will be created. If an array is provided,
+   * it is interpreted as a pre-split path. */
+  async addFolder(path: string | string[]): Promise<YypFolder | undefined> {
+    const parts = Array.isArray(path) ? path : path.split(/[/\\]+/);
+    const folders = this.yyp.Folders;
+    let current = 'folders/';
+    let folder: YypFolder | undefined;
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      if (!part) {
+        continue;
+      }
+      const thisFolderPath = current + part + '.yy';
+      const existingFolder = folders.find(
+        (f) => f.folderPath === thisFolderPath,
+      );
+      if (!existingFolder) {
+        folder = yypFolderSchema.parse({
+          folderPath: thisFolderPath,
+          name: part,
+        });
+        folders.push(folder);
+      }
+      current += part + '/';
+    }
+    await this.saveYyp();
+    return folder;
+  }
+
+  async saveYyp() {
+    await Yy.write(this.yypPath.absolute, this.yyp, 'project');
+  }
+
+  /**
    * The name of a resource, *in lower case*, from
    * a path. This is used as the key for looking up resources.
    *
@@ -377,9 +480,9 @@ export class Project {
     this.watcher.on('change', async (path) => {
       const normalized = pathy(path);
       if (this.yypPath.equals(normalized)) {
-        // Then we probably have some new resources to load
+        // TODO: Then we probably have some new resources to load
         // or need to delete one.
-        await this.loadAssets();
+        // await this.loadAssets();
       } else {
         // Then we probably have a script or object that has changed.
         // Identify which resource has changed and have it manage reloading.

@@ -51,14 +51,15 @@ export class GameMakerTreeProvider
       return;
     }
     const parts = newFolderName.split('/');
-    let parent = where;
+    let folder = where;
     for (const part of parts) {
-      parent = parent.addFolder(part);
-      parent.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-      // TODO: Ensure that this folder exists in the actual project.
+      folder = folder.addFolder(part);
+      folder.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     }
+    // Ensure that this folder exists in the actual project.
+    await where.project.addFolder(folder.path);
     this._onDidChangeTreeData.fire(where);
-    this.view.reveal(parent);
+    this.view.reveal(folder);
   }
 
   getTreeItem(element: Treeable): vscode.TreeItem {
@@ -109,7 +110,7 @@ export class GameMakerTreeProvider
 
     this.tree = new GameMakerFolder(undefined, 'root');
     for (const project of this.projects) {
-      const projectFolder = this.tree.addFolder(project.name, true);
+      const projectFolder = this.tree.addFolder(project.name, project);
       // Add all of the folders
       for (const folder of project.yyp.Folders) {
         const pathParts = folderPathToParts(folder.folderPath);
