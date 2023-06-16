@@ -3,6 +3,7 @@ import {
   type Code,
   type Diagnostic,
   type FunctionArgRange,
+  type Reference,
   type ReferenceableType,
   type Type,
 } from '@bscotch/gml-parser';
@@ -144,12 +145,30 @@ export class StitchProvider
     position: vscode.Position,
   ): vscode.Location | undefined {
     return swallowThrown(() => {
-      const item = this.getSymbol(document, position);
+      const ref = this.getReference(document, position);
+      const item = ref?.item;
       if (item && !item.native && item.def) {
         return locationOf(item.def);
-      } else {
-        info('No definition found for', item);
+      } else if (ref && item?.name === 'event_inherited') {
+        // Then this should take us to the parent event.
+        let parent = ref.file.asset.parent;
+        const eventName = ref.file.name;
+        let emergencyBreak = 0;
+        while (parent) {
+          // Get the file for the same event.
+          for (const file of parent.gmlFilesArray) {
+            if (file.name === eventName) {
+              return locationOf(file.startRange);
+            }
+          }
+          emergencyBreak++;
+          if (emergencyBreak > 10) {
+            break;
+          }
+          parent = parent.parent;
+        }
       }
+      info('No definition found for', item);
       return;
     });
   }
@@ -224,10 +243,10 @@ export class StitchProvider
     return this.getGmlFile(document)?.getFunctionArgRangeAt(offset);
   }
 
-  getSymbol(
+  getReference(
     document: vscode.TextDocument,
     position: vscode.Position,
-  ): ReferenceableType | undefined {
+  ): Reference | undefined {
     const offset = document.offsetAt(position);
     info('getSymbol', document, offset);
     const file = this.getGmlFile(document);
@@ -238,6 +257,17 @@ export class StitchProvider
     const ref = file.getReferenceAt(offset);
     if (!ref) {
       warn(`Could not find reference at ${offset}`);
+      return;
+    }
+    return ref;
+  }
+
+  getSymbol(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+  ): ReferenceableType | undefined {
+    const ref = this.getReference(document, position);
+    if (!ref) {
       return;
     }
     const item = ref.item;
