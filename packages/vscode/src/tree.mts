@@ -25,12 +25,51 @@ export class GameMakerTreeProvider
 
   constructor(readonly projects: GameMakerProject[]) {}
 
+  async createScript(where: GameMakerFolder) {
+    const newScriptName = await vscode.window.showInputBox({
+      prompt: 'Enter a name for the new Script',
+      placeHolder: 'e.g. my/new/MyScript',
+      validateInput(value) {
+        if (!value) {
+          return;
+        }
+        if (!value.match(/^[a-zA-Z0-9_][a-zA-Z0-9_/]*/)) {
+          return 'Script names must start with a letter or underscore, and can only contain letters, numbers, and underscores.';
+        }
+        return;
+      },
+    });
+    if (!newScriptName) {
+      return;
+    }
+    const existingAsset = where.project.getAssetByName(newScriptName);
+    if (existingAsset) {
+      vscode.window.showErrorMessage(
+        `An asset named ${newScriptName} already exists.`,
+      );
+      return;
+    }
+    const parts = newScriptName.split('/');
+    const name = parts.pop()!;
+    let folder = where;
+    for (const part of parts) {
+      folder = folder.addFolder(part);
+    }
+    const path = folder.path + '/' + name;
+    const asset = await where.project.addScript(path);
+    if (!asset) {
+      vscode.window.showErrorMessage(`Failed to create new script.`);
+      return;
+    }
+    const treeItem = folder.addResource(new TreeAsset(folder, asset));
+    this._onDidChangeTreeData.fire(where);
+    this.view.reveal(treeItem);
+  }
+
   /**
    * Create a new folder in the GameMaker asset tree. */
   async createFolder(where: GameMakerFolder | undefined) {
     where ||= this.tree;
-    where.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-    console.log(where.heirarchy);
     const newFolderName = await vscode.window.showInputBox({
       prompt: 'Enter a name for the new folder',
       placeHolder: 'e.g. my/new/folder',
@@ -38,11 +77,8 @@ export class GameMakerTreeProvider
         if (!value) {
           return;
         }
-        if (value.match(/[\s\r\n]/)) {
-          return 'Folder names cannot contain whitespace.';
-        }
-        if (!value.match(/^[a-zA-Z0-9_][a-zA-Z0-9_/]*/)) {
-          return 'Folder names must be valid GameMaker identifiers.';
+        if (!value.match(/^[a-zA-Z0-9_][a-zA-Z0-9_/ ]*/)) {
+          return 'Folder names must start with a letter or underscore, and can only contain letters, numbers, underscores, and spaces.';
         }
         return;
       },
@@ -54,7 +90,6 @@ export class GameMakerTreeProvider
     let folder = where;
     for (const part of parts) {
       folder = folder.addFolder(part);
-      folder.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     }
     // Ensure that this folder exists in the actual project.
     await where.project.addFolder(folder.path);
@@ -142,6 +177,17 @@ export class GameMakerTreeProvider
     this.view = vscode.window.createTreeView('bscotch-stitch-resources', {
       treeDataProvider: this.refresh(),
     });
-    return this.view;
+    const subscriptions = [
+      this.view,
+      vscode.commands.registerCommand(
+        'stitch.assets.newFolder',
+        this.createFolder.bind(this),
+      ),
+      vscode.commands.registerCommand(
+        'stitch.assets.newScript',
+        this.createScript.bind(this),
+      ),
+    ];
+    return subscriptions;
   }
 }

@@ -352,11 +352,7 @@ export class StitchProvider
     const treeProvider = new GameMakerTreeProvider(this.provider.projects);
 
     ctx.subscriptions.push(
-      treeProvider.register(),
-      vscode.commands.registerCommand(
-        'stitch.assets.newFolder',
-        treeProvider.createFolder.bind(treeProvider),
-      ),
+      ...treeProvider.register(),
       GameMakerHoverProvider.register(this.provider),
       vscode.languages.registerCompletionItemProvider(
         'gml',

@@ -112,27 +112,30 @@ const yypIncludedFileSchema = z.object({
 
 /** The YYP content that has not changed across GMS2.3 subversions */
 export type Yyp = z.infer<typeof yypSchema>;
-export const yypSchema = z.object({
-  name: z.string(),
-  resourceType: z.literal('GMProject').default('GMProject'),
-  resources: z.array(yypResourceSchema).default([]),
-  RoomOrderNodes: z.array(yypRoomOrderNodeSchema).default([]),
-  Options: z.array(yypOptionSchema).default([]),
-  isDnDProject: z.boolean().optional(),
-  defaultScriptType: z.number().default(1),
-  isEcma: z.boolean().default(false),
-  tutorialPath: z.string().optional(),
-  configs: z.object({
-    name: z.literal('Default').default('Default'),
-    children: z.array(yypConfigSchema).default([]),
-  }),
-  Folders: z.array(yypFolderSchema).default([]),
-  AudioGroups: z.array(yypAudioGroupSchema).default([]),
-  TextureGroups: z.array(yypTextureGroupSchema).default([]),
-  IncludedFiles: z.array(yypIncludedFileSchema).default([]),
-  MetaData: z.object({
-    IDEVersion: z.string(),
-  }),
-  resourceVersion: z.string(),
-  tags: z.array(z.string()).optional(),
-});
+export const yypSchema = z
+  .object({
+    name: z.string(),
+    resourceType: z.literal('GMProject').default('GMProject'),
+    resources: z.array(yypResourceSchema).default([]),
+    RoomOrderNodes: z.array(yypRoomOrderNodeSchema).default([]),
+    Options: z.array(yypOptionSchema).default([]),
+    isDnDProject: z.boolean().optional(),
+    defaultScriptType: z.number().default(1),
+    isEcma: z.boolean().default(false),
+    tutorialPath: z.string().optional(),
+    configs: z.object({
+      name: z.literal('Default').default('Default'),
+      children: z.array(yypConfigSchema).default([]),
+    }),
+    Folders: z.array(yypFolderSchema).default([]),
+    AudioGroups: z.array(yypAudioGroupSchema).default([]),
+    TextureGroups: z.array(yypTextureGroupSchema).default([]),
+    IncludedFiles: z.array(yypIncludedFileSchema).default([]),
+    MetaData: z.object({
+      IDEVersion: z.string(),
+    }),
+    LibraryEmitters: z.array(z.any()).optional(),
+    resourceVersion: z.string(),
+    tags: z.array(z.string()).optional(),
+  })
+  .passthrough();

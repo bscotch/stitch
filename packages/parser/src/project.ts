@@ -1,6 +1,6 @@
 import { pathy, Pathy } from '@bscotch/pathy';
 import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
-import { Yy, Yyp, YypFolder, yypFolderSchema } from '@bscotch/yy';
+import { Yy, Yyp, YypFolder, yypFolderSchema, YypResource } from '@bscotch/yy';
 import chokidar from 'chokidar';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
@@ -264,16 +264,21 @@ export class Project {
 
     // Create the gml file
     const scriptGml = scriptYy.changeExtension('gml');
-    await scriptGml.write('');
+    await scriptGml.write('/// @desc ');
 
     // Update the yyp file
-    await this.addAssetToYyp(scriptYy.absolute);
+    const info = await this.addAssetToYyp(scriptYy.absolute);
+
+    // Create and add the asset
+    const asset = await Asset.from(this, info, scriptYy);
+    this.addAsset(asset);
+    return asset;
   }
 
   /**
    * Given the path to a yy file for an asset, ensure
    * it has an entry in the yyp file. */
-  async addAssetToYyp(yyPath: string) {
+  async addAssetToYyp(yyPath: string): Promise<YypResource> {
     assert(yyPath.endsWith('.yy'), `Expected yy file, got ${yyPath}`);
     const parts = yyPath.split(/[/\\]+/).slice(-3);
     assert(
@@ -281,13 +286,15 @@ export class Project {
       `Expected path with at least 3 parts, got ${yyPath}`,
     );
     const [type, name, basename] = parts;
-    this.yyp.resources.push({
+    const resourceEntry: YypResource = {
       id: {
         name,
         path: `${type}/${name}/${basename}`,
       },
-    });
+    };
+    this.yyp.resources.push(resourceEntry);
     await this.saveYyp();
+    return resourceEntry;
   }
 
   /**
@@ -305,10 +312,8 @@ export class Project {
         continue;
       }
       const thisFolderPath = current + part + '.yy';
-      const existingFolder = folders.find(
-        (f) => f.folderPath === thisFolderPath,
-      );
-      if (!existingFolder) {
+      folder = folders.find((f) => f.folderPath === thisFolderPath);
+      if (!folder) {
         folder = yypFolderSchema.parse({
           folderPath: thisFolderPath,
           name: part,

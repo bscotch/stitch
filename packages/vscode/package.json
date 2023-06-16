@@ -28,6 +28,7 @@
   "main": "./dist/extension.js",
   "scripts": {
     "build": "pnpm build:grammar && node scripts/build.mjs",
+    "build:deps": "pnpm turbo run build --filter=bscotch-stitch-vscode...",
     "build:grammar": "node scripts/yaml-to-json.mjs syntaxes/gml.tmLanguage.yaml syntaxes/gml.tmLanguage.json",
     "package": "vsce package --pre-release --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
@@ -41,6 +42,11 @@
         "command": "stitch.assets.newFolder",
         "title": "New Group...",
         "icon": "$(new-folder)",
+        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+      },
+      {
+        "command": "stitch.assets.newScript",
+        "title": "New Script...",
         "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
       },
       {
@@ -217,6 +223,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "stitch.assets.newScript",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",
+          "group": "navigation@1"
+        },
         {
           "command": "stitch.assets.newFolder",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",

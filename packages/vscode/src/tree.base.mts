@@ -100,6 +100,7 @@ export class GameMakerFolder extends StitchTreeItemBase {
     if (!this.getResource(resource.asset.name)) {
       this.resources.push(resource);
     }
+    return resource;
   }
 }
 
