@@ -7,7 +7,19 @@ import { getEventName } from './spec.events.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
-export class StitchTreeItemBase extends vscode.TreeItem {
+/*
+For filtering the tree, there is no native way to add
+a searchbar to the tree view and the built-in filter
+isn't very good. The appropriate approach based on the docs
+and on other extensions is to:
+- Add a tree view item per project that represents the filter,
+  e.g. the current query string as the item with a search icon button for opening the input dialog and a clear button for resetting the query.
+*/
+
+abstract class StitchTreeItemBase extends vscode.TreeItem {
+  abstract readonly kind: string;
+  abstract readonly parent: StitchTreeItemBase | undefined;
+
   setBaseIcon(icon: string) {
     this.iconPath = new vscode.ThemeIcon(icon);
   }
@@ -42,6 +54,9 @@ export class GameMakerFolder extends StitchTreeItemBase {
   folders: GameMakerFolder[] = [];
   resources: TreeAsset[] = [];
 
+  /** folderPath:GameMakerFolder lookup, for revealing items and filtering.*/
+  static lookup: Map<string, GameMakerFolder> = new Map();
+
   constructor(
     readonly parent: GameMakerFolder | undefined,
     readonly name: string,
@@ -49,6 +64,8 @@ export class GameMakerFolder extends StitchTreeItemBase {
     readonly _project: GameMakerProject | undefined = undefined,
   ) {
     super(name);
+    GameMakerFolder.lookup.set(this.path, this);
+
     this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
     this.contextValue = 'folder';
@@ -56,6 +73,7 @@ export class GameMakerFolder extends StitchTreeItemBase {
       this.setGameMakerIcon('gamemaker');
       this.contextValue = 'project';
     }
+    this.id = this.path;
   }
 
   get project(): GameMakerProject {
@@ -114,11 +132,20 @@ export type Treeable =
 export class TreeAsset extends StitchTreeItemBase {
   readonly kind = 'asset';
   readonly asset: Asset;
+  /** Asset:TreeItem lookup, for revealing items and filtering.  */
+  static lookup: Map<Asset, TreeAsset> = new Map();
 
   constructor(readonly parent: GameMakerFolder, asset: Asset) {
     super(asset.name);
+    TreeAsset.lookup.set(asset, this);
+
     this.asset = asset;
     this.refreshTreeItem();
+    this.id = this.path;
+  }
+
+  get path(): string {
+    return this.parent.path + '/' + this.asset.name;
   }
 
   protected refreshTreeItem() {
@@ -180,9 +207,11 @@ export class TreeAsset extends StitchTreeItemBase {
 
 export class TreeCode extends StitchTreeItemBase {
   readonly kind = 'code';
+  static lookup: Map<Code, TreeCode> = new Map();
 
   constructor(readonly parent: TreeAsset, readonly code: Code) {
     super(code.name);
+    TreeCode.lookup.set(code, this);
 
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     this.command = {
@@ -191,6 +220,7 @@ export class TreeCode extends StitchTreeItemBase {
       arguments: [this.uri],
     };
     this.setIcon();
+    this.id = this.parent.id + '/' + this.code.name;
 
     // Ensure that the tree label is human-friendly.
     this.label = getEventName(this.uri.fsPath);
@@ -241,6 +271,7 @@ export class TreeSpriteFrame extends StitchTreeItemBase {
       title: 'Open',
       arguments: [this.iconPath],
     };
+    this.id = this.parent.id + '/' + this.imagePath.name;
   }
 }
 
@@ -253,6 +284,7 @@ export class TreeShaderFile extends StitchTreeItemBase {
       title: 'Open',
       arguments: [this.uri],
     };
+    this.id = this.parent.id + '/' + this.path.name;
     this.setFileIcon('shader');
   }
   get uri() {

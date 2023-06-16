@@ -42,7 +42,7 @@ export class StitchProvider
   readonly diagnosticCollection =
     vscode.languages.createDiagnosticCollection('gml');
 
-  protected projects: GameMakerProject[] = [];
+  projects: GameMakerProject[] = [];
   static config = config;
 
   readonly processingFiles = new Map<string, Promise<any>>();
@@ -289,6 +289,15 @@ export class StitchProvider
     return;
   }
 
+  getCurrentAsset() {
+    const currentDocument = vscode.window.activeTextEditor?.document;
+    if (!currentDocument) {
+      return;
+    }
+    const currentProject = this.getProject(currentDocument);
+    return currentProject?.getAsset(pathyFromUri(currentDocument));
+  }
+
   getAsset(document: vscode.TextDocument, name: string): Asset | undefined {
     const project = this.getProject(document);
     if (!project) {
@@ -379,7 +388,7 @@ export class StitchProvider
       pt.seconds('Loaded project in');
     }
 
-    const treeProvider = new GameMakerTreeProvider(this.provider.projects);
+    const treeProvider = new GameMakerTreeProvider(this.provider);
 
     ctx.subscriptions.push(
       ...treeProvider.register(),

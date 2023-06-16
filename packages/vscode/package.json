@@ -39,6 +39,11 @@
   "contributes": {
     "commands": [
       {
+        "command": "stitch.assets.reveal",
+        "title": "Stitch: Show Asset",
+        "enablement": "stitch.projectCount > 0 && resourceExtname =~ /\\.(yy|gml)$/"
+      },
+      {
         "command": "stitch.assets.newFolder",
         "title": "New Group...",
         "icon": "$(new-folder)",
@@ -268,6 +273,9 @@
         },
         {
           "command": "stitch.refresh"
+        },
+        {
+          "command": "stitch.assets.reveal"
         }
       ]
     },

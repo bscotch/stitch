@@ -1,5 +1,7 @@
+import { Asset, Code } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import type { GameMakerProject } from './extension.project.mjs';
+import type { StitchProvider } from './extension.provider.mjs';
 import { warn } from './log.mjs';
 import {
   GameMakerFolder,
@@ -15,6 +17,7 @@ export class GameMakerTreeProvider
 {
   tree: GameMakerFolder = new GameMakerFolder(undefined, 'root');
   view!: vscode.TreeView<Treeable>;
+  searchInput = vscode.window.createInputBox();
 
   private _onDidChangeTreeData: vscode.EventEmitter<
     Treeable | undefined | null | void
@@ -23,7 +26,34 @@ export class GameMakerTreeProvider
     Treeable | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
-  constructor(readonly projects: GameMakerProject[]) {}
+  constructor(readonly provider: StitchProvider) {}
+
+  get projects(): GameMakerProject[] {
+    return this.provider.projects;
+  }
+
+  /**
+   * Reveal an associate tree item in the sidebar.
+   * For folders, the value just be the folder's path string
+   * with `/` separators.
+   */
+  reveal(item: string | Asset | Code | undefined) {
+    console.log('reveal', item);
+    item ||= this.provider.getCurrentAsset();
+    if (!item) {
+      return;
+    }
+    const treeItem =
+      typeof item === 'string'
+        ? GameMakerFolder.lookup.get(item)
+        : item instanceof Asset
+        ? TreeAsset.lookup.get(item)
+        : TreeCode.lookup.get(item);
+    if (!treeItem) {
+      return;
+    }
+    this.view.reveal(treeItem);
+  }
 
   async createScript(where: GameMakerFolder) {
     const newScriptName = await vscode.window.showInputBox({
@@ -186,6 +216,10 @@ export class GameMakerTreeProvider
       vscode.commands.registerCommand(
         'stitch.assets.newScript',
         this.createScript.bind(this),
+      ),
+      vscode.commands.registerCommand(
+        'stitch.assets.reveal',
+        this.reveal.bind(this),
       ),
     ];
     return subscriptions;
