@@ -214,7 +214,7 @@ export class StitchProject extends StitchProjectStatic {
   }
 
   get ideVersion(): string {
-    return this.components.MetaData.IDEVersion;
+    return (this.components.MetaData as any).IDEVersion;
   }
 
   /**

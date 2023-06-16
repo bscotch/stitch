@@ -23,7 +23,7 @@ importers:
       zx: ^7.2.2
     dependencies:
       '@bscotch/pathy': 2.7.3
-      '@bscotch/trebuchet': 2.8.4_typescript@5.0.4
+      '@bscotch/trebuchet': 2.8.4
       '@types/chai': 4.3.5
       '@types/mocha': 10.0.1
       '@types/node': 20.1.4
@@ -80,7 +80,7 @@ importers:
       rimraf: ^5.0.0
       ts-command-line-args: 2.5.0
       tslib: ^2.5.0
-      typescript: 5.0.4
+      typescript: 5.1.3
       unzipper: 0.10.14
       uuid: ^9.0.0
       xregexp: 5.1.1
@@ -107,7 +107,7 @@ importers:
       music-metadata: 8.1.4
       open: 9.1.0
       picocolors: 1.0.0
-      ts-command-line-args: 2.5.0_typescript@5.0.4
+      ts-command-line-args: 2.5.0_typescript@5.1.3
       tslib: 2.5.0
       unzipper: 0.10.14
       uuid: 9.0.0
@@ -130,7 +130,7 @@ importers:
       just-diff: 6.0.2
       mocha: 10.2.0
       rimraf: 5.0.0
-      typescript: 5.0.4
+      typescript: 5.1.3
 
   packages/desktop:
     specifiers:
@@ -467,29 +467,29 @@ importers:
       '@bscotch/utility': ^6.8.3
       '@types/chai': ^4.3.5
       '@types/mocha': ^10.0.1
-      '@types/uuid': ^9.0.1
+      '@types/uuid': ^9.0.2
       chai: ^4.3.7
       mocha: ^10.2.0
-      rimraf: ^5.0.0
-      tslib: ^2.5.0
-      type-fest: ^3.10.0
-      typescript: 5.0.4
+      rimraf: ^5.0.1
+      tslib: ^2.5.3
+      type-fest: ^3.12.0
+      typescript: 5.1.3
       uuid: ^9.0.0
       zod: ^3.21.4
     dependencies:
       '@bscotch/utility': 6.8.3
-      tslib: 2.5.0
-      type-fest: 3.10.0_typescript@5.0.4
+      tslib: 2.5.3
+      type-fest: 3.12.0
       uuid: 9.0.0
       zod: 3.21.4
     devDependencies:
       '@types/chai': 4.3.5
       '@types/mocha': 10.0.1
-      '@types/uuid': 9.0.1
+      '@types/uuid': 9.0.2
       chai: 4.3.7
       mocha: 10.2.0
-      rimraf: 5.0.0
-      typescript: 5.0.4
+      rimraf: 5.0.1
+      typescript: 5.1.3
 
 packages:
 
@@ -529,7 +529,7 @@ packages:
       regenerator-runtime: 0.13.11
     dev: false
 
-  /@bscotch/config/1.3.4_typescript@5.0.4:
+  /@bscotch/config/1.3.4:
     resolution: {integrity: sha512-TU6j+Mu6QWnt7AG+nj1Et2d2aBPwbcksnd8CBsRZ6MF1lryrAErYKpYgjlvk4Jm80GJTDQtr4tqdktWIan0QVA==}
     dependencies:
       '@bscotch/pathy': 2.7.3
@@ -540,11 +540,10 @@ packages:
       json5: 2.2.3
       semver: 7.5.0
       sort-package-json: 2.4.1
-      tslib: 2.5.0
-      type-fest: 3.10.0_typescript@5.0.4
+      tslib: 2.5.3
+      type-fest: 3.12.0
     transitivePeerDependencies:
       - supports-color
-      - typescript
     dev: false
 
   /@bscotch/debounce-watch/1.0.18:
@@ -568,10 +567,10 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@bscotch/project/2.3.8_typescript@5.0.4:
+  /@bscotch/project/2.3.8:
     resolution: {integrity: sha512-sDUIQz/9WuJW1baNC7jNxdH/N40lBZiQJCGE8dpwCHIZEQjhvYuZVFN1jrrmoE4s8vwrSL4/RoWlOeBqulFCQg==}
     dependencies:
-      '@bscotch/config': 1.3.4_typescript@5.0.4
+      '@bscotch/config': 1.3.4
       '@bscotch/pathy': 2.7.3
       '@bscotch/utility': 6.8.3
       '@bscotch/validation': 0.2.5
@@ -583,10 +582,9 @@ packages:
       simple-git: 3.17.0
       source-map-support: 0.5.21
       ts-morph: 18.0.0
-      tslib: 2.5.0
+      tslib: 2.5.3
     transitivePeerDependencies:
       - supports-color
-      - typescript
     dev: false
 
   /@bscotch/stringify/0.2.3:
@@ -595,29 +593,28 @@ packages:
       tslib: 2.5.0
     dev: false
 
-  /@bscotch/trebuchet/2.8.4_typescript@5.0.4:
+  /@bscotch/trebuchet/2.8.4:
     resolution: {integrity: sha512-YVjizO41nrB3imn474zUrwNv+ovy3i3MagbcPXFqIkvJlDIUvIj0FEUDv1Bzu1yCvOwRRWokd3cWsKpJOrEI9g==}
     hasBin: true
     dependencies:
-      '@bscotch/config': 1.3.4_typescript@5.0.4
+      '@bscotch/config': 1.3.4
       '@bscotch/pathy': 2.7.3
-      '@bscotch/project': 2.3.8_typescript@5.0.4
+      '@bscotch/project': 2.3.8
       '@bscotch/utility': 6.8.3
       '@bscotch/validation': 0.2.5
       '@sinclair/typebox': 0.27.8
       commander: 10.0.0
       dependency-graph: 0.11.0
       fs-extra: 11.1.1
-      inquirer: 9.1.5_typescript@5.0.4
+      inquirer: 9.1.5
       json5: 2.2.3
       semver: 7.5.0
       simple-git: 3.17.0
-      tslib: 2.5.0
-      type-fest: 3.10.0_typescript@5.0.4
+      tslib: 2.5.3
+      type-fest: 3.12.0
       yaml: 2.2.1
     transitivePeerDependencies:
       - supports-color
-      - typescript
     dev: false
 
   /@bscotch/utility/6.8.3:
@@ -1264,7 +1261,7 @@ packages:
       cross-spawn: 7.0.3
     dev: true
 
-  /@morgan-stanley/ts-mocking-bird/0.6.4_typescript@5.0.4:
+  /@morgan-stanley/ts-mocking-bird/0.6.4_typescript@5.1.3:
     resolution: {integrity: sha512-57VJIflP8eR2xXa9cD1LUawh+Gh+BVQfVu0n6GALyg/AqV/Nz25kDRvws3i9kIe1PTrbsZZOYpsYp6bXPd6nVA==}
     peerDependencies:
       jasmine: 2.x || 3.x || 4.x
@@ -1277,7 +1274,7 @@ packages:
         optional: true
     dependencies:
       lodash: 4.17.21
-      typescript: 5.0.4
+      typescript: 5.1.3
       uuid: 7.0.3
     dev: false
 
@@ -1734,6 +1731,10 @@ packages:
     resolution: {integrity: sha512-rFT3ak0/2trgvp4yYZo5iKFEPsET7vKydKF+VRCxlQ9bpheehyAJH89dAkaLEq/j/RZXJIqcgsmPJKUP1Z28HA==}
     dev: true
 
+  /@types/uuid/9.0.2:
+    resolution: {integrity: sha512-kNnC1GFBLuhImSnV7w4njQkUiJi0ZXUycu1rUaouPqiKlXkh77JKgdRnTAp1x5eBwcIwbtI+3otwzuIDEuDoxQ==}
+    dev: true
+
   /@types/vscode/1.78.1:
     resolution: {integrity: sha512-wEA+54axejHu7DhcUfnFBan1IqFD1gBDxAFz8LoX06NbNDMRJv/T6OGthOs52yZccasKfN588EyffHWABkR0fg==}
     dev: true
@@ -2023,13 +2024,11 @@ packages:
     dependencies:
       type-fest: 0.21.3
 
-  /ansi-escapes/6.0.0_typescript@5.0.4:
+  /ansi-escapes/6.0.0:
     resolution: {integrity: sha512-IG23inYII3dWlU2EyiAiGj6Bwal5GzsgPMwjYGvc1HPE2dgbj4ZB5ToWBKSquKw74nB3TIuOwaI6/jSULzfgrw==}
     engines: {node: '>=14.16'}
     dependencies:
-      type-fest: 3.10.0_typescript@5.0.4
-    transitivePeerDependencies:
-      - typescript
+      type-fest: 3.12.0
     dev: false
 
   /ansi-regex/5.0.1:
@@ -4441,11 +4440,11 @@ packages:
     resolution: {integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==}
     dev: true
 
-  /inquirer/9.1.5_typescript@5.0.4:
+  /inquirer/9.1.5:
     resolution: {integrity: sha512-3ygAIh8gcZavV9bj6MTdYddG2zPSYswP808fKS46NOwlF0zZljVpnLCHODDqItWJDbDpLb3aouAxGaJbkxoppA==}
     engines: {node: '>=14.18.0'}
     dependencies:
-      ansi-escapes: 6.0.0_typescript@5.0.4
+      ansi-escapes: 6.0.0
       chalk: 5.2.0
       cli-cursor: 4.0.0
       cli-width: 4.0.0
@@ -4460,8 +4459,6 @@ packages:
       strip-ansi: 7.0.1
       through: 2.3.8
       wrap-ansi: 8.1.0
-    transitivePeerDependencies:
-      - typescript
     dev: false
 
   /inquirer/9.2.3:
@@ -6511,6 +6508,14 @@ packages:
       glob: 10.0.0
     dev: true
 
+  /rimraf/5.0.1:
+    resolution: {integrity: sha512-OfFZdwtd3lZ+XZzYP/6gTACubwFcHdLRqS9UX3UwpU2dnGQYkPFISRwvM3w9IiB2w7bW5qGo/uAwE4SmXXSKvg==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dependencies:
+      glob: 10.2.6
+    dev: true
+
   /roarr/2.15.4:
     resolution: {integrity: sha512-CHhPh+UNHD2GTXNYhPWLnU8ONHdI+5DI+4EYIAOaiD63rHeYlZvyh8P+in5999TTSFgUYuKUAjzRI4mdh/p+2A==}
     engines: {node: '>=8.0'}
@@ -6612,7 +6617,7 @@ packages:
   /rxjs/7.8.1:
     resolution: {integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==}
     dependencies:
-      tslib: 2.5.0
+      tslib: 2.5.3
 
   /sade/1.8.1:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
@@ -7403,11 +7408,11 @@ packages:
       escape-string-regexp: 1.0.5
     dev: true
 
-  /ts-command-line-args/2.5.0_typescript@5.0.4:
+  /ts-command-line-args/2.5.0_typescript@5.1.3:
     resolution: {integrity: sha512-Ff7Xt04WWCjj/cmPO9eWTJX3qpBZWuPWyQYG1vnxJao+alWWYjwJBc5aYz3h5p5dE08A6AnpkgiCtP/0KXXBYw==}
     hasBin: true
     dependencies:
-      '@morgan-stanley/ts-mocking-bird': 0.6.4_typescript@5.0.4
+      '@morgan-stanley/ts-mocking-bird': 0.6.4_typescript@5.1.3
       chalk: 4.1.2
       command-line-args: 5.2.1
       command-line-usage: 6.1.3
@@ -7431,6 +7436,9 @@ packages:
 
   /tslib/2.5.0:
     resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
+
+  /tslib/2.5.3:
+    resolution: {integrity: sha512-mSxlJJwl3BMEQCUNnxXBU9jP4JBktcEGhURcPR6VQVlnP0FdDEsIaz0C35dXNGLyRfrATNofF0F5p2KPxQgB+w==}
 
   /tsutils/3.21.0_typescript@5.0.4:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
@@ -7602,13 +7610,9 @@ packages:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
     engines: {node: '>=10'}
 
-  /type-fest/3.10.0_typescript@5.0.4:
-    resolution: {integrity: sha512-hmAPf1datm+gt3c2mvu0sJyhFy6lTkIGf0GzyaZWxRLnabQfPUqg6tF95RPg6sLxKI7nFLGdFxBcf2/7+GXI+A==}
+  /type-fest/3.12.0:
+    resolution: {integrity: sha512-qj9wWsnFvVEMUDbESiilKeXeHL7FwwiFcogfhfyjmvT968RXSvnl23f1JOClTHYItsi7o501C/7qVllscUP3oA==}
     engines: {node: '>=14.16'}
-    peerDependencies:
-      typescript: '>=4.7.0'
-    dependencies:
-      typescript: 5.0.4
     dev: false
 
   /type-is/1.6.18:
@@ -7630,6 +7634,11 @@ packages:
   /typescript/5.0.4:
     resolution: {integrity: sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==}
     engines: {node: '>=12.20'}
+    hasBin: true
+
+  /typescript/5.1.3:
+    resolution: {integrity: sha512-XH627E9vkeqhlZFQuL+UsyAXEnibT0kWR2FWONlr4sTjvxyJYnyefgrkyECLzM5NenmKzRAy2rR/OlYLA1HkZw==}
+    engines: {node: '>=14.17'}
     hasBin: true
 
   /typical/4.0.0:
