@@ -16,6 +16,7 @@ import {
 } from './project.location.js';
 import { isTypeOfKind } from './types.checks.js';
 import { Type, TypeMember } from './types.js';
+import { PrimitiveName } from './types.primitives.js';
 import { assert, ok } from './util.js';
 import type { GmlSymbolVisitor } from './visitor.js';
 
@@ -160,10 +161,22 @@ export function visitIdentifierAccessor(
             this.PROCESSOR.popSelfScope(currentLocation, true);
           }
         } else {
-          this.PROCESSOR.addDiagnostic(
-            currentLocation,
-            `Type ${currentType?.toFeatherString()} is not a struct`,
-          );
+          // TODO: Handle dot accessors for other valid dot-accessible types.
+          // But for now, just emit an error for definitenly invalid types.
+          const isDotAccessible = (
+            [
+              'Id.Instance',
+              'Asset.GMObject',
+              'Any',
+              'Unknown',
+            ] as PrimitiveName[]
+          ).includes(currentType?.kind!);
+          if (!isDotAccessible) {
+            this.PROCESSOR.addDiagnostic(
+              currentLocation,
+              `Type ${currentType?.toFeatherString()} is not a struct`,
+            );
+          }
           finalType = this.UNKNOWN;
           continue suffixLoop;
         }
@@ -213,7 +226,9 @@ export function visitIdentifierAccessor(
             argIdx++;
           } else {
             lastTokenWasDelimiter = false;
-            this.visit(token);
+            this.assignmentRightHandSide(
+              token.children.assignmentRightHandSide[0].children,
+            );
           }
         }
         // Set the current item to the return type,

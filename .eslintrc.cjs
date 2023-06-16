@@ -31,6 +31,7 @@ module.exports = {
     '@typescript-eslint/no-this-alias': 'off',
     '@typescript-eslint/no-unused-vars': 'warn',
     '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
     camelcase: 'off',
     eqeqeq: 'off',
     'getter-return': 'off',
