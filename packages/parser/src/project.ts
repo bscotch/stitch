@@ -360,7 +360,16 @@ export class Project {
       this.projectDir.listChildrenRecursively({
         includeExtension: 'yy',
         maxDepth: 2,
-        onInclude: (p) => assetNameToYy.set(this.assetNameFromPath(p), p),
+        onInclude: (p) => {
+          // Sometimes there is more than one yy file. Make sure that
+          // we only keep the one matching the name.
+          const dirname = p.up().name.toLocaleLowerCase();
+          const assetName = p.name.toLocaleLowerCase();
+          if (dirname !== assetName) {
+            return;
+          }
+          assetNameToYy.set(this.assetNameFromPath(p), p);
+        },
       }),
     ]);
     this.yyp = yyp;
