@@ -557,6 +557,8 @@ export class Project {
       }
       return a.name.localeCompare(b.name);
     });
+
+    // First pass
     for (const asset of assets) {
       asset.updateGlobals();
     }
@@ -567,9 +569,14 @@ export class Project {
     for (const asset of assets) {
       asset.updateAllSymbols();
     }
-    // Update diagnostics
+
+    // Second pass
+    // TODO: Find a better way than brute-forcing to resolve cross-file references
+    // But for now, that's what we'll do!
     for (const asset of assets) {
-      asset.updateDiagnostics();
+      for (const file of asset.gmlFilesArray) {
+        await file.reload(file._content);
+      }
     }
     logger.log('Symbols discovered in', Date.now() - t, 'ms');
     if (options?.watch) {

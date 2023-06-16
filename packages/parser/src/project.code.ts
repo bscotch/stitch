@@ -31,7 +31,7 @@ export class Code {
    * of argument ranges for that call. Useful for diagnostics.*/
   protected _functionCalls: FunctionArgRange[][] = [];
   protected _refsAreSorted = false;
-  protected _content!: string;
+  _content!: string;
   protected _parsed!: GmlParsed;
 
   // Metadata
