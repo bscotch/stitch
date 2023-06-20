@@ -7,7 +7,7 @@ import {
   type ReferenceableType,
   type Type,
 } from '@bscotch/gml-parser';
-import { GameMakerFolder } from 'tree.base.mjs';
+import { GameMakerFolder } from 'tree.folder.mjs';
 import vscode from 'vscode';
 import { assert, swallowThrown } from './assert.mjs';
 import { inScopeSymbolsToCompletions } from './extension.completions.mjs';

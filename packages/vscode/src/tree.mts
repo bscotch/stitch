@@ -3,14 +3,21 @@ import vscode from 'vscode';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchProvider } from './extension.provider.mjs';
 import { warn } from './log.mjs';
+
+import { GameMakerFolder } from './tree.folder.mjs';
 import {
-  GameMakerFolder,
   TreeAsset,
   TreeCode,
   TreeShaderFile,
   TreeSpriteFrame,
-  Treeable,
-} from './tree.base.mjs';
+} from './tree.items.mjs';
+
+export type Treeable =
+  | TreeAsset
+  | TreeCode
+  | TreeSpriteFrame
+  | TreeShaderFile
+  | GameMakerFolder;
 
 export class GameMakerTreeProvider
   implements vscode.TreeDataProvider<Treeable>
