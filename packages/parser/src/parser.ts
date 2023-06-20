@@ -808,11 +808,39 @@ export class GmlParser extends CstParser {
   }
 }
 
+export type NodeContextKind =
+  | 'withCondition'
+  | 'withBody'
+  | 'functionParam'
+  | 'functionArg'
+  | 'functionBody'
+  | 'functionReturn'
+  | 'structValue'
+  | 'template'
+  | 'arrayMember'
+  | 'assignment';
+
+export interface VisitorContext {
+  // /** The context stack as referenceable entities */
+  // ctxStack: Referenceable[];
+  /** Helpful to get general info about the context of the current node. */
+  ctxKindStack: NodeContextKind[];
+}
+
+export function withCtxKind<T extends NodeContextKind>(
+  ctx: VisitorContext,
+  kind: T,
+): VisitorContext {
+  return {
+    ctxKindStack: [...ctx.ctxKindStack, kind],
+  };
+}
+
 export const parser = new GmlParser();
 export const GmlVisitorBase =
   parser.getBaseCstVisitorConstructorWithDefaults() as new (
     ...args: any[]
   ) => GmlVisitor<
-    unknown,
+    VisitorContext,
     undefined | void | Type | { item: ReferenceableType; ref: Reference }
   >;

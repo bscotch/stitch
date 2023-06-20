@@ -5,6 +5,8 @@ import {
   isEmpty,
   sortedAccessorSuffixes,
   sortedFunctionCallParts,
+  withCtxKind,
+  type VisitorContext,
 } from './parser.js';
 import {
   FunctionArgRange,
@@ -23,6 +25,7 @@ import type { GmlSymbolVisitor } from './visitor.js';
 export function visitIdentifierAccessor(
   this: GmlSymbolVisitor,
   children: IdentifierAccessorCstChildren,
+  ctx: VisitorContext,
 ): Type {
   const identity = identifierFrom(children);
   /** The type that this node evaluates to as an expression. */
@@ -32,7 +35,7 @@ export function visitIdentifierAccessor(
         item: ReferenceableType;
         ref?: Reference<ReferenceableType>;
       }
-    | undefined = this.identifier(children.identifier[0].children);
+    | undefined = this.identifier(children.identifier[0].children, ctx);
   if (!currentItem) {
     if (identity) {
       this.PROCESSOR.addDiagnostic(
@@ -60,6 +63,7 @@ export function visitIdentifierAccessor(
   const assignmentType = assignment?.children.assignmentRightHandSide
     ? this.assignmentRightHandSide(
         assignment.children.assignmentRightHandSide[0].children,
+        withCtxKind(ctx, 'assignment'),
       )
     : this.UNKNOWN;
   this.UPDATED_TYPE_WITH_DOCS(assignmentType);
@@ -113,7 +117,10 @@ export function visitIdentifierAccessor(
             finalType = this.UNKNOWN;
           } else {
             const nextIdentity = identifierFrom(dotAccessor);
-            let nextItem = this.identifier(dotAccessor.identifier[0].children);
+            let nextItem = this.identifier(
+              dotAccessor.identifier[0].children,
+              ctx,
+            );
             const nextItemLocation = dotAccessor.identifier[0].location!;
             const range = this.PROCESSOR.range(nextItemLocation);
             if (!nextItem && isTypeOfKind(currentType, 'Struct')) {
@@ -228,6 +235,7 @@ export function visitIdentifierAccessor(
             lastTokenWasDelimiter = false;
             this.assignmentRightHandSide(
               token.children.assignmentRightHandSide[0].children,
+              withCtxKind(ctx, 'functionArg'),
             );
           }
         }
@@ -243,7 +251,7 @@ export function visitIdentifierAccessor(
         finalType = returnType || this.UNKNOWN;
         break;
       default:
-        this.visit(suffix);
+        this.visit(suffix, ctx);
         const defaultType = this.UNKNOWN;
         const defaultRef = defaultType.addRef(suffixRange);
         currentItem = { item: defaultType, ref: defaultRef };

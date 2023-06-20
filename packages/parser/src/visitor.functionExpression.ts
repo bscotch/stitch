@@ -1,4 +1,5 @@
 import type { FunctionExpressionCstChildren } from '../gml-cst.js';
+import { VisitorContext, withCtxKind } from './parser.js';
 import { fixITokenLocation } from './project.location.js';
 import { Symbol } from './project.symbol.js';
 import type { FunctionType, StructType, Type, TypeMember } from './types.js';
@@ -8,9 +9,10 @@ import type { GmlSymbolVisitor } from './visitor.js';
 export function visitFunctionExpression(
   this: GmlSymbolVisitor,
   children: FunctionExpressionCstChildren,
+  ctx: VisitorContext,
 ): Type<'Function'> {
   // Get this identifier if we already have it.
-  const identifier = this.identifier(children);
+  const identifier = this.identifier(children, ctx);
   // Consume the most recent jsdoc
   let docs = this.PROCESSOR.useJsdoc();
   if (!docs?.type.isFunction && docs?.type.kind !== 'Unknown') {
@@ -101,6 +103,7 @@ export function visitFunctionExpression(
   const params =
     children.functionParameters?.[0]?.children.functionParameter || [];
   for (let i = 0; i < params.length; i++) {
+    const paramCtx = withCtxKind(ctx, 'functionParam');
     const param = params[i].children.Identifier[0];
     const range = this.PROCESSOR.range(param);
 
@@ -116,6 +119,12 @@ export function visitFunctionExpression(
     functionType
       .addParameter(i, param.image, paramType, optional)
       .definedAt(range);
+    if (params[i].children.assignmentRightHandSide) {
+      this.assignmentRightHandSide(
+        params[i].children.assignmentRightHandSide![0].children,
+        paramCtx,
+      );
+    }
 
     // Also add to the function's local scope.
     const member = functionLocalScope
@@ -149,7 +158,7 @@ export function visitFunctionExpression(
   // This is tricky because we need to know if it is being assigned to something, e.g. a var, static, etc, so that we can add it to the correct scope with the correct name.
 
   // Process the function body
-  this.visit(children.blockStatement);
+  this.visit(children.blockStatement, withCtxKind(ctx, 'functionBody'));
 
   // End the scope
   const endBrace = fixITokenLocation(
