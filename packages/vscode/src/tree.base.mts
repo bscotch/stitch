@@ -12,9 +12,17 @@ and on other extensions is to:
   e.g. the current query string as the item with a search icon button for opening the input dialog and a clear button for resetting the query.
 */
 
-export abstract class StitchTreeItemBase extends vscode.TreeItem {
-  abstract readonly kind: string;
+export abstract class StitchTreeItemBase<
+  Kind extends string = string,
+> extends vscode.TreeItem {
+  /** The kind of Node this item is. Also used as the default `contextValue` value */
+  readonly kind!: Kind;
   abstract readonly parent: StitchTreeItemBase | undefined;
+
+  constructor(label: string) {
+    super(label);
+    this.contextValue = this.kind;
+  }
 
   setBaseIcon(icon: string) {
     this.iconPath = new vscode.ThemeIcon(icon);

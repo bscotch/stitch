@@ -3,8 +3,8 @@ import type { GameMakerProject } from './extension.project.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 import { TreeAsset } from './tree.items.mjs';
 
-export class GameMakerFolder extends StitchTreeItemBase {
-  readonly kind = 'folder';
+export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
+  override readonly kind = 'folder';
   folders: GameMakerFolder[] = [];
   resources: TreeAsset[] = [];
 
@@ -22,7 +22,7 @@ export class GameMakerFolder extends StitchTreeItemBase {
 
     this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
-    this.contextValue = 'folder';
+    // Override the 'folder' value for projects
     if (_project) {
       this.setGameMakerIcon('gamemaker');
       this.contextValue = 'project';

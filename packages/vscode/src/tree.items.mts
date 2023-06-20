@@ -7,8 +7,8 @@ import { GameMakerFolder } from './tree.folder.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
-export class TreeAsset extends StitchTreeItemBase {
-  readonly kind = 'asset';
+export class TreeAsset extends StitchTreeItemBase<'asset'> {
+  override readonly kind = 'asset';
   readonly asset: Asset;
   /** Asset:TreeItem lookup, for revealing items and filtering.  */
   static lookup: Map<Asset, TreeAsset> = new Map();
@@ -83,8 +83,8 @@ export class TreeAsset extends StitchTreeItemBase {
   }
 }
 
-export class TreeCode extends StitchTreeItemBase {
-  readonly kind = 'code';
+export class TreeCode extends StitchTreeItemBase<'code'> {
+  override readonly kind = 'code';
   static lookup: Map<Code, TreeCode> = new Map();
 
   constructor(readonly parent: TreeAsset, readonly code: Code) {
@@ -135,8 +135,8 @@ export class TreeCode extends StitchTreeItemBase {
   }
 }
 
-export class TreeSpriteFrame extends StitchTreeItemBase {
-  readonly kind = 'sprite-frame';
+export class TreeSpriteFrame extends StitchTreeItemBase<'sprite-frame'> {
+  override readonly kind = 'sprite-frame';
   constructor(
     readonly parent: TreeAsset,
     readonly imagePath: Pathy<Buffer>,
@@ -153,8 +153,8 @@ export class TreeSpriteFrame extends StitchTreeItemBase {
   }
 }
 
-export class TreeShaderFile extends StitchTreeItemBase {
-  readonly kind = 'shader-file';
+export class TreeShaderFile extends StitchTreeItemBase<'shader-file'> {
+  override readonly kind = 'shader-file';
   constructor(readonly parent: TreeAsset, readonly path: Pathy<string>) {
     super(path.hasExtension('vsh') ? 'Vertex' : 'Fragment');
     this.command = {
