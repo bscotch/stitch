@@ -40,7 +40,7 @@ const patterns = {
 };
 const typeGroupPattern = `(?<typeGroup>{\\s*(?<typeUnion>[^}]*?)?\\s*})`;
 const linePrefixPattern = `^(\\s*(?<delim>///|\\*)\\s*)?`;
-const descriptionPattern = `(?<info>.*)`;
+const descriptionPattern = `(?:\\s*-\\s*)?(?<info>.*)`;
 const paramNamePattern = `(?<name>[a-zA-Z_]+)`;
 const paramDefaultPattern = `(?:\\s*=\\s*(?<default>[^\\]]+?)\\s*)`;
 const dotdotdot = `\\.\\.\\.`;

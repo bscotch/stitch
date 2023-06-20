@@ -5,7 +5,7 @@ import { parseJsdoc } from './jsdoc.js';
 const functionJsdoc = `
 /// @desc This is a multiline
 ///       description.
-/// @param {String} first This is the first parameter
+/// @param {String} first - This is the first parameter
 /// @param {Real} second This is the second parameter,
 ///        which spans multiple lines.
 /// @param {Struct} [third] This parameter is optional
@@ -20,7 +20,7 @@ const functionJsdocJs = `
 * @desc This is a multiline
 *       description.
 @param {String} first This is the first parameter
-* @param {Real} second This is the second parameter,
+* @param {Real} second - This is the second parameter,
 *        which spans multiple lines.
 * @param {Struct} [third] This parameter is optional
 * @param {Struct} [fourth = "bleh" ] This is optional and has a default value
@@ -138,7 +138,7 @@ describe('JSDocs', function () {
   });
 
   it('can parse a GML type tag', function () {
-    const jsdoc = '/// @type {String} This is a string';
+    const jsdoc = '/// @type {String} - This is a string';
     const parsed = parseJsdoc(jsdoc);
     expect(parsed.kind).to.equal('type');
     expect(parsed.type?.content).to.equal('String');
