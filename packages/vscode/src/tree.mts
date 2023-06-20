@@ -1,13 +1,19 @@
 import { Asset, Code } from '@bscotch/gml-parser';
 import vscode from 'vscode';
-import type { GameMakerProject } from './extension.project.mjs';
+import { GameMakerProject } from './extension.project.mjs';
 import type { StitchProvider } from './extension.provider.mjs';
 import { warn } from './log.mjs';
 
-import { GameMakerFolder } from './tree.folder.mjs';
+import {
+  GameMakerFolder,
+  GameMakerProjectFolder,
+  GameMakerRootFolder,
+} from './tree.folder.mjs';
 import {
   TreeAsset,
   TreeCode,
+  TreeFilter,
+  TreeFilterGroup,
   TreeShaderFile,
   TreeSpriteFrame,
 } from './tree.items.mjs';
@@ -17,14 +23,15 @@ export type Treeable =
   | TreeCode
   | TreeSpriteFrame
   | TreeShaderFile
+  | TreeFilterGroup
+  | TreeFilter
   | GameMakerFolder;
 
 export class GameMakerTreeProvider
   implements vscode.TreeDataProvider<Treeable>
 {
-  tree: GameMakerFolder = new GameMakerFolder(undefined, 'root');
+  tree = new GameMakerRootFolder();
   view!: vscode.TreeView<Treeable>;
-  searchInput = vscode.window.createInputBox();
 
   private _onDidChangeTreeData: vscode.EventEmitter<
     Treeable | undefined | null | void
@@ -79,7 +86,7 @@ export class GameMakerTreeProvider
     if (!newScriptName) {
       return;
     }
-    const existingAsset = where.project.getAssetByName(newScriptName);
+    const existingAsset = where.project!.getAssetByName(newScriptName);
     if (existingAsset) {
       vscode.window.showErrorMessage(
         `An asset named ${newScriptName} already exists.`,
@@ -93,7 +100,7 @@ export class GameMakerTreeProvider
       folder = folder.addFolder(part);
     }
     const path = folder.path + '/' + name;
-    const asset = await where.project.addScript(path);
+    const asset = await where.project!.addScript(path);
     if (!asset) {
       vscode.window.showErrorMessage(`Failed to create new script.`);
       return;
@@ -129,7 +136,7 @@ export class GameMakerTreeProvider
       folder = folder.addFolder(part);
     }
     // Ensure that this folder exists in the actual project.
-    await where.project.addFolder(folder.path);
+    await where.project!.addFolder(folder.path);
     this._onDidChangeTreeData.fire(where);
     this.view.reveal(folder);
   }
@@ -142,19 +149,25 @@ export class GameMakerTreeProvider
     return element.parent;
   }
 
-  getChildren(element?: Treeable | undefined) {
+  getChildren(element?: Treeable | undefined): Treeable[] | undefined {
     if (!element) {
       // Then we're at the root.
       // If there is only one project (folder), we can return its tree.
-      // If there is more than one project,  we return the projects.
-      let root = this.tree;
       if (this.projects.length === 1) {
-        root = this.tree.folders[0];
+        return this.getChildren(this.tree.folders[0]);
+      } else {
+        return this.tree.folders;
       }
-      return [...root.folders, ...root.resources];
-    }
-    if (element instanceof GameMakerFolder) {
+    } else if (element instanceof GameMakerProjectFolder) {
+      return [
+        ...element.filterGroups,
+        ...element.folders,
+        ...element.resources,
+      ];
+    } else if (element instanceof GameMakerFolder) {
       return [...element.folders, ...element.resources];
+    } else if (element instanceof TreeFilterGroup) {
+      return element.filters;
     } else if (element instanceof TreeAsset) {
       if (element.asset.assetType === 'objects') {
         return element.asset.gmlFilesArray.map((f) => new TreeCode(element, f));
@@ -173,25 +186,59 @@ export class GameMakerTreeProvider
     return;
   }
 
-  refresh() {
+  rebuild() {
     const folderPathToParts = (folderPath: string) =>
       folderPath
         .replace(/^folders[\\/]/, '')
         .replace(/\.yy$/, '')
         .split(/[\\/]/);
 
-    this.tree = new GameMakerFolder(undefined, 'root');
+    // Grab the current filters before nuking everything.
+    const filterGroups = new Map<GameMakerProject, TreeFilterGroup[]>();
+    for (const projectFolder of this.tree.folders) {
+      filterGroups.set(projectFolder.project, projectFolder.filterGroups);
+    }
+
+    // Rebuild the tree
+    this.tree = new GameMakerRootFolder();
     for (const project of this.projects) {
-      const projectFolder = this.tree.addFolder(project.name, project);
+      const projectFolder = this.tree.addFolder(
+        project.name,
+        project,
+      ) as GameMakerProjectFolder;
+      // Add the filter groups
+      if (filterGroups.has(project)) {
+        projectFolder.filterGroups = filterGroups.get(project)!;
+      } else {
+        for (const filterGroupName of ['Folders', 'Assets']) {
+          const filterGroup = new TreeFilterGroup(
+            projectFolder,
+            filterGroupName,
+          );
+          projectFolder.filterGroups.push(filterGroup);
+        }
+      }
+
       // Add all of the folders
+      const folderQuery =
+        projectFolder.filterGroups[0].enabled?.query?.toLocaleLowerCase();
       for (const folder of project.yyp.Folders) {
         const pathParts = folderPathToParts(folder.folderPath);
-        let parent = projectFolder;
+        // Apply folder filters, if any
+        if (folderQuery) {
+          if (!pathParts.join('/').toLocaleLowerCase().includes(folderQuery)) {
+            continue;
+          }
+        }
+        let parent = projectFolder as GameMakerFolder;
         for (let i = 0; i < pathParts.length; i++) {
           parent = parent.addFolder(pathParts[i]);
         }
       }
+
       // Add all of the resources
+      const assetQuery =
+        projectFolder.filterGroups[1].enabled?.query?.toLocaleLowerCase();
       for (const [, resource] of project.assets) {
         const path = (resource.yy.parent as any).path;
         if (!path) {
@@ -199,7 +246,13 @@ export class GameMakerTreeProvider
           continue;
         }
         const pathParts = folderPathToParts(path);
-        let parent = projectFolder;
+        // Apply asset filters, if any
+        if (assetQuery) {
+          if (!resource.name.toLocaleLowerCase().includes(assetQuery)) {
+            continue;
+          }
+        }
+        let parent = projectFolder as GameMakerFolder;
         for (let i = 0; i < pathParts.length; i++) {
           parent = parent.addFolder(pathParts[i]);
         }
@@ -210,9 +263,41 @@ export class GameMakerTreeProvider
     return this;
   }
 
+  async createFilter(group: TreeFilterGroup) {
+    const query = await vscode.window.showInputBox({
+      prompt: 'Provide a query term to filter the tree',
+    });
+    if (!query) {
+      return;
+    }
+    const filter = group.addFilter(query);
+    this.rebuild();
+    this.view.reveal(filter);
+  }
+
+  deleteFilter(filter: TreeFilter) {
+    const requiresRefresh = filter.enabled;
+    filter.delete();
+    if (requiresRefresh) {
+      this.rebuild();
+    } else {
+      this._onDidChangeTreeData.fire(filter.parent);
+    }
+  }
+
+  enableFilter(filter: TreeFilter) {
+    filter.parent.enable(filter);
+    this.rebuild();
+  }
+
+  disableFilter(filter: TreeFilter) {
+    filter.parent.disable(filter);
+    this.rebuild();
+  }
+
   register() {
     this.view = vscode.window.createTreeView('bscotch-stitch-resources', {
-      treeDataProvider: this.refresh(),
+      treeDataProvider: this.rebuild(),
     });
     const subscriptions = [
       this.view,
@@ -227,6 +312,22 @@ export class GameMakerTreeProvider
       vscode.commands.registerCommand(
         'stitch.assets.reveal',
         this.reveal.bind(this),
+      ),
+      vscode.commands.registerCommand(
+        'stitch.assets.filters.delete',
+        this.deleteFilter.bind(this),
+      ),
+      vscode.commands.registerCommand(
+        'stitch.assets.filters.enable',
+        this.enableFilter.bind(this),
+      ),
+      vscode.commands.registerCommand(
+        'stitch.assets.filters.disable',
+        this.disableFilter.bind(this),
+      ),
+      vscode.commands.registerCommand(
+        'stitch.assets.filters.new',
+        this.createFilter.bind(this),
       ),
     ];
     return subscriptions;

@@ -283,12 +283,6 @@ describe('Project', function () {
     //#region FUNCTION CALLS
     ok(!scriptFile.getFunctionArgRangeAt(29, 35)!.hasExpression);
     ok(scriptFile.getFunctionArgRangeAt(41, 50)!.hasExpression);
-    // Check the return type of a function call
-    const functionDefRef = complexScriptFile.getReferenceAt(119, 22);
-    expect((functionDefRef?.item as Symbol).type.returns?.kind).to.equal(
-      'Array',
-    );
-
     //#endregion FUNCTION CALLS
 
     //#region DOT ASSIGNMENTS
@@ -300,6 +294,12 @@ describe('Project', function () {
     ok(dotAssignedType);
     ok(dotAssignedType.parent === obj.instanceType);
     //#endregion DOT ASSIGNMENTS
+
+    // Check the return type of a function
+    const functionDefRef = complexScriptFile.getReferenceAt(119, 22);
+    expect((functionDefRef?.item as Symbol).type.returns?.kind).to.equal(
+      'Array',
+    );
 
     validateBschemaConstructor(project);
     // Reprocess a file and ensure that the tests still pass

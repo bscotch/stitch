@@ -1,7 +1,7 @@
 import vscode from 'vscode';
 import type { GameMakerProject } from './extension.project.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
-import { TreeAsset } from './tree.items.mjs';
+import type { TreeAsset, TreeFilterGroup } from './tree.items.mjs';
 
 export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
   override readonly kind = 'folder';
@@ -14,8 +14,6 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
   constructor(
     readonly parent: GameMakerFolder | undefined,
     readonly name: string,
-    /** If this is the root node, the associated project. */
-    readonly _project: GameMakerProject | undefined = undefined,
   ) {
     super(name);
     GameMakerFolder.lookup.set(this.path, this);
@@ -23,30 +21,39 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
     this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
     // Override the 'folder' value for projects
-    if (_project) {
-      this.setGameMakerIcon('gamemaker');
-      this.contextValue = 'project';
-    }
+    this.contextValue = this.kind;
     this.id = this.path;
   }
 
-  get project(): GameMakerProject {
-    return (this._project || this.parent?.project)!;
+  get isRoot(): boolean {
+    return !this.parent;
+  }
+
+  get isProjectFolder(): boolean {
+    return this.contextValue === 'project';
+  }
+
+  get isFolder(): boolean {
+    return this.contextValue === 'folder';
+  }
+
+  get project(): GameMakerProject | undefined {
+    return this.isFolder ? this.parent?.project : undefined;
   }
 
   /**
    * Get the set of parents, ending with this folder, as a flat array.
    */
   get heirarchy(): GameMakerFolder[] {
-    if (this.parent && !this._project) {
-      return [...this.parent.heirarchy, this];
+    if (this.isFolder && !this.isRoot) {
+      return [...this.parent!.heirarchy, this];
     }
     return [this];
   }
 
   get path(): string {
     return this.heirarchy
-      .filter((f) => !f._project)
+      .filter((f) => !f.isProjectFolder)
       .map((x) => x.name)
       .join('/');
   }
@@ -58,7 +65,9 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
   addFolder(name: string, project?: GameMakerProject): GameMakerFolder {
     let folder = this.getFolder(name);
     if (!folder) {
-      folder = new GameMakerFolder(this, name, project);
+      folder = project
+        ? new GameMakerProjectFolder(this, name, project)
+        : new GameMakerFolder(this, name);
       this.folders.push(folder);
     }
     return folder;
@@ -73,5 +82,32 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
       this.resources.push(resource);
     }
     return resource;
+  }
+}
+
+export class GameMakerProjectFolder extends GameMakerFolder {
+  filterGroups: TreeFilterGroup[] = [];
+
+  constructor(
+    override parent: GameMakerFolder,
+    name: string,
+    readonly _project: GameMakerProject,
+  ) {
+    super(parent, name);
+    GameMakerFolder.lookup.set(this.path, this);
+
+    this.setGameMakerIcon('gamemaker');
+    this.contextValue = 'project';
+  }
+
+  override get project(): GameMakerProject {
+    return this._project;
+  }
+}
+
+export class GameMakerRootFolder extends GameMakerFolder {
+  override folders: GameMakerProjectFolder[] = [];
+  constructor() {
+    super(undefined, 'root');
   }
 }

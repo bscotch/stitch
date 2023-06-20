@@ -7,6 +7,68 @@ import { GameMakerFolder } from './tree.folder.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
+export class TreeFilterGroup extends StitchTreeItemBase<'tree-filter-group'> {
+  override readonly kind = 'tree-filter-group';
+  readonly filters: TreeFilter[] = [];
+
+  constructor(readonly parent: GameMakerFolder, readonly name: string) {
+    super(`Filter ${name}`);
+    this.setBaseIcon('list-filter');
+
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+    this.contextValue = this.kind;
+  }
+
+  get enabled(): TreeFilter | undefined {
+    return this.filters.find((f) => f.enabled);
+  }
+
+  addFilter(query: string) {
+    const filter = new TreeFilter(this, query);
+    this.filters.push(filter);
+    this.enable(filter);
+    return filter;
+  }
+
+  enable(filter: TreeFilter) {
+    this.filters.forEach((f) => (f.contextValue = `${f.kind}-disabled`));
+    filter.contextValue = `${filter.kind}-enabled`;
+  }
+
+  disable(filter: TreeFilter) {
+    filter.contextValue = `${filter.kind}-disabled`;
+  }
+}
+
+export class TreeFilter extends StitchTreeItemBase<'tree-filter'> {
+  override readonly kind = 'tree-filter';
+
+  constructor(readonly parent: TreeFilterGroup, readonly query: string) {
+    super(query);
+    this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+  }
+
+  get enabled() {
+    return this.contextValue!.endsWith('enabled');
+  }
+
+  get disabled() {
+    return this.contextValue!.endsWith('disabled');
+  }
+
+  delete() {
+    this.parent.filters.splice(this.parent.filters.indexOf(this), 1);
+  }
+
+  enable() {
+    this.parent.enable(this);
+  }
+
+  disable() {
+    this.parent.disable(this);
+  }
+}
+
 export class TreeAsset extends StitchTreeItemBase<'asset'> {
   override readonly kind = 'asset';
   readonly asset: Asset;
@@ -15,6 +77,7 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
 
   constructor(readonly parent: GameMakerFolder, asset: Asset) {
     super(asset.name);
+    this.contextValue = this.kind;
     TreeAsset.lookup.set(asset, this);
 
     this.asset = asset;
@@ -89,6 +152,7 @@ export class TreeCode extends StitchTreeItemBase<'code'> {
 
   constructor(readonly parent: TreeAsset, readonly code: Code) {
     super(code.name);
+    this.contextValue = this.kind;
     TreeCode.lookup.set(code, this);
 
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
@@ -143,6 +207,7 @@ export class TreeSpriteFrame extends StitchTreeItemBase<'sprite-frame'> {
     readonly idx: number,
   ) {
     super(`[${idx}] ${imagePath.name}`);
+    this.contextValue = this.kind;
     this.iconPath = vscode.Uri.file(imagePath.absolute);
     this.command = {
       command: 'vscode.open',
@@ -157,6 +222,7 @@ export class TreeShaderFile extends StitchTreeItemBase<'shader-file'> {
   override readonly kind = 'shader-file';
   constructor(readonly parent: TreeAsset, readonly path: Pathy<string>) {
     super(path.hasExtension('vsh') ? 'Vertex' : 'Fragment');
+    this.contextValue = this.kind;
     this.command = {
       command: 'vscode.open',
       title: 'Open',

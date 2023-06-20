@@ -44,6 +44,30 @@
         "enablement": "stitch.projectCount > 0 && resourceExtname =~ /\\.(yy|gml)$/"
       },
       {
+        "command": "stitch.assets.filters.enable",
+        "icon": "$(filter)",
+        "title": "Enable Filter",
+        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+      },
+      {
+        "command": "stitch.assets.filters.disable",
+        "icon": "$(filter-filled)",
+        "title": "Disable Filter",
+        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+      },
+      {
+        "command": "stitch.assets.filters.new",
+        "icon": "$(gist-new)",
+        "title": "New Filter...",
+        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+      },
+      {
+        "command": "stitch.assets.filters.delete",
+        "icon": "$(close)",
+        "title": "Delete Filter",
+        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.assets.newFolder",
         "title": "New Group...",
         "icon": "$(new-folder)",
@@ -228,6 +252,26 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "stitch.assets.filters.delete",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem =~ /^tree-filter-(enabled|disabled)/",
+          "group": "inline@2"
+        },
+        {
+          "command": "stitch.assets.filters.enable",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == tree-filter-disabled",
+          "group": "inline@1"
+        },
+        {
+          "command": "stitch.assets.filters.disable",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == tree-filter-enabled",
+          "group": "inline@1"
+        },
+        {
+          "command": "stitch.assets.filters.new",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == tree-filter-group",
+          "group": "inline"
+        },
         {
           "command": "stitch.assets.newScript",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",

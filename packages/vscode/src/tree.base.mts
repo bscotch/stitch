@@ -21,7 +21,6 @@ export abstract class StitchTreeItemBase<
 
   constructor(label: string) {
     super(label);
-    this.contextValue = this.kind;
   }
 
   setBaseIcon(icon: string) {
