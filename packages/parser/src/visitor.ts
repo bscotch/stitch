@@ -23,6 +23,7 @@ import type {
   WithStatementCstChildren,
 } from '../gml-cst.js';
 import { JsdocSummary, parseJsdoc } from './jsdoc.js';
+import { logger } from './logger.js';
 import {
   GmlVisitorBase,
   VisitorContext,
@@ -44,9 +45,13 @@ import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
 import { SymbolProcessor } from './visitor.processor.js';
 
 export function processSymbols(file: Code) {
-  const processor = new SymbolProcessor(file);
-  const visitor = new GmlSymbolVisitor(processor);
-  visitor.FIND_SYMBOLS(file.cst);
+  try {
+    const processor = new SymbolProcessor(file);
+    const visitor = new GmlSymbolVisitor(processor);
+    visitor.FIND_SYMBOLS(file.cst);
+  } catch (error) {
+    logger.error(error);
+  }
 }
 
 export class GmlSymbolVisitor extends GmlVisitorBase {

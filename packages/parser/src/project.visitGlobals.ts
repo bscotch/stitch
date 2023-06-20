@@ -7,6 +7,7 @@ import type {
   IdentifierAccessorCstChildren,
   MacroStatementCstChildren,
 } from '../gml-cst.js';
+import { logger } from './logger.js';
 import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
 import { Position, Range } from './project.location.js';
@@ -16,9 +17,13 @@ import { PrimitiveName } from './types.primitives.js';
 import { assert } from './util.js';
 
 export function processGlobalSymbols(file: Code) {
-  const processor = new GlobalDeclarationsProcessor(file);
-  const visitor = new GmlGlobalDeclarationsVisitor(processor);
-  visitor.extractGlobalDeclarations(file.cst);
+  try {
+    const processor = new GlobalDeclarationsProcessor(file);
+    const visitor = new GmlGlobalDeclarationsVisitor(processor);
+    visitor.extractGlobalDeclarations(file.cst);
+  } catch (err) {
+    logger.error(err);
+  }
 }
 
 class GlobalDeclarationsProcessor {
