@@ -3,6 +3,7 @@ import { VisitorContext, withCtxKind } from './parser.js';
 import { fixITokenLocation } from './project.location.js';
 import { Symbol } from './project.symbol.js';
 import type { FunctionType, StructType, Type, TypeMember } from './types.js';
+import { mergeManyTypes } from './types.merge.js';
 import { assert, ok } from './util.js';
 import type { GmlSymbolVisitor } from './visitor.js';
 
@@ -11,6 +12,12 @@ export function visitFunctionExpression(
   children: FunctionExpressionCstChildren,
   ctx: VisitorContext,
 ): Type<'Function'> {
+  // Reset the list of return values
+  ctx = {
+    ...ctx,
+    returns: [],
+  };
+
   // Get this identifier if we already have it.
   const identifier = this.identifier(children, ctx);
   // Consume the most recent jsdoc
@@ -57,9 +64,6 @@ export function visitFunctionExpression(
       : (this.PROCESSOR.currentSelf as StructType);
   if (docs?.type.deprecated) {
     functionType.deprecated = docs.type.deprecated;
-  }
-  if (docs?.type.returns) {
-    functionType.returns = docs.type.returns;
   }
 
   // Ensure that constructors have an attached constructed type
@@ -159,6 +163,17 @@ export function visitFunctionExpression(
 
   // Process the function body
   this.visit(children.blockStatement, withCtxKind(ctx, 'functionBody'));
+
+  // Update the RETURN type based on the return statements found in the body
+  const inferredReturnType = ctx.returns?.length
+    ? mergeManyTypes(ctx.returns)
+    : this.PROCESSOR.project.createType('Undefined');
+  if (docs?.type.returns) {
+    functionType.returns = docs.type.returns;
+    // TODO: Check against the inferred return types
+  } else {
+    functionType.returns = inferredReturnType;
+  }
 
   // End the scope
   const endBrace = fixITokenLocation(

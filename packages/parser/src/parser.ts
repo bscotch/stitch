@@ -825,6 +825,8 @@ export interface VisitorContext {
   // ctxStack: Referenceable[];
   /** Helpful to get general info about the context of the current node. */
   ctxKindStack: NodeContextKind[];
+  /** If we're in a function, the return statement values we've found */
+  returns?: Type[];
 }
 
 export function withCtxKind<T extends NodeContextKind>(
@@ -833,6 +835,7 @@ export function withCtxKind<T extends NodeContextKind>(
 ): VisitorContext {
   return {
     ctxKindStack: [...ctx.ctxKindStack, kind],
+    returns: ctx.returns,
   };
 }
 

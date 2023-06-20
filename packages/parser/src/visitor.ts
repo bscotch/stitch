@@ -14,6 +14,7 @@ import type {
   MultilineSingleStringLiteralCstChildren,
   ParenthesizedExpressionCstChildren,
   PrimaryExpressionCstChildren,
+  ReturnStatementCstChildren,
   StaticVarDeclarationsCstChildren,
   StringLiteralCstChildren,
   StructLiteralCstChildren,
@@ -233,6 +234,20 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     context: VisitorContext,
   ): Type<'Function'> {
     return visitFunctionExpression.call(this, children, context);
+  }
+
+  override returnStatement(
+    children: ReturnStatementCstChildren,
+    ctx: VisitorContext,
+  ): Type {
+    const returnType = children.assignmentRightHandSide
+      ? this.assignmentRightHandSide(
+          children.assignmentRightHandSide[0].children,
+          withCtxKind(ctx, 'functionReturn'),
+        )
+      : this.UNKNOWN;
+    ctx.returns?.push(returnType);
+    return returnType;
   }
 
   /** Called on *naked* identifiers and those that have accessors/suffixes of various sorts. */
