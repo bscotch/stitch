@@ -159,7 +159,13 @@ export class FunctionArgRange extends Range {
 /** Extend a class to add `def`, `refs`, and related fields and methods. */
 export function Refs<TBase extends Constructor>(Base: TBase) {
   return class extends Base {
-    def: Range | undefined = undefined;
+    /**
+     * If `true`, then this definitely exists but may not have a place where it
+     * is declared. E.g. the `global` variable. In that case this would be set to
+     * `true`. Otherwise `undefined` is interpreted to mean that this thing
+     * does not have a definite declaration.
+     */
+    def: Range | { file?: undefined } | undefined = undefined;
     refs = new Set<Reference>();
 
     addRef(location: Range, type?: Type): Reference {

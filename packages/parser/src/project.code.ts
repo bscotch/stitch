@@ -301,15 +301,19 @@ export class Code {
       if (cleared.has(symbol) || !symbol.refs.size) {
         continue;
       }
-      const isDefinedInThisFile = this === symbol.def?.file;
       // If the symbol was declared in this file, remove its location
+      // to flag it as undeclared.
+      const isDefinedInThisFile = this === symbol.def?.file;
       if (isDefinedInThisFile) {
         symbol.def = undefined;
       }
-      // Remove all references to this symbol found in this file
+      // Remove all references to this symbol found in this file.
+      // Flag all other files as being dirty so they get reprocessed.
       for (const symbolRef of symbol.refs) {
         if (this === symbolRef.file) {
           symbol.refs.delete(symbolRef);
+        } else {
+          symbolRef.file.dirty = true;
         }
       }
       cleared.add(symbol);
@@ -335,9 +339,9 @@ export class Code {
     this.updateGlobals();
     this.updateAllSymbols();
     this.updateDiagnostics();
-    // TODO: Update everything that ended up dirty due to the changes
+    // Re-run diagnostics on everything that ended up dirty due to the changes
     if (options?.reloadDirty) {
-      await this.project.reloadDirtyCode();
+      this.project.recheckDirtyCodeDiagnostics();
     }
   }
 
@@ -416,6 +420,18 @@ export class Code {
     }
   }
 
+  protected computeUndeclaredSymbolDiagnostics() {
+    this.diagnostics.UNDECLARED_VARIABLE_REFERENCE = [];
+    for (const ref of this._refs) {
+      if (ref.item.def) {
+        continue;
+      }
+      this.diagnostics.UNDECLARED_VARIABLE_REFERENCE.push(
+        Diagnostic.error(`Undeclared symbol \`${ref.item.name}\``, ref, 'warn'),
+      );
+    }
+  }
+
   updateGlobals() {
     this.reset();
     return processGlobalSymbols(this);
@@ -425,15 +441,18 @@ export class Code {
     processSymbols(this);
   }
 
+  /** Update and emit diagnostics */
   updateDiagnostics() {
     this.discoverEventInheritanceWarnings();
     this.computeFunctionCallDiagnostics();
-    const diagnostics: Diagnostic[] = [];
+    this.computeUndeclaredSymbolDiagnostics();
+    const allDiagnostics: Diagnostic[] = [];
     for (const items of Object.values(this.diagnostics)) {
-      diagnostics.push(...items);
+      allDiagnostics.push(...items);
     }
-    if (diagnostics.length) {
-      this.project.emitDiagnostics(diagnostics);
+    if (allDiagnostics.length) {
+      this.project.emitDiagnostics(allDiagnostics);
     }
+    return allDiagnostics;
   }
 }

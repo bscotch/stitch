@@ -8,7 +8,6 @@ export const enum Flag {
   Global = 1 << 6,
   Parameter = 1 << 7,
   Native = 1 << 8, // Is a built-in
-  Undeclared = 1 << 9, // Has been declared
   ReadWrite = Readable | Writable,
 }
 
@@ -21,13 +20,6 @@ export class Flaggable {
     } else {
       this.flags &= ~flag;
     }
-  }
-
-  get undeclared() {
-    return !!(this.flags & Flag.Undeclared);
-  }
-  set undeclared(declared: boolean) {
-    this.setFlag(Flag.Undeclared, declared);
   }
 
   get native() {

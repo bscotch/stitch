@@ -20,7 +20,7 @@ export function processGlobalSymbols(file: Code) {
   try {
     const processor = new GlobalDeclarationsProcessor(file);
     const visitor = new GmlGlobalDeclarationsVisitor(processor);
-    visitor.extractGlobalDeclarations(file.cst);
+    visitor.EXTRACT_GLOBAL_DECLARATIONS(file.cst);
   } catch (err) {
     logger.error(err);
   }
@@ -109,12 +109,13 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     symbol.definedAt(range);
     symbol.global = true;
     symbol.addRef(range, symbol.type);
-    type.addRef(range);
     return symbol;
   }
 
-  extractGlobalDeclarations(input: CstNode) {
+  EXTRACT_GLOBAL_DECLARATIONS(input: CstNode) {
     this.PROCESSOR.file.callsSuper = false;
+    // If we are reprocessing, we want the list of globals that used
+    // to be declared here in case any have gone missing.
     this.visit(input);
     return this.PROCESSOR;
   }
@@ -146,7 +147,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       // Does member already exist?
       const member =
         type.getMember(name.image) || type.addMember(name.image, memberType);
-      member.type ||= memberType;
+      member.type.coerceTo(memberType);
       member.idx = i;
       member.definedAt(range);
       member.addRef(range);
@@ -154,7 +155,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     // Flag this member as UNDECLARED so we can create diagnostics
     for (const member of type.listMembers()) {
       if (!keepNames.has(member.name)) {
-        type.undeclared = true;
+        member.def = undefined;
       }
     }
   }

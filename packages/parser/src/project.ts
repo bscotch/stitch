@@ -86,9 +86,9 @@ export class Project {
     this.dirtyCode.add(code);
   }
 
-  async reloadDirtyCode() {
+  recheckDirtyCodeDiagnostics() {
     for (const code of this.dirtyCode) {
-      await code.reload(code.content);
+      code.updateDiagnostics();
     }
     this.dirtyCode.clear();
   }
@@ -110,7 +110,10 @@ export class Project {
   createStructType(subtype?: 'self' | 'instance'): StructType {
     const type = this.createType('Struct') as StructType;
     if (subtype) {
-      type.addMember('self', type);
+      const selfMember = type.addMember('self', type);
+      selfMember.def = {};
+      selfMember.writable = false;
+      type.def = {};
     }
     if (subtype === 'instance') {
       type.instance = true;
@@ -485,6 +488,7 @@ export class Project {
       .derive()
       .named('global') as StructType;
     this.self.global = true;
+    this.self.def = {};
     this.symbol = new Symbol('global').addType(this.self);
     this.symbols.set('global', this.symbol);
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);

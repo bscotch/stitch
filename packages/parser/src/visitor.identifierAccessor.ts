@@ -38,12 +38,7 @@ export function visitIdentifierAccessor(
     | undefined = this.identifier(children.identifier[0].children, ctx);
   if (!currentItem) {
     if (identity) {
-      this.PROCESSOR.addDiagnostic(
-        'UNDECLARED_VARIABLE_REFERENCE',
-        children.identifier[0].location!,
-        `Unknown identifier`,
-        'error',
-      );
+      // TODO: Add this as an undeclared variable
     }
     return finalType;
   } else {
@@ -143,14 +138,6 @@ export function visitIdentifierAccessor(
               // new member.
               if (isLastSuffix && assignment) {
                 newMember.definedAt(range);
-              } else {
-                // Else emit a warning that this member is
-                // not definitely defined.
-                this.PROCESSOR.addDiagnostic(
-                  'UNDECLARED_VARIABLE_REFERENCE',
-                  nextItemLocation,
-                  `Member ${nextIdentity.name} is not definitely defined`,
-                );
               }
               nextItem = {
                 item: newMember,
