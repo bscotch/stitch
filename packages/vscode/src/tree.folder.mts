@@ -62,11 +62,14 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
     return this.folders.find((x) => x.name === name) as GameMakerFolder;
   }
 
-  addFolder(name: string, project?: GameMakerProject): GameMakerFolder {
+  addFolder(
+    name: string,
+    options?: { project?: GameMakerProject },
+  ): GameMakerFolder {
     let folder = this.getFolder(name);
     if (!folder) {
-      folder = project
-        ? new GameMakerProjectFolder(this, name, project)
+      folder = options?.project
+        ? new GameMakerProjectFolder(this, name, options.project)
         : new GameMakerFolder(this, name);
       this.folders.push(folder);
     }
@@ -94,6 +97,7 @@ export class GameMakerProjectFolder extends GameMakerFolder {
     readonly _project: GameMakerProject,
   ) {
     super(parent, name);
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     GameMakerFolder.lookup.set(this.path, this);
 
     this.setGameMakerIcon('gamemaker');

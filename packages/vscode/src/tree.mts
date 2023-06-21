@@ -207,6 +207,7 @@ export class GameMakerTreeProvider
         .replace(/^folders[\\/]/, '')
         .replace(/\.yy$/, '')
         .split(/[\\/]/);
+    const toReveal: Treeable[] = [];
 
     // Grab the current filters before nuking everything.
     const filterGroups = new Map<GameMakerProject, TreeFilterGroup>();
@@ -217,10 +218,9 @@ export class GameMakerTreeProvider
     // Rebuild the tree
     this.tree = new GameMakerRootFolder();
     for (const project of this.projects) {
-      const projectFolder = this.tree.addFolder(
-        project.name,
+      const projectFolder = this.tree.addFolder(project.name, {
         project,
-      ) as GameMakerProjectFolder;
+      }) as GameMakerProjectFolder;
       // Add the filter groups
       if (filterGroups.has(project)) {
         projectFolder.filterGroup = filterGroups.get(project)!;
@@ -262,22 +262,20 @@ export class GameMakerTreeProvider
           continue;
         }
         let parent = projectFolder as GameMakerFolder;
-        const state = filter
-          ? vscode.TreeItemCollapsibleState.Expanded
-          : vscode.TreeItemCollapsibleState.Collapsed;
-        parent.collapsibleState = state;
-        const folders = [parent];
         for (let i = 0; i < pathParts.length; i++) {
           parent = parent.addFolder(pathParts[i]);
-          folders.push(parent);
         }
-        parent.addResource(new TreeAsset(parent, resource));
-        for (const folder of folders) {
-          folder.collapsibleState = state;
+        const asset = new TreeAsset(parent, resource);
+        parent.addResource(asset);
+        if (filter) {
+          toReveal.push(asset);
         }
       }
     }
     this._onDidChangeTreeData.fire();
+    for (const element of toReveal) {
+      this.view.reveal(element, { focus: false, expand: false, select: false });
+    }
     return this;
   }
 
