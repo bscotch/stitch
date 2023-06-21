@@ -298,7 +298,7 @@ export class Code {
     const cleared = new Set<ReferenceableType>();
     for (const ref of this._refs) {
       const symbol = ref.item;
-      if (cleared.has(symbol) || !symbol.refs.size) {
+      if (cleared.has(symbol)) {
         continue;
       }
       // If the symbol was declared in this file, remove its location
