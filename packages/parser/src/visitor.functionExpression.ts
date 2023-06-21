@@ -114,7 +114,11 @@ export function visitFunctionExpression(
     // Use JSDocs to determine the type, description, etc of the parameter
     let fromJsdoc = docs?.type.getParameter(i);
     if (fromJsdoc && param.image !== fromJsdoc.name) {
-      this.PROCESSOR.addDiagnostic(param, `Parameter name mismatch`);
+      this.PROCESSOR.addDiagnostic(
+        'JSDOC_MISMATCH',
+        param,
+        `Parameter name mismatch`,
+      );
       // Unset it so we don't accidentally use it!
       fromJsdoc = undefined;
     }

@@ -1,7 +1,11 @@
 import type { Pathy } from '@bscotch/pathy';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
-import { Diagnostic } from './project.diagnostics.js';
+import {
+  Diagnostic,
+  DiagnosticCollectionName,
+  DiagnosticCollections,
+} from './project.diagnostics.js';
 import {
   FunctionArgRange,
   LinePosition,
@@ -22,7 +26,7 @@ export class Code {
   readonly $tag = 'gmlFile';
   readonly scopes: Scope[] = [];
 
-  protected _diagnostics: Diagnostic[] = [];
+  protected diagnostics!: DiagnosticCollections;
   /** List of all symbol references in this file, in order of appearance. */
   protected _refs: Reference[] = [];
   /** Ranges representing function call arguments,
@@ -39,7 +43,9 @@ export class Code {
   /** For object events, whether or not `event_inherited` is unambiguously being called */
   public callsSuper = false;
 
-  constructor(readonly asset: Asset, readonly path: Pathy<string>) {}
+  constructor(readonly asset: Asset, readonly path: Pathy<string>) {
+    this.clearAllDiagnostics();
+  }
 
   /** When set to `true`, this file will be flagged for reprocessing. */
   set dirty(value: boolean) {
@@ -216,7 +222,7 @@ export class Code {
    * is useful for editors that want to provide a live preview.
    */
   async parse(content?: string) {
-    this._diagnostics = [];
+    this.clearAllDiagnostics();
     this._content =
       typeof content === 'string' ? content : await this.path.read();
     this._parsed = parser.parse(this.content);
@@ -224,19 +230,31 @@ export class Code {
       const fromToken = isNaN(diagnostic.token.startOffset)
         ? diagnostic.previousToken
         : diagnostic.token;
-      this.addDiagnostic({
-        $tag: 'diagnostic',
-        kind: 'parser',
-        message: diagnostic.message,
-        severity: 'error',
-        info: diagnostic,
-        location: Range.fromCst(this, fromToken || diagnostic.token),
-      });
+      this.diagnostics.SYNTAX_ERROR.push(
+        Diagnostic.error(
+          diagnostic.message,
+          Range.fromCst(this, fromToken || diagnostic.token),
+          diagnostic,
+        ),
+      );
     }
   }
 
-  addDiagnostic(diagnostic: Diagnostic) {
-    this._diagnostics.push(diagnostic);
+  protected clearAllDiagnostics() {
+    this.diagnostics = {
+      MISSING_EVENT_INHERITED: [],
+      SYNTAX_ERROR: [],
+      UNDECLARED_VARIABLE_REFERENCE: [],
+      TOO_MANY_ARGUMENTS: [],
+      MISSING_REQUIRED_ARGUMENT: [],
+      GLOBAl_SELF: [],
+      JSDOC_MISMATCH: [],
+      INVALID_OPERATION: [],
+    };
+  }
+
+  addDiagnostic(collection: DiagnosticCollectionName, diagnostic: Diagnostic) {
+    this.diagnostics[collection].push(diagnostic);
   }
 
   addRef(ref: Reference) {
@@ -319,11 +337,12 @@ export class Code {
     this.updateDiagnostics();
     // TODO: Update everything that ended up dirty due to the changes
     if (options?.reloadDirty) {
-      this.project.reloadDirtyCode();
+      await this.project.reloadDirtyCode();
     }
   }
 
-  protected handleEventInheritance() {
+  protected discoverEventInheritanceWarnings() {
+    this.diagnostics.MISSING_EVENT_INHERITED = [];
     if (
       this.asset.assetType !== 'objects' ||
       !this.isCreateEvent ||
@@ -336,9 +355,8 @@ export class Code {
     // need to unlink the type.
     if (!this.callsSuper) {
       this.asset.instanceType!.parent = undefined;
-      this._diagnostics.push({
+      this.diagnostics.MISSING_EVENT_INHERITED.push({
         $tag: 'diagnostic',
-        kind: 'parser',
         message: `Event does not call \`event_inherited()\`, so it will not inherit from its parent.`,
         severity: 'warning',
         location: this.startRange,
@@ -353,6 +371,8 @@ export class Code {
   protected computeFunctionCallDiagnostics() {
     // Look through the function call ranges to see if we have too many or too few arguments.
     assert(this._functionCalls, 'Function calls must be initialized');
+    this.diagnostics.MISSING_REQUIRED_ARGUMENT = [];
+    this.diagnostics.TOO_MANY_ARGUMENTS = [];
 
     calls: for (let i = 0; i < this._functionCalls.length; i++) {
       const args = this._functionCalls[i];
@@ -367,13 +387,12 @@ export class Code {
         const arg = args[j] as FunctionArgRange | undefined;
         const argIsEmpty = !arg?.hasExpression;
         if (!param.optional && argIsEmpty) {
-          this._diagnostics.push({
-            $tag: 'diagnostic',
-            kind: 'parser',
-            message: `Missing required argument \`${param.name}\` for function \`${func.name}\`.`,
-            severity: 'error',
-            location: arg || ref,
-          });
+          this.diagnostics.MISSING_REQUIRED_ARGUMENT.push(
+            Diagnostic.error(
+              `Missing required argument \`${param.name}\` for function \`${func.name}\`.`,
+              arg || ref,
+            ),
+          );
           // There may be more missing args but
           // that just starts to get noisy.
           continue calls;
@@ -390,15 +409,9 @@ export class Code {
       // Handle extra arguments.
       for (let j = params.length; j < args.length; j++) {
         const arg = args[j];
-        this._diagnostics.push({
-          $tag: 'diagnostic',
-          kind: 'parser',
-          message: `Extra argument for function \`${func.name}\`.`,
-          // Use a warning since this could be due to
-          // missing docs or legacy argument_count approaches
-          severity: 'warning',
-          location: arg,
-        });
+        this.diagnostics.TOO_MANY_ARGUMENTS.push(
+          Diagnostic.warn(`Extra argument for function \`${func.name}\`.`, arg),
+        );
       }
     }
   }
@@ -413,10 +426,14 @@ export class Code {
   }
 
   updateDiagnostics() {
-    this.handleEventInheritance();
+    this.discoverEventInheritanceWarnings();
     this.computeFunctionCallDiagnostics();
-    if (this._diagnostics.length) {
-      this.project.emitDiagnostics(this._diagnostics);
+    const diagnostics: Diagnostic[] = [];
+    for (const items of Object.values(this.diagnostics)) {
+      diagnostics.push(...items);
+    }
+    if (diagnostics.length) {
+      this.project.emitDiagnostics(diagnostics);
     }
   }
 }

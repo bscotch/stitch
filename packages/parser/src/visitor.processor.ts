@@ -1,7 +1,11 @@
 import type { CstNodeLocation } from 'chevrotain';
 import { JsdocSummary } from './jsdoc.js';
 import type { Code } from './project.code.js';
-import type { Diagnostic } from './project.diagnostics.js';
+import {
+  Diagnostic,
+  DiagnosticCollectionName,
+  DiagnosticSeverity,
+} from './project.diagnostics.js';
 import { Position, Range, type Scope } from './project.location.js';
 import { Type, type EnumType, type StructType } from './types.js';
 import { assert } from './util.js';
@@ -43,17 +47,15 @@ export class SymbolProcessor {
   }
 
   addDiagnostic(
+    kind: DiagnosticCollectionName,
     where: CstNodeLocation,
     message: string,
-    severity: Diagnostic['severity'] = 'warning',
+    severity: DiagnosticSeverity = 'warning',
   ) {
-    this.file.addDiagnostic({
-      $tag: 'diagnostic',
-      kind: 'parser',
-      message,
-      severity,
-      location: Range.fromCst(this.file, where),
-    });
+    this.file.addDiagnostic(
+      kind,
+      new Diagnostic(message, Range.fromCst(this.file, where), severity),
+    );
   }
 
   get fullScope() {

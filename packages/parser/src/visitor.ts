@@ -112,6 +112,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         // (should not use self to refer to global)
         if (scope.selfIsGlobal) {
           this.PROCESSOR.addDiagnostic(
+            'GLOBAl_SELF',
             children.Self![0],
             '`self` refers to the global scope here, which is probably unintentional.',
           );

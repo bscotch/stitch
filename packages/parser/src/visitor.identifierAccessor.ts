@@ -39,6 +39,7 @@ export function visitIdentifierAccessor(
   if (!currentItem) {
     if (identity) {
       this.PROCESSOR.addDiagnostic(
+        'UNDECLARED_VARIABLE_REFERENCE',
         children.identifier[0].location!,
         `Unknown identifier`,
         'error',
@@ -146,6 +147,7 @@ export function visitIdentifierAccessor(
                 // Else emit a warning that this member is
                 // not definitely defined.
                 this.PROCESSOR.addDiagnostic(
+                  'UNDECLARED_VARIABLE_REFERENCE',
                   nextItemLocation,
                   `Member ${nextIdentity.name} is not definitely defined`,
                 );
@@ -180,6 +182,7 @@ export function visitIdentifierAccessor(
           ).includes(currentType?.kind!);
           if (!isDotAccessible) {
             this.PROCESSOR.addDiagnostic(
+              'INVALID_OPERATION',
               currentLocation,
               `Type ${currentType?.toFeatherString()} is not a struct`,
             );
