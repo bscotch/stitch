@@ -26,8 +26,14 @@ export function typeToHoverDetails(type: Type) {
       return '';
     }
     code = '```ts\n{\n';
+    let i = 0;
     for (const member of members) {
       code += `  ${member.name}: ${member.type.toFeatherString()},\n`;
+      i++;
+      if (i > 19) {
+        code += '  // ... and more!\n';
+        break;
+      }
     }
     code += '}\n```';
   }
