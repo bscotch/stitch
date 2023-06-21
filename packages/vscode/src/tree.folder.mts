@@ -1,7 +1,7 @@
 import vscode from 'vscode';
 import type { GameMakerProject } from './extension.project.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
-import type { TreeAsset, TreeFilterGroup } from './tree.items.mjs';
+import { TreeAsset, TreeFilterGroup } from './tree.items.mjs';
 
 export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
   override readonly kind = 'folder';
@@ -86,7 +86,7 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
 }
 
 export class GameMakerProjectFolder extends GameMakerFolder {
-  filterGroups: TreeFilterGroup[] = [];
+  filterGroup: TreeFilterGroup;
 
   constructor(
     override parent: GameMakerFolder,
@@ -98,6 +98,7 @@ export class GameMakerProjectFolder extends GameMakerFolder {
 
     this.setGameMakerIcon('gamemaker');
     this.contextValue = 'project';
+    this.filterGroup = new TreeFilterGroup(this, 'Assets');
   }
 
   override get project(): GameMakerProject {

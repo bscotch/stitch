@@ -150,6 +150,15 @@ export class GameMakerTreeProvider
   }
 
   getChildren(element?: Treeable | undefined): Treeable[] | undefined {
+    const assetSorter = (a: TreeAsset, b: TreeAsset) => {
+      return a.asset.name
+        .toLowerCase()
+        .localeCompare(b.asset.name.toLowerCase());
+    };
+    const folderSorter = (a: GameMakerFolder, b: GameMakerFolder) => {
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    };
+
     if (!element) {
       // Then we're at the root.
       // If there is only one project (folder), we can return its tree.
@@ -160,14 +169,17 @@ export class GameMakerTreeProvider
       }
     } else if (element instanceof GameMakerProjectFolder) {
       return [
-        ...element.filterGroups,
-        ...element.folders,
-        ...element.resources,
+        element.filterGroup,
+        ...element.folders.sort(folderSorter),
+        ...element.resources.sort(assetSorter),
       ];
     } else if (element instanceof GameMakerFolder) {
-      return [...element.folders, ...element.resources];
+      return [
+        ...element.folders.sort(folderSorter),
+        ...element.resources.sort(assetSorter),
+      ];
     } else if (element instanceof TreeFilterGroup) {
-      return element.filters;
+      return element.filters.sort((a, b) => a.query.localeCompare(b.query));
     } else if (element instanceof TreeAsset) {
       if (element.asset.assetType === 'objects') {
         return element.asset.gmlFilesArray.map((f) => new TreeCode(element, f));
@@ -194,9 +206,9 @@ export class GameMakerTreeProvider
         .split(/[\\/]/);
 
     // Grab the current filters before nuking everything.
-    const filterGroups = new Map<GameMakerProject, TreeFilterGroup[]>();
+    const filterGroups = new Map<GameMakerProject, TreeFilterGroup>();
     for (const projectFolder of this.tree.folders) {
-      filterGroups.set(projectFolder.project, projectFolder.filterGroups);
+      filterGroups.set(projectFolder.project, projectFolder.filterGroup);
     }
 
     // Rebuild the tree
@@ -208,37 +220,32 @@ export class GameMakerTreeProvider
       ) as GameMakerProjectFolder;
       // Add the filter groups
       if (filterGroups.has(project)) {
-        projectFolder.filterGroups = filterGroups.get(project)!;
+        projectFolder.filterGroup = filterGroups.get(project)!;
       } else {
         for (const filterGroupName of ['Folders', 'Assets']) {
           const filterGroup = new TreeFilterGroup(
             projectFolder,
             filterGroupName,
           );
-          projectFolder.filterGroups.push(filterGroup);
+          projectFolder.filterGroup = filterGroup;
         }
       }
 
-      // Add all of the folders
-      const folderQuery =
-        projectFolder.filterGroups[0].enabled?.query?.toLocaleLowerCase();
-      for (const folder of project.yyp.Folders) {
-        const pathParts = folderPathToParts(folder.folderPath);
-        // Apply folder filters, if any
-        if (folderQuery) {
-          if (!pathParts.join('/').toLocaleLowerCase().includes(folderQuery)) {
-            continue;
+      const query = projectFolder.filterGroup.enabled?.query;
+      const filter = query?.length ? new RegExp(query, 'i') : undefined;
+
+      // Add all of the folders, unless we're filtering
+      if (!filter) {
+        for (const folder of project.yyp.Folders) {
+          const pathParts = folderPathToParts(folder.folderPath);
+          let parent = projectFolder as GameMakerFolder;
+          for (let i = 0; i < pathParts.length; i++) {
+            parent = parent.addFolder(pathParts[i]);
           }
         }
-        let parent = projectFolder as GameMakerFolder;
-        for (let i = 0; i < pathParts.length; i++) {
-          parent = parent.addFolder(pathParts[i]);
-        }
       }
 
-      // Add all of the resources
-      const assetQuery =
-        projectFolder.filterGroups[1].enabled?.query?.toLocaleLowerCase();
+      // Add all of the resources, applying the filter if any
       for (const [, resource] of project.assets) {
         const path = (resource.yy.parent as any).path;
         if (!path) {
@@ -247,10 +254,8 @@ export class GameMakerTreeProvider
         }
         const pathParts = folderPathToParts(path);
         // Apply asset filters, if any
-        if (assetQuery) {
-          if (!resource.name.toLocaleLowerCase().includes(assetQuery)) {
-            continue;
-          }
+        if (filter && !resource.name.match(filter)) {
+          continue;
         }
         let parent = projectFolder as GameMakerFolder;
         for (let i = 0; i < pathParts.length; i++) {
