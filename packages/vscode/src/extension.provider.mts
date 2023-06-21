@@ -147,7 +147,7 @@ export class StitchProvider
     return swallowThrown(() => {
       const ref = this.getReference(document, position);
       const item = ref?.item;
-      if (item && !item.native && item.def) {
+      if (item && !item.native && item.def?.file) {
         return locationOf(item.def);
       } else if (ref && item?.name === 'event_inherited') {
         // Then this should take us to the parent event.
@@ -357,11 +357,9 @@ export class StitchProvider
         // Add the processing promise to a map so
         // that other functionality can wait for it
         // to complete.
-        this.provider.processingFiles.set(
-          doc.uri.fsPath,
-          StitchProvider.provider.updateFile(doc),
-        );
-        this.provider.processingFiles.get(doc.uri.fsPath)!.then(() => {
+        const updateWait = StitchProvider.provider.updateFile(doc);
+        this.provider.processingFiles.set(doc.uri.fsPath, updateWait);
+        updateWait.then(() => {
           this.provider.processingFiles.delete(doc.uri.fsPath);
         });
       };

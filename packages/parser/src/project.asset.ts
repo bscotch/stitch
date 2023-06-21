@@ -250,6 +250,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     item.symbol.addType(
       item.project.native.types.get(assetType)!.derive().named(item.name),
     );
+    item.symbol.def = {};
     if (item.assetType === 'objects') {
       item.instanceType = item.project
         .createStructType('instance')
