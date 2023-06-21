@@ -77,8 +77,21 @@ export class Project {
 
   watcher?: chokidar.FSWatcher;
   protected emitter = new EventEmitter();
+  /** Code that needs to be reprocessed, for one reason or another. */
+  protected dirtyCode = new Set<Code>();
 
   protected constructor(readonly yypPath: Pathy) {}
+
+  addDirtyCode(code: Code): void {
+    this.dirtyCode.add(code);
+  }
+
+  async reloadDirtyCode() {
+    for (const code of this.dirtyCode) {
+      await code.reload(code.content);
+    }
+    this.dirtyCode.clear();
+  }
 
   get ideVersion(): string {
     return this.yyp.MetaData.IDEVersion;
@@ -579,9 +592,9 @@ export class Project {
       }
     }
     logger.log('Symbols discovered in', Date.now() - t, 'ms');
-    if (options?.watch) {
-      this.watch();
-    }
+    // if (options?.watch) {
+    //   this.watch();
+    // }
   }
 
   static async initialize(

@@ -134,8 +134,10 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     // Might be updating an existing enum, so mutate members instead
     // of wholesale replacing to maintain cross-references.
     assert(children.enumMember, 'Enum must have members');
+    const keepNames = new Set<string>();
     for (let i = 0; i < children.enumMember.length; i++) {
       const name = children.enumMember[i].children.Identifier[0];
+      keepNames.add(name.image);
       const range = this.PROCESSOR.range(name);
       const memberType = this.PROCESSOR.project
         .createType('EnumMember')
@@ -149,7 +151,12 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       member.definedAt(range);
       member.addRef(range);
     }
-    // TODO: Remove any members that are not defined here.
+    // Flag this member as UNDECLARED so we can create diagnostics
+    for (const member of type.listMembers()) {
+      if (!keepNames.has(member.name)) {
+        type.undeclared = true;
+      }
+    }
   }
 
   /**

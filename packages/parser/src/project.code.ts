@@ -21,6 +21,7 @@ import { processSymbols } from './visitor.js';
 export class Code {
   readonly $tag = 'gmlFile';
   readonly scopes: Scope[] = [];
+
   protected _diagnostics: Diagnostic[] = [];
   /** List of all symbol references in this file, in order of appearance. */
   protected _refs: Reference[] = [];
@@ -39,6 +40,13 @@ export class Code {
   public callsSuper = false;
 
   constructor(readonly asset: Asset, readonly path: Pathy<string>) {}
+
+  /** When set to `true`, this file will be flagged for reprocessing. */
+  set dirty(value: boolean) {
+    if (value) {
+      this.project.addDirtyCode(this);
+    }
+  }
 
   get isScript() {
     return this.asset.assetType === 'scripts';
@@ -303,11 +311,16 @@ export class Code {
    * Reprocess after a modification to the file. Optionally
    * provide new content to use instead of reading from disk.
    */
-  async reload(content?: string) {
-    await this.parse(content);
+  async reload(content?: string, options?: { reloadDirty?: boolean }) {
+    this._content = content || this._content;
+    await this.parse(this._content);
     this.updateGlobals();
     this.updateAllSymbols();
     this.updateDiagnostics();
+    // TODO: Update everything that ended up dirty due to the changes
+    if (options?.reloadDirty) {
+      this.project.reloadDirtyCode();
+    }
   }
 
   protected handleEventInheritance() {

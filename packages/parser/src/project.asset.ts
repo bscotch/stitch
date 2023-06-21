@@ -124,7 +124,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     if (!gml) {
       return;
     }
-    await gml.reload(virtualContent);
+    await gml.reload(virtualContent, { reloadDirty: true });
   }
 
   getGmlFile(path: Pathy) {

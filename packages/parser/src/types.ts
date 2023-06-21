@@ -4,7 +4,6 @@ import {
   type FeatherTypeUnion,
 } from './jsdoc.feather.js';
 import type { JsdocSummary } from './jsdoc.js';
-import { Flaggable } from './project.flags.js';
 import { Refs } from './project.location.js';
 import { narrows } from './types.checks.js';
 import {
@@ -13,6 +12,7 @@ import {
   typeFromParsedFeatherString,
   typeFromParsedJsdocs,
 } from './types.feather.js';
+import { Flaggable } from './types.flags.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
 import { mergeTypes } from './types.merge.js';
 import { PrimitiveName } from './types.primitives.js';
@@ -233,6 +233,20 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
       member.type.coerceTo(type);
     }
     return member;
+  }
+
+  removeMember(name: string) {
+    const idx = this._members?.findIndex((m) => m.name === name);
+    if (idx === undefined || idx === -1) {
+      return;
+    }
+    const member = this._members![idx];
+    this._members!.splice(idx, 1);
+    // Flag all referencing files as dirty
+    for (const ref of member.refs) {
+      ref.file.dirty = true;
+    }
+    // member should be garbage collected now
   }
 
   addUnionType(type: Type): this {
