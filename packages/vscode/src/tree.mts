@@ -36,9 +36,12 @@ export class GameMakerTreeProvider
   private _onDidChangeTreeData: vscode.EventEmitter<
     Treeable | undefined | null | void
   > = new vscode.EventEmitter<Treeable | undefined | null | void>();
-  readonly onDidChangeTreeData: vscode.Event<
+  readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+
+  private _onDidCollapseElement: vscode.EventEmitter<
     Treeable | undefined | null | void
-  > = this._onDidChangeTreeData.event;
+  > = new vscode.EventEmitter<Treeable | undefined | null | void>();
+  readonly onDidCollapseElement = this._onDidCollapseElement.event;
 
   constructor(readonly provider: StitchProvider) {}
 
@@ -246,6 +249,7 @@ export class GameMakerTreeProvider
       }
 
       // Add all of the resources, applying the filter if any
+      // If filtering, everything should be in the OPEN state
       for (const [, resource] of project.assets) {
         const path = (resource.yy.parent as any).path;
         if (!path) {
@@ -258,10 +262,19 @@ export class GameMakerTreeProvider
           continue;
         }
         let parent = projectFolder as GameMakerFolder;
+        const state = filter
+          ? vscode.TreeItemCollapsibleState.Expanded
+          : vscode.TreeItemCollapsibleState.Collapsed;
+        parent.collapsibleState = state;
+        const folders = [parent];
         for (let i = 0; i < pathParts.length; i++) {
           parent = parent.addFolder(pathParts[i]);
+          folders.push(parent);
         }
         parent.addResource(new TreeAsset(parent, resource));
+        for (const folder of folders) {
+          folder.collapsibleState = state;
+        }
       }
     }
     this._onDidChangeTreeData.fire();
@@ -276,6 +289,19 @@ export class GameMakerTreeProvider
       return;
     }
     const filter = group.addFilter(query);
+    this.rebuild();
+    this.view.reveal(filter);
+  }
+
+  async editFilter(filter: TreeFilter) {
+    const query = await vscode.window.showInputBox({
+      prompt: 'Update the asset filter query',
+      value: filter.query,
+    });
+    if (!query) {
+      return;
+    }
+    filter.query = query;
     this.rebuild();
     this.view.reveal(filter);
   }
@@ -303,6 +329,7 @@ export class GameMakerTreeProvider
   register() {
     this.view = vscode.window.createTreeView('bscotch-stitch-resources', {
       treeDataProvider: this.rebuild(),
+      showCollapseAll: true,
     });
     const subscriptions = [
       this.view,
@@ -333,6 +360,10 @@ export class GameMakerTreeProvider
       vscode.commands.registerCommand(
         'stitch.assets.filters.new',
         this.createFilter.bind(this),
+      ),
+      vscode.commands.registerCommand(
+        'stitch.assets.filters.edit',
+        this.editFilter.bind(this),
       ),
     ];
     return subscriptions;

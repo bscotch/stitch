@@ -56,8 +56,12 @@
         "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
       },
       {
+        "command": "stitch.assets.filters.edit",
+        "title": "Edit Filter"
+      },
+      {
         "command": "stitch.assets.filters.new",
-        "icon": "$(gist-new)",
+        "icon": "$(add)",
         "title": "New Filter...",
         "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
       },
@@ -201,6 +205,11 @@
         "command": "stitch.run",
         "key": "f5",
         "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
+      },
+      {
+        "command": "stitch.assets.filters.new",
+        "key": "Ctrl+F",
+        "when": "view == bscotch-stitch-resources && stitch.projectCount > 0"
       }
     ],
     "languages": [
@@ -238,17 +247,17 @@
         {
           "command": "stitch.assets.newFolder",
           "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
-          "group": "navigation"
+          "group": "navigation@1"
         },
         {
           "command": "stitch.openIde",
           "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
-          "group": "navigation"
+          "group": "navigation@2"
         },
         {
           "command": "stitch.run",
           "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
-          "group": "navigation"
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
@@ -285,17 +294,17 @@
         {
           "command": "stitch.assets.newFolder",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
-          "group": "inline"
+          "group": "inline@1"
         },
         {
           "command": "stitch.openIde",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
-          "group": "inline"
+          "group": "inline@2"
         },
         {
           "command": "stitch.run",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
-          "group": "inline"
+          "group": "inline@3"
         }
       ],
       "explorer/context": [

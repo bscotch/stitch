@@ -43,9 +43,16 @@ export class TreeFilterGroup extends StitchTreeItemBase<'tree-filter-group'> {
 export class TreeFilter extends StitchTreeItemBase<'tree-filter'> {
   override readonly kind = 'tree-filter';
 
-  constructor(readonly parent: TreeFilterGroup, readonly query: string) {
+  constructor(readonly parent: TreeFilterGroup, public query: string) {
     super(query);
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+
+    this.command = {
+      title: 'Edit',
+      command: 'stitch.assets.filters.edit',
+      arguments: [this],
+      tooltip: 'Edit this filter query',
+    };
   }
 
   get enabled() {
