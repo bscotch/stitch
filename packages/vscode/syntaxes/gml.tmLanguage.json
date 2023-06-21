@@ -183,7 +183,7 @@
       "patterns": [
         {
           "name": "string.quoted.double.gml",
-          "begin": "\"",
+          "begin": "[@$]?\"",
           "end": "\"",
           "beginCaptures": {
             "0": {

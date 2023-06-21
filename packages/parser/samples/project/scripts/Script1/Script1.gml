@@ -44,3 +44,5 @@ function AnotherConstructor (_whatever) {
 with o_parent {
 	parent_var = "hello";
 }
+
+var a_template_string = $"hello {const} {const.name}";

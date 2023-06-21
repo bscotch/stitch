@@ -538,22 +538,25 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   ): Type<'String'> {
     return this.PROCESSOR.project.createType('String');
   }
+
   override multilineSingleStringLiteral(
     children: MultilineSingleStringLiteralCstChildren,
     context: VisitorContext,
   ): Type<'String'> {
     return this.PROCESSOR.project.createType('String');
   }
+
   override templateLiteral(
     children: TemplateLiteralCstChildren,
     context: VisitorContext,
   ): Type<'String'> {
     // Make sure that the code content is still visited
-    if (children.expression) {
-      this.visit(children.expression, withCtxKind(context, 'template'));
+    for (const exp of children.expression || []) {
+      this.expression(exp.children, withCtxKind(context, 'template'));
     }
     return this.PROCESSOR.project.createType('String');
   }
+
   override arrayLiteral(
     children: ArrayLiteralCstChildren,
     ctx: VisitorContext,

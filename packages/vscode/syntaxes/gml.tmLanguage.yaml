@@ -188,7 +188,7 @@ repository:
   strings:
     patterns:
       - name: string.quoted.double.gml
-        begin: '"'
+        begin: '[@$]?"'
         end: '"'
         beginCaptures:
           '0': { name: punctuation.definition.string.begin.gml }
