@@ -1,8 +1,9 @@
 import {
   type Asset,
   type Code,
-  type Diagnostic,
+  type DiagnosticsEventPayload,
   type FunctionArgRange,
+  type OnDiagnostics,
   type Reference,
   type ReferenceableType,
   type Type,
@@ -53,15 +54,11 @@ export class StitchProvider
 
   /**
    * Emit a collection of diagnostics for a particular file. */
-  emitDiagnostics(diagnostics: Diagnostic[]) {
-    assert(diagnostics, 'diagnostics must be an array');
-    if (!diagnostics.length) {
-      return;
-    }
-    const file = diagnostics[0].location.file;
+  emitDiagnostics(payload: DiagnosticsEventPayload) {
+    assert(payload, 'diagnostics must be an array');
     this.diagnosticCollection.set(
-      uriFromCodeFile(file),
-      diagnostics.map((d) => ({
+      uriFromCodeFile(payload.code),
+      payload.diagnostics.map((d) => ({
         message: d.message,
         range: rangeFrom(d.location),
         severity:
@@ -84,10 +81,7 @@ export class StitchProvider
     );
   }
 
-  async loadProject(
-    yypPath: vscode.Uri,
-    onDiagnostics: (diagnostics: Diagnostic[]) => void,
-  ) {
+  async loadProject(yypPath: vscode.Uri, onDiagnostics: OnDiagnostics) {
     const t = Timer.start();
     let project!: GameMakerProject;
     await vscode.window.withProgress(
@@ -222,7 +216,9 @@ export class StitchProvider
    */
   async updateFile(document: vscode.TextDocument) {
     info('updateFile', document);
-    await this.getGmlFile(document)?.reload(document.getText());
+    await this.getGmlFile(document)?.reload(document.getText(), {
+      reloadDirty: true,
+    });
   }
 
   getProject(

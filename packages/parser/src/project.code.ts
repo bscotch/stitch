@@ -450,9 +450,7 @@ export class Code {
     for (const items of Object.values(this.diagnostics)) {
       allDiagnostics.push(...items);
     }
-    if (allDiagnostics.length) {
-      this.project.emitDiagnostics(allDiagnostics);
-    }
+    this.project.emitDiagnostics(this, allDiagnostics);
     return allDiagnostics;
   }
 }

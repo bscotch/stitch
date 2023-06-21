@@ -1,4 +1,4 @@
-import { Project, setLogger, type Diagnostic } from '@bscotch/gml-parser';
+import { OnDiagnostics, Project, setLogger } from '@bscotch/gml-parser';
 import { pathy } from '@bscotch/pathy';
 import {
   GameMakerIde,
@@ -132,7 +132,7 @@ export class GameMakerProject extends Project {
 
   static async from(
     yypPath: vscode.Uri,
-    onDiagnostics: (diagnostics: Diagnostic[]) => void,
+    onDiagnostics: OnDiagnostics,
     onProgress: (increment: number, message?: string) => void,
   ) {
     const project = new GameMakerProject(yypPath);

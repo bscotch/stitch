@@ -22,6 +22,13 @@ export interface SymbolInfo {
   symbol: Symbol | TypeMember | Type;
 }
 
+export interface DiagnosticsEventPayload {
+  code: Code;
+  diagnostics: Diagnostic[];
+}
+
+export type OnDiagnostics = (diagnostics: DiagnosticsEventPayload) => void;
+
 export interface ProjectOptions {
   /**
    * If true, a file watcher will be set up to reprocess
@@ -33,7 +40,7 @@ export interface ProjectOptions {
    * initialization, but will not receive any diagnostics
    * from the initial parse.
    */
-  onDiagnostics?: (diagnostics: Diagnostic[]) => void;
+  onDiagnostics?: OnDiagnostics;
   /**
    * If registered, this callback will be used to report
    * when progress has been made towards loading the project.
@@ -123,19 +130,19 @@ export class Project {
 
   /**
    * Run a callback when diagnostics are emitted. Returns an unsubscribe function. */
-  onDiagnostics(callback: (diagnostics: Diagnostic[]) => void): () => void {
+  onDiagnostics(callback: OnDiagnostics): () => void {
     this.emitter.on('diagnostics', callback);
     return () => this.emitter.off('diagnostics', callback);
   }
 
-  emitDiagnostics(diagnostics: Diagnostic[]): void {
+  emitDiagnostics(code: Code, diagnostics: Diagnostic[]): void {
     // Ensure they are valid diagnostics
     for (const diagnostic of diagnostics) {
       ok(diagnostic.$tag === 'diagnostic');
       ok(diagnostic.location);
       ok(diagnostic.location.file);
     }
-    this.emitter.emit('diagnostics', diagnostics);
+    this.emitter.emit('diagnostics', { code, diagnostics });
   }
 
   getAssetByName(name: string): Asset | undefined {
