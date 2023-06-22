@@ -11,15 +11,14 @@ import {
 import {
   FunctionArgRange,
   Position,
+  Range,
   ReferenceableType,
   fixITokenLocation,
   getType,
-  type Reference,
 } from './project.location.js';
 import { isTypeOfKind } from './types.checks.js';
 import { Type, TypeMember } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
-import { assert, ok } from './util.js';
 import type { GmlSymbolVisitor } from './visitor.js';
 
 export function visitIdentifierAccessor(
@@ -27,42 +26,43 @@ export function visitIdentifierAccessor(
   children: IdentifierAccessorCstChildren,
   ctx: VisitorContext,
 ): Type {
-  const identity = identifierFrom(children);
-  /** The type that this node evaluates to as an expression. */
-  let finalType: Type = this.UNKNOWN;
-  let currentItem:
-    | {
-        item: ReferenceableType;
-        ref?: Reference<ReferenceableType>;
-      }
-    | undefined = this.identifier(children.identifier[0].children, ctx);
-  if (!currentItem) {
-    if (identity) {
-      // TODO: Add this as an undeclared variable
+  const matchingSymbol = this.FIND_ITEM(children.identifier[0].children);
+  if (matchingSymbol) {
+    matchingSymbol.item.addRef(matchingSymbol.range);
+  }
+  if (!matchingSymbol) {
+    const identifier = identifierFrom(children.identifier[0].children);
+    if (identifier) {
+      this.PROCESSOR.addDiagnostic(
+        'UNDECLARED_GLOBAL_REFERENCE',
+        identifier.token,
+        `This appears to be a global variable but it is not declared anywhere.`,
+      );
     }
-    return finalType;
-  } else {
-    finalType = getType(currentItem.item);
   }
-  let currentLocation = children.identifier[0].location!;
+  let accessing: {
+    item?: ReferenceableType;
+    range?: Range;
+  } = matchingSymbol ?? {};
+  const typeStack: Type[] = [
+    accessing.item ? getType(accessing.item) : this.UNKNOWN,
+  ];
+  accessing.range = this.PROCESSOR.range(children.identifier[0].location!);
   const suffixes = sortedAccessorSuffixes(children.accessorSuffixes);
-  assert(suffixes, 'Expected suffixes');
-  if (!suffixes.length) {
-    return finalType;
-  }
 
   // Compute useful metadata
   /** If true, then the `new` keyword prefixes this. */
   const usesNew = !!children.New?.length;
   /** If not `undefined`, this is the assignment node */
   const assignment = children.assignment?.[0];
-  const assignmentType = assignment?.children.assignmentRightHandSide
-    ? this.assignmentRightHandSide(
-        assignment.children.assignmentRightHandSide[0].children,
-        withCtxKind(ctx, 'assignment'),
-      )
-    : this.UNKNOWN;
-  this.UPDATED_TYPE_WITH_DOCS(assignmentType);
+  const assignmentType = this.UPDATED_TYPE_WITH_DOCS(
+    assignment?.children.assignmentRightHandSide
+      ? this.assignmentRightHandSide(
+          assignment.children.assignmentRightHandSide[0].children,
+          withCtxKind(ctx, 'assignment'),
+        )
+      : this.UNKNOWN,
+  );
 
   // For each suffix in turn, try to figure out how it changes the scope,
   // find the corresponding symbol, etc.
@@ -70,9 +70,8 @@ export function visitIdentifierAccessor(
   suffixLoop: for (let s = 0; s < suffixes.length; s++) {
     const suffix = suffixes[s];
     const suffixRange = this.PROCESSOR.range(suffix.location!);
-    const currentType: Type | null = currentItem?.item
-      ? getType(currentItem.item)
-      : null;
+    const accessingType: Type =
+      (accessing?.item && getType(accessing.item)) || this.UNKNOWN;
     const isLastSuffix = s === suffixes.length - 1;
     switch (suffix.name) {
       case 'arrayMutationAccessorSuffix':
@@ -81,13 +80,13 @@ export function visitIdentifierAccessor(
       case 'gridAccessSuffix':
       case 'listAccessSuffix':
       case 'structAccessSuffix':
-        const type: Type = currentType?.items ?? this.UNKNOWN;
-        const ref = type.addRef(suffixRange);
-        currentItem = {
+        this.visit(suffix.children.expression, ctx);
+        const type: Type = accessingType.items || this.UNKNOWN;
+        accessing = {
           item: type,
-          ref,
+          range: suffixRange,
         };
-        finalType = getType(currentItem.item);
+        typeStack.push(type);
         break;
       case 'dotAccessSuffix':
         // Then we need to change self-scope to be inside
@@ -95,11 +94,11 @@ export function visitIdentifierAccessor(
         const dotAccessor = suffix.children;
         const dot = fixITokenLocation(dotAccessor.Dot[0]);
         if (
-          isTypeOfKind(currentType, 'Struct') ||
-          isTypeOfKind(currentType, 'Enum')
+          isTypeOfKind(accessingType, 'Struct') ||
+          isTypeOfKind(accessingType, 'Enum')
         ) {
           this.PROCESSOR.scope.setEnd(dot);
-          this.PROCESSOR.pushSelfScope(dot, currentType, true, {
+          this.PROCESSOR.pushSelfScope(dot, accessingType, true, {
             accessorScope: true,
           });
           // While editing a user will dot into something
@@ -109,52 +108,56 @@ export function visitIdentifierAccessor(
           if (isEmpty(dotAccessor.identifier[0].children)) {
             this.PROCESSOR.scope.setEnd(dot, true);
             this.PROCESSOR.popSelfScope(dot, true);
-            currentItem = undefined;
-            finalType = this.UNKNOWN;
+            accessing = {};
+            typeStack.push(this.UNKNOWN);
           } else {
-            const nextIdentity = identifierFrom(dotAccessor);
-            let nextItem = this.identifier(
-              dotAccessor.identifier[0].children,
-              ctx,
+            // Then this identifier should exist in the parent struct
+            const propertyIdentifier = identifierFrom(dotAccessor)!;
+            const propertyNameLocation = dotAccessor.identifier[0].location!;
+            const propertyNameRange =
+              this.PROCESSOR.range(propertyNameLocation);
+            const existingProperty = accessingType.getMember(
+              propertyIdentifier.name,
             );
-            const nextItemLocation = dotAccessor.identifier[0].location!;
-            const range = this.PROCESSOR.range(nextItemLocation);
-            if (!nextItem && isTypeOfKind(currentType, 'Struct')) {
+            if (existingProperty) {
+              existingProperty.addRef(propertyNameRange);
+              accessing = {
+                item: existingProperty,
+                range: propertyNameRange,
+              };
+            } else if (
+              !existingProperty &&
+              isTypeOfKind(accessingType, 'Struct')
+            ) {
               // Then this variable is not yet defined on this struct.
               // We need to add it!
-              ok(nextIdentity, 'Could not get next identity');
               const newMemberType = isLastSuffix
                 ? assignmentType
                 : this.UNKNOWN;
               // Add this member to the struct
-              const newMember: TypeMember = currentType.addMember(
-                nextIdentity.name,
+              const newMember: TypeMember = accessingType.addMember(
+                propertyIdentifier.name,
                 newMemberType,
               );
               newMember.instance = true;
-              const ref = newMember.addRef(range);
+              newMember.addRef(propertyNameRange);
               // If this is the last suffix and this is
               // an assignment, then also set the `def` of the
               // new member.
               if (isLastSuffix && assignment) {
-                newMember.definedAt(range);
+                newMember.definedAt(propertyNameRange);
               }
-              nextItem = {
+              accessing = {
                 item: newMember,
-                ref,
+                range: propertyNameRange,
               };
-            } else if (nextItem) {
-              // Make sure we still have a definition
-              nextItem.item.def ||= range;
-              nextItem.item.addRef(range);
-              finalType = getType(nextItem.item);
+              typeStack.push(newMemberType);
             } else {
-              finalType = this.UNKNOWN;
+              accessing = {};
+              typeStack.push(this.UNKNOWN);
             }
-            currentItem = nextItem;
-            currentLocation = nextItemLocation;
-            this.PROCESSOR.scope.setEnd(currentLocation, true);
-            this.PROCESSOR.popSelfScope(currentLocation, true);
+            this.PROCESSOR.scope.setEnd(propertyNameLocation, true);
+            this.PROCESSOR.popSelfScope(propertyNameLocation, true);
           }
         } else {
           // TODO: Handle dot accessors for other valid dot-accessible types.
@@ -166,15 +169,16 @@ export function visitIdentifierAccessor(
               'Any',
               'Unknown',
             ] as PrimitiveName[]
-          ).includes(currentType?.kind!);
+          ).includes(accessingType?.kind!);
+          accessing = {};
+          typeStack.push(this.UNKNOWN);
           if (!isDotAccessible) {
             this.PROCESSOR.addDiagnostic(
               'INVALID_OPERATION',
-              currentLocation,
-              `Type ${currentType?.toFeatherString()} is not a struct`,
+              suffix.location!,
+              `Type ${accessingType?.toFeatherString()} does not allow dot accessors.`,
             );
           }
-          finalType = this.UNKNOWN;
           continue suffixLoop;
         }
         break;
@@ -199,23 +203,26 @@ export function visitIdentifierAccessor(
             // For some reason the end position is the same
             // as the start position for the commas and parens
             // Start on the RIGHT side of the first delimiter
-            const start = Position.fromCstEnd(
-              this.PROCESSOR.file,
-              lastDelimiter!,
-            );
-            // end on the LEFT side of the second delimiter
-            const end = Position.fromCstStart(this.PROCESSOR.file, token);
-            const funcRange = new FunctionArgRange(
-              currentItem!.ref!,
-              argIdx,
-              start,
-              end,
-            );
-            if (!lastTokenWasDelimiter) {
-              funcRange.hasExpression = true;
+
+            if (accessing.item) {
+              const start = Position.fromCstEnd(
+                this.PROCESSOR.file,
+                lastDelimiter!,
+              );
+              // end on the LEFT side of the second delimiter
+              const end = Position.fromCstStart(this.PROCESSOR.file, token);
+              const funcRange = new FunctionArgRange(
+                accessing.item,
+                argIdx,
+                start,
+                end,
+              );
+              if (!lastTokenWasDelimiter) {
+                funcRange.hasExpression = true;
+              }
+              this.PROCESSOR.file.addFunctionArgRange(funcRange);
+              ranges.push(funcRange);
             }
-            this.PROCESSOR.file.addFunctionArgRange(funcRange);
-            ranges.push(funcRange);
 
             // Increment the argument idx for the next one
             lastDelimiter = token;
@@ -232,21 +239,21 @@ export function visitIdentifierAccessor(
         // Set the current item to the return type,
         // so that we can chain suffixes.
         const returnType =
-          usesNew && isLastSuffix
-            ? currentType?.constructs
-            : currentType?.returns;
-        currentItem = { item: returnType!, ref: currentItem!.ref };
+          (usesNew && isLastSuffix
+            ? accessingType?.constructs
+            : accessingType?.returns) || this.UNKNOWN;
+        accessing = { item: returnType };
+        typeStack.push(returnType);
         // Add the function call to the file for diagnostics
-        this.PROCESSOR.file.addFunctionCall(ranges);
-        finalType = returnType || this.UNKNOWN;
+        if (ranges.length) {
+          this.PROCESSOR.file.addFunctionCall(ranges);
+        }
         break;
       default:
         this.visit(suffix, ctx);
-        const defaultType = this.UNKNOWN;
-        const defaultRef = defaultType.addRef(suffixRange);
-        currentItem = { item: defaultType, ref: defaultRef };
-        finalType = this.UNKNOWN;
+        accessing = { item: this.UNKNOWN };
+        typeStack.push(accessing.item as Type);
     }
   }
-  return finalType;
+  return typeStack.at(-1)!;
 }

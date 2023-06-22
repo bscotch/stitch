@@ -136,7 +136,7 @@ export class FunctionArgRange extends Range {
   hasExpression = false;
   constructor(
     /** The function reference this call belongs to */
-    readonly ref: Reference,
+    readonly func: ReferenceableType,
     /** The index of the parameter we're in. */
     readonly idx: number,
     start: Position,
@@ -145,9 +145,9 @@ export class FunctionArgRange extends Range {
     super(start, end);
   }
 
-  get type(): Type<'Function'> {
-    assert(this.ref, 'FunctionArgRange must have a reference');
-    return this.ref.type as Type<'Function'>;
+  get type(): Type {
+    assert(this.func, 'FunctionArgRange must have a reference');
+    return getType(this.func);
   }
 
   get param(): TypeMember {
@@ -174,7 +174,7 @@ export function Refs<TBase extends Constructor>(Base: TBase) {
       const itemType = (this as any).type as Type | undefined;
       ref.type = type || itemType || ref.type;
       if (type && 'type' in this && (this.type as Type).kind === 'Unknown') {
-        Type.merge(this.type as Type, type);
+        this.type = Type.merge(this.type as Type, type);
       }
       this.refs.add(ref);
       location.file.addRef(ref);

@@ -271,7 +271,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   /** Static params are unambiguously defined. */
   override staticVarDeclarations(
     children: StaticVarDeclarationsCstChildren,
-    context: VisitorContext,
+    ctx: VisitorContext,
   ) {
     // Add to the self scope.
     const self = this.PROCESSOR.currentSelf;
@@ -280,7 +280,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const type = this.UPDATED_TYPE_WITH_DOCS(
       this.assignmentRightHandSide(
         children.assignmentRightHandSide[0].children,
-        context,
+        withCtxKind(ctx, 'assignment'),
       ) || this.UNKNOWN,
     );
 
@@ -294,7 +294,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
   override localVarDeclaration(
     children: LocalVarDeclarationCstChildren,
-    context: VisitorContext,
+    ctx: VisitorContext,
   ) {
     const local = this.PROCESSOR.currentLocalScope;
     const range = this.PROCESSOR.range(children.Identifier[0]);
@@ -303,7 +303,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       children.assignmentRightHandSide
         ? this.assignmentRightHandSide(
             children.assignmentRightHandSide[0].children,
-            context,
+            withCtxKind(ctx, 'assignment'),
           )
         : this.UNKNOWN,
     );
@@ -317,10 +317,10 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
 
   override variableAssignment(
     children: VariableAssignmentCstChildren,
-    context: VisitorContext,
+    ctx: VisitorContext,
   ) {
     // See if this identifier is known.
-    const identified = this.identifier(children, context);
+    const identified = this.FIND_ITEM(children);
     const name = children.Identifier[0].image;
     const item = identified?.item;
     const range = this.PROCESSOR.range(children.Identifier[0]);
@@ -328,7 +328,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     const assignedType = this.UPDATED_TYPE_WITH_DOCS(
       this.assignmentRightHandSide(
         children.assignmentRightHandSide[0].children,
-        context,
+        withCtxKind(ctx, 'assignment'),
       ),
     );
 
@@ -350,7 +350,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         );
       }
     } else {
-      item.def ||= range;
+      // Add a reference to the item.
       item.addRef(range, assignedType);
     }
   }

@@ -19,10 +19,10 @@ export function visitFunctionExpression(
   };
 
   // Get this identifier if we already have it.
-  const identifier = this.identifier(children, ctx);
+  const identifier = this.FIND_ITEM(children);
   // Consume the most recent jsdoc
   let docs = this.PROCESSOR.consumeJsdoc();
-  if (!docs?.type.isFunction && docs?.type.kind !== 'Unknown') {
+  if (!docs?.type.isFunction && docs?.jsdoc.kind !== 'description') {
     // Then these docs are not applicable, so toss them.
     docs = undefined;
   }
@@ -37,14 +37,17 @@ export function visitFunctionExpression(
   const functionTypeName = isConstructor ? 'Constructor' : 'Function';
   const bodyLocation = children.blockStatement[0].location!;
 
-  // If this is global we should already have a symbol for it.
-  // If not, we should create a new symbol.
+  // Create the symbol if we don't already have it
   const item = (identifier?.item ||
     new Symbol(
       functionName || '',
       this.PROCESSOR.project.createType(functionTypeName).named(functionName),
     )) as Symbol | TypeMember;
   functionName = item.name;
+  if (nameLocation) {
+    item.addRef(nameLocation);
+    item.definedAt(nameLocation);
+  }
 
   // Make sure we have a proper type
   if (item.type.kind === 'Unknown') {
@@ -72,21 +75,21 @@ export function visitFunctionExpression(
       this.PROCESSOR.createStruct(bodyLocation).named(functionName);
   }
 
-  // Identify the "self" struct. If this is a constructor, "self" is the
+  // Identify the "self" struct for scope. If this is a constructor, "self" is the
   // constructed type. Otherwise, for now just create a new struct type
   // for the self scope.
-  const self = (
+  const functionSelfScope = (
     isConstructor ? functionType.constructs : functionType.context
   )!;
 
-  // Make sure this function is a member of the self struct
-  let asSelfMember = self.getMember(functionName);
-  if (!asSelfMember) {
-    asSelfMember = self.addMember(functionName, item.type);
-  }
-  if (nameLocation) {
-    asSelfMember.definedAt(nameLocation);
-    asSelfMember.addRef(nameLocation);
+  // If this is not part of an assignment, then we need to add this
+  // function's symbol to the current scope.
+  if (nameLocation && ctx.ctxKindStack.at(-1) !== 'assignment' && !identifier) {
+    const self = this.PROCESSOR.currentSelf;
+    const member =
+      self.getMember(functionName) || self.addMember(functionName, item.type);
+    member.definedAt(nameLocation);
+    member.addRef(nameLocation);
   }
 
   // Functions have their own localscope as well as their self scope,
@@ -95,7 +98,7 @@ export function visitFunctionExpression(
     children.functionParameters[0].children.StartParen[0],
   );
   this.PROCESSOR.scope.setEnd(startParen);
-  this.PROCESSOR.pushScope(startParen, self, true);
+  this.PROCESSOR.pushScope(startParen, functionSelfScope, true);
   const functionLocalScope = this.PROCESSOR.currentLocalScope;
 
   // TODO: Handle constructor inheritance. The `constructs` type should
@@ -161,9 +164,6 @@ export function visitFunctionExpression(
   // TODO: Remove any excess parameters, e.g. if we're updating a
   // prior definition. This is tricky since we may need to do something
   // about references to legacy params.
-
-  // TODO: Add this function to the scope in which it was defined.
-  // This is tricky because we need to know if it is being assigned to something, e.g. a var, static, etc, so that we can add it to the correct scope with the correct name.
 
   // Process the function body
   this.visit(children.blockStatement, withCtxKind(ctx, 'functionBody'));

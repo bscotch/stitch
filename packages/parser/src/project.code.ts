@@ -168,6 +168,8 @@ export class Code {
       // Then only return self variables
       return scopeRange.self.listMembers() || [];
     }
+    // Add to a flat list, and remove all entries that don't have
+    // a definition if they are not native
     return [
       // Local variables
       ...(scopeRange.local.listMembers() || []),
@@ -180,7 +182,7 @@ export class Code {
       ...(this.project.self.listMembers() || []),
       // GML globals
       ...[...this.project.native.global.values()],
-    ];
+    ].filter((x) => x.def || x.native);
   }
 
   get refs() {
@@ -390,10 +392,8 @@ export class Code {
     calls: for (let i = 0; i < this._functionCalls.length; i++) {
       const args = this._functionCalls[i];
       assert(args, 'Function call args must be initialized');
-      assert(args[0], 'Function call must have a function');
       const func = args[0].type;
       const params = func.listParameters() || [];
-      const ref = args[0].ref;
       // Handle missing arguments
       for (let j = 0; j < params.length; j++) {
         const param = params[j];
@@ -403,7 +403,7 @@ export class Code {
           this.diagnostics.MISSING_REQUIRED_ARGUMENT.push(
             Diagnostic.error(
               `Missing required argument \`${param.name}\` for function \`${func.name}\`.`,
-              arg || ref,
+              arg || args[0],
             ),
           );
           // There may be more missing args but
