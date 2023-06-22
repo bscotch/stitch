@@ -29,7 +29,7 @@ export class SymbolProcessor {
     this.position = this.scope.start;
   }
 
-  useJsdoc() {
+  consumeJsdoc() {
     const docs = this.unusedJsdoc;
     this.unusedJsdoc = undefined;
     return docs;

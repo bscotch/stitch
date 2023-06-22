@@ -21,7 +21,7 @@ export function visitFunctionExpression(
   // Get this identifier if we already have it.
   const identifier = this.identifier(children, ctx);
   // Consume the most recent jsdoc
-  let docs = this.PROCESSOR.useJsdoc();
+  let docs = this.PROCESSOR.consumeJsdoc();
   if (!docs?.type.isFunction && docs?.type.kind !== 'Unknown') {
     // Then these docs are not applicable, so toss them.
     docs = undefined;

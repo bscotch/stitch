@@ -48,7 +48,7 @@ export function processSymbols(file: Code) {
   try {
     const processor = new SymbolProcessor(file);
     const visitor = new GmlSymbolVisitor(processor);
-    visitor.FIND_SYMBOLS(file.cst);
+    visitor.EXTRACT_SYMBOLS(file.cst);
   } catch (error) {
     logger.error(error);
   }
@@ -62,7 +62,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   }
 
   /** Entrypoint */
-  FIND_SYMBOLS(input: CstNode) {
+  EXTRACT_SYMBOLS(input: CstNode) {
     this.visit(input, { ctxKindStack: [] });
     this.PROCESSOR.setLastScopeEnd(input.location!);
     return this.PROCESSOR;
@@ -136,13 +136,17 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return this.PROCESSOR.project.createType('Unknown');
   }
 
+  get UNDEFINED() {
+    return this.PROCESSOR.project.createType('Undefined');
+  }
+
   /**
    * Given a type, cohsume any current JSDocs and compute
    * the combined type. May return the original type (+/- mutation)
    * or a new type, depending on the scenario.
    */
   UPDATED_TYPE_WITH_DOCS(type: Type) {
-    const docs = this.PROCESSOR.useJsdoc();
+    const docs = this.PROCESSOR.consumeJsdoc();
     if (!docs || docs.jsdoc.kind === 'self') {
       return type;
     }
@@ -174,7 +178,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     );
     const blockLocation = children.blockableStatement[0].location!;
 
-    const docs = this.PROCESSOR.useJsdoc();
+    const docs = this.PROCESSOR.consumeJsdoc();
     let self: StructType;
     if (docs?.jsdoc.kind === 'self' && isTypeOfKind(docs.type, 'Struct')) {
       self = docs.type;
@@ -251,7 +255,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
           children.assignmentRightHandSide[0].children,
           withCtxKind(ctx, 'functionReturn'),
         )
-      : this.UNKNOWN;
+      : this.UNDEFINED;
     ctx.returns?.push(returnType);
     return returnType;
   }
@@ -339,7 +343,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         member.addRef(range);
         member.instance = true;
       } else {
-        // TODO: Add a diagnostic
+        this.PROCESSOR.addDiagnostic(
+          'UNDECLARED_GLOBAL_REFERENCE',
+          children.Identifier[0],
+          `This appears to be a global variable but it is not declared anywhere.`,
+        );
       }
     } else {
       item.def ||= range;

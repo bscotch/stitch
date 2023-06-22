@@ -13,6 +13,7 @@ export interface DiagnosticCollections {
   SYNTAX_ERROR: Diagnostic[];
   TOO_MANY_ARGUMENTS: Diagnostic[];
   UNDECLARED_VARIABLE_REFERENCE: Diagnostic[];
+  UNDECLARED_GLOBAL_REFERENCE: Diagnostic[];
 }
 export type DiagnosticCollectionName = keyof DiagnosticCollections;
 

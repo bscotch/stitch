@@ -15,7 +15,7 @@ import {
   ReferenceableType,
   Scope,
 } from './project.location.js';
-import type { Symbol } from './project.symbol.js';
+import { Symbol } from './project.symbol.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
 import { Type, TypeMember } from './types.js';
 import { assert, isBeforeRange, isInRange } from './util.js';
@@ -242,14 +242,15 @@ export class Code {
 
   protected clearAllDiagnostics() {
     this.diagnostics = {
-      MISSING_EVENT_INHERITED: [],
-      SYNTAX_ERROR: [],
-      UNDECLARED_VARIABLE_REFERENCE: [],
-      TOO_MANY_ARGUMENTS: [],
-      MISSING_REQUIRED_ARGUMENT: [],
       GLOBAl_SELF: [],
-      JSDOC_MISMATCH: [],
       INVALID_OPERATION: [],
+      JSDOC_MISMATCH: [],
+      MISSING_EVENT_INHERITED: [],
+      MISSING_REQUIRED_ARGUMENT: [],
+      SYNTAX_ERROR: [],
+      TOO_MANY_ARGUMENTS: [],
+      UNDECLARED_GLOBAL_REFERENCE: [],
+      UNDECLARED_VARIABLE_REFERENCE: [],
     };
   }
 
@@ -315,6 +316,14 @@ export class Code {
         } else {
           symbolRef.file.dirty = true;
         }
+      }
+      // If this symbol has no references left, remove it from the project.
+      if (isDefinedInThisFile && !symbol.refs.size) {
+        // Remove typemembers from their parent type
+        if (symbol instanceof TypeMember) {
+          symbol.parent.removeMember(symbol.name);
+        }
+        // TODO: Remove from global list?
       }
       cleared.add(symbol);
     }
