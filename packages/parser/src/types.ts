@@ -31,8 +31,8 @@ export type UndefinedType = Type<'Undefined'>;
 export type UnionType = Type<'Union'>;
 export type UnknownType = Type<'Unknown'>;
 
-export class TypeMember extends Refs(Flaggable) {
-  readonly $tag = 'TypeMember';
+export class MemberSignifier extends Refs(Flaggable) {
+  readonly $tag = 'Member';
   description: string | undefined = undefined;
   // For function params
   idx: number | undefined = undefined;
@@ -69,7 +69,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   parent: Type<T> | undefined = undefined;
 
   /** Named members of Structs and Enums */
-  _members: TypeMember[] | undefined = undefined;
+  _members: MemberSignifier[] | undefined = undefined;
 
   /** Types of the items found in arrays and various ds types, or the fallback type found in Structs */
   items: Type | undefined = undefined;
@@ -83,7 +83,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * type of the struct that it constructs. */
   constructs: Type<'Struct'> | undefined = undefined;
   context: Type<'Struct'> | undefined = undefined;
-  _params: TypeMember[] | undefined = undefined;
+  _params: MemberSignifier[] | undefined = undefined;
   returns: undefined | Type = undefined;
 
   /** Create a shallow-ish clone */
@@ -169,13 +169,13 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return this;
   }
 
-  listParameters(): TypeMember[] {
+  listParameters(): MemberSignifier[] {
     return this._params ? [...this._params] : [];
   }
 
-  getParameter(name: string): TypeMember | undefined;
-  getParameter(idx: number): TypeMember | undefined;
-  getParameter(nameOrIdx: string | number): TypeMember | undefined {
+  getParameter(name: string): MemberSignifier | undefined;
+  getParameter(idx: number): MemberSignifier | undefined;
+  getParameter(nameOrIdx: string | number): MemberSignifier | undefined {
     if (!this._params) {
       return undefined;
     }
@@ -190,7 +190,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     this._params ??= [];
     let param = this._params[idx];
     if (!param) {
-      param = new TypeMember(this, name, type);
+      param = new MemberSignifier(this, name, type);
       this._params[idx] = param;
     }
     param.idx = idx;
@@ -206,7 +206,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return param;
   }
 
-  listMembers(excludeParents = false): TypeMember[] {
+  listMembers(excludeParents = false): MemberSignifier[] {
     const members = this._members || [];
     if (excludeParents || !this.parent) {
       return members;
@@ -214,7 +214,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return [...members, ...this.parent.listMembers()];
   }
 
-  getMember(name: string): TypeMember | undefined {
+  getMember(name: string): MemberSignifier | undefined {
     return (
       this._members?.find((m) => m.name === name) ||
       this.parent?.getMember(name)
@@ -222,11 +222,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   }
 
   /** For container types that have named members, like Structs and Enums */
-  addMember(name: string, type: Type, writable = true): TypeMember {
+  addMember(name: string, type: Type, writable = true): MemberSignifier {
     this._members ??= [];
     let member = this._members.find((m) => m.name === name);
     if (!member) {
-      member = new TypeMember(this, name, type);
+      member = new MemberSignifier(this, name, type);
       member.writable = writable;
       this._members.push(member);
     } else {

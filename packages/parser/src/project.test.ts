@@ -2,8 +2,8 @@ import { expect } from 'chai';
 import { logger } from './logger.js';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
-import { Symbol } from './project.symbol.js';
-import { Type, TypeMember } from './types.js';
+import { Signifier } from './project.signifier.js';
+import { MemberSignifier, Type } from './types.js';
 import type { PrimitiveName } from './types.primitives.js';
 import { ok } from './util.js';
 
@@ -179,7 +179,7 @@ describe('Project', function () {
     // Global scope
     const globalConstructor = inRootScriptScope.find(
       (id) => id.name === 'GlobalConstructor',
-    ) as Symbol;
+    ) as Signifier;
     ok(globalConstructor);
     ok(!globalConstructor.local);
     ok(globalConstructor.global);
@@ -199,7 +199,7 @@ describe('Project', function () {
     const paramName = '_name';
     const paramRef = scriptFile.getReferenceAt({ line: 18, column: 32 });
     ok(paramRef);
-    const param = paramRef.item as TypeMember;
+    const param = paramRef.item as MemberSignifier;
     ok(param);
     ok(param.local);
     ok(param.parameter);
@@ -259,13 +259,13 @@ describe('Project', function () {
     //#region CONSTRUCTORS
     const constructorName = 'GlobalConstructor';
     const constructorDef = scriptFile.getReferenceAt(18, 17);
-    const constructorSymbol = constructorDef!.item as Symbol;
+    const constructorSymbol = constructorDef!.item as Signifier;
     const constructorType = constructorSymbol.type as Type<'Constructor'>;
     ok(constructorDef);
     ok(constructorSymbol);
     ok(constructorType);
     ok(constructorSymbol.name === constructorName);
-    ok(constructorSymbol instanceof Symbol);
+    ok(constructorSymbol instanceof Signifier);
     expect(constructorSymbol.type.kind).to.equal('Constructor');
     expect(constructorType.name).to.equal(constructorName);
     expect(constructorType.listParameters()).to.have.lengthOf(2);
@@ -288,7 +288,7 @@ describe('Project', function () {
     //#region DOT ASSIGNMENTS
     const dotAssignedRefName = 'another_instance_variable';
     const dotAssignedRef = objCreate.getReferenceAt(20, 14);
-    const dotAssignedType = dotAssignedRef?.item as TypeMember;
+    const dotAssignedType = dotAssignedRef?.item as MemberSignifier;
     ok(dotAssignedRef);
     ok(dotAssignedRef.item.name === dotAssignedRefName);
     ok(dotAssignedType);
@@ -297,7 +297,7 @@ describe('Project', function () {
 
     // Check the return type of a function
     const functionDefRef = complexScriptFile.getReferenceAt(119, 22);
-    expect((functionDefRef?.item as Symbol).type.returns?.kind).to.equal(
+    expect((functionDefRef?.item as Signifier).type.returns?.kind).to.equal(
       'Array',
     );
 
@@ -321,12 +321,12 @@ describe('Project', function () {
 function validateBschemaConstructor(project: Project) {
   const complexScript = project.getAssetByName('Complicated')!;
   const complexScriptFile = complexScript.gmlFile;
-  const bschemaGlobal = project.getGlobal('BSCHEMA')!.symbol as Symbol;
+  const bschemaGlobal = project.getGlobal('BSCHEMA')!.symbol as Signifier;
   const bschemaStructType = project.getGlobal('Struct.Bschema')
     ?.symbol as Type<'Struct'>;
   const bschemaGlobalDef = complexScriptFile.getReferenceAt(1, 15);
   const bschemaConstructor = complexScriptFile.getReferenceAt(7, 13)
-    ?.item as TypeMember;
+    ?.item as MemberSignifier;
   const bschemaRoleType = project.getGlobal('Struct.BschemaRole')
     ?.symbol as Type<'Struct'>;
   ok(bschemaGlobal);
@@ -343,7 +343,7 @@ function validateBschemaConstructor(project: Project) {
 
   // Make sure that the project_setup Bschema field gets typed based on its assignment
   const projectSetupRef = complexScriptFile.getReferenceAt(10, 10)!;
-  const projectSetupVar = projectSetupRef.item as TypeMember;
+  const projectSetupVar = projectSetupRef.item as MemberSignifier;
   const projectSetupType = projectSetupVar.type;
   const projectSetupAssignedTo = bschemaConstructor.type.getParameter(0)!;
   ok(projectSetupAssignedTo.name === 'project_setup_function');

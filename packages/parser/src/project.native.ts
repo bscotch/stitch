@@ -2,8 +2,8 @@ import { pathy } from '@bscotch/pathy';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
+import { Signifier } from './project.signifier.js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
-import { Symbol } from './project.symbol.js';
 import { Type, type FunctionType, type StructType } from './types.js';
 import { primitiveNames } from './types.primitives.js';
 import { assert } from './util.js';
@@ -11,9 +11,9 @@ import { assert } from './util.js';
 export class Native {
   protected spec!: GmlSpec;
   /** Symbols available globally */
-  readonly global: Map<string, Symbol> = new Map();
+  readonly global: Map<string, Signifier> = new Map();
   /** Symbols available in object instance scopes */
-  readonly instance: Map<string, Symbol> = new Map();
+  readonly instance: Map<string, Signifier> = new Map();
 
   /**
    * Types, looked up by their Feather-compatible name.
@@ -53,7 +53,7 @@ export class Native {
     for (const variable of this.spec.variables) {
       assert(variable, 'Variable must be defined');
       const type = Type.fromFeatherString(variable.type, this.types);
-      const symbol = new Symbol(variable.name)
+      const symbol = new Signifier(variable.name)
         .describe(variable.description)
         .deprecate(variable.deprecated)
         .addType(type);
@@ -116,11 +116,11 @@ export class Native {
       // Add return type to the type.
       type.addReturnType(Type.fromFeatherString(func.returnType, this.types));
 
-      const symbol = new Symbol(func.name)
+      const symbol = new Signifier(func.name)
         .deprecate(func.deprecated)
         .addType(type);
       symbol.writable = false;
-      type.native = true;
+      symbol.native = true;
       this.global.set(symbol.name, symbol);
     }
   }
@@ -148,7 +148,7 @@ export class Native {
       if (!klass) {
         for (const constant of constants) {
           assert(constant, 'Constant must be defined');
-          const symbol = new Symbol(constant.name)
+          const symbol = new Signifier(constant.name)
             .describe(constant.description)
             .addType(Type.fromFeatherString(constant.type, this.types));
           symbol.writable = false;
@@ -186,7 +186,9 @@ export class Native {
       }
       // Create symbols for each class member.
       for (const constant of constants) {
-        const symbol = new Symbol(constant.name).describe(constant.description);
+        const symbol = new Signifier(constant.name).describe(
+          constant.description,
+        );
         symbol.writable = false;
         symbol.addType(classType);
         this.global.set(symbol.name, symbol);

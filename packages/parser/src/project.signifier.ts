@@ -2,7 +2,7 @@ import { Refs } from './project.location.js';
 import { Flaggable } from './types.flags.js';
 import { Type } from './types.js';
 
-export class Symbol extends Refs(Flaggable) {
+export class Signifier extends Refs(Flaggable) {
   readonly $tag = 'Sym';
   description: string | undefined = undefined;
   type: Type = new Type('Unknown');

@@ -17,7 +17,7 @@ import {
   getType,
 } from './project.location.js';
 import { isTypeOfKind } from './types.checks.js';
-import { Type, TypeMember } from './types.js';
+import { MemberSignifier, Type } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import type { GmlSymbolVisitor } from './visitor.js';
 
@@ -36,7 +36,7 @@ export function visitIdentifierAccessor(
       this.PROCESSOR.addDiagnostic(
         'UNDECLARED_GLOBAL_REFERENCE',
         identifier.token,
-        `This appears to be a global variable but it is not declared anywhere.`,
+        `This signifier is not declared anywhere.`,
       );
     }
   }
@@ -135,7 +135,7 @@ export function visitIdentifierAccessor(
                 ? assignmentType
                 : this.UNKNOWN;
               // Add this member to the struct
-              const newMember: TypeMember = accessingType.addMember(
+              const newMember: MemberSignifier = accessingType.addMember(
                 propertyIdentifier.name,
                 newMemberType,
               );

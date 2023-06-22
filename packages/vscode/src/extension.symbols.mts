@@ -86,7 +86,7 @@ export class GameMakerWorkspaceSymbolProvider
     for (const item of (project.self.listMembers() || []).values()) {
       const type = item.type;
       const location = item.def || type.def;
-      if (!location) {
+      if (!location?.file) {
         warn(`No definition for global ${item.name}`);
         continue;
       }

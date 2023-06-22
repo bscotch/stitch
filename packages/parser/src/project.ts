@@ -9,8 +9,8 @@ import { Asset } from './project.asset.js';
 import { Code } from './project.code.js';
 import { Diagnostic } from './project.diagnostics.js';
 import { Native } from './project.native.js';
-import { Symbol } from './project.symbol.js';
-import { StructType, Type, TypeMember } from './types.js';
+import { Signifier } from './project.signifier.js';
+import { MemberSignifier, StructType, Type } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert, ok } from './util.js';
 export { setLogger, type Logger } from './logger.js';
@@ -19,7 +19,7 @@ type AssetName = string;
 
 export interface SymbolInfo {
   native: boolean;
-  symbol: Symbol | TypeMember | Type;
+  symbol: Signifier | MemberSignifier | Type;
 }
 
 export interface DiagnosticsEventPayload {
@@ -71,12 +71,12 @@ export class Project {
   self!: StructType;
   /**
    * The `global` symbol, which has type `self`. */
-  symbol!: Symbol;
+  symbol!: Signifier;
   /**
    * All symbols that cannot be stored in the `global` struct
    * and that are not native to GML,
    * including enums, macros, asset IDs, etc. */
-  readonly symbols = new Map<string, Symbol>();
+  readonly symbols = new Map<string, Signifier>();
   /**
    * Non-native global types, which can be referenced in JSDocs
    * and in a symbol's types. */
@@ -171,7 +171,7 @@ export class Project {
     const info: SymbolInfo = {
       native: false,
       // Only returned if found, so type-cheating for convenience.
-      symbol: undefined as unknown as Symbol,
+      symbol: undefined as unknown as Signifier,
     };
     let symbol: SymbolInfo['symbol'] | undefined = this.symbols.get(name);
     if (symbol) {
@@ -210,7 +210,7 @@ export class Project {
    * also be listed as a member of `global`, set `addToGlobalSelf`
    *
    */
-  addGlobal(item: Symbol, addToGlobalSelf = false) {
+  addGlobal(item: Signifier, addToGlobalSelf = false) {
     // Ensure it doesn't already exist
     ok(item, 'Cannot add undefined item');
     const existing = this.getGlobal(item.name);
@@ -496,7 +496,7 @@ export class Project {
       .named('global') as StructType;
     this.self.global = true;
     this.self.def = {};
-    this.symbol = new Symbol('global').addType(this.self);
+    this.symbol = new Signifier('global').addType(this.self);
     this.symbols.set('global', this.symbol);
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);
     this.symbol.global = true;

@@ -11,8 +11,8 @@ import { logger } from './logger.js';
 import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
 import { Position, Range } from './project.location.js';
-import { Symbol } from './project.symbol.js';
-import { EnumType, StructType, TypeMember } from './types.js';
+import { Signifier } from './project.signifier.js';
+import { EnumType, MemberSignifier, StructType } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert } from './util.js';
 
@@ -78,7 +78,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     children: { Identifier?: IToken[] },
     typeName: T,
     addToGlobalSelf = false,
-  ): Symbol | TypeMember | undefined {
+  ): Signifier | MemberSignifier | undefined {
     const name = children.Identifier?.[0];
     if (!name) return;
     const range = this.PROCESSOR.range(name);
@@ -90,10 +90,10 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
 
     // Create it if it doesn't already exist.
     let symbol = this.PROCESSOR.project.getGlobal(name.image)?.symbol as
-      | Symbol
-      | TypeMember;
+      | Signifier
+      | MemberSignifier;
     if (!symbol) {
-      symbol = new Symbol(name.image).addType(type);
+      symbol = new Signifier(name.image).addType(type);
       if (typeName === 'Constructor') {
         // Ensure the constructed type exists
         symbol.type.constructs = this.PROCESSOR.project
@@ -125,7 +125,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
    * are globally visible.
    */
   override enumStatement(children: EnumStatementCstChildren) {
-    const symbol = this.ADD_GLOBAL_DECLARATION(children, 'Enum')! as Symbol;
+    const symbol = this.ADD_GLOBAL_DECLARATION(children, 'Enum')! as Signifier;
     assert(symbol, 'Enum symbol should exist');
     const type = symbol.type as EnumType;
     assert(
@@ -189,7 +189,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    this.ADD_GLOBAL_DECLARATION(children, 'Unknown') as TypeMember;
+    this.ADD_GLOBAL_DECLARATION(children, 'Unknown') as MemberSignifier;
   }
 
   override macroStatement(children: MacroStatementCstChildren) {

@@ -11,7 +11,7 @@ import {
 import { logger } from './logger.js';
 import { Code } from './project.code.js';
 import { Project } from './project.js';
-import { Symbol } from './project.symbol.js';
+import { Signifier } from './project.signifier.js';
 import { StructType } from './types.js';
 import { ok } from './util.js';
 
@@ -21,7 +21,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   readonly gmlFiles: Map<string, Code> = new Map();
   yy!: YyDataStrict<T>;
   readonly yyPath: Pathy<YySchemas[T]>;
-  readonly symbol: Symbol;
+  readonly symbol: Signifier;
   /** For objects, their instance type. */
   instanceType: StructType | undefined;
   /** For objects, their parent */
@@ -34,7 +34,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   ) {
     this.assetType = resource.id.path.split(/[/\\]/)[0] as T;
     this.yyPath = yyPath.withValidator(yySchemas[this.assetType]) as any;
-    this.symbol = new Symbol(this.name);
+    this.symbol = new Signifier(this.name);
   }
 
   get parent() {

@@ -1,10 +1,14 @@
-import { Type, type Symbol, type TypeMember } from '@bscotch/gml-parser';
+import {
+  Type,
+  type MemberSignifier,
+  type Signifier,
+} from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { config } from './extension.config.mjs';
 
 export function inScopeSymbolsToCompletions(
   document: vscode.TextDocument,
-  items: (Symbol | TypeMember)[],
+  items: (Signifier | MemberSignifier)[],
 ): vscode.CompletionItem[] {
   const completions: vscode.CompletionItem[] = [];
   for (const symbol of items) {
@@ -17,7 +21,7 @@ export function inScopeSymbolsToCompletions(
     const shouldHide =
       ignoredPrefix &&
       symbol.name!.startsWith(ignoredPrefix) &&
-      location &&
+      location?.file &&
       location.file.path.equals(document.uri.fsPath);
     if (shouldHide) {
       continue;
