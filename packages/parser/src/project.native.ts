@@ -190,6 +190,7 @@ export class Native {
           constant.description,
         );
         symbol.writable = false;
+        symbol.def = {}; // Prevent "not found" errors
         symbol.addType(classType);
         this.global.set(symbol.name, symbol);
       }

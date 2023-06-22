@@ -83,9 +83,17 @@ export class GameMakerWorkspaceSymbolProvider
   protected updateGlobalsCache(project: GameMakerProject) {
     const symbols: vscode.SymbolInformation[] = [];
     this.globalsCache.set(project, symbols);
-    for (const item of (project.self.listMembers() || []).values()) {
+    const globals = [
+      ...project.self.listMembers(),
+      ...project.symbols.values(),
+    ];
+    for (const item of globals) {
       const type = item.type;
       const location = item.def || type.def;
+      // Assets are already handled by the resource cache.
+      if (type.kind.startsWith('Asset')) {
+        continue;
+      }
       if (!location?.file) {
         warn(`No definition for global ${item.name}`);
         continue;
@@ -95,6 +103,8 @@ export class GameMakerWorkspaceSymbolProvider
           ? vscode.SymbolKind.Enum
           : type.kind === 'Function'
           ? vscode.SymbolKind.Function
+          : type.kind === 'Constructor'
+          ? vscode.SymbolKind.Constructor
           : vscode.SymbolKind.Variable;
       symbols.push(
         new vscode.SymbolInformation(
