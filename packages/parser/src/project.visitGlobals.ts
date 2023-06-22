@@ -98,7 +98,6 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         // Ensure the constructed type exists
         symbol.type.constructs = this.PROCESSOR.project
           .createStructType('self')
-          .definedAt(range)
           .named(name.image);
         symbol.type.constructs.global = true;
       }
@@ -109,6 +108,9 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     symbol.definedAt(range);
     symbol.global = true;
     symbol.addRef(range, symbol.type);
+    if (typeName === 'Constructor') {
+      symbol.type.constructs?.definedAt(range);
+    }
     return symbol;
   }
 
