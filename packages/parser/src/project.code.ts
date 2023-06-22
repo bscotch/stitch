@@ -435,7 +435,6 @@ export class Code {
       if (ref.item.def || ref.item.native) {
         continue;
       }
-      console.dir(ref.item);
       this.diagnostics.UNDECLARED_VARIABLE_REFERENCE.push(
         Diagnostic.error(`Undeclared symbol \`${ref.item.name}\``, ref, 'warn'),
       );

@@ -37,6 +37,14 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     this.symbol = new Signifier(this.name);
   }
 
+  get isScript() {
+    return this.assetType === 'scripts';
+  }
+
+  get isObject() {
+    return this.assetType === 'objects';
+  }
+
   get parent() {
     return this._parent;
   }

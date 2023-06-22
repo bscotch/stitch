@@ -125,6 +125,11 @@ export function visitIdentifierAccessor(
                 item: existingProperty,
                 range: propertyNameRange,
               };
+              // On update, we need to make sure that the definition
+              // still exists.
+              if (isLastSuffix && assignment && !existingProperty.def) {
+                existingProperty.definedAt(propertyNameRange);
+              }
             } else if (
               !existingProperty &&
               isTypeOfKind(accessingType, 'Struct')

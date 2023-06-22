@@ -352,6 +352,11 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     } else {
       // Add a reference to the item.
       item.addRef(range, assignedType);
+      // If this is the first time we've seen it, and it wouldn't have
+      // an unambiguous decalartion, add its definition
+      if (!item.def && this.PROCESSOR.file.isCreateEvent) {
+        item.definedAt(range);
+      }
     }
   }
 
