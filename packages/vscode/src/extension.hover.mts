@@ -54,6 +54,7 @@ export class GameMakerHoverProvider implements vscode.HoverProvider {
     if (!hasSomething) {
       return;
     }
+    // console.log('Hovering over', item);
     return new vscode.Hover(hoverContents);
   }
 

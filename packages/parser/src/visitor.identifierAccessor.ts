@@ -125,6 +125,7 @@ export function visitIdentifierAccessor(
                 item: existingProperty,
                 range: propertyNameRange,
               };
+              typeStack.push(getType(existingProperty));
               // On update, we need to make sure that the definition
               // still exists.
               if (isLastSuffix && assignment && !existingProperty.def) {

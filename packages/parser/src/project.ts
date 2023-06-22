@@ -231,13 +231,13 @@ export class Project {
     }
   }
 
-  addAsset(resource: Asset): void {
+  protected addAsset(resource: Asset): void {
     const name = this.assetNameFromPath(resource.dir);
     ok(!this.assets.has(name), `Resource ${name} already exists`);
     this.assets.set(name, resource);
   }
 
-  removeAsset(path: Pathy<any>): void {
+  protected removeAsset(path: Pathy<any>): void {
     const name = this.assetNameFromPath(path);
     const resource = this.assets.get(name);
     ok(resource, `Resource ${name} does not exist`);
@@ -301,7 +301,7 @@ export class Project {
   /**
    * Given the path to a yy file for an asset, ensure
    * it has an entry in the yyp file. */
-  async addAssetToYyp(yyPath: string): Promise<YypResource> {
+  protected async addAssetToYyp(yyPath: string): Promise<YypResource> {
     assert(yyPath.endsWith('.yy'), `Expected yy file, got ${yyPath}`);
     const parts = yyPath.split(/[/\\]+/).slice(-3);
     assert(
@@ -349,7 +349,7 @@ export class Project {
     return folder;
   }
 
-  async saveYyp() {
+  protected async saveYyp() {
     await Yy.write(this.yypPath.absolute, this.yyp, 'project');
   }
 
@@ -598,9 +598,10 @@ export class Project {
     // TODO: Find a better way than brute-forcing to resolve cross-file references
     // But for now, that's what we'll do!
     for (const asset of assets) {
-      for (const file of asset.gmlFilesArray) {
-        await file.reload(file._content);
-      }
+      asset.updateDiagnostics();
+      // for (const file of asset.gmlFilesArray) {
+      //   await file.reload(file._content);
+      // }
     }
     logger.log('Symbols discovered in', Date.now() - t, 'ms');
     // if (options?.watch) {

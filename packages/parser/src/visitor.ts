@@ -353,8 +353,8 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       // Add a reference to the item.
       item.addRef(range, assignedType);
       // If this is the first time we've seen it, and it wouldn't have
-      // an unambiguous decalartion, add its definition
-      if (!item.def && this.PROCESSOR.file.isCreateEvent) {
+      // an unambiguous declaration, add its definition
+      if (!item.def) {
         item.definedAt(range);
       }
     }

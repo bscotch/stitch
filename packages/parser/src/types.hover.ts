@@ -13,6 +13,9 @@ export function typeMemberToHoverText(member: MemberSignifier) {
 export function typeToHoverDetails(type: Type) {
   let code = '';
   if (type.isFunction) {
+    if (type.context) {
+      code += `\n\n*@self* ${type.context.toFeatherString()}`;
+    }
     for (const param of type.listParameters()) {
       if (param.description || param.type.description) {
         code += `\n\n*@param* \`${param.name}\` - ${
