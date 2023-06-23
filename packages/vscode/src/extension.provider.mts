@@ -372,6 +372,9 @@ export class StitchProvider
 
     info('Loading projects...');
     const yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
+    if (!yypFiles.length) {
+      warn('No .yyp files found in workspace!');
+    }
     for (const yypFile of yypFiles) {
       info('Loading project', yypFile);
       const pt = Timer.start();

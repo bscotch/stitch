@@ -36,7 +36,7 @@ export function visitIdentifierAccessor(
       this.PROCESSOR.addDiagnostic(
         'UNDECLARED_GLOBAL_REFERENCE',
         identifier.token,
-        `This signifier is not declared anywhere.`,
+        `${identifier.name} is not declared anywhere.`,
       );
     }
   }

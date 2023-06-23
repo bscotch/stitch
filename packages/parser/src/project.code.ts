@@ -1,4 +1,5 @@
 import type { Pathy } from '@bscotch/pathy';
+import { logger } from './logger.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
 import {
@@ -232,6 +233,12 @@ export class Code {
       const fromToken = isNaN(diagnostic.token.startOffset)
         ? diagnostic.previousToken
         : diagnostic.token;
+      logger.debug(
+        'SYNTAX ERROR',
+        diagnostic.message,
+        this.path.absolute,
+        fromToken,
+      );
       this.diagnostics.SYNTAX_ERROR.push(
         Diagnostic.error(
           diagnostic.message,
@@ -295,7 +302,7 @@ export class Code {
     this.scopes.push(new Scope(position, local, self));
   }
 
-  reset() {
+  protected reset() {
     this.initializeScopeRanges();
     // Remove each reference in *this file* from its symbol.
     const cleared = new Set<ReferenceableType>();

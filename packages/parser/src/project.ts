@@ -534,6 +534,7 @@ export class Project {
   }
 
   async initialize(options?: ProjectOptions): Promise<void> {
+    logger.info('Initializing project...');
     if (options?.onDiagnostics) {
       this.onDiagnostics(options.onDiagnostics);
     }
@@ -542,10 +543,12 @@ export class Project {
     this.yypWaiter = Yy.read(this.yypPath.absolute, 'project').then((yyp) => {
       this.yyp = yyp;
       options?.onLoadProgress?.(5, 'Loaded project file');
+      logger.info('Loaded yyp file!');
     });
     void this.nativeWaiter.then(() => {
       options?.onLoadProgress?.(5, 'Loaded GML spec');
     });
+    logger.info('Loading asset files...');
     const fileLoader = this.loadAssets(options);
 
     await Promise.all([this.nativeWaiter, fileLoader]);
@@ -563,6 +566,7 @@ export class Project {
     // to minimize the number of things that need to be updated after
     // loading.
     options?.onLoadProgress?.(1, 'Parsing resource code...');
+
     const assets = [...this.assets.values()].sort((a, b) => {
       if (a.assetType === b.assetType) {
         return a.name.localeCompare(b.name);
@@ -582,7 +586,7 @@ export class Project {
       return a.name.localeCompare(b.name);
     });
 
-    // First pass
+    logger.info('Discovering globals...');
     for (const asset of assets) {
       asset.updateGlobals();
     }
@@ -590,6 +594,7 @@ export class Project {
 
     t = Date.now();
     // Discover all symbols and their references
+    logger.info('Discovering symbols...');
     for (const asset of assets) {
       asset.updateAllSymbols();
     }
@@ -597,13 +602,14 @@ export class Project {
     // Second pass
     // TODO: Find a better way than brute-forcing to resolve cross-file references
     // But for now, that's what we'll do!
+    logger.info('Updating diagnostics...');
     for (const asset of assets) {
       asset.updateDiagnostics();
       // for (const file of asset.gmlFilesArray) {
       //   await file.reload(file._content);
       // }
     }
-    logger.log('Symbols discovered in', Date.now() - t, 'ms');
+    logger.info('Symbols discovered in', Date.now() - t, 'ms');
     // if (options?.watch) {
     //   this.watch();
     // }

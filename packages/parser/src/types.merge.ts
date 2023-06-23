@@ -1,3 +1,4 @@
+import { narrows } from './types.checks.js';
 import { Type } from './types.js';
 
 /** Create a new type that combines multiple other types. */
@@ -25,17 +26,12 @@ export function mergeTypes(original: Type | undefined, withType: Type): Type {
   // Similarly, if both types are the same kind we'll need to merge some fields.
   if (
     original.kind === 'Unknown' ||
-    (original.kind === withType.kind && original.kind !== 'Union')
+    (original.kind === withType.kind && original.kind !== 'Union') ||
+    narrows(withType, original)
   ) {
-    original.kind = withType.kind;
-    original.parent ||= withType.parent;
-    original._members ||= withType._members;
-    original.items ||= withType.items;
-    original.types ||= withType.types;
-    original.constructs ||= withType.constructs;
-    original.context ||= withType.context;
-    original._params ||= withType._params;
-    original.returns ||= withType.returns;
+    return original.coerceTo(withType);
+  }
+  if (narrows(original, withType)) {
     return original;
   }
 
@@ -45,7 +41,7 @@ export function mergeTypes(original: Type | undefined, withType: Type): Type {
     // Get a copy of the current type to add to the new union
     const preUnionType = original.clone();
     // Then convert it to a union
-    Object.assign(original, unionType);
+    original.coerceTo(unionType);
     // Then add the previous type to the union
     original.types = [preUnionType];
   }

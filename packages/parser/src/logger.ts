@@ -2,7 +2,9 @@ import type { InspectOptions } from 'util';
 
 export type Log = (...args: any[]) => void;
 export interface Logger {
+  info: Log;
   log: Log;
+  debug: Log;
   warn: Log;
   error: Log;
   dir: (obj: any, options?: InspectOptions) => void;

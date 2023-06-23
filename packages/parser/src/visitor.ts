@@ -346,7 +346,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
         this.PROCESSOR.addDiagnostic(
           'UNDECLARED_GLOBAL_REFERENCE',
           children.Identifier[0],
-          `This signifier is not declared anywhere.`,
+          `${children.Identifier[0].image} is not declared anywhere.`,
         );
       }
     } else {

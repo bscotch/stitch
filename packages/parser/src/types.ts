@@ -104,9 +104,12 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
 
   /** Force-convert this type to another, even if those are incompatible. */
   coerceTo(type: Type): Type {
-    this.name = type.name;
-    this.description = type.description;
-    this.parent = type.parent as any;
+    this._kind = type.kind as any;
+    this.name ||= type.name;
+    this.description ||= type.description;
+    if (this !== type.parent) {
+      this.parent = type.parent as any;
+    }
     this._members = type._members;
     this.items = type.items;
     this.types = type.types;
@@ -131,6 +134,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
       'Cannot change type kind',
     );
     this._kind = newKind as T;
+  }
+
+  get canBeSelf() {
+    return ['Struct', 'Id.Instance', 'Asset.GMObject'].includes(this.kind);
   }
 
   /** If this type narrows `other` type, returns `true` */
