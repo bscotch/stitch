@@ -161,7 +161,7 @@ export class GameMakerWorkspaceSymbolProvider
       // pattern without case sensitivity
       new RegExp(pattern.source, 'i'),
       // pattern with case sensitivity
-      new RegExp(pattern.source),
+      // new RegExp(pattern.source),
     ];
     for (const pattern of patterns) {
       const match = result.match(pattern);
