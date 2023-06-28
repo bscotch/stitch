@@ -3,14 +3,11 @@ export type BaseName = (typeof baseNames)[number];
 export const baseNames = [
   'Array',
   'Bool',
-  'Enum',
   'Function',
-  'Macro',
   'Pointer',
   'Real',
   'String',
   'Struct',
-  'Mixed',
   'Undefined',
 ] as const;
 Object.freeze(Object.seal(baseNames));
@@ -19,6 +16,7 @@ export type PrimitiveName = (typeof primitiveNames)[number];
 export const primitiveNames = [
   ...baseNames,
   'Any',
+  'Mixed',
   'Asset.GMAnimCurve',
   'Asset.GMAudioGroup',
   'Asset.GMFont',
@@ -71,15 +69,17 @@ export const primitiveNames = [
   'Id.Uniform',
   'Id.VertexBuffer',
   'Id.VertexFormat',
+  // Custom Types
+  'Union', // Container for types that go together
 ] as const;
 Object.freeze(Object.seal(primitiveNames));
 
-export const withCompatibleTypeNames = [
+export const withableTypeNames = [
   'Any',
   'Id.Instance',
   'Asset.GMObject',
   'Struct',
 ] as const;
-Object.freeze(Object.seal(withCompatibleTypeNames));
+Object.freeze(Object.seal(withableTypeNames));
 
-export type WithCompatibleTypeName = (typeof withCompatibleTypeNames)[number];
+export type WithableTypeName = (typeof withableTypeNames)[number];

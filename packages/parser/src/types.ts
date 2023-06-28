@@ -1,28 +1,23 @@
-import { arrayUnwrapped, arrayWrapped, merge } from '@bscotch/utility';
-import { typeToFeatherString } from './jsdoc.feather.js';
+import { arrayUnwrapped, merge } from '@bscotch/utility';
 import { Signifier } from './signifiers.js';
-import { narrows } from './types.checks.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
-import type {
-  PrimitiveName,
-  WithCompatibleTypeName,
-} from './types.primitives.js';
+import type { PrimitiveName, WithableTypeName } from './types.primitives.js';
 import { ok } from './util.js';
 
 export type AnyType = Type<'Any'>;
 export type ArrayType = Type<'Array'>;
 export type BoolType = Type<'Bool'>;
-export type EnumType = Type<'Enum'>;
+export type UnionType = Type<'Union'>;
 export type FunctionType = Type<'Function'>;
 export type PointerType = Type<'Pointer'>;
 export type RealType = Type<'Real'>;
 export type StringType = Type<'String'>;
 export type StructType = Type<'Struct'>;
 export type UndefinedType = Type<'Undefined'>;
-export type WithCompatibleType = Type<WithCompatibleTypeName>;
+export type WithableType = Type<WithableTypeName>;
 
 export interface TypeConfig<T extends PrimitiveName = PrimitiveName> {
-  kind?: T;
+  kind?: T | undefined;
   /**
    * Some types have names. It only counts as a name if it
    * cannot be parsed into types given the name alone.
@@ -30,14 +25,33 @@ export interface TypeConfig<T extends PrimitiveName = PrimitiveName> {
    * has the name `MyStruct`. */
   name?: string;
   /** "Container" types can list the types of the things they store. */
-  contains?: Type[];
+  contains?: UnionType;
   /** For constructor functions, the struct type they generate */
   constructs?: Type<'Struct'>;
   /** The self context for a function */
   context?: Type<'Struct'>;
   members?: Signifier[];
   params?: Signifier[];
-  returns?: Type[];
+  returns?: UnionType;
+}
+
+/**
+ * Create config object with all keys but undefined values
+ * to keep things monomorphic.
+ */
+function emptyConfig<T extends PrimitiveName>(
+  kind?: T | undefined,
+): TypeConfig<T> {
+  return {
+    kind,
+    name: undefined,
+    contains: undefined,
+    constructs: undefined,
+    context: undefined,
+    members: undefined,
+    params: undefined,
+    returns: undefined,
+  };
 }
 
 export class Type<T extends PrimitiveName = PrimitiveName> {
@@ -91,8 +105,8 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   get name(): string | undefined {
     return this.config.name || this.parent?.name;
   }
-  get contains(): readonly Type[] {
-    return this.config.contains || this.parent?.contains || [];
+  get contains(): UnionType | undefined {
+    return this.config.contains || this.parent?.contains;
   }
   get constructs(): StructType | undefined {
     return this.config.constructs || this.parent?.constructs;
@@ -109,8 +123,8 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   get params(): readonly Signifier[] {
     return this.config.params || this.parent?.params || [];
   }
-  get returns(): readonly Type[] {
-    return this.config.returns || this.parent?.returns || [];
+  get returns(): UnionType | undefined {
+    return this.config.returns || this.parent?.returns;
   }
   //#endregion
 
@@ -119,25 +133,15 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   constructor(fromParent: Type<T>);
   constructor(kind: T | TypeConfig<T> | Type<T>) {
     this.config =
-      typeof kind === 'string' ? { kind } : kind instanceof Type ? {} : kind;
+      typeof kind === 'string'
+        ? emptyConfig(kind)
+        : kind instanceof Type
+        ? (emptyConfig() as TypeConfig<T>)
+        : merge(emptyConfig(), kind);
     if (kind instanceof Type) {
       this.parent = kind;
       this.parent.children.add(this);
     }
-  }
-
-  get canBeSelf() {
-    return ['Struct', 'Id.Instance', 'Asset.GMObject'].includes(this.kind);
-  }
-
-  /** If this type narrows `other` type, returns `true` */
-  narrows(other: Type): boolean {
-    return narrows(this, other);
-  }
-
-  /** Get this type as a Feather-compatible string */
-  toFeatherString(): string {
-    return typeToFeatherString(this);
   }
 
   get code(): string {
@@ -149,14 +153,19 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   get isFunction(): boolean {
-    return ['Constructor', 'Function'].includes(this.kind);
+    return this.kind === 'Function';
+  }
+
+  get isConstructor(): boolean {
+    return this.kind === 'Function' && this.constructs !== undefined;
   }
 
   addReturnType(type: Type | Type[]): this {
     ok(this.kind === 'Function', `Cannot add return type to ${this.kind}`);
-    const returns = this.returns.slice();
-    returns.push(...arrayWrapped(type));
-    return this.mutate({ returns });
+    if (!this.returns) {
+      this.mutate({ returns: new Type('Union') });
+    }
+    this.returns!.addContainedType(type);
   }
 
   listParameters(): Signifier[] {
@@ -193,7 +202,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     param.local = true;
     param.optional = optional || name === '...';
     param.parameter = true;
-    param.type = arrayWrapped(type);
+    param.addType(type);
     return param;
   }
 
@@ -240,7 +249,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   /**
    * For container types that have non-named members, like arrays and DsTypes.
    * Can also be used for default Struct values. */
-  addContainedType(type: Type): this {
+  addContainedType(type: Type | Type[]): this {
+    // TODO: Need to get rid of this concept. A contained Union type is stable once added. Starting to feel circular...
+    if (!this.contains) {
+      this.mutate({ contains: new Type('Union') });
+    }
     const contains = this.contains.slice();
     contains.push(type);
     return this.mutate({ contains });
@@ -255,5 +268,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   named(name: string | undefined): this {
     return this.mutate({ name });
+  }
+
+  addRef(ref: Signifier) {
+    this.refs.add(ref);
   }
 }

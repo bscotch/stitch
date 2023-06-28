@@ -1,5 +1,3 @@
-import { Referenceable } from './project.location.js';
-
 export const Flag = {
   Readable: 1 << 0,
   Writable: 1 << 1,
@@ -15,7 +13,7 @@ export const Flag = {
 };
 export type FlagName = keyof typeof Flag;
 
-export class Flaggable extends Referenceable {
+export class Flaggable {
   flags: number = Flag.ReadWrite;
 
   protected setFlag(flag: number, value: boolean) {
