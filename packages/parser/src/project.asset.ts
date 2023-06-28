@@ -11,7 +11,7 @@ import {
 import { logger } from './logger.js';
 import { Code } from './project.code.js';
 import { Project } from './project.js';
-import { Signifier } from './project.signifier.js';
+import { Signifier } from './signifiers.js';
 import { StructType } from './types.js';
 import { ok } from './util.js';
 
@@ -34,7 +34,11 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   ) {
     this.assetType = resource.id.path.split(/[/\\]/)[0] as T;
     this.yyPath = yyPath.withValidator(yySchemas[this.assetType]) as any;
-    this.symbol = new Signifier(this.name);
+    this.symbol = new Signifier(this.globalSelf, this.name);
+  }
+
+  get globalSelf() {
+    return this.project.self;
   }
 
   get isScript() {

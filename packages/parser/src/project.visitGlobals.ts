@@ -11,8 +11,8 @@ import { logger } from './logger.js';
 import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
 import { Position, Range } from './project.location.js';
-import { Signifier } from './project.signifier.js';
-import { EnumType, MemberSignifier, StructType } from './types.js';
+import { Signifier } from './signifiers.js';
+import { EnumType, StructType } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert } from './util.js';
 
@@ -78,7 +78,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     children: { Identifier?: IToken[] },
     typeName: T,
     addToGlobalSelf = false,
-  ): Signifier | MemberSignifier | undefined {
+  ): Signifier | Signifier | undefined {
     const name = children.Identifier?.[0];
     if (!name) return;
     const range = this.PROCESSOR.range(name);
@@ -86,20 +86,20 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       .createType(typeName)
       .definedAt(range)
       .named(name.image);
-    type.global = true;
 
     // Create it if it doesn't already exist.
     let symbol = this.PROCESSOR.project.getGlobal(name.image)?.symbol as
       | Signifier
-      | MemberSignifier;
+      | Signifier;
     if (!symbol) {
-      symbol = new Signifier(name.image).addType(type);
+      symbol = new Signifier(this.PROCESSOR.project.self, name.image).addType(
+        type,
+      );
       if (typeName === 'Constructor') {
         // Ensure the constructed type exists
         symbol.type.constructs = this.PROCESSOR.project
           .createStructType('self')
           .named(name.image);
-        symbol.type.constructs.global = true;
       }
       // Add the symbol and type to the project.
       this.PROCESSOR.project.addGlobal(symbol, addToGlobalSelf);
@@ -107,7 +107,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     // Ensure it's defined here.
     symbol.definedAt(range);
     symbol.global = true;
-    symbol.addRef(range, symbol.type);
+    symbol.addRef(range);
     if (typeName === 'Constructor') {
       symbol.type.constructs?.definedAt(range);
     }
@@ -191,7 +191,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    this.ADD_GLOBAL_DECLARATION(children, 'Unknown') as MemberSignifier;
+    this.ADD_GLOBAL_DECLARATION(children, 'Unknown') as Signifier;
   }
 
   override macroStatement(children: MacroStatementCstChildren) {

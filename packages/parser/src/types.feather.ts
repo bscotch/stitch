@@ -64,27 +64,16 @@ export function typeFromParsedJsdocs(
 ): Type {
   if (jsdoc.kind === 'description') {
     // Then we have no type info but have a description to add.
-    return typeFromIdentifier('Unknown', knownTypes).describe(
-      jsdoc.description,
-    );
+    return typeFromIdentifier('Unknown', knownTypes);
   } else if (jsdoc.kind === 'type') {
     // Then this was purely a type annotation. Create the type and
     // add any metadata.
-    return typeFromFeatherString(jsdoc.type!.content, knownTypes).describe(
-      jsdoc.description,
-    );
+    return typeFromFeatherString(jsdoc.type!.content, knownTypes);
   } else if (jsdoc.kind === 'self') {
-    return typeFromFeatherString(jsdoc.self!.content, knownTypes).describe(
-      jsdoc.description,
-    );
+    return typeFromFeatherString(jsdoc.self!.content, knownTypes);
   } else if (jsdoc.kind === 'function') {
-    const type = typeFromIdentifier('Function', knownTypes).describe(
-      jsdoc.description,
-    );
+    const type = typeFromIdentifier('Function', knownTypes);
     let i = 0;
-    if (jsdoc.deprecated) {
-      type.deprecated = true;
-    }
     if (jsdoc.self) {
       type.context = typeFromFeatherString(
         jsdoc.self!.content,
@@ -95,17 +84,14 @@ export function typeFromParsedJsdocs(
       const returnType = typeFromFeatherString(
         jsdoc.returns.type!.content,
         knownTypes,
-      ).describe(jsdoc.returns.description);
+      );
       type.addReturnType(returnType);
     }
     for (const param of jsdoc.params || []) {
-      const paramType = typeFromFeatherString(
-        param.type!.content,
-        knownTypes,
-      ).describe(param.description);
+      const paramType = typeFromFeatherString(param.type!.content, knownTypes);
       const member = type.addParameter(i, param.name!.content, paramType);
       i++;
-      member.optional = param.optional;
+      member.optional = param.optional || false;
       member.describe(param.description);
     }
     return type;

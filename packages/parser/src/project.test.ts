@@ -2,14 +2,14 @@ import { expect } from 'chai';
 import { logger } from './logger.js';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
-import { Signifier } from './project.signifier.js';
-import { MemberSignifier, Type } from './types.js';
+import { Signifier } from './signifiers.js';
+import { Type } from './types.js';
 import type { PrimitiveName } from './types.primitives.js';
 import { ok } from './util.js';
 
 describe('Project', function () {
   it('can load the GML spec', async function () {
-    const spec = await Native.from();
+    const spec = await Native.from(undefined, new Type('Struct'));
     expect(spec).to.exist;
 
     // STRUCTS AND CONSTS
@@ -163,7 +163,6 @@ describe('Project', function () {
     ok(item.$tag === 'Sym');
     ok(item.type.name === globalVarName);
     ok(item.global === true);
-    ok(item.type.global === true);
     //#endregion GLOBALVARS
 
     //#region ROOT SCRIPT SCOPE
@@ -199,7 +198,7 @@ describe('Project', function () {
     const paramName = '_name';
     const paramRef = scriptFile.getReferenceAt({ line: 18, column: 32 });
     ok(paramRef);
-    const param = paramRef.item as MemberSignifier;
+    const param = paramRef.item as Signifier;
     ok(param);
     ok(param.local);
     ok(param.parameter);
@@ -223,7 +222,6 @@ describe('Project', function () {
     ok(objectType);
     ok(inInstanceScope);
     ok(inInstanceScope.item.name === instanceVarName);
-    ok(inInstanceScope.item.instance);
     // Are functions properly added to self?
     const instanceFunctionName = 'instance_function';
     const instanceFunction = objectType.getMember(instanceFunctionName);
@@ -288,11 +286,11 @@ describe('Project', function () {
     //#region DOT ASSIGNMENTS
     const dotAssignedRefName = 'another_instance_variable';
     const dotAssignedRef = objCreate.getReferenceAt(20, 14);
-    const dotAssignedType = dotAssignedRef?.item as MemberSignifier;
+    const dotAssignedType = dotAssignedRef?.item as Signifier;
     ok(dotAssignedRef);
     ok(dotAssignedRef.item.name === dotAssignedRefName);
     ok(dotAssignedType);
-    ok(dotAssignedType.parent === obj.instanceType);
+    ok(dotAssignedType.container === obj.instanceType);
     //#endregion DOT ASSIGNMENTS
 
     // Check the return type of a function
@@ -326,7 +324,7 @@ function validateBschemaConstructor(project: Project) {
     ?.symbol as Type<'Struct'>;
   const bschemaGlobalDef = complexScriptFile.getReferenceAt(1, 15);
   const bschemaConstructor = complexScriptFile.getReferenceAt(7, 13)
-    ?.item as MemberSignifier;
+    ?.item as Signifier;
   const bschemaRoleType = project.getGlobal('Struct.BschemaRole')
     ?.symbol as Type<'Struct'>;
   ok(bschemaGlobal);
@@ -343,7 +341,7 @@ function validateBschemaConstructor(project: Project) {
 
   // Make sure that the project_setup Bschema field gets typed based on its assignment
   const projectSetupRef = complexScriptFile.getReferenceAt(10, 10)!;
-  const projectSetupVar = projectSetupRef.item as MemberSignifier;
+  const projectSetupVar = projectSetupRef.item as Signifier;
   const projectSetupType = projectSetupVar.type;
   const projectSetupAssignedTo = bschemaConstructor.type.getParameter(0)!;
   ok(projectSetupAssignedTo.name === 'project_setup_function');

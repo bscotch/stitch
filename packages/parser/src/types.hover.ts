@@ -1,7 +1,8 @@
-import type { MemberSignifier, Type } from './types.js';
+import { Signifier } from './signifiers.js';
+import type { Type } from './types.js';
 import { assert } from './util.js';
 
-export function typeMemberToHoverText(member: MemberSignifier) {
+export function typeMemberToHoverText(member: Signifier) {
   let code = member.name;
   if (member.optional) {
     code += '?';

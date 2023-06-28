@@ -1,25 +1,23 @@
-import { Refs } from './project.location.js';
 import { Flaggable } from './types.flags.js';
-import { Type } from './types.js';
+import { StructType, Type } from './types.js';
 
-export class Signifier extends Refs(Flaggable) {
+export class Signifier extends Flaggable {
   readonly $tag = 'Sym';
   description: string | undefined = undefined;
   type: Type = new Type('Unknown');
+  /** For function params, the parameter index */
+  idx: number | undefined = undefined;
 
-  constructor(readonly name: string, type?: Type) {
+  constructor(
+    /** The global, self, or local struct containing this signifier */
+    readonly container: StructType,
+    readonly name: string,
+    type?: Type,
+  ) {
     super();
     if (type) {
       this.type = type;
     }
-  }
-
-  toJSON() {
-    return {
-      $tag: this.$tag,
-      name: this.name,
-      type: this.type,
-    };
   }
 
   describe(description: string | undefined): this {

@@ -38,6 +38,7 @@ import {
   type ReferenceableType,
 } from './project.location.js';
 import { isTypeOfKind } from './types.checks.js';
+import { typeFromParsedJsdocs } from './types.feather.js';
 import { Type, type StructType } from './types.js';
 import { assert } from './util.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
@@ -213,7 +214,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
    * it for use by the next symbol.
    */
   PREPARE_JSDOC(jsdoc: JsdocSummary) {
-    const type = Type.fromParsedJsdocs(jsdoc, this.PROCESSOR.project.types);
+    const type = typeFromParsedJsdocs(jsdoc, this.PROCESSOR.project.types);
     // There might be named types we can swap out.
     if (type.context && type.context.name) {
       const matchingItem = this.FIND_ITEM_BY_NAME(type.context.name);
@@ -351,7 +352,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       }
     } else {
       // Add a reference to the item.
-      item.addRef(range, assignedType);
+      item.addRef(range);
       // If this is the first time we've seen it, and it wouldn't have
       // an unambiguous declaration, add its definition
       if (!item.def) {

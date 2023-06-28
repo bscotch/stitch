@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { logger } from './logger.js';
 import { GmlParser } from './parser.js';
-import { Type } from './types.js';
+import { typeFromFeatherString } from './types.feather.js';
 import { ok } from './util.js';
 
 dotenv.config();
@@ -33,11 +33,11 @@ function showErrors(
 
 describe('Parser', function () {
   it('can get types from typestrings', function () {
-    expect(Type.fromFeatherString('Array', new Map()).kind).to.equal('Array');
-    const stringArray = Type.fromFeatherString('Array<string>', new Map());
+    expect(typeFromFeatherString('Array', new Map()).kind).to.equal('Array');
+    const stringArray = typeFromFeatherString('Array<string>', new Map());
     expect(stringArray.kind).to.equal('Array');
     expect(stringArray.items!.kind).to.equal('String');
-    const dsMap = Type.fromFeatherString('Id.DsMap[String,Real]', new Map());
+    const dsMap = typeFromFeatherString('Id.DsMap[String,Real]', new Map());
     expect(dsMap.kind).to.equal('Id.DsMap');
     expect(dsMap.items!.kind).to.equal('Union');
     expect(dsMap.items!.types!.length).to.equal(2);
@@ -47,11 +47,11 @@ describe('Parser', function () {
 
   it('can parse cross-referencing types', function () {
     const knownTypes = new Map();
-    const arrayOfStructs = Type.fromFeatherString(
+    const arrayOfStructs = typeFromFeatherString(
       'Array<Struct.Hello>',
       knownTypes,
     );
-    const structType = Type.fromFeatherString('Struct.Hello', knownTypes);
+    const structType = typeFromFeatherString('Struct.Hello', knownTypes);
 
     ok(knownTypes.get('Struct.Hello') === structType);
     expect(arrayOfStructs.kind).to.equal('Array');
@@ -61,7 +61,7 @@ describe('Parser', function () {
   });
 
   it('can parse complex typestrings', function () {
-    const complexType = Type.fromFeatherString(
+    const complexType = typeFromFeatherString(
       'Array<string OR Array<Real>>|Struct.Hello OR Id.DsMap[String,Real]',
       new Map(),
     );

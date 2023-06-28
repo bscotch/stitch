@@ -16,9 +16,9 @@ import {
   ReferenceableType,
   Scope,
 } from './project.location.js';
-import { Signifier } from './project.signifier.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
-import { MemberSignifier, Type } from './types.js';
+import { Signifier } from './signifiers.js';
+import { Type } from './types.js';
 import { assert, isBeforeRange, isInRange } from './util.js';
 import { processSymbols } from './visitor.js';
 
@@ -157,7 +157,7 @@ export class Code {
   getInScopeSymbolsAt(
     offset: number | LinePosition,
     column?: number,
-  ): (Signifier | MemberSignifier)[] {
+  ): (Signifier | Signifier)[] {
     if (typeof offset === 'number' && typeof column === 'number') {
       offset = { line: offset, column };
     }
@@ -329,8 +329,8 @@ export class Code {
       // If this symbol has no references left, remove it from the project.
       if (isDefinedInThisFile && !symbol.refs.size) {
         // Remove typemembers from their parent type
-        if (symbol instanceof MemberSignifier) {
-          symbol.parent.removeMember(symbol.name);
+        if (symbol instanceof Signifier) {
+          symbol.container.removeMember(symbol.name);
         }
         // TODO: Remove from global list?
       }
@@ -439,7 +439,7 @@ export class Code {
   protected computeUndeclaredSymbolDiagnostics() {
     this.diagnostics.UNDECLARED_VARIABLE_REFERENCE = [];
     for (const ref of this._refs) {
-      if (ref.item.def || ref.item.native) {
+      if (ref.item.def || ('native' in ref.item && ref.item.native)) {
         continue;
       }
       this.diagnostics.UNDECLARED_VARIABLE_REFERENCE.push(

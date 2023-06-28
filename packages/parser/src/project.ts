@@ -9,8 +9,8 @@ import { Asset } from './project.asset.js';
 import { Code } from './project.code.js';
 import { Diagnostic } from './project.diagnostics.js';
 import { Native } from './project.native.js';
-import { Signifier } from './project.signifier.js';
-import { MemberSignifier, StructType, Type } from './types.js';
+import { Signifier } from './signifiers.js';
+import { StructType, Type } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert, ok } from './util.js';
 export { setLogger, type Logger } from './logger.js';
@@ -19,7 +19,7 @@ type AssetName = string;
 
 export interface SymbolInfo {
   native: boolean;
-  symbol: Signifier | MemberSignifier | Type;
+  symbol: Signifier | Signifier | Type;
 }
 
 export interface DiagnosticsEventPayload {
@@ -121,9 +121,6 @@ export class Project {
       selfMember.def = {};
       selfMember.writable = false;
       type.def = {};
-    }
-    if (subtype === 'instance') {
-      type.instance = true;
     }
     return type;
   }
@@ -481,22 +478,21 @@ export class Project {
           'GmlSpec.xml',
         );
         await gmlSpecPath.exists({ assert: true });
-        this.native = await Native.from(gmlSpecPath.absolute);
+        this.native = await Native.from(gmlSpecPath.absolute, this.self);
       }
     }
     // If we don't have a spec yet, use the fallback
     if (!this.native) {
       logger.error('No spec found, using fallback');
-      this.native = await Native.from();
+      this.native = await Native.from(undefined, this.self);
       ok(this.native, 'Failed to load fallback GML spec');
     }
     this.self = this.native.types
       .get('Struct')!
       .derive()
       .named('global') as StructType;
-    this.self.global = true;
     this.self.def = {};
-    this.symbol = new Signifier('global').addType(this.self);
+    this.symbol = new Signifier(this.self, 'global').addType(this.self);
     this.symbols.set('global', this.symbol);
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);
     this.symbol.global = true;

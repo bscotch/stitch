@@ -1,9 +1,9 @@
 import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
-import type { Signifier } from './project.signifier.js';
+import type { Signifier } from './signifiers.js';
 import { isTypeInstance } from './types.checks.js';
-import { EnumType, MemberSignifier, StructType, Type } from './types.js';
-import { assert, type Constructor } from './util.js';
+import { EnumType, StructType, Type } from './types.js';
+import { assert } from './util.js';
 
 export const firstLineIndex = 1;
 export const firstColumnIndex = 1;
@@ -150,72 +150,46 @@ export class FunctionArgRange extends Range {
     return getType(this.func);
   }
 
-  get param(): MemberSignifier {
+  get param(): Signifier {
     assert(this.type, 'FunctionArgRange must have a type');
     return this.type.getParameter(this.idx)!;
   }
 }
 
-/** Extend a class to add `def`, `refs`, and related fields and methods. */
-export function Refs<TBase extends Constructor>(Base: TBase) {
-  return class extends Base {
-    /**
-     * If `true`, then this definitely exists but may not have a place where it
-     * is declared. E.g. the `global` variable. In that case this would be set to
-     * `true`. Otherwise `undefined` is interpreted to mean that this thing
-     * does not have a definite declaration.
-     */
-    def: Range | { file?: undefined } | undefined = undefined;
-    refs = new Set<Reference>();
+export class Referenceable {
+  /**
+   * If `true`, then this definitely exists but may not have a place where it
+   * is declared. E.g. the `global` variable. In that case this would be set to
+   * `true`. Otherwise `undefined` is interpreted to mean that this thing
+   * does not have a definite declaration.
+   */
+  def: Range | { file?: undefined } | undefined = undefined;
+  refs = new Set<Reference>();
 
-    addRef(location: Range, type?: Type): Reference {
-      const ref = Reference.fromRange(location, this as any);
-      // TODO: Improve the type tracing!
-      const itemType = (this as any).type as Type | undefined;
-      ref.type = type || itemType || ref.type;
-      if (type && 'type' in this && (this.type as Type).kind === 'Unknown') {
-        this.type = Type.merge(this.type as Type, type);
-      }
-      this.refs.add(ref);
-      location.file.addRef(ref);
-      return ref;
-    }
+  addRef(location: Range): Reference {
+    const ref = Reference.fromRange(location, this as any);
+    this.refs.add(ref);
+    location.file.addRef(ref);
+    return ref;
+  }
 
-    definedAt(location: Range | undefined): this {
-      this.def = location;
-      return this;
-    }
-  };
-}
-
-export class Referenceable extends Refs(class {}) {}
-
-export const enum ScopeFlag {
-  DotAccessor = 1 << 0,
+  definedAt(location: Range | undefined): this {
+    this.def = location;
+    return this;
+  }
 }
 
 export class Scope extends Range {
   override readonly $tag = 'Scope';
   /** The immediately adjacent ScopeRange */
   protected _next: Scope | undefined = undefined;
-  public flags = 0;
+  public isDotAccessor = false;
   constructor(
     start: Position,
     public local: StructType,
     public self: StructType | EnumType,
   ) {
     super(start);
-  }
-
-  set isDotAccessor(value: boolean) {
-    if (value) {
-      this.flags |= ScopeFlag.DotAccessor;
-    } else {
-      this.flags &= ~ScopeFlag.DotAccessor;
-    }
-  }
-  get isDotAccessor(): boolean {
-    return !!(this.flags & ScopeFlag.DotAccessor);
   }
 
   setEnd(atToken: CstNodeLocation | Position, fromTokenEnd = false) {
@@ -244,7 +218,7 @@ export class Scope extends Range {
   }
 }
 
-export type ReferenceableType = Signifier | Type | MemberSignifier;
+export type ReferenceableType = Signifier | Type | Signifier;
 
 export function getType(ref: ReferenceableType): Type {
   assert(ref, 'Cannot get the type of an undefined reference.');

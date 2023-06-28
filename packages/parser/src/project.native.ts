@@ -2,8 +2,9 @@ import { pathy } from '@bscotch/pathy';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
-import { Signifier } from './project.signifier.js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
+import { Signifier } from './signifiers.js';
+import { typeFromFeatherString } from './types.feather.js';
 import { Type, type FunctionType, type StructType } from './types.js';
 import { primitiveNames } from './types.primitives.js';
 import { assert } from './util.js';
@@ -21,12 +22,14 @@ export class Native {
    */
   readonly types: Map<string, Type> = new Map();
 
-  protected constructor(readonly filePath: string) {
+  protected constructor(
+    readonly filePath: string,
+    readonly globalSelf: StructType,
+  ) {
     // Initialize all of the primitives so we can guarantee
     // they exist on any lookup.
     primitiveNames.forEach((name) => {
       const type = new Type(name);
-      type.writable = false;
       this.types.set(name, type);
     });
   }
@@ -52,8 +55,8 @@ export class Native {
   protected loadVariables() {
     for (const variable of this.spec.variables) {
       assert(variable, 'Variable must be defined');
-      const type = Type.fromFeatherString(variable.type, this.types);
-      const symbol = new Signifier(variable.name)
+      const type = typeFromFeatherString(variable.type, this.types);
+      const symbol = new Signifier(this.globalSelf, variable.name)
         .describe(variable.description)
         .deprecate(variable.deprecated)
         .addType(type);
@@ -96,11 +99,8 @@ export class Native {
     for (const func of this.spec.functions) {
       const typeName = `Function.${func.name}`;
       // Need a type and a symbol for each function.
-      const type = (
-        this.types.get(typeName) || this.createFunctionType().named(func.name)
-      ).describe(func.description);
-      type.native = true;
-      type.writable = false;
+      const type =
+        this.types.get(typeName) || this.createFunctionType().named(func.name);
       this.types.set(typeName, type);
 
       // Add parameters to the type.
@@ -108,15 +108,15 @@ export class Native {
       for (let i = 0; i < func.parameters.length; i++) {
         const param = func.parameters[i];
         assert(param, 'Parameter must be defined');
-        const paramType = Type.fromFeatherString(param.type, this.types);
+        const paramType = typeFromFeatherString(param.type, this.types);
         type
           .addParameter(i, param.name, paramType, param.optional)
           .describe(param.description);
       }
       // Add return type to the type.
-      type.addReturnType(Type.fromFeatherString(func.returnType, this.types));
+      type.addReturnType(typeFromFeatherString(func.returnType, this.types));
 
-      const symbol = new Signifier(func.name)
+      const symbol = new Signifier(this.globalSelf, func.name)
         .deprecate(func.deprecated)
         .addType(type);
       symbol.writable = false;
@@ -148,9 +148,9 @@ export class Native {
       if (!klass) {
         for (const constant of constants) {
           assert(constant, 'Constant must be defined');
-          const symbol = new Signifier(constant.name)
+          const symbol = new Signifier(this.globalSelf, constant.name)
             .describe(constant.description)
-            .addType(Type.fromFeatherString(constant.type, this.types));
+            .addType(typeFromFeatherString(constant.type, this.types));
           symbol.writable = false;
           symbol.native = true;
           this.global.set(symbol.name, symbol);
@@ -169,7 +169,7 @@ export class Native {
       // Create the base type for the class.
       const classTypeName = `Constant.${klass}`;
       const typeString = [...typeNames.values()].join('|');
-      let classType = Type.fromFeatherString(typeString, this.types)
+      let classType = typeFromFeatherString(typeString, this.types)
         .derive()
         .named(classTypeName);
       const existingType = this.types.get(classTypeName);
@@ -186,7 +186,7 @@ export class Native {
       }
       // Create symbols for each class member.
       for (const constant of constants) {
-        const symbol = new Signifier(constant.name).describe(
+        const symbol = new Signifier(this.globalSelf, constant.name).describe(
           constant.description,
         );
         symbol.writable = false;
@@ -211,7 +211,7 @@ export class Native {
 
       for (const prop of struct.properties) {
         assert(prop, 'Property must be defined');
-        const type = Type.fromFeatherString(prop.type, this.types);
+        const type = typeFromFeatherString(prop.type, this.types);
         structType
           .addMember(prop.name, type, prop.writable)
           .describe(prop.description);
@@ -219,9 +219,12 @@ export class Native {
     }
   }
 
-  static async from(filePath: string = Native.fallbackGmlSpecPath.absolute) {
+  static async from(
+    filePath: string = Native.fallbackGmlSpecPath.absolute,
+    globalSelf: StructType,
+  ) {
     const parsedSpec = await Native.parse(filePath);
-    const spec = new Native(filePath);
+    const spec = new Native(filePath, globalSelf);
     spec.spec = parsedSpec;
     spec.load();
     return spec;

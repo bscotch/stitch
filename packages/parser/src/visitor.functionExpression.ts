@@ -1,13 +1,8 @@
 import type { FunctionExpressionCstChildren } from '../gml-cst.js';
 import { VisitorContext, withCtxKind } from './parser.js';
 import { fixITokenLocation } from './project.location.js';
-import { Signifier } from './project.signifier.js';
-import type {
-  FunctionType,
-  MemberSignifier,
-  StructType,
-  Type,
-} from './types.js';
+import { Signifier } from './signifiers.js';
+import type { FunctionType, StructType, Type } from './types.js';
 import { mergeManyTypes } from './types.merge.js';
 import { assert, ok } from './util.js';
 import type { GmlSymbolVisitor } from './visitor.js';
@@ -45,9 +40,10 @@ export function visitFunctionExpression(
   // Create the symbol if we don't already have it
   const item = (identifier?.item ||
     new Signifier(
+      undefined, // TODO: Reorganize all of this so we know the scope already
       functionName || '',
       this.PROCESSOR.project.createType(functionTypeName).named(functionName),
-    )) as Signifier | MemberSignifier;
+    )) as Signifier | Signifier;
   functionName = item.name;
   if (nameLocation) {
     item.addRef(nameLocation);
@@ -70,9 +66,6 @@ export function visitFunctionExpression(
     docs?.type.context?.kind === 'Struct'
       ? docs.type.context
       : (this.PROCESSOR.currentSelf as StructType);
-  if (docs?.type.deprecated) {
-    functionType.deprecated = docs.type.deprecated;
-  }
 
   // Ensure that constructors have an attached constructed type
   if (isConstructor && !functionType.constructs) {

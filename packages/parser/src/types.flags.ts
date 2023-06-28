@@ -1,25 +1,36 @@
-export const enum Flag {
-  Readable = 1 << 0,
-  Writable = 1 << 1,
-  Instance = 1 << 2,
-  Deprecated = 1 << 3,
-  Static = 1 << 4,
-  Local = 1 << 5,
-  Global = 1 << 6,
-  Parameter = 1 << 7,
-  Native = 1 << 8, // Is a built-in
-  ReadWrite = Readable | Writable,
-}
+import { Referenceable } from './project.location.js';
 
-export class Flaggable {
-  flags: Flag = Flag.ReadWrite;
+export const Flag = {
+  Readable: 1 << 0,
+  Writable: 1 << 1,
+  Instance: 1 << 2,
+  Deprecated: 1 << 3,
+  Static: 1 << 4,
+  Local: 1 << 5,
+  Global: 1 << 6,
+  Parameter: 1 << 7,
+  Native: 1 << 8, // Is a built-in
+  Optional: 1 << 9,
+  ReadWrite: (1 << 0) | (1 << 1),
+};
+export type FlagName = keyof typeof Flag;
 
-  protected setFlag(flag: Flag, value: boolean) {
+export class Flaggable extends Referenceable {
+  flags: number = Flag.ReadWrite;
+
+  protected setFlag(flag: number, value: boolean) {
     if (value) {
       this.flags |= flag;
     } else {
       this.flags &= ~flag;
     }
+  }
+
+  get optional() {
+    return !!(this.flags & Flag.Optional);
+  }
+  set optional(optional: boolean) {
+    this.setFlag(Flag.Optional, optional);
   }
 
   get native() {

@@ -16,8 +16,9 @@ import {
   fixITokenLocation,
   getType,
 } from './project.location.js';
+import { Signifier } from './signifiers.js';
 import { isTypeOfKind } from './types.checks.js';
-import { MemberSignifier, Type } from './types.js';
+import { Type } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import type { GmlSymbolVisitor } from './visitor.js';
 
@@ -141,7 +142,7 @@ export function visitIdentifierAccessor(
                 ? assignmentType
                 : this.UNKNOWN;
               // Add this member to the struct
-              const newMember: MemberSignifier = accessingType.addMember(
+              const newMember: Signifier = accessingType.addMember(
                 propertyIdentifier.name,
                 newMemberType,
               );
