@@ -82,7 +82,7 @@ export function visitIdentifierAccessor(
       case 'listAccessSuffix':
       case 'structAccessSuffix':
         this.visit(suffix.children.expression, ctx);
-        const type: Type = accessingType.items || this.UNKNOWN;
+        const type: Type = accessingType.contains || this.UNKNOWN;
         accessing = {
           item: type,
           range: suffixRange,

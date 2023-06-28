@@ -36,13 +36,13 @@ describe('Parser', function () {
     expect(typeFromFeatherString('Array', new Map()).kind).to.equal('Array');
     const stringArray = typeFromFeatherString('Array<string>', new Map());
     expect(stringArray.kind).to.equal('Array');
-    expect(stringArray.items!.kind).to.equal('String');
+    expect(stringArray.contains!.kind).to.equal('String');
     const dsMap = typeFromFeatherString('Id.DsMap[String,Real]', new Map());
     expect(dsMap.kind).to.equal('Id.DsMap');
-    expect(dsMap.items!.kind).to.equal('Union');
-    expect(dsMap.items!.types!.length).to.equal(2);
-    expect(dsMap.items!.types![0].kind).to.equal('String');
-    expect(dsMap.items!.types![1].kind).to.equal('Real');
+    expect(dsMap.contains!.kind).to.equal('Union');
+    expect(dsMap.contains!.types!.length).to.equal(2);
+    expect(dsMap.contains!.types![0].kind).to.equal('String');
+    expect(dsMap.contains!.types![1].kind).to.equal('Real');
   });
 
   it('can parse cross-referencing types', function () {
@@ -55,9 +55,9 @@ describe('Parser', function () {
 
     ok(knownTypes.get('Struct.Hello') === structType);
     expect(arrayOfStructs.kind).to.equal('Array');
-    expect(arrayOfStructs.items!.kind).to.equal('Struct');
-    ok(arrayOfStructs.items === structType);
-    expect(arrayOfStructs.items!.name).to.equal('Hello');
+    expect(arrayOfStructs.contains!.kind).to.equal('Struct');
+    ok(arrayOfStructs.contains === structType);
+    expect(arrayOfStructs.contains!.name).to.equal('Hello');
   });
 
   it('can parse complex typestrings', function () {
@@ -69,11 +69,11 @@ describe('Parser', function () {
     const types = complexType.types!;
     expect(types.length).to.equal(3);
     expect(types[0].kind).to.equal('Array');
-    expect(types[0].items!.kind).to.equal('Union');
-    expect(types[0].items!.types!.length).to.equal(2);
-    expect(types[0].items!.types![0].kind).to.equal('String');
-    expect(types[0].items!.types![1].kind).to.equal('Array');
-    expect(types[0].items!.types![1].items!.kind).to.equal('Real');
+    expect(types[0].contains!.kind).to.equal('Union');
+    expect(types[0].contains!.types!.length).to.equal(2);
+    expect(types[0].contains!.types![0].kind).to.equal('String');
+    expect(types[0].contains!.types![1].kind).to.equal('Array');
+    expect(types[0].contains!.types![1].contains!.kind).to.equal('Real');
   });
 
   it('can parse simple expressions', function () {

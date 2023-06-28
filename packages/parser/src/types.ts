@@ -1,9 +1,12 @@
-import { merge } from '@bscotch/utility';
+import { arrayUnwrapped, arrayWrapped, merge } from '@bscotch/utility';
 import { typeToFeatherString } from './jsdoc.feather.js';
 import { Signifier } from './signifiers.js';
 import { narrows } from './types.checks.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
-import { PrimitiveName } from './types.primitives.js';
+import type {
+  PrimitiveName,
+  WithCompatibleTypeName,
+} from './types.primitives.js';
 import { ok } from './util.js';
 
 export type AnyType = Type<'Any'>;
@@ -16,8 +19,7 @@ export type RealType = Type<'Real'>;
 export type StringType = Type<'String'>;
 export type StructType = Type<'Struct'>;
 export type UndefinedType = Type<'Undefined'>;
-export type UnionType = Type<'Union'>;
-export type UnknownType = Type<'Unknown'>;
+export type WithCompatibleType = Type<WithCompatibleTypeName>;
 
 export interface TypeConfig<T extends PrimitiveName = PrimitiveName> {
   kind?: T;
@@ -25,16 +27,17 @@ export interface TypeConfig<T extends PrimitiveName = PrimitiveName> {
    * Some types have names. It only counts as a name if it
    * cannot be parsed into types given the name alone.
    * E.g. `Array<String>` is not a name, but `Struct.MyStruct`
-   * results in the name `MyStruct`. */
+   * has the name `MyStruct`. */
   name?: string;
-  items?: Type;
-  /** For type unions */
-  types?: Type[];
+  /** "Container" types can list the types of the things they store. */
+  contains?: Type[];
+  /** For constructor functions, the struct type they generate */
   constructs?: Type<'Struct'>;
+  /** The self context for a function */
   context?: Type<'Struct'>;
   members?: Signifier[];
   params?: Signifier[];
-  returns?: Type;
+  returns?: Type[];
 }
 
 export class Type<T extends PrimitiveName = PrimitiveName> {
@@ -88,17 +91,17 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   get name(): string | undefined {
     return this.config.name || this.parent?.name;
   }
-  get items(): Type | undefined {
-    return this.config.items || this.parent?.items;
+  get contains(): readonly Type[] {
+    return this.config.contains || this.parent?.contains || [];
   }
-  get types(): Type[] {
-    return this.config.types || this.parent?.types || [];
-  }
-  get constructs(): Type<'Struct'> | undefined {
+  get constructs(): StructType | undefined {
     return this.config.constructs || this.parent?.constructs;
   }
-  get context(): Type<'Struct'> | undefined {
+  get context(): StructType | undefined {
     return this.config.context || this.parent?.context;
+  }
+  set context(value: StructType | StructType[]) {
+    this.mutate({ context: arrayUnwrapped(value) });
   }
   get members(): readonly Signifier[] {
     return this.config.members || this.parent?.members || [];
@@ -106,8 +109,8 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   get params(): readonly Signifier[] {
     return this.config.params || this.parent?.params || [];
   }
-  get returns(): Type | undefined {
-    return this.config.returns || this.parent?.returns;
+  get returns(): readonly Type[] {
+    return this.config.returns || this.parent?.returns || [];
   }
   //#endregion
 
@@ -149,17 +152,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return ['Constructor', 'Function'].includes(this.kind);
   }
 
-  addReturnType(type: Type): this {
+  addReturnType(type: Type | Type[]): this {
     ok(this.kind === 'Function', `Cannot add return type to ${this.kind}`);
-    if (!this.returns) {
-      return this.mutate({ returns: type });
-    }
-    if (this.returns.kind !== 'Union') {
-      const union = new Type('Union').addUnionType(this.returns);
-      return this.mutate({ returns: union });
-    }
-    this.returns.addUnionType(type);
-    return this;
+    const returns = this.returns.slice();
+    returns.push(...arrayWrapped(type));
+    return this.mutate({ returns });
   }
 
   listParameters(): Signifier[] {
@@ -178,7 +175,12 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return this.params[nameOrIdx];
   }
 
-  addParameter(idx: number, name: string, type: Type, optional = false) {
+  addParameter(
+    idx: number,
+    name: string,
+    type: Type | Type[],
+    optional = false,
+  ) {
     ok(this.isFunction, `Cannot add param to ${this.kind} type`);
     const params = [...this.params];
     let param = params[idx];
@@ -191,7 +193,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     param.local = true;
     param.optional = optional || name === '...';
     param.parameter = true;
-    param.type = type;
+    param.type = arrayWrapped(type);
     return param;
   }
 
@@ -235,35 +237,20 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     // member should be garbage collected now
   }
 
-  addUnionType(type: Type): this {
-    ok(this.kind === 'Union', `Cannot add union type to ${this.kind}`);
-    const types = [...this.types];
-    types.push(type);
-    return this.mutate({ types });
-  }
-
   /**
    * For container types that have non-named members, like arrays and DsTypes.
    * Can also be used for default Struct values. */
-  addItemType(type: Type): this {
-    if (!this.items) {
-      return this.mutate({ items: type });
-    }
-    if (this.items.kind !== 'Union') {
-      const union = new Type('Union').addUnionType(this.items);
-      this.mutate({ items: union });
-    }
-    this.items.addUnionType(type);
-    return this;
+  addContainedType(type: Type): this {
+    const contains = this.contains.slice();
+    contains.push(type);
+    return this.mutate({ contains });
   }
 
   /**
    * Create a derived type: of the same kind, pointing to
    * this type as its parent. */
   derive(): Type<T> {
-    const derived = new Type(this.kind) as Type<T>;
-    derived.parent = this;
-    return derived;
+    return new Type(this) as Type<T>;
   }
 
   named(name: string | undefined): this {

@@ -587,7 +587,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       );
       if (!types.find((t) => t.kind === type.kind && t.name === type.name)) {
         types.push(type);
-        arrayType.addItemType(type);
+        arrayType.addContainedType(type);
       }
     }
     return arrayType;

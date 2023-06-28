@@ -28,16 +28,16 @@ describe('Project', function () {
     const tracks = track.getMember('tracks');
     ok(tracks);
     expect(tracks.type.kind).to.equal('Array');
-    expect(tracks.type.items!.kind).to.equal('Struct');
-    expect(tracks.type.items!.parent!).to.eql(spec.types.get('Struct'));
-    expect(tracks.type.items!).to.eql(track);
+    expect(tracks.type.contains!.kind).to.equal('Struct');
+    expect(tracks.type.contains!.parent!).to.eql(spec.types.get('Struct'));
+    expect(tracks.type.contains!).to.eql(track);
 
     const keyframes = track.getMember('keyframes');
     ok(keyframes);
     expect(keyframes.type.kind).to.equal('Array');
-    expect(keyframes.type.items!.kind).to.equal('Struct');
-    expect(keyframes.type.items!.parent!).to.eql(spec.types.get('Struct'));
-    expect(keyframes.type.items!).to.eql(spec.types.get('Struct.Keyframe'));
+    expect(keyframes.type.contains!.kind).to.equal('Struct');
+    expect(keyframes.type.contains!.parent!).to.eql(spec.types.get('Struct'));
+    expect(keyframes.type.contains!).to.eql(spec.types.get('Struct.Keyframe'));
 
     const type = track.getMember('type');
     ok(type);
@@ -411,18 +411,18 @@ function validateBschemaConstructor(project: Project) {
   //#region Bschema.schema_mote_ids
   const schemaMoteIds = bschemaStructType.getMember('schema_mote_ids')!;
   expect(schemaMoteIds.type.kind).to.equal('Struct');
-  expect(schemaMoteIds.type.items).to.exist;
-  expect(schemaMoteIds.type.items!.kind).to.equal('Array');
-  expect(schemaMoteIds.type.items!.items).to.exist;
-  expect(schemaMoteIds.type.items!.items!.kind).to.equal('String');
+  expect(schemaMoteIds.type.contains).to.exist;
+  expect(schemaMoteIds.type.contains!.kind).to.equal('Array');
+  expect(schemaMoteIds.type.contains!.contains).to.exist;
+  expect(schemaMoteIds.type.contains!.contains!.kind).to.equal('String');
   expect(schemaMoteIds.type.code).to.equal('Struct<Array<String>>');
   //#endregion Bschema.schema_mote_ids
 
   //#region Bschema.roles
   const roles = bschemaStructType.getMember('roles')!;
   expect(roles.type.kind).to.equal('Struct');
-  expect(roles.type.items).to.exist;
-  expect(roles.type.items!.kind).to.equal('Struct');
-  ok(roles.type.items === bschemaRoleType);
+  expect(roles.type.contains).to.exist;
+  expect(roles.type.contains!.kind).to.equal('Struct');
+  ok(roles.type.contains === bschemaRoleType);
   //#endregion Bschema.roles
 }

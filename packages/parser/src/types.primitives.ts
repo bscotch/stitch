@@ -10,6 +10,7 @@ export const baseNames = [
   'Real',
   'String',
   'Struct',
+  'Mixed',
   'Undefined',
 ] as const;
 Object.freeze(Object.seal(baseNames));
@@ -70,12 +71,15 @@ export const primitiveNames = [
   'Id.Uniform',
   'Id.VertexBuffer',
   'Id.VertexFormat',
-  'Mixed',
-  // Custom names (not in Feather)
-  'Constructor',
-  'EnumMember',
-  'Union',
-  'Unknown',
-  'Never', // For things that throw
 ] as const;
 Object.freeze(Object.seal(primitiveNames));
+
+export const withCompatibleTypeNames = [
+  'Any',
+  'Id.Instance',
+  'Asset.GMObject',
+  'Struct',
+] as const;
+Object.freeze(Object.seal(withCompatibleTypeNames));
+
+export type WithCompatibleTypeName = (typeof withCompatibleTypeNames)[number];

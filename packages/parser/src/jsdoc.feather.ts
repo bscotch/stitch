@@ -118,9 +118,9 @@ export function typeToFeatherString(
     return `${type.kind}.${type.name}`;
   }
   // Arrays etc can contain items of a type) {
-  if (type.items) {
+  if (type.contains) {
     return `${type.kind}<${typeToFeatherString(
-      type.items,
+      type.contains,
       _already_stringified,
     )}>`;
   }
