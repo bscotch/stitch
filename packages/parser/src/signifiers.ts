@@ -45,6 +45,9 @@ export class Signifier extends Flaggable {
   set idx(idx: number | undefined) {
     this.config.idx = idx;
   }
+  get description(): string | undefined {
+    return this.config.description;
+  }
 
   describe(description: string | undefined): this {
     this.config.description = description;

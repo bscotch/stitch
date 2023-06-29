@@ -6,10 +6,6 @@ describe('Types', function () {
     const string = new Type('String');
     expect(string.narrows(new Type('String'))).to.be.true;
     expect(string.narrows(new Type('Real'))).to.be.false;
-
-    const union = new Type('Union').addUnionType(new Type('String'));
-    expect(string.narrows(union)).to.be.true;
-    expect(union.narrows(string)).to.be.false;
   });
 
   it('can check whether one struct type satisfies another', function () {

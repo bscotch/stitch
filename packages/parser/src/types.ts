@@ -1,5 +1,7 @@
 import { arrayWrapped, merge } from '@bscotch/utility';
+import { typeToFeatherString } from './jsdoc.feather.js';
 import { Signifier } from './signifiers.js';
+import { narrows } from './types.checks.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
 import {
   containerTypeNames,
@@ -17,6 +19,7 @@ export type PointerType = Type<'Pointer'>;
 export type RealType = Type<'Real'>;
 export type StringType = Type<'String'>;
 export type StructType = Type<'Struct'>;
+export type EnumType = Type<'Enum'>;
 export type UndefinedType = Type<'Undefined'>;
 export type WithableType = Type<WithableTypeName>;
 
@@ -55,6 +58,14 @@ export class AssignableType<T extends PrimitiveName = PrimitiveName> {
   /** If this contains only one type, its `contains` value */
   get contains(): AssignableType | undefined {
     return this.type?.contains;
+  }
+
+  narrows(type: Type | AssignableType): boolean {
+    return narrows(this, type);
+  }
+
+  toFeatherString(): string {
+    return this.types.map((t) => t.toFeatherString()).join(' | ');
   }
 
   /**
@@ -177,6 +188,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       this.parent = kind;
       this.parent.children.add(this);
     }
+  }
+
+  narrows(type: Type | AssignableType): boolean {
+    return narrows(this, type);
   }
 
   get code(): string {
@@ -332,5 +347,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * this type as its parent. */
   extend(): Type<T> {
     return new Type(this) as Type<T>;
+  }
+
+  toFeatherString(): string {
+    return typeToFeatherString(this);
   }
 }

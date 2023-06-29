@@ -18,10 +18,8 @@ export function typeToHoverDetails(type: Type) {
       code += `\n\n*@self* ${type.context.toFeatherString()}`;
     }
     for (const param of type.listParams()) {
-      if (param.description || param.type.description) {
-        code += `\n\n*@param* \`${param.name}\` - ${
-          param.description || param.type.description
-        }`;
+      if (param.description) {
+        code += `\n\n*@param* \`${param.name}\` - ${param.description}`;
       }
     }
   } else if (type.kind === 'Struct') {
@@ -48,7 +46,7 @@ export function typeToHoverText(type: Type) {
   let code = '';
   if (type.isFunction) {
     code = `function ${type.name || ''}(`;
-    const params = type._params || [];
+    const params = type.listParams() || [];
     for (let i = 0; i < params.length; i++) {
       const param = params[i];
       assert(param, 'Param is undefined');
@@ -58,7 +56,7 @@ export function typeToHoverText(type: Type) {
       code += typeMemberToHoverText(param);
     }
     code += ')';
-    if (type.kind === 'Constructor') {
+    if (type.isConstructor) {
       code += ` constructor`;
     }
     code += `: ${

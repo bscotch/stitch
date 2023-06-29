@@ -120,7 +120,6 @@ export class Project {
       const selfMember = type.setMember('self', type);
       selfMember.def = {};
       selfMember.writable = false;
-      type.def = {};
     }
     return type;
   }
@@ -177,12 +176,6 @@ export class Project {
     }
     symbol = this.self.getMember(name);
     if (symbol) {
-      info.symbol = symbol;
-      return info;
-    }
-    symbol = this.native.global.get(name);
-    if (symbol) {
-      info.native = true;
       info.symbol = symbol;
       return info;
     }
@@ -490,8 +483,7 @@ export class Project {
     this.self = this.native.types
       .get('Struct')!
       .extend()
-      .named('global') as StructType;
-    this.self.def = {};
+      .setName('global') as StructType;
     this.symbol = new Signifier(this.self, 'global').setType(this.self);
     this.symbols.set('global', this.symbol);
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);
