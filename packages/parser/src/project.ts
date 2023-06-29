@@ -111,13 +111,13 @@ export class Project {
   createType<T extends PrimitiveName>(type: T): Type<T> {
     const baseType = this.native.types.get(type) as Type<T>;
     ok(baseType, `Unknown type '${type}'`);
-    return baseType!.derive();
+    return baseType!.extend();
   }
 
   createStructType(subtype?: 'self' | 'instance'): StructType {
     const type = this.createType('Struct') as StructType;
     if (subtype) {
-      const selfMember = type.addMember('self', type);
+      const selfMember = type.setMember('self', type);
       selfMember.def = {};
       selfMember.writable = false;
       type.def = {};
@@ -222,7 +222,7 @@ export class Project {
     }
     // Add the symbol to the appropriate global pool
     if (addToGlobalSelf) {
-      this.self.addMember(item.name, item.type);
+      this.self.setMember(item.name, item.type);
     } else {
       this.symbols.set(item.name, item);
     }
@@ -489,10 +489,10 @@ export class Project {
     }
     this.self = this.native.types
       .get('Struct')!
-      .derive()
+      .extend()
       .named('global') as StructType;
     this.self.def = {};
-    this.symbol = new Signifier(this.self, 'global').addType(this.self);
+    this.symbol = new Signifier(this.self, 'global').setType(this.self);
     this.symbols.set('global', this.symbol);
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);
     this.symbol.global = true;

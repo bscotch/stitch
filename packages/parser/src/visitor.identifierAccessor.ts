@@ -142,7 +142,7 @@ export function visitIdentifierAccessor(
                 ? assignmentType
                 : this.UNKNOWN;
               // Add this member to the struct
-              const newMember: Signifier = accessingType.addMember(
+              const newMember: Signifier = accessingType.setMember(
                 propertyIdentifier.name,
                 newMemberType,
               );

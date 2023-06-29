@@ -1,18 +1,20 @@
 import { arrayWrapped } from '@bscotch/utility';
 import { Range, Reference } from './project.location.js';
-import { Flaggable } from './types.flags.js';
-import { StructType, Type } from './types.js';
+import { Flaggable } from './signifiers.flags.js';
+import { AssignableType, FunctionType, StructType, Type } from './types.js';
 
 export interface SignifierConfig {
   description?: string;
   idx?: number;
   /** The associated type is added at the time of identifying the signifier, or its first assignment  */
-  type: Type[];
+  type: AssignableType;
 }
 
 export class Signifier extends Flaggable {
-  readonly $tag = 'Sym';
-  protected readonly config: SignifierConfig = { type: [] };
+  readonly $tag = 'Signifier';
+  protected readonly config: SignifierConfig = {
+    type: new AssignableType(),
+  };
   /**
    * If `true`, then this definitely exists but may not have a place where it
    * is declared. E.g. the `global` variable. In that case this would be set to
@@ -23,19 +25,19 @@ export class Signifier extends Flaggable {
   refs = new Set<Reference>();
 
   constructor(
-    /** The global, self, or local struct containing this signifier */
-    readonly container: StructType,
+    /** The global, self, or local struct containing this signifier, or the function if it is a parameter. */
+    readonly container: StructType | FunctionType,
     readonly name: string,
     type?: Type | Type[],
   ) {
     super();
     for (const subtype of arrayWrapped(type)) {
-      this.addType(subtype);
+      this.setType(subtype);
     }
   }
 
-  get type(): readonly Type[] {
-    return [...this.config.type];
+  get type(): AssignableType {
+    return this.config.type;
   }
   get idx(): number | undefined {
     return this.config.idx;
@@ -49,11 +51,8 @@ export class Signifier extends Flaggable {
     return this;
   }
 
-  addType(newType: Type | Type[]): this {
-    for (const type of arrayWrapped(newType)) {
-      this.config.type.push(type);
-      type.addRef(this);
-    }
+  setType(newType: Type | Type[]): this {
+    this.config.type.setTypes(newType);
     return this;
   }
 
@@ -67,5 +66,18 @@ export class Signifier extends Flaggable {
   definedAt(location: Range | undefined): this {
     this.def = location;
     return this;
+  }
+
+  /**
+   * Mark this signifier as deleted, which should cause any references
+   * to it to become invalid and any associated types to be invalid as well.
+   */
+  delete() {
+    // Inform referrers
+    for (const ref of this.refs) {
+      ref.file.dirty = true;
+    }
+    // Inform type-referrers
+    this.type.delete();
   }
 }

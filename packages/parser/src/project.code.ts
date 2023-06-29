@@ -400,7 +400,7 @@ export class Code {
       const args = this._functionCalls[i];
       assert(args, 'Function call args must be initialized');
       const func = args[0].type;
-      const params = func.listParameters() || [];
+      const params = func.listParams() || [];
       // Handle missing arguments
       for (let j = 0; j < params.length; j++) {
         const param = params[j];

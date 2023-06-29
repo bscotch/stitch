@@ -39,40 +39,38 @@ describe('Project', function () {
     expect(keyframes.type.contains!.parent!).to.eql(spec.types.get('Struct'));
     expect(keyframes.type.contains!).to.eql(spec.types.get('Struct.Keyframe'));
 
-    const type = track.getMember('type');
-    ok(type);
+    const typeField = track.getMember('type');
+    ok(typeField);
     const expectedTypeType = spec.types.get('Constant.SequenceTrackType');
     ok(expectedTypeType);
-    ok(type.type === expectedTypeType);
+    ok(typeField.type.type === expectedTypeType);
     ok(expectedTypeType.kind === 'Real');
 
     // VARIABLES
-    const depthSymbol = spec.instance.get('depth');
+    const depthSymbol = spec.globalSelf.getMember('depth');
     ok(depthSymbol);
     expect(depthSymbol.type.kind).to.equal('Real');
 
     // FUNCTIONS
-    const scriptExecuteType = spec.types.get('Function.script_execute');
-    const scriptExecuteSymbol = spec.global.get('script_execute');
+    const scriptExecuteType = spec.types.get('Function.script_execute')!;
+    const scriptExecuteSymbol = spec.globalSelf.getMember('script_execute');
     ok(scriptExecuteSymbol);
-    ok(scriptExecuteSymbol.type === scriptExecuteType);
+    ok(scriptExecuteSymbol.type.type === scriptExecuteType);
     ok(scriptExecuteType.kind === 'Function');
-    expect(scriptExecuteType.listParameters()).to.have.lengthOf(2);
-    expect(scriptExecuteType.listParameters()![0].name).to.equal('scr');
-    expect(scriptExecuteType.listParameters()![0].type.kind).to.equal('Union');
-    expect(scriptExecuteType.listParameters()![0].type.types).to.have.lengthOf(
-      3,
-    );
-    expect(scriptExecuteType.listParameters()![0].type.types![0].kind).to.equal(
+    expect(scriptExecuteType.listParams()).to.have.lengthOf(2);
+    expect(scriptExecuteType.listParams()![0].name).to.equal('scr');
+    expect(scriptExecuteType.listParams()![0].type.kind).to.equal('Union');
+    expect(scriptExecuteType.listParams()![0].type.types).to.have.lengthOf(3);
+    expect(scriptExecuteType.listParams()![0].type.types![0].kind).to.equal(
       'String',
     );
-    expect(scriptExecuteType.listParameters()![0].type.types![1].kind).to.equal(
+    expect(scriptExecuteType.listParams()![0].type.types![1].kind).to.equal(
       'Function',
     );
-    expect(scriptExecuteType.listParameters()![0].type.types![2].kind).to.equal(
+    expect(scriptExecuteType.listParams()![0].type.types![2].kind).to.equal(
       'Asset.GMScript',
     );
-    expect(scriptExecuteType.listParameters()![1].name).to.equal('...');
+    expect(scriptExecuteType.listParams()![1].name).to.equal('...');
   });
 
   it('can has fallback GmlSpec', async function () {
@@ -266,7 +264,7 @@ describe('Project', function () {
     ok(constructorSymbol instanceof Signifier);
     expect(constructorSymbol.type.kind).to.equal('Constructor');
     expect(constructorType.name).to.equal(constructorName);
-    expect(constructorType.listParameters()).to.have.lengthOf(2);
+    expect(constructorType.listParams()).to.have.lengthOf(2);
     expect(constructorType.constructs).to.exist;
     expect(constructorType.constructs!.kind).to.equal('Struct');
     expect(constructorType.constructs!.name).to.equal(constructorName);

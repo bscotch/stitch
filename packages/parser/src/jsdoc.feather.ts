@@ -10,7 +10,7 @@
 //  - `Array[String|Real]`
 
 import type { Type } from './types.js';
-import { ok } from './util.js';
+import { isArray, ok } from './util.js';
 
 export interface FeatherTypeUnion {
   kind: 'union';
@@ -105,36 +105,23 @@ export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
   return rootUnion;
 }
 
-export function typeToFeatherString(
-  type: Type,
-  _already_stringified = new Set<Type>(),
-): string {
-  // Functions, Structs, and Enums are the only types that can have names
-  if (_already_stringified.has(type)) {
-    return 'Circular';
+export function typeToFeatherString(type: readonly Type[] | Type): string {
+  if (isArray(type)) {
+    return type.map((t) => typeToFeatherString(t)).join('|');
   }
-  _already_stringified.add(type);
-  if (['Function', 'Struct', 'Enum'].includes(type.kind) && type.name) {
-    return `${type.kind}.${type.name}`;
+  if (type.name) {
+    if (
+      ['Function', 'Struct', 'Enum'].includes(type.kind) ||
+      type.kind.match(/^(Asset|Id)/)
+    ) {
+      return `${type.kind}.${type.name}`;
+    }
+    return type.name;
   }
   // Arrays etc can contain items of a type) {
   if (type.contains) {
-    return `${type.kind}<${typeToFeatherString(
-      type.contains,
-      _already_stringified,
-    )}>`;
-  }
-  // Unions can list types
-  if (type.kind === 'Union') {
-    if (type.types) {
-      const typeStrings = type.types.map((t) =>
-        typeToFeatherString(t, _already_stringified),
-      );
-      const uniqueTypeStrings = [...typeStrings].sort().join('|');
-      return uniqueTypeStrings;
-    } else {
-      return 'Mixed';
-    }
+    const contains = typeToFeatherString(type.contains.types);
+    return `${type.kind}<${contains}>`;
   }
   return type.kind;
 }

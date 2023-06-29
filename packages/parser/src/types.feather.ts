@@ -1,3 +1,4 @@
+import { arrayWrapped } from '@bscotch/utility';
 import {
   parseFeatherTypeString,
   type FeatherType,
@@ -15,6 +16,7 @@ export function typeFromFeatherString(
   const parsed = parseFeatherTypeString(typeString);
   return typeFromParsedFeatherString(parsed, knownTypes);
 }
+
 /**
  * Given a type identifier, get a parsed Type instance. Useful for
  * the "leaves" of a type tree, e.g. "String" or "Struct.Mystruct".
@@ -23,13 +25,12 @@ export function typeFromFeatherString(
  *
  * When knownTypes are provided, will return a known type by exact
  * identifier match if it exists. Otherwise a new type instance will
- * be created *and added to the knownTypes map*.
+ * be created.
  */
 export function typeFromIdentifier(
   identifier: string,
   knownTypes: Map<string, Type>,
-  __isRootRequest = true,
-): Type {
+): Type | undefined {
   ok(
     identifier.match(/^[A-Z][A-Z0-9._]*$/i),
     `Invalid type name ${identifier}`,
@@ -45,26 +46,28 @@ export function typeFromIdentifier(
   if (primitiveType) {
     return new Type(primitiveType);
   } else if (identifier.match(/\./)) {
-    // Then we might still be able to get a base type.
-    const [baseType, ...nameParts] = identifier.split('.');
-    const type = typeFromIdentifier(baseType, knownTypes, false);
-    if (__isRootRequest && type) {
-      // Then add to the known types map
-      const derivedTyped = type.derive().named(nameParts.join('.'));
-      knownTypes.set(identifier, derivedTyped);
-      return derivedTyped;
+    // Then this is probably some sort of Base.Signifier[.name] identifier.
+    // Work our way backwards until we find a known or primitive type.
+    const parts = identifier.split('.');
+    const baseIdentifier = parts.slice(0, -1).join('.');
+    const name = parts.at(-1);
+    const type = typeFromIdentifier(baseIdentifier, knownTypes);
+    if (!type) {
+      return;
     }
-    return type;
+    return type.extend().setName(name);
   }
-  return new Type('Any');
+  return;
 }
+
 export function typeFromParsedJsdocs(
   jsdoc: JsdocSummary,
   knownTypes: Map<string, Type>,
 ): Type[] {
   if (jsdoc.kind === 'description') {
-    // Then we have no type info but have a description to add.
-    return [typeFromIdentifier('Any', knownTypes)];
+    // Then we have no type info
+    const type = new Type('Any');
+    return arrayWrapped(type);
   } else if (jsdoc.kind === 'type') {
     // Then this was purely a type annotation. Create the type and
     // add any metadata.
@@ -72,24 +75,27 @@ export function typeFromParsedJsdocs(
   } else if (jsdoc.kind === 'self') {
     return typeFromFeatherString(jsdoc.self!.content, knownTypes);
   } else if (jsdoc.kind === 'function') {
-    const type = typeFromIdentifier('Function', knownTypes);
+    const type = new Type('Function');
     let i = 0;
     if (jsdoc.self) {
-      type.context = typeFromFeatherString(
+      const contextType = typeFromFeatherString(
         jsdoc.self!.content,
         knownTypes,
-      ) as StructType[];
+      )?.[0];
+      if (contextType) {
+        type.setContextType(contextType as StructType);
+      }
     }
     if (jsdoc.returns) {
       const returnType = typeFromFeatherString(
         jsdoc.returns.type!.content,
         knownTypes,
       );
-      type.addReturnType(returnType);
+      type.setReturnType(returnType);
     }
     for (const param of jsdoc.params || []) {
       const paramType = typeFromFeatherString(param.type!.content, knownTypes);
-      const member = type.addParameter(i, param.name!.content, paramType);
+      const member = type.setParam(i, param.name!.content, paramType);
       i++;
       member.optional = param.optional || false;
       member.describe(param.description);
@@ -98,6 +104,7 @@ export function typeFromParsedJsdocs(
   }
   throw new Error(`Unknown JSDoc kind ${jsdoc.kind}`);
 }
+
 export function typeFromParsedFeatherString(
   node: FeatherTypeUnion | FeatherType,
   knownTypes: Map<string, Type>,
@@ -105,17 +112,17 @@ export function typeFromParsedFeatherString(
   if (node.kind === 'type') {
     const identifier = node.name;
     let type = typeFromIdentifier(identifier, knownTypes);
-    if (node.of) {
+    if (!type) {
+      return [];
+    }
+    if (node.of && type.isContainer) {
       const subtypes = typeFromParsedFeatherString(node.of, knownTypes);
       // Then we need to create a new type instead of mutating
       // the one we found.
-      type = type.derive();
-      if (type.kind.match(/^(Array|Struct|Id.Ds)/)) {
-        for (const subtype of subtypes) {
-          type.addContainedType(subtype);
-        }
+      type = type.extend();
+      for (const subtype of subtypes) {
+        type.setContainedTypes(subtype);
       }
-      // TODO: Else create a diagnostic?
     }
     return [type];
   } else if (node.kind === 'union') {

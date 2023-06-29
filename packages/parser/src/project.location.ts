@@ -152,7 +152,7 @@ export class FunctionArgRange extends Range {
 
   get param(): Signifier {
     assert(this.type, 'FunctionArgRange must have a type');
-    return this.type.getParameter(this.idx)!;
+    return this.type.getParam(this.idx)!;
   }
 }
 

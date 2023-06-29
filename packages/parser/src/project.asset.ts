@@ -259,8 +259,8 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     await item.project.nativeWaiter;
     const assetType = item.instanceTypeName;
 
-    item.symbol.addType(
-      item.project.native.types.get(assetType)!.derive().named(item.name),
+    item.symbol.setType(
+      item.project.native.types.get(assetType)!.extend().named(item.name),
     );
     item.symbol.def = {};
     if (item.assetType === 'objects') {

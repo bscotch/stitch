@@ -92,7 +92,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       | Signifier
       | Signifier;
     if (!symbol) {
-      symbol = new Signifier(this.PROCESSOR.project.self, name.image).addType(
+      symbol = new Signifier(this.PROCESSOR.project.self, name.image).setType(
         type,
       );
       if (typeName === 'Constructor') {

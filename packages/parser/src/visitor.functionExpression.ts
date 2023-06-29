@@ -113,7 +113,7 @@ export function visitFunctionExpression(
     const range = this.PROCESSOR.range(param);
 
     // Use JSDocs to determine the type, description, etc of the parameter
-    let fromJsdoc = docs?.type.getParameter(i);
+    let fromJsdoc = docs?.type.getParam(i);
     if (fromJsdoc && param.image !== fromJsdoc.name) {
       this.PROCESSOR.addDiagnostic(
         'JSDOC_MISMATCH',
@@ -125,9 +125,7 @@ export function visitFunctionExpression(
     }
     const paramType = fromJsdoc?.type || this.UNKNOWN.definedAt(range);
     const optional = fromJsdoc?.optional || !!params[i].children.Assign;
-    functionType
-      .addParameter(i, param.image, paramType, optional)
-      .definedAt(range);
+    functionType.setParam(i, param.image, paramType, optional).definedAt(range);
     if (params[i].children.assignmentRightHandSide) {
       this.assignmentRightHandSide(
         params[i].children.assignmentRightHandSide![0].children,
@@ -137,15 +135,15 @@ export function visitFunctionExpression(
 
     // Also add to the function's local scope.
     const member = functionLocalScope
-      .addMember(param.image, paramType)
+      .setMember(param.image, paramType)
       .definedAt(range);
     member.addRef(range);
     member.local = true;
     member.parameter = true;
   }
   // If we have more args defined in JSDocs, add them!
-  if ((docs?.type?.listParameters().length || 0) > params.length) {
-    const extraParams = docs!.type.listParameters().slice(params.length);
+  if ((docs?.type?.listParams().length || 0) > params.length) {
+    const extraParams = docs!.type.listParams().slice(params.length);
     assert(extraParams, 'Expected extra params');
     for (let i = 0; i < extraParams.length; i++) {
       const idx = params.length + i;
@@ -153,7 +151,7 @@ export function visitFunctionExpression(
       assert(param, 'Expected extra param');
       const paramType = param.type;
       const optional = param.optional;
-      functionType.addParameter(idx, param.name, paramType, optional);
+      functionType.setParam(idx, param.name, paramType, optional);
       // Do not add to local scope, since if it's only defined
       // in the JSDoc it's not a real parameter.
     }

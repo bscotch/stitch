@@ -17,7 +17,7 @@ export function typeToHoverDetails(type: Type) {
     if (type.context) {
       code += `\n\n*@self* ${type.context.toFeatherString()}`;
     }
-    for (const param of type.listParameters()) {
+    for (const param of type.listParams()) {
       if (param.description || param.type.description) {
         code += `\n\n*@param* \`${param.name}\` - ${
           param.description || param.type.description

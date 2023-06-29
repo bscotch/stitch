@@ -2,20 +2,16 @@ import { pathy } from '@bscotch/pathy';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
+import { typeToFeatherString } from './jsdoc.feather.js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
 import { Signifier } from './signifiers.js';
 import { typeFromFeatherString } from './types.feather.js';
-import { Type, type FunctionType, type StructType } from './types.js';
+import { Type, type StructType } from './types.js';
 import { primitiveNames } from './types.primitives.js';
 import { assert } from './util.js';
 
 export class Native {
   protected spec!: GmlSpec;
-  /** Symbols available globally */
-  readonly global: Map<string, Signifier> = new Map();
-  /** Symbols available in object instance scopes */
-  readonly instance: Map<string, Signifier> = new Map();
-
   /**
    * Types, looked up by their Feather-compatible name.
    * Types can be either a single type or a type union.
@@ -38,13 +34,6 @@ export class Native {
     return this.spec.runtime;
   }
 
-  protected createStructType(): StructType {
-    return this.types.get('Struct')!.derive() as StructType;
-  }
-  protected createFunctionType(): FunctionType {
-    return this.types.get('Function')!.derive() as FunctionType;
-  }
-
   protected load() {
     this.loadConstants();
     this.loadVariables();
@@ -52,76 +41,59 @@ export class Native {
     this.loadFunctions();
   }
 
+  /** Given a feather string, get a new Type instance and ensure that the type
+   * exists in the knownTypes map.
+   */
+  typesFromFeatherString(typeString: string) {
+    const types = typeFromFeatherString(typeString, this.types);
+    for (const type of types) {
+      if (type.name) {
+        this.types.set(typeToFeatherString(type), type);
+      }
+    }
+    return types;
+  }
+
   protected loadVariables() {
     for (const variable of this.spec.variables) {
       assert(variable, 'Variable must be defined');
-      const type = typeFromFeatherString(variable.type, this.types);
+      const type = this.typesFromFeatherString(variable.type);
       const symbol = new Signifier(this.globalSelf, variable.name)
         .describe(variable.description)
         .deprecate(variable.deprecated)
-        .addType(type);
+        .setType(type);
       symbol.writable = variable.writable;
       symbol.native = true;
       symbol.global = !variable.instance;
       symbol.instance = variable.instance;
-      if (variable.instance) {
-        this.instance.set(symbol.name, symbol);
-        // For now also add to global, since we aren't making use of
-        // the distinction yet.
-        this.global.set(symbol.name, symbol);
-      } else {
-        this.global.set(symbol.name, symbol);
-      }
+      this.globalSelf.setMember(symbol);
     }
   }
 
   protected loadFunctions() {
-    // As of writing, the `throw` function was not in the spec.
-    this.spec.functions.push({
-      name: 'throw',
-      description: 'Throws an error with the given message.',
-      parameters: [
-        {
-          name: 'message',
-          type: 'Any',
-          description: 'The message to throw. Can be any type.',
-          optional: false,
-          coerce: undefined,
-        },
-      ],
-      returnType: 'Never',
-      deprecated: false,
-      locale: undefined,
-      featureFlag: undefined,
-      pure: true,
-    });
-
     for (const func of this.spec.functions) {
       const typeName = `Function.${func.name}`;
       // Need a type and a symbol for each function.
-      const type =
-        this.types.get(typeName) || this.createFunctionType().named(func.name);
-      this.types.set(typeName, type);
+      const type = this.typesFromFeatherString(typeName)[0];
 
       // Add parameters to the type.
-      assert(func.parameters, 'Function must have parameters');
       for (let i = 0; i < func.parameters.length; i++) {
-        const param = func.parameters[i];
-        assert(param, 'Parameter must be defined');
-        const paramType = typeFromFeatherString(param.type, this.types);
+        const paramDef = func.parameters[i];
+        assert(paramDef, 'Parameter must be defined');
+        const paramType = this.typesFromFeatherString(paramDef.type);
         type
-          .addParameter(i, param.name, paramType, param.optional)
-          .describe(param.description);
+          .setParam(i, paramDef.name, paramType, paramDef.optional)
+          .describe(paramDef.description);
       }
       // Add return type to the type.
-      type.addReturnType(typeFromFeatherString(func.returnType, this.types));
+      type.setReturnType(this.typesFromFeatherString(func.returnType));
 
       const symbol = new Signifier(this.globalSelf, func.name)
         .deprecate(func.deprecated)
-        .addType(type);
+        .setType(type);
       symbol.writable = false;
       symbol.native = true;
-      this.global.set(symbol.name, symbol);
+      this.globalSelf.setMember(symbol);
     }
   }
 
@@ -143,6 +115,34 @@ export class Native {
       constantsByClass.set(klass, constantsByClass.get(klass) || []);
       constantsByClass.get(klass)!.push(constant);
     }
+
+    // Create the `Constant.<class>` types
+    for (const [klass, constants] of constantsByClass) {
+      if (!klass) {
+        continue;
+      }
+      // Figure out what types are in use by this class.
+      const typeNames = new Set<string>();
+      for (const constant of constants) {
+        assert(constant, 'Constant must be defined');
+        typeNames.add(constant.type);
+      }
+      ok(typeNames.size === 1, `Class ${klass} has unexpected number of types`);
+
+      // Ensure the base type for the class. These are a wonky case -- figure
+      // out the primitive type and then create a named type that extends it.
+      const classTypeName = `Constant.${klass}`;
+      assert(
+        !this.types.get(classTypeName),
+        `Type ${classTypeName} already exists`,
+      );
+      const typeString = [...typeNames.values()][0];
+      const classType = this.typesFromFeatherString(typeString)[0]
+        .extend()
+        .setName(classTypeName);
+      this.types.set(classTypeName, classType);
+    }
+
     // Then create a type for each class and a symbol for each constant.
     for (const [klass, constants] of constantsByClass) {
       if (!klass) {
@@ -150,49 +150,25 @@ export class Native {
           assert(constant, 'Constant must be defined');
           const symbol = new Signifier(this.globalSelf, constant.name)
             .describe(constant.description)
-            .addType(typeFromFeatherString(constant.type, this.types));
+            .setType(this.typesFromFeatherString(constant.type));
           symbol.writable = false;
           symbol.native = true;
-          this.global.set(symbol.name, symbol);
+          this.globalSelf.setMember(symbol);
         }
         continue;
       }
 
-      // Figure out what types are in use by this class.
-      const typeNames = new Set<string>();
-      for (const constant of constants) {
-        assert(constant, 'Constant must be defined');
-        typeNames.add(constant.type);
-      }
-      ok(typeNames.size, `Class ${klass} has no types`);
-
-      // Create the base type for the class.
-      const classTypeName = `Constant.${klass}`;
-      const typeString = [...typeNames.values()].join('|');
-      let classType = typeFromFeatherString(typeString, this.types)
-        .derive()
-        .named(classTypeName);
-      const existingType = this.types.get(classTypeName);
-      if (existingType) {
-        // Then we defined an Unknown type earlier to handle a reference.
-        // Replace it with the real type.!;
-        ok(
-          existingType.kind === 'Unknown',
-          `Type ${classTypeName} already exists but is not Unknown`,
-        );
-        classType = Type.merge(existingType, classType);
-      } else {
-        this.types.set(classTypeName, classType);
-      }
+      const classType = this.types.get(`Constant.${klass}`)!;
       // Create symbols for each class member.
       for (const constant of constants) {
-        const symbol = new Signifier(this.globalSelf, constant.name).describe(
-          constant.description,
-        );
+        const symbol = new Signifier(
+          this.globalSelf,
+          constant.name,
+          classType,
+        ).describe(constant.description);
         symbol.writable = false;
         symbol.def = {}; // Prevent "not found" errors
-        symbol.addType(classType);
-        this.global.set(symbol.name, symbol);
+        this.globalSelf.setMember(symbol);
       }
     }
   }
@@ -204,16 +180,14 @@ export class Native {
         continue;
       }
       const typeName = `Struct.${struct.name}`;
-      const structType =
-        this.types.get(typeName) || this.createStructType().named(struct.name);
-      ok(!structType.listMembers().length, `Type ${typeName} already exists`);
-      this.types.set(typeName, structType);
+      const structType = this.typesFromFeatherString(typeName)[0];
+      ok(!structType.listMembers().length, `Type ${typeName} already defined`);
 
       for (const prop of struct.properties) {
         assert(prop, 'Property must be defined');
-        const type = typeFromFeatherString(prop.type, this.types);
+        const type = this.typesFromFeatherString(prop.type);
         structType
-          .addMember(prop.name, type, prop.writable)
+          .setMember(prop.name, type, prop.writable)
           .describe(prop.description);
       }
     }
@@ -226,6 +200,26 @@ export class Native {
     const parsedSpec = await Native.parse(filePath);
     const spec = new Native(filePath, globalSelf);
     spec.spec = parsedSpec;
+    // Add missing content
+    spec.spec.functions.push({
+      name: 'throw',
+      description: 'Throws an error with the given message.',
+      parameters: [
+        {
+          name: 'message',
+          type: 'Any',
+          description: 'The message to throw. Can be any type.',
+          optional: false,
+          coerce: undefined,
+        },
+      ],
+      returnType: 'Never',
+      deprecated: false,
+      locale: undefined,
+      featureFlag: undefined,
+      pure: true,
+    });
+
     spec.load();
     return spec;
   }
@@ -237,14 +231,6 @@ export class Native {
       normalize: true,
     }); // Prevent possible errors: "Non-white space before first tag"
     return gmlSpecSchema.parse(asJson);
-  }
-
-  toJSON() {
-    return {
-      filePath: this.filePath,
-      symbols: this.global,
-      types: this.types,
-    };
   }
 
   static readonly fallbackGmlSpecPath = pathy(import.meta.url).resolveTo(

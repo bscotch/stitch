@@ -1,13 +1,17 @@
-import { arrayUnwrapped, merge } from '@bscotch/utility';
+import { arrayWrapped, merge } from '@bscotch/utility';
 import { Signifier } from './signifiers.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
-import type { PrimitiveName, WithableTypeName } from './types.primitives.js';
-import { ok } from './util.js';
+import {
+  containerTypeNames,
+  type ContainerTypeName,
+  type PrimitiveName,
+  type WithableTypeName,
+} from './types.primitives.js';
+import { assert, ok } from './util.js';
 
 export type AnyType = Type<'Any'>;
 export type ArrayType = Type<'Array'>;
 export type BoolType = Type<'Bool'>;
-export type UnionType = Type<'Union'>;
 export type FunctionType = Type<'Function'>;
 export type PointerType = Type<'Pointer'>;
 export type RealType = Type<'Real'>;
@@ -15,6 +19,68 @@ export type StringType = Type<'String'>;
 export type StructType = Type<'Struct'>;
 export type UndefinedType = Type<'Undefined'>;
 export type WithableType = Type<WithableTypeName>;
+
+/**
+ * Collection of types, allowing things to reference the collection
+ * instead of individual types. Types can be changed within the collection.
+ */
+export class AssignableType<T extends PrimitiveName = PrimitiveName> {
+  readonly $tag = 'Assignableype';
+  protected _types: Type<T>[] = [];
+
+  /** If this contains only one type, that type. Else throws. */
+  get type(): Type<T> | undefined {
+    assert(this.types.length === 1, 'AssignableType has more than one type');
+    return this.types[0];
+  }
+
+  get types(): readonly Type<T>[] {
+    return [...this._types];
+  }
+
+  /** If this contains only one type, its parent. */
+  get parent(): Type<T> | undefined {
+    return this.type?.parent;
+  }
+
+  /** The inferred kind, based on the collection of types. */
+  get kind(): PrimitiveName {
+    return this._types.length === 0
+      ? 'Any'
+      : this._types.length === 1
+      ? this._types[0].kind
+      : 'Mixed';
+  }
+
+  /** If this contains only one type, its `contains` value */
+  get contains(): AssignableType | undefined {
+    return this.type?.contains;
+  }
+
+  /**
+   * Signifiers that are considered to be of this type. If this type changes,
+   * then all signifiers must be informed of the change.
+   */
+  protected readonly refs: Set<Signifier> = new Set();
+  addRef(ref: Signifier): this {
+    this.refs.add(ref);
+    return this;
+  }
+  setTypes(types: Type<T> | Type<T>[]): this {
+    this._types = arrayWrapped(types);
+    this.emitChanged();
+    return this;
+  }
+  delete() {
+    this.emitDeleted();
+  }
+  protected emitChanged() {
+    // TODO: Alert all referrers
+  }
+  protected emitDeleted() {
+    // TODO: Alert all referrers
+  }
+}
 
 export interface TypeConfig<T extends PrimitiveName = PrimitiveName> {
   kind?: T | undefined;
@@ -25,14 +91,14 @@ export interface TypeConfig<T extends PrimitiveName = PrimitiveName> {
    * has the name `MyStruct`. */
   name?: string;
   /** "Container" types can list the types of the things they store. */
-  contains?: UnionType;
+  contains?: AssignableType;
   /** For constructor functions, the struct type they generate */
-  constructs?: Type<'Struct'>;
+  constructs?: StructType;
   /** The self context for a function */
-  context?: Type<'Struct'>;
+  context?: StructType;
   members?: Signifier[];
   params?: Signifier[];
-  returns?: UnionType;
+  returns?: AssignableType;
 }
 
 /**
@@ -63,9 +129,8 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    */
   protected config: TypeConfig<T>;
   /**
-   * If set, then this Type is treated as a subset of the parent.
-   * It will only "match" another type if that type is in its
-   * parent somewhere. Useful for struct/constructor inheritence, as well
+   * If set, then this Type is treated as a narrowing of the parent.
+   * Useful for struct/constructor inheritence, as well
    * as for e.g. representing a subset of Real constants in a type. */
   parent: Type<T> | undefined = undefined;
   /**
@@ -73,30 +138,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * this one as their `parent`. Child types can only narrow parent types.
    */
   protected readonly children: Set<Type<T>> = new Set();
-  /**
-   * Signifiers that are considered to be of this type. If this type changes,
-   * then all signifiers must be informed of the change.
-   */
-  protected readonly refs: Set<Signifier> = new Set();
-
-  mutate(configPatch: TypeConfig<T>): this;
-  mutate<K extends keyof TypeConfig<T>>(
-    field: K,
-    value: TypeConfig<T>[K],
-  ): this;
-  mutate(
-    field: keyof TypeConfig<T> | TypeConfig<T>,
-    value?: TypeConfig<T>[keyof TypeConfig<T>],
-  ): this {
-    if (typeof field === 'string') {
-      // @ts-expect-error
-      this.config[field] = value;
-    } else {
-      merge(this.config, field);
-    }
-    // TODO: Emit mutation event and inform descendents and referrers
-    return this;
-  }
 
   //#region Property getters
   get kind(): T {
@@ -105,26 +146,20 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   get name(): string | undefined {
     return this.config.name || this.parent?.name;
   }
-  get contains(): UnionType | undefined {
-    return this.config.contains || this.parent?.contains;
+  get contains(): T extends ContainerTypeName ? AssignableType : undefined {
+    return (this.config.contains || this.parent?.contains) as any;
   }
-  get constructs(): StructType | undefined {
-    return this.config.constructs || this.parent?.constructs;
+  get constructs(): T extends 'Function' ? StructType : undefined {
+    return (this.config.constructs || this.parent?.constructs) as any;
   }
-  get context(): StructType | undefined {
-    return this.config.context || this.parent?.context;
+  get context(): T extends 'Function' ? StructType : undefined {
+    return (this.config.context || this.parent?.context) as any;
   }
-  set context(value: StructType | StructType[]) {
-    this.mutate({ context: arrayUnwrapped(value) });
+  get params(): T extends 'Function' ? readonly Signifier[] : undefined {
+    return (this.config.params || this.parent?.params) as any;
   }
-  get members(): readonly Signifier[] {
-    return this.config.members || this.parent?.members || [];
-  }
-  get params(): readonly Signifier[] {
-    return this.config.params || this.parent?.params || [];
-  }
-  get returns(): UnionType | undefined {
-    return this.config.returns || this.parent?.returns;
+  get returns(): T extends 'Function' ? AssignableType : undefined {
+    return (this.config.returns || this.parent?.returns) as any;
   }
   //#endregion
 
@@ -160,21 +195,24 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return this.kind === 'Function' && this.constructs !== undefined;
   }
 
-  addReturnType(type: Type | Type[]): this {
+  get isContainer(): boolean {
+    return containerTypeNames.includes(this.kind as any);
+  }
+
+  setReturnType(type: Type | Type[]): this {
     ok(this.kind === 'Function', `Cannot add return type to ${this.kind}`);
-    if (!this.returns) {
-      this.mutate({ returns: new Type('Union') });
-    }
-    this.returns!.addContainedType(type);
+    this.config.returns ||= new AssignableType();
+    this.config.returns.setTypes(type);
+    return this;
   }
 
-  listParameters(): Signifier[] {
-    return this.params ? [...this.params] : [];
+  listParams(): readonly Signifier[] {
+    return (this.params || []).filter((p) => p.idx !== undefined);
   }
 
-  getParameter(name: string): Signifier | undefined;
-  getParameter(idx: number): Signifier | undefined;
-  getParameter(nameOrIdx: string | number): Signifier | undefined {
+  getParam(name: string): Signifier | undefined;
+  getParam(idx: number): Signifier | undefined;
+  getParam(nameOrIdx: string | number): Signifier | undefined {
     if (!this.params) {
       return undefined;
     }
@@ -184,93 +222,115 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return this.params[nameOrIdx];
   }
 
-  addParameter(
-    idx: number,
-    name: string,
-    type: Type | Type[],
-    optional = false,
-  ) {
+  setParam(idx: number, name: string, type: Type | Type[], optional = false) {
     ok(this.isFunction, `Cannot add param to ${this.kind} type`);
-    const params = [...this.params];
-    let param = params[idx];
+    const params = this.config.params || [];
+    let param = this.getParam(name);
+    const paramByIndex = this.getParam(idx);
+    if (paramByIndex && paramByIndex !== param) {
+      paramByIndex.idx = undefined;
+    }
     if (!param) {
-      param = new Signifier(this as StructType, name, type);
-      params[idx] = param;
-      this.mutate({ params });
+      param = new Signifier(this as FunctionType, name, type);
+      param.local = true;
+      param.optional = optional || name === '...';
+      param.parameter = true;
     }
     param.idx = idx;
-    param.local = true;
-    param.optional = optional || name === '...';
-    param.parameter = true;
-    param.addType(type);
+    param.type.setTypes(type);
+    params[idx] = param;
+    this.config.params = params;
+    params.sort((a, b) => (a.idx || Infinity) - (b.idx || Infinity));
     return param;
   }
 
-  listMembers(excludeParents = false): Signifier[] {
+  listMembers(excludeParents = false): readonly Signifier[] {
     if (excludeParents || !this.parent) {
-      return [...this.members];
+      return [...(this.config.members || [])];
     }
-    return [...this.members, ...this.parent.listMembers()];
+    return [...(this.config.members || []), ...this.parent.listMembers()];
   }
 
   getMember(name: string): Signifier | undefined {
-    return (
-      this.members.find((m) => m.name === name) || this.parent?.getMember(name)
-    );
+    return this.listMembers().find((m) => m.name === name);
   }
 
   /** For container types that have named members, like Structs and Enums */
-  addMember(name: string, type: Type, writable = true): Signifier {
-    let member = this.members.find((m) => m.name === name);
-    if (!member) {
-      member = new Signifier(this as StructType, name, type);
-      member.writable = writable;
-      this.mutate({ members: [...this.members, member] });
+  setMember(signifier: Signifier): Signifier;
+  setMember(name: string, type: Type | Type[], writable?: boolean): Signifier;
+  setMember(
+    name: string | Signifier,
+    type?: Type | Type[],
+    writable = true,
+  ): Signifier {
+    let member: Signifier | undefined;
+    if (typeof name === 'string') {
+      ok(type, `Must provide a type for member ${name}`);
+      // Only find OWNED members, not inherited ones
+      member = this.config.members?.find((m) => m.name === name);
+      if (!member) {
+        member = new Signifier(this as StructType, name, type);
+        member.writable = writable;
+        this.config.members ||= [];
+        this.config.members.push(member);
+      } else {
+        member.type.setTypes(type);
+      }
+    } else {
+      ok(
+        !this.config.members?.includes(name),
+        `A signifier with the name ${name} already exists in this type`,
+      );
+      member = name;
+      this.config.members ||= [];
+      this.config.members.push(member);
     }
     return member;
   }
 
   removeMember(name: string) {
-    const idx = this.members?.findIndex((m) => m.name === name);
+    // Only owned members!
+    const idx = this.config.members?.findIndex((m) => m.name === name);
     if (idx === undefined || idx === -1) {
       return;
     }
-    const member = this.members[idx];
-    const members = [...this.members];
+    const members = [...this.config.members!];
+    const member = members[idx];
     members.splice(idx, 1);
-    this.mutate({ members });
+    member.delete();
     // Flag all referencing files as dirty
-    for (const ref of member.refs) {
-      ref.file.dirty = true;
-    }
+
     // member should be garbage collected now
   }
 
   /**
    * For container types that have non-named members, like arrays and DsTypes.
    * Can also be used for default Struct values. */
-  addContainedType(type: Type | Type[]): this {
-    // TODO: Need to get rid of this concept. A contained Union type is stable once added. Starting to feel circular...
-    if (!this.contains) {
-      this.mutate({ contains: new Type('Union') });
+  setContainedTypes(types: Type | Type[]): this {
+    this.config.contains ||= new AssignableType();
+    this.config.contains.setTypes(types);
+    return this;
+  }
+
+  setContextType(type: StructType): this {
+    ok(this.kind === 'Function', `Cannot add context type to ${this.kind}`);
+    this.config.context = type;
+    return this;
+  }
+
+  setName(name: string | undefined): this {
+    if (!name) {
+      return this;
     }
-    const contains = this.contains.slice();
-    contains.push(type);
-    return this.mutate({ contains });
+    ok(!this.config.name, 'Cannot rename type');
+    this.config.name = name;
+    return this;
   }
 
   /**
    * Create a derived type: of the same kind, pointing to
    * this type as its parent. */
-  derive(): Type<T> {
+  extend(): Type<T> {
     return new Type(this) as Type<T>;
-  }
-
-  named(name: string | undefined): this {
-    return this.mutate({ name });
-  }
-
-  addRef(ref: Signifier) {
-    this.refs.add(ref);
   }
 }

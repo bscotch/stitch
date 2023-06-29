@@ -32,6 +32,7 @@ export const primitiveNames = [
   'Asset.GMTileSet',
   'Asset.GMTimeline',
   'Asset.Script',
+  'Enum',
   'Id.AudioEmitter',
   'Id.AudioListener',
   'Id.AudioSyncGroup',
@@ -69,11 +70,10 @@ export const primitiveNames = [
   'Id.Uniform',
   'Id.VertexBuffer',
   'Id.VertexFormat',
-  // Custom Types
-  'Union', // Container for types that go together
 ] as const;
 Object.freeze(Object.seal(primitiveNames));
 
+export type WithableTypeName = (typeof withableTypeNames)[number];
 export const withableTypeNames = [
   'Any',
   'Id.Instance',
@@ -82,4 +82,15 @@ export const withableTypeNames = [
 ] as const;
 Object.freeze(Object.seal(withableTypeNames));
 
-export type WithableTypeName = (typeof withableTypeNames)[number];
+export type ContainerTypeName = (typeof containerTypeNames)[number];
+export const containerTypeNames = [
+  'Id.DsGrid',
+  'Id.DsList',
+  'Id.DsMap',
+  'Id.DsPriority',
+  'Id.DsQueue',
+  'Id.DsStack',
+  'Struct',
+  'Array',
+] as const;
+Object.freeze(Object.seal(containerTypeNames));

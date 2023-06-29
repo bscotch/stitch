@@ -310,7 +310,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     );
 
     const member = local
-      .addMember(children.Identifier[0].image, type)
+      .setMember(children.Identifier[0].image, type)
       .definedAt(range);
     member.local = true;
     member.addRef(range);
@@ -587,7 +587,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       );
       if (!types.find((t) => t.kind === type.kind && t.name === type.name)) {
         types.push(type);
-        arrayType.addContainedType(type);
+        arrayType.setContainedTypes(type);
       }
     }
     return arrayType;
