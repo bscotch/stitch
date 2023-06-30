@@ -84,7 +84,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return (
       scope.local.getMember(name) ||
       (!scope.selfIsGlobal && scope.self.getMember(name)) ||
-      this.PROCESSOR.project.getGlobal(name)?.symbol
+      this.PROCESSOR.project.getGlobal(name)
     );
   }
 

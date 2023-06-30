@@ -10,7 +10,7 @@ import { Code } from './project.code.js';
 import { Diagnostic } from './project.diagnostics.js';
 import { Native } from './project.native.js';
 import { Signifier } from './signifiers.js';
-import { MemberSignifier, StructType, Type } from './types.js';
+import { StructType, Type } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert, ok } from './util.js';
 export { setLogger, type Logger } from './logger.js';
@@ -19,7 +19,7 @@ type AssetName = string;
 
 export interface SymbolInfo {
   native: boolean;
-  symbol: Signifier | MemberSignifier | Type;
+  symbol: Signifier | Type;
 }
 
 export interface DiagnosticsEventPayload {
@@ -73,11 +73,6 @@ export class Project {
    * The `global` symbol, which has type `self`. */
   symbol!: Signifier;
   /**
-   * All symbols that cannot be stored in the `global` struct
-   * and that are not native to GML,
-   * including enums, macros, asset IDs, etc. */
-  readonly symbols = new Map<string, Signifier>();
-  /**
    * Non-native global types, which can be referenced in JSDocs
    * and in a symbol's types. */
   readonly types = new Map<string, Type>();
@@ -109,7 +104,7 @@ export class Project {
   }
 
   createType<T extends PrimitiveName>(type: T): Type<T> {
-    const baseType = this.native.types.get(type) as Type<T>;
+    const baseType = this.types.get(type) as Type<T>;
     ok(baseType, `Unknown type '${type}'`);
     return baseType!.derive();
   }
@@ -165,41 +160,17 @@ export class Project {
    * Get a named symbol from any global pool, including global
    * struct members and global types, from the project and from
    * native GML. */
-  getGlobal(name: string): SymbolInfo | undefined {
+  getGlobal(name: string): Signifier | Type | undefined {
     // Check symbols first, starting with project scope
     // After that, check types.
-    const info: SymbolInfo = {
-      native: false,
-      // Only returned if found, so type-cheating for convenience.
-      symbol: undefined as unknown as Signifier,
-    };
-    let symbol: SymbolInfo['symbol'] | undefined = this.symbols.get(name);
+    let symbol: Signifier | Type | undefined = this.self.getMember(name);
     if (symbol) {
-      info.symbol = symbol;
-      return info;
-    }
-    symbol = this.self.getMember(name);
-    if (symbol) {
-      info.symbol = symbol;
-      return info;
-    }
-    symbol = this.native.global.get(name);
-    if (symbol) {
-      info.native = true;
-      info.symbol = symbol;
-      return info;
+      return symbol;
     }
     // Check types
     symbol = this.types.get(name);
     if (symbol) {
-      info.symbol = symbol;
-      return info;
-    }
-    symbol = this.native.types.get(name);
-    if (symbol) {
-      info.native = true;
-      info.symbol = symbol;
-      return info;
+      return symbol;
     }
     return;
   }
@@ -210,7 +181,7 @@ export class Project {
    * also be listed as a member of `global`, set `addToGlobalSelf`
    *
    */
-  addGlobal(item: Signifier, addToGlobalSelf = false) {
+  addGlobal(item: Signifier) {
     // Ensure it doesn't already exist
     ok(item, 'Cannot add undefined item');
     const existing = this.getGlobal(item.name);
@@ -223,12 +194,7 @@ export class Project {
     if (item.type.kind === 'Constructor' && item.type.constructs) {
       this.types.set(`Struct.${item.name}`, item.type.constructs);
     }
-    // Add the symbol to the appropriate global pool
-    if (addToGlobalSelf) {
-      this.self.addMember(item.name, item.type);
-    } else {
-      this.symbols.set(item.name, item);
-    }
+    this.self.addMember(item.name, item.type);
   }
 
   protected addAsset(resource: Asset): void {
@@ -443,6 +409,14 @@ export class Project {
    */
   protected async loadGmlSpec(): Promise<void> {
     const t = Date.now();
+
+    this.self = new Type('Struct').named('global') as StructType;
+    this.self.global = true;
+    this.self.def = {};
+    this.symbol = new Signifier(this.self, 'global', this.self);
+    this.symbol.global = true;
+    this.symbol.writable = false;
+
     let runtimeVersion: string | undefined;
     // Check for a stitch config file that specifies the runtime version.
     // If it exists, use that version. It's likely that it is correct, and this
@@ -481,26 +455,20 @@ export class Project {
           'GmlSpec.xml',
         );
         await gmlSpecPath.exists({ assert: true });
-        this.native = await Native.from(gmlSpecPath.absolute);
+        this.native = await Native.from(
+          gmlSpecPath.absolute,
+          this.self,
+          this.types,
+        );
       }
     }
     // If we don't have a spec yet, use the fallback
     if (!this.native) {
       logger.error('No spec found, using fallback');
-      this.native = await Native.from();
+      this.native = await Native.from(undefined, this.self, this.types);
       ok(this.native, 'Failed to load fallback GML spec');
     }
-    this.self = this.native.types
-      .get('Struct')!
-      .derive()
-      .named('global') as StructType;
-    this.self.global = true;
-    this.self.def = {};
-    this.symbol = new Signifier('global').addType(this.self);
-    this.symbols.set('global', this.symbol);
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);
-    this.symbol.global = true;
-    this.symbol.writable = false;
   }
 
   protected watch(): void {

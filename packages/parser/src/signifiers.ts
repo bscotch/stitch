@@ -6,12 +6,17 @@ export class Signifier extends Refs(Flaggable) {
   readonly $tag = 'Sym';
   description: string | undefined = undefined;
   type: Type = new Type('Unknown');
+  /** For function params, the index of this param */
+  idx: number | undefined = undefined;
+  /** The Type containing this member */
+  readonly parent: Type;
 
-  constructor(readonly name: string, type?: Type) {
+  constructor(parent: Type, readonly name: string, type?: Type) {
     super();
     if (type) {
       this.type = type;
     }
+    this.parent = parent;
   }
 
   toJSON() {

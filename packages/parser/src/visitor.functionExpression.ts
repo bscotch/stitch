@@ -2,12 +2,7 @@ import type { FunctionExpressionCstChildren } from '../gml-cst.js';
 import { VisitorContext, withCtxKind } from './parser.js';
 import { fixITokenLocation } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import type {
-  FunctionType,
-  MemberSignifier,
-  StructType,
-  Type,
-} from './types.js';
+import type { FunctionType, StructType, Type } from './types.js';
 import { mergeManyTypes } from './types.merge.js';
 import { assert, ok } from './util.js';
 import type { GmlSymbolVisitor } from './visitor.js';
@@ -45,9 +40,10 @@ export function visitFunctionExpression(
   // Create the symbol if we don't already have it
   const item = (identifier?.item ||
     new Signifier(
+      this.PROCESSOR.project.self,
       functionName || '',
       this.PROCESSOR.project.createType(functionTypeName).named(functionName),
-    )) as Signifier | MemberSignifier;
+    )) as Signifier;
   functionName = item.name;
   if (nameLocation) {
     item.addRef(nameLocation);

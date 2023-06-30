@@ -8,6 +8,7 @@ export const enum Flag {
   Global = 1 << 6,
   Parameter = 1 << 7,
   Native = 1 << 8, // Is a built-in
+  Optional = 1 << 9,
   ReadWrite = Readable | Writable,
 }
 
@@ -20,6 +21,13 @@ export class Flaggable {
     } else {
       this.flags &= ~flag;
     }
+  }
+
+  get optional() {
+    return !!(this.flags & Flag.Optional);
+  }
+  set optional(optional: boolean) {
+    this.setFlag(Flag.Optional, optional);
   }
 
   get native() {

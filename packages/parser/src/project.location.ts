@@ -2,7 +2,7 @@ import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
 import type { Signifier } from './signifiers.js';
 import { isTypeInstance } from './types.checks.js';
-import { EnumType, MemberSignifier, StructType, Type } from './types.js';
+import { EnumType, StructType, Type } from './types.js';
 import { assert, type Constructor } from './util.js';
 
 export const firstLineIndex = 1;
@@ -150,7 +150,7 @@ export class FunctionArgRange extends Range {
     return getType(this.func);
   }
 
-  get param(): MemberSignifier {
+  get param(): Signifier {
     assert(this.type, 'FunctionArgRange must have a type');
     return this.type.getParameter(this.idx)!;
   }
@@ -244,7 +244,7 @@ export class Scope extends Range {
   }
 }
 
-export type ReferenceableType = Signifier | Type | MemberSignifier;
+export type ReferenceableType = Signifier | Type;
 
 export function getType(ref: ReferenceableType): Type {
   assert(ref, 'Cannot get the type of an undefined reference.');

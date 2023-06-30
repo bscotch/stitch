@@ -3,13 +3,13 @@ import { logger } from './logger.js';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
 import { Signifier } from './signifiers.js';
-import { MemberSignifier, Type } from './types.js';
+import { Type } from './types.js';
 import type { PrimitiveName } from './types.primitives.js';
 import { ok } from './util.js';
 
 describe('Project', function () {
   it('can load the GML spec', async function () {
-    const spec = await Native.from();
+    const spec = await Native.from(undefined, new Type('Struct'), new Map());
     expect(spec).to.exist;
 
     // STRUCTS AND CONSTS
@@ -47,15 +47,16 @@ describe('Project', function () {
     ok(expectedTypeType.kind === 'Real');
 
     // VARIABLES
-    const depthSymbol = spec.instance.get('depth');
+    const depthSymbol = spec.globalSelf.getMember('depth');
     ok(depthSymbol);
     expect(depthSymbol.type.kind).to.equal('Real');
 
     // FUNCTIONS
     const scriptExecuteType = spec.types.get('Function.script_execute');
-    const scriptExecuteSymbol = spec.global.get('script_execute');
+    const scriptExecuteSymbol = spec.globalSelf.getMember('script_execute');
     ok(scriptExecuteSymbol);
     ok(scriptExecuteSymbol.type === scriptExecuteType);
+    ok(scriptExecuteType);
     ok(scriptExecuteType.kind === 'Function');
     expect(scriptExecuteType.listParameters()).to.have.lengthOf(2);
     expect(scriptExecuteType.listParameters()![0].name).to.equal('scr');
@@ -199,7 +200,7 @@ describe('Project', function () {
     const paramName = '_name';
     const paramRef = scriptFile.getReferenceAt({ line: 18, column: 32 });
     ok(paramRef);
-    const param = paramRef.item as MemberSignifier;
+    const param = paramRef.item as Signifier;
     ok(param);
     ok(param.local);
     ok(param.parameter);
@@ -272,7 +273,7 @@ describe('Project', function () {
     expect(constructorType.constructs).to.exist;
     expect(constructorType.constructs!.kind).to.equal('Struct');
     expect(constructorType.constructs!.name).to.equal(constructorName);
-    ok(project.getGlobal(constructorName)?.symbol === constructorSymbol);
+    ok(project.getGlobal(constructorName) === constructorSymbol);
     ok(
       project.types.get(`Struct.${constructorName}`) ===
         constructorType.constructs,
@@ -288,7 +289,7 @@ describe('Project', function () {
     //#region DOT ASSIGNMENTS
     const dotAssignedRefName = 'another_instance_variable';
     const dotAssignedRef = objCreate.getReferenceAt(20, 14);
-    const dotAssignedType = dotAssignedRef?.item as MemberSignifier;
+    const dotAssignedType = dotAssignedRef?.item as Signifier;
     ok(dotAssignedRef);
     ok(dotAssignedRef.item.name === dotAssignedRefName);
     ok(dotAssignedType);
@@ -321,14 +322,16 @@ describe('Project', function () {
 function validateBschemaConstructor(project: Project) {
   const complexScript = project.getAssetByName('Complicated')!;
   const complexScriptFile = complexScript.gmlFile;
-  const bschemaGlobal = project.getGlobal('BSCHEMA')!.symbol as Signifier;
-  const bschemaStructType = project.getGlobal('Struct.Bschema')
-    ?.symbol as Type<'Struct'>;
+  const bschemaGlobal = project.getGlobal('BSCHEMA') as Signifier;
+  const bschemaStructType = project.getGlobal(
+    'Struct.Bschema',
+  ) as Type<'Struct'>;
   const bschemaGlobalDef = complexScriptFile.getReferenceAt(1, 15);
   const bschemaConstructor = complexScriptFile.getReferenceAt(7, 13)
-    ?.item as MemberSignifier;
-  const bschemaRoleType = project.getGlobal('Struct.BschemaRole')
-    ?.symbol as Type<'Struct'>;
+    ?.item as Signifier;
+  const bschemaRoleType = project.getGlobal(
+    'Struct.BschemaRole',
+  ) as Type<'Struct'>;
   ok(bschemaGlobal);
   ok(bschemaStructType);
   ok(bschemaStructType.kind === 'Struct');
@@ -343,7 +346,7 @@ function validateBschemaConstructor(project: Project) {
 
   // Make sure that the project_setup Bschema field gets typed based on its assignment
   const projectSetupRef = complexScriptFile.getReferenceAt(10, 10)!;
-  const projectSetupVar = projectSetupRef.item as MemberSignifier;
+  const projectSetupVar = projectSetupRef.item as Signifier;
   const projectSetupType = projectSetupVar.type;
   const projectSetupAssignedTo = bschemaConstructor.type.getParameter(0)!;
   ok(projectSetupAssignedTo.name === 'project_setup_function');

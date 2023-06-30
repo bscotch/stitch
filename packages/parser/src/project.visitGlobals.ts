@@ -12,7 +12,7 @@ import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
 import { Position, Range } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import { EnumType, MemberSignifier, StructType } from './types.js';
+import { EnumType, StructType } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert } from './util.js';
 
@@ -77,8 +77,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   ADD_GLOBAL_DECLARATION<T extends PrimitiveName>(
     children: { Identifier?: IToken[] },
     typeName: T,
-    addToGlobalSelf = false,
-  ): Signifier | MemberSignifier | undefined {
+  ): Signifier | undefined {
     const name = children.Identifier?.[0];
     if (!name) return;
     const range = this.PROCESSOR.range(name);
@@ -89,11 +88,11 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     type.global = true;
 
     // Create it if it doesn't already exist.
-    let symbol = this.PROCESSOR.project.getGlobal(name.image)?.symbol as
-      | Signifier
-      | MemberSignifier;
+    let symbol = this.PROCESSOR.project.getGlobal(name.image) as Signifier;
     if (!symbol) {
-      symbol = new Signifier(name.image).addType(type);
+      symbol = new Signifier(this.PROCESSOR.project.self, name.image).addType(
+        type,
+      );
       if (typeName === 'Constructor') {
         // Ensure the constructed type exists
         symbol.type.constructs = this.PROCESSOR.project
@@ -102,7 +101,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         symbol.type.constructs.global = true;
       }
       // Add the symbol and type to the project.
-      this.PROCESSOR.project.addGlobal(symbol, addToGlobalSelf);
+      this.PROCESSOR.project.addGlobal(symbol);
     }
     // Ensure it's defined here.
     symbol.definedAt(range);
@@ -191,7 +190,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    this.ADD_GLOBAL_DECLARATION(children, 'Unknown') as MemberSignifier;
+    this.ADD_GLOBAL_DECLARATION(children, 'Unknown') as Signifier;
   }
 
   override macroStatement(children: MacroStatementCstChildren) {
@@ -206,7 +205,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         children.accessorSuffixes?.[0].children.dotAccessSuffix?.[0].children
           .identifier[0].children;
       if (globalIdentifier?.Identifier) {
-        this.ADD_GLOBAL_DECLARATION(globalIdentifier, 'Unknown', true);
+        this.ADD_GLOBAL_DECLARATION(globalIdentifier, 'Unknown');
       }
     } else if (
       identifier?.type === 'Identifier' &&

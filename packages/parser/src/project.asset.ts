@@ -34,7 +34,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   ) {
     this.assetType = resource.id.path.split(/[/\\]/)[0] as T;
     this.yyPath = yyPath.withValidator(yySchemas[this.assetType]) as any;
-    this.symbol = new Signifier(this.name);
+    this.symbol = new Signifier(this.project.self, this.name);
   }
 
   get isScript() {

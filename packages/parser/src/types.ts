@@ -5,6 +5,7 @@ import {
 } from './jsdoc.feather.js';
 import type { JsdocSummary } from './jsdoc.js';
 import { Refs } from './project.location.js';
+import { Signifier } from './signifiers.js';
 import { narrows } from './types.checks.js';
 import {
   typeFromFeatherString,
@@ -16,7 +17,7 @@ import { Flaggable } from './types.flags.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
 import { mergeTypes } from './types.merge.js';
 import { PrimitiveName } from './types.primitives.js';
-import { ok } from './util.js';
+import { assert, ok } from './util.js';
 
 export type AnyType = Type<'Any'>;
 export type ArrayType = Type<'Array'>;
@@ -30,26 +31,6 @@ export type StructType = Type<'Struct'>;
 export type UndefinedType = Type<'Undefined'>;
 export type UnionType = Type<'Union'>;
 export type UnknownType = Type<'Unknown'>;
-
-export class MemberSignifier extends Refs(Flaggable) {
-  readonly $tag = 'Member';
-  description: string | undefined = undefined;
-  // For function params
-  idx: number | undefined = undefined;
-  optional: undefined | boolean = undefined;
-  /** The Type containing this member */
-  readonly parent: Type;
-
-  constructor(parent: Type, public name: string, public type: Type) {
-    super();
-    this.parent = parent;
-  }
-
-  describe(description: string | undefined) {
-    this.description = description;
-    return this;
-  }
-}
 
 export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   Flaggable,
@@ -69,7 +50,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   parent: Type<T> | undefined = undefined;
 
   /** Named members of Structs and Enums */
-  _members: MemberSignifier[] | undefined = undefined;
+  _members: Signifier[] | undefined = undefined;
 
   /** Types of the items found in arrays and various ds types, or the fallback type found in Structs */
   items: Type | undefined = undefined;
@@ -83,7 +64,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * type of the struct that it constructs. */
   constructs: Type<'Struct'> | undefined = undefined;
   context: Type<'Struct'> | undefined = undefined;
-  _params: MemberSignifier[] | undefined = undefined;
+  _params: Signifier[] | undefined = undefined;
   returns: undefined | Type = undefined;
 
   /** Create a shallow-ish clone */
@@ -176,13 +157,13 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return this;
   }
 
-  listParameters(): MemberSignifier[] {
+  listParameters(): Signifier[] {
     return this._params ? [...this._params] : [];
   }
 
-  getParameter(name: string): MemberSignifier | undefined;
-  getParameter(idx: number): MemberSignifier | undefined;
-  getParameter(nameOrIdx: string | number): MemberSignifier | undefined {
+  getParameter(name: string): Signifier | undefined;
+  getParameter(idx: number): Signifier | undefined;
+  getParameter(nameOrIdx: string | number): Signifier | undefined {
     if (!this._params) {
       return undefined;
     }
@@ -197,12 +178,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     this._params ??= [];
     let param = this._params[idx];
     if (!param) {
-      param = new MemberSignifier(this, name, type);
+      param = new Signifier(this, name, type);
       this._params[idx] = param;
     }
     param.idx = idx;
     param.local = true;
-    param.name = name;
     param.optional = optional || name === '...';
     param.parameter = true;
     if (param.type) {
@@ -213,7 +193,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return param;
   }
 
-  listMembers(excludeParents = false): MemberSignifier[] {
+  listMembers(excludeParents = false): Signifier[] {
     const members = this._members || [];
     if (excludeParents || !this.parent) {
       return members;
@@ -221,25 +201,43 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return [...members, ...this.parent.listMembers()];
   }
 
-  getMember(name: string): MemberSignifier | undefined {
+  getMember(name: string, excludeParents = false): Signifier | undefined {
     return (
       this._members?.find((m) => m.name === name) ||
-      this.parent?.getMember(name)
+      (excludeParents ? undefined : this.parent?.getMember(name))
     );
   }
 
   /** For container types that have named members, like Structs and Enums */
-  addMember(name: string, type: Type, writable = true): MemberSignifier {
-    this._members ??= [];
-    let member = this._members.find((m) => m.name === name);
-    if (!member) {
-      member = new MemberSignifier(this, name, type);
-      member.writable = writable;
-      this._members.push(member);
+  addMember(signifier: Signifier): Signifier;
+  addMember(name: string, type: Type, writable?: boolean): Signifier;
+  addMember(
+    name: string | Signifier,
+    type?: Type,
+    writable?: boolean,
+  ): Signifier {
+    if (typeof name === 'string') {
+      assert(type, 'Must provide type when adding member');
+      this._members ??= [];
+      let member = this.getMember(name, false);
+      if (!member) {
+        member = new Signifier(this, name, type);
+        member.writable = !!writable;
+        this._members.push(member);
+      } else {
+        member.type.coerceTo(type);
+      }
+      return member;
     } else {
-      member.type.coerceTo(type);
+      const existing = this.getMember(name.name, false);
+      assert(
+        !existing || existing === name,
+        'Cannot add member with same name as existing member',
+      );
+      this._members ??= [];
+      this._members.push(name);
+      return name;
     }
-    return member;
   }
 
   removeMember(name: string) {

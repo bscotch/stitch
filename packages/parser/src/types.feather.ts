@@ -105,7 +105,7 @@ export function typeFromParsedJsdocs(
       ).describe(param.description);
       const member = type.addParameter(i, param.name!.content, paramType);
       i++;
-      member.optional = param.optional;
+      member.optional = !!param.optional;
       member.describe(param.description);
     }
     return type;

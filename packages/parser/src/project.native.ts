@@ -10,18 +10,12 @@ import { assert } from './util.js';
 
 export class Native {
   protected spec!: GmlSpec;
-  /** Symbols available globally */
-  readonly global: Map<string, Signifier> = new Map();
-  /** Symbols available in object instance scopes */
-  readonly instance: Map<string, Signifier> = new Map();
 
-  /**
-   * Types, looked up by their Feather-compatible name.
-   * Types can be either a single type or a type union.
-   */
-  readonly types: Map<string, Type> = new Map();
-
-  protected constructor(readonly filePath: string) {
+  protected constructor(
+    readonly filePath: string,
+    readonly globalSelf: StructType,
+    readonly types: Map<string, Type>,
+  ) {
     // Initialize all of the primitives so we can guarantee
     // they exist on any lookup.
     primitiveNames.forEach((name) => {
@@ -53,7 +47,7 @@ export class Native {
     for (const variable of this.spec.variables) {
       assert(variable, 'Variable must be defined');
       const type = Type.fromFeatherString(variable.type, this.types);
-      const symbol = new Signifier(variable.name)
+      const symbol = new Signifier(this.globalSelf, variable.name)
         .describe(variable.description)
         .deprecate(variable.deprecated)
         .addType(type);
@@ -61,14 +55,7 @@ export class Native {
       symbol.native = true;
       symbol.global = !variable.instance;
       symbol.instance = variable.instance;
-      if (variable.instance) {
-        this.instance.set(symbol.name, symbol);
-        // For now also add to global, since we aren't making use of
-        // the distinction yet.
-        this.global.set(symbol.name, symbol);
-      } else {
-        this.global.set(symbol.name, symbol);
-      }
+      this.globalSelf.addMember(symbol);
     }
   }
 
@@ -116,12 +103,12 @@ export class Native {
       // Add return type to the type.
       type.addReturnType(Type.fromFeatherString(func.returnType, this.types));
 
-      const symbol = new Signifier(func.name)
+      const symbol = new Signifier(this.globalSelf, func.name)
         .deprecate(func.deprecated)
         .addType(type);
       symbol.writable = false;
       symbol.native = true;
-      this.global.set(symbol.name, symbol);
+      this.globalSelf.addMember(symbol);
     }
   }
 
@@ -148,12 +135,12 @@ export class Native {
       if (!klass) {
         for (const constant of constants) {
           assert(constant, 'Constant must be defined');
-          const symbol = new Signifier(constant.name)
+          const symbol = new Signifier(this.globalSelf, constant.name)
             .describe(constant.description)
             .addType(Type.fromFeatherString(constant.type, this.types));
           symbol.writable = false;
           symbol.native = true;
-          this.global.set(symbol.name, symbol);
+          this.globalSelf.addMember(symbol);
         }
         continue;
       }
@@ -186,13 +173,14 @@ export class Native {
       }
       // Create symbols for each class member.
       for (const constant of constants) {
-        const symbol = new Signifier(constant.name).describe(
+        const symbol = new Signifier(this.globalSelf, constant.name).describe(
           constant.description,
         );
         symbol.writable = false;
         symbol.def = {}; // Prevent "not found" errors
         symbol.addType(classType);
-        this.global.set(symbol.name, symbol);
+
+        this.globalSelf.addMember(symbol);
       }
     }
   }
@@ -219,9 +207,14 @@ export class Native {
     }
   }
 
-  static async from(filePath: string = Native.fallbackGmlSpecPath.absolute) {
+  static async from(
+    filePath: string | undefined,
+    globalSelf: StructType,
+    types: Map<string, Type>,
+  ): Promise<Native> {
+    filePath ||= Native.fallbackGmlSpecPath.absolute;
     const parsedSpec = await Native.parse(filePath);
-    const spec = new Native(filePath);
+    const spec = new Native(filePath, globalSelf, types);
     spec.spec = parsedSpec;
     spec.load();
     return spec;
@@ -234,14 +227,6 @@ export class Native {
       normalize: true,
     }); // Prevent possible errors: "Non-white space before first tag"
     return gmlSpecSchema.parse(asJson);
-  }
-
-  toJSON() {
-    return {
-      filePath: this.filePath,
-      symbols: this.global,
-      types: this.types,
-    };
   }
 
   static readonly fallbackGmlSpecPath = pathy(import.meta.url).resolveTo(
