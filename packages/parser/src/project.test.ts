@@ -28,22 +28,28 @@ describe('Project', function () {
     const tracks = track.getMember('tracks');
     ok(tracks);
     expect(tracks.type.kind).to.equal('Array');
-    expect(tracks.type.items!.kind).to.equal('Struct');
-    expect(tracks.type.items!.parent!).to.eql(spec.types.get('Struct'));
-    expect(tracks.type.items!).to.eql(track);
+    expect(tracks.type.type.items!.kind).to.equal('Struct');
+    expect(tracks.type.type.items!.type.parent!).to.eql(
+      spec.types.get('Struct'),
+    );
+    expect(tracks.type.type.items!).to.eql(track);
 
     const keyframes = track.getMember('keyframes');
     ok(keyframes);
     expect(keyframes.type.kind).to.equal('Array');
-    expect(keyframes.type.items!.kind).to.equal('Struct');
-    expect(keyframes.type.items!.parent!).to.eql(spec.types.get('Struct'));
-    expect(keyframes.type.items!).to.eql(spec.types.get('Struct.Keyframe'));
+    expect(keyframes.type.type.items!.kind).to.equal('Struct');
+    expect(keyframes.type.type.items!.type.parent!).to.eql(
+      spec.types.get('Struct'),
+    );
+    expect(keyframes.type.type.items!).to.eql(
+      spec.types.get('Struct.Keyframe'),
+    );
 
     const type = track.getMember('type');
     ok(type);
     const expectedTypeType = spec.types.get('Constant.SequenceTrackType');
     ok(expectedTypeType);
-    ok(type.type === expectedTypeType);
+    ok(type.type.type === expectedTypeType);
     ok(expectedTypeType.kind === 'Real');
 
     // VARIABLES
@@ -55,7 +61,7 @@ describe('Project', function () {
     const scriptExecuteType = spec.types.get('Function.script_execute');
     const scriptExecuteSymbol = spec.globalSelf.getMember('script_execute');
     ok(scriptExecuteSymbol);
-    ok(scriptExecuteSymbol.type === scriptExecuteType);
+    ok(scriptExecuteSymbol.type.type === scriptExecuteType);
     ok(scriptExecuteType);
     ok(scriptExecuteType.kind === 'Function');
     expect(scriptExecuteType.listParameters()).to.have.lengthOf(2);
@@ -162,7 +168,7 @@ describe('Project', function () {
     ok(item.name === globalVarName);
     // The globalvar should have appropriate symbol and type info
     ok(item.$tag === 'Sym');
-    ok(item.type.name === globalVarName);
+    ok(item.type.type.name === globalVarName);
     ok(item.global === true);
     ok(item.type.global === true);
     //#endregion GLOBALVARS
@@ -185,9 +191,9 @@ describe('Project', function () {
     ok(!globalConstructor.local);
     ok(globalConstructor.global);
     ok(globalConstructor.name === 'GlobalConstructor');
-    ok(globalConstructor.type.constructs);
-    ok(globalConstructor.type.constructs.name === 'GlobalConstructor');
-    ok(globalConstructor.type.isFunction);
+    ok(globalConstructor.type.type.constructs);
+    ok(globalConstructor.type.type.constructs.name === 'GlobalConstructor');
+    ok(globalConstructor.type.type.isFunction);
     expect(globalConstructor.type.kind).to.equal('Constructor');
     // Instance scope (should not be found)
     ok(!inRootScriptScope.find((id) => id.name === 'instance_function'));
@@ -261,7 +267,7 @@ describe('Project', function () {
     const constructorName = 'GlobalConstructor';
     const constructorDef = scriptFile.getReferenceAt(18, 17);
     const constructorSymbol = constructorDef!.item as Signifier;
-    const constructorType = constructorSymbol.type as Type<'Constructor'>;
+    const constructorType = constructorSymbol.type.type as Type<'Constructor'>;
     ok(constructorDef);
     ok(constructorSymbol);
     ok(constructorType);
@@ -298,9 +304,9 @@ describe('Project', function () {
 
     // Check the return type of a function
     const functionDefRef = complexScriptFile.getReferenceAt(119, 22);
-    expect((functionDefRef?.item as Signifier).type.returns?.kind).to.equal(
-      'Array',
-    );
+    expect(
+      (functionDefRef?.item as Signifier).type.type.returns?.kind,
+    ).to.equal('Array');
 
     validateBschemaConstructor(project);
     // Reprocess a file and ensure that the tests still pass
@@ -339,8 +345,8 @@ function validateBschemaConstructor(project: Project) {
   ok(bschemaGlobalDef.item === bschemaGlobal);
   ok(bschemaConstructor);
   ok(bschemaConstructor.type.kind === 'Constructor');
-  expect(bschemaConstructor.type.name).to.equal('Bschema');
-  ok(bschemaConstructor.type.constructs === bschemaStructType);
+  expect(bschemaConstructor.type.type.name).to.equal('Bschema');
+  ok(bschemaConstructor.type.type.constructs === bschemaStructType);
   ok(bschemaRoleType);
   // Check all of the members of Struct.Bschema.
 
@@ -348,7 +354,7 @@ function validateBschemaConstructor(project: Project) {
   const projectSetupRef = complexScriptFile.getReferenceAt(10, 10)!;
   const projectSetupVar = projectSetupRef.item as Signifier;
   const projectSetupType = projectSetupVar.type;
-  const projectSetupAssignedTo = bschemaConstructor.type.getParameter(0)!;
+  const projectSetupAssignedTo = bschemaConstructor.type.type.getParameter(0)!;
   ok(projectSetupAssignedTo.name === 'project_setup_function');
   // ok(projectSetupType === projectSetupAssignedTo.type);
 
@@ -408,7 +414,7 @@ function validateBschemaConstructor(project: Project) {
       }
     }
     if ('code' in info) {
-      expect(type.code).to.equal(info.code);
+      expect(type.type.code).to.equal(info.code);
     }
   }
 
@@ -416,18 +422,18 @@ function validateBschemaConstructor(project: Project) {
   //#region Bschema.schema_mote_ids
   const schemaMoteIds = bschemaStructType.getMember('schema_mote_ids')!;
   expect(schemaMoteIds.type.kind).to.equal('Struct');
-  expect(schemaMoteIds.type.items).to.exist;
-  expect(schemaMoteIds.type.items!.kind).to.equal('Array');
-  expect(schemaMoteIds.type.items!.items).to.exist;
-  expect(schemaMoteIds.type.items!.items!.kind).to.equal('String');
-  expect(schemaMoteIds.type.code).to.equal('Struct<Array<String>>');
+  expect(schemaMoteIds.type.type.items).to.exist;
+  expect(schemaMoteIds.type.type.items!.kind).to.equal('Array');
+  expect(schemaMoteIds.type.type.items!.type.items).to.exist;
+  expect(schemaMoteIds.type.type.items!.type.items!.kind).to.equal('String');
+  expect(schemaMoteIds.type.type.code).to.equal('Struct<Array<String>>');
   //#endregion Bschema.schema_mote_ids
 
   //#region Bschema.roles
   const roles = bschemaStructType.getMember('roles')!;
   expect(roles.type.kind).to.equal('Struct');
-  expect(roles.type.items).to.exist;
-  expect(roles.type.items!.kind).to.equal('Struct');
-  ok(roles.type.items === bschemaRoleType);
+  expect(roles.type.type.items).to.exist;
+  expect(roles.type.type.items!.kind).to.equal('Struct');
+  ok(roles.type.type.items!.type === bschemaRoleType);
   //#endregion Bschema.roles
 }

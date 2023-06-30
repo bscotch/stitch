@@ -106,7 +106,7 @@ export class SymbolProcessor {
   }
 
   createStruct(token: CstNodeLocation, endToken?: CstNodeLocation) {
-    return new Type('Struct').definedAt(this.range(token, endToken));
+    return new Type('Struct');
   }
 
   pushScope(

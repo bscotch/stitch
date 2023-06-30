@@ -84,11 +84,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const name = children.Identifier?.[0];
     if (!name) return;
     const range = this.PROCESSOR.range(name);
-    const type = this.PROCESSOR.project
-      .createType(typeName)
-      .definedAt(range)
-      .named(name.image);
-    type.global = true;
+    const type = this.PROCESSOR.project.createType(typeName).named(name.image);
 
     // Create it if it doesn't already exist.
     let symbol = this.PROCESSOR.globalSelf.getMember(name.image);
@@ -100,28 +96,21 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       // Add the symbol's type to the global lookup
       if (typeName === 'Constructor') {
         // Ensure the constructed type exists
-        symbol.type.constructs = this.PROCESSOR.project
+        type.constructs = this.PROCESSOR.project
           .createStructType('self')
           .named(name.image);
-        symbol.type.constructs.global = true;
-        this.PROCESSOR.project.types.set(
-          `Struct.${name}`,
-          symbol.type.constructs,
-        );
+        this.PROCESSOR.project.types.set(`Struct.${name}`, type.constructs);
       }
       if (type.isFunction) {
-        this.PROCESSOR.project.types.set(`Function.${name}`, symbol.type);
+        this.PROCESSOR.project.types.set(`Function.${name}`, type);
       } else if (type.kind === 'Enum') {
-        this.PROCESSOR.project.types.set(`Enum.${name}`, symbol.type);
+        this.PROCESSOR.project.types.set(`Enum.${name}`, type);
       }
     }
     // Ensure it's defined here.
     symbol.definedAt(range);
     symbol.global = true;
-    symbol.addRef(range, symbol.type);
-    if (typeName === 'Constructor') {
-      symbol.type.constructs?.definedAt(range);
-    }
+    symbol.addRef(range);
     return symbol;
   }
 
@@ -140,7 +129,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   override enumStatement(children: EnumStatementCstChildren) {
     const symbol = this.ADD_GLOBAL_DECLARATION(children, 'Enum')! as Signifier;
     assert(symbol, 'Enum symbol should exist');
-    const type = symbol.type as EnumType;
+    const type = symbol.type.types[0] as EnumType;
     assert(
       type.kind === 'Enum',
       `Symbol ${symbol.name} is a ${type.kind} instead of an enum.`,
@@ -155,12 +144,11 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       const range = this.PROCESSOR.range(name);
       const memberType = this.PROCESSOR.project
         .createType('EnumMember')
-        .definedAt(range)
         .named(name.image);
       // Does member already exist?
       const member =
         type.getMember(name.image) || type.addMember(name.image, memberType);
-      member.type.coerceTo(memberType);
+      member.type.types = memberType;
       member.idx = i;
       member.definedAt(range);
       member.addRef(range);

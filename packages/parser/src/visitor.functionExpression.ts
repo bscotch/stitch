@@ -3,7 +3,6 @@ import { VisitorContext, withCtxKind } from './parser.js';
 import { fixITokenLocation } from './project.location.js';
 import { Signifier } from './signifiers.js';
 import type { FunctionType, StructType, Type } from './types.js';
-import { mergeManyTypes } from './types.merge.js';
 import { assert, ok } from './util.js';
 import type { GmlSymbolVisitor } from './visitor.js';
 
@@ -170,14 +169,11 @@ export function visitFunctionExpression(
   this.visit(children.blockStatement, withCtxKind(ctx, 'functionBody'));
 
   // Update the RETURN type based on the return statements found in the body
-  const inferredReturnType = ctx.returns?.length
-    ? mergeManyTypes(ctx.returns)
-    : this.PROCESSOR.project.createType('Undefined');
   if (docs?.type.returns) {
-    functionType.returns = docs.type.returns;
+    functionType.addReturnType(docs.type.returns.types);
     // TODO: Check against the inferred return types
   } else {
-    functionType.returns = inferredReturnType;
+    functionType.addReturnType(ctx.returns || this.UNDEFINED);
   }
 
   // End the scope

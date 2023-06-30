@@ -154,21 +154,14 @@ export class Native {
       // Create the base type for the class.
       const classTypeName = `Constant.${klass}`;
       const typeString = [...typeNames.values()].join('|');
-      let classType = Type.fromFeatherString(typeString, this.types)[0]
+      const classType = Type.fromFeatherString(typeString, this.types)[0]
         .derive()
         .named(classTypeName);
       const existingType = this.types.get(classTypeName);
-      if (existingType) {
-        // Then we defined an Unknown type earlier to handle a reference.
-        // Replace it with the real type.!;
-        ok(
-          existingType.kind === 'Unknown',
-          `Type ${classTypeName} already exists but is not Unknown`,
-        );
-        classType = Type.merge(existingType, classType);
-      } else {
-        this.types.set(classTypeName, classType);
-      }
+      assert(!existingType, `Type ${classTypeName} already exists`);
+
+      this.types.set(classTypeName, classType);
+
       // Create symbols for each class member.
       for (const constant of constants) {
         const symbol = new Signifier(this.globalSelf, constant.name).describe(

@@ -5,7 +5,6 @@ import { narrows } from './types.checks.js';
 import { typeFromFeatherString } from './types.feather.js';
 import { Flaggable } from './types.flags.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
-import { mergeTypes } from './types.merge.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert, ok } from './util.js';
 
@@ -38,8 +37,20 @@ export class TypeStore<
     this.types = types;
   }
 
-  get types(): readonly Type<T>[] {
-    return this._types;
+  /** If this store has only one type, its kind. Else throws. */
+  get kind(): T {
+    assert(this.types.length === 1, 'TypeStore has more than one type.');
+    return this.types[0].kind as T;
+  }
+
+  /** If this store has only one type, its type. Else throws. */
+  get type(): Type<T> {
+    assert(this.types.length === 1, 'TypeStore has more than one type.');
+    return this.types[0];
+  }
+
+  get types(): Type<T>[] {
+    return [...this._types];
   }
   set types(types: Type<T> | Type<T>[] | undefined) {
     this._types = arrayWrapped(types);
@@ -292,19 +303,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   describe(description: string | undefined): this {
     this.description = description;
     return this;
-  }
-
-  /**
-   * If this type is unknown, change it to the provided Type.
-   * If it is a union, add the provided Type to the union.
-   * If it is not a union, create a union and return that.
-   *
-   * **WARNING**: This method sometimes mutates the original type, and sometimes returns a new type.
-   *
-   * @deprecated
-   */
-  static merge(original: Type | undefined, withType: Type): Type {
-    return mergeTypes(original, withType);
   }
 
   /** Given a Feather-compatible type string, get a fully parsed type. */

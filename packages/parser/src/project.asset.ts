@@ -263,6 +263,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       item.instanceType = item.project
         .createStructType('instance')
         .named(item.name);
+      // TODO: Add global Asset and Id types
     }
 
     // If we are not a script, add ourselves to the global symbols.

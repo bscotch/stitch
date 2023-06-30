@@ -40,7 +40,7 @@ import {
 import { Signifier } from './signifiers.js';
 import { isTypeOfKind } from './types.checks.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
-import { Type, type StructType } from './types.js';
+import { EnumType, Type, type StructType } from './types.js';
 import { assert } from './util.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
 import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
@@ -93,13 +93,13 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   /** Given an identifier in the current scope, find the corresponding item. */
   protected FIND_ITEM(
     children: IdentifierCstChildren,
-  ): { item: ReferenceableType; range: Range } | undefined {
+  ): { item: Signifier | StructType | EnumType; range: Range } | undefined {
     const identifier = identifierFrom(children);
     if (!identifier) {
       return;
     }
     const scope = this.PROCESSOR.fullScope;
-    let item: ReferenceableType | undefined;
+    let item: Signifier | StructType | EnumType | undefined;
     const range = this.PROCESSOR.range(identifier.token);
     switch (identifier.type) {
       case 'Global':
@@ -324,7 +324,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     // See if this identifier is known.
     const identified = this.FIND_ITEM(children);
     const name = children.Identifier[0].image;
-    const item = identified?.item;
+    const item = identified?.item as Signifier;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
     const assignedType = this.UPDATED_TYPE_WITH_DOCS(
@@ -353,7 +353,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
       }
     } else {
       // Add a reference to the item.
-      item.addRef(range, assignedType);
+      item.addRef(range);
       // If this is the first time we've seen it, and it wouldn't have
       // an unambiguous declaration, add its definition
       if (!item.def) {
@@ -369,12 +369,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
   override identifier(
     children: IdentifierCstChildren,
     ctx: VisitorContext,
-  ): { item: ReferenceableType; ref: Reference } | undefined {
+  ): { item: Signifier; ref: Reference } | undefined {
     const item = this.FIND_ITEM(children);
     if (item) {
-      const ref = item.item.addRef(item.range);
+      const ref = (item.item as Signifier).addRef(item.range);
       return {
-        item: item.item,
+        item: item.item as Signifier,
         ref,
       };
     }

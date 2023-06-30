@@ -1,7 +1,6 @@
 import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
 import type { Signifier } from './signifiers.js';
-import { isTypeInstance } from './types.checks.js';
 import { EnumType, StructType, Type } from './types.js';
 import { assert, type Constructor } from './util.js';
 
@@ -147,7 +146,7 @@ export class FunctionArgRange extends Range {
 
   get type(): Type {
     assert(this.func, 'FunctionArgRange must have a reference');
-    return getType(this.func);
+    return this.func.type.types[0];
   }
 
   get param(): Signifier {
@@ -168,14 +167,8 @@ export function Refs<TBase extends Constructor>(Base: TBase) {
     def: Range | { file?: undefined } | undefined = undefined;
     refs = new Set<Reference>();
 
-    addRef(location: Range, type?: Type): Reference {
+    addRef(location: Range): Reference {
       const ref = Reference.fromRange(location, this as any);
-      // TODO: Improve the type tracing!
-      const itemType = (this as any).type as Type | undefined;
-      ref.type = type || itemType || ref.type;
-      if (type && 'type' in this && (this.type as Type).kind === 'Unknown') {
-        this.type = Type.merge(this.type as Type, type);
-      }
       this.refs.add(ref);
       location.file.addRef(ref);
       return ref;
@@ -244,15 +237,7 @@ export class Scope extends Range {
   }
 }
 
-export type ReferenceableType = Signifier | Type;
-
-export function getType(ref: ReferenceableType): Type {
-  assert(ref, 'Cannot get the type of an undefined reference.');
-  if (isTypeInstance(ref)) {
-    return ref;
-  }
-  return ref.type;
-}
+export type ReferenceableType = Signifier;
 
 export class Reference<
   T extends ReferenceableType = ReferenceableType,
