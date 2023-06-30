@@ -267,7 +267,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
 
     // If we are not a script, add ourselves to the global symbols.
     if (item.assetType !== 'scripts') {
-      item.project.addGlobal(item.symbol);
+      item.project.self.addMember(item.symbol);
     }
     return item;
   }

@@ -37,6 +37,7 @@ import {
   Reference,
   type ReferenceableType,
 } from './project.location.js';
+import { Signifier } from './signifiers.js';
 import { isTypeOfKind } from './types.checks.js';
 import { Type, type StructType } from './types.js';
 import { assert } from './util.js';
@@ -79,12 +80,12 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
     return super.visit(cstNode, ctx);
   }
 
-  protected FIND_ITEM_BY_NAME(name: string): ReferenceableType | undefined {
+  protected FIND_ITEM_BY_NAME(name: string): Signifier | undefined {
     const scope = this.PROCESSOR.fullScope;
     return (
       scope.local.getMember(name) ||
       (!scope.selfIsGlobal && scope.self.getMember(name)) ||
-      this.PROCESSOR.project.getGlobal(name)
+      this.PROCESSOR.globalSelf.getMember(name)
     );
   }
 

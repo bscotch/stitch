@@ -110,7 +110,7 @@ export class Project {
   }
 
   createStructType(subtype?: 'self' | 'instance'): StructType {
-    const type = this.createType('Struct') as StructType;
+    const type = new Type('Struct');
     if (subtype) {
       const selfMember = type.addMember('self', type);
       selfMember.def = {};
@@ -154,47 +154,6 @@ export class Project {
       return;
     }
     return resource.getGmlFile(path);
-  }
-
-  /**
-   * Get a named symbol from any global pool, including global
-   * struct members and global types, from the project and from
-   * native GML. */
-  getGlobal(name: string): Signifier | Type | undefined {
-    // Check symbols first, starting with project scope
-    // After that, check types.
-    let symbol: Signifier | Type | undefined = this.self.getMember(name);
-    if (symbol) {
-      return symbol;
-    }
-    // Check types
-    symbol = this.types.get(name);
-    if (symbol) {
-      return symbol;
-    }
-    return;
-  }
-
-  /**
-   * Add an entry to global tracking. Automatically adds
-   * the type of the item if appropriate. If the item should
-   * also be listed as a member of `global`, set `addToGlobalSelf`
-   *
-   */
-  addGlobal(item: Signifier) {
-    // Ensure it doesn't already exist
-    ok(item, 'Cannot add undefined item');
-    const existing = this.getGlobal(item.name);
-    ok(!existing, `Global ${item.name} already exists`);
-    // If it is a function or enum, add its type to the global types
-    if (['Function', 'Enum'].includes(item.type.kind)) {
-      this.types.set(`${item.type.kind}.${item.name}`, item.type);
-    }
-    // If it is a constructor, add its resulting struct type to the global types
-    if (item.type.kind === 'Constructor' && item.type.constructs) {
-      this.types.set(`Struct.${item.name}`, item.type.constructs);
-    }
-    this.self.addMember(item.name, item.type);
   }
 
   protected addAsset(resource: Asset): void {

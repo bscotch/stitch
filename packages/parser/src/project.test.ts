@@ -273,7 +273,7 @@ describe('Project', function () {
     expect(constructorType.constructs).to.exist;
     expect(constructorType.constructs!.kind).to.equal('Struct');
     expect(constructorType.constructs!.name).to.equal(constructorName);
-    ok(project.getGlobal(constructorName) === constructorSymbol);
+    ok(project.self.getMember(constructorName) === constructorSymbol);
     ok(
       project.types.get(`Struct.${constructorName}`) ===
         constructorType.constructs,
@@ -322,14 +322,14 @@ describe('Project', function () {
 function validateBschemaConstructor(project: Project) {
   const complexScript = project.getAssetByName('Complicated')!;
   const complexScriptFile = complexScript.gmlFile;
-  const bschemaGlobal = project.getGlobal('BSCHEMA') as Signifier;
-  const bschemaStructType = project.getGlobal(
+  const bschemaGlobal = project.self.getMember('BSCHEMA');
+  const bschemaStructType = project.types.get(
     'Struct.Bschema',
   ) as Type<'Struct'>;
   const bschemaGlobalDef = complexScriptFile.getReferenceAt(1, 15);
   const bschemaConstructor = complexScriptFile.getReferenceAt(7, 13)
     ?.item as Signifier;
-  const bschemaRoleType = project.getGlobal(
+  const bschemaRoleType = project.types.get(
     'Struct.BschemaRole',
   ) as Type<'Struct'>;
   ok(bschemaGlobal);

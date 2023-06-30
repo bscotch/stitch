@@ -75,16 +75,16 @@ export class SymbolProcessor {
     return this.asset.project;
   }
 
+  get globalSelf() {
+    return this.project.self;
+  }
+
   get currentLocalScope() {
     return this.localScopeStack.at(-1)!;
   }
 
   get currentSelf() {
     return this.selfStack.at(-1) || this.project.self;
-  }
-
-  getGlobalSymbol(name: string) {
-    return this.project.getGlobal(name);
   }
 
   protected nextScope(token: CstNodeLocation, fromTokenEnd: boolean) {

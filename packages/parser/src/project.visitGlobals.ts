@@ -60,11 +60,14 @@ class GlobalDeclarationsProcessor {
   get project() {
     return this.asset.project;
   }
+
+  get globalSelf() {
+    return this.project.self;
+  }
 }
 
 /**
- * Visits the CST and creates symbols and types for global
- * declarations.
+ * Visits the CST and creates symbols for global signifiers.
  */
 export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   static validated = false;
@@ -88,20 +91,29 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     type.global = true;
 
     // Create it if it doesn't already exist.
-    let symbol = this.PROCESSOR.project.getGlobal(name.image) as Signifier;
+    let symbol = this.PROCESSOR.globalSelf.getMember(name.image);
     if (!symbol) {
-      symbol = new Signifier(this.PROCESSOR.project.self, name.image).addType(
-        type,
-      );
+      symbol = new Signifier(this.PROCESSOR.project.self, name.image, type);
+      // Add the symbol and type to the project.
+      this.PROCESSOR.globalSelf.addMember(symbol);
+
+      // Add the symbol's type to the global lookup
       if (typeName === 'Constructor') {
         // Ensure the constructed type exists
         symbol.type.constructs = this.PROCESSOR.project
           .createStructType('self')
           .named(name.image);
         symbol.type.constructs.global = true;
+        this.PROCESSOR.project.types.set(
+          `Struct.${name}`,
+          symbol.type.constructs,
+        );
       }
-      // Add the symbol and type to the project.
-      this.PROCESSOR.project.addGlobal(symbol);
+      if (type.isFunction) {
+        this.PROCESSOR.project.types.set(`Function.${name}`, symbol.type);
+      } else if (type.kind === 'Enum') {
+        this.PROCESSOR.project.types.set(`Enum.${name}`, symbol.type);
+      }
     }
     // Ensure it's defined here.
     symbol.definedAt(range);
