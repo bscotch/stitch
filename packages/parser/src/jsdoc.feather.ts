@@ -105,36 +105,16 @@ export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
   return rootUnion;
 }
 
-export function typeToFeatherString(
-  type: Type,
-  _already_stringified = new Set<Type>(),
-): string {
+export function typeToFeatherString(type: Type): string {
   // Functions, Structs, and Enums are the only types that can have names
-  if (_already_stringified.has(type)) {
-    return 'Circular';
-  }
-  _already_stringified.add(type);
   if (['Function', 'Struct', 'Enum'].includes(type.kind) && type.name) {
     return `${type.kind}.${type.name}`;
   }
   // Arrays etc can contain items of a type) {
-  if (type.items) {
-    return `${type.kind}<${typeToFeatherString(
-      type.items,
-      _already_stringified,
-    )}>`;
-  }
-  // Unions can list types
-  if (type.kind === 'Union') {
-    if (type.types) {
-      const typeStrings = type.types.map((t) =>
-        typeToFeatherString(t, _already_stringified),
-      );
-      const uniqueTypeStrings = [...typeStrings].sort().join('|');
-      return uniqueTypeStrings;
-    } else {
-      return 'Mixed';
-    }
+  if (type.items?.types.length) {
+    return `${type.kind}<${type.items.types
+      .map((t) => t.toFeatherString())
+      .join('|')}>`;
   }
   return type.kind;
 }

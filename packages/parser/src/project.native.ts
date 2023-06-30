@@ -20,7 +20,6 @@ export class Native {
     // they exist on any lookup.
     primitiveNames.forEach((name) => {
       const type = new Type(name);
-      type.writable = false;
       this.types.set(name, type);
     });
   }
@@ -47,10 +46,9 @@ export class Native {
     for (const variable of this.spec.variables) {
       assert(variable, 'Variable must be defined');
       const type = Type.fromFeatherString(variable.type, this.types);
-      const symbol = new Signifier(this.globalSelf, variable.name)
+      const symbol = new Signifier(this.globalSelf, variable.name, type)
         .describe(variable.description)
-        .deprecate(variable.deprecated)
-        .addType(type);
+        .deprecate(variable.deprecated);
       symbol.writable = variable.writable;
       symbol.native = true;
       symbol.global = !variable.instance;
@@ -86,8 +84,6 @@ export class Native {
       const type = (
         this.types.get(typeName) || this.createFunctionType().named(func.name)
       ).describe(func.description);
-      type.native = true;
-      type.writable = false;
       this.types.set(typeName, type);
 
       // Add parameters to the type.
@@ -103,9 +99,9 @@ export class Native {
       // Add return type to the type.
       type.addReturnType(Type.fromFeatherString(func.returnType, this.types));
 
-      const symbol = new Signifier(this.globalSelf, func.name)
-        .deprecate(func.deprecated)
-        .addType(type);
+      const symbol = new Signifier(this.globalSelf, func.name, type).deprecate(
+        func.deprecated,
+      );
       symbol.writable = false;
       symbol.native = true;
       this.globalSelf.addMember(symbol);
@@ -135,9 +131,11 @@ export class Native {
       if (!klass) {
         for (const constant of constants) {
           assert(constant, 'Constant must be defined');
-          const symbol = new Signifier(this.globalSelf, constant.name)
-            .describe(constant.description)
-            .addType(Type.fromFeatherString(constant.type, this.types));
+          const symbol = new Signifier(
+            this.globalSelf,
+            constant.name,
+            Type.fromFeatherString(constant.type, this.types),
+          ).describe(constant.description);
           symbol.writable = false;
           symbol.native = true;
           this.globalSelf.addMember(symbol);
@@ -156,7 +154,7 @@ export class Native {
       // Create the base type for the class.
       const classTypeName = `Constant.${klass}`;
       const typeString = [...typeNames.values()].join('|');
-      let classType = Type.fromFeatherString(typeString, this.types)
+      let classType = Type.fromFeatherString(typeString, this.types)[0]
         .derive()
         .named(classTypeName);
       const existingType = this.types.get(classTypeName);

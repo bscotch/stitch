@@ -232,10 +232,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   /** For container types that have named members, like Structs and Enums */
   addMember(signifier: Signifier): Signifier;
-  addMember(name: string, type: Type, writable?: boolean): Signifier;
+  addMember(name: string, type: Type | Type[], writable?: boolean): Signifier;
   addMember(
     name: string | Signifier,
-    type?: Type,
+    type?: Type | Type[],
     writable?: boolean,
   ): Signifier {
     const member =

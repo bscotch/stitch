@@ -11,7 +11,7 @@ export class Signifier extends Refs(Flaggable) {
   /** The Type containing this member */
   readonly parent: Type;
 
-  constructor(parent: Type, readonly name: string, type?: Type) {
+  constructor(parent: Type, readonly name: string, type?: Type | Type[]) {
     super();
     if (type) {
       this.type.types = type;
@@ -33,7 +33,7 @@ export class Signifier extends Refs(Flaggable) {
   }
 
   /** @deprecated Types should be set in one go instead of added piecemeal */
-  addType(newType: Type): this {
+  addType(newType: Type | Type[]): this {
     // We may have duplicate types, but that information is
     // still useful since the same type information may have
     // come from multiple assignment statements.
