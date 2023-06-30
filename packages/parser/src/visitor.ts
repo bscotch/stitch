@@ -39,6 +39,7 @@ import {
 } from './project.location.js';
 import { Signifier } from './signifiers.js';
 import { isTypeOfKind } from './types.checks.js';
+import { typeFromParsedJsdocs } from './types.feather.js';
 import { Type, type StructType } from './types.js';
 import { assert } from './util.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
@@ -214,7 +215,7 @@ export class GmlSymbolVisitor extends GmlVisitorBase {
    * it for use by the next symbol.
    */
   PREPARE_JSDOC(jsdoc: JsdocSummary) {
-    const type = Type.fromParsedJsdocs(jsdoc, this.PROCESSOR.project.types);
+    const type = typeFromParsedJsdocs(jsdoc, this.PROCESSOR.project.types);
     // There might be named types we can swap out.
     if (type.context && type.context.name) {
       const matchingItem = this.FIND_ITEM_BY_NAME(type.context.name);

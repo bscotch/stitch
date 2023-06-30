@@ -1,7 +1,10 @@
 import { narrows } from './types.checks.js';
 import { Type } from './types.js';
 
-/** Create a new type that combines multiple other types. */
+/**
+ * Create a new type that combines multiple other types.
+ * @deprecated
+ */
 export function mergeManyTypes(types: Type[]): Type {
   let result: Type = new Type('Unknown');
   for (const type of types) {
@@ -10,6 +13,7 @@ export function mergeManyTypes(types: Type[]): Type {
   return result;
 }
 
+/** @deprecated */
 export function mergeTypes(original: Type | undefined, withType: Type): Type {
   // If the incoming type is unknown, toss it.
   // If the original type is Any/Mixed, then it's already as wide as possible so don't change it.

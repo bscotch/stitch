@@ -18,10 +18,8 @@ export function typeToHoverDetails(type: Type) {
       code += `\n\n*@self* ${type.context.toFeatherString()}`;
     }
     for (const param of type.listParameters()) {
-      if (param.description || param.type.description) {
-        code += `\n\n*@param* \`${param.name}\` - ${
-          param.description || param.type.description
-        }`;
+      if (param.description) {
+        code += `\n\n*@param* \`${param.name}\` - ${param.description}`;
       }
     }
   } else if (type.kind === 'Struct') {

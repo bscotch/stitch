@@ -74,7 +74,6 @@ export const primitiveNames = [
   // Custom names (not in Feather)
   'Constructor',
   'EnumMember',
-  'Union',
   'Unknown',
   'Never', // For things that throw
 ] as const;

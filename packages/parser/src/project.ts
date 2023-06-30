@@ -115,10 +115,6 @@ export class Project {
       const selfMember = type.addMember('self', type);
       selfMember.def = {};
       selfMember.writable = false;
-      type.def = {};
-    }
-    if (subtype === 'instance') {
-      type.instance = true;
     }
     return type;
   }
@@ -370,11 +366,10 @@ export class Project {
     const t = Date.now();
 
     this.self = new Type('Struct').named('global') as StructType;
-    this.self.global = true;
-    this.self.def = {};
     this.symbol = new Signifier(this.self, 'global', this.self);
     this.symbol.global = true;
     this.symbol.writable = false;
+    this.symbol.def = {};
 
     let runtimeVersion: string | undefined;
     // Check for a stitch config file that specifies the runtime version.

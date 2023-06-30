@@ -1,18 +1,8 @@
-import {
-  typeToFeatherString,
-  type FeatherType,
-  type FeatherTypeUnion,
-} from './jsdoc.feather.js';
-import type { JsdocSummary } from './jsdoc.js';
-import { Refs } from './project.location.js';
+import { arrayWrapped } from '@bscotch/utility';
+import { typeToFeatherString } from './jsdoc.feather.js';
 import { Signifier } from './signifiers.js';
 import { narrows } from './types.checks.js';
-import {
-  typeFromFeatherString,
-  typeFromIdentifier,
-  typeFromParsedFeatherString,
-  typeFromParsedJsdocs,
-} from './types.feather.js';
+import { typeFromFeatherString } from './types.feather.js';
 import { Flaggable } from './types.flags.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
 import { mergeTypes } from './types.merge.js';
@@ -29,12 +19,51 @@ export type RealType = Type<'Real'>;
 export type StringType = Type<'String'>;
 export type StructType = Type<'Struct'>;
 export type UndefinedType = Type<'Undefined'>;
-export type UnionType = Type<'Union'>;
 export type UnknownType = Type<'Unknown'>;
 
-export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
-  Flaggable,
-) {
+/**
+ * A stable entity that represents a type. It should be used
+ * as the referenced container for any type information, so
+ * that the types can be changed within the container without
+ * breaking references.
+ */
+export class TypeStore<
+  T extends PrimitiveName = PrimitiveName,
+> extends Flaggable {
+  readonly $tag = 'TypeStore';
+  protected _types: Type<T>[] = [];
+
+  constructor(types?: Type<T> | Type<T>[]) {
+    super();
+    this.types = types;
+  }
+
+  get types(): readonly Type<T>[] {
+    return this._types;
+  }
+  set types(types: Type<T> | Type<T>[] | undefined) {
+    this._types = arrayWrapped(types);
+  }
+
+  /**
+   * Should be used sparingly, since it means we're adding types in multiple steps instead of all at once.
+   * @deprecated
+   */
+  addType(type: Type<T> | Type<T>[]): this {
+    this.types = [...this.types, ...arrayWrapped(type)];
+    return this;
+  }
+
+  narrows(other: TypeStore | Type | Type[]): boolean {
+    return narrows(this, other);
+  }
+
+  toFeatherString(): string {
+    return this.types.map((t) => typeToFeatherString(t)).join('|');
+  }
+}
+
+export class Type<T extends PrimitiveName = PrimitiveName> {
   readonly $tag = 'Type';
   // Some types have names. It only counts as a name if it
   // cannot be parsed into types given the name alone.
@@ -50,13 +79,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   parent: Type<T> | undefined = undefined;
 
   /** Named members of Structs and Enums */
-  _members: Signifier[] | undefined = undefined;
+  _members: Map<string, Signifier> | undefined = undefined;
 
   /** Types of the items found in arrays and various ds types, or the fallback type found in Structs */
-  items: Type | undefined = undefined;
-
-  /** The types making up a union */
-  types: Type[] | undefined = undefined;
+  items: TypeStore | undefined = undefined;
 
   // Applicable to Functions
   /**
@@ -65,25 +91,30 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   constructs: Type<'Struct'> | undefined = undefined;
   context: Type<'Struct'> | undefined = undefined;
   _params: Signifier[] | undefined = undefined;
-  returns: undefined | Type = undefined;
+  returns: TypeStore | undefined = undefined;
 
-  /** Create a shallow-ish clone */
+  /**
+   * Create a shallow-ish clone
+   * @deprecated Difficult to understand consequences
+   */
   clone(): Type<T> {
     const clone = new Type<T>(this.kind as T);
     clone.name = this.name;
     clone.description = this.description;
     clone.parent = this.parent;
-    clone._members = this._members ? [...this._members] : undefined;
-    clone.items = this.items?.clone();
-    clone.types = this.types ? [...this.types] : undefined;
+    clone._members = this._members;
+    clone.items = this.items;
     clone.constructs = this.constructs?.clone();
     clone.context = this.context?.clone();
     clone._params = this._params ? [...this._params] : undefined;
-    clone.returns = this.returns?.clone();
+    clone.returns = this.returns;
     return clone;
   }
 
-  /** Force-convert this type to another, even if those are incompatible. */
+  /**
+   * Force-convert this type to another, even if those are incompatible.
+   * @deprecated Types should be immutable -- they should be replaced in a TypeStore instead.
+   */
   coerceTo(type: Type): Type {
     this._kind = type.kind as any;
     this.name ||= type.name;
@@ -93,18 +124,14 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     }
     this._members = type._members;
     this.items = type.items;
-    this.types = type.types;
     this.constructs = type.constructs;
     this.context = type.context;
     this._params = type._params;
     this.returns = type.returns;
-    this.def = type.def;
     return this;
   }
 
-  constructor(protected _kind: T) {
-    super();
-  }
+  constructor(protected _kind: T) {}
 
   get kind() {
     return this._kind;
@@ -122,7 +149,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   }
 
   /** If this type narrows `other` type, returns `true` */
-  narrows(other: Type): boolean {
+  narrows(other: Type | Type[] | TypeStore): boolean {
     return narrows(this, other);
   }
 
@@ -143,22 +170,15 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return ['Constructor', 'Function'].includes(this.kind);
   }
 
-  addReturnType(type: Type) {
-    ok(this.kind === 'Function', `Cannot add return type to ${this.kind}`);
-    if (!this.returns) {
-      this.returns = type;
-      return this;
-    }
-    if (this.returns.kind !== 'Union') {
-      const union = new Type('Union').addUnionType(this.returns);
-      this.returns = union;
-    }
-    this.returns.addUnionType(type);
+  addReturnType(type: Type | Type[]) {
+    ok(this.isFunction, `Cannot add return type to ${this.kind}`);
+    this.returns ||= new TypeStore();
+    this.returns.addType(type);
     return this;
   }
 
   listParameters(): Signifier[] {
-    return this._params ? [...this._params] : [];
+    return (this._params || []).filter((p) => p.idx !== undefined);
   }
 
   getParameter(name: string): Signifier | undefined;
@@ -173,37 +193,39 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     return this._params[nameOrIdx];
   }
 
-  addParameter(idx: number, name: string, type: Type, optional = false) {
-    ok(this.isFunction, `Cannot add param to ${this.kind} type`);
-    this._params ??= [];
-    let param = this._params[idx];
-    if (!param) {
-      param = new Signifier(this, name, type);
-      this._params[idx] = param;
+  addParameter(
+    idx: number,
+    name: string,
+    type: Type | Type[],
+    optional = false,
+  ): Signifier {
+    assert(this.isFunction, `Cannot add param to ${this.kind} type`);
+    const param = this.getParameter(name) || new Signifier(this, name);
+    if (this._params?.[idx] && this._params[idx] !== param) {
+      // Then we're overriding by position
+      this._params[idx].idx = undefined;
     }
+    this._params ??= [];
+    this._params[idx] = param;
     param.idx = idx;
     param.local = true;
     param.optional = optional || name === '...';
     param.parameter = true;
-    if (param.type) {
-      param.type.coerceTo(type);
-    } else {
-      param.type = type;
-    }
+    param.type.types = type;
     return param;
   }
 
   listMembers(excludeParents = false): Signifier[] {
-    const members = this._members || [];
+    const members = this._members?.values() || [];
     if (excludeParents || !this.parent) {
-      return members;
+      return [...members];
     }
     return [...members, ...this.parent.listMembers()];
   }
 
   getMember(name: string, excludeParents = false): Signifier | undefined {
     return (
-      this._members?.find((m) => m.name === name) ||
+      this._members?.get(name) ||
       (excludeParents ? undefined : this.parent?.getMember(name))
     );
   }
@@ -216,64 +238,40 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
     type?: Type,
     writable?: boolean,
   ): Signifier {
-    if (typeof name === 'string') {
-      assert(type, 'Must provide type when adding member');
-      this._members ??= [];
-      let member = this.getMember(name, false);
-      if (!member) {
-        member = new Signifier(this, name, type);
-        member.writable = !!writable;
-        this._members.push(member);
-      } else {
-        member.type.coerceTo(type);
-      }
-      return member;
-    } else {
-      const existing = this.getMember(name.name, false);
-      assert(
-        !existing || existing === name,
-        'Cannot add member with same name as existing member',
-      );
-      this._members ??= [];
-      this._members.push(name);
-      return name;
-    }
+    const member =
+      (typeof name === 'string' ? this._members?.get(name) : name) ||
+      new Signifier(this, name as string);
+    const existing = this.getMember(member.name, true);
+    assert(
+      !existing || existing === member,
+      'Cannot add member with same name as existing member',
+    );
+    this._members ??= new Map();
+    this._members.set(member.name, member);
+
+    member.writable = writable ?? true;
+    member.type.types = type;
+    return member;
   }
 
   removeMember(name: string) {
-    const idx = this._members?.findIndex((m) => m.name === name);
-    if (idx === undefined || idx === -1) {
+    const member = this.getMember(name, true);
+    if (!member) {
       return;
     }
-    const member = this._members![idx];
-    this._members!.splice(idx, 1);
+    this._members!.delete(name);
     // Flag all referencing files as dirty
     for (const ref of member.refs) {
       ref.file.dirty = true;
     }
-    // member should be garbage collected now
-  }
-
-  addUnionType(type: Type): this {
-    ok(this.kind === 'Union', `Cannot add union type to ${this.kind}`);
-    this.types ??= [];
-    this.types.push(type);
-    return this;
   }
 
   /**
    * For container types that have non-named members, like arrays and DsTypes.
    * Can also be used for default Struct values. */
   addItemType(type: Type): this {
-    if (!this.items) {
-      this.items = type;
-      return this;
-    }
-    if (this.items.kind !== 'Union') {
-      const union = new Type('Union').addUnionType(this.items);
-      this.items = union;
-    }
-    this.items.addUnionType(type);
+    this.items ||= new TypeStore();
+    this.items.types = type;
     return this;
   }
 
@@ -302,6 +300,8 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
    * If it is not a union, create a union and return that.
    *
    * **WARNING**: This method sometimes mutates the original type, and sometimes returns a new type.
+   *
+   * @deprecated
    */
   static merge(original: Type | undefined, withType: Type): Type {
     return mergeTypes(original, withType);
@@ -311,43 +311,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> extends Refs(
   static fromFeatherString(
     typeString: string,
     knownTypes: Map<string, Type>,
-  ): Type {
+  ): Type[] {
     return typeFromFeatherString(typeString, knownTypes);
-  }
-
-  static fromParsedFeatherString(
-    node: FeatherTypeUnion | FeatherType,
-    knownTypes: Map<string, Type>,
-  ): Type {
-    return typeFromParsedFeatherString(node, knownTypes);
-  }
-
-  static fromParsedJsdocs(
-    jsdoc: JsdocSummary,
-    knownTypes: Map<string, Type>,
-  ): Type {
-    return typeFromParsedJsdocs(jsdoc, knownTypes);
-  }
-
-  static fromIdentifier(
-    identifier: string,
-    knownTypes: Map<string, Type>,
-    __isRootRequest = true,
-  ): Type {
-    return typeFromIdentifier(identifier, knownTypes, __isRootRequest);
-  }
-
-  toJSON() {
-    return {
-      $tag: this.$tag,
-      kind: this.kind,
-      parent: this.parent,
-      members: this.listMembers(),
-      items: this.items,
-      types: this.types,
-      context: this.context,
-      params: this.listParameters(),
-      returns: this.returns,
-    };
   }
 }

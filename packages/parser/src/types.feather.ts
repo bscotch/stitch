@@ -11,7 +11,7 @@ import { ok } from './util.js';
 export function typeFromFeatherString(
   typeString: string,
   knownTypes: Map<string, Type>,
-): Type {
+): Type[] {
   const parsed = parseFeatherTypeString(typeString);
   return typeFromParsedFeatherString(parsed, knownTypes);
 }
@@ -58,89 +58,80 @@ export function typeFromIdentifier(
   }
   return new Type('Unknown');
 }
+
 export function typeFromParsedJsdocs(
   jsdoc: JsdocSummary,
   knownTypes: Map<string, Type>,
-): Type {
+): Type[] {
   if (jsdoc.kind === 'description') {
     // Then we have no type info but have a description to add.
-    return typeFromIdentifier('Unknown', knownTypes).describe(
-      jsdoc.description,
-    );
+    return [typeFromIdentifier('Unknown', knownTypes)];
   } else if (jsdoc.kind === 'type') {
     // Then this was purely a type annotation. Create the type and
     // add any metadata.
-    return typeFromFeatherString(jsdoc.type!.content, knownTypes).describe(
-      jsdoc.description,
-    );
+    return typeFromFeatherString(jsdoc.type!.content, knownTypes);
   } else if (jsdoc.kind === 'self') {
-    return typeFromFeatherString(jsdoc.self!.content, knownTypes).describe(
-      jsdoc.description,
-    );
+    return typeFromFeatherString(jsdoc.self!.content, knownTypes);
   } else if (jsdoc.kind === 'function') {
     const type = typeFromIdentifier('Function', knownTypes).describe(
       jsdoc.description,
     );
     let i = 0;
-    if (jsdoc.deprecated) {
-      type.deprecated = true;
-    }
     if (jsdoc.self) {
       type.context = typeFromFeatherString(
         jsdoc.self!.content,
         knownTypes,
-      ) as Type<any>;
+      )[0] as Type<any>;
     }
     if (jsdoc.returns) {
       const returnType = typeFromFeatherString(
         jsdoc.returns.type!.content,
         knownTypes,
-      ).describe(jsdoc.returns.description);
+      );
       type.addReturnType(returnType);
     }
     for (const param of jsdoc.params || []) {
-      const paramType = typeFromFeatherString(
-        param.type!.content,
-        knownTypes,
-      ).describe(param.description);
+      const paramType = typeFromFeatherString(param.type!.content, knownTypes);
       const member = type.addParameter(i, param.name!.content, paramType);
       i++;
       member.optional = !!param.optional;
       member.describe(param.description);
     }
-    return type;
+    return [type];
   }
   throw new Error(`Unknown JSDoc kind ${jsdoc.kind}`);
 }
 export function typeFromParsedFeatherString(
   node: FeatherTypeUnion | FeatherType,
   knownTypes: Map<string, Type>,
-): Type {
+): Type[] {
   if (node.kind === 'type') {
     const identifier = node.name;
     let type = typeFromIdentifier(identifier, knownTypes);
     if (node.of) {
-      const subtype = typeFromParsedFeatherString(node.of, knownTypes);
+      const subtypes = typeFromParsedFeatherString(node.of, knownTypes);
       // Then we need to create a new type instead of mutating
       // the one we found.
       type = type.derive();
       if (type.kind.match(/^(Array|Struct|Id.Ds)/)) {
-        type.addItemType(subtype);
+        for (const subtype of subtypes) {
+          type.addItemType(subtype);
+        }
       }
       // TODO: Else create a diagnostic?
     }
-    return type;
+    return [type];
   } else if (node.kind === 'union') {
     const unionOf = node.types;
     if (unionOf.length === 1) {
       return typeFromParsedFeatherString(unionOf[0], knownTypes);
     }
-    const type = new Type('Union');
+    const types: Type[] = [];
     for (const child of unionOf) {
       const subtype = typeFromParsedFeatherString(child, knownTypes);
-      type.addUnionType(subtype);
+      types.push(...subtype);
     }
-    return type;
+    return types;
   }
   throw new Error(`Unknown node type ${node['name']}`);
 }
