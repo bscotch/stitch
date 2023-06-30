@@ -16,8 +16,8 @@ import {
   ReferenceableType,
   Scope,
 } from './project.location.js';
-import { Signifier } from './project.signifier.js';
 import { processGlobalSymbols } from './project.visitGlobals.js';
+import { Signifier } from './signifiers.js';
 import { MemberSignifier, Type } from './types.js';
 import { assert, isBeforeRange, isInRange } from './util.js';
 import { processSymbols } from './visitor.js';

@@ -9,7 +9,7 @@ import { Asset } from './project.asset.js';
 import { Code } from './project.code.js';
 import { Diagnostic } from './project.diagnostics.js';
 import { Native } from './project.native.js';
-import { Signifier } from './project.signifier.js';
+import { Signifier } from './signifiers.js';
 import { MemberSignifier, StructType, Type } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert, ok } from './util.js';

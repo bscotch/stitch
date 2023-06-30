@@ -1,7 +1,7 @@
 import type { FunctionExpressionCstChildren } from '../gml-cst.js';
 import { VisitorContext, withCtxKind } from './parser.js';
 import { fixITokenLocation } from './project.location.js';
-import { Signifier } from './project.signifier.js';
+import { Signifier } from './signifiers.js';
 import type {
   FunctionType,
   MemberSignifier,

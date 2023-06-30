@@ -11,7 +11,7 @@ import {
 import { logger } from './logger.js';
 import { Code } from './project.code.js';
 import { Project } from './project.js';
-import { Signifier } from './project.signifier.js';
+import { Signifier } from './signifiers.js';
 import { StructType } from './types.js';
 import { ok } from './util.js';
 

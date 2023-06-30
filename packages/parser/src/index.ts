@@ -10,6 +10,6 @@ export {
   Scope,
   type ReferenceableType,
 } from './project.location.js';
-export { Signifier } from './project.signifier.js';
+export { Signifier } from './signifiers.js';
 export * from './types.flags.js';
 export type * from './types.js';

@@ -11,7 +11,7 @@ import { logger } from './logger.js';
 import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
 import { Position, Range } from './project.location.js';
-import { Signifier } from './project.signifier.js';
+import { Signifier } from './signifiers.js';
 import { EnumType, MemberSignifier, StructType } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert } from './util.js';

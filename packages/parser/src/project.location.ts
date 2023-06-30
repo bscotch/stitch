@@ -1,6 +1,6 @@
 import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
-import type { Signifier } from './project.signifier.js';
+import type { Signifier } from './signifiers.js';
 import { isTypeInstance } from './types.checks.js';
 import { EnumType, MemberSignifier, StructType, Type } from './types.js';
 import { assert, type Constructor } from './util.js';

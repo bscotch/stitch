@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { logger } from './logger.js';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
-import { Signifier } from './project.signifier.js';
+import { Signifier } from './signifiers.js';
 import { MemberSignifier, Type } from './types.js';
 import type { PrimitiveName } from './types.primitives.js';
 import { ok } from './util.js';
