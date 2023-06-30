@@ -260,18 +260,19 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     const assetType = item.instanceTypeName;
 
     item.symbol.setType(
-      item.project.native.types.get(assetType)!.extend().named(item.name),
+      item.project.native.types.get(assetType)!.extend().setName(item.name),
     );
     item.symbol.def = {};
     if (item.assetType === 'objects') {
       item.instanceType = item.project
         .createStructType('instance')
-        .named(item.name);
+        .setName(item.name);
+      // TODO: Add Id.Instance and Asset.GMObject
     }
 
     // If we are not a script, add ourselves to the global symbols.
     if (item.assetType !== 'scripts') {
-      item.project.addGlobal(item.symbol);
+      item.project.self.setMember(item.symbol);
     }
     return item;
   }

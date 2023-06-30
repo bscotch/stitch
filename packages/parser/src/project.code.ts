@@ -157,7 +157,7 @@ export class Code {
   getInScopeSymbolsAt(
     offset: number | LinePosition,
     column?: number,
-  ): (Signifier | Signifier)[] {
+  ): Signifier[] {
     if (typeof offset === 'number' && typeof column === 'number') {
       offset = { line: offset, column };
     }
@@ -167,6 +167,7 @@ export class Code {
     }
     if (scopeRange.isDotAccessor) {
       // Then only return self variables
+      // TODO: If global, filter out things that can't be dotted into.
       return scopeRange.self.listMembers() || [];
     }
     // Add to a flat list, and remove all entries that don't have
@@ -179,10 +180,7 @@ export class Code {
         ? scopeRange.self.listMembers()
         : []) || []),
       // Project globals
-      ...this.project.symbols.values(),
       ...(this.project.self.listMembers() || []),
-      // GML globals
-      ...[...this.project.native.global.values()],
     ].filter((x) => x.def || x.native);
   }
 

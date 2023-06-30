@@ -12,15 +12,15 @@ import { assert } from './util.js';
 
 export class Native {
   protected spec!: GmlSpec;
-  /**
-   * Types, looked up by their Feather-compatible name.
-   * Types can be either a single type or a type union.
-   */
-  readonly types: Map<string, Type> = new Map();
 
   protected constructor(
     readonly filePath: string,
     readonly globalSelf: StructType,
+    /**
+     * Types, looked up by their Feather-compatible name.
+     * Types can be either a single type or a type union.
+     */
+    readonly types: Map<string, Type>,
   ) {
     // Initialize all of the primitives so we can guarantee
     // they exist on any lookup.
@@ -196,9 +196,10 @@ export class Native {
   static async from(
     filePath: string = Native.fallbackGmlSpecPath.absolute,
     globalSelf: StructType,
+    globalTypes: Map<string, Type>,
   ) {
     const parsedSpec = await Native.parse(filePath);
-    const spec = new Native(filePath, globalSelf);
+    const spec = new Native(filePath, globalSelf, globalTypes);
     spec.spec = parsedSpec;
     // Add missing content
     spec.spec.functions.push({

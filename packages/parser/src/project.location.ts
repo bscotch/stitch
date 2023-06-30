@@ -2,7 +2,7 @@ import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
 import type { Signifier } from './signifiers.js';
 import { isTypeInstance } from './types.checks.js';
-import { EnumType, StructType, Type } from './types.js';
+import { AssignableType, EnumType, StructType, Type } from './types.js';
 import { assert } from './util.js';
 
 export const firstLineIndex = 1;
@@ -19,6 +19,8 @@ export interface IRange {
   start: IPosition;
   end: IPosition;
 }
+
+export type DefinedAt = Range | { file?: undefined } | undefined;
 
 /**
  * Single-character tokens do not have correct end
@@ -145,14 +147,14 @@ export class FunctionArgRange extends Range {
     super(start, end);
   }
 
-  get type(): Type {
+  get type(): Type | AssignableType {
     assert(this.func, 'FunctionArgRange must have a reference');
     return getType(this.func);
   }
 
   get param(): Signifier {
     assert(this.type, 'FunctionArgRange must have a type');
-    return this.type.getParam(this.idx)!;
+    return this.type.type!.getParam(this.idx)!;
   }
 }
 
@@ -195,9 +197,9 @@ export class Scope extends Range {
   }
 }
 
-export type ReferenceableType = Signifier | Type | Signifier;
+export type ReferenceableType = Signifier | AssignableType;
 
-export function getType(ref: ReferenceableType): Type {
+export function getType(ref: ReferenceableType): AssignableType | Type {
   assert(ref, 'Cannot get the type of an undefined reference.');
   if (isTypeInstance(ref)) {
     return ref;
@@ -209,7 +211,6 @@ export class Reference<
   T extends ReferenceableType = ReferenceableType,
 > extends Range {
   override readonly $tag = 'Ref';
-  type: Type = new Type('Unknown');
   constructor(readonly item: T, start: Position, end: Position) {
     super(start, end);
   }

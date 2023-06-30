@@ -323,6 +323,7 @@ importers:
       chevrotain: 10.5.0
       chokidar: 3.5.3
       dotenv: 16.3.1
+      esbuild: ^0.17.19
       mocha: ^10.2.0
       prettier: ^2.8.8
       typescript: 5.1.5
@@ -342,6 +343,7 @@ importers:
       '@types/xml2js': 0.4.11
       chai: 4.3.7
       dotenv: 16.3.1
+      esbuild: 0.17.19
       mocha: 10.2.0
       prettier: 2.8.8
       typescript: 5.1.5

@@ -85,7 +85,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const type = this.PROCESSOR.project
       .createType(typeName)
       .definedAt(range)
-      .named(name.image);
+      .setName(name.image);
 
     // Create it if it doesn't already exist.
     let symbol = this.PROCESSOR.project.getGlobal(name.image)?.symbol as
@@ -99,7 +99,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         // Ensure the constructed type exists
         symbol.type.constructs = this.PROCESSOR.project
           .createStructType('self')
-          .named(name.image);
+          .setName(name.image);
       }
       // Add the symbol and type to the project.
       this.PROCESSOR.project.addGlobal(symbol, addToGlobalSelf);
@@ -145,7 +145,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       const memberType = this.PROCESSOR.project
         .createType('EnumMember')
         .definedAt(range)
-        .named(name.image);
+        .setName(name.image);
       // Does member already exist?
       const member =
         type.getMember(name.image) || type.addMember(name.image, memberType);

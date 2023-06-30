@@ -42,7 +42,7 @@ export function visitFunctionExpression(
     new Signifier(
       undefined, // TODO: Reorganize all of this so we know the scope already
       functionName || '',
-      this.PROCESSOR.project.createType(functionTypeName).named(functionName),
+      this.PROCESSOR.project.createType(functionTypeName).setName(functionName),
     )) as Signifier | Signifier;
   functionName = item.name;
   if (nameLocation) {
@@ -70,7 +70,7 @@ export function visitFunctionExpression(
   // Ensure that constructors have an attached constructed type
   if (isConstructor && !functionType.constructs) {
     functionType.constructs =
-      this.PROCESSOR.createStruct(bodyLocation).named(functionName);
+      this.PROCESSOR.createStruct(bodyLocation).setName(functionName);
   }
 
   // Identify the "self" struct for scope. If this is a constructor, "self" is the

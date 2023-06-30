@@ -1,5 +1,5 @@
 import { arrayWrapped } from '@bscotch/utility';
-import { Range, Reference } from './project.location.js';
+import { DefinedAt, Range, Reference } from './project.location.js';
 import { Flaggable } from './signifiers.flags.js';
 import { AssignableType, FunctionType, StructType, Type } from './types.js';
 
@@ -21,7 +21,7 @@ export class Signifier extends Flaggable {
    * `true`. Otherwise `undefined` is interpreted to mean that this thing
    * does not have a definite declaration.
    */
-  def: Range | { file?: undefined } | undefined = undefined;
+  def: DefinedAt = undefined;
   refs = new Set<Reference>();
 
   constructor(

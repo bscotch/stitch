@@ -70,13 +70,9 @@ export class Project {
    * and globally defined functions. */
   self!: StructType;
   /**
-   * The `global` symbol, which has type `self`. */
+   * The `global` symbol, which has type `this.self`. */
   symbol!: Signifier;
-  /**
-   * All symbols that cannot be stored in the `global` struct
-   * and that are not native to GML,
-   * including enums, macros, asset IDs, etc. */
-  readonly symbols = new Map<string, Signifier>();
+
   /**
    * Non-native global types, which can be referenced in JSDocs
    * and in a symbol's types. */
@@ -169,12 +165,7 @@ export class Project {
       // Only returned if found, so type-cheating for convenience.
       symbol: undefined as unknown as Signifier,
     };
-    let symbol: SymbolInfo['symbol'] | undefined = this.symbols.get(name);
-    if (symbol) {
-      info.symbol = symbol;
-      return info;
-    }
-    symbol = this.self.getMember(name);
+    let symbol: SymbolInfo['symbol'] | undefined = this.self.getMember(name);
     if (symbol) {
       info.symbol = symbol;
       return info;
@@ -192,33 +183,6 @@ export class Project {
       return info;
     }
     return;
-  }
-
-  /**
-   * Add an entry to global tracking. Automatically adds
-   * the type of the item if appropriate. If the item should
-   * also be listed as a member of `global`, set `addToGlobalSelf`
-   *
-   */
-  addGlobal(item: Signifier, addToGlobalSelf = false) {
-    // Ensure it doesn't already exist
-    ok(item, 'Cannot add undefined item');
-    const existing = this.getGlobal(item.name);
-    ok(!existing, `Global ${item.name} already exists`);
-    // If it is a function or enum, add its type to the global types
-    if (['Function', 'Enum'].includes(item.type.kind)) {
-      this.types.set(`${item.type.kind}.${item.name}`, item.type);
-    }
-    // If it is a constructor, add its resulting struct type to the global types
-    if (item.type.kind === 'Constructor' && item.type.constructs) {
-      this.types.set(`Struct.${item.name}`, item.type.constructs);
-    }
-    // Add the symbol to the appropriate global pool
-    if (addToGlobalSelf) {
-      this.self.setMember(item.name, item.type);
-    } else {
-      this.symbols.set(item.name, item);
-    }
   }
 
   protected addAsset(resource: Asset): void {
@@ -471,13 +435,17 @@ export class Project {
           'GmlSpec.xml',
         );
         await gmlSpecPath.exists({ assert: true });
-        this.native = await Native.from(gmlSpecPath.absolute, this.self);
+        this.native = await Native.from(
+          gmlSpecPath.absolute,
+          this.self,
+          this.types,
+        );
       }
     }
     // If we don't have a spec yet, use the fallback
     if (!this.native) {
       logger.error('No spec found, using fallback');
-      this.native = await Native.from(undefined, this.self);
+      this.native = await Native.from(undefined, this.self, this.types);
       ok(this.native, 'Failed to load fallback GML spec');
     }
     this.self = this.native.types
@@ -485,7 +453,7 @@ export class Project {
       .extend()
       .setName('global') as StructType;
     this.symbol = new Signifier(this.self, 'global').setType(this.self);
-    this.symbols.set('global', this.symbol);
+    this.self.setMember(this.symbol);
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);
     this.symbol.global = true;
     this.symbol.writable = false;

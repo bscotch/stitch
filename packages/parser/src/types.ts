@@ -1,5 +1,6 @@
 import { arrayWrapped, merge } from '@bscotch/utility';
 import { typeToFeatherString } from './jsdoc.feather.js';
+import { DefinedAt, Range } from './project.location.js';
 import { Signifier } from './signifiers.js';
 import { narrows } from './types.checks.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
@@ -30,6 +31,12 @@ export type WithableType = Type<WithableTypeName>;
 export class AssignableType<T extends PrimitiveName = PrimitiveName> {
   readonly $tag = 'Assignableype';
   protected _types: Type<T>[] = [];
+
+  def: DefinedAt = undefined;
+  definedAt(location: Range | undefined): this {
+    this.def = location;
+    return this;
+  }
 
   /** If this contains only one type, that type. Else throws. */
   get type(): Type<T> | undefined {
@@ -174,6 +181,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
   //#endregion
 
+  /** Returns self -- useful for compatibility with the AssignableType API */
+  get type() {
+    return this;
+  }
+
   constructor(kind: T);
   constructor(config: TypeConfig<T>);
   constructor(fromParent: Type<T>);
@@ -259,7 +271,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return param;
   }
 
-  listMembers(excludeParents = false): readonly Signifier[] {
+  listMembers(excludeParents = false): Signifier[] {
     if (excludeParents || !this.parent) {
       return [...(this.config.members || [])];
     }

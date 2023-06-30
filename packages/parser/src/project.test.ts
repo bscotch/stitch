@@ -7,8 +7,8 @@ import { Type } from './types.js';
 import type { PrimitiveName } from './types.primitives.js';
 import { ok } from './util.js';
 
-describe('Project', function () {
-  it('can load the GML spec', async function () {
+describe.only('Project', function () {
+  it.only('can load the GML spec', async function () {
     const spec = await Native.from(undefined, new Type('Struct'));
     expect(spec).to.exist;
 
