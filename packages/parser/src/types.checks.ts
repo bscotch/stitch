@@ -1,4 +1,4 @@
-import { isArray } from '@bscotch/utility';
+import { arrayWrapped, isArray } from '@bscotch/utility';
 import type { Signifier } from './signifiers.js';
 import type { Type, TypeStore } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
@@ -10,20 +10,75 @@ export function isTypeOfKind<T extends PrimitiveName>(
   return isTypeInstance(item) && item.kind === kind;
 }
 
-export function getTypes(item: Signifier | Type | TypeStore | Type[]): Type[] {
+export function isTypeStoreOfKind<T extends PrimitiveName>(
+  item: any,
+  kind: T,
+): item is TypeStore<T> {
+  return isTypeStore(item) && item.kind === kind;
+}
+
+export function isTypeOrStoreOfKind<T extends PrimitiveName>(
+  item: any,
+  kind: T,
+): item is Type<T> | TypeStore<T> {
+  return isTypeOfKind(item, kind) || isTypeStoreOfKind(item, kind);
+}
+
+/**
+ * Given some kind of type collection, find the first one matching
+ * a given kind.
+ */
+export function getTypeOfKind<T extends PrimitiveName>(
+  from: undefined | Signifier | Type | TypeStore | (Type | TypeStore)[],
+  kind: T | T[],
+): { [Kind in T]: Type<Kind> }[T] | undefined {
+  if (!from) return undefined;
+  const types = getTypes(from);
+  const kinds = arrayWrapped(kind) as T[];
+  return types.find((t) => kinds.includes(t.kind as any)) as
+    | Type<T>
+    | undefined;
+}
+
+/** Get the typestore of item, if present. Else get the type on item. */
+export function getTypeStoreOrType(
+  item: Signifier | Type | TypeStore | Type[],
+): TypeStore | Type[] {
   if (isArray(item)) {
     return item;
-  } else if (item.$tag === 'Sym') {
-    return [...item.type.types];
-  } else if (item.$tag === 'TypeStore') {
-    return [...item.types];
   }
-  return [item];
+  if (item.$tag === 'Sym') {
+    return item.type;
+  } else if (item.$tag === 'TypeStore') {
+    return item;
+  }
+  return arrayWrapped(item);
+}
+
+export function getTypes(
+  items: Signifier | Type | TypeStore | (Type | TypeStore)[],
+): Type[] {
+  const types: Type[] = [];
+  for (const item of arrayWrapped(items)) {
+    if (item.$tag === 'Sym') {
+      types.push(...item.type.type);
+    } else if (item.$tag === 'TypeStore') {
+      return [...item.type];
+    } else {
+      types.push(item);
+    }
+  }
+  return types;
 }
 
 export function isTypeInstance(item: any): item is Type {
   return item && '$tag' in item && item.$tag === 'Type';
 }
+
+export function isTypeStore(item: any): item is TypeStore {
+  return item && '$tag' in item && item.$tag === 'TypeStore';
+}
+
 /**
  * Returns `true` if `narrowed` is a subtype of `type`,
  * meaning that it is a subset/narrowed/compatible/same type

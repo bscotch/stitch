@@ -8,7 +8,7 @@ describe('Types', function () {
     expect(string.narrows(new Type('Real'))).to.be.false;
 
     const union = new TypeStore();
-    union.types = [new Type('String'), new Type('Real')];
+    union.type = [new Type('String'), new Type('Real')];
     expect(string.narrows(union)).to.be.true;
     expect(union.narrows(string)).to.be.false;
   });

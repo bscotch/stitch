@@ -34,13 +34,9 @@ import {
   withCtxKind,
 } from './parser.js';
 import type { Code } from './project.code.js';
-import {
-  Range,
-  Reference,
-  type ReferenceableType,
-} from './project.location.js';
+import { Range, Reference } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import { isTypeOfKind } from './types.checks.js';
+import { getTypes, isTypeOfKind } from './types.checks.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
 import { EnumType, Type, TypeStore, type StructType } from './types.js';
 import { assert } from './util.js';
@@ -72,16 +68,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     return this.PROCESSOR;
   }
 
-  override visit(
-    cstNode: CstNode | CstNode[],
-    ctx: VisitorContext,
-  ):
-    | void
-    | Type
-    | Type[]
-    | TypeStore
-    | { item: ReferenceableType; ref: Reference<ReferenceableType> }
-    | undefined {
+  override visit(cstNode: CstNode | CstNode[], ctx: VisitorContext) {
     return super.visit(cstNode, ctx);
   }
 
@@ -231,7 +218,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   override returnStatement(
     children: ReturnStatementCstChildren,
     ctx: VisitorContext,
-  ): Type[] {
+  ): (Type | TypeStore)[] {
     const returnType = children.assignmentRightHandSide
       ? this.assignmentRightHandSide(
           children.assignmentRightHandSide[0].children,
@@ -246,8 +233,8 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   override identifierAccessor(
     children: IdentifierAccessorCstChildren,
     context: VisitorContext,
-  ) {
-    return visitIdentifierAccessor.call(this, children, context);
+  ): (Type | TypeStore)[] {
+    return arrayWrapped(visitIdentifierAccessor.call(this, children, context));
   }
 
   /** Static params are unambiguously defined. */
@@ -412,7 +399,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   override assignmentRightHandSide(
     children: AssignmentRightHandSideCstChildren,
     context: VisitorContext,
-  ): Type[] {
+  ): (Type | TypeStore)[] {
     if (children.expression) {
       return this.expression(children.expression[0].children, context);
     } else if (children.structLiteral) {
@@ -431,7 +418,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   override expression(
     children: ExpressionCstChildren,
     context: VisitorContext,
-  ): Type[] {
+  ): (Type | TypeStore)[] {
     const lhs = this.primaryExpression(
       children.primaryExpression[0].children,
       context,
@@ -456,7 +443,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         ternary[1].children,
         context,
       );
-      return [...leftType, ...rightType];
+      return [...arrayWrapped(leftType), ...arrayWrapped(rightType)];
     } else if (children.assignment) {
       // We shouldn't really end up here since well-formed code
       // should have assignments that get caught by other rules.
@@ -468,8 +455,8 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   override primaryExpression(
     children: PrimaryExpressionCstChildren,
     context: VisitorContext,
-  ): Type[] {
-    let type!: Type | Type[];
+  ): (Type | TypeStore)[] {
+    let type!: Type | (Type | TypeStore)[];
     if (children.BooleanLiteral) {
       type = new Type('Bool');
     } else if (children.NumericLiteral) {
@@ -518,7 +505,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   override parenthesizedExpression(
     children: ParenthesizedExpressionCstChildren,
     context: VisitorContext,
-  ): Type[] {
+  ): (Type | TypeStore)[] {
     return this.expression(children.expression[0].children, context);
   }
 
@@ -632,7 +619,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         item.children,
         withCtxKind(ctx, 'arrayMember'),
       );
-      for (const itemType of itemTypes) {
+      for (const itemType of getTypes(itemTypes)) {
         if (
           !types.find(
             (t) => t.kind === itemType.kind && t.name === itemType.name,

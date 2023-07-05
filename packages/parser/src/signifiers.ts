@@ -1,4 +1,6 @@
+import { arrayWrapped } from '@bscotch/utility';
 import { Refs } from './project.location.js';
+import { getTypes } from './types.checks.js';
 import { Flags } from './types.flags.js';
 import { Type, TypeStore } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
@@ -15,7 +17,7 @@ export class Signifier extends Refs(Flags) {
   constructor(parent: Type, readonly name: string, type?: Type | Type[]) {
     super();
     if (type) {
-      this.type.types = type;
+      this.type.type = type;
     }
     this.parent = parent;
   }
@@ -33,8 +35,17 @@ export class Signifier extends Refs(Flags) {
     return this;
   }
 
-  setType(newType: Type | Type[]): this {
-    this.type.types = newType;
+  setType(newType: Type | TypeStore | (TypeStore | Type)[]): this {
+    const typeStore = arrayWrapped(newType).find(
+      (t) => t instanceof TypeStore,
+    ) as TypeStore | undefined;
+    if (typeStore) {
+      this.type = typeStore;
+    } else {
+      this.type.type = arrayWrapped(newType)
+        .map((t) => getTypes(t))
+        .flat();
+    }
     return this;
   }
 
@@ -48,10 +59,10 @@ export class Signifier extends Refs(Flags) {
   }
 
   get isTyped(): boolean {
-    return this.type.types.length > 0;
+    return this.type.type.length > 0;
   }
 
   getTypeByKind<T extends PrimitiveName>(kind: T): Type<T> | undefined {
-    return this.type.types.find((t) => t.kind === kind) as Type<T> | undefined;
+    return this.type.type.find((t) => t.kind === kind) as Type<T> | undefined;
   }
 }

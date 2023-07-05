@@ -67,16 +67,16 @@ describe('Project', function () {
     expect(scriptExecuteType.listParameters()).to.have.lengthOf(2);
     expect(scriptExecuteType.listParameters()![0].name).to.equal('scr');
     expect(scriptExecuteType.listParameters()![0].type.kind).to.equal('Union');
-    expect(scriptExecuteType.listParameters()![0].type.types).to.have.lengthOf(
+    expect(scriptExecuteType.listParameters()![0].type.type).to.have.lengthOf(
       3,
     );
-    expect(scriptExecuteType.listParameters()![0].type.types![0].kind).to.equal(
+    expect(scriptExecuteType.listParameters()![0].type.type![0].kind).to.equal(
       'String',
     );
-    expect(scriptExecuteType.listParameters()![0].type.types![1].kind).to.equal(
+    expect(scriptExecuteType.listParameters()![0].type.type![1].kind).to.equal(
       'Function',
     );
-    expect(scriptExecuteType.listParameters()![0].type.types![2].kind).to.equal(
+    expect(scriptExecuteType.listParameters()![0].type.type![2].kind).to.equal(
       'Asset.GMScript',
     );
     expect(scriptExecuteType.listParameters()![1].name).to.equal('...');
@@ -405,10 +405,10 @@ function validateBschemaConstructor(project: Project) {
     expect(member.def, 'All members should have a definition location').to
       .exist;
     if ('of' in info) {
-      expect(type.types?.length).to.equal(info.of.length);
+      expect(type.type?.length).to.equal(info.of.length);
       for (const expectedKind of info.of) {
         expect(
-          type.types?.some((t) => t.kind === expectedKind),
+          type.type?.some((t) => t.kind === expectedKind),
           `Type ${expectedKind} not found in Union`,
         ).to.be.true;
       }

@@ -1,7 +1,7 @@
 import { arrayWrapped } from '@bscotch/utility';
 import { typeToFeatherString } from './jsdoc.feather.js';
 import { Signifier } from './signifiers.js';
-import { narrows } from './types.checks.js';
+import { getTypes, narrows } from './types.checks.js';
 import { typeFromFeatherString } from './types.feather.js';
 import { Flags } from './types.flags.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
@@ -32,26 +32,28 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
 
   constructor(types?: Type<T> | Type<T>[]) {
     super();
-    this.types = types;
+    this.type = types;
   }
 
   /** If this store has only one type, its kind. Else throws. */
-  get kind(): T {
-    assert(this.types.length === 1, 'TypeStore has more than one type.');
-    return this.types[0].kind as T;
+  get kind() {
+    if (this.type.length === 0) {
+      return 'Any';
+    } else if (this.type.length > 1) {
+      return 'Mixed';
+    }
+    return this.type[0].kind;
   }
 
-  /** If this store has only one type, its type. Else throws. */
-  get type(): Type<T> {
-    assert(this.types.length === 1, 'TypeStore has more than one type.');
-    return this.types[0];
-  }
-
-  get types(): Type<T>[] {
+  get type(): Type<T>[] {
     return [...this._types];
   }
-  set types(types: Type<T> | Type<T>[] | undefined) {
+  set type(types: Type<T> | Type<T>[] | undefined) {
     this._types = arrayWrapped(types);
+  }
+
+  get items(): TypeStore[] {
+    return this.type.map((t) => t.items).filter((x) => !!x) as TypeStore[];
   }
 
   /**
@@ -59,7 +61,7 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
    * @deprecated
    */
   addType(type: Type<T> | Type<T>[]): this {
-    this.types = [...this.types, ...arrayWrapped(type)];
+    this.type = [...this.type, ...arrayWrapped(type)];
     return this;
   }
 
@@ -68,7 +70,7 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
   }
 
   toFeatherString(): string {
-    return this.types.map((t) => typeToFeatherString(t)).join('|');
+    return this.type.map((t) => typeToFeatherString(t)).join('|');
   }
 }
 
@@ -183,10 +185,18 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return this.kind === 'Function' && !!this.constructs;
   }
 
-  setReturnType(type: Type | Type[]) {
-    ok(this.isFunction, `Cannot add return type to ${this.kind}`);
-    this.returns ||= new TypeStore();
-    this.returns.types = type;
+  setReturnType(type: Type | TypeStore | (Type | TypeStore)[]) {
+    const typeStore = arrayWrapped(type).find((t) => t instanceof TypeStore) as
+      | TypeStore
+      | undefined;
+    if (typeStore) {
+      this.returns = typeStore;
+    } else {
+      this.returns ||= new TypeStore();
+      this.returns.type = arrayWrapped(type)
+        .map((t) => getTypes(t))
+        .flat();
+    }
     return this;
   }
 
@@ -296,7 +306,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * Can also be used for default Struct values. */
   addItemType(type: Type): this {
     this.items ||= new TypeStore();
-    this.items.types = type;
+    this.items.type = type;
     return this;
   }
 

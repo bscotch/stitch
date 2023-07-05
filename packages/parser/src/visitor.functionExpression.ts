@@ -133,14 +133,14 @@ export function visitFunctionExpression(
     param.optional = fromJsdoc?.optional || !!cstParams[i].children.Assign;
     param.addRef(range);
 
-    let inferredType: Type[] | undefined;
+    let inferredType: (Type | TypeStore)[] | undefined;
     if (cstParams[i].children.assignmentRightHandSide) {
       inferredType = this.assignmentRightHandSide(
         cstParams[i].children.assignmentRightHandSide![0].children,
         paramCtx,
       );
     }
-    const paramType = fromJsdoc?.type.types || inferredType || this.ANY;
+    const paramType = fromJsdoc?.type.type || inferredType || this.ANY;
     param.setType(paramType);
 
     // Also add to the function's local scope.
@@ -156,7 +156,7 @@ export function visitFunctionExpression(
       assert(param, 'Expected extra param');
       const paramType = param.type;
       const optional = param.optional;
-      functionType.addParameter(idx, param.name, paramType.types, optional);
+      functionType.addParameter(idx, param.name, paramType.type, optional);
       // Do not add to local scope, since if it's only defined
       // in the JSDoc it's not a real parameter.
     }
@@ -171,7 +171,7 @@ export function visitFunctionExpression(
 
   // Update the RETURN type based on the return statements found in the body
   if (docs?.type[0]?.returns) {
-    functionType.setReturnType(docs.type[0].returns.types);
+    functionType.setReturnType(docs.type[0].returns.type);
     // TODO: Check against the inferred return types
   } else {
     functionType.setReturnType(ctx.returns || this.UNDEFINED);

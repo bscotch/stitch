@@ -111,8 +111,8 @@ export function typeToFeatherString(type: Type): string {
     return `${type.kind}.${type.name}`;
   }
   // Arrays etc can contain items of a type) {
-  if (type.items?.types.length) {
-    return `${type.kind}<${type.items.types
+  if (type.items?.type.length) {
+    return `${type.kind}<${type.items.type
       .map((t) => t.toFeatherString())
       .join('|')}>`;
   }

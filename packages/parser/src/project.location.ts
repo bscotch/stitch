@@ -1,7 +1,7 @@
 import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
 import type { Signifier } from './signifiers.js';
-import { EnumType, StructType, Type } from './types.js';
+import { EnumType, FunctionType, StructType, Type } from './types.js';
 import { assert, type Constructor } from './util.js';
 
 export const firstLineIndex = 1;
@@ -135,18 +135,13 @@ export class FunctionArgRange extends Range {
   hasExpression = false;
   constructor(
     /** The function reference this call belongs to */
-    readonly func: ReferenceableType,
+    readonly type: FunctionType,
     /** The index of the parameter we're in. */
     readonly idx: number,
     start: Position,
     end?: Position,
   ) {
     super(start, end);
-  }
-
-  get type(): Type {
-    assert(this.func, 'FunctionArgRange must have a reference');
-    return this.func.type.types[0];
   }
 
   get param(): Signifier {

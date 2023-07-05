@@ -113,11 +113,11 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     assert(symbol, 'Enum symbol should exist');
     let type = symbol.getTypeByKind('Enum');
     if (!type) {
-      symbol.type.types = new Type('Enum');
+      symbol.type.type = new Type('Enum');
       type = symbol.getTypeByKind('Enum')!;
     }
-    if (symbol.type.types.length > 1) {
-      symbol.type.types = type;
+    if (symbol.type.type.length > 1) {
+      symbol.type.type = type;
     }
     type.named(symbol.name);
     this.PROCESSOR.project.types.set(`Enum.${symbol.name}`, type);
@@ -134,7 +134,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       // Does member already exist?
       const member =
         type.getMember(name.image) || type.addMember(name.image, memberType);
-      member.type.types = memberType;
+      member.type.type = memberType;
       member.idx = i;
       member.definedAt(range);
       member.addRef(range);
@@ -163,12 +163,12 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       // Make sure that the types all exist
       let type = signifier.getTypeByKind('Function');
       if (!type) {
-        signifier.type.types = new Type('Function');
+        signifier.type.type = new Type('Function');
         type = signifier.getTypeByKind('Function')!;
         this.PROCESSOR.project.types.set(`Function.${name.image}`, type);
       }
-      if (signifier.type.types.length > 1) {
-        signifier.type.types = type;
+      if (signifier.type.type.length > 1) {
+        signifier.type.type = type;
       }
       // If it's a constructor, ensure the type exists
       if (isConstructor && !type.constructs) {

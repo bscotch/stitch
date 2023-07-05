@@ -829,7 +829,7 @@ export interface VisitorContext {
   /** Helpful to get general info about the context of the current node. */
   ctxKindStack: NodeContextKind[];
   /** If we're in a function, the return statement values we've found */
-  returns?: Type[];
+  returns?: (Type | TypeStore)[];
 }
 
 export function withCtxKind<T extends NodeContextKind>(
@@ -851,7 +851,7 @@ export const GmlVisitorBase =
     | undefined
     | void
     | Type
-    | Type[]
+    | (Type | TypeStore)[]
     | TypeStore
     | { item: ReferenceableType; ref: Reference }
   >;
