@@ -4,10 +4,10 @@ import { fixITokenLocation } from './project.location.js';
 import { Signifier } from './signifiers.js';
 import type { FunctionType, StructType, Type } from './types.js';
 import { assert, ok } from './util.js';
-import type { GmlSymbolVisitor } from './visitor.js';
+import type { GmlSignifierVisitor } from './visitor.js';
 
 export function visitFunctionExpression(
-  this: GmlSymbolVisitor,
+  this: GmlSignifierVisitor,
   children: FunctionExpressionCstChildren,
   ctx: VisitorContext,
 ): Type<'Function'> {

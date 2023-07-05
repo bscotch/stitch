@@ -21,7 +21,7 @@ import { Signifier } from './signifiers.js';
 import { isTypeOfKind } from './types.checks.js';
 import { Type } from './types.js';
 import { assert, isBeforeRange, isInRange } from './util.js';
-import { processSymbols } from './visitor.js';
+import { registerSignifiers } from './visitor.js';
 
 /** Represenation of a GML code file. */
 export class Code {
@@ -454,7 +454,7 @@ export class Code {
   }
 
   updateAllSymbols() {
-    processSymbols(this);
+    registerSignifiers(this);
   }
 
   /** Update and emit diagnostics */

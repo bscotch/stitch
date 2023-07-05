@@ -10,7 +10,7 @@ import { Position, Range, type Scope } from './project.location.js';
 import { Type, type EnumType, type StructType } from './types.js';
 import { assert } from './util.js';
 
-export class SymbolProcessor {
+export class SignifierProcessor {
   protected readonly localScopeStack: StructType[] = [];
   protected readonly selfStack: (StructType | EnumType)[] = [];
   /** The current ScopeRange, updated as we push/pop local and self */

@@ -44,21 +44,21 @@ import { EnumType, Type, type StructType } from './types.js';
 import { assert } from './util.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
 import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
-import { SymbolProcessor } from './visitor.processor.js';
+import { SignifierProcessor } from './visitor.processor.js';
 
-export function processSymbols(file: Code) {
+export function registerSignifiers(file: Code) {
   try {
-    const processor = new SymbolProcessor(file);
-    const visitor = new GmlSymbolVisitor(processor);
+    const processor = new SignifierProcessor(file);
+    const visitor = new GmlSignifierVisitor(processor);
     visitor.EXTRACT_SYMBOLS(file.cst);
   } catch (error) {
     logger.error(error);
   }
 }
 
-export class GmlSymbolVisitor extends GmlVisitorBase {
+export class GmlSignifierVisitor extends GmlVisitorBase {
   static validated = false;
-  constructor(readonly PROCESSOR: SymbolProcessor) {
+  constructor(readonly PROCESSOR: SignifierProcessor) {
     super();
     this.validateVisitor();
   }

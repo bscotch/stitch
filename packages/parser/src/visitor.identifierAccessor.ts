@@ -20,10 +20,10 @@ import { Signifier } from './signifiers.js';
 import { isTypeOfKind } from './types.checks.js';
 import { Type } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
-import type { GmlSymbolVisitor } from './visitor.js';
+import type { GmlSignifierVisitor } from './visitor.js';
 
 export function visitIdentifierAccessor(
-  this: GmlSymbolVisitor,
+  this: GmlSignifierVisitor,
   children: IdentifierAccessorCstChildren,
   ctx: VisitorContext,
 ): Type {
