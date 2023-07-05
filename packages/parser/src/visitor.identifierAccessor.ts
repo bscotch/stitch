@@ -46,7 +46,7 @@ export function visitIdentifierAccessor(
     range?: Range;
   } = matchingSymbol ?? {};
   const typeStack: Type[] = [
-    accessing.item ? getType(accessing.item) : this.UNKNOWN,
+    accessing.item ? getType(accessing.item) : this.ANY,
   ];
   accessing.range = this.PROCESSOR.range(children.identifier[0].location!);
   const suffixes = sortedAccessorSuffixes(children.accessorSuffixes);
@@ -62,7 +62,7 @@ export function visitIdentifierAccessor(
           assignment.children.assignmentRightHandSide[0].children,
           withCtxKind(ctx, 'assignment'),
         )
-      : this.UNKNOWN,
+      : this.ANY,
   );
 
   // For each suffix in turn, try to figure out how it changes the scope,
@@ -72,7 +72,7 @@ export function visitIdentifierAccessor(
     const suffix = suffixes[s];
     const suffixRange = this.PROCESSOR.range(suffix.location!);
     const accessingType: Type =
-      (accessing?.item && getType(accessing.item)) || this.UNKNOWN;
+      (accessing?.item && getType(accessing.item)) || this.ANY;
     const isLastSuffix = s === suffixes.length - 1;
     switch (suffix.name) {
       case 'arrayMutationAccessorSuffix':
@@ -82,7 +82,7 @@ export function visitIdentifierAccessor(
       case 'listAccessSuffix':
       case 'structAccessSuffix':
         this.visit(suffix.children.expression, ctx);
-        const type: Type = accessingType.items || this.UNKNOWN;
+        const type: Type = accessingType.items || this.ANY;
         accessing = {
           item: type,
           range: suffixRange,
@@ -110,7 +110,7 @@ export function visitIdentifierAccessor(
             this.PROCESSOR.scope.setEnd(dot, true);
             this.PROCESSOR.popSelfScope(dot, true);
             accessing = {};
-            typeStack.push(this.UNKNOWN);
+            typeStack.push(this.ANY);
           } else {
             // Then this identifier should exist in the parent struct
             const propertyIdentifier = identifierFrom(dotAccessor)!;
@@ -138,9 +138,7 @@ export function visitIdentifierAccessor(
             ) {
               // Then this variable is not yet defined on this struct.
               // We need to add it!
-              const newMemberType = isLastSuffix
-                ? assignmentType
-                : this.UNKNOWN;
+              const newMemberType = isLastSuffix ? assignmentType : this.ANY;
               // Add this member to the struct
               const newMember: Signifier = accessingType.addMember(
                 propertyIdentifier.name,
@@ -161,7 +159,7 @@ export function visitIdentifierAccessor(
               typeStack.push(newMemberType);
             } else {
               accessing = {};
-              typeStack.push(this.UNKNOWN);
+              typeStack.push(this.ANY);
             }
             this.PROCESSOR.scope.setEnd(propertyNameLocation, true);
             this.PROCESSOR.popSelfScope(propertyNameLocation, true);
@@ -178,7 +176,7 @@ export function visitIdentifierAccessor(
             ] as PrimitiveName[]
           ).includes(accessingType?.kind!);
           accessing = {};
-          typeStack.push(this.UNKNOWN);
+          typeStack.push(this.ANY);
           if (!isDotAccessible) {
             this.PROCESSOR.addDiagnostic(
               'INVALID_OPERATION',
@@ -248,7 +246,7 @@ export function visitIdentifierAccessor(
         const returnType =
           (usesNew && isLastSuffix
             ? accessingType?.constructs
-            : accessingType?.returns) || this.UNKNOWN;
+            : accessingType?.returns) || this.ANY;
         accessing = { item: returnType };
         typeStack.push(returnType);
         // Add the function call to the file for diagnostics
@@ -258,7 +256,7 @@ export function visitIdentifierAccessor(
         break;
       default:
         this.visit(suffix, ctx);
-        accessing = { item: this.UNKNOWN };
+        accessing = { item: this.ANY };
         typeStack.push(accessing.item as Type);
     }
   }

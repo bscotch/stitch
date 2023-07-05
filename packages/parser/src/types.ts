@@ -245,7 +245,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   /** For container types that have named members, like Structs and Enums */
   addMember(signifier: Signifier): Signifier;
-  addMember(name: string, type: Type | Type[], writable?: boolean): Signifier;
+  addMember(name: string, type?: Type | Type[], writable?: boolean): Signifier;
   addMember(
     name: string | Signifier,
     type?: Type | Type[],
@@ -263,7 +263,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     this._members.set(member.name, member);
 
     member.writable = writable ?? true;
-    member.type.types = type;
+    if (type) {
+      member.type.types = type;
+    }
     return member;
   }
 

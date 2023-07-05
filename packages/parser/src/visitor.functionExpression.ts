@@ -125,7 +125,7 @@ export function visitFunctionExpression(
       // Unset it so we don't accidentally use it!
       fromJsdoc = undefined;
     }
-    const paramType = fromJsdoc?.type || this.UNKNOWN.definedAt(range);
+    const paramType = fromJsdoc?.type || this.ANY.definedAt(range);
     const optional = fromJsdoc?.optional || !!params[i].children.Assign;
     functionType
       .addParameter(i, param.image, paramType, optional)

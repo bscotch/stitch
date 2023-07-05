@@ -1,4 +1,5 @@
 // CST Visitor for creating an AST etc
+import { arrayWrapped } from '@bscotch/utility';
 import type { CstNode } from 'chevrotain';
 import type {
   ArrayLiteralCstChildren,
@@ -40,7 +41,7 @@ import {
 import { Signifier } from './signifiers.js';
 import { isTypeOfKind } from './types.checks.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
-import { EnumType, Type, type StructType } from './types.js';
+import { EnumType, Type, TypeStore, type StructType } from './types.js';
 import { assert } from './util.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
 import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
@@ -50,7 +51,7 @@ export function registerSignifiers(file: Code) {
   try {
     const processor = new SignifierProcessor(file);
     const visitor = new GmlSignifierVisitor(processor);
-    visitor.EXTRACT_SYMBOLS(file.cst);
+    visitor.UPDATE_SIGNIFIERS(file.cst);
   } catch (error) {
     logger.error(error);
   }
@@ -64,7 +65,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   }
 
   /** Entrypoint */
-  EXTRACT_SYMBOLS(input: CstNode) {
+  UPDATE_SIGNIFIERS(input: CstNode) {
     this.visit(input, { ctxKindStack: [] });
     this.PROCESSOR.setLastScopeEnd(input.location!);
     return this.PROCESSOR;
@@ -76,6 +77,8 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   ):
     | void
     | Type
+    | Type[]
+    | TypeStore
     | { item: ReferenceableType; ref: Reference<ReferenceableType> }
     | undefined {
     return super.visit(cstNode, ctx);
@@ -134,36 +137,32 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     return;
   }
 
-  get UNKNOWN() {
-    return this.PROCESSOR.project.createType('Unknown');
+  get ANY() {
+    return new Type('Any');
   }
 
   get UNDEFINED() {
-    return this.PROCESSOR.project.createType('Undefined');
+    return new Type('Undefined');
   }
 
   /**
-   * Given a type, cohsume any current JSDocs and compute
-   * the combined type. May return the original type (+/- mutation)
-   * or a new type, depending on the scenario.
+   * Given parsed JSDocs, convert into a Type and store
+   * it for use by the next symbol.
    */
-  UPDATED_TYPE_WITH_DOCS(type: Type) {
-    const docs = this.PROCESSOR.consumeJsdoc();
-    if (!docs || docs.jsdoc.kind === 'self') {
-      return type;
-    }
-    type.description = docs.type.description || type.description;
-    if (docs.jsdoc.kind === 'description') {
-      return type;
-    }
-    // If the type is narrower (or the same as) the docs, return the docs
-    // (i.e. the docs get precedence when there is no conflict).
-    if (type.narrows(docs.type)) {
-      return docs.type;
-    }
-    // Otherwise merge the two types
-    // TODO: Handle conflict between docs and type
-    return Type.merge(type, docs.type);
+  PREPARE_JSDOC(jsdoc: JsdocSummary) {
+    const type = typeFromParsedJsdocs(jsdoc, this.PROCESSOR.project.types);
+    this.PROCESSOR.unusedJsdoc = {
+      jsdoc,
+      type,
+    };
+  }
+
+  override jsdocJs(children: JsdocJsCstChildren) {
+    this.PREPARE_JSDOC(parseJsdoc(children.JsdocJs[0]));
+  }
+
+  override jsdocGml(children: JsdocGmlCstChildren) {
+    this.PREPARE_JSDOC(parseJsdoc(children.JsdocGmlLine));
   }
 
   override withStatement(
@@ -180,10 +179,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     );
     const blockLocation = children.blockableStatement[0].location!;
 
+    // See if there are JSDocs providing more specific self context
     const docs = this.PROCESSOR.consumeJsdoc();
     let self: StructType;
-    if (docs?.jsdoc.kind === 'self' && isTypeOfKind(docs.type, 'Struct')) {
-      self = docs.type;
+    if (docs?.jsdoc.kind === 'self' && isTypeOfKind(docs.type[0], 'Struct')) {
+      self = docs.type[0];
     } else if (isTypeOfKind(conditionType, 'Struct')) {
       self = conditionType;
     } else if (
@@ -210,63 +210,32 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     return;
   }
 
-  /**
-   * Given parsed JSDocs, convert into a Type and store
-   * it for use by the next symbol.
-   */
-  PREPARE_JSDOC(jsdoc: JsdocSummary) {
-    const type = typeFromParsedJsdocs(jsdoc, this.PROCESSOR.project.types);
-    // There might be named types we can swap out.
-    if (type.context && type.context.name) {
-      const matchingItem = this.FIND_ITEM_BY_NAME(type.context.name);
-      if (matchingItem) {
-        const contextType =
-          'type' in matchingItem ? matchingItem.type : matchingItem;
-        if (contextType.kind === 'Struct') {
-          type.context = contextType as StructType;
-        }
-      }
-    }
-    this.PROCESSOR.unusedJsdoc = {
-      jsdoc,
-      type,
-    };
-  }
-
-  override jsdocJs(children: JsdocJsCstChildren) {
-    this.PREPARE_JSDOC(parseJsdoc(children.JsdocJs[0]));
-  }
-
-  override jsdocGml(children: JsdocGmlCstChildren) {
-    this.PREPARE_JSDOC(parseJsdoc(children.JsdocGmlLine));
-  }
-
   override functionExpression(
     children: FunctionExpressionCstChildren,
     context: VisitorContext,
-  ): Type<'Function'> {
+  ) {
     return visitFunctionExpression.call(this, children, context);
   }
 
   override returnStatement(
     children: ReturnStatementCstChildren,
     ctx: VisitorContext,
-  ): Type {
+  ): Type[] {
     const returnType = children.assignmentRightHandSide
       ? this.assignmentRightHandSide(
           children.assignmentRightHandSide[0].children,
           withCtxKind(ctx, 'functionReturn'),
         )
       : this.UNDEFINED;
-    ctx.returns?.push(returnType);
-    return returnType;
+    ctx.returns?.push(...arrayWrapped(returnType));
+    return arrayWrapped(returnType);
   }
 
   /** Called on *naked* identifiers and those that have accessors/suffixes of various sorts. */
   override identifierAccessor(
     children: IdentifierAccessorCstChildren,
     context: VisitorContext,
-  ): Type {
+  ) {
     return visitIdentifierAccessor.call(this, children, context);
   }
 
@@ -275,23 +244,30 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     children: StaticVarDeclarationsCstChildren,
     ctx: VisitorContext,
   ) {
-    // Add to the self scope.
+    // Ensure that this variable exists
     const self = this.PROCESSOR.currentSelf;
     const range = this.PROCESSOR.range(children.Identifier[0]);
-
-    const type = this.UPDATED_TYPE_WITH_DOCS(
-      this.assignmentRightHandSide(
-        children.assignmentRightHandSide[0].children,
-        withCtxKind(ctx, 'assignment'),
-      ) || this.UNKNOWN,
-    );
-
     const member = self
-      .addMember(children.Identifier[0].image, type)
+      .addMember(children.Identifier[0].image)
       .definedAt(range);
     member.addRef(range);
     member.static = true;
     member.instance = true;
+
+    // Ensure that the type is up to date
+    const docs = this.PROCESSOR.consumeJsdoc();
+    const inferredType = this.assignmentRightHandSide(
+      children.assignmentRightHandSide[0].children,
+      withCtxKind(ctx, 'assignment'),
+    );
+
+    if (docs) {
+      member.describe(docs.jsdoc.description);
+      member.setType(docs.type);
+    } else if (inferredType) {
+      member.setType(inferredType);
+    }
+    // TODO: Check inferred against docs
   }
 
   override localVarDeclaration(
@@ -301,20 +277,28 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const local = this.PROCESSOR.currentLocalScope;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
-    const type = this.UPDATED_TYPE_WITH_DOCS(
-      children.assignmentRightHandSide
-        ? this.assignmentRightHandSide(
-            children.assignmentRightHandSide[0].children,
-            withCtxKind(ctx, 'assignment'),
-          )
-        : this.UNKNOWN,
-    );
-
+    // Ensure that this variable exists
     const member = local
-      .addMember(children.Identifier[0].image, type)
+      .addMember(children.Identifier[0].image)
       .definedAt(range);
     member.local = true;
     member.addRef(range);
+
+    // Ensure that the type is up to date
+    const docs = this.PROCESSOR.consumeJsdoc();
+    const inferredType = children.assignmentRightHandSide
+      ? this.assignmentRightHandSide(
+          children.assignmentRightHandSide[0].children,
+          withCtxKind(ctx, 'assignment'),
+        )
+      : new Type('Any');
+
+    if (docs) {
+      member.describe(docs.jsdoc.description);
+      member.setType(docs.type);
+    } else if (inferredType) {
+      member.setType(inferredType);
+    }
   }
 
   override variableAssignment(
@@ -323,27 +307,18 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   ) {
     // See if this identifier is known.
     const identified = this.FIND_ITEM(children);
+    let signifier = identified?.item as Signifier;
     const name = children.Identifier[0].image;
-    const item = identified?.item as Signifier;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
-    const assignedType = this.UPDATED_TYPE_WITH_DOCS(
-      this.assignmentRightHandSide(
-        children.assignmentRightHandSide[0].children,
-        withCtxKind(ctx, 'assignment'),
-      ),
-    );
-
-    if (!item) {
+    if (!signifier) {
       // Create a new member on the self scope, unless it's global
       const fullScope = this.PROCESSOR.fullScope;
       if (fullScope.self !== fullScope.global) {
         // Then we can add a new member
-        const member = fullScope.self
-          .addMember(name, assignedType)
-          .definedAt(range);
-        member.addRef(range);
-        member.instance = true;
+        signifier = fullScope.self.addMember(name).definedAt(range);
+        signifier.addRef(range);
+        signifier.instance = true;
       } else {
         this.PROCESSOR.addDiagnostic(
           'UNDECLARED_GLOBAL_REFERENCE',
@@ -353,11 +328,27 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       }
     } else {
       // Add a reference to the item.
-      item.addRef(range);
+      signifier.addRef(range);
       // If this is the first time we've seen it, and it wouldn't have
       // an unambiguous declaration, add its definition
-      if (!item.def) {
-        item.definedAt(range);
+      if (!signifier.def) {
+        signifier.definedAt(range);
+      }
+    }
+
+    // If we don't have any type on this signifier yet, use the
+    // assigned type.
+    if (signifier && !signifier.isTyped) {
+      const docs = this.PROCESSOR.consumeJsdoc();
+      const inferredType = this.assignmentRightHandSide(
+        children.assignmentRightHandSide[0].children,
+        withCtxKind(ctx, 'assignment'),
+      );
+      if (docs) {
+        signifier.describe(docs.jsdoc.description);
+        signifier.setType(docs.type);
+      } else if (inferredType) {
+        signifier.setType(inferredType);
       }
     }
   }
@@ -368,8 +359,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
    * to make that work.*/
   override identifier(
     children: IdentifierCstChildren,
-    ctx: VisitorContext,
-  ): { item: Signifier; ref: Reference } | undefined {
+  ): { item: Signifier; ref: Reference<Signifier> } | undefined {
     const item = this.FIND_ITEM(children);
     if (item) {
       const ref = (item.item as Signifier).addRef(item.range);
@@ -385,24 +375,26 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   override assignmentRightHandSide(
     children: AssignmentRightHandSideCstChildren,
     context: VisitorContext,
-  ): Type {
+  ): Type[] {
     if (children.expression) {
       return this.expression(children.expression[0].children, context);
     } else if (children.structLiteral) {
-      return this.structLiteral(children.structLiteral[0].children, context);
+      return [this.structLiteral(children.structLiteral[0].children, context)];
     } else if (children.functionExpression) {
-      return this.functionExpression(
-        children.functionExpression[0].children,
-        context,
-      );
+      return [
+        this.functionExpression(
+          children.functionExpression[0].children,
+          context,
+        ),
+      ];
     }
-    return this.UNKNOWN;
+    return [this.ANY];
   }
 
   override expression(
     children: ExpressionCstChildren,
     context: VisitorContext,
-  ): Type {
+  ): Type[] {
     const lhs = this.primaryExpression(
       children.primaryExpression[0].children,
       context,
@@ -427,11 +419,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         ternary[1].children,
         context,
       );
-      return Type.merge(leftType, rightType);
+      return [...leftType, ...rightType];
     } else if (children.assignment) {
       // We shouldn't really end up here since well-formed code
       // should have assignments that get caught by other rules.
-      return this.PROCESSOR.project.createType('Undefined');
+      return [this.ANY];
     }
     return lhs; // Shouldn't happpen unless the parser gets changed.
   }
@@ -439,18 +431,18 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   override primaryExpression(
     children: PrimaryExpressionCstChildren,
     context: VisitorContext,
-  ): Type {
-    let type!: Type;
+  ): Type[] {
+    let type!: Type | Type[];
     if (children.BooleanLiteral) {
-      type = this.PROCESSOR.project.createType('Bool');
+      type = new Type('Bool');
     } else if (children.NumericLiteral) {
-      type = this.PROCESSOR.project.createType('Real');
+      type = new Type('Real');
     } else if (children.NaN) {
-      type = this.PROCESSOR.project.createType('Real');
+      type = new Type('Real');
     } else if (children.PointerLiteral) {
-      type = this.PROCESSOR.project.createType('Pointer');
+      type = new Type('Pointer');
     } else if (children.Undefined) {
-      type = this.PROCESSOR.project.createType('Undefined');
+      type = new Type('Undefined');
     } else if (children.arrayLiteral) {
       type = this.arrayLiteral(children.arrayLiteral[0].children, context);
     } else if (children.identifierAccessor) {
@@ -483,13 +475,13 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     }
     assert(type, 'No type found for primary expression');
     // TODO: Check unary operators etc to make sure types make sense
-    return type;
+    return arrayWrapped(type);
   }
 
   override parenthesizedExpression(
     children: ParenthesizedExpressionCstChildren,
     context: VisitorContext,
-  ): Type {
+  ): Type[] {
     return this.expression(children.expression[0].children, context);
   }
 
@@ -520,21 +512,27 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           parts.stringLiteral![0].children.StringEnd[0],
         );
       }
+      // Ensure the member exists
+      const signifier = struct.addMember(name).definedAt(range);
+      signifier.instance = true;
+      signifier.addRef(range);
+
+      // Add type info
       if (parts.jsdoc) {
         this.visit(parts.jsdoc, ctx);
       }
-      if (parts.assignmentRightHandSide) {
-        const type = this.UPDATED_TYPE_WITH_DOCS(
-          this.assignmentRightHandSide(
+      const docs = this.PROCESSOR.consumeJsdoc();
+      const inferredType = parts.assignmentRightHandSide
+        ? this.assignmentRightHandSide(
             parts.assignmentRightHandSide[0].children,
             withCtxKind(ctx, 'structValue'),
-          ),
-        );
-        if (type instanceof Type) {
-          const member = struct.addMember(name, type).definedAt(range);
-          member.instance = true;
-          member.addRef(range);
-        }
+          )
+        : this.ANY;
+      if (docs) {
+        signifier.describe(docs.jsdoc.description);
+        signifier.setType(docs.type);
+      } else if (inferredType) {
+        signifier.setType(inferredType);
       }
     }
 
@@ -546,20 +544,20 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     children: StringLiteralCstChildren,
     context: VisitorContext,
   ): Type<'String'> {
-    return this.PROCESSOR.project.createType('String');
+    return new Type('String');
   }
   override multilineDoubleStringLiteral(
     children: MultilineDoubleStringLiteralCstChildren,
     context: VisitorContext,
   ): Type<'String'> {
-    return this.PROCESSOR.project.createType('String');
+    return new Type('String');
   }
 
   override multilineSingleStringLiteral(
     children: MultilineSingleStringLiteralCstChildren,
     context: VisitorContext,
   ): Type<'String'> {
-    return this.PROCESSOR.project.createType('String');
+    return new Type('String');
   }
 
   override templateLiteral(
@@ -570,7 +568,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     for (const exp of children.expression || []) {
       this.expression(exp.children, withCtxKind(context, 'template'));
     }
-    return this.PROCESSOR.project.createType('String');
+    return new Type('String');
   }
 
   override arrayLiteral(
@@ -580,15 +578,21 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // Infer the content type of the array
     // Make sure that the content is visited
     const types: Type[] = [];
-    const arrayType = this.PROCESSOR.project.createType('Array');
+    const arrayType = new Type('Array');
     for (const item of children.assignmentRightHandSide || []) {
-      const type = this.assignmentRightHandSide(
+      const itemTypes = this.assignmentRightHandSide(
         item.children,
         withCtxKind(ctx, 'arrayMember'),
       );
-      if (!types.find((t) => t.kind === type.kind && t.name === type.name)) {
-        types.push(type);
-        arrayType.addItemType(type);
+      for (const itemType of itemTypes) {
+        if (
+          !types.find(
+            (t) => t.kind === itemType.kind && t.name === itemType.name,
+          )
+        ) {
+          types.push(itemType);
+          arrayType.addItemType(itemType);
+        }
       }
     }
     return arrayType;

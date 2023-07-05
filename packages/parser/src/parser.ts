@@ -22,7 +22,7 @@ import { GmlLexer } from './lexer.js';
 import type { GmlParseError } from './project.diagnostics.js';
 import { Reference, ReferenceableType } from './project.location.js';
 import { c, categories, t, tokens } from './tokens.js';
-import { Type } from './types.js';
+import { Type, TypeStore } from './types.js';
 import { ok } from './util.js';
 
 export interface GmlParsed {
@@ -826,7 +826,7 @@ export interface VisitorContext {
   /** Helpful to get general info about the context of the current node. */
   ctxKindStack: NodeContextKind[];
   /** If we're in a function, the return statement values we've found */
-  returns?: Type[];
+  returns?: (Type | TypeStore)[];
 }
 
 export function withCtxKind<T extends NodeContextKind>(
@@ -845,5 +845,10 @@ export const GmlVisitorBase =
     ...args: any[]
   ) => GmlVisitor<
     VisitorContext,
-    undefined | void | Type | { item: ReferenceableType; ref: Reference }
+    | undefined
+    | void
+    | Type
+    | Type[]
+    | TypeStore
+    | { item: ReferenceableType; ref: Reference }
   >;

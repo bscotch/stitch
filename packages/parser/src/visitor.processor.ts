@@ -16,7 +16,7 @@ export class SignifierProcessor {
   /** The current ScopeRange, updated as we push/pop local and self */
   public scope: Scope;
   readonly position: Position;
-  public unusedJsdoc: { type: Type; jsdoc: JsdocSummary } | undefined;
+  public unusedJsdoc: { type: Type[]; jsdoc: JsdocSummary } | undefined;
 
   constructor(readonly file: Code) {
     this.scope = file.scopes[0];

@@ -47,6 +47,10 @@ export class Signifier extends Refs(Flags) {
     return this;
   }
 
+  get isTyped(): boolean {
+    return this.type.types.length > 0;
+  }
+
   getTypeByKind<T extends PrimitiveName>(kind: T): Type<T> | undefined {
     return this.type.types.find((t) => t.kind === kind) as Type<T> | undefined;
   }
