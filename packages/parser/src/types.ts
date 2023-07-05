@@ -52,8 +52,18 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
     this._types = arrayWrapped(types);
   }
 
+  get constructs(): StructType[] {
+    return this.type
+      .map((t) => t.constructs)
+      .filter((x) => !!x) as StructType[];
+  }
+
   get items(): TypeStore[] {
     return this.type.map((t) => t.items).filter((x) => !!x) as TypeStore[];
+  }
+
+  get returns(): TypeStore[] {
+    return this.type.map((t) => t.returns).filter((x) => !!x) as TypeStore[];
   }
 
   /**

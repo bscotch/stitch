@@ -56,7 +56,7 @@ export function typeToHoverText(type: Type) {
       code += typeMemberToHoverText(param);
     }
     code += ')';
-    if (type.kind === 'Constructor') {
+    if (type.isConstructor) {
       code += ` constructor`;
     }
     code += `: ${

@@ -33,16 +33,18 @@ function showErrors(
 
 describe('Parser', function () {
   it('can get types from typestrings', function () {
-    expect(Type.fromFeatherString('Array', new Map()).kind).to.equal('Array');
-    const stringArray = Type.fromFeatherString('Array<string>', new Map());
+    expect(Type.fromFeatherString('Array', new Map())[0].kind).to.equal(
+      'Array',
+    );
+    const stringArray = Type.fromFeatherString('Array<string>', new Map())[0];
     expect(stringArray.kind).to.equal('Array');
     expect(stringArray.items!.kind).to.equal('String');
-    const dsMap = Type.fromFeatherString('Id.DsMap[String,Real]', new Map());
+    const dsMap = Type.fromFeatherString('Id.DsMap[String,Real]', new Map())[0];
     expect(dsMap.kind).to.equal('Id.DsMap');
-    expect(dsMap.items!.kind).to.equal('Union');
-    expect(dsMap.items!.types!.length).to.equal(2);
-    expect(dsMap.items!.types![0].kind).to.equal('String');
-    expect(dsMap.items!.types![1].kind).to.equal('Real');
+    const dsMapItems = dsMap.items!.type;
+    expect(dsMapItems.length).to.equal(2);
+    expect(dsMapItems[0].kind).to.equal('String');
+    expect(dsMapItems[1].kind).to.equal('Real');
   });
 
   it('can parse cross-referencing types', function () {
@@ -50,14 +52,14 @@ describe('Parser', function () {
     const arrayOfStructs = Type.fromFeatherString(
       'Array<Struct.Hello>',
       knownTypes,
-    );
-    const structType = Type.fromFeatherString('Struct.Hello', knownTypes);
+    )[0];
+    const structType = Type.fromFeatherString('Struct.Hello', knownTypes)[0];
 
     ok(knownTypes.get('Struct.Hello') === structType);
     expect(arrayOfStructs.kind).to.equal('Array');
     expect(arrayOfStructs.items!.kind).to.equal('Struct');
-    ok(arrayOfStructs.items === structType);
-    expect(arrayOfStructs.items!.name).to.equal('Hello');
+    ok(arrayOfStructs.items!.type[0] === structType);
+    expect(arrayOfStructs.items!.type[0].name).to.equal('Hello');
   });
 
   it('can parse complex typestrings', function () {
@@ -65,15 +67,21 @@ describe('Parser', function () {
       'Array<string OR Array<Real>>|Struct.Hello OR Id.DsMap[String,Real]',
       new Map(),
     );
-    expect(complexType.kind).to.equal('Union');
-    const types = complexType.types!;
-    expect(types.length).to.equal(3);
-    expect(types[0].kind).to.equal('Array');
-    expect(types[0].items!.kind).to.equal('Union');
-    expect(types[0].items!.types!.length).to.equal(2);
-    expect(types[0].items!.types![0].kind).to.equal('String');
-    expect(types[0].items!.types![1].kind).to.equal('Array');
-    expect(types[0].items!.types![1].items!.kind).to.equal('Real');
+    const [arrayType, structType, dsMapType] = complexType;
+    expect(complexType.length).to.equal(3);
+    expect(arrayType.kind).to.equal('Array');
+    const arrayItems = arrayType.items!.type;
+    expect(arrayItems.length).to.equal(2);
+    expect(arrayItems[0].kind).to.equal('String');
+    expect(arrayItems[1].kind).to.equal('Array');
+    expect(arrayItems[1].items!.kind).to.equal('Real');
+    expect(structType.kind).to.equal('Struct');
+    expect(structType.name).to.equal('Hello');
+    expect(dsMapType.kind).to.equal('Id.DsMap');
+    const dsMapItems = dsMapType.items!.type;
+    expect(dsMapItems.length).to.equal(2);
+    expect(dsMapItems[0].kind).to.equal('String');
+    expect(dsMapItems[1].kind).to.equal('Real');
   });
 
   it('can parse simple expressions', function () {

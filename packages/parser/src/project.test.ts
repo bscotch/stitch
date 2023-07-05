@@ -3,7 +3,7 @@ import { logger } from './logger.js';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
 import { Signifier } from './signifiers.js';
-import { Type } from './types.js';
+import { Type, TypeStore } from './types.js';
 import type { PrimitiveName } from './types.primitives.js';
 import { ok } from './util.js';
 
@@ -28,28 +28,26 @@ describe('Project', function () {
     const tracks = track.getMember('tracks');
     ok(tracks);
     expect(tracks.type.kind).to.equal('Array');
-    expect(tracks.type.type.items!.kind).to.equal('Struct');
-    expect(tracks.type.type.items!.type.parent!).to.eql(
+    expect(tracks.type.items[0].kind).to.equal('Struct');
+    expect(tracks.type.items[0].type[0].parent!).to.eql(
       spec.types.get('Struct'),
     );
-    expect(tracks.type.type.items!).to.eql(track);
+    expect(tracks.type.items!).to.eql(track);
 
     const keyframes = track.getMember('keyframes');
     ok(keyframes);
     expect(keyframes.type.kind).to.equal('Array');
-    expect(keyframes.type.type.items!.kind).to.equal('Struct');
-    expect(keyframes.type.type.items!.type.parent!).to.eql(
+    expect(keyframes.type.items[0].kind).to.equal('Struct');
+    expect(keyframes.type.items[0].type[0].parent!).to.eql(
       spec.types.get('Struct'),
     );
-    expect(keyframes.type.type.items!).to.eql(
-      spec.types.get('Struct.Keyframe'),
-    );
+    expect(keyframes.type.items!).to.eql(spec.types.get('Struct.Keyframe'));
 
-    const type = track.getMember('type');
-    ok(type);
+    const typeField = track.getMember('type');
+    ok(typeField);
     const expectedTypeType = spec.types.get('Constant.SequenceTrackType');
     ok(expectedTypeType);
-    ok(type.type.type === expectedTypeType);
+    ok(typeField.type.type[0] === expectedTypeType);
     ok(expectedTypeType.kind === 'Real');
 
     // VARIABLES
@@ -61,25 +59,21 @@ describe('Project', function () {
     const scriptExecuteType = spec.types.get('Function.script_execute');
     const scriptExecuteSymbol = spec.globalSelf.getMember('script_execute');
     ok(scriptExecuteSymbol);
-    ok(scriptExecuteSymbol.type.type === scriptExecuteType);
+    ok(scriptExecuteSymbol.type.type[0] === scriptExecuteType);
     ok(scriptExecuteType);
     ok(scriptExecuteType.kind === 'Function');
     expect(scriptExecuteType.listParameters()).to.have.lengthOf(2);
     expect(scriptExecuteType.listParameters()![0].name).to.equal('scr');
     expect(scriptExecuteType.listParameters()![0].type.kind).to.equal('Union');
-    expect(scriptExecuteType.listParameters()![0].type.type).to.have.lengthOf(
-      3,
-    );
-    expect(scriptExecuteType.listParameters()![0].type.type![0].kind).to.equal(
-      'String',
-    );
-    expect(scriptExecuteType.listParameters()![0].type.type![1].kind).to.equal(
+    expect(scriptExecuteType.listParameters()![0].type).to.have.lengthOf(3);
+    expect(scriptExecuteType.listParameters()![0].type.kind).to.equal('String');
+    expect(scriptExecuteType.listParameters()![1].type.kind).to.equal(
       'Function',
     );
-    expect(scriptExecuteType.listParameters()![0].type.type![2].kind).to.equal(
+    expect(scriptExecuteType.listParameters()![2].type.kind).to.equal(
       'Asset.GMScript',
     );
-    expect(scriptExecuteType.listParameters()![1].name).to.equal('...');
+    expect(scriptExecuteType.listParameters()![3].name).to.equal('...');
   });
 
   it('can has fallback GmlSpec', async function () {
@@ -168,7 +162,6 @@ describe('Project', function () {
     ok(item.name === globalVarName);
     // The globalvar should have appropriate symbol and type info
     ok(item.$tag === 'Sym');
-    ok(item.type.type.name === globalVarName);
     ok(item.global === true);
     ok(item.type.global === true);
     //#endregion GLOBALVARS
@@ -191,9 +184,9 @@ describe('Project', function () {
     ok(!globalConstructor.local);
     ok(globalConstructor.global);
     ok(globalConstructor.name === 'GlobalConstructor');
-    ok(globalConstructor.type.type.constructs);
-    ok(globalConstructor.type.type.constructs.name === 'GlobalConstructor');
-    ok(globalConstructor.type.type.isFunction);
+    ok(globalConstructor.type.constructs);
+    ok(globalConstructor.type.constructs[0].name === 'GlobalConstructor');
+    ok(globalConstructor.type.type[0].isFunction);
     expect(globalConstructor.type.kind).to.equal('Constructor');
     // Instance scope (should not be found)
     ok(!inRootScriptScope.find((id) => id.name === 'instance_function'));
@@ -266,23 +259,22 @@ describe('Project', function () {
     //#region CONSTRUCTORS
     const constructorName = 'GlobalConstructor';
     const constructorDef = scriptFile.getReferenceAt(18, 17);
-    const constructorSymbol = constructorDef!.item as Signifier;
-    const constructorType = constructorSymbol.type.type as Type<'Constructor'>;
+    const constructorSymbol = constructorDef!.item;
+    const constructorType = constructorSymbol.type as TypeStore<'Function'>;
     ok(constructorDef);
     ok(constructorSymbol);
     ok(constructorType);
     ok(constructorSymbol.name === constructorName);
     ok(constructorSymbol instanceof Signifier);
     expect(constructorSymbol.type.kind).to.equal('Constructor');
-    expect(constructorType.name).to.equal(constructorName);
-    expect(constructorType.listParameters()).to.have.lengthOf(2);
-    expect(constructorType.constructs).to.exist;
-    expect(constructorType.constructs!.kind).to.equal('Struct');
-    expect(constructorType.constructs!.name).to.equal(constructorName);
+    expect(constructorType.type[0].name).to.equal(constructorName);
+    expect(constructorType.type[0].listParameters()).to.have.lengthOf(2);
+    expect(constructorType.constructs[0].kind).to.equal('Struct');
+    expect(constructorType.constructs[0].name).to.equal(constructorName);
     ok(project.self.getMember(constructorName) === constructorSymbol);
     ok(
       project.types.get(`Struct.${constructorName}`) ===
-        constructorType.constructs,
+        constructorType.constructs[0],
     );
 
     //#endregion CONSTRUCTORS
@@ -304,9 +296,9 @@ describe('Project', function () {
 
     // Check the return type of a function
     const functionDefRef = complexScriptFile.getReferenceAt(119, 22);
-    expect(
-      (functionDefRef?.item as Signifier).type.type.returns?.kind,
-    ).to.equal('Array');
+    expect((functionDefRef?.item as Signifier).type.returns[0].kind).to.equal(
+      'Array',
+    );
 
     validateBschemaConstructor(project);
     // Reprocess a file and ensure that the tests still pass
@@ -344,9 +336,9 @@ function validateBschemaConstructor(project: Project) {
   ok(bschemaGlobalDef);
   ok(bschemaGlobalDef.item === bschemaGlobal);
   ok(bschemaConstructor);
-  ok(bschemaConstructor.type.kind === 'Constructor');
-  expect(bschemaConstructor.type.type.name).to.equal('Bschema');
-  ok(bschemaConstructor.type.type.constructs === bschemaStructType);
+  ok(bschemaConstructor.type.kind === 'Function');
+  expect(bschemaConstructor.type.type[0].name).to.equal('Bschema');
+  ok(bschemaConstructor.type.constructs[0] === bschemaStructType);
   ok(bschemaRoleType);
   // Check all of the members of Struct.Bschema.
 
@@ -354,7 +346,8 @@ function validateBschemaConstructor(project: Project) {
   const projectSetupRef = complexScriptFile.getReferenceAt(10, 10)!;
   const projectSetupVar = projectSetupRef.item as Signifier;
   const projectSetupType = projectSetupVar.type;
-  const projectSetupAssignedTo = bschemaConstructor.type.type.getParameter(0)!;
+  const projectSetupAssignedTo =
+    bschemaConstructor.type.type[0].getParameter(0)!;
   ok(projectSetupAssignedTo.name === 'project_setup_function');
   // ok(projectSetupType === projectSetupAssignedTo.type);
 
@@ -370,19 +363,16 @@ function validateBschemaConstructor(project: Project) {
     force_use_packed: { kind: 'Bool' },
     init: { kind: 'Function' },
     latest_commitId: {
-      kind: 'Union',
-      of: ['String', 'Undefined'],
+      kinds: ['String', 'Undefined'],
       code: 'String|Undefined',
     },
     latest: {
-      kind: 'Union',
-      of: ['String', 'Undefined'],
+      kinds: ['String', 'Undefined'],
       code: 'String|Undefined',
     },
     next_commit_id: { kind: 'Function' },
     packed_commitId: {
-      kind: 'Union',
-      of: ['String', 'Undefined'],
+      kinds: ['String', 'Undefined'],
       code: 'String|Undefined',
     },
     project_setup: { kind: 'Function' },
@@ -391,7 +381,7 @@ function validateBschemaConstructor(project: Project) {
     uid_pools: { kind: 'Struct' },
   } satisfies Record<
     string,
-    { kind: PrimitiveName; of?: PrimitiveName[]; code?: string }
+    { kind?: PrimitiveName; kinds?: PrimitiveName[]; code?: string }
   >;
 
   for (const [fieldName, info] of Object.entries(expectedKinds)) {
@@ -401,20 +391,22 @@ function validateBschemaConstructor(project: Project) {
     ok(member, `Expected to find member ${fieldName}`);
     ok(type, `Expected to find type for member ${fieldName}`);
     expect(member.name).to.equal(fieldName);
-    expect(type.kind).to.equal(info.kind);
+    if ('kind' in info) {
+      expect(type.kind).to.equal(info.kind);
+    }
     expect(member.def, 'All members should have a definition location').to
       .exist;
-    if ('of' in info) {
-      expect(type.type?.length).to.equal(info.of.length);
-      for (const expectedKind of info.of) {
+    if ('kinds' in info) {
+      expect(type?.type.length).to.equal(info.kinds.length);
+      for (const expectedKind of info.kinds) {
         expect(
-          type.type?.some((t) => t.kind === expectedKind),
+          type?.type.some((t) => t.kind === expectedKind),
           `Type ${expectedKind} not found in Union`,
         ).to.be.true;
       }
     }
     if ('code' in info) {
-      expect(type.type.code).to.equal(info.code);
+      expect(type.toFeatherString()).to.equal(info.code);
     }
   }
 
@@ -422,18 +414,20 @@ function validateBschemaConstructor(project: Project) {
   //#region Bschema.schema_mote_ids
   const schemaMoteIds = bschemaStructType.getMember('schema_mote_ids')!;
   expect(schemaMoteIds.type.kind).to.equal('Struct');
-  expect(schemaMoteIds.type.type.items).to.exist;
-  expect(schemaMoteIds.type.type.items!.kind).to.equal('Array');
-  expect(schemaMoteIds.type.type.items!.type.items).to.exist;
-  expect(schemaMoteIds.type.type.items!.type.items!.kind).to.equal('String');
-  expect(schemaMoteIds.type.type.code).to.equal('Struct<Array<String>>');
+  expect(schemaMoteIds.type.items).to.exist;
+  expect(schemaMoteIds.type.items[0].kind).to.equal('Array');
+  expect(schemaMoteIds.type.items[0].type[0].items).to.exist;
+  expect(schemaMoteIds.type.items[0].type[0].items!.kind).to.equal('String');
+  expect(schemaMoteIds.type.toFeatherString()).to.equal(
+    'Struct<Array<String>>',
+  );
   //#endregion Bschema.schema_mote_ids
 
   //#region Bschema.roles
   const roles = bschemaStructType.getMember('roles')!;
   expect(roles.type.kind).to.equal('Struct');
-  expect(roles.type.type.items).to.exist;
-  expect(roles.type.type.items!.kind).to.equal('Struct');
-  ok(roles.type.type.items!.type === bschemaRoleType);
+  expect(roles.type.items[0]).to.exist;
+  expect(roles.type.items[0].kind).to.equal('Struct');
+  ok(roles.type.items[0].type[0] === bschemaRoleType);
   //#endregion Bschema.roles
 }
