@@ -183,6 +183,14 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return this.kind === 'Function' && !!this.constructs;
   }
 
+  setReturnType(type: Type | Type[]) {
+    ok(this.isFunction, `Cannot add return type to ${this.kind}`);
+    this.returns ||= new TypeStore();
+    this.returns.types = type;
+    return this;
+  }
+
+  /** @deprecated Use setReturnType instead */
   addReturnType(type: Type | Type[]) {
     ok(this.isFunction, `Cannot add return type to ${this.kind}`);
     this.returns ||= new TypeStore();
@@ -209,7 +217,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   addParameter(
     idx: number,
     name: string,
-    type: Type | Type[],
+    type?: Type | Type[],
     optional = false,
   ): Signifier {
     assert(this.isFunction, `Cannot add param to ${this.kind} type`);
@@ -224,7 +232,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     param.local = true;
     param.optional = optional || name === '...';
     param.parameter = true;
-    param.type.types = type;
+    if (type) {
+      param.setType(type);
+    }
     return param;
   }
 
@@ -264,7 +274,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
     member.writable = writable ?? true;
     if (type) {
-      member.type.types = type;
+      member.setType(type);
     }
     return member;
   }

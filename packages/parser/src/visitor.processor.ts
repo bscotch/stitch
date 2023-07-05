@@ -106,7 +106,7 @@ export class SignifierProcessor {
   }
 
   createStruct(token: CstNodeLocation, endToken?: CstNodeLocation) {
-    return new Type('Struct');
+    return this.project.createStructType('self');
   }
 
   pushScope(

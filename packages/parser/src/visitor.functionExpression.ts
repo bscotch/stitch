@@ -2,10 +2,12 @@ import type { FunctionExpressionCstChildren } from '../gml-cst.js';
 import { VisitorContext, withCtxKind } from './parser.js';
 import { fixITokenLocation } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import type { FunctionType, StructType, Type } from './types.js';
-import { assert, ok } from './util.js';
+import { isTypeOfKind } from './types.checks.js';
+import { Type, TypeStore, type StructType } from './types.js';
+import { assert } from './util.js';
 import type { GmlSignifierVisitor } from './visitor.js';
 
+/** Visit a function's CST and update any signifiers and types */
 export function visitFunctionExpression(
   this: GmlSignifierVisitor,
   children: FunctionExpressionCstChildren,
@@ -17,63 +19,71 @@ export function visitFunctionExpression(
     returns: [],
   };
 
-  // Get this identifier if we already have it.
-  const identifier = this.FIND_ITEM(children);
-  // Consume the most recent jsdoc
-  let docs = this.PROCESSOR.consumeJsdoc();
-  if (!docs?.type.isFunction && docs?.jsdoc.kind !== 'description') {
-    // Then these docs are not applicable, so toss them.
-    docs = undefined;
-  }
-
   // Compute useful properties of this function to help figure out
   // how to define its symbol, type, scope, etc.
-  let functionName: string | undefined = children.Identifier?.[0]?.image;
+  const functionName: string | undefined = children.Identifier?.[0]?.image;
   const nameLocation = functionName
     ? this.PROCESSOR.range(children.Identifier![0])
     : undefined;
   const isConstructor = !!children.constructorSuffix;
-  const functionTypeName = isConstructor ? 'Constructor' : 'Function';
   const bodyLocation = children.blockStatement[0].location!;
+  const isFunctionStatement = ctx.ctxKindStack.at(-1) === 'functionStatement';
+  const assignedTo = ctx.functionSignifier;
+  ctx.functionSignifier = undefined;
 
-  // Create the symbol if we don't already have it
-  const item = (identifier?.item ||
-    new Signifier(
-      this.PROCESSOR.project.self,
-      functionName || '',
-      this.PROCESSOR.project.createType(functionTypeName).named(functionName),
-    )) as Signifier;
-  functionName = item.name;
-  if (nameLocation) {
-    item.addRef(nameLocation);
-    item.definedAt(nameLocation);
+  /** If this function has a corresponding signfiier, either
+   * because it is a function declaration or because it is a
+   * function expression assigned to a variable, then that's
+   * what this is.
+   *
+   * @remarks Function expressions need not be assigned to anything, necessarily, so they may not have a signifier.
+   */
+  let signifier: Signifier | undefined;
+  if (assignedTo) {
+    signifier = assignedTo;
+  } else if (isFunctionStatement && functionName) {
+    // Then this function is being created by declaration,
+    // without being assigned to a variable. Find or create
+    // the signifier and update its definedAt & refs.
+    const matching = this.FIND_ITEM(children);
+    if (matching?.item.$tag === 'Sym') {
+      signifier = matching.item;
+    } else {
+      signifier = new Signifier(this.PROCESSOR.project.self, functionName);
+    }
+    signifier?.definedAt(nameLocation);
+    signifier?.addRef(nameLocation!);
+    // Add to the current scope (globals have already been handled)
+    this.PROCESSOR.currentSelf.addMember(signifier);
   }
 
-  // Make sure we have a proper type
-  if (item.type.kind === 'Unknown') {
-    item.type.kind = functionTypeName;
+  // Get or create the function type. Use the existing type if there is one.
+  let docs = this.PROCESSOR.consumeJsdoc();
+  signifier?.describe(docs?.jsdoc.description);
+  const functionType =
+    signifier?.getTypeByKind('Function') || new Type('Function');
+  signifier?.setType(functionType);
+  if (docs && docs.jsdoc.kind !== 'function') {
+    // Then these docs are not applicable, so toss them.
+    docs = undefined;
   }
-  const functionType = item.type as FunctionType;
+  if (signifier && docs?.jsdoc.deprecated) {
+    signifier.deprecated = true;
+  }
+  functionType.constructs = isConstructor
+    ? functionType.constructs || this.PROCESSOR.createStruct(bodyLocation)
+    : undefined;
+  functionType.constructs?.named(functionName);
+  functionType.returns ||= new TypeStore();
 
-  // Use JSDocs to fill in any missing top-level information
-  ok(
-    functionType.isFunction,
-    `Expected function type, got ${functionType.kind}`,
-  );
-  functionType.describe(functionType.description || docs?.type.description);
-  functionType.context =
-    docs?.type.context?.kind === 'Struct'
-      ? docs.type.context
-      : (this.PROCESSOR.currentSelf as StructType);
-  if (docs?.type.deprecated) {
-    functionType.deprecated = docs.type.deprecated;
-  }
-
-  // Ensure that constructors have an attached constructed type
-  if (isConstructor && !functionType.constructs) {
-    functionType.constructs =
-      this.PROCESSOR.createStruct(bodyLocation).named(functionName);
-  }
+  // Determine the function context.
+  const docContext = docs?.type[0]?.context;
+  const context: StructType = isConstructor
+    ? functionType.constructs!
+    : isTypeOfKind(docContext, 'Struct')
+    ? docContext
+    : (this.PROCESSOR.currentSelf as StructType);
+  functionType.context = context;
 
   // Identify the "self" struct for scope. If this is a constructor, "self" is the
   // constructed type. Otherwise, for now just create a new struct type
@@ -81,16 +91,6 @@ export function visitFunctionExpression(
   const functionSelfScope = (
     isConstructor ? functionType.constructs : functionType.context
   )!;
-
-  // If this is not part of an assignment, then we need to add this
-  // function's symbol to the current scope.
-  if (nameLocation && ctx.ctxKindStack.at(-1) !== 'assignment' && !identifier) {
-    const self = this.PROCESSOR.currentSelf;
-    const member =
-      self.getMember(functionName) || self.addMember(functionName, item.type);
-    member.definedAt(nameLocation);
-    member.addRef(nameLocation);
-  }
 
   // Functions have their own localscope as well as their self scope,
   // so we need to push both.
@@ -104,58 +104,59 @@ export function visitFunctionExpression(
   // TODO: Handle constructor inheritance. The `constructs` type should
   // be based off of the parent.
 
-  // Add function signature components. We may be *updating*, e.g.
-  // if this was a global function and we're recomputing. So update
-  // instead of just adding or even clearing-then-adding.
-  const params =
+  // Add function signature components. Must take into account that we may
+  // be updating after an edit.
+  const cstParams =
     children.functionParameters?.[0]?.children.functionParameter || [];
-  for (let i = 0; i < params.length; i++) {
+  for (let i = 0; i < cstParams.length; i++) {
     const paramCtx = withCtxKind(ctx, 'functionParam');
-    const param = params[i].children.Identifier[0];
-    const range = this.PROCESSOR.range(param);
+    const paramToken = cstParams[i].children.Identifier[0];
+    const name = paramToken.image;
+    const range = this.PROCESSOR.range(paramToken);
 
     // Use JSDocs to determine the type, description, etc of the parameter
-    let fromJsdoc = docs?.type.getParameter(i);
-    if (fromJsdoc && param.image !== fromJsdoc.name) {
+    let fromJsdoc = docs?.type?.[0]?.getParameter(name);
+    if (fromJsdoc && paramToken.image !== fromJsdoc.name) {
       this.PROCESSOR.addDiagnostic(
         'JSDOC_MISMATCH',
-        param,
+        paramToken,
         `Parameter name mismatch`,
       );
       // Unset it so we don't accidentally use it!
       fromJsdoc = undefined;
     }
-    const paramType = fromJsdoc?.type || this.ANY.definedAt(range);
-    const optional = fromJsdoc?.optional || !!params[i].children.Assign;
-    functionType
-      .addParameter(i, param.image, paramType, optional)
+    const param = functionType
+      .addParameter(i, paramToken.image)
       .definedAt(range);
-    if (params[i].children.assignmentRightHandSide) {
-      this.assignmentRightHandSide(
-        params[i].children.assignmentRightHandSide![0].children,
+    param.local = true;
+    param.parameter = true;
+    param.optional = fromJsdoc?.optional || !!cstParams[i].children.Assign;
+    param.addRef(range);
+
+    let inferredType: Type[] | undefined;
+    if (cstParams[i].children.assignmentRightHandSide) {
+      inferredType = this.assignmentRightHandSide(
+        cstParams[i].children.assignmentRightHandSide![0].children,
         paramCtx,
       );
     }
+    const paramType = fromJsdoc?.type.types || inferredType || this.ANY;
+    param.setType(paramType);
 
     // Also add to the function's local scope.
-    const member = functionLocalScope
-      .addMember(param.image, paramType)
-      .definedAt(range);
-    member.addRef(range);
-    member.local = true;
-    member.parameter = true;
+    functionLocalScope.addMember(param);
   }
   // If we have more args defined in JSDocs, add them!
-  if ((docs?.type?.listParameters().length || 0) > params.length) {
-    const extraParams = docs!.type.listParameters().slice(params.length);
+  if ((docs?.type[0]?.listParameters().length || 0) > cstParams.length) {
+    const extraParams = docs!.type[0].listParameters().slice(cstParams.length);
     assert(extraParams, 'Expected extra params');
     for (let i = 0; i < extraParams.length; i++) {
-      const idx = params.length + i;
+      const idx = cstParams.length + i;
       const param = extraParams[i];
       assert(param, 'Expected extra param');
       const paramType = param.type;
       const optional = param.optional;
-      functionType.addParameter(idx, param.name, paramType, optional);
+      functionType.addParameter(idx, param.name, paramType.types, optional);
       // Do not add to local scope, since if it's only defined
       // in the JSDoc it's not a real parameter.
     }
@@ -169,11 +170,11 @@ export function visitFunctionExpression(
   this.visit(children.blockStatement, withCtxKind(ctx, 'functionBody'));
 
   // Update the RETURN type based on the return statements found in the body
-  if (docs?.type.returns) {
-    functionType.addReturnType(docs.type.returns.types);
+  if (docs?.type[0]?.returns) {
+    functionType.setReturnType(docs.type[0].returns.types);
     // TODO: Check against the inferred return types
   } else {
-    functionType.addReturnType(ctx.returns || this.UNDEFINED);
+    functionType.setReturnType(ctx.returns || this.UNDEFINED);
   }
 
   // End the scope

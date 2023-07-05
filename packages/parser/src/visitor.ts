@@ -6,6 +6,7 @@ import type {
   AssignmentRightHandSideCstChildren,
   ExpressionCstChildren,
   FunctionExpressionCstChildren,
+  FunctionStatementCstChildren,
   IdentifierAccessorCstChildren,
   IdentifierCstChildren,
   JsdocGmlCstChildren,
@@ -210,6 +211,16 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     return;
   }
 
+  override functionStatement(
+    children: FunctionStatementCstChildren,
+    ctx: VisitorContext,
+  ) {
+    this.functionExpression(
+      children.functionExpression[0].children,
+      withCtxKind(ctx, 'functionStatement'),
+    );
+  }
+
   override functionExpression(
     children: FunctionExpressionCstChildren,
     context: VisitorContext,
@@ -247,27 +258,35 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // Ensure that this variable exists
     const self = this.PROCESSOR.currentSelf;
     const range = this.PROCESSOR.range(children.Identifier[0]);
-    const member = self
+    const signifier = self
       .addMember(children.Identifier[0].image)
       .definedAt(range);
-    member.addRef(range);
-    member.static = true;
-    member.instance = true;
+    signifier.addRef(range);
+    signifier.static = true;
+    signifier.instance = true;
 
     // Ensure that the type is up to date
-    const docs = this.PROCESSOR.consumeJsdoc();
-    const inferredType = this.assignmentRightHandSide(
-      children.assignmentRightHandSide[0].children,
-      withCtxKind(ctx, 'assignment'),
-    );
+    const assignedToFunction =
+      children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
+        .children;
 
-    if (docs) {
-      member.describe(docs.jsdoc.description);
-      member.setType(docs.type);
-    } else if (inferredType) {
-      member.setType(inferredType);
+    if (assignedToFunction) {
+      ctx.functionSignifier = signifier;
+      this.functionExpression(assignedToFunction, ctx);
+    } else {
+      const docs = this.PROCESSOR.consumeJsdoc();
+      const inferredType = this.assignmentRightHandSide(
+        children.assignmentRightHandSide[0].children,
+        withCtxKind(ctx, 'assignment'),
+      );
+
+      if (docs) {
+        signifier.describe(docs.jsdoc.description);
+        signifier.setType(docs.type);
+      } else if (inferredType) {
+        signifier.setType(inferredType);
+      }
     }
-    // TODO: Check inferred against docs
   }
 
   override localVarDeclaration(
@@ -278,26 +297,35 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
     // Ensure that this variable exists
-    const member = local
+    const signifier = local
       .addMember(children.Identifier[0].image)
       .definedAt(range);
-    member.local = true;
-    member.addRef(range);
+    signifier.local = true;
+    signifier.addRef(range);
 
     // Ensure that the type is up to date
-    const docs = this.PROCESSOR.consumeJsdoc();
-    const inferredType = children.assignmentRightHandSide
-      ? this.assignmentRightHandSide(
-          children.assignmentRightHandSide[0].children,
-          withCtxKind(ctx, 'assignment'),
-        )
-      : new Type('Any');
+    const assignedToFunction =
+      children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
+        .children;
 
-    if (docs) {
-      member.describe(docs.jsdoc.description);
-      member.setType(docs.type);
-    } else if (inferredType) {
-      member.setType(inferredType);
+    if (assignedToFunction) {
+      ctx.functionSignifier = signifier;
+      this.functionExpression(assignedToFunction, ctx);
+    } else {
+      const docs = this.PROCESSOR.consumeJsdoc();
+      const inferredType = children.assignmentRightHandSide
+        ? this.assignmentRightHandSide(
+            children.assignmentRightHandSide[0].children,
+            withCtxKind(ctx, 'assignment'),
+          )
+        : new Type('Any');
+
+      if (docs) {
+        signifier.describe(docs.jsdoc.description);
+        signifier.setType(docs.type);
+      } else if (inferredType) {
+        signifier.setType(inferredType);
+      }
     }
   }
 
@@ -339,16 +367,25 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // If we don't have any type on this signifier yet, use the
     // assigned type.
     if (signifier && !signifier.isTyped) {
-      const docs = this.PROCESSOR.consumeJsdoc();
-      const inferredType = this.assignmentRightHandSide(
-        children.assignmentRightHandSide[0].children,
-        withCtxKind(ctx, 'assignment'),
-      );
-      if (docs) {
-        signifier.describe(docs.jsdoc.description);
-        signifier.setType(docs.type);
-      } else if (inferredType) {
-        signifier.setType(inferredType);
+      const assignedToFunction =
+        children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
+          .children;
+
+      if (assignedToFunction) {
+        ctx.functionSignifier = signifier;
+        this.functionExpression(assignedToFunction, ctx);
+      } else {
+        const docs = this.PROCESSOR.consumeJsdoc();
+        const inferredType = this.assignmentRightHandSide(
+          children.assignmentRightHandSide[0].children,
+          withCtxKind(ctx, 'assignment'),
+        );
+        if (docs) {
+          signifier.describe(docs.jsdoc.description);
+          signifier.setType(docs.type);
+        } else if (inferredType) {
+          signifier.setType(inferredType);
+        }
       }
     }
   }
@@ -517,22 +554,33 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       signifier.instance = true;
       signifier.addRef(range);
 
-      // Add type info
+      // Parse any Jsdocs
       if (parts.jsdoc) {
         this.visit(parts.jsdoc, ctx);
       }
-      const docs = this.PROCESSOR.consumeJsdoc();
-      const inferredType = parts.assignmentRightHandSide
-        ? this.assignmentRightHandSide(
-            parts.assignmentRightHandSide[0].children,
-            withCtxKind(ctx, 'structValue'),
-          )
-        : this.ANY;
-      if (docs) {
-        signifier.describe(docs.jsdoc.description);
-        signifier.setType(docs.type);
-      } else if (inferredType) {
-        signifier.setType(inferredType);
+
+      const assignedToFunction =
+        parts.assignmentRightHandSide?.[0].children.functionExpression?.[0]
+          .children;
+
+      if (assignedToFunction) {
+        // Then we we're creat
+        ctx.functionSignifier = signifier;
+        this.functionExpression(assignedToFunction, ctx);
+      } else {
+        const docs = this.PROCESSOR.consumeJsdoc();
+        const inferredType = parts.assignmentRightHandSide
+          ? this.assignmentRightHandSide(
+              parts.assignmentRightHandSide[0].children,
+              withCtxKind(ctx, 'assignment'),
+            )
+          : this.ANY;
+        if (docs) {
+          signifier.describe(docs.jsdoc.description);
+          signifier.setType(docs.type);
+        } else if (inferredType) {
+          signifier.setType(inferredType);
+        }
       }
     }
 

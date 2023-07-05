@@ -21,6 +21,7 @@ import type {
 import { GmlLexer } from './lexer.js';
 import type { GmlParseError } from './project.diagnostics.js';
 import { Reference, ReferenceableType } from './project.location.js';
+import { Signifier } from './signifiers.js';
 import { c, categories, t, tokens } from './tokens.js';
 import { Type, TypeStore } from './types.js';
 import { ok } from './util.js';
@@ -815,18 +816,20 @@ export type NodeContextKind =
   | 'functionArg'
   | 'functionBody'
   | 'functionReturn'
-  | 'structValue'
+  | 'functionStatement'
   | 'template'
   | 'arrayMember'
   | 'assignment';
 
 export interface VisitorContext {
+  /** While processing a function expression, the signifier may come from an assignment operation. */
+  functionSignifier?: Signifier;
   // /** The context stack as referenceable entities */
   // ctxStack: Referenceable[];
   /** Helpful to get general info about the context of the current node. */
   ctxKindStack: NodeContextKind[];
   /** If we're in a function, the return statement values we've found */
-  returns?: (Type | TypeStore)[];
+  returns?: Type[];
 }
 
 export function withCtxKind<T extends NodeContextKind>(
