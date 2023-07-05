@@ -5,7 +5,6 @@ export const baseNames = [
   'Bool',
   'Enum',
   'Function',
-  'Macro',
   'Pointer',
   'Real',
   'String',
@@ -72,7 +71,6 @@ export const primitiveNames = [
   'Id.VertexFormat',
   'Mixed',
   // Custom names (not in Feather)
-  'Constructor',
   'EnumMember',
   'Unknown',
   'Never', // For things that throw

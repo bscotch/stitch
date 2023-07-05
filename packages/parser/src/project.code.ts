@@ -7,6 +7,7 @@ import {
   DiagnosticCollectionName,
   DiagnosticCollections,
 } from './project.diagnostics.js';
+import { registerGlobals } from './project.globals.js';
 import {
   FunctionArgRange,
   LinePosition,
@@ -16,7 +17,6 @@ import {
   ReferenceableType,
   Scope,
 } from './project.location.js';
-import { processGlobalSymbols } from './project.visitGlobals.js';
 import { Signifier } from './signifiers.js';
 import { isTypeOfKind } from './types.checks.js';
 import { Type } from './types.js';
@@ -57,11 +57,11 @@ export class Code {
   }
 
   get isScript() {
-    return this.asset.assetType === 'scripts';
+    return this.asset.assetKind === 'scripts';
   }
 
   get isObjectEvent() {
-    return this.asset.assetType === 'objects';
+    return this.asset.assetKind === 'objects';
   }
 
   get isCreateEvent() {
@@ -366,7 +366,7 @@ export class Code {
   protected discoverEventInheritanceWarnings() {
     this.diagnostics.MISSING_EVENT_INHERITED = [];
     if (
-      this.asset.assetType !== 'objects' ||
+      this.asset.assetKind !== 'objects' ||
       !this.isCreateEvent ||
       !this.asset.parent
     ) {
@@ -450,7 +450,7 @@ export class Code {
 
   updateGlobals() {
     this.reset();
-    return processGlobalSymbols(this);
+    return registerGlobals(this);
   }
 
   updateAllSymbols() {

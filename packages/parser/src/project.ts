@@ -115,6 +115,7 @@ export class Project {
       const selfMember = type.addMember('self', type);
       selfMember.def = {};
       selfMember.writable = false;
+      selfMember.instance = subtype === 'instance';
     }
     return type;
   }
@@ -180,7 +181,7 @@ export class Project {
     const existingAsset = this.getAssetByName(name);
     if (existingAsset) {
       logger.error(
-        `An asset named ${path} (${existingAsset.assetType}) already exists`,
+        `An asset named ${path} (${existingAsset.assetKind}) already exists`,
       );
       return;
     }
@@ -340,7 +341,7 @@ export class Project {
     options?.onLoadProgress?.(1, `Loaded ${this.assets.size} resources`);
     // TODO: Link up object parent-child relationships
     for (const asset of this.assets.values()) {
-      if (asset.assetType !== 'objects') {
+      if (asset.assetKind !== 'objects') {
         continue;
       }
       const obj = asset as Asset<'objects'>;
@@ -490,19 +491,19 @@ export class Project {
     options?.onLoadProgress?.(1, 'Parsing resource code...');
 
     const assets = [...this.assets.values()].sort((a, b) => {
-      if (a.assetType === b.assetType) {
+      if (a.assetKind === b.assetKind) {
         return a.name.localeCompare(b.name);
       }
-      if (a.assetType === 'scripts') {
+      if (a.assetKind === 'scripts') {
         return 1;
       }
-      if (b.assetType === 'scripts') {
+      if (b.assetKind === 'scripts') {
         return -1;
       }
-      if (a.assetType === 'objects') {
+      if (a.assetKind === 'objects') {
         return 1;
       }
-      if (b.assetType === 'objects') {
+      if (b.assetKind === 'objects') {
         return -1;
       }
       return a.name.localeCompare(b.name);

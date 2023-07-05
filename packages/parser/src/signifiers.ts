@@ -1,8 +1,9 @@
 import { Refs } from './project.location.js';
-import { Flaggable } from './types.flags.js';
+import { Flags } from './types.flags.js';
 import { Type, TypeStore } from './types.js';
+import { PrimitiveName } from './types.primitives.js';
 
-export class Signifier extends Refs(Flaggable) {
+export class Signifier extends Refs(Flags) {
   readonly $tag = 'Sym';
   description: string | undefined = undefined;
   type: TypeStore = new TypeStore();
@@ -32,6 +33,11 @@ export class Signifier extends Refs(Flaggable) {
     return this;
   }
 
+  setType(newType: Type | Type[]): this {
+    this.type.types = newType;
+    return this;
+  }
+
   /** @deprecated Types should be set in one go instead of added piecemeal */
   addType(newType: Type | Type[]): this {
     // We may have duplicate types, but that information is
@@ -39,5 +45,9 @@ export class Signifier extends Refs(Flaggable) {
     // come from multiple assignment statements.
     this.type.addType(newType);
     return this;
+  }
+
+  getTypeByKind<T extends PrimitiveName>(kind: T): Type<T> | undefined {
+    return this.type.types.find((t) => t.kind === kind) as Type<T> | undefined;
   }
 }

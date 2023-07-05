@@ -12,11 +12,10 @@ import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
 import { Position, Range } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import { EnumType, StructType } from './types.js';
-import { PrimitiveName } from './types.primitives.js';
+import { StructType, Type } from './types.js';
 import { assert } from './util.js';
 
-export function processGlobalSymbols(file: Code) {
+export function registerGlobals(file: Code) {
   try {
     const processor = new GlobalDeclarationsProcessor(file);
     const visitor = new GmlGlobalDeclarationsVisitor(processor);
@@ -72,48 +71,6 @@ class GlobalDeclarationsProcessor {
 export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   static validated = false;
 
-  /**
-   * Register a global identifier from its declaration. Note that
-   * global identifiers are not deleted when their definitions are,
-   * so we need to either create *or update* the corresponding symbol/typeMember.
-   */
-  ADD_GLOBAL_DECLARATION<T extends PrimitiveName>(
-    children: { Identifier?: IToken[] },
-    typeName: T,
-  ): Signifier | undefined {
-    const name = children.Identifier?.[0];
-    if (!name) return;
-    const range = this.PROCESSOR.range(name);
-    const type = this.PROCESSOR.project.createType(typeName).named(name.image);
-
-    // Create it if it doesn't already exist.
-    let symbol = this.PROCESSOR.globalSelf.getMember(name.image);
-    if (!symbol) {
-      symbol = new Signifier(this.PROCESSOR.project.self, name.image, type);
-      // Add the symbol and type to the project.
-      this.PROCESSOR.globalSelf.addMember(symbol);
-
-      // Add the symbol's type to the global lookup
-      if (typeName === 'Constructor') {
-        // Ensure the constructed type exists
-        type.constructs = this.PROCESSOR.project
-          .createStructType('self')
-          .named(name.image);
-        this.PROCESSOR.project.types.set(`Struct.${name}`, type.constructs);
-      }
-      if (type.isFunction) {
-        this.PROCESSOR.project.types.set(`Function.${name}`, type);
-      } else if (type.kind === 'Enum') {
-        this.PROCESSOR.project.types.set(`Enum.${name}`, type);
-      }
-    }
-    // Ensure it's defined here.
-    symbol.definedAt(range);
-    symbol.global = true;
-    symbol.addRef(range);
-    return symbol;
-  }
-
   EXTRACT_GLOBAL_DECLARATIONS(input: CstNode) {
     this.PROCESSOR.file.callsSuper = false;
     // If we are reprocessing, we want the list of globals that used
@@ -123,20 +80,49 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   /**
+   * Register a global identifier from its declaration. Note that
+   * global identifiers are not deleted when their definitions are,
+   * so we need to either create *or update* the corresponding symbol/typeMember.
+   */
+  REGISTER_GLOBAL(children: { Identifier?: IToken[] }): Signifier | undefined {
+    const name = children.Identifier?.[0];
+    if (!name) return;
+    const range = this.PROCESSOR.range(name);
+
+    // Create it if it doesn't already exist.
+    let symbol = this.PROCESSOR.globalSelf.getMember(name.image);
+    if (!symbol) {
+      symbol = new Signifier(this.PROCESSOR.project.self, name.image);
+      // Add the symbol and type to the project.
+      this.PROCESSOR.globalSelf.addMember(symbol);
+    }
+    // Ensure it's defined here.
+    symbol.definedAt(range);
+    symbol.addRef(range);
+    symbol.global = true;
+    symbol.macro = false; // Reset macro status
+    return symbol;
+  }
+
+  /**
    * Collect the enum symbol *and* its members, since all of those
    * are globally visible.
    */
   override enumStatement(children: EnumStatementCstChildren) {
-    const symbol = this.ADD_GLOBAL_DECLARATION(children, 'Enum')! as Signifier;
+    const symbol = this.REGISTER_GLOBAL(children)! as Signifier;
     assert(symbol, 'Enum symbol should exist');
-    const type = symbol.type.types[0] as EnumType;
-    assert(
-      type.kind === 'Enum',
-      `Symbol ${symbol.name} is a ${type.kind} instead of an enum.`,
-    );
-    // Might be updating an existing enum, so mutate members instead
-    // of wholesale replacing to maintain cross-references.
-    assert(children.enumMember, 'Enum must have members');
+    let type = symbol.getTypeByKind('Enum');
+    if (!type) {
+      symbol.type.types = new Type('Enum');
+      type = symbol.getTypeByKind('Enum')!;
+    }
+    if (symbol.type.types.length > 1) {
+      symbol.type.types = type;
+    }
+    type.named(symbol.name);
+    this.PROCESSOR.project.types.set(`Enum.${symbol.name}`, type);
+
+    // Upsert the enum members
     const keepNames = new Set<string>();
     for (let i = 0; i < children.enumMember.length; i++) {
       const name = children.enumMember[i].children.Identifier[0];
@@ -153,12 +139,6 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       member.definedAt(range);
       member.addRef(range);
     }
-    // Flag this member as UNDECLARED so we can create diagnostics
-    for (const member of type.listMembers()) {
-      if (!keepNames.has(member.name)) {
-        member.def = undefined;
-      }
-    }
   }
 
   /**
@@ -170,18 +150,36 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const isGlobal =
       this.PROCESSOR.currentLocalScope ===
         this.PROCESSOR.file.scopes[0].local &&
-      this.PROCESSOR.asset.assetType === 'scripts';
+      this.PROCESSOR.asset.assetKind === 'scripts';
     // Functions create a new localscope. Keeping track of that is important
     // for making sure that we're looking at a global function declaration.
     this.PROCESSOR.pushLocalScope();
     const name = children.Identifier?.[0];
-    // Add the function to a table of functions
+
     if (name && isGlobal) {
+      // Add the function to a table of functions
       const isConstructor = !!children.constructorSuffix?.[0];
-      this.ADD_GLOBAL_DECLARATION(
-        children,
-        isConstructor ? 'Constructor' : 'Function',
-      )!;
+      const signifier = this.REGISTER_GLOBAL(children)!;
+      // Make sure that the types all exist
+      let type = signifier.getTypeByKind('Function');
+      if (!type) {
+        signifier.type.types = new Type('Function');
+        type = signifier.getTypeByKind('Function')!;
+        this.PROCESSOR.project.types.set(`Function.${name.image}`, type);
+      }
+      if (signifier.type.types.length > 1) {
+        signifier.type.types = type;
+      }
+      // If it's a constructor, ensure the type exists
+      if (isConstructor && !type.constructs) {
+        type.constructs = this.PROCESSOR.project
+          .createStructType('self')
+          .named(name.image);
+        this.PROCESSOR.project.types.set(
+          `Struct.${name.image}`,
+          type.constructs,
+        );
+      }
     }
     this.visit(children.blockStatement);
 
@@ -190,11 +188,12 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
-    this.ADD_GLOBAL_DECLARATION(children, 'Unknown') as Signifier;
+    this.REGISTER_GLOBAL(children) as Signifier;
   }
 
   override macroStatement(children: MacroStatementCstChildren) {
-    this.ADD_GLOBAL_DECLARATION(children, 'Macro')!;
+    const symbol = this.REGISTER_GLOBAL(children)!;
+    symbol.macro = true;
   }
 
   override identifierAccessor(children: IdentifierAccessorCstChildren) {
@@ -205,7 +204,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         children.accessorSuffixes?.[0].children.dotAccessSuffix?.[0].children
           .identifier[0].children;
       if (globalIdentifier?.Identifier) {
-        this.ADD_GLOBAL_DECLARATION(globalIdentifier, 'Unknown');
+        this.REGISTER_GLOBAL(globalIdentifier);
       }
     } else if (
       identifier?.type === 'Identifier' &&

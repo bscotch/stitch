@@ -3,7 +3,7 @@ import { typeToFeatherString } from './jsdoc.feather.js';
 import { Signifier } from './signifiers.js';
 import { narrows } from './types.checks.js';
 import { typeFromFeatherString } from './types.feather.js';
-import { Flaggable } from './types.flags.js';
+import { Flags } from './types.flags.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert, ok } from './util.js';
@@ -26,9 +26,7 @@ export type UnknownType = Type<'Unknown'>;
  * that the types can be changed within the container without
  * breaking references.
  */
-export class TypeStore<
-  T extends PrimitiveName = PrimitiveName,
-> extends Flaggable {
+export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
   readonly $tag = 'TypeStore';
   protected _types: Type<T>[] = [];
 
@@ -178,7 +176,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   get isFunction() {
-    return ['Constructor', 'Function'].includes(this.kind);
+    return this.kind === 'Function';
+  }
+
+  get isConstructor() {
+    return this.kind === 'Function' && !!this.constructs;
   }
 
   addReturnType(type: Type | Type[]) {

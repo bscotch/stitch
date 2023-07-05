@@ -9,10 +9,12 @@ export const enum Flag {
   Parameter = 1 << 7,
   Native = 1 << 8, // Is a built-in
   Optional = 1 << 9,
+  Macro = 1 << 10, // Is a macro
+  Asset = 1 << 11, // Is an asset
   ReadWrite = Readable | Writable,
 }
 
-export class Flaggable {
+export class Flags {
   flags: Flag = Flag.ReadWrite;
 
   protected setFlag(flag: Flag, value: boolean) {
@@ -21,6 +23,20 @@ export class Flaggable {
     } else {
       this.flags &= ~flag;
     }
+  }
+
+  get asset() {
+    return !!(this.flags & Flag.Asset);
+  }
+  set asset(asset: boolean) {
+    this.setFlag(Flag.Asset, asset);
+  }
+
+  get macro() {
+    return !!(this.flags & Flag.Macro);
+  }
+  set macro(macro: boolean) {
+    this.setFlag(Flag.Macro, macro);
   }
 
   get optional() {
@@ -56,12 +72,14 @@ export class Flaggable {
   }
   set local(local: boolean) {
     this.setFlag(Flag.Local, local);
+    this.setFlag(Flag.Global, !local);
   }
 
   get global() {
     return !!(this.flags & Flag.Global);
   }
   set global(global: boolean) {
+    this.setFlag(Flag.Local, !global);
     this.setFlag(Flag.Global, global);
   }
 
