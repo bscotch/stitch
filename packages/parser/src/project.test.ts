@@ -311,6 +311,8 @@ describe('Project', function () {
     ok(globalFunction.item.name === 'global_function');
     //#endregion FUNCTIONS
 
+    validateWithContexts(project);
+
     validateBschemaConstructor(project);
     // Reprocess a file and ensure that the tests still pass
     await complexScriptFile.reload();
@@ -327,6 +329,54 @@ describe('Project', function () {
     const project = await Project.initialize(projectDir);
   });
 });
+
+function validateWithContexts(project: Project) {
+  const complicatedScriptFile = project.getAssetByName('Complicated')!.gmlFile;
+  const withingScript = project.getAssetByName('Withing')!;
+  const withingScriptFile = withingScript.gmlFile;
+  ok(withingScript);
+  ok(withingScriptFile);
+  ok(complicatedScriptFile);
+
+  // WITHING INTO A GLOBAL CONSTRUCTED
+  const bschemaGlobalContext = complicatedScriptFile.getReferenceAt(1, 14)!.item
+    .type.type[0];
+  ok(
+    bschemaGlobalContext &&
+      bschemaGlobalContext.kind === 'Struct' &&
+      bschemaGlobalContext.name === 'Bschema',
+  );
+  const withIntoBschemaGlobal = withingScriptFile.getScopeRangeAt(2, 15)!;
+  ok(
+    withIntoBschemaGlobal &&
+      withIntoBschemaGlobal.self === bschemaGlobalContext,
+  );
+
+  // WITHING INTO AN OBJECT IDENTIFIER
+  const obj = project.getAssetByName('o_object')!;
+  ok(obj && obj.instanceType);
+  const withIntoObject = withingScriptFile.getScopeRangeAt(6, 16)!;
+  ok(withIntoObject && withIntoObject.self === obj.instanceType);
+
+  // WITHING INTO AN OBJECT INSTANCE
+  const instanceVar = withingScriptFile.getReferenceAt(11, 11)!.item;
+  ok(instanceVar && instanceVar.type.type[0] === obj.instanceType);
+  const withIntoInstance = withingScriptFile.getScopeRangeAt(13, 18)!;
+  ok(withIntoInstance && withIntoInstance.self === obj.instanceType);
+
+  // WITHING USING A JSDOC CONTEXT
+  const withIntoJsdoc = withingScriptFile.getScopeRangeAt(20, 25)!;
+  ok(withIntoJsdoc && withIntoJsdoc.self === obj.instanceType);
+
+  // WITHING INTO LOCAL STRUCT
+  const localStruct = withingScriptFile.getReferenceAt(24, 9)!.item;
+  ok(localStruct && localStruct.type.kind === 'Struct');
+  const withIntoLocalStruct = withingScriptFile.getScopeRangeAt(27, 16)!;
+  ok(
+    withIntoLocalStruct &&
+      withIntoLocalStruct.self === localStruct.type.type[0],
+  );
+}
 
 function validateBschemaConstructor(project: Project) {
   const complexScript = project.getAssetByName('Complicated')!;
