@@ -134,6 +134,7 @@ export function visitFunctionExpression(
     const param = functionType
       .addParameter(i, paramToken.image)
       .definedAt(range);
+    param.describe(fromJsdoc?.description);
     param.local = true;
     param.parameter = true;
     param.optional = fromJsdoc?.optional || !!cstParams[i].children.Assign;
@@ -162,7 +163,9 @@ export function visitFunctionExpression(
       assert(param, 'Expected extra param');
       const paramType = param.type;
       const optional = param.optional;
-      functionType.addParameter(idx, param.name, paramType.type, optional);
+      functionType
+        .addParameter(idx, param.name, paramType.type, optional)
+        .describe(param.description);
       // Do not add to local scope, since if it's only defined
       // in the JSDoc it's not a real parameter.
     }
