@@ -12,6 +12,7 @@ import type {
   JsdocGmlCstChildren,
   JsdocJsCstChildren,
   LocalVarDeclarationCstChildren,
+  MacroStatementCstChildren,
   MultilineDoubleStringLiteralCstChildren,
   MultilineSingleStringLiteralCstChildren,
   ParenthesizedExpressionCstChildren,
@@ -246,6 +247,23 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     context: VisitorContext,
   ): (Type | TypeStore)[] {
     return arrayWrapped(visitIdentifierAccessor.call(this, children, context));
+  }
+
+  override macroStatement(
+    children: MacroStatementCstChildren,
+    ctx: VisitorContext,
+  ) {
+    // Macros are just references to some expression, so set their
+    // type the the type of that expression.
+    // Macros are defined during global parsing, so we can assume
+    // that they exist.
+    const signifier = this.FIND_ITEM_BY_NAME(children.Identifier[0].image);
+    assert(signifier, 'Macro should exist');
+    const inferredType = this.assignmentRightHandSide(
+      children.assignmentRightHandSide[0].children,
+      withCtxKind(ctx, 'assignment'),
+    );
+    signifier.setType(inferredType);
   }
 
   /** Static params are unambiguously defined. */
