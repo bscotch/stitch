@@ -13,6 +13,7 @@ export function visitFunctionExpression(
   children: FunctionExpressionCstChildren,
   ctx: VisitorContext,
 ): Type<'Function'> {
+  let docs = this.PROCESSOR.consumeJsdoc();
   // Reset the list of return values
   ctx = {
     ...ctx,
@@ -57,8 +58,12 @@ export function visitFunctionExpression(
     this.PROCESSOR.currentSelf.addMember(signifier);
   }
 
+  if (signifier?.name === 'GlobalConstructor') {
+    console.log(signifier.name);
+    console.dir(docs);
+  }
+
   // Get or create the function type. Use the existing type if there is one.
-  let docs = this.PROCESSOR.consumeJsdoc();
   signifier?.describe(docs?.jsdoc.description);
   const functionType =
     signifier?.getTypeByKind('Function') || new Type('Function');

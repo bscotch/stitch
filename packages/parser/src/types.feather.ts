@@ -34,17 +34,19 @@ export function typeFromIdentifier(
     identifier.match(/^[A-Z][A-Z0-9._]*$/i),
     `Invalid type name ${identifier}`,
   );
-  const knownType = knownTypes.get(identifier);
-  if (knownType) {
-    return knownType;
-  }
   const normalizedName = identifier.toLocaleLowerCase();
   const primitiveType = primitiveNames.find(
     (n) => n.toLocaleLowerCase() === normalizedName,
   );
   if (primitiveType) {
     return new Type(primitiveType);
-  } else if (identifier.match(/\./)) {
+  }
+
+  const knownType = knownTypes.get(identifier);
+  if (knownType) {
+    return knownType;
+  }
+  if (identifier.match(/\./)) {
     // Then we might still be able to get a base type.
     const [baseType, ...nameParts] = identifier.split('.');
     const type = typeFromIdentifier(baseType, knownTypes, false);
@@ -65,7 +67,7 @@ export function typeFromParsedJsdocs(
 ): Type[] {
   if (jsdoc.kind === 'description') {
     // Then we have no type info but have a description to add.
-    return [typeFromIdentifier('Unknown', knownTypes)];
+    return [new Type('Unknown')];
   } else if (jsdoc.kind === 'type') {
     // Then this was purely a type annotation. Create the type and
     // add any metadata.
@@ -73,9 +75,7 @@ export function typeFromParsedJsdocs(
   } else if (jsdoc.kind === 'self') {
     return typeFromFeatherString(jsdoc.self!.content, knownTypes);
   } else if (jsdoc.kind === 'function') {
-    const type = typeFromIdentifier('Function', knownTypes).describe(
-      jsdoc.description,
-    );
+    const type = new Type('Function').describe(jsdoc.description);
     let i = 0;
     if (jsdoc.self) {
       type.context = typeFromFeatherString(

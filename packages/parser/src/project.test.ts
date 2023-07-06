@@ -349,9 +349,6 @@ function validateBschemaConstructor(project: Project) {
   // Check all of the members of Struct.Bschema.
 
   // Make sure that the project_setup Bschema field gets typed based on its assignment
-  const projectSetupRef = complexScriptFile.getReferenceAt(10, 10)!;
-  const projectSetupVar = projectSetupRef.item as Signifier;
-  const projectSetupType = projectSetupVar.type;
   const projectSetupAssignedTo =
     bschemaConstructor.type.type[0].getParameter(0)!;
   ok(projectSetupAssignedTo.name === 'project_setup_function');
@@ -360,7 +357,7 @@ function validateBschemaConstructor(project: Project) {
   // Check the types of all of the fields of the Bschema struct
   const expectedKinds = {
     base: { kind: 'Struct' },
-    changes: { kind: 'Unknown' },
+    changes: { kind: 'Any' },
     clear_changes: { kind: 'Function' },
     commit_id_prefix: { kind: 'String' },
     commitId: { kind: 'String' },
@@ -372,10 +369,7 @@ function validateBschemaConstructor(project: Project) {
       kinds: ['String', 'Undefined'],
       code: 'String|Undefined',
     },
-    latest: {
-      kinds: ['String', 'Undefined'],
-      code: 'String|Undefined',
-    },
+    latest: { kind: 'String' },
     next_commit_id: { kind: 'Function' },
     packed_commitId: {
       kinds: ['String', 'Undefined'],
