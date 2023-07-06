@@ -156,7 +156,7 @@ export class Native {
       const typeString = [...typeNames.values()].join('|');
       const classType = Type.fromFeatherString(typeString, this.types)[0]
         .derive()
-        .named(classTypeName);
+        .named(klass);
       const existingType = this.types.get(classTypeName);
       assert(!existingType, `Type ${classTypeName} already exists`);
 
@@ -169,7 +169,9 @@ export class Native {
         );
         symbol.writable = false;
         symbol.def = {}; // Prevent "not found" errors
-        symbol.addType(classType);
+        symbol.setType(classType);
+        const typeName = `${classTypeName}.${constant.name}`;
+        this.types.set(typeName, classType);
 
         this.globalSelf.addMember(symbol);
       }

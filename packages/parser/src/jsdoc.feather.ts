@@ -108,6 +108,10 @@ export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
 export function typeToFeatherString(type: Type): string {
   // Functions, Structs, and Enums are the only types that can have names
   if (type.name) {
+    if (['Real', 'String', 'Boolean'].includes(type.kind)) {
+      // Then this is a constant, represented in Feather as `Constant.<Class>`
+      return `Constant.${type.name}`;
+    }
     return `${type.kind}.${type.name}`;
   }
   // Arrays etc can contain items of a type) {
