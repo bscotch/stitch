@@ -137,6 +137,14 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     return new Type('Any');
   }
 
+  get BOOLEAN() {
+    return new Type('Bool');
+  }
+
+  get REAL() {
+    return new Type('Real');
+  }
+
   get UNDEFINED() {
     return new Type('Undefined');
   }
@@ -489,7 +497,18 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           .children,
         context,
       );
-      return lhs;
+      const operator =
+        children.binaryExpression[0].children.BinaryOperator[0].image;
+      const isNumeric = operator.match(/^([*/%^&|-]|<<|>>)$/);
+      const isBoolean =
+        !isNumeric && operator.match(/^([><]=?|\|\||&&|!=|==)$/);
+      if (isNumeric) {
+        return [this.REAL];
+      } else if (isBoolean) {
+        return [this.BOOLEAN];
+      } else {
+        return lhs;
+      }
     } else if (children.ternaryExpression) {
       // Get the types of the two expression and create a union
       const ternary =
@@ -557,7 +576,15 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       );
     }
     assert(type, 'No type found for primary expression');
-    // TODO: Check unary operators etc to make sure types make sense
+    // Override the type if we have a unary operator
+
+    const prefixOperator = children.UnaryPrefixOperator?.[0].image;
+    if (prefixOperator?.match(/^[~+-]|++|--$/)) {
+      type = this.REAL;
+    } else if (prefixOperator?.match(/^!$/)) {
+      type = this.BOOLEAN;
+    }
+
     return arrayWrapped(type);
   }
 
