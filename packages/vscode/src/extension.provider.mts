@@ -123,7 +123,7 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Location[]> {
-    const symbol = this.getSymbol(document, position);
+    const symbol = this.getSignifier(document, position);
     if (!symbol) {
       return;
     }
@@ -258,7 +258,7 @@ export class StitchProvider
     return ref;
   }
 
-  getSymbol(
+  getSignifier(
     document: vscode.TextDocument,
     position: vscode.Position,
   ): ReferenceableType | undefined {
@@ -279,7 +279,7 @@ export class StitchProvider
     name: string,
   ): Asset<'sprites'> | undefined {
     const asset = this.getAsset(document, name);
-    if (asset && asset.assetType === 'sprites') {
+    if (asset && asset.assetKind === 'sprites') {
       return asset as Asset<'sprites'>;
     }
     return;

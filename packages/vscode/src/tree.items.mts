@@ -98,7 +98,7 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
 
   protected refreshTreeItem() {
     let file: vscode.Uri;
-    if (this.asset.assetType === 'scripts') {
+    if (this.asset.assetKind === 'scripts') {
       const gmlFiles = [...this.asset.gmlFiles.values()];
       file = vscode.Uri.file(gmlFiles[0].path.absolute);
     } else {
@@ -111,14 +111,14 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
     };
 
     this.collapsibleState = ['objects', 'sprites', 'shaders'].includes(
-      this.asset.assetType,
+      this.asset.assetKind,
     )
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
 
     this.setBaseIcon('question');
 
-    switch (this.asset.assetType) {
+    switch (this.asset.assetKind) {
       case 'objects':
         this.setBaseIcon('symbol-misc');
         break;

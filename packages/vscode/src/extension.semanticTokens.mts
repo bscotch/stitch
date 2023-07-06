@@ -1,4 +1,4 @@
-import { Flaggable, ReferenceableType } from '@bscotch/gml-parser';
+import { ReferenceableType, type Signifier } from '@bscotch/gml-parser';
 import { literal } from '@bscotch/utility';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
@@ -57,19 +57,19 @@ export class GameMakerSemanticTokenProvider
       >();
       for (const ref of file.refs) {
         // Get the location as a vscode range
-        const item = ref.item;
+        const signifier = ref.item;
 
         // Exclude some types that don't make sense to override
         if (
-          item.name &&
-          ['self', 'other', 'noone', 'all', 'global'].includes(item.name)
+          signifier.name &&
+          ['self', 'other', 'noone', 'all', 'global'].includes(signifier.name)
         ) {
           continue;
         }
         const range = locationOf(ref)!.range;
         // If we've already seen this symbol, use the cached semantic details
-        if (cache.has(item)) {
-          const { type, mods } = cache.get(item)!;
+        if (cache.has(signifier)) {
+          const { type, mods } = cache.get(signifier)!;
           try {
             tokensBuilder.push(range, type, [...mods]);
           } catch (error) {
@@ -81,26 +81,24 @@ export class GameMakerSemanticTokenProvider
         }
 
         // Figure out what the semantic details are
-        const itemType = item.$tag === 'Type' ? item : item.type;
-        let tokenType = getSemanticToken(item);
-        if (tokenType === 'variable' && item.instance) {
+        let tokenType = inferSemanticToken(signifier);
+        if (tokenType === 'variable' && signifier.instance) {
           tokenType = 'property';
         }
-        const tokenModifiers = updateSemanticModifiers(itemType);
-        if (itemType.kind.startsWith('Asset.')) {
+        const tokenModifiers = inferSemanticModifiers(signifier);
+        const isAsset = signifier.type.type.find((t) =>
+          t.kind.startsWith('Asset.'),
+        );
+        if (isAsset) {
           tokenModifiers.add('asset');
         }
-        if (item.$tag !== 'Type') {
-          // Then we may have additional modifiers from the symbol
-          updateSemanticModifiers(item, tokenModifiers);
-        }
         if (!tokenType) {
-          warn('No token type for symbol', item);
+          warn('No token type for symbol', signifier);
           continue;
         }
         try {
           tokensBuilder.push(range, tokenType, [...tokenModifiers]);
-          cache.set(item, { type: tokenType, mods: tokenModifiers });
+          cache.set(signifier, { type: tokenType, mods: tokenModifiers });
         } catch (err) {
           warn(err);
           warn('PUSH ERROR');
@@ -125,57 +123,59 @@ export class GameMakerSemanticTokenProvider
   }
 }
 
-function getSemanticToken(item: ReferenceableType): SemanticTokenType {
-  const type = item.$tag === 'Type' ? item : item.type;
-  // These take priority over the type
-  if (item.parameter) {
+function inferSemanticToken(signifier: Signifier): SemanticTokenType {
+  if (signifier.parameter) {
     return 'parameter';
   }
-  if (item.instance) {
+  if (signifier.instance) {
     return 'property';
   }
-  switch (type.kind) {
-    case 'Enum':
-      return 'enum';
-    case 'EnumMember':
-      return 'enumMember';
-    case 'Constructor':
-      return 'class';
-    case 'Function':
-      return 'function';
-    case 'Macro':
-      return 'macro';
+  if (signifier.getTypeByKind('Enum')) {
+    return 'enum';
+  }
+  if (signifier.getTypeByKind('EnumMember')) {
+    return 'enumMember';
+  }
+  const functionType = signifier.getTypeByKind('Function');
+  if (functionType?.isConstructor) {
+    return 'class';
+  }
+  if (functionType) {
+    return 'function';
+  }
+  if (signifier.macro) {
+    return 'macro';
   }
   return 'variable';
 }
 
 /** Clobbers conflicting, allowing e.g. overriding type modifiers with symbol modifiers. */
-function updateSemanticModifiers(
-  type: Flaggable,
+function inferSemanticModifiers(
+  signifier: Signifier,
   modifiers = new Set<SemanticTokenModifier>(),
 ): Set<SemanticTokenModifier> {
-  if (type.native) {
+  if (signifier.native) {
     modifiers.add('defaultLibrary');
   } else {
     // modifiers.delete('defaultLibrary');
   }
 
-  if (type.global) {
+  if (signifier.global) {
     modifiers.add('global');
     modifiers.delete('local');
   }
-  if (type.local) {
+  if (signifier.local) {
     modifiers.add('local');
     modifiers.delete('global');
   }
 
-  if (!type.writable) {
+  if (!signifier.writable) {
     modifiers.add('readonly');
   } else {
     modifiers.delete('readonly');
   }
 
-  if (type.static) {
+  if (signifier.static) {
     modifiers.add('static');
   } else {
     modifiers.delete('static');

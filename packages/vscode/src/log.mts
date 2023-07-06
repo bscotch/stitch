@@ -25,7 +25,7 @@ export class Logger {
     return Logger.outputChannels.get(this.channel)!;
   }
 
-  protected emit(type: 'info' | 'warn' | 'error', ...args: any[]) {
+  protected emit(type: 'debug' | 'info' | 'warn' | 'error', ...args: any[]) {
     const timestamp = new Date().toISOString().replace(/^.*T(.*)Z$/, '$1');
     args = args.map((arg) => {
       const isObject = arg && typeof arg === 'object';
@@ -60,6 +60,10 @@ export class Logger {
 
   log(...args: any[]) {
     this.emit('info', ...args);
+  }
+
+  debug(...args: any[]) {
+    this.emit('debug', ...args);
   }
 
   info(...args: any[]) {
