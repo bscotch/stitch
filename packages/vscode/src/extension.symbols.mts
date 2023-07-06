@@ -92,7 +92,6 @@ export class GameMakerWorkspaceSymbolProvider
         continue;
       }
       if (!location?.file) {
-        warn(`No definition for global ${item.name}`);
         continue;
       }
       const functionType = item.getTypeByKind('Function');

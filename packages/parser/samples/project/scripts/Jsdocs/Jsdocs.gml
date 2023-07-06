@@ -31,6 +31,6 @@ function Jsdocs(){
  * @param {Bool} [...] And so is this one, but there can be as many as you want!
  * @returns {Struct} And here is a multiline
  *  description of the return type.
- * @self {Struct.AnotherConstructor} */
+ * @self Struct.AnotherConstructor */
 function JsdocsJsStyle(first, second){
 }

@@ -58,7 +58,7 @@ export function typeFromIdentifier(
     }
     return type;
   }
-  return new Type('Unknown');
+  return new Type('Undefined');
 }
 
 export function typeFromParsedJsdocs(
@@ -66,8 +66,8 @@ export function typeFromParsedJsdocs(
   knownTypes: Map<string, Type>,
 ): Type[] {
   if (jsdoc.kind === 'description') {
-    // Then we have no type info but have a description to add.
-    return [new Type('Unknown')];
+    // Then we have no type info.
+    return [];
   } else if (jsdoc.kind === 'type') {
     // Then this was purely a type annotation. Create the type and
     // add any metadata.

@@ -81,7 +81,7 @@ describe('Project', function () {
     expect(scriptExecuteType.listParameters()![1].name).to.equal('...');
   });
 
-  it('can has fallback GmlSpec', async function () {
+  it('can use fallback GmlSpec', async function () {
     await Project.fallbackGmlSpecPath.exists({ assert: true });
   });
 
@@ -300,11 +300,16 @@ describe('Project', function () {
     ok(dotAssignedType.parent === obj.instanceType);
     //#endregion DOT ASSIGNMENTS
 
+    //#region FUNCTIONS
     // Check the return type of a function
     const functionDefRef = complexScriptFile.getReferenceAt(119, 22);
     expect((functionDefRef?.item as Signifier).type.returns[0].kind).to.equal(
       'Array',
     );
+    const globalFunction = scriptFile.getReferenceAt(6, 19);
+    ok(globalFunction);
+    ok(globalFunction.item.name === 'global_function');
+    //#endregion FUNCTIONS
 
     validateBschemaConstructor(project);
     // Reprocess a file and ensure that the tests still pass

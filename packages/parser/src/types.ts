@@ -38,7 +38,7 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
   /** If this store has only one type, its kind. Else throws. */
   get kind() {
     if (this.type.length === 0) {
-      return 'Any';
+      return 'Undefined';
     } else if (this.type.length > 1) {
       return 'Mixed';
     }
@@ -212,7 +212,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return this;
   }
 
-  /** @deprecated Use setReturnType instead */
+  /** Prefer `setReturnType` where possible */
   addReturnType(type: Type | Type[]) {
     ok(this.isFunction, `Cannot add return type to ${this.kind}`);
     this.returns ||= new TypeStore();
