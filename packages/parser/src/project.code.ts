@@ -38,7 +38,7 @@ export class Code {
    * of argument ranges for that call. Useful for diagnostics.*/
   protected _functionCalls: FunctionArgRange[][] = [];
   protected _refsAreSorted = false;
-  _content!: string;
+  content!: string;
   protected _parsed!: GmlParsed;
 
   // Metadata
@@ -210,10 +210,6 @@ export class Code {
     return this.path.basename;
   }
 
-  get content() {
-    return this._content;
-  }
-
   get cst() {
     return this._parsed.cst;
   }
@@ -226,7 +222,7 @@ export class Code {
    */
   async parse(content?: string) {
     this.clearAllDiagnostics();
-    this._content =
+    this.content =
       typeof content === 'string' ? content : await this.path.read();
     this._parsed = parser.parse(this.content);
     for (const diagnostic of this._parsed.errors) {
@@ -356,8 +352,8 @@ export class Code {
    * provide new content to use instead of reading from disk.
    */
   async reload(content?: string, options?: { reloadDirty?: boolean }) {
-    this._content = content || this._content;
-    await this.parse(this._content);
+    this.content = content || this.content;
+    await this.parse(this.content);
     this.updateGlobals();
     this.updateAllSymbols();
     this.updateDiagnostics();

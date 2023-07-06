@@ -486,11 +486,8 @@ export class Project {
     t = Date.now();
     // Discover all symbols and their references
     logger.info('Discovering symbols...');
-    // Run through it twice to resolve cross-file references
-    for (let i = 0; i < 2; i++) {
-      for (const asset of assets) {
-        asset.updateAllSymbols();
-      }
+    for (const asset of assets) {
+      asset.updateAllSymbols();
     }
     // Second pass
     // TODO: Find a better way than brute-forcing to resolve cross-file references
