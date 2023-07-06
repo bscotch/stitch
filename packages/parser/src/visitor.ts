@@ -42,10 +42,17 @@ import { EnumType, Type, TypeStore, type StructType } from './types.js';
 import { assert } from './util.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
 import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
-import { SignifierProcessor } from './visitor.processor.js';
+import {
+  SignifierProcessor,
+  diagnosticCollections,
+} from './visitor.processor.js';
 
 export function registerSignifiers(file: Code) {
   try {
+    // Clear diagnostics managed by the processor
+    for (const group of diagnosticCollections) {
+      file.clearDiagnosticCollection(group);
+    }
     const processor = new SignifierProcessor(file);
     const visitor = new GmlSignifierVisitor(processor);
     visitor.UPDATE_SIGNIFIERS(file.cst);
@@ -105,7 +112,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         // (should not use self to refer to global)
         if (scope.selfIsGlobal) {
           this.PROCESSOR.addDiagnostic(
-            'GLOBAl_SELF',
+            'GLOBAL_SELF',
             children.Self![0],
             '`self` refers to the global scope here, which is probably unintentional.',
           );

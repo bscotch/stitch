@@ -249,9 +249,13 @@ export class Code {
     }
   }
 
+  clearDiagnosticCollection(collection: DiagnosticCollectionName) {
+    this.diagnostics[collection] = [];
+  }
+
   protected clearAllDiagnostics() {
     this.diagnostics = {
-      GLOBAl_SELF: [],
+      GLOBAL_SELF: [],
       INVALID_OPERATION: [],
       JSDOC_MISMATCH: [],
       MISSING_EVENT_INHERITED: [],

@@ -10,6 +10,13 @@ import { Position, Range, type Scope } from './project.location.js';
 import { type EnumType, type StructType } from './types.js';
 import { assert } from './util.js';
 
+export const diagnosticCollections = [
+  'GLOBAL_SELF',
+  'UNDECLARED_GLOBAL_REFERENCE',
+  'INVALID_OPERATION',
+  'JSDOC_MISMATCH',
+] satisfies DiagnosticCollectionName[];
+
 export class SignifierProcessor {
   protected readonly localScopeStack: StructType[] = [];
   protected readonly selfStack: (StructType | EnumType)[] = [];
@@ -47,7 +54,7 @@ export class SignifierProcessor {
   }
 
   addDiagnostic(
-    kind: DiagnosticCollectionName,
+    kind: (typeof diagnosticCollections)[number],
     where: CstNodeLocation,
     message: string,
     severity: DiagnosticSeverity = 'warning',
