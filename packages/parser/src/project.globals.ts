@@ -163,7 +163,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       // Make sure that the types all exist
       let type = signifier.getTypeByKind('Function');
       if (!type) {
-        signifier.type.type = new Type('Function');
+        signifier.type.type = new Type('Function').named(name.image);
         type = signifier.getTypeByKind('Function')!;
         this.PROCESSOR.project.types.set(`Function.${name.image}`, type);
       }
