@@ -66,7 +66,8 @@ export function visitFunctionExpression(
   // Get or create the function type. Use the existing type if there is one.
   signifier?.describe(docs?.jsdoc.description);
   const functionType =
-    signifier?.getTypeByKind('Function') || new Type('Function');
+    signifier?.getTypeByKind('Function') ||
+    new Type('Function').named(functionName);
   signifier?.setType(functionType);
   if (docs && docs.jsdoc.kind !== 'function') {
     // Then these docs are not applicable, so toss them.

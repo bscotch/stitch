@@ -14,21 +14,19 @@ export class GameMakerHoverProvider implements vscode.HoverProvider {
       return;
     }
     const hoverContents = new vscode.MarkdownString();
-    let hasSomething = false;
+    const codeBlocks = new Set<string>();
+    const textBlocks = new Set<string>();
     for (const type of item.type.type) {
       const code = type.code;
       if (code) {
-        hoverContents.appendCodeblock(type.code, 'gml');
-        hasSomething = true;
+        codeBlocks.add(type.code);
       }
       const description = item.description || type.description;
       if (description) {
-        hoverContents.appendMarkdown(description);
-        hasSomething = true;
+        textBlocks.add(description);
       }
       if (type.details) {
-        hoverContents.appendMarkdown(type.details);
-        hasSomething = true;
+        textBlocks.add(type.details);
       }
       // If it's a sprite, add preview images
       const sprite =
@@ -47,14 +45,20 @@ export class GameMakerHoverProvider implements vscode.HoverProvider {
           );
           images += `![Sprite subimage](${framePath})`;
         }
-        hoverContents.appendMarkdown(images);
-        hasSomething = true;
+        textBlocks.add(images);
       }
     }
 
-    if (!hasSomething) {
+    if (!codeBlocks.size && !textBlocks.size) {
       return;
     }
+    for (const code of codeBlocks) {
+      hoverContents.appendCodeblock(code, 'gml');
+    }
+    for (const text of textBlocks) {
+      hoverContents.appendMarkdown(text);
+    }
+
     // console.log('Hovering over', item);
     return new vscode.Hover(hoverContents);
   }

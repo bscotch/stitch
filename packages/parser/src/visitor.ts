@@ -327,7 +327,9 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const name = children.Identifier[0].image;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
+    let wasUndeclared = false;
     if (!signifier) {
+      wasUndeclared = true;
       // Create a new member on the self scope, unless it's global
       const fullScope = this.PROCESSOR.fullScope;
       if (fullScope.self !== fullScope.global) {
@@ -348,6 +350,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       // If this is the first time we've seen it, and it wouldn't have
       // an unambiguous declaration, add its definition
       if (!signifier.def) {
+        wasUndeclared = true;
         signifier.definedAt(range);
       }
     }
@@ -366,7 +369,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         children.assignmentRightHandSide[0].children,
         withCtxKind(ctx, 'assignment'),
       );
-      if (signifier && !signifier.isTyped) {
+      if (signifier && (!signifier.isTyped || wasUndeclared)) {
         if (docs) {
           signifier.describe(docs.jsdoc.description);
           signifier.setType(docs.type);
