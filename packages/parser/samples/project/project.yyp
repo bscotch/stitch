@@ -45,6 +45,7 @@
     {"id":{"name":"Script1","path":"scripts/Script1/Script1.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"Withing","path":"scripts/Withing/Withing.yy",},},
+    {"id":{"name":"FunctionSelf","path":"scripts/FunctionSelf/FunctionSelf.yy",},},
   ],
   "RoomOrderNodes": [
     {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},

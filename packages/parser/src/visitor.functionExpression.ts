@@ -2,7 +2,7 @@ import type { FunctionExpressionCstChildren } from '../gml-cst.js';
 import { VisitorContext, withCtxKind } from './parser.js';
 import { fixITokenLocation } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import { isTypeOfKind } from './types.checks.js';
+import { getTypeOfKind, isTypeOfKind } from './types.checks.js';
 import { Type, TypeStore, type StructType } from './types.js';
 import { assert } from './util.js';
 import type { GmlSignifierVisitor } from './visitor.js';
@@ -13,13 +13,16 @@ export function visitFunctionExpression(
   children: FunctionExpressionCstChildren,
   ctx: VisitorContext,
 ): Type<'Function'> {
-  let docs = ctx.docs || this.PROCESSOR.consumeJsdoc();
+  const docs = ctx.docs || this.PROCESSOR.consumeJsdoc();
+  ctx.docs = undefined;
+  const assignedTo = ctx.signifier;
+  ctx.signifier = undefined;
+
   // Reset the list of return values
   ctx = {
     ...ctx,
     returns: [],
   };
-  ctx.docs = undefined;
 
   // Compute useful properties of this function to help figure out
   // how to define its symbol, type, scope, etc.
@@ -30,8 +33,6 @@ export function visitFunctionExpression(
   const isConstructor = !!children.constructorSuffix;
   const bodyLocation = children.blockStatement[0].location!;
   const isFunctionStatement = ctx.ctxKindStack.at(-1) === 'functionStatement';
-  const assignedTo = ctx.signifier;
-  ctx.signifier = undefined;
 
   /** If this function has a corresponding signfiier, either
    * because it is a function declaration or because it is a
@@ -59,21 +60,12 @@ export function visitFunctionExpression(
     this.PROCESSOR.currentSelf.addMember(signifier);
   }
 
-  if (signifier?.name === 'GlobalConstructor') {
-    console.log(signifier.name);
-    console.dir(docs);
-  }
-
   // Get or create the function type. Use the existing type if there is one.
   signifier?.describe(docs?.jsdoc.description);
   const functionType =
     signifier?.getTypeByKind('Function') ||
     new Type('Function').named(functionName);
   signifier?.setType(functionType);
-  if (docs && docs.jsdoc.kind !== 'function') {
-    // Then these docs are not applicable, so toss them.
-    docs = undefined;
-  }
   if (signifier && docs?.jsdoc.deprecated) {
     signifier.deprecated = true;
   }
@@ -84,12 +76,34 @@ export function visitFunctionExpression(
   functionType.returns ||= new TypeStore();
 
   // Determine the function context.
-  const docContext = docs?.type[0]?.context;
-  const context: StructType = isConstructor
-    ? functionType.constructs!
-    : isTypeOfKind(docContext, 'Struct')
-    ? docContext
-    : (this.PROCESSOR.currentSelf as StructType);
+  const docContext = getTypeOfKind(
+    docs?.jsdoc.kind === 'self'
+      ? docs.type[0]
+      : docs?.jsdoc.kind === 'function'
+      ? docs.type[0]?.context
+      : undefined,
+    ['Struct', 'Asset.GMObject', 'Id.Instance'],
+  );
+  let context: StructType;
+  if (isConstructor) {
+    context = functionType.constructs!;
+  } else if (isTypeOfKind(docContext, 'Struct')) {
+    context = docContext;
+  } else if (
+    (isTypeOfKind(docContext, 'Asset.GMObject') ||
+      isTypeOfKind(docContext, 'Id.Instance')) &&
+    docContext.name
+  ) {
+    // Then we want to use the associated instance struct as the self
+    const instanceStruct = this.PROCESSOR.project.getAssetByName(
+      docContext.name,
+    )?.instanceType;
+    if (instanceStruct) {
+      context = instanceStruct;
+    }
+  }
+  context ||= this.PROCESSOR.currentSelf as StructType;
+
   functionType.context = context;
 
   // Identify the "self" struct for scope. If this is a constructor, "self" is the

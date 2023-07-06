@@ -312,6 +312,7 @@ describe('Project', function () {
     //#endregion FUNCTIONS
 
     validateWithContexts(project);
+    validateFunctionContexts(project);
 
     validateBschemaConstructor(project);
     // Reprocess a file and ensure that the tests still pass
@@ -329,6 +330,49 @@ describe('Project', function () {
     const project = await Project.initialize(projectDir);
   });
 });
+
+function validateFunctionContexts(project: Project) {
+  const complicatedScriptFile = project.getAssetByName('Complicated')!.gmlFile;
+  const functionScript = project.getAssetByName('FunctionSelf')!;
+  const functionScriptFile = functionScript.gmlFile;
+  ok(functionScript);
+  ok(functionScriptFile);
+  ok(complicatedScriptFile);
+
+  // GLOBAL CONSTRUCTED CONTEXT
+  const bschemaGlobalContext = complicatedScriptFile.getReferenceAt(
+    7,
+    14,
+  )!.item;
+  const functionWithBschemaGlobalContext = functionScriptFile.getScopeRangeAt(
+    2,
+    32,
+  )!;
+  ok(
+    functionWithBschemaGlobalContext &&
+      functionWithBschemaGlobalContext.self ===
+        bschemaGlobalContext.type.constructs[0],
+  );
+
+  // OBJECT CONTEXT
+  const obj = project.getAssetByName('o_object')!;
+  ok(obj && obj.instanceType);
+  const functionWithObjectContext = functionScriptFile.getScopeRangeAt(7, 25)!;
+  ok(
+    functionWithObjectContext &&
+      functionWithObjectContext.self === obj.instanceType,
+  );
+
+  // INSTANCE CONTEXT
+  const functionWithInstanceContext = functionScriptFile.getScopeRangeAt(
+    12,
+    27,
+  );
+  ok(
+    functionWithInstanceContext &&
+      functionWithInstanceContext.self === obj.instanceType,
+  );
+}
 
 function validateWithContexts(project: Project) {
   const complicatedScriptFile = project.getAssetByName('Complicated')!.gmlFile;
