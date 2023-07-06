@@ -1,7 +1,6 @@
 import { pathy, Pathy } from '@bscotch/pathy';
 import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { Yy, Yyp, YypFolder, yypFolderSchema, YypResource } from '@bscotch/yy';
-import chokidar from 'chokidar';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
 import { logger } from './logger.js';
@@ -77,7 +76,6 @@ export class Project {
    * and in a symbol's types. */
   readonly types = new Map<string, Type>();
 
-  watcher?: chokidar.FSWatcher;
   protected emitter = new EventEmitter();
   /** Code that needs to be reprocessed, for one reason or another. */
   protected dirtyCode = new Set<Code>();
@@ -424,36 +422,6 @@ export class Project {
       ok(this.native, 'Failed to load fallback GML spec');
     }
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);
-  }
-
-  protected watch(): void {
-    if (this.watcher) {
-      return;
-    }
-    const globs = [
-      this.yypPath.absolute,
-      this.projectDir.join('scripts/*/*.gml').absolute,
-      this.projectDir.join('objects/*/*.gml').absolute,
-    ];
-    this.watcher = chokidar.watch(globs, {
-      ignoreInitial: true,
-    });
-    this.watcher.on('change', async (path) => {
-      const normalized = pathy(path);
-      if (this.yypPath.equals(normalized)) {
-        // TODO: Then we probably have some new resources to load
-        // or need to delete one.
-        // await this.loadAssets();
-      } else {
-        // Then we probably have a script or object that has changed.
-        // Identify which resource has changed and have it manage reloading.
-        const resource = this.getAsset(normalized);
-        if (!resource) {
-          return;
-        }
-        await resource.reloadFile(normalized);
-      }
-    });
   }
 
   async initialize(options?: ProjectOptions): Promise<void> {
