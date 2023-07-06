@@ -579,7 +579,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // Override the type if we have a unary operator
 
     const prefixOperator = children.UnaryPrefixOperator?.[0].image;
-    if (prefixOperator?.match(/^[~+-]|++|--$/)) {
+    if (prefixOperator?.match(/^[~+-]|\+\+|--$/)) {
       type = this.REAL;
     } else if (prefixOperator?.match(/^!$/)) {
       type = this.BOOLEAN;

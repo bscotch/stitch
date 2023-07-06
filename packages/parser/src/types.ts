@@ -198,17 +198,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   setReturnType(type: Type | TypeStore | (Type | TypeStore)[]) {
-    const typeStore = arrayWrapped(type).find((t) => t instanceof TypeStore) as
-      | TypeStore
-      | undefined;
-    if (typeStore) {
-      this.returns = typeStore;
-    } else {
-      this.returns ||= new TypeStore();
-      this.returns.type = arrayWrapped(type)
-        .map((t) => getTypes(t))
-        .flat();
-    }
+    this.returns ||= new TypeStore();
+    const types = getTypes(type);
+    this.returns.type = types;
     return this;
   }
 

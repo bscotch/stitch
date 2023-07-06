@@ -1,4 +1,3 @@
-import { arrayWrapped } from '@bscotch/utility';
 import { Refs } from './project.location.js';
 import { getTypes } from './types.checks.js';
 import { Flags } from './types.flags.js';
@@ -36,16 +35,7 @@ export class Signifier extends Refs(Flags) {
   }
 
   setType(newType: Type | TypeStore | (TypeStore | Type)[]): this {
-    const typeStore = arrayWrapped(newType).find(
-      (t) => t instanceof TypeStore,
-    ) as TypeStore | undefined;
-    if (typeStore) {
-      this.type = typeStore;
-    } else {
-      this.type.type = arrayWrapped(newType)
-        .map((t) => getTypes(t))
-        .flat();
-    }
+    this.type.type = getTypes(newType);
     return this;
   }
 
