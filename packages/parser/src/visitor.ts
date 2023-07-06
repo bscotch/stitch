@@ -260,6 +260,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
     if (assignedToFunction) {
       ctx.functionSignifier = signifier;
+      ctx.docs = docs;
       this.functionExpression(assignedToFunction, ctx);
     } else {
       const inferredType = this.assignmentRightHandSide(
@@ -298,6 +299,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
     if (assignedToFunction) {
       ctx.functionSignifier = signifier;
+      ctx.docs = docs;
       this.functionExpression(assignedToFunction, ctx);
     } else {
       const inferredType = children.assignmentRightHandSide
@@ -363,6 +365,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
     if (assignedToFunction) {
       ctx.functionSignifier = signifier;
+      ctx.docs = docs;
       this.functionExpression(assignedToFunction, ctx);
     } else {
       const inferredType = this.assignmentRightHandSide(
@@ -557,6 +560,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       if (assignedToFunction) {
         // Then we we're creat
         ctx.functionSignifier = signifier;
+        ctx.docs = docs;
         this.functionExpression(assignedToFunction, ctx);
       } else {
         const inferredType = parts.assignmentRightHandSide

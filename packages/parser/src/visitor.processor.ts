@@ -1,5 +1,5 @@
 import type { CstNodeLocation } from 'chevrotain';
-import { JsdocSummary } from './jsdoc.js';
+import type { Docs } from './parser.js';
 import type { Code } from './project.code.js';
 import {
   Diagnostic,
@@ -7,7 +7,7 @@ import {
   DiagnosticSeverity,
 } from './project.diagnostics.js';
 import { Position, Range, type Scope } from './project.location.js';
-import { Type, type EnumType, type StructType } from './types.js';
+import { type EnumType, type StructType } from './types.js';
 import { assert } from './util.js';
 
 export class SignifierProcessor {
@@ -16,7 +16,7 @@ export class SignifierProcessor {
   /** The current ScopeRange, updated as we push/pop local and self */
   public scope: Scope;
   readonly position: Position;
-  public unusedJsdoc: { type: Type[]; jsdoc: JsdocSummary } | undefined;
+  public unusedJsdoc: Docs | undefined;
 
   constructor(readonly file: Code) {
     this.scope = file.scopes[0];

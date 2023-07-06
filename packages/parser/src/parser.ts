@@ -18,6 +18,7 @@ import type {
   MultilineSingleStringLiteralCstChildren,
   StringLiteralCstChildren,
 } from '../gml-cst.js';
+import type { JsdocSummary } from './jsdoc.js';
 import { GmlLexer } from './lexer.js';
 import type { GmlParseError } from './project.diagnostics.js';
 import { Reference, ReferenceableType } from './project.location.js';
@@ -821,9 +822,15 @@ export type NodeContextKind =
   | 'arrayMember'
   | 'assignment';
 
+export interface Docs {
+  type: Type[];
+  jsdoc: JsdocSummary;
+}
+
 export interface VisitorContext {
   /** While processing a function expression, the signifier may come from an assignment operation. */
   functionSignifier?: Signifier;
+  docs?: Docs;
   // /** The context stack as referenceable entities */
   // ctxStack: Referenceable[];
   /** Helpful to get general info about the context of the current node. */

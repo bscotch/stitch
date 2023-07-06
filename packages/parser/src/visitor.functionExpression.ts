@@ -13,12 +13,13 @@ export function visitFunctionExpression(
   children: FunctionExpressionCstChildren,
   ctx: VisitorContext,
 ): Type<'Function'> {
-  let docs = this.PROCESSOR.consumeJsdoc();
+  let docs = ctx.docs || this.PROCESSOR.consumeJsdoc();
   // Reset the list of return values
   ctx = {
     ...ctx,
     returns: [],
   };
+  ctx.docs = undefined;
 
   // Compute useful properties of this function to help figure out
   // how to define its symbol, type, scope, etc.
