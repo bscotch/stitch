@@ -268,11 +268,19 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const assignedToFunction =
       children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
         .children;
+    const assignedToStructLiteral =
+      !assignedToFunction &&
+      children.assignmentRightHandSide?.[0].children.structLiteral?.[0]
+        .children;
 
-    if (assignedToFunction) {
-      ctx.functionSignifier = signifier;
+    if (assignedToFunction || assignedToStructLiteral) {
+      ctx.signifier = signifier;
       ctx.docs = docs;
-      this.functionExpression(assignedToFunction, ctx);
+      if (assignedToFunction) {
+        this.functionExpression(assignedToFunction, ctx);
+      } else if (assignedToStructLiteral) {
+        this.structLiteral(assignedToStructLiteral, ctx);
+      }
     } else {
       const inferredType = this.assignmentRightHandSide(
         children.assignmentRightHandSide[0].children,
@@ -307,11 +315,19 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const assignedToFunction =
       children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
         .children;
+    const assignedToStructLiteral =
+      !assignedToFunction &&
+      children.assignmentRightHandSide?.[0].children.structLiteral?.[0]
+        .children;
 
-    if (assignedToFunction) {
-      ctx.functionSignifier = signifier;
+    if (assignedToFunction || assignedToStructLiteral) {
+      ctx.signifier = signifier;
       ctx.docs = docs;
-      this.functionExpression(assignedToFunction, ctx);
+      if (assignedToFunction) {
+        this.functionExpression(assignedToFunction, ctx);
+      } else if (assignedToStructLiteral) {
+        this.structLiteral(assignedToStructLiteral, ctx);
+      }
     } else {
       const inferredType = children.assignmentRightHandSide
         ? this.assignmentRightHandSide(
@@ -373,11 +389,19 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const assignedToFunction =
       children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
         .children;
+    const assignedToStructLiteral =
+      !assignedToFunction &&
+      children.assignmentRightHandSide?.[0].children.structLiteral?.[0]
+        .children;
 
-    if (assignedToFunction) {
-      ctx.functionSignifier = signifier;
+    if (assignedToFunction || assignedToStructLiteral) {
+      ctx.signifier = signifier;
       ctx.docs = docs;
-      this.functionExpression(assignedToFunction, ctx);
+      if (assignedToFunction) {
+        this.functionExpression(assignedToFunction, ctx);
+      } else if (assignedToStructLiteral) {
+        this.structLiteral(assignedToStructLiteral, ctx);
+      }
     } else {
       const inferredType = this.assignmentRightHandSide(
         children.assignmentRightHandSide[0].children,
@@ -530,10 +554,15 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     children: StructLiteralCstChildren,
     ctx: VisitorContext,
   ): Type<'Struct'> {
-    const struct = this.PROCESSOR.createStruct(
-      children.StartBrace[0],
-      children.EndBrace[0],
-    );
+    // We may already have a struct type attached to a signfier,
+    // which should be updated instaed of replaced.
+    const structType = ctx.signifier?.getTypeByKind('Struct');
+    const struct =
+      structType ||
+      this.PROCESSOR.createStruct(children.StartBrace[0], children.EndBrace[0]);
+    ctx.signifier?.setType(struct);
+    ctx.signifier = undefined;
+    ctx.docs = undefined;
 
     // Change the self scope to the struct
     this.PROCESSOR.scope.setEnd(children.StartBrace[0], false);
@@ -567,12 +596,18 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       const assignedToFunction =
         parts.assignmentRightHandSide?.[0].children.functionExpression?.[0]
           .children;
+      const assignedToStructLiteral =
+        !assignedToFunction &&
+        parts.assignmentRightHandSide?.[0].children.structLiteral?.[0].children;
 
-      if (assignedToFunction) {
-        // Then we we're creat
-        ctx.functionSignifier = signifier;
+      if (assignedToFunction || assignedToStructLiteral) {
+        ctx.signifier = signifier;
         ctx.docs = docs;
-        this.functionExpression(assignedToFunction, ctx);
+        if (assignedToFunction) {
+          this.functionExpression(assignedToFunction, ctx);
+        } else if (assignedToStructLiteral) {
+          this.structLiteral(assignedToStructLiteral, ctx);
+        }
       } else {
         const inferredType = parts.assignmentRightHandSide
           ? this.assignmentRightHandSide(

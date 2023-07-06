@@ -30,8 +30,8 @@ export function visitFunctionExpression(
   const isConstructor = !!children.constructorSuffix;
   const bodyLocation = children.blockStatement[0].location!;
   const isFunctionStatement = ctx.ctxKindStack.at(-1) === 'functionStatement';
-  const assignedTo = ctx.functionSignifier;
-  ctx.functionSignifier = undefined;
+  const assignedTo = ctx.signifier;
+  ctx.signifier = undefined;
 
   /** If this function has a corresponding signfiier, either
    * because it is a function declaration or because it is a

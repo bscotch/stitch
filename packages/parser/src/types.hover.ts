@@ -18,12 +18,14 @@ export function typeToHoverDetails(type: Type) {
       code += `\n\n*@self* ${type.context.toFeatherString()}`;
     }
     for (const param of type.listParameters()) {
-      if (param.description) {
+      if (param.def && param.description) {
         code += `\n\n*@param* \`${param.name}\` - ${param.description}`;
       }
     }
   } else if (type.kind === 'Struct') {
-    const members = type.listMembers().filter((x) => x.name !== 'self');
+    const members = type
+      .listMembers()
+      .filter((x) => x.name !== 'self' && x.def);
     if (!members.length) {
       return '';
     }

@@ -828,8 +828,8 @@ export interface Docs {
 }
 
 export interface VisitorContext {
-  /** While processing a function expression, the signifier may come from an assignment operation. */
-  functionSignifier?: Signifier;
+  /** While processing a function expression or struct literal, the signifier may come from an assignment operation. */
+  signifier?: Signifier;
   docs?: Docs;
   // /** The context stack as referenceable entities */
   // ctxStack: Referenceable[];
