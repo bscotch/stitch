@@ -168,7 +168,6 @@ describe('Project', function () {
     // The globalvar should have appropriate symbol and type info
     ok(item.$tag === 'Sym');
     ok(item.global === true);
-    ok(item.type.global === true);
     //#endregion GLOBALVARS
 
     //#region ROOT SCRIPT SCOPE
@@ -192,7 +191,8 @@ describe('Project', function () {
     ok(globalConstructor.type.constructs);
     ok(globalConstructor.type.constructs[0].name === 'GlobalConstructor');
     ok(globalConstructor.type.type[0].isFunction);
-    expect(globalConstructor.type.kind).to.equal('Constructor');
+    expect(globalConstructor.type.kind).to.equal('Function');
+    expect(globalConstructor.type.type[0].isConstructor).to.equal(true);
     // Instance scope (should not be found)
     ok(!inRootScriptScope.find((id) => id.name === 'instance_function'));
     // Deeper local scope (should not be found)
@@ -271,7 +271,8 @@ describe('Project', function () {
     ok(constructorType);
     ok(constructorSymbol.name === constructorName);
     ok(constructorSymbol instanceof Signifier);
-    expect(constructorSymbol.type.kind).to.equal('Constructor');
+    expect(constructorSymbol.type.kind).to.equal('Function');
+    expect(constructorSymbol.type.type[0].isConstructor).to.equal(true);
     expect(constructorType.type[0].name).to.equal(constructorName);
     expect(constructorType.type[0].listParameters()).to.have.lengthOf(2);
     expect(constructorType.constructs[0].kind).to.equal('Struct');

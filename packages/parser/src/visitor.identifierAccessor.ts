@@ -41,7 +41,7 @@ export function visitIdentifierAccessor(
       type: isArray(type) ? type[0] : type,
       range: initialSignifier.range,
     };
-    if (initialSignifier.item instanceof Signifier) {
+    if ('addRef' in initialSignifier.item) {
       initialSignifier.item.addRef(initialSignifier.range);
     }
   } else {

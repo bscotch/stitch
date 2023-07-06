@@ -160,6 +160,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // With statements change the self scope to
     // whatever their expression evaluates to.
     // Evaluate the expression and try to use its type as the self scope
+    const docs = this.PROCESSOR.consumeJsdoc();
 
     const conditionType = this.expression(
       children.expression[0].children,
@@ -168,7 +169,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const blockLocation = children.blockableStatement[0].location!;
 
     // See if there are JSDocs providing more specific self context
-    const docs = this.PROCESSOR.consumeJsdoc();
     let self: StructType;
     if (docs?.jsdoc.kind === 'self' && isTypeOfKind(docs.type[0], 'Struct')) {
       self = docs.type[0];
@@ -242,6 +242,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     children: StaticVarDeclarationsCstChildren,
     ctx: VisitorContext,
   ) {
+    const docs = this.PROCESSOR.consumeJsdoc();
     // Ensure that this variable exists
     const self = this.PROCESSOR.currentSelf;
     const range = this.PROCESSOR.range(children.Identifier[0]);
@@ -261,7 +262,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       ctx.functionSignifier = signifier;
       this.functionExpression(assignedToFunction, ctx);
     } else {
-      const docs = this.PROCESSOR.consumeJsdoc();
       const inferredType = this.assignmentRightHandSide(
         children.assignmentRightHandSide[0].children,
         withCtxKind(ctx, 'assignment'),
@@ -280,6 +280,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     children: LocalVarDeclarationCstChildren,
     ctx: VisitorContext,
   ) {
+    const docs = this.PROCESSOR.consumeJsdoc();
     const local = this.PROCESSOR.currentLocalScope;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
@@ -299,7 +300,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       ctx.functionSignifier = signifier;
       this.functionExpression(assignedToFunction, ctx);
     } else {
-      const docs = this.PROCESSOR.consumeJsdoc();
       const inferredType = children.assignmentRightHandSide
         ? this.assignmentRightHandSide(
             children.assignmentRightHandSide[0].children,
@@ -320,9 +320,10 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     children: VariableAssignmentCstChildren,
     ctx: VisitorContext,
   ) {
+    const docs = this.PROCESSOR.consumeJsdoc();
     // See if this identifier is known.
     const identified = this.FIND_ITEM(children);
-    let signifier = identified?.item as Signifier;
+    let signifier = identified?.item as Signifier | undefined;
     const name = children.Identifier[0].image;
     const range = this.PROCESSOR.range(children.Identifier[0]);
 
@@ -353,20 +354,19 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
     // If we don't have any type on this signifier yet, use the
     // assigned type.
-    if (signifier && !signifier.isTyped) {
-      const assignedToFunction =
-        children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
-          .children;
+    const assignedToFunction =
+      children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
+        .children;
 
-      if (assignedToFunction) {
-        ctx.functionSignifier = signifier;
-        this.functionExpression(assignedToFunction, ctx);
-      } else {
-        const docs = this.PROCESSOR.consumeJsdoc();
-        const inferredType = this.assignmentRightHandSide(
-          children.assignmentRightHandSide[0].children,
-          withCtxKind(ctx, 'assignment'),
-        );
+    if (assignedToFunction) {
+      ctx.functionSignifier = signifier;
+      this.functionExpression(assignedToFunction, ctx);
+    } else {
+      const inferredType = this.assignmentRightHandSide(
+        children.assignmentRightHandSide[0].children,
+        withCtxKind(ctx, 'assignment'),
+      );
+      if (signifier && !signifier.isTyped) {
         if (docs) {
           signifier.describe(docs.jsdoc.description);
           signifier.setType(docs.type);
@@ -522,6 +522,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     this.PROCESSOR.scope.setEnd(children.StartBrace[0], false);
     this.PROCESSOR.pushSelfScope(children.StartBrace[0], struct, true);
     for (const entry of children.structLiteralEntry || []) {
+      const docs = this.PROCESSOR.consumeJsdoc();
       const parts = entry.children;
       // The name is either a direct variable name or a string literal.
       let name: string;
@@ -555,7 +556,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         ctx.functionSignifier = signifier;
         this.functionExpression(assignedToFunction, ctx);
       } else {
-        const docs = this.PROCESSOR.consumeJsdoc();
         const inferredType = parts.assignmentRightHandSide
           ? this.assignmentRightHandSide(
               parts.assignmentRightHandSide[0].children,
