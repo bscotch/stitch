@@ -16,7 +16,7 @@ with(o_instance){
 
 var could_be_anything;
 
-/// @self {Id.Instance.o_object}
+/// @self Id.Instance.o_object
 with(could_be_anything){
   instance_variable = 300;
 }
