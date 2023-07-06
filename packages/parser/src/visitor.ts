@@ -36,7 +36,7 @@ import {
 import type { Code } from './project.code.js';
 import { Range, Reference } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import { getTypes, isTypeOfKind } from './types.checks.js';
+import { getTypeOfKind, getTypes, isTypeOfKind } from './types.checks.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
 import { EnumType, Type, TypeStore, type StructType } from './types.js';
 import { assert } from './util.js';
@@ -169,9 +169,12 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // Evaluate the expression and try to use its type as the self scope
     const docs = this.PROCESSOR.consumeJsdoc();
 
-    const conditionType = this.expression(
-      children.expression[0].children,
-      withCtxKind(context, 'withCondition'),
+    const conditionType = getTypeOfKind(
+      this.expression(
+        children.expression[0].children,
+        withCtxKind(context, 'withCondition'),
+      ),
+      ['Struct', 'Asset.GMObject', 'Id.Instance'],
     );
     const blockLocation = children.blockableStatement[0].location!;
 
@@ -182,7 +185,8 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     } else if (isTypeOfKind(conditionType, 'Struct')) {
       self = conditionType;
     } else if (
-      isTypeOfKind(conditionType, 'Asset.GMObject') &&
+      (isTypeOfKind(conditionType, 'Asset.GMObject') ||
+        isTypeOfKind(conditionType, 'Id.Instance')) &&
       conditionType.name
     ) {
       // Then we want to use the associated instance struct as the self
