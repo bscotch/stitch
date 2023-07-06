@@ -25,7 +25,10 @@ export function typeToHoverDetails(type: Type) {
   } else if (type.kind === 'Struct') {
     const members = type
       .listMembers()
-      .filter((x) => x.name !== 'self' && x.def);
+      .filter((x) => x.name !== 'self' && x.def)
+      .sort((a, b) =>
+        a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()),
+      );
     if (!members.length) {
       return '';
     }
