@@ -32,7 +32,7 @@ describe('Project', function () {
     expect(tracks.type.items[0].type[0].parent!).to.eql(
       spec.types.get('Struct'),
     );
-    expect(tracks.type.items!).to.eql(track);
+    expect(tracks.type.items[0].type[0]).to.eql(track);
 
     const keyframes = track.getMember('keyframes');
     ok(keyframes);
@@ -41,7 +41,9 @@ describe('Project', function () {
     expect(keyframes.type.items[0].type[0].parent!).to.eql(
       spec.types.get('Struct'),
     );
-    expect(keyframes.type.items!).to.eql(spec.types.get('Struct.Keyframe'));
+    expect(keyframes.type.items[0].type[0]).to.eql(
+      spec.types.get('Struct.Keyframe'),
+    );
 
     const typeField = track.getMember('type');
     ok(typeField);
@@ -64,16 +66,19 @@ describe('Project', function () {
     ok(scriptExecuteType.kind === 'Function');
     expect(scriptExecuteType.listParameters()).to.have.lengthOf(2);
     expect(scriptExecuteType.listParameters()![0].name).to.equal('scr');
-    expect(scriptExecuteType.listParameters()![0].type.kind).to.equal('Union');
-    expect(scriptExecuteType.listParameters()![0].type).to.have.lengthOf(3);
-    expect(scriptExecuteType.listParameters()![0].type.kind).to.equal('String');
-    expect(scriptExecuteType.listParameters()![1].type.kind).to.equal(
+    expect(scriptExecuteType.listParameters()![0].type.type).to.have.lengthOf(
+      3,
+    );
+    expect(scriptExecuteType.listParameters()![0].type.type[0].kind).to.equal(
+      'String',
+    );
+    expect(scriptExecuteType.listParameters()![0].type.type[1].kind).to.equal(
       'Function',
     );
-    expect(scriptExecuteType.listParameters()![2].type.kind).to.equal(
+    expect(scriptExecuteType.listParameters()![0].type.type[2].kind).to.equal(
       'Asset.GMScript',
     );
-    expect(scriptExecuteType.listParameters()![3].name).to.equal('...');
+    expect(scriptExecuteType.listParameters()![1].name).to.equal('...');
   });
 
   it('can has fallback GmlSpec', async function () {

@@ -68,7 +68,6 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
 
   /**
    * Should be used sparingly, since it means we're adding types in multiple steps instead of all at once.
-   * @deprecated
    */
   addType(type: Type<T> | Type<T>[]): this {
     this.type = [...this.type, ...arrayWrapped(type)];
@@ -316,7 +315,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * Can also be used for default Struct values. */
   addItemType(type: Type): this {
     this.items ||= new TypeStore();
-    this.items.type = type;
+    this.items.addType(type);
     return this;
   }
 
