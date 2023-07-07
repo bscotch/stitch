@@ -204,7 +204,7 @@ export function visitFunctionExpression(
       const paramDoc = docs!.jsdoc.params?.find(
         (p) => p.name?.content === param.name,
       );
-      if (paramDoc?.type && param.type.type[0].signifier) {
+      if (paramDoc?.type && param.type.type[0]?.signifier) {
         // Then we need a reference in the JSDocs
         param.type.type[0].signifier.addRef(
           Range.from(this.PROCESSOR.file, paramDoc.type!),

@@ -82,11 +82,19 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
   protected FIND_ITEM_BY_NAME(name: string): Signifier | undefined {
     const scope = this.PROCESSOR.fullScope;
-    return (
-      scope.local.getMember(name) ||
-      (!scope.selfIsGlobal && scope.self.getMember(name)) ||
-      this.PROCESSOR.globalSelf.getMember(name)
-    );
+    let item: Signifier | undefined = scope.local.getMember(name);
+    if (!item && !scope.selfIsGlobal) {
+      item = scope.self.getMember(name);
+    }
+    if (!item) {
+      item = this.PROCESSOR.globalSelf.getMember(name);
+      if (item?.instance) {
+        // Then this is a native "instance" variable. Ignore it
+        // to allow falling back on the self scope.
+        item = undefined;
+      }
+    }
+    return item;
   }
 
   /** Given an identifier in the current scope, find the corresponding item. */
