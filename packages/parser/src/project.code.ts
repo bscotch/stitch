@@ -1,5 +1,5 @@
 import type { Pathy } from '@bscotch/pathy';
-import { Jsdoc } from './jsdoc.js';
+import { Jsdoc, JsdocSummary } from './jsdoc.js';
 import { logger } from './logger.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
@@ -11,6 +11,8 @@ import {
 import { registerGlobals } from './project.globals.js';
 import {
   FunctionArgRange,
+  IPosition,
+  IRange,
   LinePosition,
   Position,
   Range,
@@ -28,7 +30,7 @@ import { registerSignifiers } from './visitor.js';
 export class Code {
   readonly $tag = 'gmlFile';
   readonly scopes: Scope[] = [];
-  readonly jsdocs: Jsdoc[] = [];
+  readonly jsdocs: JsdocSummary[] = [];
 
   protected diagnostics!: DiagnosticCollections;
   /** List of all symbol references in this file, in order of appearance. */
@@ -84,13 +86,13 @@ export class Code {
   }
 
   protected isInRange(
-    range: { start: Position; end: Position },
+    range: { start: IPosition; end: IPosition },
     offset: number | LinePosition,
   ) {
     return isInRange(range, offset);
   }
 
-  protected isBeforeRange(range: Range, offset: number | LinePosition) {
+  protected isBeforeRange(range: IRange, offset: number | LinePosition) {
     return isBeforeRange(range, offset);
   }
 
@@ -114,6 +116,34 @@ export class Code {
       }
     }
     return undefined;
+  }
+
+  getJsdocAt(
+    offset: number | LinePosition,
+    column?: number,
+  ): Jsdoc | undefined {
+    if (typeof offset === 'number' && typeof column === 'number') {
+      offset = { line: offset, column };
+    }
+    assert(this.jsdocs, 'Jsdocs must be an array');
+    for (let i = 0; i < this.jsdocs.length; i++) {
+      const jsdoc = this.jsdocs[i];
+      if (this.isInRange(jsdoc, offset)) {
+        return jsdoc;
+      } else if (this.isBeforeRange(jsdoc, offset)) {
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
+  /** @private Not yet implemented */
+  canAddJsdocTagAt(offset: number | LinePosition, column?: number): boolean {
+    const inJsdoc = this.getJsdocAt(offset, column);
+    if (!inJsdoc) {
+      return false;
+    }
+    return false;
   }
 
   getFunctionArgRangeAt(
@@ -262,6 +292,7 @@ export class Code {
       TOO_MANY_ARGUMENTS: [],
       UNDECLARED_GLOBAL_REFERENCE: [],
       UNDECLARED_VARIABLE_REFERENCE: [],
+      JSDOC: [],
     };
   }
 
@@ -451,6 +482,23 @@ export class Code {
     }
   }
 
+  protected computeJsdocDiagnostics() {
+    this.diagnostics.JSDOC = [];
+    for (const jsdoc of this.jsdocs) {
+      for (const diagnostic of jsdoc.diagnostics) {
+        this.diagnostics.JSDOC.push(
+          Diagnostic.warn(
+            diagnostic.message,
+            new Range(
+              Position.from(this, diagnostic.start),
+              Position.from(this, diagnostic.end),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   updateGlobals() {
     this.reset();
     return registerGlobals(this);
@@ -465,6 +513,7 @@ export class Code {
     this.discoverEventInheritanceWarnings();
     this.computeFunctionCallDiagnostics();
     this.computeUndeclaredSymbolDiagnostics();
+    this.computeJsdocDiagnostics();
     const allDiagnostics: Diagnostic[] = [];
     for (const items of Object.values(this.diagnostics)) {
       allDiagnostics.push(...items);

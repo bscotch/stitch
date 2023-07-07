@@ -14,6 +14,7 @@ export interface DiagnosticCollections {
   TOO_MANY_ARGUMENTS: Diagnostic[];
   UNDECLARED_VARIABLE_REFERENCE: Diagnostic[];
   UNDECLARED_GLOBAL_REFERENCE: Diagnostic[];
+  JSDOC: Diagnostic[];
 }
 export type DiagnosticCollectionName = keyof DiagnosticCollections;
 

@@ -64,11 +64,14 @@ export class Position implements IPosition {
 
   static from(
     file: Code,
-    loc: CstNodeLocation | Position,
+    loc: CstNodeLocation | Position | IPosition,
     fromTokenEnd = false,
   ): Position {
     if (loc instanceof Position) {
       return loc;
+    }
+    if ('offset' in loc) {
+      return new Position(file, loc.offset, loc.line, loc.column);
     }
     return fromTokenEnd
       ? Position.fromCstEnd(file, loc)

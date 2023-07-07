@@ -390,6 +390,17 @@ function validateJsdocs(project: Project) {
   expect(jsdoc.start.column).to.equal(1);
   expect(jsdoc.end.line).to.equal(11);
   expect(jsdoc.end.column).to.equal(16);
+  expect(jsdoc.params![2].optional).to.equal(true);
+  expect(jsdoc.params![2].name!.content).to.equal('maybe');
+  expect(jsdoc.params![2].name!.start.line).to.equal(6);
+  expect(jsdoc.params![2].name!.end.line).to.equal(6);
+  expect(jsdoc.params![2].name!.start.column).to.equal(22);
+  expect(jsdoc.params![2].name!.end.column).to.equal(27);
+  expect(jsdoc.params![2].type!.content).to.equal('Struct');
+  expect(jsdoc.params![2].type!.start.line).to.equal(6);
+  expect(jsdoc.params![2].type!.end.line).to.equal(6);
+  expect(jsdoc.params![2].type!.start.column).to.equal(13);
+  expect(jsdoc.params![2].type!.end.column).to.equal(19);
 
   jsdoc = jsdocs[1];
   expect(jsdoc.start.line).to.equal(13);

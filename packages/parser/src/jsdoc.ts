@@ -22,6 +22,7 @@ interface MatchGroups {
   default?: string;
   optionalName?: string;
   tag?: string;
+  extraBracket?: string;
 }
 type MatchIndex = readonly [start: number, end: number];
 type MatchIndices = { [K in keyof MatchGroups]?: MatchIndex };
@@ -63,8 +64,8 @@ for (const tagName of typeTags) {
 // Params
 patterns.param = `${patterns.param}(\\s+${typeGroupPattern})?\\s+(${paramNamePattern}|${optionalParamNamePattern})`;
 
-// Self (has a type but no group)
-patterns.self = `${patterns.self}\\s+(?<type>[a-zA-Z_.]+)`;
+// Self (has a type but no group. Make brackets optional to be more forgiving)
+patterns.self = `${patterns.self}\\s+(?<extraBracket>\\{\\s*)?(?<type>[a-zA-Z_.]+)(?:\\s*\\})?`;
 
 // Descriptions
 for (const tagName of names) {
@@ -122,6 +123,7 @@ export interface JsdocSummary
    * respective locations, for use e.g. syntax highlighting.
    */
   tags: JsdocComponent[];
+  diagnostics: (IRange & { message: string })[];
 }
 
 interface JsdocLine {
@@ -260,6 +262,7 @@ export function parseJsdoc(
     start,
     end,
     tags: [],
+    diagnostics: [],
   };
   let describing: Jsdoc | null = doc;
   const appendDescription = (
@@ -327,15 +330,19 @@ export function parseJsdoc(
       }
       // Handle params
       else if (parts.param) {
+        // Until VSCode ships Node 18, and therefore has group
+        // indices, we'll have to get positions with a simple search
+        // per group.
+
         const param: Jsdoc<'param'> = {
           kind: 'param',
-          name: matchToComponent(
-            match,
-            parts.name ? 'name' : 'optionalName',
+          name: substringRange(
+            line.content,
+            parts.name || parts.optionalName!,
             line.start,
           ),
           optional: !!parts.optionalName,
-          type: matchToComponent(match, 'typeUnion', line.start),
+          type: substringRange(line.content, parts.typeUnion!, line.start),
           description: parts.info || '',
           ...entireMatchRange,
         };
@@ -352,7 +359,7 @@ export function parseJsdoc(
         }
         const returns: Jsdoc<'returns'> = {
           kind: 'returns',
-          type: matchToComponent(match, 'typeUnion', line.start),
+          type: substringRange(line.content, parts.typeUnion!, line.start),
           description: parts.info || '',
           ...entireMatchRange,
         };
@@ -362,7 +369,14 @@ export function parseJsdoc(
       }
       // Handle Self
       else if (parts.self) {
-        doc.self = matchToComponent(match, 'type', line.start);
+        doc.self = substringRange(line.content, parts.type!, line.start);
+        if (parts.extraBracket) {
+          doc.diagnostics.push({
+            message: '@self types should not be wrapped in brackets',
+            start: doc.self.start,
+            end: doc.self.end,
+          });
+        }
       }
       // Handle Type
       else if (parts.type) {
@@ -397,6 +411,26 @@ export function parseJsdoc(
     doc.kind = 'self';
   }
   return doc;
+}
+
+function substringRange(
+  string: string,
+  substring: string,
+  start: IPosition,
+): JsdocComponent {
+  start = { ...start };
+  const index = string.indexOf(substring);
+  start.column += index;
+  start.offset += index;
+  return {
+    start,
+    end: {
+      column: start.column + substring.length,
+      line: start.line,
+      offset: start.offset + substring.length,
+    },
+    content: substring,
+  };
 }
 
 function matchToComponent(
