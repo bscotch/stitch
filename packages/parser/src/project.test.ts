@@ -29,18 +29,12 @@ describe('Project', function () {
     ok(tracks);
     expect(tracks.type.kind).to.equal('Array');
     expect(tracks.type.items[0].kind).to.equal('Struct');
-    expect(tracks.type.items[0].type[0].parent!).to.eql(
-      spec.types.get('Struct'),
-    );
     expect(tracks.type.items[0].type[0]).to.eql(track);
 
     const keyframes = track.getMember('keyframes');
     ok(keyframes);
     expect(keyframes.type.kind).to.equal('Array');
     expect(keyframes.type.items[0].kind).to.equal('Struct');
-    expect(keyframes.type.items[0].type[0].parent!).to.eql(
-      spec.types.get('Struct'),
-    );
     expect(keyframes.type.items[0].type[0]).to.eql(
       spec.types.get('Struct.Keyframe'),
     );

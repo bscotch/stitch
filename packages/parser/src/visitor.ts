@@ -200,9 +200,8 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       conditionType.name
     ) {
       // Then we want to use the associated instance struct as the self
-      const instanceStruct = this.PROCESSOR.project.getAssetByName(
-        conditionType.name,
-      )?.instanceType;
+      const asset = this.PROCESSOR.project.getAssetByName(conditionType.name);
+      const instanceStruct = asset?.instanceType;
       if (instanceStruct) {
         self = instanceStruct;
       }

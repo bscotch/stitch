@@ -116,44 +116,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   _params: Signifier[] | undefined = undefined;
   returns: TypeStore | undefined = undefined;
 
-  /**
-   * Create a shallow-ish clone
-   * @deprecated Difficult to understand consequences
-   */
-  clone(): Type<T> {
-    const clone = new Type<T>(this.kind as T);
-    clone.name = this.name;
-    clone.description = this.description;
-    clone.parent = this.parent;
-    clone._members = this._members;
-    clone.items = this.items;
-    clone.constructs = this.constructs?.clone();
-    clone.context = this.context?.clone();
-    clone._params = this._params ? [...this._params] : undefined;
-    clone.returns = this.returns;
-    return clone;
-  }
-
-  /**
-   * Force-convert this type to another, even if those are incompatible.
-   * @deprecated Types should be immutable -- they should be replaced in a TypeStore instead.
-   */
-  coerceTo(type: Type): Type {
-    this._kind = type.kind as any;
-    this.name ||= type.name;
-    this.description ||= type.description;
-    if (this !== type.parent) {
-      this.parent = type.parent as any;
-    }
-    this._members = type._members;
-    this.items = type.items;
-    this.constructs = type.constructs;
-    this.context = type.context;
-    this._params = type._params;
-    this.returns = type.returns;
-    return this;
-  }
-
   constructor(protected _kind: T) {}
 
   get kind() {

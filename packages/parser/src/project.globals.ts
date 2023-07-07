@@ -128,9 +128,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       const name = children.enumMember[i].children.Identifier[0];
       keepNames.add(name.image);
       const range = this.PROCESSOR.range(name);
-      const memberType = this.PROCESSOR.project
-        .createType('EnumMember')
-        .named(name.image);
+      const memberType = new Type('EnumMember').named(name.image);
       // Does member already exist?
       const member =
         type.getMember(name.image) || type.addMember(name.image, memberType);

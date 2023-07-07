@@ -21,7 +21,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   readonly gmlFiles: Map<string, Code> = new Map();
   yy!: YyDataStrict<T>;
   readonly yyPath: Pathy<YySchemas[T]>;
-  readonly symbol: Signifier;
+  readonly signifier: Signifier;
   /** For objects, their instance type. */
   instanceType: StructType | undefined;
   /** For objects, their parent */
@@ -36,18 +36,18 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     this.yyPath = yyPath.withValidator(yySchemas[this.assetKind]) as any;
 
     // Create the symbol
-    this.symbol = new Signifier(this.project.self, this.name);
-    this.symbol.def = {};
-    this.symbol.global = true;
-    this.symbol.asset = true;
+    this.signifier = new Signifier(this.project.self, this.name);
+    this.signifier.def = {};
+    this.signifier.global = true;
+    this.signifier.asset = true;
 
     // Create the Asset.<> type
     const type = new Type(this.assetTypeKind).named(this.name);
-    this.symbol.setType(type);
+    this.signifier.setType(type);
 
     // Add this asset to the project lookup, unless it is a script.
     if (this.assetKind !== 'scripts') {
-      this.project.self.addMember(this.symbol);
+      this.project.self.addMember(this.signifier);
       if (type.kind !== 'Any') {
         this.project.types.set(`${type.kind}.${this.name}`, type);
       }

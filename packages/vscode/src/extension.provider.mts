@@ -9,9 +9,12 @@ import {
   type Type,
 } from '@bscotch/gml-parser';
 import { GameMakerFolder } from 'tree.folder.mjs';
-import vscode from 'vscode';
+import vscode, { CancellationToken, CompletionContext } from 'vscode';
 import { assert, swallowThrown } from './assert.mjs';
-import { inScopeSymbolsToCompletions } from './extension.completions.mjs';
+import {
+  inScopeSymbolsToCompletions,
+  jsdocCompletions,
+} from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { GameMakerHoverProvider } from './extension.hover.mjs';
@@ -82,7 +85,6 @@ export class StitchProvider
   }
 
   async loadProject(yypPath: vscode.Uri, onDiagnostics: OnDiagnostics) {
-    const t = Timer.start();
     let project!: GameMakerProject;
     await vscode.window.withProgress(
       {
@@ -170,6 +172,8 @@ export class StitchProvider
   async provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
+    token: CancellationToken,
+    context: CompletionContext,
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
     info('provideCompletionItems', document, position);
     // If we're already processing this file, wait for it to finish so that we get up-to-date completions.
@@ -179,8 +183,16 @@ export class StitchProvider
     if (!gmlFile) {
       return [];
     }
-    const items = gmlFile.getInScopeSymbolsAt(offset);
-    return inScopeSymbolsToCompletions(document, items);
+    // Are we inside a JSDoc comment?
+    const jsdoc = gmlFile.getJsdocAt(offset);
+    if (jsdoc) {
+      return jsdocCompletions(document, position, jsdoc);
+    } else if (context.triggerCharacter !== '{') {
+      // The '{' character is only used to trigger autocomplete inside of JSDoc type blocks.
+      const items = gmlFile.getInScopeSymbolsAt(offset);
+      return inScopeSymbolsToCompletions(document, items);
+    }
+    return [];
   }
 
   provideSignatureHelp(

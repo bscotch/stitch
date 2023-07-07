@@ -417,7 +417,8 @@
     "completionProvider": {
       "resolveProvider": "true",
       "triggerCharacters": [
-        "."
+        ".",
+        "{"
       ]
     },
     "signatureHelpProvider": {

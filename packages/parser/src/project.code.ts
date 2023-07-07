@@ -1,5 +1,5 @@
 import type { Pathy } from '@bscotch/pathy';
-import { Jsdoc, JsdocSummary } from './jsdoc.js';
+import { JsdocSummary } from './jsdoc.js';
 import { logger } from './logger.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
@@ -121,7 +121,7 @@ export class Code {
   getJsdocAt(
     offset: number | LinePosition,
     column?: number,
-  ): Jsdoc | undefined {
+  ): JsdocSummary | undefined {
     if (typeof offset === 'number' && typeof column === 'number') {
       offset = { line: offset, column };
     }

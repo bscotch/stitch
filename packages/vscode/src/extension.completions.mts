@@ -1,6 +1,12 @@
-import { type Signifier } from '@bscotch/gml-parser';
+import type { JsdocSummary, Signifier } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { config } from './extension.config.mjs';
+
+export function jsdocCompletions(
+  document: vscode.TextDocument,
+  position: vscode.Position,
+  jsdoc: JsdocSummary,
+): vscode.CompletionItem[] {}
 
 export function inScopeSymbolsToCompletions(
   document: vscode.TextDocument,

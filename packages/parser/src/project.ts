@@ -10,7 +10,6 @@ import { Diagnostic } from './project.diagnostics.js';
 import { Native } from './project.native.js';
 import { Signifier } from './signifiers.js';
 import { StructType, Type } from './types.js';
-import { PrimitiveName } from './types.primitives.js';
 import { assert, ok } from './util.js';
 export { setLogger, type Logger } from './logger.js';
 
@@ -101,16 +100,11 @@ export class Project {
     return pathy(this.yypPath).up();
   }
 
-  createType<T extends PrimitiveName>(type: T): Type<T> {
-    const baseType = this.types.get(type) as Type<T>;
-    ok(baseType, `Unknown type '${type}'`);
-    return baseType!.derive();
-  }
-
   createStructType(subtype?: 'self' | 'instance'): StructType {
     const type = new Type('Struct');
     if (subtype) {
       const selfMember = type.addMember('self', type);
+      selfMember.setType(type);
       selfMember.def = {};
       selfMember.writable = false;
       selfMember.instance = subtype === 'instance';

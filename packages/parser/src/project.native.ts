@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
 import { Signifier } from './signifiers.js';
-import { Type, type FunctionType, type StructType } from './types.js';
+import { Type, type StructType } from './types.js';
 import { primitiveNames } from './types.primitives.js';
 import { assert } from './util.js';
 
@@ -26,13 +26,6 @@ export class Native {
 
   get version() {
     return this.spec.runtime;
-  }
-
-  protected createStructType(): StructType {
-    return this.types.get('Struct')!.derive() as StructType;
-  }
-  protected createFunctionType(): FunctionType {
-    return this.types.get('Function')!.derive() as FunctionType;
   }
 
   protected load() {
@@ -82,7 +75,7 @@ export class Native {
       const typeName = `Function.${func.name}`;
       // Need a type and a symbol for each function.
       const type = (
-        this.types.get(typeName) || this.createFunctionType().named(func.name)
+        this.types.get(typeName) || new Type('Function').named(func.name)
       ).describe(func.description);
       this.types.set(typeName, type);
 
@@ -154,9 +147,9 @@ export class Native {
       // Create the base type for the class.
       const classTypeName = `Constant.${klass}`;
       const typeString = [...typeNames.values()].join('|');
-      const classType = Type.fromFeatherString(typeString, this.types)[0]
-        .derive()
-        .named(klass);
+      const classType = Type.fromFeatherString(typeString, this.types)[0].named(
+        klass,
+      );
       const existingType = this.types.get(classTypeName);
       assert(!existingType, `Type ${classTypeName} already exists`);
 
@@ -186,7 +179,7 @@ export class Native {
       }
       const typeName = `Struct.${struct.name}`;
       const structType =
-        this.types.get(typeName) || this.createStructType().named(struct.name);
+        this.types.get(typeName) || new Type('Struct').named(struct.name);
       ok(!structType.listMembers().length, `Type ${typeName} already exists`);
       this.types.set(typeName, structType);
 

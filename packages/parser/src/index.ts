@@ -1,3 +1,4 @@
+export * from './jsdoc.js';
 export { Asset } from './project.asset.js';
 export { Code } from './project.code.js';
 export type { Diagnostic } from './project.diagnostics.js';
