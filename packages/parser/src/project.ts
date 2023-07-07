@@ -109,6 +109,10 @@ export class Project {
       selfMember.writable = false;
       selfMember.instance = subtype === 'instance';
     }
+    if (subtype === 'instance') {
+      /// Then this extends the parent with all of the built-ins
+      type.parent = this.native.objectInstanceBase;
+    }
     return type;
   }
 

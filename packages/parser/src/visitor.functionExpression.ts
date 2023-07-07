@@ -223,6 +223,7 @@ export function visitFunctionExpression(
   // Update the RETURN type based on the return statements found in the body
   if (docs?.type[0]?.returns) {
     functionType.setReturnType(docs.type[0].returns.type);
+
     // TODO: Check against the inferred return types
   } else {
     functionType.setReturnType(ctx.returns || this.UNDEFINED);

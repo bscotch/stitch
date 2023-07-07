@@ -10,6 +10,7 @@ import { assert } from './util.js';
 
 export class Native {
   protected spec!: GmlSpec;
+  objectInstanceBase!: StructType;
 
   protected constructor(
     readonly filePath: string,
@@ -33,6 +34,14 @@ export class Native {
     this.loadVariables();
     this.loadStructs();
     this.loadFunctions();
+
+    // Create the base object instance type using instance variables.
+    this.objectInstanceBase = new Type('Struct');
+    for (const member of this.globalSelf.listMembers()) {
+      if (member.instance) {
+        this.objectInstanceBase.addMember(member);
+      }
+    }
   }
 
   protected loadVariables() {
