@@ -94,7 +94,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   name: string | undefined = undefined;
   description: string | undefined = undefined;
   /** Signifiers associated with this type. */
-  _signifiers: Set<Signifier> | undefined = undefined;
+  _signifier: Signifier | undefined = undefined;
 
   /**
    * If set, then this Type is treated as a subset of the parent.
@@ -131,13 +131,12 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     this._kind = newKind as T;
   }
 
-  addSignifier(signifier: Signifier) {
-    this._signifiers ||= new Set();
-    this._signifiers.add(signifier);
+  get signifier(): Signifier | undefined {
+    return this._signifier;
   }
-
-  get signifiers(): Signifier[] {
-    return [...(this._signifiers?.values() || [])];
+  set signifier(signifier: Signifier) {
+    // assert(!this._signifier, 'Cannot change type signifier');
+    this._signifier = signifier;
   }
 
   get canBeSelf() {

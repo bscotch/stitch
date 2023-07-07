@@ -1,6 +1,6 @@
 import type { FunctionExpressionCstChildren } from '../gml-cst.js';
 import { VisitorContext, withCtxKind } from './parser.js';
-import { fixITokenLocation } from './project.location.js';
+import { Range, fixITokenLocation } from './project.location.js';
 import { Signifier } from './signifiers.js';
 import { getTypeOfKind, isTypeOfKind } from './types.checks.js';
 import { Type, TypeStore, type StructType } from './types.js';
@@ -146,6 +146,10 @@ export function visitFunctionExpression(
       // Unset it so we don't accidentally use it!
       fromJsdoc = undefined;
     }
+    const paramDoc = fromJsdoc
+      ? docs?.jsdoc.params?.find((p) => p.name?.content === name)
+      : undefined;
+
     const param = functionType
       .addParameter(i, paramToken.image)
       .definedAt(range);
@@ -165,6 +169,19 @@ export function visitFunctionExpression(
     const paramType = fromJsdoc?.type.type || inferredType || this.ANY;
     param.setType(paramType);
 
+    // Add a reference to the jsdoc hame
+    if (paramDoc?.name) {
+      param.addRef(Range.from(this.PROCESSOR.file, paramDoc.name));
+    }
+
+    // Add a reference to the jsdoc type if it is associated with a signifier
+    if (paramDoc?.type && param.type.type[0].signifier) {
+      // Then we need a reference in the JSDocs
+      param.type.type[0].signifier.addRef(
+        Range.from(this.PROCESSOR.file, paramDoc.type),
+      );
+    }
+
     // Also add to the function's local scope.
     functionLocalScope.addMember(param);
   }
@@ -183,6 +200,16 @@ export function visitFunctionExpression(
         .describe(param.description);
       // Do not add to local scope, since if it's only defined
       // in the JSDoc it's not a real parameter.
+
+      const paramDoc = docs!.jsdoc.params?.find(
+        (p) => p.name?.content === param.name,
+      );
+      if (paramDoc?.type && param.type.type[0].signifier) {
+        // Then we need a reference in the JSDocs
+        param.type.type[0].signifier.addRef(
+          Range.from(this.PROCESSOR.file, paramDoc.type!),
+        );
+      }
     }
   }
 

@@ -121,6 +121,16 @@ export class Range implements IRange {
     return this.start.file;
   }
 
+  static from(file: Code, location: IRange | CstNodeLocation): Range {
+    if ('start' in location) {
+      return new Range(
+        Position.from(file, location.start),
+        Position.from(file, location.end),
+      );
+    }
+    return Range.fromCst(file, location);
+  }
+
   static fromCst(fileName: Code, location: CstNodeLocation) {
     return new Range(
       Position.fromCstStart(fileName, location),

@@ -187,20 +187,25 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       ['Struct', 'Asset.GMObject', 'Id.Instance'],
     );
     const blockLocation = children.blockableStatement[0].location!;
+    const selfType = docs?.jsdoc.kind === 'self' ? docs.type[0] : conditionType;
+    const docsSelfRange = docs?.jsdoc.self
+      ? Range.from(this.PROCESSOR.file, docs.jsdoc.self)
+      : undefined;
+    if (docsSelfRange && selfType) {
+      selfType.signifier?.addRef(docsSelfRange);
+    }
 
     // See if there are JSDocs providing more specific self context
     let self: StructType;
-    if (docs?.jsdoc.kind === 'self' && isTypeOfKind(docs.type[0], 'Struct')) {
-      self = docs.type[0];
-    } else if (isTypeOfKind(conditionType, 'Struct')) {
-      self = conditionType;
+    if (isTypeOfKind(selfType, 'Struct')) {
+      self = selfType;
     } else if (
-      (isTypeOfKind(conditionType, 'Asset.GMObject') ||
-        isTypeOfKind(conditionType, 'Id.Instance')) &&
-      conditionType.name
+      (isTypeOfKind(selfType, 'Asset.GMObject') ||
+        isTypeOfKind(selfType, 'Id.Instance')) &&
+      selfType.name
     ) {
       // Then we want to use the associated instance struct as the self
-      const asset = this.PROCESSOR.project.getAssetByName(conditionType.name);
+      const asset = this.PROCESSOR.project.getAssetByName(selfType.name);
       const instanceStruct = asset?.instanceType;
       if (instanceStruct) {
         self = instanceStruct;
@@ -316,6 +321,15 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       if (docs) {
         signifier.describe(docs.jsdoc.description);
         signifier.setType(docs.type);
+        if (
+          docs.jsdoc.kind === 'type' &&
+          docs.jsdoc.type &&
+          docs.type[0].signifier
+        ) {
+          docs.type[0].signifier.addRef(
+            Range.from(this.PROCESSOR.file, docs.jsdoc.type),
+          );
+        }
       } else if (inferredType) {
         signifier.setType(inferredType);
       }
@@ -365,6 +379,15 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       if (docs) {
         signifier.describe(docs.jsdoc.description);
         signifier.setType(docs.type);
+        if (
+          docs.jsdoc.kind === 'type' &&
+          docs.jsdoc.type &&
+          docs.type[0].signifier
+        ) {
+          docs.type[0].signifier.addRef(
+            Range.from(this.PROCESSOR.file, docs.jsdoc.type),
+          );
+        }
       } else if (inferredType) {
         signifier.setType(inferredType);
       }
@@ -433,10 +456,20 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         children.assignmentRightHandSide[0].children,
         withCtxKind(ctx, 'assignment'),
       );
-      if (signifier && (!signifier.isTyped || wasUndeclared)) {
+      const forceOverride = docs?.jsdoc.kind === 'type';
+      if (signifier && (!signifier.isTyped || wasUndeclared || forceOverride)) {
         if (docs) {
           signifier.describe(docs.jsdoc.description);
           signifier.setType(docs.type);
+          if (
+            docs.jsdoc.kind === 'type' &&
+            docs.jsdoc.type &&
+            docs.type[0].signifier
+          ) {
+            docs.type[0].signifier.addRef(
+              Range.from(this.PROCESSOR.file, docs.jsdoc.type),
+            );
+          }
         } else if (inferredType) {
           signifier.setType(inferredType);
         }
@@ -667,6 +700,15 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         if (docs) {
           signifier.describe(docs.jsdoc.description);
           signifier.setType(docs.type);
+          if (
+            docs.jsdoc.kind === 'type' &&
+            docs.jsdoc.type &&
+            docs.type[0].signifier
+          ) {
+            docs.type[0].signifier.addRef(
+              Range.from(this.PROCESSOR.file, docs.jsdoc.type),
+            );
+          }
         } else if (inferredType) {
           signifier.setType(inferredType);
         }

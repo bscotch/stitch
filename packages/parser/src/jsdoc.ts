@@ -250,7 +250,7 @@ export function parseJsdoc(
   if (!lines.length) return undefined;
   assert(lines[0], 'No lines found in jsdoc block');
   const start: IPosition = lines[0].start;
-  const end: IPosition = lines.at(-1)!.start;
+  const end: IPosition = { ...lines.at(-1)!.start };
   end.column += lines.at(-1)!.content.length;
   end.offset += lines.at(-1)!.content.length;
 

@@ -413,6 +413,19 @@ function validateJsdocs(project: Project) {
   expect(jsdoc.start.column).to.equal(1);
   expect(jsdoc.end.line).to.equal(34);
   expect(jsdoc.end.column).to.equal(38);
+
+  // This one was misbehaving despite the above tests passing
+  const scriptFile = project.getAssetByName('Script1')!.gmlFile;
+  const lastJsdoc = scriptFile.jsdocs.at(-1)!;
+  expect(lastJsdoc.start.line).to.equal(55);
+  expect(lastJsdoc.start.column).to.equal(1);
+  expect(lastJsdoc.end.line).to.equal(55);
+  expect(lastJsdoc.end.column).to.equal(42);
+  expect(lastJsdoc.params![0].name!.content).to.equal('hello');
+  expect(lastJsdoc.params![0].type!.start.line).to.equal(55);
+  expect(lastJsdoc.params![0].type!.end.line).to.equal(55);
+  expect(lastJsdoc.params![0].type!.start.column).to.equal(11);
+  expect(lastJsdoc.params![0].type!.end.column).to.equal(35);
 }
 
 function validateWithContexts(project: Project) {

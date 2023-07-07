@@ -51,3 +51,6 @@ BSCHEMA.force_use_packed = true;
 
 /// @arg hello
 function untyped_param_function(){}
+
+/// @arg {Struct.GlobalConstructor} hello
+function typed_param_function(){}

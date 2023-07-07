@@ -16,7 +16,7 @@ export class Signifier extends Refs(Flags) {
   constructor(parent: Type, readonly name: string, type?: Type | Type[]) {
     super();
     if (type) {
-      this.type.type = type;
+      this.setType(type);
     }
     this.parent = parent;
   }
@@ -36,6 +36,9 @@ export class Signifier extends Refs(Flags) {
 
   setType(newType: Type | TypeStore | (TypeStore | Type)[]): this {
     this.type.type = getTypes(newType);
+    if (newType instanceof Type) {
+      newType.signifier = this;
+    }
     return this;
   }
 
