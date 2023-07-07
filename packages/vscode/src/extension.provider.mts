@@ -413,11 +413,15 @@ export class StitchProvider
     for (const yypFile of yypFiles) {
       info('Loading project', yypFile);
       const pt = Timer.start();
-      await StitchProvider.provider.loadProject(
-        yypFile,
-        this.provider.emitDiagnostics.bind(this.provider),
-      );
-      pt.seconds('Loaded project in');
+      try {
+        await StitchProvider.provider.loadProject(
+          yypFile,
+          this.provider.emitDiagnostics.bind(this.provider),
+        );
+        pt.seconds('Loaded project in');
+      } catch (error) {
+        logger.error('Error loading project', yypFile, error);
+      }
     }
 
     const treeProvider = new GameMakerTreeProvider(this.provider);
