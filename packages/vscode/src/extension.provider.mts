@@ -27,7 +27,7 @@ import {
   rangeFrom,
   uriFromCodeFile,
 } from './lib.mjs';
-import { Timer, info, warn } from './log.mjs';
+import { Timer, info, logger, warn } from './log.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 
 export class StitchProvider
@@ -361,6 +361,10 @@ export class StitchProvider
         if (doc.languageId !== 'gml') {
           return;
         }
+        if (this.provider.processingFiles.has(doc.uri.fsPath)) {
+          logger.info('Already processing file', doc.uri.fsPath);
+          return;
+        }
         this.provider.diagnosticCollection.delete(doc.uri);
         // Add the processing promise to a map so
         // that other functionality can wait for it
@@ -371,9 +375,28 @@ export class StitchProvider
           this.provider.processingFiles.delete(doc.uri.fsPath);
         });
       };
+      const watcher = vscode.workspace.createFileSystemWatcher('**/*.gml');
       // Ensure that things stay up to date!
       vscode.workspace.onDidChangeTextDocument(onChangeDoc);
       vscode.workspace.onDidOpenTextDocument(onChangeDoc);
+      watcher.onDidChange((uri) => {
+        // Find the corresponding document, if there is one
+        const doc = vscode.workspace.textDocuments.find(
+          (d) => d.uri.fsPath === uri.fsPath,
+        );
+        info('changedOnDisk', uri.fsPath);
+        if (doc) {
+          // Then we might have just saved this doc, or
+          // it's open but got changed externally. Either way,
+          // the onChangeDoc handler is already debouncing
+          return onChangeDoc(doc);
+        }
+        // Otherwise the file isn't open, so we need to
+        // reprocess it more directly.
+        this.provider.getGmlFile(uri)?.reload(undefined, {
+          reloadDirty: true,
+        });
+      });
     }
 
     // Dispose any existing subscriptions
