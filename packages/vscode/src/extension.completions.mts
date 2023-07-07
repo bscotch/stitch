@@ -1,12 +1,33 @@
-import type { JsdocSummary, Signifier } from '@bscotch/gml-parser';
+import {
+  Code,
+  JsdocSummary,
+  Signifier,
+  primitiveNames,
+} from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { config } from './extension.config.mjs';
 
 export function jsdocCompletions(
   document: vscode.TextDocument,
   position: vscode.Position,
+  file: Code,
   jsdoc: JsdocSummary,
-): vscode.CompletionItem[] {}
+): vscode.CompletionItem[] {
+  // For now just grab all of the global types and return them as completions.
+  const completions: vscode.CompletionItem[] = [];
+  const typeNames = new Set<string>(file.project.types.keys());
+  for (const primitiveName of primitiveNames) {
+    typeNames.add(primitiveName);
+  }
+  for (const type of typeNames) {
+    const item = new vscode.CompletionItem(
+      type,
+      vscode.CompletionItemKind.Interface,
+    );
+    completions.push(item);
+  }
+  return completions;
+}
 
 export function inScopeSymbolsToCompletions(
   document: vscode.TextDocument,

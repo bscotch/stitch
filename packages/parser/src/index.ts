@@ -14,3 +14,4 @@ export {
 export { Signifier } from './signifiers.js';
 export * from './types.flags.js';
 export type * from './types.js';
+export { primitiveNames, type PrimitiveName } from './types.primitives.js';

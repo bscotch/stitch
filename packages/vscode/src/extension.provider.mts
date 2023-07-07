@@ -186,7 +186,7 @@ export class StitchProvider
     // Are we inside a JSDoc comment?
     const jsdoc = gmlFile.getJsdocAt(offset);
     if (jsdoc) {
-      return jsdocCompletions(document, position, jsdoc);
+      return jsdocCompletions(document, position, gmlFile, jsdoc);
     } else if (context.triggerCharacter !== '{') {
       // The '{' character is only used to trigger autocomplete inside of JSDoc type blocks.
       const items = gmlFile.getInScopeSymbolsAt(offset);
