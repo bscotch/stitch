@@ -146,15 +146,9 @@ function jsdocBlockToLines(raw: {
     offset: raw.startOffset,
   };
   // If this starts with a /**, remove that.
-  if (raw.image.startsWith('/**')) {
-    raw.image = raw.image.slice(3);
-    startPosition.column += 3;
-    startPosition.offset += 3;
-  }
+  raw.image = raw.image.replace(/^\/\*\*/, '   ');
   // If this ends with a */, remove that.
-  if (raw.image.endsWith('*/')) {
-    raw.image = raw.image.slice(0, -2);
-  }
+  raw.image = raw.image.replace(/\*\/$/, '  ');
 
   const rawLines = raw.image.split(/(\r?\n)/);
   const jsdocLines: JsdocLine[] = [];

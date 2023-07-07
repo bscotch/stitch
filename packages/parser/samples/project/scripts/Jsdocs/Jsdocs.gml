@@ -10,13 +10,13 @@
 /// @self Struct.AnotherConstructor
 /// @deprecated
 function Jsdocs(){
-	/// This one is a string
-	/// @type {String}
+  /// This one is a string
+  /// @type {String}
 	var a_string;
 	
-	/** This one is a Real
-	 * @type {Real}
-	 */
+  /** This one is a Real
+   * @type {Real}
+   */
 	var a_real;
 }
 

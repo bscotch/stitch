@@ -159,6 +159,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       jsdoc,
       type,
     };
+    this.PROCESSOR.file.jsdocs.push(jsdoc);
   }
 
   override jsdocJs(children: JsdocJsCstChildren) {

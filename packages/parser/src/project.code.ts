@@ -1,4 +1,5 @@
 import type { Pathy } from '@bscotch/pathy';
+import { Jsdoc } from './jsdoc.js';
 import { logger } from './logger.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
@@ -27,6 +28,7 @@ import { registerSignifiers } from './visitor.js';
 export class Code {
   readonly $tag = 'gmlFile';
   readonly scopes: Scope[] = [];
+  readonly jsdocs: Jsdoc[] = [];
 
   protected diagnostics!: DiagnosticCollections;
   /** List of all symbol references in this file, in order of appearance. */
@@ -296,6 +298,7 @@ export class Code {
   protected initializeScopeRanges() {
     assert(this.scopes, 'Scopes must be initialized');
     this.scopes.length = 0;
+    this.jsdocs.length = 0;
     const position = Position.fromFileStart(this);
     const self = this.asset.instanceType || this.project.self;
     const local = new Type('Struct');

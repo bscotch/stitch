@@ -93,6 +93,8 @@ describe('Project', function () {
     //#region ASSETS
     const script = project.getAssetByName('Script1')!;
     const scriptFile = script.gmlFile;
+    const jsdocs = project.getAssetByName('Jsdocs')!;
+    const jsdocsFile = jsdocs.gmlFile;
     const complexScript = project.getAssetByName('Complicated')!;
     const complexScriptFile = complexScript.gmlFile;
     const recoveryScript = project.getAssetByName('Recovery')!;
@@ -106,6 +108,8 @@ describe('Project', function () {
     const child2 = project.getAssetByName('o_child2')!;
     ok(script);
     ok(scriptFile);
+    ok(jsdocs);
+    ok(jsdocsFile);
     ok(complexScript);
     ok(complexScriptFile);
     ok(obj);
@@ -313,6 +317,7 @@ describe('Project', function () {
 
     validateWithContexts(project);
     validateFunctionContexts(project);
+    validateJsdocs(project);
 
     validateBschemaConstructor(project);
     // Reprocess a file and ensure that the tests still pass
@@ -372,6 +377,37 @@ function validateFunctionContexts(project: Project) {
     functionWithInstanceContext &&
       functionWithInstanceContext.self === obj.instanceType,
   );
+}
+
+function validateJsdocs(project: Project) {
+  const jsdocsFile = project.getAssetByName('Jsdocs')!.gmlFile;
+  const jsdocs = jsdocsFile.jsdocs;
+  expect(jsdocs).to.have.lengthOf(4);
+
+  // Check positions
+  let jsdoc = jsdocs[0];
+  expect(jsdoc.start.line).to.equal(1);
+  expect(jsdoc.start.column).to.equal(1);
+  expect(jsdoc.end.line).to.equal(11);
+  expect(jsdoc.end.column).to.equal(16);
+
+  jsdoc = jsdocs[1];
+  expect(jsdoc.start.line).to.equal(13);
+  expect(jsdoc.start.column).to.equal(3);
+  expect(jsdoc.end.line).to.equal(14);
+  expect(jsdoc.end.column).to.equal(21);
+
+  jsdoc = jsdocs[2];
+  expect(jsdoc.start.line).to.equal(17);
+  expect(jsdoc.start.column).to.equal(3);
+  expect(jsdoc.end.line).to.equal(19);
+  expect(jsdoc.end.column).to.equal(6);
+
+  jsdoc = jsdocs[3];
+  expect(jsdoc.start.line).to.equal(23);
+  expect(jsdoc.start.column).to.equal(1);
+  expect(jsdoc.end.line).to.equal(34);
+  expect(jsdoc.end.column).to.equal(38);
 }
 
 function validateWithContexts(project: Project) {
