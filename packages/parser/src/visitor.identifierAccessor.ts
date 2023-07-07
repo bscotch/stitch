@@ -184,12 +184,16 @@ export function visitIdentifierAccessor(
         } else {
           // TODO: Handle dot accessors for other valid dot-accessible types.
           // But for now, just emit an error for definitenly invalid types.
-          const isDotAccessible = getTypeOfKind(accessing.type, [
-            'Id.Instance',
-            'Asset.GMObject',
-            'Any',
-            'Unknown',
-          ]);
+          const isDotAccessible =
+            getTypeOfKind(accessing.type, [
+              'Id.Instance',
+              'Asset.GMObject',
+              'Any',
+              'Unknown',
+            ]) ||
+            !accessing.type ||
+            (accessing.type instanceof TypeStore &&
+              accessing.type.type.length === 0);
           accessing = {};
           lastAccessedType = this.ANY;
           if (!isDotAccessible) {

@@ -81,7 +81,7 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
     const typeStrings = [
       ...new Set(this.type.map((t) => t.toFeatherString())),
     ].sort((a, b) => a.localeCompare(b));
-    return typeStrings.join('|');
+    return typeStrings.join('|') || 'Any';
   }
 }
 

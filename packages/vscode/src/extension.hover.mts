@@ -16,10 +16,13 @@ export class GameMakerHoverProvider implements vscode.HoverProvider {
     const hoverContents = new vscode.MarkdownString();
     const codeBlocks = new Set<string>();
     const textBlocks = new Set<string>();
+    if (item.type.type.length === 0) {
+      codeBlocks.add('Any');
+    }
     for (const type of item.type.type) {
       const code = type.code;
       if (code) {
-        codeBlocks.add(type.code);
+        codeBlocks.add(code);
       }
       const description = item.description || type.description;
       if (description) {
