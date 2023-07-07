@@ -169,6 +169,15 @@ export function visitIdentifierAccessor(
                   newMember.setType(inferredType);
                 }
               }
+              // Else if this is a struct without any type info,
+              // allow it to be "defined" since the user has no opinions about its existence.
+              // TODO: This should probably be an OPTION
+              else if (
+                accessingStruct.totalMembers() === 0 &&
+                !accessingStruct.items?.type.length
+              ) {
+                newMember.def = {}; // Prevents "Undeclared" errors
+              }
               accessing = {
                 type: newMember.type,
                 range: propertyNameRange,

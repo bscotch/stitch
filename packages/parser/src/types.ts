@@ -224,6 +224,15 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return param;
   }
 
+  totalMembers(excludeParents = false): number {
+    if (excludeParents || !this.parent) {
+      return this._members?.size || 0;
+    }
+    return (
+      (this._members?.size || 0) + this.parent.totalMembers(excludeParents)
+    );
+  }
+
   listMembers(excludeParents = false): Signifier[] {
     const members = this._members?.values() || [];
     if (excludeParents || !this.parent) {
