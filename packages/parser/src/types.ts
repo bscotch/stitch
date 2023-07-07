@@ -30,9 +30,8 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
   readonly $tag = 'TypeStore';
   protected _types: Type<T>[] = [];
 
-  constructor(types?: Type<T> | Type<T>[]) {
+  constructor() {
     super();
-    this.type = types;
   }
 
   /** If this store has only one type, its kind. Else throws. */
@@ -94,6 +93,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   // results in the name `MyStruct`.
   name: string | undefined = undefined;
   description: string | undefined = undefined;
+  /** Signifiers associated with this type. */
+  _signifiers: Set<Signifier> | undefined = undefined;
+
   /**
    * If set, then this Type is treated as a subset of the parent.
    * It will only "match" another type if that type is in its
@@ -127,6 +129,15 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       'Cannot change type kind',
     );
     this._kind = newKind as T;
+  }
+
+  addSignifier(signifier: Signifier) {
+    this._signifiers ||= new Set();
+    this._signifiers.add(signifier);
+  }
+
+  get signifiers(): Signifier[] {
+    return [...(this._signifiers?.values() || [])];
   }
 
   get canBeSelf() {
