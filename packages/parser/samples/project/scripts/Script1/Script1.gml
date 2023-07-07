@@ -48,3 +48,6 @@ with o_parent {
 var a_template_string = $"hello {const} {const.name}";
 
 BSCHEMA.force_use_packed = true;
+
+/// @arg hello
+function untyped_param_function(){}

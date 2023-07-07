@@ -91,8 +91,10 @@ export function typeFromParsedJsdocs(
       type.addReturnType(returnType);
     }
     for (const param of jsdoc.params || []) {
-      const paramType = typeFromFeatherString(param.type!.content, knownTypes);
-      const member = type.addParameter(i, param.name!.content, paramType);
+      const member = type.addParameter(i, param.name!.content);
+      if (param.type) {
+        member.setType(typeFromFeatherString(param.type.content, knownTypes));
+      }
       i++;
       member.optional = !!param.optional;
       member.describe(param.description);

@@ -374,12 +374,12 @@ export class Project {
         z.object({ runtimeVersion: z.string().optional() }).passthrough(),
       );
     if (await stitchConfig.exists()) {
-      logger.error('Found stitch config');
+      logger.info('Found stitch config');
       const config = await stitchConfig.read();
       runtimeVersion = config.runtimeVersion;
     }
     if (!runtimeVersion) {
-      logger.error('No stitch config found, looking up runtime version');
+      logger.warn('No stitch config found, looking up runtime version');
       // Look up the runtime version that matches the project's IDE version.
       await this.yypWaiter;
       const usingRelease = await GameMakerIde.findRelease({

@@ -373,8 +373,8 @@ export function parseJsdoc(
         if (parts.extraBracket) {
           doc.diagnostics.push({
             message: '@self types should not be wrapped in brackets',
-            start: doc.self.start,
-            end: doc.self.end,
+            start: doc.self!.start,
+            end: doc.self!.end,
           });
         }
       }
@@ -415,11 +415,17 @@ export function parseJsdoc(
 
 function substringRange(
   string: string,
-  substring: string,
+  substring: string | undefined,
   start: IPosition,
-): JsdocComponent {
+): JsdocComponent | undefined {
+  if (!substring) {
+    return undefined;
+  }
   start = { ...start };
   const index = string.indexOf(substring);
+  if (index < 0) {
+    return undefined;
+  }
   start.column += index;
   start.offset += index;
   return {

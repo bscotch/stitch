@@ -4,7 +4,7 @@
 /// @param {Real} second This is the second parameter,
 ///        which spans multiple lines.
 /// @param {Struct} [maybe] This parameter is optional
-/// @param {Bool} [...] And so is this one, but there can be as many as you want!
+/// @param {String} [...] And so is this one, but there can be as many as you want!
 /// @returns {Struct} And here is a multiline
 ///  description of the return type.
 /// @self Struct.AnotherConstructor
