@@ -23,7 +23,7 @@ await $`pnpm build`;
 
 // PUBLISH
 
-await $`pnpm wrangler pages deploy ./.svelte-kit/cloudflare --project-name=stitch --branch=develop --commit-message=${message} --commit-hash=${hash}`;
+await $`pnpm wrangler pages deploy ./.svelte-kit/cloudflare --project-name=stitch`;
 
 /** @param {import('zx').ProcessPromise} call */
 async function stdout(call) {
