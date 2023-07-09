@@ -15,7 +15,7 @@
 	<div class="title">
 		<h1>Stitch</h1>
 		<p>
-			A toolkit for managing <a href="https://gamemaker.io/en">GameMaker</a> projects
+			A toolkit for managing <a href="https://gamemaker.io">GameMaker</a> projects
 		</p>
 		<p style="font-style:italic">This site is a work in progress.</p>
 	</div>

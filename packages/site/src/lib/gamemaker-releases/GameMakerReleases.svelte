@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { GameMakerReleaseWithNotes } from '@bscotch/gamemaker-releases';
+	import { faDownload } from '@fortawesome/free-solid-svg-icons';
+	import Fa from 'svelte-fa';
 	import { toDateIso, toDateLocal } from '../util.js';
 	import FilteredReleases from './FilteredReleases.svelte';
 	import NoteGroup from './NoteGroup.svelte';
@@ -8,6 +10,9 @@
 
 	export let showChannels: Channel[] = ['lts', 'stable', 'beta'];
 	export let releases: GameMakerReleaseWithNotes[];
+
+	// We only want to show the download button for Windows clients.
+	const onWindows = navigator.userAgent.includes('Windows');
 
 	let filteredReleases: GameMakerReleaseWithNotes[] = [];
 </script>
@@ -24,6 +29,17 @@
 				>
 					<span class="versions">
 						<span class="ide">
+							{#if onWindows && release.ide.link}
+								<a
+									href={release.ide.link}
+									class="download-link"
+									title="Download"
+									target="_blank"
+									rel="noopener"
+								>
+									<Fa icon={faDownload} size="sm" />
+								</a>
+							{/if}
 							{release.ide.version}
 							<span class="label">(IDE)</span>
 						</span>
@@ -77,11 +93,11 @@
 
 <style>
 	#gamemaker-releases-component {
+		font-size: 1.1em;
 		color: var(--color-text);
-		background-color: var(--color-background);
 		display: flex;
 		flex-direction: column;
-		gap: 1.5em;
+		gap: 2em;
 	}
 	/* CHANNEL PILLS */
 	[data-channel='lts'] {
@@ -106,9 +122,17 @@
 
 	article header {
 		display: grid;
-		grid-template-columns: 1fr 1em 3em 5.5em;
+		grid-template-columns: 1fr 5.5em;
 		gap: 0.5em;
 		align-items: center;
+	}
+
+	.download-link {
+		color: var(--color-text-subtle);
+		margin-right: 0.25em;
+	}
+	.download-link:hover {
+		color: var(--color-link-hover);
 	}
 
 	article header h2 {
@@ -122,7 +146,7 @@
 	article header h2 .versions {
 		display: flex;
 		flex-direction: column;
-		gap: 0;
+		gap: 0.1em;
 		line-height: 1em;
 	}
 

@@ -382,6 +382,8 @@ importers:
       '@bscotch/gamemaker-releases': workspace:*
       '@bscotch/pathy': ^2.7.3
       '@fortawesome/free-brands-svg-icons': 6.4.0
+      '@fortawesome/free-regular-svg-icons': 6.4.0
+      '@fortawesome/free-solid-svg-icons': 6.4.0
       '@playwright/test': ^1.35.1
       '@sveltejs/adapter-static': 2.0.2
       '@sveltejs/kit': ^1.22.1
@@ -403,6 +405,8 @@ importers:
       zx: ^7.2.2
     dependencies:
       '@fortawesome/free-brands-svg-icons': 6.4.0
+      '@fortawesome/free-regular-svg-icons': 6.4.0
+      '@fortawesome/free-solid-svg-icons': 6.4.0
       svelte-fa: 3.0.4
     devDependencies:
       '@bscotch/gamemaker-releases': link:../releases
@@ -1749,6 +1753,22 @@ packages:
 
   /@fortawesome/free-brands-svg-icons/6.4.0:
     resolution: {integrity: sha512-qvxTCo0FQ5k2N+VCXb/PZQ+QMhqRVM4OORiO6MXdG6bKolIojGU/srQ1ptvKk0JTbRgaJOfL2qMqGvBEZG7Z6g==}
+    engines: {node: '>=6'}
+    requiresBuild: true
+    dependencies:
+      '@fortawesome/fontawesome-common-types': 6.4.0
+    dev: false
+
+  /@fortawesome/free-regular-svg-icons/6.4.0:
+    resolution: {integrity: sha512-ZfycI7D0KWPZtf7wtMFnQxs8qjBXArRzczABuMQqecA/nXohquJ5J/RCR77PmY5qGWkxAZDxpnUFVXKwtY/jPw==}
+    engines: {node: '>=6'}
+    requiresBuild: true
+    dependencies:
+      '@fortawesome/fontawesome-common-types': 6.4.0
+    dev: false
+
+  /@fortawesome/free-solid-svg-icons/6.4.0:
+    resolution: {integrity: sha512-kutPeRGWm8V5dltFP1zGjQOEAzaLZj4StdQhWVZnfGFCvAPVvHh8qk5bRrU4KXnRRRNni5tKQI9PBAdI6MP8nQ==}
     engines: {node: '>=6'}
     requiresBuild: true
     dependencies:
