@@ -2,19 +2,39 @@
 	import type { GameMakerReleaseWithNotes } from '@bscotch/gamemaker-releases';
 	import { faDownload } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
-	import { toDateIso, toDateLocal } from '../util.js';
+	import { loadProperty, saveProperty, toDateIso, toDateLocal } from '../util.js';
 	import FilteredReleases from './FilteredReleases.svelte';
 	import NoteGroup from './NoteGroup.svelte';
 	import ReleaseVersion from './ReleaseVersion.svelte';
-	import { ideAnchorId, releaseAnchorId, runtimeAnchorId, type Channel } from './constants.js';
+	import {
+		channels,
+		ideAnchorId,
+		releaseAnchorId,
+		runtimeAnchorId,
+		type Channel
+	} from './constants.js';
 
-	export let showChannels: Channel[] = ['lts', 'stable', 'beta'];
+	export let showChannels: Channel[] = loadChannelPreference();
 	export let releases: GameMakerReleaseWithNotes[];
 
 	// We only want to show the download button for Windows clients.
 	const onWindows = navigator.userAgent.includes('Windows');
 
 	let filteredReleases: GameMakerReleaseWithNotes[] = [];
+
+	function loadChannelPreference(): Channel[] {
+		let stored: Channel[] = loadProperty('feed-channels');
+		stored = Array.isArray(stored) ? stored : [];
+		stored = stored.filter((channel) => channels.includes(channel));
+		if (!stored.length) {
+			stored = ['lts', 'stable', 'beta'];
+		}
+		return stored;
+	}
+
+	$: {
+		saveProperty('feed-channels', showChannels);
+	}
 </script>
 
 <section id="gamemaker-releases-component">

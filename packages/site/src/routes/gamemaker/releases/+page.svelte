@@ -6,6 +6,14 @@
 	export let data;
 </script>
 
+<svelte:head>
+	<title>Unified GameMaker Release Notes | Stitch | Butterscotch Shenanigans</title>
+	<meta
+		name="description"
+		content="All GameMaker IDE and Runtime release notes merged into a single feed."
+	/>
+</svelte:head>
+
 <main>
 	<h1>Unified GameMaker Releases Feed</h1>
 	<p>

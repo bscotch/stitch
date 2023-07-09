@@ -6,7 +6,7 @@
 </script>
 
 <nav>
-	<a href={base} title="Go home">
+	<a href={base || '/'} title="Go home">
 		<img src={Logo} alt="SvelteKit" />
 		<span class="name">Stitch</span>
 	</a>
