@@ -23,21 +23,36 @@
 
 <main>
 	<article>
-		<h2>Getting Started</h2>
+		<section>
+			<h2>Getting Started</h2>
+			<p>
+				Stitch consists of a bunch of tools to help automate or improve GameMaker workflows. See the <a
+					href="https://github.com/bscotch/stitch">GitHub repo</a
+				> for details and source code for all Stitch projects.
+			</p>
+		</section>
 
-		<p>
-			Stitch consists of a bunch of tools to help automate or improve GameMaker workflows. See the <a
-				href="https://github.com/bscotch/stitch">GitHub repo</a
-			> for details and source code for all Stitch projects.
-		</p>
-
-		<h3>Unified GameMaker Releases Feed</h3>
-		<p>
-			GameMaker releases come in multiple flavors (LTS, stable, and beta), each with its own release
-			notes for both the IDE and the runtime. The Stitch "GameMaker Releases" <a
-				href="https://www.npmjs.com/package/@bscotch/gamemaker-releases">npm package</a
-			> provides mechinisms to convert all of those into a single, unified feed.
-		</p>
+		<section>
+			<h3>Unified GameMaker Releases Feed</h3>
+			<p>
+				GameMaker releases come in multiple flavors (LTS, stable, and beta), each with its own
+				release notes for both the IDE and the runtime. The Stitch "GameMaker Releases" <a
+					href="https://www.npmjs.com/package/@bscotch/gamemaker-releases">npm package</a
+				> provides mechinisms to convert all of those into a single, unified feed.
+			</p>
+			<p>
+				Stitch maintains an updated feed and a user-friendly interface for perusing GameMaker
+				release notes:
+			</p>
+			<ul>
+				<li>
+					<a href="./gamemaker/releases">Browse the unified release notes</a>
+				</li>
+				<li>
+					<a href="./artifacts/gamemaker-releases.json">See the raw feed</a>
+				</li>
+			</ul>
+		</section>
 	</article>
 </main>
 
@@ -50,6 +65,11 @@
 		gap: 1em;
 		font-size: 1.2rem;
 		margin-top: 2rem;
+	}
+	article section {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
 	}
 	header {
 		display: flex;

@@ -34,12 +34,16 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --filter=@bscotch/gamemaker-releases... --filter=@bscotch/stitch-site...
 
+      - name: Build Deps
+        run: pnpm turbo run build --filter=@bscotch/stitch-site^...
+
       - name: Update Unified Feed
         run: pnpm node scripts/update-unified-feed.mjs
         working-directory: packages/site
 
       - name: Build
-        run: pnpm turbo run build --filter=@bscotch/stitch-site...
+        run: pnpm build
+        working-directory: packages/site
 
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v1.0.9
