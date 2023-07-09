@@ -379,6 +379,7 @@ importers:
 
   packages/site:
     specifiers:
+      '@bscotch/gamemaker-releases': workspace:*
       '@bscotch/pathy': ^2.7.3
       '@fortawesome/free-brands-svg-icons': 6.4.0
       '@playwright/test': ^1.35.1
@@ -403,6 +404,7 @@ importers:
       '@fortawesome/free-brands-svg-icons': 6.4.0
       svelte-fa: 3.0.4
     devDependencies:
+      '@bscotch/gamemaker-releases': link:../releases
       '@bscotch/pathy': 2.7.3
       '@playwright/test': 1.35.1
       '@sveltejs/adapter-static': 2.0.2_@sveltejs+kit@1.22.1

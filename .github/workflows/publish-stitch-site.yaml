@@ -39,7 +39,7 @@ jobs:
         working-directory: packages/site
 
       - name: Build
-        run: pnpm turbo run build --filter=@bscotch/stitch-site... --filter=@bscotch/gamemaker-releases...
+        run: pnpm turbo run build --filter=@bscotch/stitch-site...
 
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v1.0.9
