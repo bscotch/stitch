@@ -47,7 +47,9 @@
 			</p>
 			<ul>
 				<li>
-					<a href={`${base}/gamemaker/releases`}>Browse the unified release notes</a>
+					<a data-sveltekit-reload href={`${base}/gamemaker/releases`}
+						>Browse the unified release notes</a
+					>
 				</li>
 				<li>
 					<a href={`${base}/artifacts/gamemaker/releases-summary.json`}>See the raw feed</a>
