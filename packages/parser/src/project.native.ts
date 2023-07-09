@@ -2,31 +2,25 @@ import { pathy } from '@bscotch/pathy';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
-import { Signifier } from './project.signifier.js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
-import { Type, type FunctionType, type StructType } from './types.js';
+import { Signifier } from './signifiers.js';
+import { Type, type StructType } from './types.js';
 import { primitiveNames } from './types.primitives.js';
 import { assert } from './util.js';
 
 export class Native {
   protected spec!: GmlSpec;
-  /** Symbols available globally */
-  readonly global: Map<string, Signifier> = new Map();
-  /** Symbols available in object instance scopes */
-  readonly instance: Map<string, Signifier> = new Map();
+  objectInstanceBase!: StructType;
 
-  /**
-   * Types, looked up by their Feather-compatible name.
-   * Types can be either a single type or a type union.
-   */
-  readonly types: Map<string, Type> = new Map();
-
-  protected constructor(readonly filePath: string) {
+  protected constructor(
+    readonly filePath: string,
+    readonly globalSelf: StructType,
+    readonly types: Map<string, Type>,
+  ) {
     // Initialize all of the primitives so we can guarantee
     // they exist on any lookup.
     primitiveNames.forEach((name) => {
       const type = new Type(name);
-      type.writable = false;
       this.types.set(name, type);
     });
   }
@@ -35,40 +29,33 @@ export class Native {
     return this.spec.runtime;
   }
 
-  protected createStructType(): StructType {
-    return this.types.get('Struct')!.derive() as StructType;
-  }
-  protected createFunctionType(): FunctionType {
-    return this.types.get('Function')!.derive() as FunctionType;
-  }
-
   protected load() {
     this.loadConstants();
     this.loadVariables();
     this.loadStructs();
     this.loadFunctions();
+
+    // Create the base object instance type using instance variables.
+    this.objectInstanceBase = new Type('Struct');
+    for (const member of this.globalSelf.listMembers()) {
+      if (member.instance) {
+        this.objectInstanceBase.addMember(member);
+      }
+    }
   }
 
   protected loadVariables() {
     for (const variable of this.spec.variables) {
       assert(variable, 'Variable must be defined');
       const type = Type.fromFeatherString(variable.type, this.types);
-      const symbol = new Signifier(variable.name)
+      const symbol = new Signifier(this.globalSelf, variable.name, type)
         .describe(variable.description)
-        .deprecate(variable.deprecated)
-        .addType(type);
+        .deprecate(variable.deprecated);
       symbol.writable = variable.writable;
       symbol.native = true;
       symbol.global = !variable.instance;
       symbol.instance = variable.instance;
-      if (variable.instance) {
-        this.instance.set(symbol.name, symbol);
-        // For now also add to global, since we aren't making use of
-        // the distinction yet.
-        this.global.set(symbol.name, symbol);
-      } else {
-        this.global.set(symbol.name, symbol);
-      }
+      this.globalSelf.addMember(symbol);
     }
   }
 
@@ -97,10 +84,8 @@ export class Native {
       const typeName = `Function.${func.name}`;
       // Need a type and a symbol for each function.
       const type = (
-        this.types.get(typeName) || this.createFunctionType().named(func.name)
+        this.types.get(typeName) || new Type('Function').named(func.name)
       ).describe(func.description);
-      type.native = true;
-      type.writable = false;
       this.types.set(typeName, type);
 
       // Add parameters to the type.
@@ -116,12 +101,12 @@ export class Native {
       // Add return type to the type.
       type.addReturnType(Type.fromFeatherString(func.returnType, this.types));
 
-      const symbol = new Signifier(func.name)
-        .deprecate(func.deprecated)
-        .addType(type);
+      const symbol = new Signifier(this.globalSelf, func.name, type).deprecate(
+        func.deprecated,
+      );
       symbol.writable = false;
       symbol.native = true;
-      this.global.set(symbol.name, symbol);
+      this.globalSelf.addMember(symbol);
     }
   }
 
@@ -148,12 +133,14 @@ export class Native {
       if (!klass) {
         for (const constant of constants) {
           assert(constant, 'Constant must be defined');
-          const symbol = new Signifier(constant.name)
-            .describe(constant.description)
-            .addType(Type.fromFeatherString(constant.type, this.types));
+          const symbol = new Signifier(
+            this.globalSelf,
+            constant.name,
+            Type.fromFeatherString(constant.type, this.types),
+          ).describe(constant.description);
           symbol.writable = false;
           symbol.native = true;
-          this.global.set(symbol.name, symbol);
+          this.globalSelf.addMember(symbol);
         }
         continue;
       }
@@ -169,30 +156,26 @@ export class Native {
       // Create the base type for the class.
       const classTypeName = `Constant.${klass}`;
       const typeString = [...typeNames.values()].join('|');
-      let classType = Type.fromFeatherString(typeString, this.types)
-        .derive()
-        .named(classTypeName);
+      const classType = Type.fromFeatherString(typeString, this.types)[0].named(
+        klass,
+      );
       const existingType = this.types.get(classTypeName);
-      if (existingType) {
-        // Then we defined an Unknown type earlier to handle a reference.
-        // Replace it with the real type.!;
-        ok(
-          existingType.kind === 'Unknown',
-          `Type ${classTypeName} already exists but is not Unknown`,
-        );
-        classType = Type.merge(existingType, classType);
-      } else {
-        this.types.set(classTypeName, classType);
-      }
+      assert(!existingType, `Type ${classTypeName} already exists`);
+
+      this.types.set(classTypeName, classType);
+
       // Create symbols for each class member.
       for (const constant of constants) {
-        const symbol = new Signifier(constant.name).describe(
+        const symbol = new Signifier(this.globalSelf, constant.name).describe(
           constant.description,
         );
         symbol.writable = false;
         symbol.def = {}; // Prevent "not found" errors
-        symbol.addType(classType);
-        this.global.set(symbol.name, symbol);
+        symbol.setType(classType);
+        const typeName = `${classTypeName}.${constant.name}`;
+        this.types.set(typeName, classType);
+
+        this.globalSelf.addMember(symbol);
       }
     }
   }
@@ -205,7 +188,7 @@ export class Native {
       }
       const typeName = `Struct.${struct.name}`;
       const structType =
-        this.types.get(typeName) || this.createStructType().named(struct.name);
+        this.types.get(typeName) || new Type('Struct').named(struct.name);
       ok(!structType.listMembers().length, `Type ${typeName} already exists`);
       this.types.set(typeName, structType);
 
@@ -219,9 +202,14 @@ export class Native {
     }
   }
 
-  static async from(filePath: string = Native.fallbackGmlSpecPath.absolute) {
+  static async from(
+    filePath: string | undefined,
+    globalSelf: StructType,
+    types: Map<string, Type>,
+  ): Promise<Native> {
+    filePath ||= Native.fallbackGmlSpecPath.absolute;
     const parsedSpec = await Native.parse(filePath);
-    const spec = new Native(filePath);
+    const spec = new Native(filePath, globalSelf, types);
     spec.spec = parsedSpec;
     spec.load();
     return spec;
@@ -234,14 +222,6 @@ export class Native {
       normalize: true,
     }); // Prevent possible errors: "Non-white space before first tag"
     return gmlSpecSchema.parse(asJson);
-  }
-
-  toJSON() {
-    return {
-      filePath: this.filePath,
-      symbols: this.global,
-      types: this.types,
-    };
   }
 
   static readonly fallbackGmlSpecPath = pathy(import.meta.url).resolveTo(

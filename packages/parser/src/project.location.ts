@@ -1,8 +1,7 @@
 import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
-import type { Signifier } from './project.signifier.js';
-import { isTypeInstance } from './types.checks.js';
-import { EnumType, MemberSignifier, StructType, Type } from './types.js';
+import type { Signifier } from './signifiers.js';
+import { EnumType, FunctionType, StructType, Type } from './types.js';
 import { assert, type Constructor } from './util.js';
 
 export const firstLineIndex = 1;
@@ -65,11 +64,14 @@ export class Position implements IPosition {
 
   static from(
     file: Code,
-    loc: CstNodeLocation | Position,
+    loc: CstNodeLocation | Position | IPosition,
     fromTokenEnd = false,
   ): Position {
     if (loc instanceof Position) {
       return loc;
+    }
+    if ('offset' in loc) {
+      return new Position(file, loc.offset, loc.line, loc.column);
     }
     return fromTokenEnd
       ? Position.fromCstEnd(file, loc)
@@ -119,6 +121,16 @@ export class Range implements IRange {
     return this.start.file;
   }
 
+  static from(file: Code, location: IRange | CstNodeLocation): Range {
+    if ('start' in location) {
+      return new Range(
+        Position.from(file, location.start),
+        Position.from(file, location.end),
+      );
+    }
+    return Range.fromCst(file, location);
+  }
+
   static fromCst(fileName: Code, location: CstNodeLocation) {
     return new Range(
       Position.fromCstStart(fileName, location),
@@ -136,7 +148,7 @@ export class FunctionArgRange extends Range {
   hasExpression = false;
   constructor(
     /** The function reference this call belongs to */
-    readonly func: ReferenceableType,
+    readonly type: FunctionType,
     /** The index of the parameter we're in. */
     readonly idx: number,
     start: Position,
@@ -145,12 +157,7 @@ export class FunctionArgRange extends Range {
     super(start, end);
   }
 
-  get type(): Type {
-    assert(this.func, 'FunctionArgRange must have a reference');
-    return getType(this.func);
-  }
-
-  get param(): MemberSignifier {
+  get param(): Signifier {
     assert(this.type, 'FunctionArgRange must have a type');
     return this.type.getParameter(this.idx)!;
   }
@@ -168,14 +175,8 @@ export function Refs<TBase extends Constructor>(Base: TBase) {
     def: Range | { file?: undefined } | undefined = undefined;
     refs = new Set<Reference>();
 
-    addRef(location: Range, type?: Type): Reference {
+    addRef(location: Range): Reference {
       const ref = Reference.fromRange(location, this as any);
-      // TODO: Improve the type tracing!
-      const itemType = (this as any).type as Type | undefined;
-      ref.type = type || itemType || ref.type;
-      if (type && 'type' in this && (this.type as Type).kind === 'Unknown') {
-        this.type = Type.merge(this.type as Type, type);
-      }
       this.refs.add(ref);
       location.file.addRef(ref);
       return ref;
@@ -244,15 +245,7 @@ export class Scope extends Range {
   }
 }
 
-export type ReferenceableType = Signifier | Type | MemberSignifier;
-
-export function getType(ref: ReferenceableType): Type {
-  assert(ref, 'Cannot get the type of an undefined reference.');
-  if (isTypeInstance(ref)) {
-    return ref;
-  }
-  return ref.type;
-}
+export type ReferenceableType = Signifier;
 
 export class Reference<
   T extends ReferenceableType = ReferenceableType,

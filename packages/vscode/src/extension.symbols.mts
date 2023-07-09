@@ -46,24 +46,24 @@ export class GameMakerWorkspaceSymbolProvider
     this.resourceCache.get(project)!.set(resource, symbols);
     // Then add the resource itself. Scripts and objects should point to their GML, while everything else should point to yy files.
     const start = new vscode.Position(0, 0);
-    if (resource.assetType === 'scripts') {
+    if (resource.assetKind === 'scripts') {
       symbols.push(
         new vscode.SymbolInformation(
           resource.name,
           vscode.SymbolKind.Module,
-          resource.assetType,
+          resource.assetKind,
           new vscode.Location(
             vscode.Uri.file(resource.gmlFile!.path.absolute),
             start,
           ),
         ),
       );
-    } else if (resource.assetType === 'objects') {
+    } else if (resource.assetKind === 'objects') {
       for (const file of resource.gmlFiles.values()) {
         const symbol = new vscode.SymbolInformation(
           resource.name,
           vscode.SymbolKind.Class,
-          `${resource.assetType} (${file.path.name})`,
+          `${resource.assetKind} (${file.path.name})`,
           new vscode.Location(vscode.Uri.file(file.path.absolute), start),
         );
         symbols.push(symbol);
@@ -73,7 +73,7 @@ export class GameMakerWorkspaceSymbolProvider
         new vscode.SymbolInformation(
           resource.name,
           vscode.SymbolKind.File,
-          resource.assetType,
+          resource.assetKind,
           new vscode.Location(vscode.Uri.file(resource.yyPath.absolute), start),
         ),
       );
@@ -83,28 +83,26 @@ export class GameMakerWorkspaceSymbolProvider
   protected updateGlobalsCache(project: GameMakerProject) {
     const symbols: vscode.SymbolInformation[] = [];
     this.globalsCache.set(project, symbols);
-    const globals = [
-      ...project.self.listMembers(),
-      ...project.symbols.values(),
-    ];
+    const globals = [...project.self.listMembers()];
     for (const item of globals) {
       const type = item.type;
-      const location = item.def || type.def;
+      const location = item.def;
       // Assets are already handled by the resource cache.
       if (type.kind.startsWith('Asset')) {
         continue;
       }
       if (!location?.file) {
-        warn(`No definition for global ${item.name}`);
         continue;
       }
+      const functionType = item.getTypeByKind('Function');
+
       const kind =
         type.kind === 'Enum'
           ? vscode.SymbolKind.Enum
-          : type.kind === 'Function'
-          ? vscode.SymbolKind.Function
-          : type.kind === 'Constructor'
+          : functionType?.isConstructor
           ? vscode.SymbolKind.Constructor
+          : functionType
+          ? vscode.SymbolKind.Function
           : vscode.SymbolKind.Variable;
       symbols.push(
         new vscode.SymbolInformation(

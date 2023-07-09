@@ -1,55 +1,77 @@
 import {
-  Type,
-  type MemberSignifier,
-  type Signifier,
+  Code,
+  JsdocSummary,
+  Signifier,
+  primitiveNames,
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { config } from './extension.config.mjs';
 
+export function jsdocCompletions(
+  document: vscode.TextDocument,
+  position: vscode.Position,
+  file: Code,
+  jsdoc: JsdocSummary,
+): vscode.CompletionItem[] {
+  // For now just grab all of the global types and return them as completions.
+  const completions: vscode.CompletionItem[] = [];
+  const typeNames = new Set<string>(file.project.types.keys());
+  for (const primitiveName of primitiveNames) {
+    typeNames.add(primitiveName);
+  }
+  for (const type of typeNames) {
+    const item = new vscode.CompletionItem(
+      type,
+      vscode.CompletionItemKind.Interface,
+    );
+    completions.push(item);
+  }
+  return completions;
+}
+
 export function inScopeSymbolsToCompletions(
   document: vscode.TextDocument,
-  items: (Signifier | MemberSignifier)[],
+  items: Signifier[],
 ): vscode.CompletionItem[] {
   const completions: vscode.CompletionItem[] = [];
-  for (const symbol of items) {
-    if (!symbol.name) {
+  for (const signifier of items) {
+    if (!signifier.name) {
       continue;
     }
-    const type = symbol.type;
-    const location = symbol.def;
+    const location = signifier.def;
     const ignoredPrefix = config.autocompleteIgnoredPrefix;
     const shouldHide =
       ignoredPrefix &&
-      symbol.name!.startsWith(ignoredPrefix) &&
+      signifier.name!.startsWith(ignoredPrefix) &&
       location?.file &&
       location.file.path.equals(document.uri.fsPath);
     if (shouldHide) {
       continue;
     }
     const item = new vscode.CompletionItem(
-      symbol.name!,
+      signifier.name!,
       vscode.CompletionItemKind.Constant,
     );
-    item.detail = detailsFromType(type);
-    item.kind = vscodeKindFromType(type);
+    item.detail = inferDetails(signifier);
+    item.kind = inferVscodeKind(signifier);
 
     completions.push(item);
   }
   return completions;
 }
 
-function detailsFromType(type: Type): string | undefined {
-  const details: string[] = [type.toFeatherString()];
-  if (type.native) {
+function inferDetails(signifier: Signifier): string | undefined {
+  const details: string[] = [signifier.type.toFeatherString()];
+  if (signifier.native) {
     details.push('native');
   }
-  if (type.global) {
+  if (signifier.global) {
     details.push('global');
   }
-  if (type.local) {
+  if (signifier.local) {
     details.push('local');
   }
-  if (type.parameter) {
+  if (signifier.parameter) {
     details.push('parameter');
   }
   if (details.length) {
@@ -58,12 +80,14 @@ function detailsFromType(type: Type): string | undefined {
   return;
 }
 
-function vscodeKindFromType(type: Type): vscode.CompletionItemKind {
-  if (type.kind === 'Enum') {
+function inferVscodeKind(signifier: Signifier): vscode.CompletionItemKind {
+  if (signifier.getTypeByKind('Enum')) {
     return vscode.CompletionItemKind.Enum;
-  } else if (type.kind === 'Constructor') {
+  }
+  const functionType = signifier.getTypeByKind('Function');
+  if (functionType?.isConstructor) {
     return vscode.CompletionItemKind.Constructor;
-  } else if (type.kind === 'Function') {
+  } else if (functionType) {
     return vscode.CompletionItemKind.Function;
   }
   return vscode.CompletionItemKind.Variable;

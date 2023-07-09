@@ -9,51 +9,59 @@ export class GameMakerHoverProvider implements vscode.HoverProvider {
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Hover> {
-    const item = this.provider.getSymbol(document, position);
+    const item = this.provider.getSignifier(document, position);
     if (!item) {
       return;
     }
-    const type = item.$tag === 'Type' ? item : item.type;
     const hoverContents = new vscode.MarkdownString();
-    let hasSomething = false;
-    const code = type.code;
-    if (code) {
-      hoverContents.appendCodeblock(type.code, 'gml');
-      hasSomething = true;
+    const codeBlocks = new Set<string>();
+    const textBlocks = new Set<string>();
+    if (item.type.type.length === 0) {
+      codeBlocks.add('Any');
     }
-    const description = item.description || type.description;
-    if (description) {
-      hoverContents.appendMarkdown(description);
-      hasSomething = true;
-    }
-    if (type.details) {
-      hoverContents.appendMarkdown(type.details);
-      hasSomething = true;
-    }
-    // If it's a sprite, add preview images
-    const sprite =
-      type.kind === 'Asset.GMSprite' &&
-      item.name &&
-      this.provider.getAsset(document, item.name);
-    if (sprite) {
-      hoverContents.isTrusted = true;
-      hoverContents.baseUri = vscode.Uri.file(sprite.dir.absolute);
-      hoverContents.supportHtml = true;
-      const yy = sprite.yy as YySprite;
-      let images = '';
-      for (const frame of yy.frames) {
-        const framePath = vscode.Uri.file(
-          sprite.dir.join(`${frame.name}.png`).absolute,
-        );
-        images += `![Sprite subimage](${framePath})`;
+    for (const type of item.type.type) {
+      const code = type.code;
+      if (code) {
+        codeBlocks.add(code);
       }
-      hoverContents.appendMarkdown(images);
-      hasSomething = true;
+      const description = item.description || type.description;
+      if (description) {
+        textBlocks.add(description);
+      }
+      if (type.details) {
+        textBlocks.add(type.details);
+      }
+      // If it's a sprite, add preview images
+      const sprite =
+        type.kind === 'Asset.GMSprite' &&
+        item.name &&
+        this.provider.getAsset(document, item.name);
+      if (sprite) {
+        hoverContents.isTrusted = true;
+        hoverContents.baseUri = vscode.Uri.file(sprite.dir.absolute);
+        hoverContents.supportHtml = true;
+        const yy = sprite.yy as YySprite;
+        let images = '';
+        for (const frame of yy.frames) {
+          const framePath = vscode.Uri.file(
+            sprite.dir.join(`${frame.name}.png`).absolute,
+          );
+          images += `![Sprite subimage](${framePath})`;
+        }
+        textBlocks.add(images);
+      }
     }
 
-    if (!hasSomething) {
+    if (!codeBlocks.size && !textBlocks.size) {
       return;
     }
+    for (const code of codeBlocks) {
+      hoverContents.appendCodeblock(code, 'gml');
+    }
+    for (const text of textBlocks) {
+      hoverContents.appendMarkdown(text);
+    }
+
     // console.log('Hovering over', item);
     return new vscode.Hover(hoverContents);
   }

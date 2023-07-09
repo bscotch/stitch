@@ -22,6 +22,7 @@ interface MatchGroups {
   default?: string;
   optionalName?: string;
   tag?: string;
+  extraBracket?: string;
 }
 type MatchIndex = readonly [start: number, end: number];
 type MatchIndices = { [K in keyof MatchGroups]?: MatchIndex };
@@ -63,8 +64,8 @@ for (const tagName of typeTags) {
 // Params
 patterns.param = `${patterns.param}(\\s+${typeGroupPattern})?\\s+(${paramNamePattern}|${optionalParamNamePattern})`;
 
-// Self (has a type but no group)
-patterns.self = `${patterns.self}\\s+(?<type>[a-zA-Z_.]+)`;
+// Self (has a type but no group. Make brackets optional to be more forgiving)
+patterns.self = `${patterns.self}\\s+(?<extraBracket>\\{\\s*)?(?<type>[a-zA-Z_.]+)(?:\\s*\\})?`;
 
 // Descriptions
 for (const tagName of names) {
@@ -122,6 +123,7 @@ export interface JsdocSummary
    * respective locations, for use e.g. syntax highlighting.
    */
   tags: JsdocComponent[];
+  diagnostics: (IRange & { message: string })[];
 }
 
 interface JsdocLine {
@@ -146,15 +148,9 @@ function jsdocBlockToLines(raw: {
     offset: raw.startOffset,
   };
   // If this starts with a /**, remove that.
-  if (raw.image.startsWith('/**')) {
-    raw.image = raw.image.slice(3);
-    startPosition.column += 3;
-    startPosition.offset += 3;
-  }
+  raw.image = raw.image.replace(/^\/\*\*/, '   ');
   // If this ends with a */, remove that.
-  if (raw.image.endsWith('*/')) {
-    raw.image = raw.image.slice(0, -2);
-  }
+  raw.image = raw.image.replace(/\*\/$/, '  ');
 
   const rawLines = raw.image.split(/(\r?\n)/);
   const jsdocLines: JsdocLine[] = [];
@@ -254,7 +250,7 @@ export function parseJsdoc(
   if (!lines.length) return undefined;
   assert(lines[0], 'No lines found in jsdoc block');
   const start: IPosition = lines[0].start;
-  const end: IPosition = lines.at(-1)!.start;
+  const end: IPosition = { ...lines.at(-1)!.start };
   end.column += lines.at(-1)!.content.length;
   end.offset += lines.at(-1)!.content.length;
 
@@ -266,6 +262,7 @@ export function parseJsdoc(
     start,
     end,
     tags: [],
+    diagnostics: [],
   };
   let describing: Jsdoc | null = doc;
   const appendDescription = (
@@ -333,15 +330,19 @@ export function parseJsdoc(
       }
       // Handle params
       else if (parts.param) {
+        // Until VSCode ships Node 18, and therefore has group
+        // indices, we'll have to get positions with a simple search
+        // per group.
+
         const param: Jsdoc<'param'> = {
           kind: 'param',
-          name: matchToComponent(
-            match,
-            parts.name ? 'name' : 'optionalName',
+          name: substringRange(
+            line.content,
+            parts.name || parts.optionalName!,
             line.start,
           ),
           optional: !!parts.optionalName,
-          type: matchToComponent(match, 'typeUnion', line.start),
+          type: substringRange(line.content, parts.typeUnion!, line.start),
           description: parts.info || '',
           ...entireMatchRange,
         };
@@ -358,7 +359,7 @@ export function parseJsdoc(
         }
         const returns: Jsdoc<'returns'> = {
           kind: 'returns',
-          type: matchToComponent(match, 'typeUnion', line.start),
+          type: substringRange(line.content, parts.typeUnion!, line.start),
           description: parts.info || '',
           ...entireMatchRange,
         };
@@ -368,7 +369,14 @@ export function parseJsdoc(
       }
       // Handle Self
       else if (parts.self) {
-        doc.self = matchToComponent(match, 'type', line.start);
+        doc.self = substringRange(line.content, parts.type!, line.start);
+        if (parts.extraBracket) {
+          doc.diagnostics.push({
+            message: '@self types should not be wrapped in brackets',
+            start: doc.self!.start,
+            end: doc.self!.end,
+          });
+        }
       }
       // Handle Type
       else if (parts.type) {
@@ -403,6 +411,32 @@ export function parseJsdoc(
     doc.kind = 'self';
   }
   return doc;
+}
+
+function substringRange(
+  string: string,
+  substring: string | undefined,
+  start: IPosition,
+): JsdocComponent | undefined {
+  if (!substring) {
+    return undefined;
+  }
+  start = { ...start };
+  const index = string.indexOf(substring);
+  if (index < 0) {
+    return undefined;
+  }
+  start.column += index;
+  start.offset += index;
+  return {
+    start,
+    end: {
+      column: start.column + substring.length,
+      line: start.line,
+      offset: start.offset + substring.length,
+    },
+    content: substring,
+  };
 }
 
 function matchToComponent(

@@ -1,4 +1,5 @@
 import type { Pathy } from '@bscotch/pathy';
+import { JsdocSummary } from './jsdoc.js';
 import { logger } from './logger.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
@@ -7,8 +8,11 @@ import {
   DiagnosticCollectionName,
   DiagnosticCollections,
 } from './project.diagnostics.js';
+import { registerGlobals } from './project.globals.js';
 import {
   FunctionArgRange,
+  IPosition,
+  IRange,
   LinePosition,
   Position,
   Range,
@@ -16,16 +20,17 @@ import {
   ReferenceableType,
   Scope,
 } from './project.location.js';
-import { Signifier } from './project.signifier.js';
-import { processGlobalSymbols } from './project.visitGlobals.js';
-import { MemberSignifier, Type } from './types.js';
+import { Signifier } from './signifiers.js';
+import { isTypeOfKind } from './types.checks.js';
+import { Type } from './types.js';
 import { assert, isBeforeRange, isInRange } from './util.js';
-import { processSymbols } from './visitor.js';
+import { registerSignifiers } from './visitor.js';
 
 /** Represenation of a GML code file. */
 export class Code {
   readonly $tag = 'gmlFile';
   readonly scopes: Scope[] = [];
+  readonly jsdocs: JsdocSummary[] = [];
 
   protected diagnostics!: DiagnosticCollections;
   /** List of all symbol references in this file, in order of appearance. */
@@ -37,7 +42,7 @@ export class Code {
    * of argument ranges for that call. Useful for diagnostics.*/
   protected _functionCalls: FunctionArgRange[][] = [];
   protected _refsAreSorted = false;
-  _content!: string;
+  content!: string;
   protected _parsed!: GmlParsed;
 
   // Metadata
@@ -56,11 +61,11 @@ export class Code {
   }
 
   get isScript() {
-    return this.asset.assetType === 'scripts';
+    return this.asset.assetKind === 'scripts';
   }
 
   get isObjectEvent() {
-    return this.asset.assetType === 'objects';
+    return this.asset.assetKind === 'objects';
   }
 
   get isCreateEvent() {
@@ -81,13 +86,13 @@ export class Code {
   }
 
   protected isInRange(
-    range: { start: Position; end: Position },
+    range: { start: IPosition; end: IPosition },
     offset: number | LinePosition,
   ) {
     return isInRange(range, offset);
   }
 
-  protected isBeforeRange(range: Range, offset: number | LinePosition) {
+  protected isBeforeRange(range: IRange, offset: number | LinePosition) {
     return isBeforeRange(range, offset);
   }
 
@@ -111,6 +116,34 @@ export class Code {
       }
     }
     return undefined;
+  }
+
+  getJsdocAt(
+    offset: number | LinePosition,
+    column?: number,
+  ): JsdocSummary | undefined {
+    if (typeof offset === 'number' && typeof column === 'number') {
+      offset = { line: offset, column };
+    }
+    assert(this.jsdocs, 'Jsdocs must be an array');
+    for (let i = 0; i < this.jsdocs.length; i++) {
+      const jsdoc = this.jsdocs[i];
+      if (this.isInRange(jsdoc, offset)) {
+        return jsdoc;
+      } else if (this.isBeforeRange(jsdoc, offset)) {
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
+  /** @private Not yet implemented */
+  canAddJsdocTagAt(offset: number | LinePosition, column?: number): boolean {
+    const inJsdoc = this.getJsdocAt(offset, column);
+    if (!inJsdoc) {
+      return false;
+    }
+    return false;
   }
 
   getFunctionArgRangeAt(
@@ -157,7 +190,7 @@ export class Code {
   getInScopeSymbolsAt(
     offset: number | LinePosition,
     column?: number,
-  ): (Signifier | MemberSignifier)[] {
+  ): Signifier[] {
     if (typeof offset === 'number' && typeof column === 'number') {
       offset = { line: offset, column };
     }
@@ -167,6 +200,8 @@ export class Code {
     }
     if (scopeRange.isDotAccessor) {
       // Then only return self variables
+      // TODO: Filter out those that cannot be dot-accessed on global
+      // (native functions, etc.)
       return scopeRange.self.listMembers() || [];
     }
     // Add to a flat list, and remove all entries that don't have
@@ -179,10 +214,7 @@ export class Code {
         ? scopeRange.self.listMembers()
         : []) || []),
       // Project globals
-      ...this.project.symbols.values(),
       ...(this.project.self.listMembers() || []),
-      // GML globals
-      ...[...this.project.native.global.values()],
     ].filter((x) => x.def || x.native);
   }
 
@@ -210,10 +242,6 @@ export class Code {
     return this.path.basename;
   }
 
-  get content() {
-    return this._content;
-  }
-
   get cst() {
     return this._parsed.cst;
   }
@@ -226,7 +254,7 @@ export class Code {
    */
   async parse(content?: string) {
     this.clearAllDiagnostics();
-    this._content =
+    this.content =
       typeof content === 'string' ? content : await this.path.read();
     this._parsed = parser.parse(this.content);
     for (const diagnostic of this._parsed.errors) {
@@ -249,9 +277,13 @@ export class Code {
     }
   }
 
+  clearDiagnosticCollection(collection: DiagnosticCollectionName) {
+    this.diagnostics[collection] = [];
+  }
+
   protected clearAllDiagnostics() {
     this.diagnostics = {
-      GLOBAl_SELF: [],
+      GLOBAL_SELF: [],
       INVALID_OPERATION: [],
       JSDOC_MISMATCH: [],
       MISSING_EVENT_INHERITED: [],
@@ -260,6 +292,7 @@ export class Code {
       TOO_MANY_ARGUMENTS: [],
       UNDECLARED_GLOBAL_REFERENCE: [],
       UNDECLARED_VARIABLE_REFERENCE: [],
+      JSDOC: [],
     };
   }
 
@@ -296,6 +329,7 @@ export class Code {
   protected initializeScopeRanges() {
     assert(this.scopes, 'Scopes must be initialized');
     this.scopes.length = 0;
+    this.jsdocs.length = 0;
     const position = Position.fromFileStart(this);
     const self = this.asset.instanceType || this.project.self;
     const local = new Type('Struct');
@@ -329,8 +363,8 @@ export class Code {
       // If this symbol has no references left, remove it from the project.
       if (isDefinedInThisFile && !symbol.refs.size) {
         // Remove typemembers from their parent type
-        if (symbol instanceof MemberSignifier) {
-          symbol.parent.removeMember(symbol.name);
+        if (isTypeOfKind(symbol.parent, 'Struct')) {
+          symbol.parent.removeMember(symbol.name!);
         }
         // TODO: Remove from global list?
       }
@@ -352,8 +386,8 @@ export class Code {
    * provide new content to use instead of reading from disk.
    */
   async reload(content?: string, options?: { reloadDirty?: boolean }) {
-    this._content = content || this._content;
-    await this.parse(this._content);
+    this.content = content || this.content;
+    await this.parse(this.content);
     this.updateGlobals();
     this.updateAllSymbols();
     this.updateDiagnostics();
@@ -366,7 +400,7 @@ export class Code {
   protected discoverEventInheritanceWarnings() {
     this.diagnostics.MISSING_EVENT_INHERITED = [];
     if (
-      this.asset.assetType !== 'objects' ||
+      this.asset.assetKind !== 'objects' ||
       !this.isCreateEvent ||
       !this.asset.parent
     ) {
@@ -448,13 +482,30 @@ export class Code {
     }
   }
 
+  protected computeJsdocDiagnostics() {
+    this.diagnostics.JSDOC = [];
+    for (const jsdoc of this.jsdocs) {
+      for (const diagnostic of jsdoc.diagnostics) {
+        this.diagnostics.JSDOC.push(
+          Diagnostic.warn(
+            diagnostic.message,
+            new Range(
+              Position.from(this, diagnostic.start),
+              Position.from(this, diagnostic.end),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   updateGlobals() {
     this.reset();
-    return processGlobalSymbols(this);
+    return registerGlobals(this);
   }
 
   updateAllSymbols() {
-    processSymbols(this);
+    registerSignifiers(this);
   }
 
   /** Update and emit diagnostics */
@@ -462,6 +513,7 @@ export class Code {
     this.discoverEventInheritanceWarnings();
     this.computeFunctionCallDiagnostics();
     this.computeUndeclaredSymbolDiagnostics();
+    this.computeJsdocDiagnostics();
     const allDiagnostics: Diagnostic[] = [];
     for (const items of Object.values(this.diagnostics)) {
       allDiagnostics.push(...items);

@@ -9,9 +9,12 @@ import {
   type Type,
 } from '@bscotch/gml-parser';
 import { GameMakerFolder } from 'tree.folder.mjs';
-import vscode from 'vscode';
+import vscode, { CancellationToken, CompletionContext } from 'vscode';
 import { assert, swallowThrown } from './assert.mjs';
-import { inScopeSymbolsToCompletions } from './extension.completions.mjs';
+import {
+  inScopeSymbolsToCompletions,
+  jsdocCompletions,
+} from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { GameMakerHoverProvider } from './extension.hover.mjs';
@@ -24,7 +27,7 @@ import {
   rangeFrom,
   uriFromCodeFile,
 } from './lib.mjs';
-import { Timer, info, warn } from './log.mjs';
+import { Timer, info, logger, warn } from './log.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 
 export class StitchProvider
@@ -82,7 +85,6 @@ export class StitchProvider
   }
 
   async loadProject(yypPath: vscode.Uri, onDiagnostics: OnDiagnostics) {
-    const t = Timer.start();
     let project!: GameMakerProject;
     await vscode.window.withProgress(
       {
@@ -123,7 +125,7 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Location[]> {
-    const symbol = this.getSymbol(document, position);
+    const symbol = this.getSignifier(document, position);
     if (!symbol) {
       return;
     }
@@ -170,6 +172,8 @@ export class StitchProvider
   async provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
+    token: CancellationToken,
+    context: CompletionContext,
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
     info('provideCompletionItems', document, position);
     // If we're already processing this file, wait for it to finish so that we get up-to-date completions.
@@ -179,8 +183,16 @@ export class StitchProvider
     if (!gmlFile) {
       return [];
     }
-    const items = gmlFile.getInScopeSymbolsAt(offset);
-    return inScopeSymbolsToCompletions(document, items);
+    // Are we inside a JSDoc comment?
+    const jsdoc = gmlFile.getJsdocAt(offset);
+    if (jsdoc) {
+      return jsdocCompletions(document, position, gmlFile, jsdoc);
+    } else if (context.triggerCharacter !== '{') {
+      // The '{' character is only used to trigger autocomplete inside of JSDoc type blocks.
+      const items = gmlFile.getInScopeSymbolsAt(offset);
+      return inScopeSymbolsToCompletions(document, items);
+    }
+    return [];
   }
 
   provideSignatureHelp(
@@ -258,7 +270,7 @@ export class StitchProvider
     return ref;
   }
 
-  getSymbol(
+  getSignifier(
     document: vscode.TextDocument,
     position: vscode.Position,
   ): ReferenceableType | undefined {
@@ -279,7 +291,7 @@ export class StitchProvider
     name: string,
   ): Asset<'sprites'> | undefined {
     const asset = this.getAsset(document, name);
-    if (asset && asset.assetType === 'sprites') {
+    if (asset && asset.assetKind === 'sprites') {
       return asset as Asset<'sprites'>;
     }
     return;
@@ -349,6 +361,10 @@ export class StitchProvider
         if (doc.languageId !== 'gml') {
           return;
         }
+        if (this.provider.processingFiles.has(doc.uri.fsPath)) {
+          logger.info('Already processing file', doc.uri.fsPath);
+          return;
+        }
         this.provider.diagnosticCollection.delete(doc.uri);
         // Add the processing promise to a map so
         // that other functionality can wait for it
@@ -359,9 +375,28 @@ export class StitchProvider
           this.provider.processingFiles.delete(doc.uri.fsPath);
         });
       };
+      const watcher = vscode.workspace.createFileSystemWatcher('**/*.gml');
       // Ensure that things stay up to date!
       vscode.workspace.onDidChangeTextDocument(onChangeDoc);
       vscode.workspace.onDidOpenTextDocument(onChangeDoc);
+      watcher.onDidChange((uri) => {
+        // Find the corresponding document, if there is one
+        const doc = vscode.workspace.textDocuments.find(
+          (d) => d.uri.fsPath === uri.fsPath,
+        );
+        info('changedOnDisk', uri.fsPath);
+        if (doc) {
+          // Then we might have just saved this doc, or
+          // it's open but got changed externally. Either way,
+          // the onChangeDoc handler is already debouncing
+          return onChangeDoc(doc);
+        }
+        // Otherwise the file isn't open, so we need to
+        // reprocess it more directly.
+        this.provider.getGmlFile(uri)?.reload(undefined, {
+          reloadDirty: true,
+        });
+      });
     }
 
     // Dispose any existing subscriptions
@@ -378,11 +413,15 @@ export class StitchProvider
     for (const yypFile of yypFiles) {
       info('Loading project', yypFile);
       const pt = Timer.start();
-      await StitchProvider.provider.loadProject(
-        yypFile,
-        this.provider.emitDiagnostics.bind(this.provider),
-      );
-      pt.seconds('Loaded project in');
+      try {
+        await StitchProvider.provider.loadProject(
+          yypFile,
+          this.provider.emitDiagnostics.bind(this.provider),
+        );
+        pt.seconds('Loaded project in');
+      } catch (error) {
+        logger.error('Error loading project', yypFile, error);
+      }
     }
 
     const treeProvider = new GameMakerTreeProvider(this.provider);

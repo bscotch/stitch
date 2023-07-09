@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Type } from './types.js';
+import { Type, TypeStore } from './types.js';
 
 describe('Types', function () {
   it('can check whether one simple type satisfies another', function () {
@@ -7,7 +7,8 @@ describe('Types', function () {
     expect(string.narrows(new Type('String'))).to.be.true;
     expect(string.narrows(new Type('Real'))).to.be.false;
 
-    const union = new Type('Union').addUnionType(new Type('String'));
+    const union = new TypeStore();
+    union.type = [new Type('String'), new Type('Real')];
     expect(string.narrows(union)).to.be.true;
     expect(union.narrows(string)).to.be.false;
   });

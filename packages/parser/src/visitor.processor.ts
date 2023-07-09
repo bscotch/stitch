@@ -1,5 +1,5 @@
 import type { CstNodeLocation } from 'chevrotain';
-import { JsdocSummary } from './jsdoc.js';
+import type { Docs } from './parser.js';
 import type { Code } from './project.code.js';
 import {
   Diagnostic,
@@ -7,16 +7,23 @@ import {
   DiagnosticSeverity,
 } from './project.diagnostics.js';
 import { Position, Range, type Scope } from './project.location.js';
-import { Type, type EnumType, type StructType } from './types.js';
+import { type EnumType, type StructType } from './types.js';
 import { assert } from './util.js';
 
-export class SymbolProcessor {
+export const diagnosticCollections = [
+  'GLOBAL_SELF',
+  'UNDECLARED_GLOBAL_REFERENCE',
+  'INVALID_OPERATION',
+  'JSDOC_MISMATCH',
+] satisfies DiagnosticCollectionName[];
+
+export class SignifierProcessor {
   protected readonly localScopeStack: StructType[] = [];
   protected readonly selfStack: (StructType | EnumType)[] = [];
   /** The current ScopeRange, updated as we push/pop local and self */
   public scope: Scope;
   readonly position: Position;
-  public unusedJsdoc: { type: Type; jsdoc: JsdocSummary } | undefined;
+  public unusedJsdoc: Docs | undefined;
 
   constructor(readonly file: Code) {
     this.scope = file.scopes[0];
@@ -47,7 +54,7 @@ export class SymbolProcessor {
   }
 
   addDiagnostic(
-    kind: DiagnosticCollectionName,
+    kind: (typeof diagnosticCollections)[number],
     where: CstNodeLocation,
     message: string,
     severity: DiagnosticSeverity = 'warning',
@@ -75,16 +82,16 @@ export class SymbolProcessor {
     return this.asset.project;
   }
 
+  get globalSelf() {
+    return this.project.self;
+  }
+
   get currentLocalScope() {
     return this.localScopeStack.at(-1)!;
   }
 
   get currentSelf() {
     return this.selfStack.at(-1) || this.project.self;
-  }
-
-  getGlobalSymbol(name: string) {
-    return this.project.getGlobal(name);
   }
 
   protected nextScope(token: CstNodeLocation, fromTokenEnd: boolean) {
@@ -106,7 +113,7 @@ export class SymbolProcessor {
   }
 
   createStruct(token: CstNodeLocation, endToken?: CstNodeLocation) {
-    return new Type('Struct').definedAt(this.range(token, endToken));
+    return this.project.createStructType('self');
   }
 
   pushScope(

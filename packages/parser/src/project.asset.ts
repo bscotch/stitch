@@ -11,17 +11,17 @@ import {
 import { logger } from './logger.js';
 import { Code } from './project.code.js';
 import { Project } from './project.js';
-import { Signifier } from './project.signifier.js';
-import { StructType } from './types.js';
+import { Signifier } from './signifiers.js';
+import { StructType, Type } from './types.js';
 import { ok } from './util.js';
 
 export class Asset<T extends YyResourceType = YyResourceType> {
   readonly $tag = 'Asset';
-  readonly assetType: T;
+  readonly assetKind: T;
   readonly gmlFiles: Map<string, Code> = new Map();
   yy!: YyDataStrict<T>;
   readonly yyPath: Pathy<YySchemas[T]>;
-  readonly symbol: Signifier;
+  readonly signifier: Signifier;
   /** For objects, their instance type. */
   instanceType: StructType | undefined;
   /** For objects, their parent */
@@ -32,17 +32,42 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     readonly resource: YypResource,
     yyPath: Pathy,
   ) {
-    this.assetType = resource.id.path.split(/[/\\]/)[0] as T;
-    this.yyPath = yyPath.withValidator(yySchemas[this.assetType]) as any;
-    this.symbol = new Signifier(this.name);
+    this.assetKind = resource.id.path.split(/[/\\]/)[0] as T;
+    this.yyPath = yyPath.withValidator(yySchemas[this.assetKind]) as any;
+
+    // Create the symbol
+    this.signifier = new Signifier(this.project.self, this.name);
+    this.signifier.def = {};
+    this.signifier.global = true;
+    this.signifier.asset = true;
+
+    // Create the Asset.<> type
+    const type = new Type(this.assetTypeKind).named(this.name);
+    this.signifier.setType(type);
+
+    // Add this asset to the project lookup, unless it is a script.
+    if (this.assetKind !== 'scripts') {
+      this.project.self.addMember(this.signifier);
+      if (type.kind !== 'Any') {
+        this.project.types.set(`${type.kind}.${this.name}`, type);
+      }
+    }
+
+    // If this is an object, also create the instance type
+    if (this.assetKind === 'objects') {
+      this.instanceType = this.project
+        .createStructType('instance')
+        .named(this.name);
+      this.project.types.set(`Id.Instance.${this.name}`, this.instanceType);
+    }
   }
 
   get isScript() {
-    return this.assetType === 'scripts';
+    return this.assetKind === 'scripts';
   }
 
   get isObject() {
-    return this.assetType === 'objects';
+    return this.assetKind === 'objects';
   }
 
   get parent() {
@@ -78,7 +103,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   get shaderPaths(): T extends 'shaders'
     ? { [K in 'vertex' | 'fragment']: Pathy<string> }
     : undefined {
-    if (this.assetType !== 'shaders') {
+    if (this.assetKind !== 'shaders') {
       return undefined as any;
     }
     return {
@@ -89,7 +114,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
 
   get framePaths(): Pathy<Buffer>[] {
     const paths: Pathy<Buffer>[] = [];
-    if (this.assetType !== 'sprites') {
+    if (this.assetKind !== 'sprites') {
       return paths;
     }
     const yy = this.yy as YySprite;
@@ -107,7 +132,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       asPath = paths.find((x) => filePattern.test(x.basename));
     }
     ok(asPath, `Could not find a .yy file for ${this.name}`);
-    this.yy = await Yy.read(asPath.absolute, this.assetType);
+    this.yy = await Yy.read(asPath.absolute, this.assetKind);
     return this.yy;
   }
 
@@ -170,9 +195,9 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       await this.readYy(),
       this.dir.listChildren(),
     ]);
-    if (this.assetType === 'scripts') {
+    if (this.assetKind === 'scripts') {
       this.addScriptFile(children as Pathy<string>[]);
-    } else if (this.assetType === 'objects') {
+    } else if (this.assetKind === 'objects') {
       this.addObjectFile(children as Pathy<string>[]);
     }
     await this.initiallyReadAndParseGml();
@@ -217,8 +242,8 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return await Promise.all(parseWaits);
   }
 
-  get instanceTypeName() {
-    switch (this.assetType) {
+  get assetTypeKind() {
+    switch (this.assetKind) {
       case 'objects':
         return 'Asset.GMObject';
       case 'rooms':
@@ -238,7 +263,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       case 'fonts':
         return 'Asset.GMFont';
       default:
-        return 'Unknown';
+        return 'Any';
     }
   }
 
@@ -249,26 +274,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   ): Promise<Asset<T>> {
     const item = new Asset(project, resource, yyPath) as Asset<T>;
     await item.load();
-    // Setting the asset type depends on the GML Spec having been
-    // loaded, so we do it after the other stuff and ensure that
-    // the spec has been fully loaded
-    await item.project.nativeWaiter;
-    const assetType = item.instanceTypeName;
 
-    item.symbol.addType(
-      item.project.native.types.get(assetType)!.derive().named(item.name),
-    );
-    item.symbol.def = {};
-    if (item.assetType === 'objects') {
-      item.instanceType = item.project
-        .createStructType('instance')
-        .named(item.name);
-    }
-
-    // If we are not a script, add ourselves to the global symbols.
-    if (item.assetType !== 'scripts') {
-      item.project.addGlobal(item.symbol);
-    }
     return item;
   }
 }

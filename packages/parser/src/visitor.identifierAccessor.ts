@@ -1,3 +1,4 @@
+import { arrayUnwrapped, isArray } from '@bscotch/utility';
 import type { IToken } from 'chevrotain';
 import type { IdentifierAccessorCstChildren } from '../gml-cst.js';
 import {
@@ -12,25 +13,39 @@ import {
   FunctionArgRange,
   Position,
   Range,
-  ReferenceableType,
   fixITokenLocation,
-  getType,
 } from './project.location.js';
-import { isTypeOfKind } from './types.checks.js';
-import { MemberSignifier, Type } from './types.js';
-import { PrimitiveName } from './types.primitives.js';
-import type { GmlSymbolVisitor } from './visitor.js';
+import { Signifier } from './signifiers.js';
+import {
+  getTypeOfKind,
+  getTypeStoreOrType,
+  isTypeOrStoreOfKind,
+} from './types.checks.js';
+import { Type, TypeStore } from './types.js';
+import type { GmlSignifierVisitor } from './visitor.js';
 
 export function visitIdentifierAccessor(
-  this: GmlSymbolVisitor,
+  this: GmlSignifierVisitor,
   children: IdentifierAccessorCstChildren,
   ctx: VisitorContext,
-): Type {
-  const matchingSymbol = this.FIND_ITEM(children.identifier[0].children);
-  if (matchingSymbol) {
-    matchingSymbol.item.addRef(matchingSymbol.range);
-  }
-  if (!matchingSymbol) {
+): Type | TypeStore {
+  /** The type or signifier we're using an accessor on */
+  let accessing: {
+    type?: Type | TypeStore;
+    range?: Range;
+  } = {};
+  const initialSignifier = this.FIND_ITEM(children.identifier[0].children);
+  if (initialSignifier) {
+    const type = getTypeStoreOrType(initialSignifier.item);
+    accessing = {
+      type: isArray(type) ? type[0] : type,
+      range: initialSignifier.range,
+    };
+    if ('addRef' in initialSignifier.item) {
+      initialSignifier.item.addRef(initialSignifier.range);
+    }
+  } else {
+    // Add a diagnostic for the identifier
     const identifier = identifierFrom(children.identifier[0].children);
     if (identifier) {
       this.PROCESSOR.addDiagnostic(
@@ -40,13 +55,8 @@ export function visitIdentifierAccessor(
       );
     }
   }
-  let accessing: {
-    item?: ReferenceableType;
-    range?: Range;
-  } = matchingSymbol ?? {};
-  const typeStack: Type[] = [
-    accessing.item ? getType(accessing.item) : this.UNKNOWN,
-  ];
+
+  let lastAccessedType: Type | TypeStore = accessing.type || this.ANY;
   accessing.range = this.PROCESSOR.range(children.identifier[0].location!);
   const suffixes = sortedAccessorSuffixes(children.accessorSuffixes);
 
@@ -54,24 +64,22 @@ export function visitIdentifierAccessor(
   /** If true, then the `new` keyword prefixes this. */
   const usesNew = !!children.New?.length;
   /** If not `undefined`, this is the assignment node */
-  const assignment = children.assignment?.[0];
-  const assignmentType = this.UPDATED_TYPE_WITH_DOCS(
-    assignment?.children.assignmentRightHandSide
-      ? this.assignmentRightHandSide(
-          assignment.children.assignmentRightHandSide[0].children,
-          withCtxKind(ctx, 'assignment'),
-        )
-      : this.UNKNOWN,
-  );
+  const docs = this.PROCESSOR.consumeJsdoc();
+  const assignmentCst =
+    children.assignment?.[0]?.children.assignmentRightHandSide?.[0].children;
+  const inferredType = assignmentCst
+    ? this.assignmentRightHandSide(
+        assignmentCst,
+        withCtxKind(ctx, 'assignment'),
+      )
+    : this.ANY;
 
   // For each suffix in turn, try to figure out how it changes the scope,
   // find the corresponding symbol, etc.
 
-  suffixLoop: for (let s = 0; s < suffixes.length; s++) {
+  for (let s = 0; s < suffixes.length; s++) {
     const suffix = suffixes[s];
     const suffixRange = this.PROCESSOR.range(suffix.location!);
-    const accessingType: Type =
-      (accessing?.item && getType(accessing.item)) || this.UNKNOWN;
     const isLastSuffix = s === suffixes.length - 1;
     switch (suffix.name) {
       case 'arrayMutationAccessorSuffix':
@@ -81,24 +89,24 @@ export function visitIdentifierAccessor(
       case 'listAccessSuffix':
       case 'structAccessSuffix':
         this.visit(suffix.children.expression, ctx);
-        const type: Type = accessingType.items || this.UNKNOWN;
+        const type = arrayUnwrapped(accessing.type?.items || this.ANY);
         accessing = {
-          item: type,
+          type: type,
           range: suffixRange,
         };
-        typeStack.push(type);
+        lastAccessedType = type;
         break;
       case 'dotAccessSuffix':
         // Then we need to change self-scope to be inside
-        // the prior struct.
+        // the prior dot-accessible.
         const dotAccessor = suffix.children;
         const dot = fixITokenLocation(dotAccessor.Dot[0]);
-        if (
-          isTypeOfKind(accessingType, 'Struct') ||
-          isTypeOfKind(accessingType, 'Enum')
-        ) {
+        const dottableType = accessing.type
+          ? getTypeOfKind(accessing.type, ['Struct', 'Enum'])
+          : undefined;
+        if (dottableType) {
           this.PROCESSOR.scope.setEnd(dot);
-          this.PROCESSOR.pushSelfScope(dot, accessingType, true, {
+          this.PROCESSOR.pushSelfScope(dot, dottableType, true, {
             accessorScope: true,
           });
           // While editing a user will dot into something
@@ -109,58 +117,75 @@ export function visitIdentifierAccessor(
             this.PROCESSOR.scope.setEnd(dot, true);
             this.PROCESSOR.popSelfScope(dot, true);
             accessing = {};
-            typeStack.push(this.UNKNOWN);
+            lastAccessedType = this.ANY;
           } else {
             // Then this identifier should exist in the parent struct
             const propertyIdentifier = identifierFrom(dotAccessor)!;
             const propertyNameLocation = dotAccessor.identifier[0].location!;
             const propertyNameRange =
               this.PROCESSOR.range(propertyNameLocation);
-            const existingProperty = accessingType.getMember(
+            const existingProperty = dottableType.getMember(
               propertyIdentifier.name,
             );
             if (existingProperty) {
               existingProperty.addRef(propertyNameRange);
               accessing = {
-                item: existingProperty,
+                type: existingProperty.type,
                 range: propertyNameRange,
               };
-              typeStack.push(getType(existingProperty));
+              lastAccessedType = existingProperty.type;
               // On update, we need to make sure that the definition
               // still exists.
-              if (isLastSuffix && assignment && !existingProperty.def) {
+              if (isLastSuffix && assignmentCst && !existingProperty.def) {
                 existingProperty.definedAt(propertyNameRange);
+                if (docs) {
+                  existingProperty.describe(docs.jsdoc.description);
+                  existingProperty.setType(docs.type);
+                } else if (inferredType) {
+                  existingProperty.setType(inferredType);
+                }
               }
             } else if (
               !existingProperty &&
-              isTypeOfKind(accessingType, 'Struct')
+              isTypeOrStoreOfKind(accessing.type, 'Struct')
             ) {
               // Then this variable is not yet defined on this struct.
               // We need to add it!
-              const newMemberType = isLastSuffix
-                ? assignmentType
-                : this.UNKNOWN;
-              // Add this member to the struct
-              const newMember: MemberSignifier = accessingType.addMember(
+              const accessingStruct = getTypeOfKind(accessing.type, 'Struct')!;
+              const newMember: Signifier = accessingStruct.addMember(
                 propertyIdentifier.name,
-                newMemberType,
               );
               newMember.instance = true;
               newMember.addRef(propertyNameRange);
               // If this is the last suffix and this is
               // an assignment, then also set the `def` of the
               // new member.
-              if (isLastSuffix && assignment) {
+              if (isLastSuffix && assignmentCst) {
                 newMember.definedAt(propertyNameRange);
+                if (docs) {
+                  newMember.describe(docs.jsdoc.description);
+                  newMember.setType(docs.type);
+                } else if (inferredType) {
+                  newMember.setType(inferredType);
+                }
+              }
+              // Else if this is a struct without any type info,
+              // allow it to be "defined" since the user has no opinions about its existence.
+              // TODO: This should probably be an OPTION
+              else if (
+                accessingStruct.totalMembers() === 0 &&
+                !accessingStruct.items?.type.length
+              ) {
+                newMember.def = {}; // Prevents "Undeclared" errors
               }
               accessing = {
-                item: newMember,
+                type: newMember.type,
                 range: propertyNameRange,
               };
-              typeStack.push(newMemberType);
+              lastAccessedType = newMember.type;
             } else {
               accessing = {};
-              typeStack.push(this.UNKNOWN);
+              lastAccessedType = this.ANY;
             }
             this.PROCESSOR.scope.setEnd(propertyNameLocation, true);
             this.PROCESSOR.popSelfScope(propertyNameLocation, true);
@@ -168,41 +193,44 @@ export function visitIdentifierAccessor(
         } else {
           // TODO: Handle dot accessors for other valid dot-accessible types.
           // But for now, just emit an error for definitenly invalid types.
-          const isDotAccessible = (
-            [
+          const isDotAccessible =
+            getTypeOfKind(accessing.type, [
               'Id.Instance',
               'Asset.GMObject',
               'Any',
               'Unknown',
-            ] as PrimitiveName[]
-          ).includes(accessingType?.kind!);
+            ]) ||
+            !accessing.type ||
+            (accessing.type instanceof TypeStore &&
+              accessing.type.type.length === 0);
           accessing = {};
-          typeStack.push(this.UNKNOWN);
+          lastAccessedType = this.ANY;
           if (!isDotAccessible) {
             this.PROCESSOR.addDiagnostic(
               'INVALID_OPERATION',
               suffix.location!,
-              `Type ${accessingType?.toFeatherString()} does not allow dot accessors.`,
+              `Type does not allow dot accessors.`,
             );
           }
-          continue suffixLoop;
+          continue;
         }
         break;
       case 'functionArguments':
-        // Create the argumentRanges between the parense and each comma
+        // Create the argumentRanges between the parens and each comma
         const argsAndSeps = sortedFunctionCallParts(suffix);
         let argIdx = 0;
         let lastDelimiter: IToken;
         let lastTokenWasDelimiter = true;
+        const functionType = getTypeOfKind(accessing.type, 'Function');
         const ranges: FunctionArgRange[] = [];
-        argLoop: for (let i = 0; i < argsAndSeps.length; i++) {
+        for (let i = 0; i < argsAndSeps.length; i++) {
           const token = argsAndSeps[i];
           const isSep = 'image' in token;
           if (isSep) {
             fixITokenLocation(token);
             if (token.image === '(') {
               lastDelimiter = token;
-              continue argLoop;
+              continue;
             }
 
             // Otherwise create the range
@@ -210,7 +238,7 @@ export function visitIdentifierAccessor(
             // as the start position for the commas and parens
             // Start on the RIGHT side of the first delimiter
 
-            if (accessing.item) {
+            if (functionType) {
               const start = Position.fromCstEnd(
                 this.PROCESSOR.file,
                 lastDelimiter!,
@@ -218,7 +246,7 @@ export function visitIdentifierAccessor(
               // end on the LEFT side of the second delimiter
               const end = Position.fromCstStart(this.PROCESSOR.file, token);
               const funcRange = new FunctionArgRange(
-                accessing.item,
+                functionType,
                 argIdx,
                 start,
                 end,
@@ -242,14 +270,13 @@ export function visitIdentifierAccessor(
             );
           }
         }
-        // Set the current item to the return type,
-        // so that we can chain suffixes.
+        // The returntype of this function may be used in another accessor
         const returnType =
           (usesNew && isLastSuffix
-            ? accessingType?.constructs
-            : accessingType?.returns) || this.UNKNOWN;
-        accessing = { item: returnType };
-        typeStack.push(returnType);
+            ? functionType?.constructs
+            : functionType?.returns) || this.ANY;
+        accessing = { type: returnType };
+        lastAccessedType = returnType;
         // Add the function call to the file for diagnostics
         if (ranges.length) {
           this.PROCESSOR.file.addFunctionCall(ranges);
@@ -257,9 +284,9 @@ export function visitIdentifierAccessor(
         break;
       default:
         this.visit(suffix, ctx);
-        accessing = { item: this.UNKNOWN };
-        typeStack.push(accessing.item as Type);
+        accessing = { type: this.ANY };
+        lastAccessedType = accessing.type as Type;
     }
   }
-  return typeStack.at(-1)!;
+  return lastAccessedType;
 }

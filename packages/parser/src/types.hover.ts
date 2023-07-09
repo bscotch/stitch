@@ -1,7 +1,8 @@
-import type { MemberSignifier, Type } from './types.js';
+import type { Signifier } from './signifiers.js';
+import type { Type } from './types.js';
 import { assert } from './util.js';
 
-export function typeMemberToHoverText(member: MemberSignifier) {
+export function typeMemberToHoverText(member: Signifier) {
   let code = member.name;
   if (member.optional) {
     code += '?';
@@ -17,14 +18,17 @@ export function typeToHoverDetails(type: Type) {
       code += `\n\n*@self* ${type.context.toFeatherString()}`;
     }
     for (const param of type.listParameters()) {
-      if (param.description || param.type.description) {
-        code += `\n\n*@param* \`${param.name}\` - ${
-          param.description || param.type.description
-        }`;
+      if (param.def && param.description) {
+        code += `\n\n*@param* \`${param.name}\` - ${param.description}`;
       }
     }
   } else if (type.kind === 'Struct') {
-    const members = type.listMembers().filter((x) => x.name !== 'self');
+    const members = type
+      .listMembers()
+      .filter((x) => x.name !== 'self' && x.def)
+      .sort((a, b) =>
+        a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()),
+      );
     if (!members.length) {
       return '';
     }
@@ -57,13 +61,13 @@ export function typeToHoverText(type: Type) {
       code += typeMemberToHoverText(param);
     }
     code += ')';
-    if (type.kind === 'Constructor') {
+    if (type.isConstructor) {
       code += ` constructor`;
     }
     code += `: ${
       type.constructs
         ? type.constructs.toFeatherString()
-        : type.returns?.toFeatherString() || 'Unknown'
+        : type.returns?.toFeatherString() || 'Undefined'
     }`;
   } else {
     code += type.toFeatherString();

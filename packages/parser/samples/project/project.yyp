@@ -44,6 +44,8 @@
     {"id":{"name":"Complicated","path":"scripts/Complicated/Complicated.yy",},},
     {"id":{"name":"Script1","path":"scripts/Script1/Script1.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
+    {"id":{"name":"Withing","path":"scripts/Withing/Withing.yy",},},
+    {"id":{"name":"FunctionSelf","path":"scripts/FunctionSelf/FunctionSelf.yy",},},
   ],
   "RoomOrderNodes": [
     {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
@@ -51,4 +53,5 @@
   "TextureGroups": [
     {"resourceType":"GMTextureGroup","resourceVersion":"1.3","name":"Default","autocrop":true,"border":2,"compressFormat":"bz2","directory":"","groupParent":null,"isScaled":true,"loadType":"default","mipsToGenerate":0,"targets":-1,},
   ],
+  "Options": [],
 }

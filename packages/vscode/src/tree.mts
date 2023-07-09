@@ -184,13 +184,13 @@ export class GameMakerTreeProvider
     } else if (element instanceof TreeFilterGroup) {
       return element.filters.sort((a, b) => a.query.localeCompare(b.query));
     } else if (element instanceof TreeAsset) {
-      if (element.asset.assetType === 'objects') {
+      if (element.asset.assetKind === 'objects') {
         return element.asset.gmlFilesArray.map((f) => new TreeCode(element, f));
-      } else if (element.asset.assetType === 'sprites') {
+      } else if (element.asset.assetKind === 'sprites') {
         return element.asset.framePaths.map(
           (p, i) => new TreeSpriteFrame(element, p, i),
         );
-      } else if (element.asset.assetType === 'shaders') {
+      } else if (element.asset.assetKind === 'shaders') {
         const paths = element.asset.shaderPaths!;
         return [
           new TreeShaderFile(element, paths.fragment),

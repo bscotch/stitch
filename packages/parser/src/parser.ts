@@ -18,11 +18,13 @@ import type {
   MultilineSingleStringLiteralCstChildren,
   StringLiteralCstChildren,
 } from '../gml-cst.js';
+import type { JsdocSummary } from './jsdoc.js';
 import { GmlLexer } from './lexer.js';
 import type { GmlParseError } from './project.diagnostics.js';
 import { Reference, ReferenceableType } from './project.location.js';
+import { Signifier } from './signifiers.js';
 import { c, categories, t, tokens } from './tokens.js';
-import { Type } from './types.js';
+import { Type, TypeStore } from './types.js';
 import { ok } from './util.js';
 
 export interface GmlParsed {
@@ -815,18 +817,26 @@ export type NodeContextKind =
   | 'functionArg'
   | 'functionBody'
   | 'functionReturn'
-  | 'structValue'
+  | 'functionStatement'
   | 'template'
   | 'arrayMember'
   | 'assignment';
 
+export interface Docs {
+  type: Type[];
+  jsdoc: JsdocSummary;
+}
+
 export interface VisitorContext {
+  /** While processing a function expression or struct literal, the signifier may come from an assignment operation. */
+  signifier?: Signifier;
+  docs?: Docs;
   // /** The context stack as referenceable entities */
   // ctxStack: Referenceable[];
   /** Helpful to get general info about the context of the current node. */
   ctxKindStack: NodeContextKind[];
   /** If we're in a function, the return statement values we've found */
-  returns?: Type[];
+  returns?: (Type | TypeStore)[];
 }
 
 export function withCtxKind<T extends NodeContextKind>(
@@ -845,5 +855,10 @@ export const GmlVisitorBase =
     ...args: any[]
   ) => GmlVisitor<
     VisitorContext,
-    undefined | void | Type | { item: ReferenceableType; ref: Reference }
+    | undefined
+    | void
+    | Type
+    | (Type | TypeStore)[]
+    | TypeStore
+    | { item: ReferenceableType; ref: Reference }
   >;
