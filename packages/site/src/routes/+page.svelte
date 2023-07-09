@@ -2,6 +2,11 @@
 	import Logo from '$lib/assets/stitch-logo-small.webp';
 </script>
 
+<svelte:head>
+	<title>Stitch | Butterscotch Shenanigans</title>
+	<meta name="description" content="A toolkit for managing GameMaker projects" />
+</svelte:head>
+
 <main>
 	<article>
 		<header>
@@ -14,9 +19,23 @@
 				<p>
 					A toolkit for managing <a href="https://gamemaker.io/en">GameMaker</a> projects
 				</p>
+				<p style="font-style:italic">This site is a work in progress.</p>
 			</div>
 		</header>
-		<p style="font-style:italic">This site is a work in progress.</p>
+
+		<h2>Getting Started</h2>
+
+		<p>
+			Stitch consists of a bunch of tools to help automate or improve GameMaker workflows. See the <a
+				href="https://github.com/bscotch/stitch">GitHub repo</a
+			> for details and source code for all Stitch projects.
+		</p>
+
+		<h3>Unified GameMaker Releases Feed</h3>
+		<p>
+			GameMaker releases come in multiple flavors (LTS, stable, and beta), each with its own release
+			notes for both the IDE and the runtime. The <a href="" />
+		</p>
 	</article>
 </main>
 
