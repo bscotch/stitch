@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import Logo from '$lib/assets/stitch-logo-small.webp';
 	import { faGithub } from '@fortawesome/free-brands-svg-icons';
 	import Fa from 'svelte-fa';
 </script>
 
 <nav>
-	<a href="/" title="Go home">
+	<a href={base} title="Go home">
 		<img src={Logo} alt="SvelteKit" />
 		<span class="name">Stitch</span>
 	</a>

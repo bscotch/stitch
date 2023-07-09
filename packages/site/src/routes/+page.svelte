@@ -1,4 +1,5 @@
 <script>
+	import { base } from '$app/paths';
 	import Logo from '$lib/assets/stitch-logo-small.webp';
 </script>
 
@@ -46,10 +47,10 @@
 			</p>
 			<ul>
 				<li>
-					<a href="./gamemaker/releases">Browse the unified release notes</a>
+					<a href={`${base}/gamemaker/releases`}>Browse the unified release notes</a>
 				</li>
 				<li>
-					<a href="./artifacts/gamemaker/releases-summary.json">See the raw feed</a>
+					<a href={`${base}/artifacts/gamemaker/releases-summary.json`}>See the raw feed</a>
 				</li>
 			</ul>
 		</section>
