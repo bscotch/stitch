@@ -11,7 +11,7 @@
 	</a>
 	<menu class="reset">
 		<li>
-			<a href="https://github.com/bscotch/stitch" title="See the source code">
+			<a href="https://github.com/bscotch/stitch" title="See the Stitch source code">
 				<Fa icon={faGithub} size="lg" />
 			</a>
 		</li>

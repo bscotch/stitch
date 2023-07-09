@@ -49,7 +49,7 @@
 					<a href="./gamemaker/releases">Browse the unified release notes</a>
 				</li>
 				<li>
-					<a href="./artifacts/gamemaker-releases.json">See the raw feed</a>
+					<a href="./artifacts/gamemaker/releases-summary.json">See the raw feed</a>
 				</li>
 			</ul>
 		</section>
