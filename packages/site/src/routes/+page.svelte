@@ -7,22 +7,22 @@
 	<meta name="description" content="A toolkit for managing GameMaker projects" />
 </svelte:head>
 
+<header>
+	<figure>
+		<div class="background" />
+		<img src={Logo} alt="Stitch Logo" />
+	</figure>
+	<div class="title">
+		<h1>Stitch</h1>
+		<p>
+			A toolkit for managing <a href="https://gamemaker.io/en">GameMaker</a> projects
+		</p>
+		<p style="font-style:italic">This site is a work in progress.</p>
+	</div>
+</header>
+
 <main>
 	<article>
-		<header>
-			<figure>
-				<div class="background" />
-				<img src={Logo} alt="Stitch Logo" />
-			</figure>
-			<div class="title">
-				<h1>Stitch</h1>
-				<p>
-					A toolkit for managing <a href="https://gamemaker.io/en">GameMaker</a> projects
-				</p>
-				<p style="font-style:italic">This site is a work in progress.</p>
-			</div>
-		</header>
-
 		<h2>Getting Started</h2>
 
 		<p>
@@ -42,18 +42,22 @@
 </main>
 
 <style>
-	main {
+	article {
 		width: 100%;
+		max-width: 50rem;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 3em;
+		gap: 1em;
+		font-size: 1.2rem;
+		margin-top: 2rem;
 	}
 	header {
 		display: flex;
 		flex-direction: column;
+		align-items: center;
 		gap: 1.5em;
+		font-size: 1.5rem;
+		text-align: center;
 	}
 	.title p {
 		font-size: 1.25rem;
@@ -66,8 +70,7 @@
 		justify-content: center;
 		gap: 2em;
 		width: 100%;
-		max-width: 30rem;
-		aspect-ratio: 1/1;
+		max-width: 20rem;
 	}
 
 	.background {
@@ -93,7 +96,7 @@
 	}
 
 	h1 {
-		text-shadow: 0.1em 0.1em 0.2em black;
+		text-shadow: 0.2em 0.2em 0.2em black;
 	}
 
 	@keyframes breathing {

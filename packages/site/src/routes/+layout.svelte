@@ -11,7 +11,7 @@
 	</a>
 	<menu class="reset">
 		<li>
-			<a href="https://github.com/bscotch/stitch">
+			<a href="https://github.com/bscotch/stitch" title="See the source code">
 				<Fa icon={faGithub} size="lg" />
 			</a>
 		</li>
@@ -23,6 +23,8 @@
 <style>
 	nav {
 		display: flex;
+		width: 100%;
+		max-width: 50rem;
 		justify-content: space-between;
 	}
 	nav menu a {
