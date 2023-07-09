@@ -15,11 +15,11 @@ const cache = await (
 ).json();
 await notesCache.write(cache);
 
-/** @type {boolean} */
-let b = false;
+const releases = await computeReleasesSummaryWithNotes(undefined, notesCache);
+await summaryPath.write(releases);
+console.log('Latest GameMaker IDE:', releases[0].ide.version);
 
-if (b) {
-	const releases = await computeReleasesSummaryWithNotes(undefined, notesCache);
-	await summaryPath.write(releases);
-	console.log('Latest GameMaker IDE:', releases[0].ide.version);
-}
+await notesCache.exists({ assert: true });
+await summaryPath.exists({ assert: true });
+
+console.log('Updated GameMaker releases summary.', summaryPath.absolute, notesCache.absolute);
