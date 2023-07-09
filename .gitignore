@@ -21,6 +21,8 @@ debug.log
 spritely.log
 .pnpm-debug.log
 .svelte-kit
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
 
 # dependencies
 node_modules
