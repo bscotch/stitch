@@ -34,7 +34,9 @@
 		<h3>Unified GameMaker Releases Feed</h3>
 		<p>
 			GameMaker releases come in multiple flavors (LTS, stable, and beta), each with its own release
-			notes for both the IDE and the runtime. The <a href="" />
+			notes for both the IDE and the runtime. The Stitch "GameMaker Releases" <a
+				href="https://www.npmjs.com/package/@bscotch/gamemaker-releases">npm package</a
+			> provides mechinisms to convert all of those into a single, unified feed.
 		</p>
 	</article>
 </main>

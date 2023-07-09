@@ -34,6 +34,10 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --filter=@bscotch/gamemaker-releases... --filter=@bscotch/stitch-site...
 
+      - name: Update Unified Feed
+        run: pnpm node scripts/update-unified-feed.js
+        working-directory: packages/site
+
       - name: Build
         run: pnpm turbo run build --filter=@bscotch/stitch-site... --filter=@bscotch/gamemaker-releases...
 
