@@ -1,18 +1,16 @@
 import { $ } from 'zx';
-import { pathy } from '@bscotch/pathy';
-import { computeReleasesSummaryWithNotes } from '../../releases/dist/index.js';
+// import { computeReleasesSummaryWithNotes } from '../../releases/dist/index.js';
 
-// UPDATE GAMEMAKER RELEASES SUMMARY
-const artifactsDir = pathy('static/artifacts/gamemaker');
-await artifactsDir.ensureDirectory();
+// // UPDATE GAMEMAKER RELEASES SUMMARY
+// const artifactsDir = pathy('static/artifacts/gamemaker');
+// await artifactsDir.ensureDirectory();
 
-const notesCache = artifactsDir.join('release-notes-cache.json');
-const summaryPath = artifactsDir.join('releases-summary.json');
+// const notesCache = artifactsDir.join('release-notes-cache.json');
+// const summaryPath = artifactsDir.join('releases-summary.json');
 
-const releases = await computeReleasesSummaryWithNotes(undefined, notesCache);
-await summaryPath.write(releases);
-console.log('Latest GameMaker IDE:',releases[0].ide.version);
-
+// const releases = await computeReleasesSummaryWithNotes(undefined, notesCache);
+// await summaryPath.write(releases);
+// console.log('Latest GameMaker IDE:',releases[0].ide.version);
 
 // COLLECT INFO
 const hash = await stdout($`git rev-parse HEAD`);

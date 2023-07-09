@@ -382,7 +382,7 @@ importers:
       '@bscotch/pathy': ^2.7.3
       '@fortawesome/free-brands-svg-icons': 6.4.0
       '@playwright/test': ^1.35.1
-      '@sveltejs/adapter-cloudflare': 2.3.0
+      '@sveltejs/adapter-static': 2.0.2
       '@sveltejs/kit': ^1.22.1
       '@typescript-eslint/eslint-plugin': ^5.61.0
       '@typescript-eslint/parser': ^5.61.0
@@ -405,7 +405,7 @@ importers:
     devDependencies:
       '@bscotch/pathy': 2.7.3
       '@playwright/test': 1.35.1
-      '@sveltejs/adapter-cloudflare': 2.3.0_@sveltejs+kit@1.22.1
+      '@sveltejs/adapter-static': 2.0.2_@sveltejs+kit@1.22.1
       '@sveltejs/kit': 1.22.1_svelte@4.0.5+vite@4.4.2
       '@typescript-eslint/eslint-plugin': 5.61.0_24v3duij7ab7rtbfz4qzw7dc5u
       '@typescript-eslint/parser': 5.61.0_iqf7tbmerllfqanu4l3d6aqdn4
@@ -763,10 +763,6 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
-
-  /@cloudflare/workers-types/4.20230628.0:
-    resolution: {integrity: sha512-dpOFJJPEEWahLJKhj+xRY+VwXu/s/634CVsLVnTNDCfs2KXZx9nwQ/04M0OKBJFdc6jheWwAAv/AGvRvrTDkDg==}
-    dev: true
 
   /@electron-forge/cli/6.1.1:
     resolution: {integrity: sha512-ufD9wKh35Mynj5MEKcWQKLpuIgxPvehwvykHRULi2ev8MWLCqxN4wda1Wy/cj57Uaeokf2rTbcGHGqbBX60bFQ==}
@@ -2017,17 +2013,6 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /@sveltejs/adapter-cloudflare/2.3.0_@sveltejs+kit@1.22.1:
-    resolution: {integrity: sha512-4rUtQG1rfenLh3V+w8DSfmtv/l3pGBdxjvJ68oAVX7Lpm2yHUaKPmPVOA7EuQiP0BOB/TSZVmIF8c5SnTlrYXQ==}
-    peerDependencies:
-      '@sveltejs/kit': ^1.0.0
-    dependencies:
-      '@cloudflare/workers-types': 4.20230628.0
-      '@sveltejs/kit': 1.22.1_svelte@4.0.5+vite@4.4.2
-      esbuild: 0.17.19
-      worktop: 0.8.0-next.15
-    dev: true
-
   /@sveltejs/adapter-node/1.2.4_@sveltejs+kit@1.16.3:
     resolution: {integrity: sha512-TNnhS+OKRZ9RKnC+ho5mlE2FJquI61i0v7yOXxBUSU3LAoYH2kwVVL8P8ecjefmZ8BOfM1V54pBnDODBU5CEaA==}
     peerDependencies:
@@ -2038,6 +2023,14 @@ packages:
       '@rollup/plugin-node-resolve': 15.0.1_rollup@3.18.0
       '@sveltejs/kit': 1.16.3_svelte@3.59.1+vite@4.3.6
       rollup: 3.18.0
+    dev: true
+
+  /@sveltejs/adapter-static/2.0.2_@sveltejs+kit@1.22.1:
+    resolution: {integrity: sha512-9wYtf6s6ew7DHUHMrt55YpD1FgV7oWql2IGsW5BXquLxqcY9vjrqCFo0TzzDpo+ZPZkW/v77k0eOP6tsAb8HmQ==}
+    peerDependencies:
+      '@sveltejs/kit': ^1.5.0
+    dependencies:
+      '@sveltejs/kit': 1.22.1_svelte@4.0.5+vite@4.4.2
     dev: true
 
   /@sveltejs/kit/1.16.3_svelte@3.59.1+vite@4.3.6:
@@ -7729,11 +7722,6 @@ packages:
     resolution: {integrity: sha512-tlbJqcMHnPKI9zSrystikWKwHkBqu2a/Sgw01h3zFjvYrMxEDYHzzoMZnUrbIfpTFEsoRnnviOXNCzFiSc54Qw==}
     dev: false
 
-  /regexparam/2.0.1:
-    resolution: {integrity: sha512-zRgSaYemnNYxUv+/5SeoHI0eJIgTL/A2pUtXUPLHQxUldagouJ9p+K6IbIZ/JiQuCEv2E2B1O11SjVQy3aMCkw==}
-    engines: {node: '>=8'}
-    dev: true
-
   /require-directory/2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -9633,14 +9621,6 @@ packages:
 
   /workerpool/6.2.1:
     resolution: {integrity: sha512-ILEIE97kDZvF9Wb9f6h5aXK4swSlKGUcOEGiIYb2OOu/IrDU9iwj0fD//SsA6E5ibwJxpEvhullJY4Sl4GcpAw==}
-
-  /worktop/0.8.0-next.15:
-    resolution: {integrity: sha512-0ycNO52P6nVwsjr1y20zuf0nqJatAb8L7MODBfQIxbxndHV5O4s50oZZMHWhJG1RLpHwbK0Epq8aaQK4E2GlgQ==}
-    engines: {node: '>=12'}
-    dependencies:
-      mrmime: 1.0.1
-      regexparam: 2.0.1
-    dev: true
 
   /wrangler/3.1.2:
     resolution: {integrity: sha512-UvpKpemw2Bt0tSS3Dspkw0tp/d2dR3W3hdHjyM7jEsv+xgmQgEZqoN8gdA/2sgECO3FXRdLuQZDdcuOO43aHFw==}

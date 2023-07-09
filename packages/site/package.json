@@ -17,7 +17,7 @@
 	"devDependencies": {
 		"@bscotch/pathy": "^2.7.3",
 		"@playwright/test": "^1.35.1",
-		"@sveltejs/adapter-cloudflare": "2.3.0",
+		"@sveltejs/adapter-static": "2.0.2",
 		"@sveltejs/kit": "^1.22.1",
 		"@typescript-eslint/eslint-plugin": "^5.61.0",
 		"@typescript-eslint/parser": "^5.61.0",
