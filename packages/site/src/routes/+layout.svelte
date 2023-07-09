@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Logo from '$lib/assets/stitch-logo-small.webp';
+	import { faGithub } from '@fortawesome/free-brands-svg-icons';
+	import Fa from 'svelte-fa';
 </script>
 
 <nav>
@@ -7,11 +9,28 @@
 		<img src={Logo} alt="SvelteKit" />
 		<span class="name">Stitch</span>
 	</a>
+	<menu class="reset">
+		<li>
+			<a href="https://github.com/bscotch/stitch">
+				<Fa icon={faGithub} size="lg" />
+			</a>
+		</li>
+	</menu>
 </nav>
 
 <slot />
 
 <style>
+	nav {
+		display: flex;
+		justify-content: space-between;
+	}
+	nav menu a {
+		color: var(--color-text);
+	}
+	nav menu a:hover {
+		color: var(--color-link-hover);
+	}
 	nav a {
 		display: flex;
 		align-items: center;

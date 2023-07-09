@@ -24,10 +24,6 @@
         /* FONT */
         --font-family: 'Ubuntu', sans-serif;
         --font-family-mono: 'Ubuntu Mono', monospace;
-        --font-weight-light: 300;
-        --font-weight-regular: 400;
-        --font-weight-bold: 500;
-        --font-weight-boldest: 700;
 
         /* Colors */
         --color-text: white;
@@ -46,33 +42,7 @@
         --color-channel-stable: #ae89ff;
         --color-channel-beta: #569cff;
         --color-channel-unstable: var(--color-text-subtle);
-
-        /* SIZES */
-        --u: 1.1rem; /* Normal font size, basically */
-        --u-10: calc(var(--u) * 0.1);
-        --u-20: calc(var(--u) * 0.2);
-        --u-30: calc(var(--u) * 0.3);
-        --u-40: calc(var(--u) * 0.4);
-        --u-50: calc(var(--u) * 0.5);
-        --u-60: calc(var(--u) * 0.6);
-        --u-70: calc(var(--u) * 0.7);
-        --u-80: calc(var(--u) * 0.8);
-        --u-90: calc(var(--u) * 0.9);
-        --u-100: var(--u);
-        --u-110: calc(var(--u) * 1.1);
-        --u-120: calc(var(--u) * 1.2);
-        --u-130: calc(var(--u) * 1.3);
-        --u-140: calc(var(--u) * 1.4);
-        --u-150: calc(var(--u) * 1.5);
-        --u-160: calc(var(--u) * 1.6);
-        --u-170: calc(var(--u) * 1.7);
-        --u-180: calc(var(--u) * 1.8);
-        --u-190: calc(var(--u) * 1.9);
-        --u-200: calc(var(--u) * 2);
-        --u-300: calc(var(--u) * 3);
-
         --content-max-width: 1920px;
-        --editor-widget-gap: var(--u-150);
       }
 
       @layer reset {
@@ -92,13 +62,8 @@
 
         html,
         body {
-          font-size: 100%;
-          font-weight: var(--font-weight-regular);
-          height: 100vh;
           line-height: 1.5;
           background-color: black;
-          padding-inline: 0.5rem;
-          padding-block: 0.4rem;
         }
 
         img,
@@ -142,10 +107,16 @@
         body {
           margin: auto;
           max-width: var(--content-max-width);
-          max-height: 100vh;
           font-family: var(--font-family);
           overflow-wrap: break-word;
-          color: lightgray;
+          color: var(--color-text);
+          padding-inline: 1rem;
+          padding-block: 0.8rem;
+          min-height: 100vh;
+        }
+
+        p{
+          font-size: 1.1rem;
         }
       }
 
@@ -157,7 +128,7 @@
         h4,
         h5,
         h6 {
-          font-weight: var(--font-weight-bold);
+          font-weight: bold;
         }
 
         a {
@@ -176,8 +147,11 @@
           text-decoration: underline;
           cursor: pointer;
           text-decoration-color: var(--color-link-underline);
-          text-decoration-thickness: calc(var(--u) * 0.1);
-          text-underline-offset: calc(var(--u) * 0.1);
+          text-decoration-thickness: 0.1rem;
+          text-underline-offset: 0.25rem;
+        }
+        a:hover{
+          text-decoration-thickness: 0.2rem;
         }
 
         pre,
