@@ -3,7 +3,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async () => {
 	const releases: GameMakerReleaseWithNotes[] = await (
-		await fetch('../../artifacts/gamemaker/releases-summary.json')
+		await fetch('../artifacts/gamemaker/releases-summary.json')
 	).json();
 	return {
 		releases
