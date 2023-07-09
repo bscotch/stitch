@@ -1,0 +1,36 @@
+name: Publish Stitch Website
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "@bscotch/stitch-site@*"
+  schedule:
+    # https://crontab.guru/#22_13,17,20,22_*_*_1-5
+    - cron: '22 13,17,20,22 * * 1-5'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: corepack enable
+      - run: npm run setup:pnpm
+      - run: pnpm install --filter=@bscotch/gamemaker-releases... --filter=@bscotch/stitch-site...
+      - run: pnpm turbo run build --filter=@bscotch/stitch-site... --filter=@bscotch/gamemaker-releases...
+      - run: node scripts/publish.mjs
+        working-directory: ./packages/site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{secrets.CLOUDFLARE_API_TOKEN}}
+        

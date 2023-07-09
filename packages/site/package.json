@@ -15,6 +15,7 @@
 		"test:unit": "vitest"
 	},
 	"devDependencies": {
+		"@bscotch/pathy": "^2.7.3",
 		"@playwright/test": "^1.35.1",
 		"@sveltejs/adapter-cloudflare": "2.3.0",
 		"@sveltejs/kit": "^1.22.1",
@@ -29,7 +30,8 @@
 		"tslib": "^2.6.0",
 		"typescript": "^5.1.6",
 		"vite": "^4.4.2",
-		"vitest": "^0.33.0"
+		"vitest": "^0.33.0",
+		"zx": "^7.2.2"
 	},
 	"type": "module",
 	"dependencies": {

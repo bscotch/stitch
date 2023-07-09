@@ -9,7 +9,8 @@
     "clean:artifacts": "node ./scripts/nuke-builds.mjs",
     "clean:deps": "node ./scripts/nuke-deps.mjs",
     "fix:deps": "syncpack fix-mismatches",
-    "watch": "turbo run watch --parallel"
+    "watch": "turbo run watch --parallel",
+    "setup:pnpm": "corepack prepare $npm_package_packageManager --activate"
   },
   "dependencies": {
     "@bscotch/pathy": "^2.7.3",
