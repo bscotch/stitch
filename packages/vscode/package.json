@@ -171,7 +171,10 @@
       {
         "language": "gml",
         "scopeName": "source.gml",
-        "path": "./syntaxes/gml.tmLanguage.json"
+        "path": "./syntaxes/gml.tmLanguage.json",
+        "embeddedLanguages": {
+          "comment.block.documentation.gml": "gml-jsdoc"
+        }
       },
       {
         "language": "stitch-logs",
@@ -221,7 +224,7 @@
           "yy",
           "yyp"
         ],
-        "configuration": "./language-configuration.json",
+        "configuration": "./gml.language-configuration.json",
         "extensions": [
           ".yy",
           ".yyp"
@@ -236,11 +239,15 @@
         "extensions": [
           ".gml"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./gml.language-configuration.json"
       },
       {
         "id": "stitch-logs",
-        "configuration": "./logger-config.json"
+        "configuration": "./logs.language-configuration.json"
+      },
+      {
+        "id": "gml-jsdoc",
+        "configuration": "./jsdoc.language-configuration.json"
       }
     ],
     "menus": {

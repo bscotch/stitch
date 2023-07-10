@@ -2,7 +2,8 @@
 !assets/
 !dist/
 !images/
-!language-configuration.json
+!*.language-configuration.json
 !LICENSE.md
 !snippets/
 !syntaxes/
+!themes/

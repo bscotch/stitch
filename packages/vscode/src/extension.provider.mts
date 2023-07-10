@@ -205,7 +205,6 @@ export class StitchProvider
     }
     // Are we inside a JSDoc comment?
     const jsdoc = gmlFile.getJsdocAt(offset);
-    info('Inside JSDoc?', !!jsdoc);
     if (jsdoc && context.triggerCharacter === '.') {
       // Then abort!
       return;
