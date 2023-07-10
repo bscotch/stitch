@@ -381,7 +381,7 @@ export function parseJsdoc(
       // Handle Type
       else if (parts.type) {
         doc.kind = 'type';
-        doc.type = matchToComponent(match, 'typeUnion', line.start);
+        doc.type = substringRange(line.content, parts.typeUnion!, line.start);
         doc.description = appendDescription(doc.description, parts.info);
       }
       // Handle modifiers
@@ -436,18 +436,6 @@ function substringRange(
       offset: start.offset + substring.length,
     },
     content: substring,
-  };
-}
-
-function matchToComponent(
-  match: RegExpMatchArray,
-  groupName: string,
-  startPosition: IPosition,
-): JsdocComponent {
-  const indices = [match.index!, match.index! + match[0].length] as const;
-  return {
-    content: match.groups![groupName]!,
-    ...matchIndexToRange(startPosition, indices),
   };
 }
 

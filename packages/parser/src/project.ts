@@ -102,13 +102,13 @@ export class Project {
 
   createStructType(subtype?: 'self' | 'instance'): StructType {
     const type = new Type('Struct');
-    if (subtype) {
-      const selfMember = type.addMember('self', type);
-      selfMember.setType(type);
-      selfMember.def = {};
-      selfMember.writable = false;
-      selfMember.instance = subtype === 'instance';
-    }
+    // if (subtype) {
+    //   const selfMember = type.addMember('self', type);
+    //   selfMember.setType(type);
+    //   selfMember.def = {};
+    //   selfMember.writable = false;
+    //   selfMember.instance = subtype === 'instance';
+    // }
     if (subtype === 'instance') {
       /// Then this extends the parent with all of the built-ins
       type.parent = this.native.objectInstanceBase;

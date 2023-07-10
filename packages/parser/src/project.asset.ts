@@ -58,6 +58,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       this.instanceType = this.project
         .createStructType('instance')
         .named(this.name);
+      this.instanceType.signifier = this.signifier;
       this.project.types.set(`Id.Instance.${this.name}`, this.instanceType);
     }
   }

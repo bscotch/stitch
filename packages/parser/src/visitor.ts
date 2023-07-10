@@ -199,10 +199,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const docsSelfRange = docs?.jsdoc.self
       ? Range.from(this.PROCESSOR.file, docs.jsdoc.self)
       : undefined;
-    if (docsSelfRange && selfType) {
-      selfType.signifier?.addRef(docsSelfRange);
-    }
-
     // See if there are JSDocs providing more specific self context
     let self: StructType;
     if (isTypeOfKind(selfType, 'Struct')) {
@@ -220,6 +216,9 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       }
     }
     self ||= this.PROCESSOR.createStruct(blockLocation);
+    if (docsSelfRange && self.signifier) {
+      self.signifier.addRef(docsSelfRange);
+    }
 
     this.PROCESSOR.scope.setEnd(children.expression[0].location!, true);
     this.PROCESSOR.pushSelfScope(blockLocation, self, false);

@@ -474,6 +474,12 @@ function validateWithContexts(project: Project) {
     withIntoLocalStruct &&
       withIntoLocalStruct.self === localStruct.type.type[0],
   );
+
+  // The following JSDoc was misbehaving at one point...
+  const jsdoc = withingScriptFile.jsdocs[0];
+  ok(jsdoc);
+  expect(jsdoc.type?.content).to.equal('Id.Instance.o_object');
+  expect(jsdoc.type?.start.column).to.equal(12);
 }
 
 function validateBschemaConstructor(project: Project) {
