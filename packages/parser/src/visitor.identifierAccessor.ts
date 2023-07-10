@@ -216,13 +216,25 @@ export function visitIdentifierAccessor(
         }
         break;
       case 'functionArguments':
+        const functionType = getTypeOfKind(accessing.type, 'Function');
+
+        /**
+         * The native `method` function has the unique property
+         * of causing its first argument to be used as the scope
+         * for the second argument.
+         */
+        const isMethodCall =
+          functionType?.signifier ===
+          this.PROCESSOR.project.self.getMember('method');
+        let methodSelf: Type | undefined;
+
         // Create the argumentRanges between the parens and each comma
         const argsAndSeps = sortedFunctionCallParts(suffix);
         let argIdx = 0;
         let lastDelimiter: IToken;
         let lastTokenWasDelimiter = true;
-        const functionType = getTypeOfKind(accessing.type, 'Function');
         const ranges: FunctionArgRange[] = [];
+
         for (let i = 0; i < argsAndSeps.length; i++) {
           const token = argsAndSeps[i];
           const isSep = 'image' in token;
@@ -264,10 +276,21 @@ export function visitIdentifierAccessor(
             argIdx++;
           } else {
             lastTokenWasDelimiter = false;
-            this.assignmentRightHandSide(
+            const functionCtx = withCtxKind(ctx, 'functionArg');
+            if (isMethodCall && argIdx === 1 && methodSelf) {
+              functionCtx.self = methodSelf;
+            }
+            const inferredType = this.assignmentRightHandSide(
               token.children.assignmentRightHandSide[0].children,
-              withCtxKind(ctx, 'functionArg'),
+              functionCtx,
             );
+            if (isMethodCall && argIdx === 0) {
+              methodSelf = getTypeOfKind(inferredType, [
+                'Id.Instance',
+                'Struct',
+                'Asset.GMObject',
+              ]);
+            }
           }
         }
         // The returntype of this function may be used in another accessor

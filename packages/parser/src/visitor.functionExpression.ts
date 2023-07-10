@@ -101,7 +101,14 @@ export function visitFunctionExpression(
     if (instanceStruct) {
       context = instanceStruct;
     }
+  } else if (ctx.self) {
+    // Then we're inside of a method() call, and the self
+    // is from the prior argument, and we aren't overriding
+    // using jsdoc.
+    context = ctx.self as StructType;
   }
+  ctx.self = undefined; // Just to make sure nothing downstream uses it
+
   if (docContext?.signifier && context && docs?.jsdoc.self) {
     // Add a reference to the jsdoc
     docContext.signifier.addRef(

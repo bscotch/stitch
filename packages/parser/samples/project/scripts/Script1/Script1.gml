@@ -54,3 +54,7 @@ function untyped_param_function(){}
 
 /// @arg {Struct.GlobalConstructor} hello
 function typed_param_function(){}
+
+var bound = method({a:1,b:2}, function(c,d){
+	return a + b + c + d;
+});

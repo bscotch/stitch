@@ -830,6 +830,10 @@ export interface Docs {
 export interface VisitorContext {
   /** While processing a function expression or struct literal, the signifier may come from an assignment operation. */
   signifier?: Signifier;
+  /** While processing `method()` calls, we may find the self-context
+   * of the function in the second argument.
+   */
+  self?: Type;
   docs?: Docs;
   // /** The context stack as referenceable entities */
   // ctxStack: Referenceable[];
