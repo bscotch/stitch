@@ -1,7 +1,7 @@
 {
   "name": "bscotch-stitch-vscode",
   "displayName": "Stitch",
-  "version": "0.30.1",
+  "version": "1.0.0",
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
@@ -31,9 +31,9 @@
     "build:deps": "pnpm turbo run build --filter=bscotch-stitch-vscode...",
     "build:grammar": "node scripts/yaml-to-json.mjs syntaxes/gml.tmLanguage.yaml syntaxes/gml.tmLanguage.json",
     "bump": "treb version && treb publish",
-    "package": "vsce package --pre-release --no-dependencies --githubBranch develop",
+    "package": "vsce package --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
-    "vscode:publish": "vsce publish --pre-release --no-dependencies --githubBranch develop",
+    "vscode:publish": "vsce publish --no-dependencies --githubBranch develop",
     "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --watch ../parser/dist --exec \"npm run build\"",
     "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
