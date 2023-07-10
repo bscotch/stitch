@@ -436,7 +436,9 @@
       "resolveProvider": "true",
       "triggerCharacters": [
         ".",
-        "{"
+        "{",
+        "<",
+        "|"
       ]
     },
     "signatureHelpProvider": {

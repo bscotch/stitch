@@ -12,6 +12,7 @@ import { GameMakerFolder } from 'tree.folder.mjs';
 import vscode, { CancellationToken, CompletionContext } from 'vscode';
 import { assert, swallowThrown } from './assert.mjs';
 import {
+  completionTriggerCharacters,
   inScopeSymbolsToCompletions,
   jsdocCompletions,
 } from './extension.completions.mjs';
@@ -204,13 +205,13 @@ export class StitchProvider
     }
     // Are we inside a JSDoc comment?
     const jsdoc = gmlFile.getJsdocAt(offset);
+    info('Inside JSDoc?', !!jsdoc);
     if (jsdoc && context.triggerCharacter === '.') {
       // Then abort!
       return;
     } else if (jsdoc) {
       return jsdocCompletions(document, position, gmlFile, jsdoc);
-    } else if (context.triggerCharacter !== '{') {
-      // The '{' character is only used to trigger autocomplete inside of JSDoc type blocks.
+    } else if (context.triggerCharacter === '.') {
       const items = gmlFile.getInScopeSymbolsAt(offset);
       return inScopeSymbolsToCompletions(document, items);
     }
@@ -454,8 +455,7 @@ export class StitchProvider
       vscode.languages.registerCompletionItemProvider(
         'gml',
         this.provider,
-        '.',
-        // '"',
+        ...completionTriggerCharacters,
       ),
       vscode.languages.registerSignatureHelpProvider(
         'gml',

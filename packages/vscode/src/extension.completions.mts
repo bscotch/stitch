@@ -7,6 +7,8 @@ import {
 import vscode from 'vscode';
 import { config } from './extension.config.mjs';
 
+export const completionTriggerCharacters = ['.', '{', '<', '|'] as const;
+
 export function jsdocCompletions(
   document: vscode.TextDocument,
   position: vscode.Position,

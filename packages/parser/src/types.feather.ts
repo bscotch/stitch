@@ -71,9 +71,9 @@ export function typeFromParsedJsdocs(
   } else if (jsdoc.kind === 'type') {
     // Then this was purely a type annotation. Create the type and
     // add any metadata.
-    return typeFromFeatherString(jsdoc.type!.content, knownTypes);
+    return typeFromFeatherString(jsdoc.type?.content || 'Any', knownTypes);
   } else if (jsdoc.kind === 'self') {
-    return typeFromFeatherString(jsdoc.self!.content, knownTypes);
+    return typeFromFeatherString(jsdoc.self?.content || 'Any', knownTypes);
   } else if (jsdoc.kind === 'function') {
     const type = new Type('Function').describe(jsdoc.description);
     let i = 0;
@@ -101,7 +101,7 @@ export function typeFromParsedJsdocs(
     }
     return [type];
   }
-  throw new Error(`Unknown JSDoc kind ${jsdoc.kind}`);
+  return [];
 }
 export function typeFromParsedFeatherString(
   node: FeatherTypeUnion | FeatherType,
