@@ -9,12 +9,12 @@ export interface RssFeedEntry {
   description?: string;
 }
 
-export type Channel = typeof channels[number];
+export type Channel = (typeof channels)[number];
 export const channels = ['lts', 'stable', 'beta', 'unstable'] as const;
 export const channelSchema = z.enum(channels);
 Object.freeze(channels);
 
-export type ArtifactType = typeof artifactTypes[number];
+export type ArtifactType = (typeof artifactTypes)[number];
 export const artifactTypes = ['ide', 'runtime'] as const;
 Object.freeze(artifactTypes);
 
@@ -52,7 +52,7 @@ export const gameMakerArtifactSchema = z.object({
   channel: channelSchema,
   summary: z.string().optional(),
   feedUrl: z.string(),
-  publishedAt: z.string(),
+  publishedAt: z.string().transform((arg) => new Date(arg).toISOString()),
   link: z.string().optional(),
   notesUrl: z.string(),
 });
@@ -74,7 +74,10 @@ export const gameMakerArtifactWithNotesSchema = gameMakerArtifactSchema.extend({
 
 const gameMakerReleaseBaseSchema = z.object({
   channel: channelSchema,
-  publishedAt: z.string().describe('Date of release for the IDE in this pair'),
+  publishedAt: z
+    .string()
+    .transform((arg) => new Date(arg).toISOString())
+    .describe('Date of release for the IDE in this pair'),
   summary: htmlString().describe(
     'Summary of the release, from the RSS feed for the IDE',
   ),
