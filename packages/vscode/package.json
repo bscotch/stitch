@@ -179,6 +179,14 @@
         "path": "./syntaxes/logs.tmLanguage.json"
       }
     ],
+    "themes": [
+      {
+        "id": "stitch-theme-bscotchseth",
+        "label": "Stitch (Seth's Theme)",
+        "path": "./themes/stitch-bscotchseth.json",
+        "uiTheme": "vs-dark"
+      }
+    ],
     "iconThemes": [
       {
         "id": "stitch-icon-theme",
@@ -409,7 +417,7 @@
     "color": "#37183c",
     "theme": "dark"
   },
-  "preview": true,
+  "preview": false,
   "capabilities": {
     "referencesProvider": "true",
     "definitionProvider": "true",

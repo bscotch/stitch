@@ -8,10 +8,6 @@ Edit your [GameMaker](https://gamemaker.io/en) projects in VSCode! This extensio
 
 Stitch for VSCode is in active development. Expect bugs, missing features, and frequent breaking changes. To see the current list of known issues and feature requests, check out the [issues page](https://github.com/bscotch/stitch/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Akeyboard%3A+vscode%22).
 
-Stitch will be kept in "pre-release" status until it has [sufficient features and stability](https://github.com/bscotch/stitch/milestone/2) that we find ourselves extensively using it for our own projects.
-
-You're also welcome to report issues and make feature requests, but keep in mind that we're focusing our limited time on features that we need for our own projects.
-
 ## 🤔 Why tho?
 
 We've used GameMaker for the entire 10+ year history of our studio. While the GameMaker IDE has been rapidly improving, VSCode is able to improve even faster due to its enormous community, stellar extension APIs, and use of accessible web technologies.
@@ -37,6 +33,8 @@ Finally, the Intellisense features (go-to-definition, find-references, etc) make
 Stitch provides context-aware "semantic highlighting" for all symbols.
 
 Depending on your VSCode Theme, you may need to enable semantic highlighting to get the full effect. Additionally, you may want to tweak the colors for the different symbol types.
+
+Stitch provides themes that already include semantic highlighting support. Try them out by opening the command palette and searching for "Preferences: Color Theme", then selecting one of the "Stitch" themes.
 
 Here's an example of how you might update your `settings.json`:
 
