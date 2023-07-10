@@ -45,7 +45,9 @@ export class Logger {
         );
       }
       if (isObject && arg.toString() === '[object Object]') {
-        return JSON.stringify(arg);
+        try {
+          return JSON.stringify(arg);
+        } catch {}
       }
       return arg;
     });
