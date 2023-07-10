@@ -438,6 +438,11 @@ export class Code {
       const args = this._functionCalls[i];
       assert(args, 'Function call args must be initialized');
       const func = args[0].type;
+      if (!func.signifier) {
+        // Then this was a generic function type and we don't know
+        // how many args it takes or what it returns.
+        continue;
+      }
       const params = func.listParameters() || [];
       // Handle missing arguments
       for (let j = 0; j < params.length; j++) {
