@@ -5,6 +5,7 @@ import {
   GameMakerLauncher,
   GameMakerRuntime,
   stringifyGameMakerBuildCommand,
+  stringifyGameMakerCleanCommand,
 } from '@bscotch/stitch-launcher';
 import path from 'path';
 import vscode from 'vscode';
@@ -64,7 +65,11 @@ export class GameMakerProject extends Project {
     );
   }
 
-  async run(options?: { config?: string | null; compiler?: 'yyc' | 'vm' }) {
+  async run(options?: {
+    config?: string | null;
+    compiler?: 'yyc' | 'vm';
+    clean?: boolean;
+  }) {
     const config = options?.config ?? GameMakerProject.config.runConfigDefault;
     const compiler =
       options?.compiler ?? GameMakerProject.config.runCompilerDefault;
@@ -87,7 +92,9 @@ export class GameMakerProject extends Project {
       );
       return;
     }
-    const cmd = await stringifyGameMakerBuildCommand(runtime, {
+    const cmd = await (options?.clean
+      ? stringifyGameMakerCleanCommand
+      : stringifyGameMakerBuildCommand)(runtime, {
       project: this.yypPath.absolute,
       config: config || undefined,
       yyc: compiler === 'yyc',

@@ -36,26 +36,17 @@ export async function executeGameMakerRuntimeInstallCommand(
   );
 }
 
-export async function computeGameMakerBuildOptions(
+export async function computeOptions(
   runtime: GameMakerRuntime,
   options: GameMakerBuildOptions & { compile?: boolean },
-): Promise<{
-  target: StitchSupportedBuilder;
-  command: 'Run' | 'PackageZip' | 'Package';
-  options: GameMakerExecuteOptions;
-}> {
+) {
   const target = options?.targetPlatform || 'windows';
-  const command = options?.compile
-    ? target === 'windows'
-      ? 'PackageZip'
-      : 'Package'
-    : 'Run';
   const projectPath = new Pathy(options.project);
   const projectDir = projectPath.up();
   const outputDir = new Pathy(options?.outDir || projectDir);
   const tempDir = new Pathy(projectDir).join('tmp');
   const empath = (p: Pathy | string) => `"${p}"`;
-  const buildOptions = {
+  return {
     project: empath(projectPath),
     user: empath(await runtime.activeUserDirectory()),
     runtimePath: empath(runtime.directory),
@@ -74,6 +65,40 @@ export async function computeGameMakerBuildOptions(
       ),
     ),
   };
+}
+
+export async function computeGameMakerCleanOptions(
+  runtime: GameMakerRuntime,
+  options: GameMakerBuildOptions,
+): Promise<{
+  target: StitchSupportedBuilder;
+  command: 'Clean';
+  options: GameMakerExecuteOptions;
+}> {
+  const target = options?.targetPlatform || 'windows';
+  const buildOptions = await computeOptions(runtime, options);
+  return {
+    target,
+    command: 'Clean',
+    options: buildOptions,
+  };
+}
+
+export async function computeGameMakerBuildOptions(
+  runtime: GameMakerRuntime,
+  options: GameMakerBuildOptions & { compile?: boolean },
+): Promise<{
+  target: StitchSupportedBuilder;
+  command: 'Run' | 'PackageZip' | 'Package';
+  options: GameMakerExecuteOptions;
+}> {
+  const target = options?.targetPlatform || 'windows';
+  const command = options?.compile
+    ? target === 'windows'
+      ? 'PackageZip'
+      : 'Package'
+    : 'Run';
+  const buildOptions = await computeOptions(runtime, options);
   return {
     target,
     command,
@@ -106,6 +131,26 @@ export async function executeGameMakerBuildCommand(
   return results;
 }
 
+export async function executeGameMakerCleanCommand(
+  runtime: GameMakerRuntime,
+  options: GameMakerBuildOptions & { compile?: boolean },
+) {
+  const {
+    target,
+    command,
+    options: buildOptions,
+  } = await computeGameMakerCleanOptions(runtime, options);
+
+  const results = await executeGameMakerCommand(
+    runtime,
+    target,
+    command,
+    buildOptions,
+    options,
+  );
+  return results;
+}
+
 export async function stringifyGameMakerBuildCommand(
   runtime: GameMakerRuntime,
   options: GameMakerBuildOptions & { compile?: boolean },
@@ -113,6 +158,28 @@ export async function stringifyGameMakerBuildCommand(
   const { cmd, args } = await computeGameMakerBuildCommand(runtime, options);
   const escapedCmd = cmd.replace(/[/\\]/g, '/').replace(/ /g, '\\ ');
   return `${escapedCmd} ${args.join(' ')}`;
+}
+
+export async function stringifyGameMakerCleanCommand(
+  runtime: GameMakerRuntime,
+  options: GameMakerBuildOptions,
+) {
+  const { cmd, args } = await computeGameMakerCleanCommand(runtime, options);
+  const escapedCmd = cmd.replace(/[/\\]/g, '/').replace(/ /g, '\\ ');
+  return `${escapedCmd} ${args.join(' ')}`;
+}
+
+export async function computeGameMakerCleanCommand(
+  runtime: GameMakerRuntime,
+  options: GameMakerBuildOptions & { compile?: boolean },
+) {
+  const {
+    target,
+    command,
+    options: buildOptions,
+  } = await computeGameMakerCleanOptions(runtime, options);
+
+  return computeGameMakerCommand(runtime, target, command, buildOptions);
 }
 
 export async function computeGameMakerBuildCommand(

@@ -256,9 +256,14 @@
           "group": "navigation@2"
         },
         {
-          "command": "stitch.run",
+          "command": "stitch.clean",
           "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
           "group": "navigation@3"
+        },
+        {
+          "command": "stitch.run",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
+          "group": "navigation@4"
         }
       ],
       "view/item/context": [
@@ -303,9 +308,14 @@
           "group": "inline@2"
         },
         {
-          "command": "stitch.run",
+          "command": "stitch.clean",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
           "group": "inline@3"
+        },
+        {
+          "command": "stitch.run",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
+          "group": "inline@4"
         }
       ],
       "explorer/context": [

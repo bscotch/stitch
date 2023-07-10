@@ -22,6 +22,7 @@ import { GameMakerProject } from './extension.project.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import {
+  findProject,
   locationOf,
   pathyFromUri,
   rangeFrom,
@@ -474,30 +475,23 @@ export class StitchProvider
       vscode.commands.registerCommand(
         'stitch.run',
         (uriOrFolder: string[] | GameMakerFolder) => {
-          // Identify the target project
-          let project: GameMakerProject | undefined;
-          if (this.provider.projects.length === 1) {
-            project = this.provider.projects[0];
-          } else if (uriOrFolder instanceof GameMakerFolder) {
-            // Then we clicked in the tree view
-            project = this.provider.projects.find(
-              (p) => p.name === uriOrFolder.name,
-            );
-          } else {
-            const uriString =
-              uriOrFolder[0] ||
-              vscode.window.activeTextEditor?.document.uri.toString();
-            if (uriString) {
-              const uri = vscode.Uri.parse(uriString);
-              project = this.provider.getProject(uri);
-            }
-          }
-
+          const project = findProject(this.provider, uriOrFolder);
           if (!project) {
             void vscode.window.showErrorMessage('No project found to run!');
             return;
           }
           project.run();
+        },
+      ),
+      vscode.commands.registerCommand(
+        'stitch.clean',
+        (uriOrFolder: string[] | GameMakerFolder) => {
+          const project = findProject(this.provider, uriOrFolder);
+          if (!project) {
+            void vscode.window.showErrorMessage('No project found to run!');
+            return;
+          }
+          project.run({ clean: true });
         },
       ),
       vscode.commands.registerCommand('stitch.openIde', (...args) => {
