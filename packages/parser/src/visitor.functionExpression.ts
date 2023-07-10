@@ -84,7 +84,7 @@ export function visitFunctionExpression(
       : undefined,
     ['Struct', 'Asset.GMObject', 'Id.Instance'],
   );
-  let context: StructType;
+  let context: StructType | undefined;
   if (isConstructor) {
     context = functionType.constructs!;
   } else if (isTypeOfKind(docContext, 'Struct')) {
@@ -101,6 +101,12 @@ export function visitFunctionExpression(
     if (instanceStruct) {
       context = instanceStruct;
     }
+  }
+  if (docContext?.signifier && context && docs?.jsdoc.self) {
+    // Add a reference to the jsdoc
+    docContext.signifier.addRef(
+      Range.from(this.PROCESSOR.file, docs.jsdoc.self),
+    );
   }
   context ||= this.PROCESSOR.currentSelf as StructType;
 
@@ -223,7 +229,9 @@ export function visitFunctionExpression(
   // Update the RETURN type based on the return statements found in the body
   if (docs?.type[0]?.returns) {
     functionType.setReturnType(docs.type[0].returns.type);
-
+    docs.type[0].returns.type[0]?.signifier?.addRef(
+      Range.from(this.PROCESSOR.file, docs.jsdoc.returns!.type!),
+    );
     // TODO: Check against the inferred return types
   } else {
     functionType.setReturnType(ctx.returns || this.UNDEFINED);
