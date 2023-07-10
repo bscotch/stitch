@@ -2,9 +2,6 @@ name: Publish Stitch Website
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "@bscotch/stitch-site@*"
   schedule:
     # https://crontab.guru/#22_13,17,20,22_*_*_1-5
     - cron: '22 13,17,20,22 * * 1-5'
@@ -25,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          lfs: true
       - uses: actions/setup-node@v3
         with:
           node-version: 18
