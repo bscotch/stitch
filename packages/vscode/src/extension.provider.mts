@@ -163,8 +163,26 @@ export class StitchProvider
           }
           parent = parent.parent;
         }
+      } else if (ref && item?.asset) {
+        // Then we can go to the asset's defining file.
+        const asset = ref.file.project.getAssetByName(item.name);
+        if (asset?.assetKind === 'objects') {
+          const files = asset.gmlFilesArray;
+          for (const file of files) {
+            if (file.isCreateEvent) {
+              return locationOf(file.startRange);
+            } else if (file.isStepEvent) {
+              return locationOf(file.startRange);
+            }
+          }
+          // Otherwise just whatever step we have,
+          // if any.
+          if (files.length > 0) {
+            return locationOf(files[0].startRange);
+          }
+        }
       }
-      info('No definition found for', item);
+      info('No definition found for', item?.name);
       return;
     });
   }

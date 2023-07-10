@@ -72,6 +72,10 @@ export class Code {
     return this.name === 'Create_0';
   }
 
+  get isStepEvent() {
+    return this.name.startsWith('Step_');
+  }
+
   get project() {
     return this.asset.project;
   }
