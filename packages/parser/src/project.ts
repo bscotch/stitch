@@ -438,9 +438,9 @@ export class Project {
       options?.onLoadProgress?.(5, 'Loaded GML spec');
     });
     logger.info('Loading asset files...');
-    const fileLoader = this.loadAssets(options);
+    await Promise.all([this.nativeWaiter, this.yypWaiter]);
 
-    await Promise.all([this.nativeWaiter, fileLoader]);
+    await this.loadAssets(options);
     logger.log(
       'Resources',
       this.assets.size,
