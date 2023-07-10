@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/stitch-launcher",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Manage GameMaker IDE and runtime installations for fast switching between versions.",
   "keywords": [
     "gml",
