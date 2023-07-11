@@ -33,7 +33,7 @@ export enum YyObjectPropertyVarType {
 }
 
 export type YyObjectEvent = z.infer<typeof yyObjectEventSchema>;
-const yyObjectEventSchema = unstable({
+export const yyObjectEventSchema = unstable({
   isDnD: z.boolean().default(false),
   /**
    * Numeric identifier for an event subtype.
@@ -56,7 +56,7 @@ const yyObjectEventSchema = unstable({
 const yyObjectPropertyVarTypeSchema = z.nativeEnum(YyObjectPropertyVarType);
 
 export type YyObjectProperty = z.infer<typeof yyObjectPropertySchema>;
-const yyObjectPropertySchema = unstable({
+export const yyObjectPropertySchema = unstable({
   /** The variable's name */
   name: z.string(),
   varType: yyObjectPropertyVarTypeSchema,
