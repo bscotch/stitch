@@ -2,18 +2,21 @@ import { Pathy, pathy } from '@bscotch/pathy';
 import {
   Yy,
   YyDataStrict,
+  YyObject,
   YyResourceType,
   YySchemas,
   YySprite,
   YypResource,
+  yyObjectEventSchema,
   yySchemas,
 } from '@bscotch/yy';
+import type { ObjectEvent } from './lib.js';
 import { logger } from './logger.js';
 import { Code } from './project.code.js';
 import { Project } from './project.js';
 import { Signifier } from './signifiers.js';
 import { StructType, Type } from './types.js';
-import { ok } from './util.js';
+import { assert, ok } from './util.js';
 
 export class Asset<T extends YyResourceType = YyResourceType> {
   readonly $tag = 'Asset';
@@ -123,6 +126,35 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       paths.push(this.dir.join<Buffer>(`${frame.name}.png`));
     }
     return paths;
+  }
+
+  async createEvent(eventInfo: ObjectEvent) {
+    assert(this.isObject, 'Can only create events for objects');
+    // Create the file if it doesn't already exist
+    const path = this.dir.join(`${eventInfo.name}.gml`);
+    if (!(await path.exists())) {
+      await path.write('/// ');
+    }
+    // Update the YY file
+    const yy = this.yy as YyObject;
+    yy.eventList ||= [];
+    if (
+      yy.eventList.find(
+        (x) =>
+          x.eventNum === eventInfo.eventNum &&
+          x.eventType === eventInfo.eventType,
+      )
+    ) {
+      logger.warn(`Event ${eventInfo.name} already exists on ${this.name}`);
+      return;
+    }
+    yy.eventList.push(
+      yyObjectEventSchema.parse({
+        eventNum: eventInfo.eventNum,
+        eventType: eventInfo.eventType,
+      }),
+    );
+    await this.yyPath.write(yy);
   }
 
   protected async readYy(): Promise<YyDataStrict<T>> {
