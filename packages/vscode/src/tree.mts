@@ -72,45 +72,76 @@ export class GameMakerTreeProvider
     this.view.reveal(treeItem);
   }
 
-  async createScript(where: GameMakerFolder) {
-    const newScriptName = await vscode.window.showInputBox({
-      prompt: 'Enter a name for the new Script',
-      placeHolder: 'e.g. my/new/MyScript',
+  /**
+   * Prompt the user for a new asset name and do all of
+   * the non-type-specific prep work for creating the asset.
+   */
+  protected async prepareForNewAsset(where: GameMakerFolder) {
+    const newAssetName = await vscode.window.showInputBox({
+      prompt: `Provide a name for the new asset`,
+      placeHolder: 'e.g. my/new/Asset',
       validateInput(value) {
         if (!value) {
           return;
         }
         if (!value.match(/^[a-zA-Z0-9_][a-zA-Z0-9_/]*/)) {
-          return 'Script names must start with a letter or underscore, and can only contain letters, numbers, and underscores.';
+          return 'Asset names must start with a letter or underscore, and can only contain letters, numbers, and underscores.';
         }
         return;
       },
     });
-    if (!newScriptName) {
+    if (!newAssetName) {
       return;
     }
-    const existingAsset = where.project!.getAssetByName(newScriptName);
+    const existingAsset = where.project!.getAssetByName(newAssetName);
     if (existingAsset) {
       vscode.window.showErrorMessage(
-        `An asset named ${newScriptName} already exists.`,
+        `An asset named ${newAssetName} already exists.`,
       );
       return;
     }
-    const parts = newScriptName.split('/');
+    const parts = newAssetName.split('/');
     const name = parts.pop()!;
     let folder = where;
     for (const part of parts) {
       folder = folder.addFolder(part);
     }
     const path = folder.path + '/' + name;
-    const asset = await where.project!.addScript(path);
+    return { folder, path, name };
+  }
+
+  protected afterNewAssetCreated(
+    asset: Asset | undefined,
+    folder: GameMakerFolder,
+    addedTo: GameMakerFolder,
+  ) {
     if (!asset) {
-      vscode.window.showErrorMessage(`Failed to create new script.`);
+      vscode.window.showErrorMessage(`Failed to create new asset.`);
       return;
     }
     const treeItem = folder.addResource(new TreeAsset(folder, asset));
-    this._onDidChangeTreeData.fire(where);
+    this._onDidChangeTreeData.fire(addedTo);
     this.view.reveal(treeItem);
+  }
+
+  async createObject(where: GameMakerFolder) {
+    const info = await this.prepareForNewAsset(where);
+    if (!info) {
+      return;
+    }
+    const { folder, path } = info;
+    const asset = await where.project!.addObject(path);
+    this.afterNewAssetCreated(asset, folder, where);
+  }
+
+  async createScript(where: GameMakerFolder) {
+    const info = await this.prepareForNewAsset(where);
+    if (!info) {
+      return;
+    }
+    const { folder, path } = info;
+    const asset = await where.project!.addScript(path);
+    this.afterNewAssetCreated(asset, folder, where);
   }
 
   /**
@@ -338,6 +369,10 @@ export class GameMakerTreeProvider
       vscode.commands.registerCommand(
         'stitch.assets.newScript',
         this.createScript.bind(this),
+      ),
+      vscode.commands.registerCommand(
+        'stitch.assets.newObject',
+        this.createObject.bind(this),
       ),
       vscode.commands.registerCommand(
         'stitch.assets.reveal',

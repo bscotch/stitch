@@ -164,10 +164,85 @@ export class Project {
   }
 
   /**
+   * Add an object to the yyp file. The string can include separators,
+   * in which case folders will be ensured up to the final component.
+   */
+  async addObject(path: string) {
+    // Create the yy file
+    const parsed = await this.parseNewAssetPath(path);
+    if (!parsed) {
+      return;
+    }
+    const { name, folder } = parsed;
+    const objectDir = this.projectDir.join(`objects/${name}`);
+    await objectDir.ensureDirectory();
+    const objectYy = objectDir.join(`${name}.yy`);
+    const objectCreateFile = objectDir.join('Create_0.gml');
+    await objectCreateFile.write('/// ');
+
+    await Yy.write(
+      objectYy.absolute,
+      {
+        name,
+        parent: {
+          name: folder.name,
+          path: folder.folderPath,
+        },
+        // Include the Create event by default
+        eventList: [{ eventNum: 0, eventType: 0 }],
+      },
+      'objects',
+    );
+
+    // Update the yyp file
+    const info = await this.addAssetToYyp(objectYy.absolute);
+
+    // Create and add the asset
+    const asset = await Asset.from(this, info, objectYy);
+    this.addAsset(asset);
+    return asset;
+  }
+
+  /**
    * Add a script to the yyp file. The string can include separators,
    * in which case folders will be ensured up to the final component.
    */
   async addScript(path: string) {
+    // Create the yy file
+    const parsed = await this.parseNewAssetPath(path);
+    if (!parsed) {
+      return;
+    }
+    const { name, folder } = parsed;
+    const scriptDir = this.projectDir.join(`scripts/${name}`);
+    await scriptDir.ensureDirectory();
+    const scriptYy = scriptDir.join(`${name}.yy`);
+    await Yy.write(
+      scriptYy.absolute,
+      {
+        name,
+        parent: {
+          name: folder.name,
+          path: folder.folderPath,
+        },
+      },
+      'scripts',
+    );
+
+    // Create the gml file
+    const scriptGml = scriptYy.changeExtension('gml');
+    await scriptGml.write('/// ');
+
+    // Update the yyp file
+    const info = await this.addAssetToYyp(scriptYy.absolute);
+
+    // Create and add the asset
+    const asset = await Asset.from(this, info, scriptYy);
+    this.addAsset(asset);
+    return asset;
+  }
+
+  protected async parseNewAssetPath(path: string) {
     const parts = path.split(/[/\\]+/);
     const name = parts.pop()!;
     if (!name) {
@@ -186,34 +261,7 @@ export class Project {
       return;
     }
     const folder = (await this.addFolder(parts))!;
-
-    // Create the yy file
-    const scriptDir = this.projectDir.join(`scripts/${name}`);
-    await scriptDir.ensureDirectory();
-    const scriptYy = scriptDir.join(`${name}.yy`);
-    await Yy.write(
-      scriptYy.absolute,
-      {
-        name,
-        parent: {
-          name: folder.name,
-          path: folder.folderPath,
-        },
-      },
-      'scripts',
-    );
-
-    // Create the gml file
-    const scriptGml = scriptYy.changeExtension('gml');
-    await scriptGml.write('/// @desc ');
-
-    // Update the yyp file
-    const info = await this.addAssetToYyp(scriptYy.absolute);
-
-    // Create and add the asset
-    const asset = await Asset.from(this, info, scriptYy);
-    this.addAsset(asset);
-    return asset;
+    return { folder, name };
   }
 
   /**

@@ -84,6 +84,11 @@
         "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
       },
       {
+        "command": "stitch.assets.newObject",
+        "title": "New Object...",
+        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.openIde",
         "title": "Stitch: Open in GameMaker",
         "shortTitle": "Open in GameMaker",
@@ -300,9 +305,14 @@
           "group": "navigation@1"
         },
         {
-          "command": "stitch.assets.newFolder",
+          "command": "stitch.assets.newObject",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",
           "group": "navigation@2"
+        },
+        {
+          "command": "stitch.assets.newFolder",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",
+          "group": "navigation@3"
         },
         {
           "command": "stitch.assets.newFolder",
