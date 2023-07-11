@@ -46,6 +46,8 @@
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"Withing","path":"scripts/Withing/Withing.yy",},},
     {"id":{"name":"FunctionSelf","path":"scripts/FunctionSelf/FunctionSelf.yy",},},
+    {"id":{"name":"Reactions","path":"scripts/Reactions/Reactions.yy",},},
+    {"id":{"name":"o_world_element","path":"objects/o_world_element/o_world_element.yy",},},
   ],
   "RoomOrderNodes": [
     {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},

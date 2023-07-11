@@ -61,3 +61,6 @@ var bound = method({a:1,b:2}, function(c,d){
 
 var grid = ds_grid_create(1,1);
 var grid_value = grid[#0,0];
+
+globalvar REACTIONS; REACTIONS = {};
+globalvar ITEMS; ITEMS = {};

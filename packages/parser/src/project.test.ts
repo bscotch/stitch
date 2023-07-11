@@ -330,6 +330,14 @@ describe('Project', function () {
   });
 });
 
+function validateAccessorTypes(project: Project) {
+  // There was an issue where the type retrieved from an accessor
+  // would end up being a *new* type, causing structs to lose
+  // properties upon reload
+  // The sample case is in the `Reactions` script, where the
+  //
+}
+
 function validateFunctionContexts(project: Project) {
   const complicatedScriptFile = project.getAssetByName('Complicated')!.gmlFile;
   const functionScript = project.getAssetByName('FunctionSelf')!;
