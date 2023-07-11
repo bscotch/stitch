@@ -1,7 +1,6 @@
-import { Asset, Code } from '@bscotch/gml-parser';
+import { Asset, Code, getEventFromFilename } from '@bscotch/gml-parser';
 import { Pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
-import { getEventName } from './spec.events.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
 
@@ -172,7 +171,7 @@ export class TreeCode extends StitchTreeItemBase<'code'> {
     this.id = this.parent.id + '/' + this.code.name;
 
     // Ensure that the tree label is human-friendly.
-    this.label = getEventName(this.uri.fsPath);
+    this.label = getEventFromFilename(this.uri.fsPath);
   }
 
   get uri() {
