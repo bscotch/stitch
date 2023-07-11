@@ -97,7 +97,17 @@ export class Yy {
     filePath: string,
     schema?: T,
   ): Promise<YyDataStrict<T>> {
-    return Yy.parse(await fsp.readFile(filePath, 'utf8'), schema);
+    try {
+      return Yy.parse(await fsp.readFile(filePath, 'utf8'), schema);
+    } catch (err) {
+      const error = new Error(
+        `Error reading file: ${filePath}\n${
+          err && err instanceof Error && err.message
+        }`,
+      );
+      error.cause = err;
+      throw error;
+    }
   }
 
   /**
