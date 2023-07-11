@@ -402,12 +402,12 @@ export class GmlParser extends CstParser {
 
   readonly accessorSuffixes = this.RULE('accessorSuffixes', () => {
     this.OR([
-      { ALT: () => this.SUBRULE(this.arrayAccessSuffix) },
+      { ALT: () => this.SUBRULE(this.gridAccessorSuffix) },
       { ALT: () => this.SUBRULE(this.structAccessorSuffix) },
       { ALT: () => this.SUBRULE(this.listAccessorSuffix) },
       { ALT: () => this.SUBRULE(this.mapAccessorSuffix) },
-      { ALT: () => this.SUBRULE(this.gridAccessorSuffix) },
       { ALT: () => this.SUBRULE(this.arrayMutationAccessorSuffix) },
+      { ALT: () => this.SUBRULE(this.arrayAccessSuffix) },
       { ALT: () => this.SUBRULE(this.dotAccessSuffix) },
       { ALT: () => this.SUBRULE(this.functionArguments) },
     ]);
@@ -445,6 +445,8 @@ export class GmlParser extends CstParser {
   readonly gridAccessorSuffix = this.RULE('gridAccessSuffix', () => {
     this.CONSUME(t.DsGridAccessorStart);
     this.SUBRULE(this.expression);
+    this.CONSUME(t.Comma);
+    this.SUBRULE2(this.expression);
     this.CONSUME(t.EndBracket);
   });
 

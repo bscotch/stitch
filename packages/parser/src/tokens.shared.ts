@@ -29,4 +29,9 @@ export const numericLiterals = [
     pattern: /(\d[\d_]*(\.\d[\d_]*)?)|\.\d[\d_]*/,
     categories: [c.NumericLiteral],
   }),
+  createToken({
+    name: 'HexColor',
+    pattern: /#[\da-fA-F]{6}\b/,
+    categories: [c.NumericLiteral],
+  }),
 ];

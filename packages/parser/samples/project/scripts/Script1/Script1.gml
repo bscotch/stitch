@@ -58,3 +58,6 @@ function typed_param_function(){}
 var bound = method({a:1,b:2}, function(c,d){
 	return a + b + c + d;
 });
+
+var grid = ds_grid_create(1,1);
+var grid_value = grid[#0,0];

@@ -56,3 +56,6 @@ update_listener_position = function() {
 if instance_number(o_earparty) > 1 {
 	show_error("There can be only one Ear Party.", true);	
 }
+
+var grid = ds_grid_create(1,1);
+var grid_value = grid[#0,0];

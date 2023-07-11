@@ -309,12 +309,12 @@ export interface AccessorSuffixesCstNode extends CstNode {
 }
 
 export type AccessorSuffixesCstChildren = {
-  arrayAccessSuffix?: ArrayAccessSuffixCstNode[];
+  gridAccessSuffix?: GridAccessSuffixCstNode[];
   structAccessSuffix?: StructAccessSuffixCstNode[];
   listAccessSuffix?: ListAccessSuffixCstNode[];
   mapAccessSuffix?: MapAccessSuffixCstNode[];
-  gridAccessSuffix?: GridAccessSuffixCstNode[];
   arrayMutationAccessorSuffix?: ArrayMutationAccessorSuffixCstNode[];
+  arrayAccessSuffix?: ArrayAccessSuffixCstNode[];
   dotAccessSuffix?: DotAccessSuffixCstNode[];
   functionArguments?: FunctionArgumentsCstNode[];
 };
@@ -381,6 +381,7 @@ export interface GridAccessSuffixCstNode extends CstNode {
 export type GridAccessSuffixCstChildren = {
   DsGridAccessorStart: IToken[];
   expression: ExpressionCstNode[];
+  Comma: IToken[];
   EndBracket: IToken[];
 };
 
