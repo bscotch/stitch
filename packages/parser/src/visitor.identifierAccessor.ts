@@ -34,26 +34,41 @@ export function visitIdentifierAccessor(
     type?: Type | TypeStore;
     range?: Range;
   } = {};
-  const initialSignifier = this.FIND_ITEM(children.identifier[0].children);
-  if (initialSignifier) {
-    const type = getTypeStoreOrType(initialSignifier.item);
+  const identifier = identifierFrom(children.identifier[0].children);
+  const { name } = identifier || {};
+  const initialItem = this.FIND_ITEM(children.identifier[0].children);
+  const fullScope = this.PROCESSOR.fullScope;
+
+  if (initialItem) {
+    const type = getTypeStoreOrType(initialItem.item);
     accessing = {
       type: isArray(type) ? type[0] : type,
-      range: initialSignifier.range,
+      range: initialItem.range,
     };
-    if ('addRef' in initialSignifier.item) {
-      initialSignifier.item.addRef(initialSignifier.range);
+    if ('addRef' in initialItem.item) {
+      initialItem.item.addRef(initialItem.range);
     }
-  } else {
-    // Add a diagnostic for the identifier
-    const identifier = identifierFrom(children.identifier[0].children);
-    if (identifier) {
-      this.PROCESSOR.addDiagnostic(
-        'UNDECLARED_GLOBAL_REFERENCE',
-        identifier.token,
-        `${identifier.name} is not declared anywhere.`,
-      );
-    }
+  } else if (fullScope.self === fullScope.global && identifier) {
+    // Then this is being treated as a global variable but it has
+    // not been declared anywhere
+    this.PROCESSOR.addDiagnostic(
+      'UNDECLARED_GLOBAL_REFERENCE',
+      identifier.token,
+      `${identifier.name} looks like a global but is declared anywhere.`,
+    );
+  } else if (fullScope.self !== fullScope.global && name) {
+    // Then this is a signifier that we have not seen declared yet,
+    // but might be declared later. So add it to the self scope but
+    // without setting where it's defined. Diagnostics should be added
+    // later.
+    const range = this.PROCESSOR.range(children.identifier[0].location!);
+    const newMember = fullScope.self.addMember(name);
+    newMember.addRef(range);
+    newMember.instance = true;
+    accessing = {
+      type: newMember.type,
+      range,
+    };
   }
 
   let lastAccessedType: Type | TypeStore = accessing.type || this.ANY;

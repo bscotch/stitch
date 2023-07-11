@@ -426,7 +426,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         this.PROCESSOR.addDiagnostic(
           'UNDECLARED_GLOBAL_REFERENCE',
           children.Identifier[0],
-          `${children.Identifier[0].image} is not declared anywhere.`,
+          `${children.Identifier[0].image} is not declared anywhere but is assigned in global scope.`,
         );
       }
     } else {

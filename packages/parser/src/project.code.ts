@@ -21,7 +21,6 @@ import {
   Scope,
 } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import { isTypeOfKind } from './types.checks.js';
 import { Type } from './types.js';
 import { assert, isBeforeRange, isInRange } from './util.js';
 import { registerSignifiers } from './visitor.js';
@@ -345,34 +344,26 @@ export class Code {
     // Remove each reference in *this file* from its symbol.
     const cleared = new Set<ReferenceableType>();
     for (const ref of this._refs) {
-      const symbol = ref.item;
-      if (cleared.has(symbol)) {
+      const signifier = ref.item;
+      if (cleared.has(signifier)) {
         continue;
       }
       // If the symbol was declared in this file, remove its location
       // to flag it as undeclared.
-      const isDefinedInThisFile = this === symbol.def?.file;
+      const isDefinedInThisFile = this === signifier.def?.file;
       if (isDefinedInThisFile) {
-        symbol.def = undefined;
+        signifier.def = undefined;
       }
       // Remove all references to this symbol found in this file.
       // Flag all other files as being dirty so they get reprocessed.
-      for (const symbolRef of symbol.refs) {
+      for (const symbolRef of signifier.refs) {
         if (this === symbolRef.file) {
-          symbol.refs.delete(symbolRef);
+          signifier.refs.delete(symbolRef);
         } else {
           symbolRef.file.dirty = true;
         }
       }
-      // If this symbol has no references left, remove it from the project.
-      if (isDefinedInThisFile && !symbol.refs.size) {
-        // Remove typemembers from their parent type
-        if (isTypeOfKind(symbol.parent, 'Struct')) {
-          symbol.parent.removeMember(symbol.name!);
-        }
-        // TODO: Remove from global list?
-      }
-      cleared.add(symbol);
+      cleared.add(signifier);
     }
     // Reset this file's refs list
     this._refs = [];

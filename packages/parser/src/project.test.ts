@@ -314,6 +314,8 @@ describe('Project', function () {
     validateJsdocs(project);
 
     validateBschemaConstructor(project);
+    await validateAccessorTypes(project);
+
     // Reprocess a file and ensure that the tests still pass
     await complexScriptFile.reload();
     logger.log('Re-running after reload...');
@@ -330,12 +332,61 @@ describe('Project', function () {
   });
 });
 
-function validateAccessorTypes(project: Project) {
+async function validateAccessorTypes(project: Project) {
   // There was an issue where the type retrieved from an accessor
   // would end up being a *new* type, causing structs to lose
   // properties upon reload
+
   // The sample case is in the `Reactions` script, where the
-  //
+  // `_timer` localvar initially has the expected struct type
+  // but after reloading it is missing most of its properties
+
+  const reactionTimerFunction = project.self.getMember('ReactionTimer');
+  ok(reactionTimerFunction);
+  const reactionTimerConstruct = reactionTimerFunction.type.constructs[0];
+  ok(reactionTimerConstruct);
+  ok(reactionTimerConstruct.name === 'ReactionTimer');
+  const expectedMemberNames = [
+    'reaction_id',
+    'timer',
+    'maxtime_min',
+    'maxtime_max',
+    'maxtime',
+    'event_id',
+  ];
+  const assertAllMembersExist = (type: TypeStore) => {
+    expectedMemberNames.forEach((name) => {
+      ok(type.type[0].getMember(name), `Missing member ${name}`);
+    });
+  };
+
+  const reactionsAsset = project.getAssetByName('Reactions')!;
+  const reactionsFile = reactionsAsset.gmlFile;
+  const functionScope = reactionsFile.getScopeRangeAt(3, 1);
+  ok(functionScope);
+  const timerVar = functionScope!.local.getMember('_timer');
+  ok(timerVar);
+  ok(
+    timerVar.type.type[0] === reactionTimerConstruct,
+    'Timer var type is not the expected type',
+  );
+  let withContext = reactionsFile.getScopeRangeAt(5, 1)!;
+  ok(withContext.self === reactionTimerConstruct);
+  assertAllMembersExist(timerVar.type);
+
+  // Reload the file and ensure that the type is still correct
+  await reactionsFile.reload();
+  const reloadedTimerVar = reactionsFile
+    .getScopeRangeAt(3, 1)!
+    .local.getMember('_timer');
+  ok(reloadedTimerVar);
+  ok(
+    reloadedTimerVar.type.type[0] === reactionTimerConstruct,
+    'Timer var type is not the expected type after reload',
+  );
+  withContext = reactionsFile.getScopeRangeAt(5, 1)!;
+  ok(withContext.self === reactionTimerConstruct);
+  assertAllMembersExist(reloadedTimerVar.type);
 }
 
 function validateFunctionContexts(project: Project) {
