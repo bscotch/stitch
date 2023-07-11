@@ -210,7 +210,7 @@ export class StitchProvider
       return;
     } else if (jsdoc) {
       return jsdocCompletions(document, position, gmlFile, jsdoc);
-    } else if (context.triggerCharacter === '.') {
+    } else if (context.triggerCharacter === '.' || !context.triggerCharacter) {
       const items = gmlFile.getInScopeSymbolsAt(offset);
       return inScopeSymbolsToCompletions(document, items);
     }
