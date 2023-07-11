@@ -81,6 +81,30 @@ const yyRoomLayerBaseSchema = unstable({
   properties: z.array(z.unknown()).optional().default([]),
 });
 
+const yyRoomTileLayerSchema = z.object({
+  resourceType: z.literal('GMRTileLayer'),
+  resourceVersion: z.literal('1.1'),
+  name: z.string().default('Tiles'),
+  depth: z.number().default(0),
+  effectEnabled: z.boolean().default(true),
+  effectType: z.unknown().optional().default(null),
+  gridX: z.number().default(32),
+  gridY: z.number().default(32),
+  hierarchyFrozen: z.boolean().default(false),
+  inheritLayerDepth: z.boolean().default(false),
+  inheritLayerSettings: z.boolean().default(false),
+  inheritSubLayers: z.boolean().default(true),
+  inheritVisibility: z.boolean().default(true),
+  layers: z.array(z.unknown()).default([]),
+  properties: z.array(z.unknown()).default([]),
+  tiles: z.unknown(),
+  tilesetId: z.object({ name: z.string(), path: z.string() }),
+  userdefinedDepth: z.boolean().default(false),
+  visible: z.boolean().default(true),
+  x: z.number().default(0),
+  y: z.number().default(0),
+});
+
 export type YyRoomInstanceLayer = z.infer<typeof yyRoomInstanceLayerSchema>;
 const yyRoomInstanceLayerSchema = yyRoomLayerBaseSchema.extend({
   instances: z.array(yyRoomInstanceSchema).default([]),
@@ -137,6 +161,7 @@ export type YyRoomLayer = z.infer<typeof yyRoomLayerSchema>;
 const yyRoomLayerSchema = z.discriminatedUnion('resourceType', [
   yyRoomInstanceLayerSchema,
   yyRoomBackgroundLayerSchema,
+  yyRoomTileLayerSchema,
 ]);
 
 export type YyRoom = z.infer<typeof yyRoomSchema>;
