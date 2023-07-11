@@ -25,7 +25,7 @@ export class Gms2Room extends Gms2ResourceBase<YyRoom> {
     const instanceLayers: YyRoomInstanceLayer[] = [];
     for (const layer of layers) {
       if ('instances' in layer) {
-        instanceLayers.push(layer);
+        instanceLayers.push(layer as any);
       }
     }
     return instanceLayers;
