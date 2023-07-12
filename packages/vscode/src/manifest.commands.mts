@@ -19,7 +19,7 @@ export const commands = {
     command: 'stitch.assets.filters.enable',
     icon: '$(filter)',
     title: 'Enable Filter',
-    enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilterDisabled}`,
       group: 'inline@1',
@@ -29,7 +29,7 @@ export const commands = {
     command: 'stitch.assets.filters.disable',
     icon: '$(filter-filled)',
     title: 'Disable Filter',
-    enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilterEnabled}`,
       group: 'inline@1',
@@ -43,7 +43,7 @@ export const commands = {
     command: 'stitch.assets.filters.new',
     icon: '$(add)',
     title: 'New Filter...',
-    enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilterGroup}`,
       group: 'inline@1',
@@ -53,7 +53,7 @@ export const commands = {
     command: 'stitch.assets.filters.delete',
     icon: '$(close)',
     title: 'Delete Filter',
-    enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilter}`,
       group: 'inline@2',
@@ -63,7 +63,7 @@ export const commands = {
     command: 'stitch.assets.newFolder',
     title: 'New Group...',
     icon: '$(new-folder)',
-    enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewTitle]: {
       when: when.assetTreeFocusedAndHasOneProject,
       group: 'navigation@1',
@@ -82,7 +82,7 @@ export const commands = {
   'stitch.assets.newScript': {
     command: 'stitch.assets.newScript',
     title: 'New Script...',
-    enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFolder}`,
       group: 'navigation@1',
@@ -91,10 +91,19 @@ export const commands = {
   'stitch.assets.newObject': {
     command: 'stitch.assets.newObject',
     title: 'New Object...',
-    enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFolder}`,
       group: 'navigation@2',
+    },
+  },
+  'stitch.assets.newEvent': {
+    command: 'stitch.assets.newEvent',
+    title: 'New Event...',
+    enablement: when.assetTreeFocusedAndHasProjects,
+    [$showInViewItemContextMenu]: {
+      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsObject}`,
+      group: 'navigation@1',
     },
   },
   'stitch.openIde': {
@@ -155,20 +164,20 @@ export const commandNames = keysOf(commands);
 export type CommandName = keyof typeof commands;
 
 export function canShowInPalette(commandName: CommandName): boolean {
-  const command = commands[commandName];
+  const command = commands[commandName] as ManifestCommand;
   if (!($showInPalette in command)) return false;
-  return command[$showInPalette];
+  return command[$showInPalette]!;
 }
 
 export function asViewTitleEntry(
   commandName: CommandName,
 ): MenuItem | undefined {
-  const command = commands[commandName];
+  const command = commands[commandName] as ManifestCommand;
   if (!($showInViewTitle in command)) return;
   return {
     command: commandName,
-    when: command[$showInViewTitle].when,
-    group: command[$showInViewTitle].group,
+    when: command[$showInViewTitle]!.when,
+    group: command[$showInViewTitle]!.group,
   };
 }
 

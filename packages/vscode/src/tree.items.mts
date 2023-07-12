@@ -83,7 +83,7 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
 
   constructor(readonly parent: GameMakerFolder, asset: Asset) {
     super(asset.name);
-    this.contextValue = this.kind;
+    this.contextValue = `asset-${asset.assetKind}`;
     TreeAsset.lookup.set(asset, this);
 
     this.asset = asset;

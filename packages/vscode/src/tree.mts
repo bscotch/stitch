@@ -1,9 +1,15 @@
-import { Asset, Code } from '@bscotch/gml-parser';
+import {
+  Asset,
+  Code,
+  ObjectEvent,
+  isAssetOfKind,
+  objectEvents,
+} from '@bscotch/gml-parser';
 import vscode from 'vscode';
+import { assertLoudly } from './assert.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import type { StitchProvider } from './extension.provider.mjs';
 import { warn } from './log.mjs';
-
 import {
   GameMakerFolder,
   GameMakerProjectFolder,
@@ -122,6 +128,38 @@ export class GameMakerTreeProvider
     const treeItem = folder.addResource(new TreeAsset(folder, asset));
     this._onDidChangeTreeData.fire(addedTo);
     this.view.reveal(treeItem);
+  }
+
+  async createEvent(objectItem: TreeAsset) {
+    const asset = objectItem.asset;
+    assertLoudly(
+      isAssetOfKind(asset, 'objects'),
+      `Cannot create event for ${asset.assetKind} asset.`,
+    );
+    const events: (
+      | ObjectEvent
+      | { kind: vscode.QuickPickItemKind.Separator; label: string }
+    )[] = [];
+    for (let i = 0; i < objectEvents.length; i++) {
+      const event = objectEvents[i];
+      if (i > 0 && objectEvents[i - 1].group !== event.group) {
+        // Add a separator between event types
+        events.push({
+          kind: vscode.QuickPickItemKind.Separator,
+          label: event.group,
+        });
+      }
+      events.push(event);
+    }
+    const eventInfo = await vscode.window.showQuickPick(events, {
+      title: 'Select which type of event to create.',
+    });
+    if (!eventInfo || !('eventNum' in eventInfo)) {
+      return;
+    }
+    await asset.createEvent(eventInfo);
+    this._onDidChangeTreeData.fire(objectItem);
+    this.view.reveal(objectItem);
   }
 
   async createObject(where: GameMakerFolder) {
@@ -373,6 +411,10 @@ export class GameMakerTreeProvider
       vscode.commands.registerCommand(
         'stitch.assets.newObject',
         this.createObject.bind(this),
+      ),
+      vscode.commands.registerCommand(
+        'stitch.assets.newEvent',
+        this.createEvent.bind(this),
       ),
       vscode.commands.registerCommand(
         'stitch.assets.reveal',
