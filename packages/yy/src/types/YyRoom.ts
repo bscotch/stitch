@@ -40,7 +40,7 @@ export const yyRoomInstanceSchema = unstable({
   /** The type of the object being instanced */
   objectId: yyResourceIdSchemaGenerator('objects'),
   inheritCode: z.boolean().default(false),
-  hasCreationCode: z.literal(false).default(false),
+  hasCreationCode: z.boolean().default(false),
   colour: z.number().default(4294967295),
   rotation: fixedNumber().default(0),
   scaleX: fixedNumber().default(1),
@@ -80,6 +80,32 @@ const yyRoomLayerBaseSchema = unstable({
   hierarchyFrozen: z.boolean().default(false),
   properties: z.array(z.unknown()).optional().default([]),
 });
+
+export type YyRoomPathLayer = z.infer<typeof yyRoomPathLayerSchema>;
+const yyRoomPathLayerSchema = z
+  .object({
+    resourceType: z.literal('GMRPathLayer'),
+    resourceVersion: z.string().default('1.0'),
+    name: z.string(),
+    depth: z.number().default(0),
+    effectEnabled: z.boolean().default(true),
+    effectType: z.unknown().nullable().default(null),
+    gridX: z.number().default(32),
+    gridY: z.number().default(32),
+    hierarchyFrozen: z.boolean().default(false),
+    inheritLayerDepth: z.boolean().default(false),
+    inheritLayerSettings: z.boolean().default(false),
+    inheritSubLayers: z.boolean().default(true),
+    inheritVisibility: z.boolean().default(true),
+    layers: z.array(z.unknown()).nullable().default([]),
+    pathId: z.object({
+      name: z.string(),
+      path: z.string(),
+    }),
+    userdefinedDepth: z.boolean().default(false),
+    visible: z.boolean().default(true),
+  })
+  .passthrough();
 
 export type YyRoomTileLayer = z.infer<typeof yyRoomTileLayerSchema>;
 const yyRoomTileLayerSchema = z
@@ -189,6 +215,27 @@ const yyRoomBackgroundLayerSchema = yyRoomLayerBaseSchema.extend({
   resourceType: z.literal('GMRBackgroundLayer'),
 });
 
+export type YyRoomLayerLayer = z.infer<typeof yyRoomLayerLayerSchema>;
+const yyRoomLayerLayerSchema = z.object({
+  resourceType: z.literal('GMRLayer'),
+  resourceVersion: z.string().default('1.0'),
+  name: z.string().default('instances'),
+  depth: z.number().default(0),
+  effectEnabled: z.boolean().default(true),
+  effectType: z.unknown().nullable().default(null),
+  gridX: z.number().default(32),
+  gridY: z.number().default(32),
+  hierarchyFrozen: z.boolean().default(false),
+  inheritLayerDepth: z.boolean().default(false),
+  inheritLayerSettings: z.boolean().default(false),
+  inheritSubLayers: z.boolean().default(true),
+  inheritVisibility: z.boolean().default(true),
+  layers: z.array(z.unknown()).default([]),
+  properties: z.array(z.unknown()).default([]),
+  userdefinedDepth: z.boolean().default(false),
+  visible: z.boolean().default(true),
+});
+
 export type YyRoomInstanceCreationOrderEntry = z.infer<
   typeof yyRoomInstanceCreationOrderEntrySchema
 >;
@@ -209,6 +256,8 @@ const yyRoomLayerSchema = z.discriminatedUnion('resourceType', [
   yyRoomBackgroundLayerSchema,
   yyRoomTileLayerSchema,
   yyRoomAssetLayerSchema,
+  yyRoomPathLayerSchema,
+  yyRoomLayerLayerSchema,
 ]);
 
 export type YyRoom = z.infer<typeof yyRoomSchema>;
