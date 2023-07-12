@@ -18,6 +18,13 @@ import { Signifier } from './signifiers.js';
 import { StructType, Type } from './types.js';
 import { assert, ok } from './util.js';
 
+export function isAssetOfKind<T extends YyResourceType>(
+  asset: Asset,
+  kind: T,
+): asset is Asset<T> {
+  return asset.assetKind === kind;
+}
+
 export class Asset<T extends YyResourceType = YyResourceType> {
   readonly $tag = 'Asset';
   readonly assetKind: T;
@@ -136,7 +143,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   async createEvent(eventInfo: ObjectEvent) {
     assert(this.isObject, 'Can only create events for objects');
     // Create the file if it doesn't already exist
-    const path = this.dir.join(`${eventInfo.name}.gml`);
+    const path = this.dir.join<string>(`${eventInfo.name}.gml`);
     if (!(await path.exists())) {
       await path.write('/// ');
     }
@@ -160,6 +167,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       }),
     );
     await this.yyPath.write(yy);
+    return this.addGmlFile(path);
   }
 
   protected async readYy(): Promise<YyDataStrict<T>> {
@@ -254,11 +262,12 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     }
   }
 
-  protected addGmlFile(path: Pathy<string>) {
+  protected addGmlFile(path: Pathy<string>): Code {
     const gml =
       this.getGmlFile(path) ||
       new Code(this as Asset<'scripts' | 'objects'>, path);
     this.gmlFiles.set(path.absolute, gml);
+    return gml;
   }
 
   protected async load() {
