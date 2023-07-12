@@ -3,6 +3,12 @@ import type { ViewContainerId } from './manifest.views.mjs';
 
 export const $showInPalette = Symbol('showInPalette');
 export const $showInViewTitle = Symbol('showInViewTitle');
+export const $showInViewItemContextMenu = Symbol('showInViewItemMenu');
+
+interface ManifestCommandMenuEntry {
+  when: string;
+  group: MenuItemGroup;
+}
 
 export interface ManifestCommand {
   command: string;
@@ -11,10 +17,10 @@ export interface ManifestCommand {
   icon?: `$(${string})`;
   enablement?: string;
   [$showInPalette]?: boolean;
-  [$showInViewTitle]?: {
-    when: string;
-    group: MenuItemGroup;
-  };
+  [$showInViewTitle]?: ManifestCommandMenuEntry;
+  [$showInViewItemContextMenu]?:
+    | ManifestCommandMenuEntry
+    | ManifestCommandMenuEntry[];
 }
 
 export interface ManifestView {

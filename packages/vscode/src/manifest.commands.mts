@@ -1,6 +1,7 @@
-import { keysOf } from '@bscotch/utility';
+import { arrayWrapped, keysOf } from '@bscotch/utility';
 import {
   $showInPalette,
+  $showInViewItemContextMenu,
   $showInViewTitle,
   type ManifestCommand,
   type MenuItem,
@@ -19,12 +20,20 @@ export const commands = {
     icon: '$(filter)',
     title: 'Enable Filter',
     enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    [$showInViewItemContextMenu]: {
+      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilterDisabled}`,
+      group: 'inline@1',
+    },
   },
   'stitch.assets.filters.disable': {
     command: 'stitch.assets.filters.disable',
     icon: '$(filter-filled)',
     title: 'Disable Filter',
     enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    [$showInViewItemContextMenu]: {
+      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilterEnabled}`,
+      group: 'inline@1',
+    },
   },
   'stitch.assets.filters.edit': {
     command: 'stitch.assets.filters.edit',
@@ -35,12 +44,20 @@ export const commands = {
     icon: '$(add)',
     title: 'New Filter...',
     enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    [$showInViewItemContextMenu]: {
+      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilterGroup}`,
+      group: 'inline@1',
+    },
   },
   'stitch.assets.filters.delete': {
     command: 'stitch.assets.filters.delete',
     icon: '$(close)',
     title: 'Delete Filter',
     enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    [$showInViewItemContextMenu]: {
+      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilter}`,
+      group: 'inline@2',
+    },
   },
   'stitch.assets.newFolder': {
     command: 'stitch.assets.newFolder',
@@ -51,16 +68,34 @@ export const commands = {
       when: when.assetTreeFocusedAndHasOneProject,
       group: 'navigation@1',
     },
+    [$showInViewItemContextMenu]: [
+      {
+        when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFolder}`,
+        group: 'navigation@3',
+      },
+      {
+        when: when.isInlineProject,
+        group: 'inline@1',
+      },
+    ],
   },
   'stitch.assets.newScript': {
     command: 'stitch.assets.newScript',
     title: 'New Script...',
     enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    [$showInViewItemContextMenu]: {
+      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFolder}`,
+      group: 'navigation@1',
+    },
   },
   'stitch.assets.newObject': {
     command: 'stitch.assets.newObject',
     title: 'New Object...',
     enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    [$showInViewItemContextMenu]: {
+      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFolder}`,
+      group: 'navigation@2',
+    },
   },
   'stitch.openIde': {
     command: 'stitch.openIde',
@@ -73,6 +108,10 @@ export const commands = {
       when: when.assetTreeFocusedAndHasOneProject,
       group: 'navigation@2',
     },
+    [$showInViewItemContextMenu]: {
+      when: when.isInlineProject,
+      group: 'inline@2',
+    },
   },
   'stitch.run': {
     command: 'stitch.run',
@@ -84,6 +123,10 @@ export const commands = {
       when: when.assetTreeFocusedAndHasOneProject,
       group: 'navigation@4',
     },
+    [$showInViewItemContextMenu]: {
+      when: when.isInlineProject,
+      group: 'inline@4',
+    },
   },
   'stitch.clean': {
     command: 'stitch.clean',
@@ -94,6 +137,10 @@ export const commands = {
     [$showInViewTitle]: {
       when: when.assetTreeFocusedAndHasOneProject,
       group: 'navigation@3',
+    },
+    [$showInViewItemContextMenu]: {
+      when: when.isInlineProject,
+      group: 'inline@3',
     },
   },
   'stitch.refresh': {
@@ -123,4 +170,17 @@ export function asViewTitleEntry(
     when: command[$showInViewTitle].when,
     group: command[$showInViewTitle].group,
   };
+}
+
+export function asViewItemContextMenuEntry(
+  commandName: CommandName,
+): MenuItem[] | undefined {
+  const command = commands[commandName];
+  if (!($showInViewItemContextMenu in command)) return;
+  const entries = arrayWrapped(command[$showInViewItemContextMenu]);
+  return entries.map((entry) => ({
+    command: commandName,
+    when: entry.when,
+    group: entry.group,
+  }));
 }

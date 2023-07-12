@@ -280,11 +280,6 @@
       ],
       "view/item/context": [
         {
-          "command": "stitch.assets.filters.delete",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem =~ /^tree-filter-(enabled|disabled)/",
-          "group": "inline@2"
-        },
-        {
           "command": "stitch.assets.filters.enable",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == tree-filter-disabled",
           "group": "inline@1"
@@ -297,7 +292,22 @@
         {
           "command": "stitch.assets.filters.new",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == tree-filter-group",
-          "group": "inline"
+          "group": "inline@1"
+        },
+        {
+          "command": "stitch.assets.filters.delete",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem =~ /^tree-filter-(enabled|disabled)/",
+          "group": "inline@2"
+        },
+        {
+          "command": "stitch.assets.newFolder",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",
+          "group": "navigation@3"
+        },
+        {
+          "command": "stitch.assets.newFolder",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
+          "group": "inline@1"
         },
         {
           "command": "stitch.assets.newScript",
@@ -310,29 +320,19 @@
           "group": "navigation@2"
         },
         {
-          "command": "stitch.assets.newFolder",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",
-          "group": "navigation@3"
-        },
-        {
-          "command": "stitch.assets.newFolder",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
-          "group": "inline@1"
-        },
-        {
           "command": "stitch.openIde",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
           "group": "inline@2"
         },
         {
-          "command": "stitch.clean",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
-          "group": "inline@3"
+          "command": "stitch.run",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
+          "group": "inline@4"
         },
         {
-          "command": "stitch.run",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 1 && viewItem == project",
-          "group": "inline@4"
+          "command": "stitch.clean",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
+          "group": "inline@3"
         }
       ],
       "explorer/context": [
