@@ -1,0 +1,15 @@
+export const when = {
+  assetTreeFocused: 'view == bscotch-stitch-resources',
+  hasProjects: 'stitch.projectCount > 0',
+  hasOneProject: 'stitch.projectCount == 1',
+  anyGameMakerFileFocused: 'resourceExtname =~ /\\.(yy|gml|yyp)$',
+  yypFocused: 'resourceExtname == ".yyp"',
+  yyFocused: 'resourceExtname == ".yyp"',
+  gmlFocused: 'resourceExtname == ".gml"',
+  viewItemIsFilter: 'viewItem =~ /^tree-filter-(enabled|disabled)/',
+  viewItemIsFilterGroup: 'viewItem == "tree-filter-group"',
+  viewItemIsFilterEnabled: 'viewItem == "tree-filter-enabled"',
+  viewItemIsFilterDisabled: 'viewItem == "tree-filter-disabled"',
+  viewItemIsProject: 'viewItem == "project"',
+  viewItemIsFolder: 'viewItem == "folder"',
+};

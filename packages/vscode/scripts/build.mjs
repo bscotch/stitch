@@ -4,9 +4,9 @@ import { $ } from 'zx';
 // CREATE THE BUNDLE
 
 const builder = esbuild.build({
-  entryPoints: ['./src/extension.ts'],
+  entryPoints: ['./src/extension.ts', './src/manifest.update.mts'],
   bundle: true,
-  outfile: './dist/extension.js',
+  outdir: './dist/',
   target: 'esnext',
   keepNames: true,
   sourcemap: true,
