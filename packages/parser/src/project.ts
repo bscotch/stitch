@@ -508,7 +508,7 @@ export class Project {
 
     logger.info('Discovering globals...');
     for (const asset of assets) {
-      asset.updateGlobals();
+      asset.updateGlobals(true);
     }
     logger.log('Globals discovered in', Date.now() - t, 'ms');
 
@@ -516,7 +516,7 @@ export class Project {
     // Discover all symbols and their references
     logger.info('Discovering symbols...');
     for (const asset of assets) {
-      asset.updateAllSymbols();
+      asset.updateAllSymbols(true);
     }
     // Second pass
     // TODO: Find a better way than brute-forcing to resolve cross-file references
