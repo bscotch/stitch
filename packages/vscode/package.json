@@ -27,7 +27,7 @@
   "publisher": "bscotch",
   "main": "./dist/extension.js",
   "scripts": {
-    "build": "pnpm build:grammar && node scripts/build.mjs",
+    "build": "pnpm build:grammar && node scripts/build.mjs && node dist/manifest.update.js",
     "build:deps": "pnpm turbo run build --filter=bscotch-stitch-vscode...",
     "build:grammar": "node scripts/yaml-to-json.mjs syntaxes/gml.tmLanguage.yaml syntaxes/gml.tmLanguage.json",
     "bump": "treb version && treb publish",
@@ -400,6 +400,12 @@
     ],
     "views": {
       "bscotch-stitch": [
+        {
+          "id": "bscotch-stitch-inspector",
+          "name": "Inspector",
+          "icon": "./images/stitch-logo-mono.svg",
+          "type": "tree"
+        },
         {
           "id": "bscotch-stitch-resources",
           "name": "Resources",

@@ -22,6 +22,7 @@ import { GameMakerHoverProvider } from './extension.hover.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
+import { GameMakerInspectorProvider } from './inspector.mjs';
 import {
   findProject,
   locationOf,
@@ -447,9 +448,11 @@ export class StitchProvider
     }
 
     const treeProvider = new GameMakerTreeProvider(this.provider);
+    const inspectorProvider = new GameMakerInspectorProvider(this.provider);
 
     ctx.subscriptions.push(
       ...treeProvider.register(),
+      ...inspectorProvider.register(),
       GameMakerHoverProvider.register(this.provider),
       vscode.languages.registerCompletionItemProvider(
         'gml',

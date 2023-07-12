@@ -3,6 +3,12 @@ import { ManifestView, ManifestViewContainer } from './manifest.types.mjs';
 
 export type ViewId = keyof typeof views;
 export const views = {
+  'bscotch-stitch-inspector': {
+    id: 'bscotch-stitch-inspector',
+    name: 'Inspector',
+    icon: './images/stitch-logo-mono.svg',
+    type: 'tree',
+  },
   'bscotch-stitch-resources': {
     id: 'bscotch-stitch-resources',
     name: 'Resources',
