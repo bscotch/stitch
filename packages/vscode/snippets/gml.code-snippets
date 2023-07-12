@@ -25,6 +25,18 @@
     "description": "Create a static constructor method",
     "body": ["static ${1} = function ${1}($2) {", "\t$0", "}"]
   },
+  "GML: JSDoc Type": {
+    "scope": "gml",
+    "prefix": "/// @type",
+    "description": "Create a JSDoc type",
+    "body": ["/// @type {${1:Any}} ${0}"]
+  },
+  "GML: JSDoc Context": {
+    "scope": "gml",
+    "prefix": "/// @self",
+    "description": "Create a JSDoc type",
+    "body": ["/// @self ${1:Any}"]
+  },
   "GML: JSDoc Description": {
     "scope": "gml",
     "prefix": "///-description",
