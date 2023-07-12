@@ -1,6 +1,8 @@
+import { type CommandName } from './manifest.commands.mjs';
 import type { ViewContainerId } from './manifest.views.mjs';
 
 export const $showInPalette = Symbol('showInPalette');
+export const $showInViewTitle = Symbol('showInViewTitle');
 
 export interface ManifestCommand {
   command: string;
@@ -9,6 +11,10 @@ export interface ManifestCommand {
   icon?: `$(${string})`;
   enablement?: string;
   [$showInPalette]?: boolean;
+  [$showInViewTitle]?: {
+    when: string;
+    group: MenuItemGroup;
+  };
 }
 
 export interface ManifestView {
@@ -24,10 +30,18 @@ export interface ManifestViewContainer {
   icon: './images/stitch-logo-mono.svg';
 }
 
+export type MenuItemGroup = `${'navigation' | 'inline'}@${number}`;
+
+export interface MenuItem {
+  command: CommandName;
+  when: string;
+  group: MenuItemGroup;
+}
+
 export interface ManifestMenus {
-  'view/title': unknown;
-  'view/item/context': unknown;
-  'explorer/context': unknown;
+  'view/title': MenuItem[];
+  'view/item/context': MenuItem[];
+  'explorer/context': MenuItem[];
   commandPalette: ManifestCommandPalette[];
 }
 

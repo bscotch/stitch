@@ -1,7 +1,11 @@
 import { pathy } from '@bscotch/pathy';
 import { keysOf } from '@bscotch/utility';
-import { canShowInPalette, commands } from './manifest.commands.mjs';
-import { Manifest } from './manifest.types.mjs';
+import {
+  asViewTitleEntry,
+  canShowInPalette,
+  commands,
+} from './manifest.commands.mjs';
+import { Manifest, MenuItem } from './manifest.types.mjs';
 import { viewsArray, viewsContainersArray } from './manifest.views.mjs';
 
 async function main() {
@@ -25,6 +29,9 @@ async function main() {
   manifest.contributes.menus['commandPalette'] = commandNames
     .filter(canShowInPalette)
     .map((c) => ({ command: c }));
+  manifest.contributes.menus['view/title'] = commandNames
+    .filter(asViewTitleEntry)
+    .map(asViewTitleEntry) as MenuItem[];
 
   // Write out the updated manifest
   await manifestPath.write(manifest);

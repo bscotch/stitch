@@ -1,7 +1,12 @@
+const assetTreeFocused = 'view == bscotch-stitch-resources';
+const hasProjects = 'stitch.projectCount > 0';
+const hasOneProject = 'stitch.projectCount == 1';
+
 export const when = {
-  assetTreeFocused: 'view == bscotch-stitch-resources',
-  hasProjects: 'stitch.projectCount > 0',
-  hasOneProject: 'stitch.projectCount == 1',
+  assetTreeFocused,
+  hasProjects,
+  hasOneProject,
+  assetTreeFocusedAndHasOneProject: `${assetTreeFocused} && ${hasOneProject}`,
   anyGameMakerFileFocused: 'resourceExtname =~ /\\.(yy|gml|yyp)$',
   yypFocused: 'resourceExtname == ".yyp"',
   yyFocused: 'resourceExtname == ".yyp"',

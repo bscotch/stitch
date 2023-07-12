@@ -268,14 +268,14 @@
           "group": "navigation@2"
         },
         {
-          "command": "stitch.clean",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
-          "group": "navigation@3"
-        },
-        {
           "command": "stitch.run",
           "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
           "group": "navigation@4"
+        },
+        {
+          "command": "stitch.clean",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
@@ -344,6 +344,9 @@
       ],
       "commandPalette": [
         {
+          "command": "stitch.assets.reveal"
+        },
+        {
           "command": "stitch.openIde"
         },
         {
@@ -354,9 +357,6 @@
         },
         {
           "command": "stitch.refresh"
-        },
-        {
-          "command": "stitch.assets.reveal"
         }
       ]
     },

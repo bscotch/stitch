@@ -1,5 +1,10 @@
 import { keysOf } from '@bscotch/utility';
-import { $showInPalette, ManifestCommand } from './manifest.types.mjs';
+import {
+  $showInPalette,
+  $showInViewTitle,
+  type ManifestCommand,
+  type MenuItem,
+} from './manifest.types.mjs';
 import { when } from './manifest.when.mjs';
 
 export const commands = {
@@ -42,6 +47,10 @@ export const commands = {
     title: 'New Group...',
     icon: '$(new-folder)',
     enablement: `${when.assetTreeFocused} && ${when.hasProjects}`,
+    [$showInViewTitle]: {
+      when: when.assetTreeFocusedAndHasOneProject,
+      group: 'navigation@1',
+    },
   },
   'stitch.assets.newScript': {
     command: 'stitch.assets.newScript',
@@ -60,6 +69,10 @@ export const commands = {
     enablement: `(resourceExtname =~ /\\.(yy|yyp|gml)$/) || (${when.assetTreeFocused} && ${when.hasProjects})`,
     icon: '$(edit)',
     [$showInPalette]: true,
+    [$showInViewTitle]: {
+      when: when.assetTreeFocusedAndHasOneProject,
+      group: 'navigation@2',
+    },
   },
   'stitch.run': {
     command: 'stitch.run',
@@ -67,6 +80,10 @@ export const commands = {
     shortTitle: 'Run',
     icon: '$(play)',
     [$showInPalette]: true,
+    [$showInViewTitle]: {
+      when: when.assetTreeFocusedAndHasOneProject,
+      group: 'navigation@4',
+    },
   },
   'stitch.clean': {
     command: 'stitch.clean',
@@ -74,6 +91,10 @@ export const commands = {
     shortTitle: 'Clean Cache',
     icon: '$(history)',
     [$showInPalette]: true,
+    [$showInViewTitle]: {
+      when: when.assetTreeFocusedAndHasOneProject,
+      group: 'navigation@3',
+    },
   },
   'stitch.refresh': {
     command: 'stitch.refresh',
@@ -90,4 +111,16 @@ export function canShowInPalette(commandName: CommandName): boolean {
   const command = commands[commandName];
   if (!($showInPalette in command)) return false;
   return command[$showInPalette];
+}
+
+export function asViewTitleEntry(
+  commandName: CommandName,
+): MenuItem | undefined {
+  const command = commands[commandName];
+  if (!($showInViewTitle in command)) return;
+  return {
+    command: commandName,
+    when: command[$showInViewTitle].when,
+    group: command[$showInViewTitle].group,
+  };
 }
