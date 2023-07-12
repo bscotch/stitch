@@ -4,42 +4,86 @@ import {
   getEventFromFilename,
   isAssetOfKind,
 } from '@bscotch/gml-parser';
+import { Pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
+import { uriFromPathy } from './lib.mjs';
 import { logger } from './log.mjs';
-import { StitchTreeItemBase } from './tree.base.mjs';
+import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
 
-type InspectorItem = ObjectItem;
+type InspectorItem =
+  | ObjectParentContainer
+  | ObjectEvents
+  | ObjectEventItem
+  | ObjectSpriteItem
+  | ObjectSpriteContainer;
 
-class ObjectItem extends StitchTreeItemBase<'inspector-object'> {
-  override readonly kind = 'inspector-object';
+class ObjectParentContainer extends StitchTreeItemBase<'inspector-object-parents'> {
+  override readonly kind = 'inspector-object-parents';
   parent = undefined;
-  constructor(readonly asset: Asset<'objects'>) {
-    super(asset.name);
-    this.contextValue = `inspector-object`;
+  constructor() {
+    super('Parent');
+    this.contextValue = this.kind;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
   }
 }
 
-class ObjectEventItem extends StitchTreeItemBase<'inspector-object-event'> {
-  override readonly kind = 'inspector-object-event';
-  override parent: ObjectItem;
+class ObjectEvents extends StitchTreeItemBase<'inspector-object-events'> {
+  override readonly kind = 'inspector-object-events';
+  parent = undefined;
+  constructor() {
+    super('Events');
+    this.contextValue = this.kind;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+  }
+}
 
-  constructor(parent: ObjectItem, code: Code) {
+class ObjectEventItem extends StitchTreeItemBase<'asset-objects'> {
+  override readonly kind = 'asset-objects';
+  parent = undefined;
+
+  constructor(readonly code: Code) {
     super(code.name);
-    this.parent = parent;
     this.contextValue = this.kind;
 
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     this.command = {
       command: 'vscode.open',
       title: 'Open',
-      arguments: [code.path.toAbsolute],
+      arguments: [uriFromPathy(code.path)],
     };
     this.setIcon();
-    this.id = this.parent.id + '/' + this.code.name;
 
     // Ensure that the tree label is human-friendly.
-    this.label = getEventFromFilename(this.uri.fsPath);
+    this.label = getEventFromFilename(code.path.absolute);
+  }
+
+  protected setIcon = setEventIcon;
+}
+
+class ObjectSpriteContainer extends StitchTreeItemBase<'inspector-sprites'> {
+  override readonly kind = 'inspector-sprites';
+  parent = undefined;
+  constructor() {
+    super('Sprite');
+    this.contextValue = this.kind;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+  }
+}
+
+class ObjectSpriteItem extends StitchTreeItemBase<'inspector-sprite'> {
+  override readonly kind = 'inspector-sprite';
+  parent = undefined;
+
+  constructor(readonly imagePath: Pathy<Buffer>, readonly idx: number) {
+    super(`[${idx}] ${imagePath.name}`);
+    this.contextValue = this.kind;
+    this.iconPath = vscode.Uri.file(imagePath.absolute);
+    this.command = {
+      command: 'vscode.open',
+      title: 'Open',
+      arguments: [this.iconPath],
+    };
   }
 }
 
@@ -64,16 +108,30 @@ export class GameMakerInspectorProvider
     return element;
   }
 
-  getParent(element: InspectorItem): vscode.ProviderResult<InspectorItem> {
-    return undefined;
-  }
-
   getChildren(
     element?: InspectorItem | undefined,
   ): InspectorItem[] | undefined {
+    if (!this.asset) {
+      return;
+    }
     if (!element) {
       // Then we're at the root.
+      return [
+        new ObjectParentContainer(),
+        new ObjectSpriteContainer(),
+        new ObjectEvents(),
+      ];
+    } else if (element instanceof ObjectParentContainer) {
+      return undefined;
+    } else if (element instanceof ObjectSpriteContainer) {
+      return this.asset.framePaths.map((p, i) => new ObjectSpriteItem(p, i));
+    } else if (element instanceof ObjectEvents) {
+      const events = this.asset.gmlFilesArray.map((code) => {
+        return new ObjectEventItem(code);
+      });
+      return events;
     }
+    return;
   }
 
   rebuild() {

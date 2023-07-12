@@ -102,7 +102,7 @@ export const commands = {
     title: 'New Event...',
     enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
-      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsObject}`,
+      when: `${when.hasProjects} && (${when.assetTreeFocused} || ${when.inspectorFocused}) && ${when.viewItemIsObject}`,
       group: 'navigation@1',
     },
   },

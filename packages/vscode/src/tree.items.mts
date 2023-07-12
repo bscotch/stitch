@@ -1,7 +1,7 @@
 import { Asset, Code, getEventFromFilename } from '@bscotch/gml-parser';
 import { Pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
-import { StitchTreeItemBase } from './tree.base.mjs';
+import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
@@ -178,31 +178,7 @@ export class TreeCode extends StitchTreeItemBase<'code'> {
     return vscode.Uri.file(this.code.path.absolute);
   }
 
-  protected setIcon() {
-    // Set the default
-    if (this.code.name.startsWith('Other_')) {
-      this.setObjectEventIcon('other');
-    } else {
-      this.setGameMakerIcon('script');
-    }
-
-    // Override for object events
-    if (this.code.name.match(/^Draw_\d+$/i)) {
-      this.setObjectEventIcon('draw');
-    } else if (this.code.name.match(/^Alarm_\d+$/i)) {
-      this.setObjectEventIcon('alarm');
-    } else if (this.code.name.match(/^Step_\d+$/i)) {
-      this.setObjectEventIcon('step');
-    } else if (this.code.name === 'Create_0') {
-      this.setObjectEventIcon('create');
-    } else if (this.code.name === 'Destroy_0') {
-      this.setObjectEventIcon('destroy');
-    } else if (this.code.name === 'CleanUp_0') {
-      this.setObjectEventIcon('cleanup');
-    } else if (this.code.name.match(/^Other_(7[250]|6[239])$/i)) {
-      this.setObjectEventIcon('asynchronous');
-    }
-  }
+  protected setIcon = setEventIcon;
 }
 
 export class TreeSpriteFrame extends StitchTreeItemBase<'sprite-frame'> {

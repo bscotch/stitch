@@ -10,6 +10,10 @@ export function pathyFromUri(uri: vscode.TextDocument | vscode.Uri): Pathy {
   return new Pathy(uri instanceof vscode.Uri ? uri.fsPath : uri.uri.fsPath);
 }
 
+export function uriFromPathy(pathy: Pathy) {
+  return vscode.Uri.file(pathy.absolute);
+}
+
 export function uriFromCodeFile(file: Code) {
   return vscode.Uri.file(file.path.absolute);
 }

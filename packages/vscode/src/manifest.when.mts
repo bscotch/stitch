@@ -5,6 +5,7 @@ const viewItemIsProject = 'viewItem == project';
 
 export const when = {
   assetTreeFocused,
+  inspectorFocused: 'view == bscotch-stitch-inspector',
   hasProjects,
   hasOneProject,
   assetTreeFocusedAndHasOneProject: `${assetTreeFocused} && ${hasOneProject}`,

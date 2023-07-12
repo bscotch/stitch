@@ -1,3 +1,4 @@
+import { Code } from '@bscotch/gml-parser';
 import path from 'path';
 import vscode from 'vscode';
 
@@ -49,5 +50,31 @@ export abstract class StitchTreeItemBase<
       'obj',
       icon + '.svg',
     );
+  }
+}
+
+export function setEventIcon(this: StitchTreeItemBase & { code: Code }) {
+  // Set the default
+  if (this.code.name.startsWith('Other_')) {
+    this.setObjectEventIcon('other');
+  } else {
+    this.setGameMakerIcon('script');
+  }
+
+  // Override for object events
+  if (this.code.name.match(/^Draw_\d+$/i)) {
+    this.setObjectEventIcon('draw');
+  } else if (this.code.name.match(/^Alarm_\d+$/i)) {
+    this.setObjectEventIcon('alarm');
+  } else if (this.code.name.match(/^Step_\d+$/i)) {
+    this.setObjectEventIcon('step');
+  } else if (this.code.name === 'Create_0') {
+    this.setObjectEventIcon('create');
+  } else if (this.code.name === 'Destroy_0') {
+    this.setObjectEventIcon('destroy');
+  } else if (this.code.name === 'CleanUp_0') {
+    this.setObjectEventIcon('cleanup');
+  } else if (this.code.name.match(/^Other_(7[250]|6[239])$/i)) {
+    this.setObjectEventIcon('asynchronous');
   }
 }
