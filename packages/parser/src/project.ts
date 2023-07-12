@@ -77,19 +77,19 @@ export class Project {
 
   protected emitter = new EventEmitter();
   /** Code that needs to be reprocessed, for one reason or another. */
-  protected dirtyCode = new Set<Code>();
+  protected needsDiagnosticsUpdate = new Set<Code>();
 
   protected constructor(readonly yypPath: Pathy) {}
 
-  addDirtyCode(code: Code): void {
-    this.dirtyCode.add(code);
+  queueDiagnosticsUpdate(code: Code): void {
+    this.needsDiagnosticsUpdate.add(code);
   }
 
-  recheckDirtyCodeDiagnostics() {
-    for (const code of this.dirtyCode) {
+  drainDiagnosticsUpdateQueue() {
+    for (const code of this.needsDiagnosticsUpdate) {
       code.updateDiagnostics();
     }
-    this.dirtyCode.clear();
+    this.needsDiagnosticsUpdate.clear();
   }
 
   get ideVersion(): string {
@@ -383,23 +383,6 @@ export class Project {
     }
     await Promise.all(resourceWaits);
     options?.onLoadProgress?.(1, `Loaded ${this.assets.size} resources`);
-    // TODO: Link up object parent-child relationships
-    for (const asset of this.assets.values()) {
-      if (asset.assetKind !== 'objects') {
-        continue;
-      }
-      const obj = asset as Asset<'objects'>;
-      if (!obj.yy.parentObjectId) {
-        continue;
-      }
-      const parent = this.getAssetByName(obj.yy.parentObjectId.name);
-      if (!parent) {
-        // TODO: Add diagnostic if parent missing
-        continue;
-      }
-      // Set the parent
-      obj.parent = parent as Asset<'objects'>;
-    }
     logger.log(`Loaded ${this.assets.size} resources in ${Date.now() - t}ms`);
   }
 

@@ -79,7 +79,7 @@ describe('Project', function () {
     await Project.fallbackGmlSpecPath.exists({ assert: true });
   });
 
-  it('can parse a representative project', async function () {
+  it('can analyze a representative project', async function () {
     const projectDir = 'samples/project';
     const project = await Project.initialize(projectDir);
     ok(project);
@@ -145,6 +145,13 @@ describe('Project', function () {
     expect(
       child2.instanceType?.listMembers().map((m) => m.name),
     ).not.to.include.members(parentVars);
+
+    // Check that a reference to the parent_var works in the grandchild
+    const grandChildRef = grandchild.gmlFile.getReferenceAt(4, 24);
+    ok(grandChildRef);
+    expect(grandChildRef.item.name).to.equal('parent_var');
+    ok(grandChildRef.item === parent.instanceType!.getMember('parent_var'));
+    ok(grandChildRef.item.def);
 
     //#endregion OBJECT INHERITANCE
 

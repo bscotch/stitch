@@ -55,7 +55,7 @@ export class Code {
   /** When set to `true`, this file will be flagged for reprocessing. */
   set dirty(value: boolean) {
     if (value) {
-      this.project.addDirtyCode(this);
+      this.project.queueDiagnosticsUpdate(this);
     }
   }
 
@@ -388,7 +388,7 @@ export class Code {
     this.updateDiagnostics();
     // Re-run diagnostics on everything that ended up dirty due to the changes
     if (options?.reloadDirty) {
-      this.project.recheckDirtyCodeDiagnostics();
+      this.project.drainDiagnosticsUpdateQueue();
     }
   }
 

@@ -197,7 +197,25 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return this.gmlFiles.get(path.absolute);
   }
 
+  updateParent() {
+    if (this.assetKind !== 'objects') {
+      return;
+    }
+    const yy = this.yy as YyObject;
+    if (!yy.parentObjectId) {
+      return;
+    }
+    const parent = this.project.getAssetByName(yy.parentObjectId.name);
+    if (!parent || parent.assetKind !== 'objects') {
+      // TODO: Add diagnostic if parent missing
+      return;
+    }
+    // Set the parent
+    this.parent = parent as Asset<'objects'>;
+  }
+
   updateGlobals() {
+    this.updateParent();
     for (const gml of this.gmlFilesArray) {
       gml.updateGlobals();
     }

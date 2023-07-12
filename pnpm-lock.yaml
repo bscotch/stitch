@@ -321,6 +321,7 @@ importers:
       '@types/xml2js': 0.4.11
       chai: ^4.3.7
       chevrotain: 10.5.0
+      dependency-graph: 0.11.0
       dotenv: 16.3.1
       mocha: ^10.2.0
       prettier: ^2.8.8
@@ -334,6 +335,7 @@ importers:
       '@bscotch/utility': 6.8.3
       '@bscotch/yy': link:../yy
       chevrotain: 10.5.0
+      dependency-graph: 0.11.0
       xml2js: 0.6.0
       zod: 3.21.4
     devDependencies:
