@@ -1,7 +1,7 @@
 import { pathy } from '@bscotch/pathy';
 import { keysOf } from '@bscotch/utility';
-import { commands } from './manifest.commands.mjs';
-import type { Manifest } from './manifest.types.mjs';
+import { canShowInPalette, commands } from './manifest.commands.mjs';
+import { Manifest } from './manifest.types.mjs';
 import { viewsArray, viewsContainersArray } from './manifest.views.mjs';
 
 async function main() {
@@ -9,6 +9,7 @@ async function main() {
   await manifestPath.exists({ assert: true });
 
   const manifest = await manifestPath.read<Manifest>();
+  const commandNames = keysOf(commands);
 
   // Update commands
   manifest.contributes.commands = [];
@@ -19,6 +20,11 @@ async function main() {
   // Update views
   manifest.contributes.views['bscotch-stitch'] = viewsArray;
   manifest.contributes.viewsContainers.activitybar = viewsContainersArray;
+
+  // Update menus
+  manifest.contributes.menus['commandPalette'] = commandNames
+    .filter(canShowInPalette)
+    .map((c) => ({ command: c }));
 
   // Write out the updated manifest
   await manifestPath.write(manifest);

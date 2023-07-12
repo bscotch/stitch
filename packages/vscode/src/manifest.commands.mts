@@ -1,4 +1,5 @@
-import type { ManifestCommand } from './manifest.types.mjs';
+import { keysOf } from '@bscotch/utility';
+import { $showInPalette, ManifestCommand } from './manifest.types.mjs';
 import { when } from './manifest.when.mjs';
 
 export const commands = {
@@ -6,6 +7,7 @@ export const commands = {
     command: 'stitch.assets.reveal',
     title: 'Stitch: Show Asset',
     enablement: `${when.hasProjects} && resourceExtname =~ /\\.(yy|gml)$/`,
+    [$showInPalette]: true,
   },
   'stitch.assets.filters.enable': {
     command: 'stitch.assets.filters.enable',
@@ -57,23 +59,35 @@ export const commands = {
     shortTitle: 'Open in GameMaker',
     enablement: `(resourceExtname =~ /\\.(yy|yyp|gml)$/) || (${when.assetTreeFocused} && ${when.hasProjects})`,
     icon: '$(edit)',
+    [$showInPalette]: true,
   },
   'stitch.run': {
     command: 'stitch.run',
     title: 'Stitch: Run Project',
     shortTitle: 'Run',
     icon: '$(play)',
+    [$showInPalette]: true,
   },
   'stitch.clean': {
     command: 'stitch.clean',
     title: 'Stitch: Clean Project Cache',
     shortTitle: 'Clean Cache',
     icon: '$(history)',
+    [$showInPalette]: true,
   },
   'stitch.refresh': {
     command: 'stitch.refresh',
     title: 'Stitch: Refresh Project',
     shortTitle: 'Refresh Project',
     icon: '$(refresh)',
+    [$showInPalette]: true,
   },
 } satisfies Record<string, ManifestCommand>;
+export const commandNames = keysOf(commands);
+export type CommandName = keyof typeof commands;
+
+export function canShowInPalette(commandName: CommandName): boolean {
+  const command = commands[commandName];
+  if (!($showInPalette in command)) return false;
+  return command[$showInPalette];
+}
