@@ -5,7 +5,7 @@ import { Native } from './project.native.js';
 import { Signifier } from './signifiers.js';
 import { Type, TypeStore } from './types.js';
 import type { PrimitiveName } from './types.primitives.js';
-import { ok } from './util.js';
+import { assert, ok } from './util.js';
 
 describe('Project', function () {
   it('can load the GML spec', async function () {
@@ -316,6 +316,7 @@ describe('Project', function () {
     ok(globalFunction.item.name === 'global_function');
     //#endregion FUNCTIONS
 
+    await validateCrossFileDiagnostics(project);
     validateWithContexts(project);
     validateFunctionContexts(project);
     validateJsdocs(project);
@@ -338,6 +339,54 @@ describe('Project', function () {
     const project = await Project.initialize(projectDir);
   });
 });
+
+async function validateCrossFileDiagnostics(project: Project) {
+  // In VSCode, we were finding that when a Create event was updated
+  // then a struct stored in its variables would have incorrect "missing"
+  // properties in the Step of the same object.
+  const asset = project.getAssetByName('o_child1_child')!;
+  const createEvent = asset.getEventByName('Create_0')!;
+  const stepEvent = asset.getEventByName('Step_0')!;
+  const propName = 'idle';
+
+  const declaration = createEvent.getReferenceAt(5, 4)!;
+  const reference = stepEvent.getReferenceAt(1, 20)!;
+
+  const propertyDeclaration = createEvent.getReferenceAt(6, 5)!;
+  const propertyReference = stepEvent.getReferenceAt(1, 25)!;
+
+  assert(declaration.item === reference.item);
+  assert(propertyDeclaration.item === propertyReference.item);
+  assert(propertyDeclaration.item.name === propName);
+  assert(
+    declaration.item.type.type[0]!.getMember(propName) ===
+      propertyDeclaration.item,
+  );
+  // Should not have any diagnostics in these files.
+  const stepDiagnostics =
+    stepEvent.getDiagnostics().UNDECLARED_VARIABLE_REFERENCE;
+  expect(stepDiagnostics).to.have.lengthOf(0);
+
+  // Upon reloading the Create event, should STILL have
+  // no diagnostics and the references
+  // should all go to the same, *defined* signifiers.
+  await createEvent.reload(createEvent.content, { reloadDirty: true });
+
+  const reloadedDeclaration = createEvent.getReferenceAt(5, 4)!;
+  assert(reloadedDeclaration.item === declaration.item);
+  const reloadedReference = stepEvent.getReferenceAt(1, 20)!;
+  expect(reloadedReference.item).to.equal(reloadedDeclaration.item);
+
+  const reloadedPropertyDeclaration = createEvent.getReferenceAt(6, 5)!;
+  assert(reloadedPropertyDeclaration.item.name === propName);
+  assert(reloadedPropertyDeclaration.item === propertyDeclaration.item);
+  const reloadedPropertyReference = stepEvent.getReferenceAt(1, 25)!;
+  assert(reloadedPropertyReference.item === reloadedPropertyDeclaration.item);
+
+  const reloadedStepDiagnostics =
+    stepEvent.getDiagnostics().UNDECLARED_VARIABLE_REFERENCE;
+  expect(reloadedStepDiagnostics).to.have.lengthOf(0);
+}
 
 async function validateAccessorTypes(project: Project) {
   // There was an issue where the type retrieved from an accessor

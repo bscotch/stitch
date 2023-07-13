@@ -221,6 +221,10 @@ export class Code {
     ].filter((x) => x.def || x.native);
   }
 
+  getDiagnostics() {
+    return { ...this.diagnostics };
+  }
+
   get refs() {
     if (!this._refsAreSorted) {
       this.sortRefs();
@@ -381,8 +385,7 @@ export class Code {
    * provide new content to use instead of reading from disk.
    */
   async reload(content?: string, options?: { reloadDirty?: boolean }) {
-    this.content = content || this.content;
-    await this.parse(this.content);
+    await this.parse(content);
     this.updateGlobals();
     this.updateAllSymbols();
     this.updateDiagnostics();

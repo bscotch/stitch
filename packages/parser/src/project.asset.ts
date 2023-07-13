@@ -11,7 +11,7 @@ import {
   yySchemas,
 } from '@bscotch/yy';
 import { logger } from './logger.js';
-import type { ObjectEvent } from './objects.lib.js';
+import type { ObjectEvent, ObjectEventName } from './objects.lib.js';
 import { Code } from './project.code.js';
 import { Project } from './project.js';
 import { Signifier } from './signifiers.js';
@@ -142,6 +142,11 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       }
       return 0;
     });
+  }
+
+  getEventByName(name: ObjectEventName): Code | undefined {
+    assert(this.isObject, 'Can only get events for objects');
+    return this.gmlFilesArray.find((gml) => gml.name === name);
   }
 
   get shaderPaths(): T extends 'shaders'
