@@ -99,6 +99,17 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return sprite as Asset<'sprites'> | undefined;
   }
 
+  get children(): Asset<'objects'>[] {
+    assert(isAssetOfKind(this, 'objects'), 'Can only get children of objects');
+    const children: Asset<'objects'>[] = [];
+    for (const asset of this.project.assets.values()) {
+      if (isAssetOfKind(asset, 'objects') && asset.parent === this) {
+        children.push(asset);
+      }
+    }
+    return children;
+  }
+
   get parent() {
     return this._parent;
   }

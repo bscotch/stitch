@@ -6,19 +6,20 @@ import {
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
-import { uriFromPathy } from './lib.mjs';
+import { createSorter, uriFromPathy } from './lib.mjs';
 import { logger } from './log.mjs';
 import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
 
 type InspectorItem =
-  | ObjectParentItem
-  | ObjectParentContainer
+  | ObjectItem
+  | ObjectParentFolder
+  | ObjectChildren
   | ObjectEvents
   | ObjectEventItem
   | ObjectSpriteItem
-  | ObjectSpriteContainer;
+  | ObjectSpriteFolder;
 
-class ObjectParentContainer extends StitchTreeItemBase<'inspector-object-parents'> {
+class ObjectParentFolder extends StitchTreeItemBase<'inspector-object-parents'> {
   override readonly kind = 'inspector-object-parents';
   parent = undefined;
   constructor() {
@@ -28,7 +29,17 @@ class ObjectParentContainer extends StitchTreeItemBase<'inspector-object-parents
   }
 }
 
-class ObjectParentItem extends StitchTreeItemBase<'asset-objects'> {
+class ObjectChildren extends StitchTreeItemBase<'inspector-object-children'> {
+  override readonly kind = 'inspector-object-children';
+  parent = undefined;
+  constructor() {
+    super('Children');
+    this.contextValue = this.kind;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+  }
+}
+
+class ObjectItem extends StitchTreeItemBase<'asset-objects'> {
   override readonly kind = 'asset-objects';
   parent = undefined;
 
@@ -78,7 +89,7 @@ class ObjectEventItem extends StitchTreeItemBase<'code'> {
   protected setIcon = setEventIcon;
 }
 
-class ObjectSpriteContainer extends StitchTreeItemBase<'inspector-sprites'> {
+class ObjectSpriteFolder extends StitchTreeItemBase<'inspector-sprites'> {
   override readonly kind = 'inspector-sprites';
   parent = undefined;
   constructor() {
@@ -134,13 +145,14 @@ export class GameMakerInspectorProvider
     if (!element) {
       // Then we're at the root.
       return [
-        new ObjectParentContainer(),
-        new ObjectSpriteContainer(),
+        new ObjectParentFolder(),
+        new ObjectSpriteFolder(),
         new ObjectEvents(),
+        new ObjectChildren(),
       ];
-    } else if (element instanceof ObjectParentContainer && this.asset.parent) {
-      return [new ObjectParentItem(this.asset.parent)];
-    } else if (element instanceof ObjectSpriteContainer) {
+    } else if (element instanceof ObjectParentFolder && this.asset.parent) {
+      return [new ObjectItem(this.asset.parent)];
+    } else if (element instanceof ObjectSpriteFolder) {
       const sprite = this.asset.sprite;
       logger.info('Found sprite?', !!sprite, sprite?.name);
       if (sprite) {
@@ -151,6 +163,10 @@ export class GameMakerInspectorProvider
         return new ObjectEventItem(code);
       });
       return events;
+    } else if (element instanceof ObjectChildren) {
+      return this.asset.children.sort(createSorter('name')).map((child) => {
+        return new ObjectItem(child);
+      });
     }
     return;
   }

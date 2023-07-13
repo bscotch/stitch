@@ -100,7 +100,7 @@ export const commands = {
   'stitch.assets.newEvent': {
     command: 'stitch.assets.newEvent',
     title: 'New Event...',
-    enablement: when.assetTreeFocusedAndHasProjects,
+    enablement: `${when.hasProjects} && (${when.assetTreeFocused} || ${when.inspectorFocused})`,
     [$showInViewItemContextMenu]: {
       when: `${when.hasProjects} && (${when.assetTreeFocused} || ${when.inspectorFocused}) && ${when.viewItemIsObject}`,
       group: 'navigation@1',
