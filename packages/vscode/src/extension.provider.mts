@@ -249,11 +249,13 @@ export class StitchProvider
    * Determine the project the file belongs to,
    * and pass an update request to that project.
    */
-  async updateFile(document: vscode.TextDocument) {
+  async updateFile(document: vscode.TextDocument): Promise<Code | undefined> {
     info('updateFile', document);
-    await this.getGmlFile(document)?.reload(document.getText(), {
+    const code = this.getGmlFile(document);
+    await code?.reload(document.getText(), {
       reloadDirty: true,
     });
+    return code;
   }
 
   getProject(
@@ -377,9 +379,12 @@ export class StitchProvider
     this.ctx ||= ctx;
     if (!this.provider) {
       this.provider = new StitchProvider();
-      const onChangeDoc = (
-        event: vscode.TextDocumentChangeEvent | vscode.TextDocument,
+      const onChangeDoc = async (
+        event: vscode.TextDocumentChangeEvent | vscode.TextDocument | undefined,
       ) => {
+        if (!event) {
+          return;
+        }
         const doc = 'document' in event ? event.document : event;
         if (doc.languageId !== 'gml') {
           return;
@@ -394,15 +399,20 @@ export class StitchProvider
         // to complete.
         const updateWait = StitchProvider.provider.updateFile(doc);
         this.provider.processingFiles.set(doc.uri.fsPath, updateWait);
-        updateWait.then(() => {
-          this.provider.processingFiles.delete(doc.uri.fsPath);
-        });
+        const code = await updateWait;
+        this.provider.processingFiles.delete(doc.uri.fsPath);
       };
       const watcher = vscode.workspace.createFileSystemWatcher('**/*.gml');
       // Ensure that things stay up to date!
+      vscode.window.onDidChangeActiveTextEditor((editor) => {
+        if (!editor) {
+          return;
+        }
+        const code = this.provider.getGmlFile(editor.document);
+      });
       vscode.workspace.onDidChangeTextDocument(onChangeDoc);
       vscode.workspace.onDidOpenTextDocument(onChangeDoc);
-      watcher.onDidChange((uri) => {
+      watcher.onDidChange((uri): any => {
         // Find the corresponding document, if there is one
         const doc = vscode.workspace.textDocuments.find(
           (d) => d.uri.fsPath === uri.fsPath,
