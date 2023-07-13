@@ -9,6 +9,7 @@ import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import type { StitchProvider } from './extension.provider.mjs';
+import { uriFromCodeFile } from './lib.mjs';
 import { warn } from './log.mjs';
 import {
   GameMakerFolder,
@@ -157,9 +158,19 @@ export class GameMakerTreeProvider
     if (!eventInfo || !('eventNum' in eventInfo)) {
       return;
     }
-    await asset.createEvent(eventInfo);
+    const code = await asset.createEvent(eventInfo);
+    if (!code) {
+      return;
+    }
+    if (
+      'onCreateEvent' in objectItem &&
+      typeof objectItem.onCreateEvent === 'function'
+    ) {
+      objectItem.onCreateEvent(eventInfo);
+    }
     this._onDidChangeTreeData.fire(objectItem);
     this.view.reveal(objectItem);
+    vscode.window.showTextDocument(uriFromCodeFile(code));
   }
 
   async createObject(where: GameMakerFolder) {

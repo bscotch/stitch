@@ -59,10 +59,19 @@ class ObjectItem extends StitchTreeItemBase<'asset-objects'> {
 class ObjectEvents extends StitchTreeItemBase<'inspector-object-events'> {
   override readonly kind = 'inspector-object-events';
   parent = undefined;
-  constructor(readonly asset: Asset<'objects'>) {
+  constructor(
+    readonly asset: Asset<'objects'>,
+    readonly provider: GameMakerInspectorProvider,
+  ) {
     super('Events');
     this.contextValue = this.kind;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+  }
+
+  // To be called by the stitch.assets.newEvent command registered by the TreeProvider.
+  onCreateEvent() {
+    this.provider.onUpdate(this);
+    this.provider.view.reveal(this, { expand: true });
   }
 }
 
@@ -132,6 +141,10 @@ export class GameMakerInspectorProvider
 
   constructor(readonly provider: StitchProvider) {}
 
+  onUpdate(updated: InspectorItem) {
+    this._onDidChangeTreeData.fire(updated);
+  }
+
   getTreeItem(element: InspectorItem): vscode.TreeItem {
     return element;
   }
@@ -147,7 +160,7 @@ export class GameMakerInspectorProvider
       return [
         new ObjectParentFolder(),
         new ObjectSpriteFolder(),
-        new ObjectEvents(this.asset),
+        new ObjectEvents(this.asset, this),
         new ObjectChildren(),
       ];
     } else if (element instanceof ObjectParentFolder && this.asset.parent) {
