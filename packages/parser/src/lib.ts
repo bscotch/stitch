@@ -1,4 +1,5 @@
 import path from 'path';
+import { logger } from './logger.js';
 
 export interface ObjectEvent {
   label: string;
@@ -10,6 +11,30 @@ export interface ObjectEvent {
 
 export type ObjectEventName = (typeof objectEvents)[number]['name'];
 export type ObjectEventLabel = (typeof objectEvents)[number]['label'];
+
+interface ObjectUserEvent<N extends number> extends ObjectEvent {
+  label: `User Event ${N}`;
+  name: `Other_1${N}`;
+  eventNum: N;
+  eventType: 7;
+  group: 'user-event';
+}
+
+const objectUserEvents: ObjectUserEvent<
+  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+>[] = [];
+for (let i = 0; i < 10; i++) {
+  objectUserEvents.push({
+    // @ts-expect-error
+    label: `User Event ${i}`,
+    // @ts-expect-error
+    name: `Other_1${i}`,
+    // @ts-expect-error
+    eventNum: i,
+    eventType: 7,
+    group: 'user-event',
+  });
+}
 
 /**
  * Mapping of GameMaker filenames to their corresponding
@@ -62,6 +87,13 @@ export const objectEvents = [
     label: 'Draw Begin',
     name: 'Draw_72',
     eventNum: 72,
+    eventType: 8,
+    group: 'draw',
+  },
+  {
+    label: 'Draw',
+    name: 'Draw_0',
+    eventNum: 0,
     eventType: 8,
     group: 'draw',
   },
@@ -171,13 +203,7 @@ export const objectEvents = [
     eventType: 7,
     group: 'async',
   },
-  {
-    label: 'User Event 0',
-    name: 'Other_10',
-    eventNum: 10,
-    eventType: 7,
-    group: 'user-event',
-  },
+  ...objectUserEvents,
 ] as const;
 Object.freeze(Object.seal(objectEvents));
 
@@ -187,7 +213,11 @@ export function getEventFromFilename(
   filename: string,
 ): ObjectEvent | undefined {
   const name = path.basename(filename, '.gml');
-  return objectEvents.find((x) => x.name === name);
+  const event = objectEvents.find((x) => x.name === name);
+  if (!event) {
+    logger.warn(`Could not find event for filename: ${filename}`);
+  }
+  return event;
 }
 
 export function getEventFromLabel(label: string): ObjectEvent | undefined {
