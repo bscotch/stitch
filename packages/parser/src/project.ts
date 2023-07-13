@@ -341,6 +341,21 @@ export class Project {
     // TODO: Allow for reloading of resources, so that we only need to keep track of new/deleted resources.
     const t = Date.now();
 
+    // Load AudioGroup assets
+    for (const audioGroup of this.yyp.AudioGroups) {
+      if (!this.self.getMember(audioGroup.name)) {
+        const signifier = new Signifier(
+          this.self,
+          audioGroup.name,
+          new Type('Asset.GMAudioGroup'),
+        );
+        signifier.global = true;
+        signifier.writable = false;
+        signifier.native = true;
+        this.self.addMember(signifier);
+      }
+    }
+
     // Collect the asset dirs since we can run into capitalization issues.
     // We'll use these as a backup for "missing" resources.
     const assetNameToYy = new Map<string, Pathy>();
