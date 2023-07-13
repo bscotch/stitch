@@ -78,6 +78,10 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     }
   }
 
+  async saveYy() {
+    await Yy.write(this.yyPath.absolute, this.yy, this.assetKind);
+  }
+
   get isScript() {
     return this.assetKind === 'scripts';
   }
@@ -190,7 +194,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
         eventType: eventInfo.eventType,
       }),
     );
-    await this.yyPath.write(yy);
+    await this.saveYy();
     return this.addGmlFile(path);
   }
 
