@@ -10,8 +10,8 @@ import {
   yyObjectEventSchema,
   yySchemas,
 } from '@bscotch/yy';
-import type { ObjectEvent } from './lib.js';
 import { logger } from './logger.js';
+import type { ObjectEvent } from './objects.lib.js';
 import { Code } from './project.code.js';
 import { Project } from './project.js';
 import { Signifier } from './signifiers.js';
@@ -84,6 +84,19 @@ export class Asset<T extends YyResourceType = YyResourceType> {
 
   get isObject() {
     return this.assetKind === 'objects';
+  }
+
+  get sprite(): Asset<'sprites'> | undefined {
+    assert(isAssetOfKind(this, 'objects'), 'Can only get sprites from objects');
+    const yy = this.yy as YyObject;
+    const spriteName = yy.spriteId?.name;
+    const sprite = spriteName
+      ? this.project.getAssetByName(spriteName)
+      : undefined;
+    if (spriteName && !sprite) {
+      logger.warn(`Sprite ${spriteName} has no asset`);
+    }
+    return sprite as Asset<'sprites'> | undefined;
   }
 
   get parent() {

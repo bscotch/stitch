@@ -4,7 +4,6 @@ import {
   getEventFromFilename,
   isAssetOfKind,
 } from '@bscotch/gml-parser';
-import { Pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
 import { uriFromPathy } from './lib.mjs';
@@ -12,6 +11,7 @@ import { logger } from './log.mjs';
 import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
 
 type InspectorItem =
+  | ObjectParentItem
   | ObjectParentContainer
   | ObjectEvents
   | ObjectEventItem
@@ -28,6 +28,23 @@ class ObjectParentContainer extends StitchTreeItemBase<'inspector-object-parents
   }
 }
 
+class ObjectParentItem extends StitchTreeItemBase<'asset-objects'> {
+  override readonly kind = 'asset-objects';
+  parent = undefined;
+
+  constructor(readonly asset: Asset<'objects'>) {
+    super(asset.name);
+    this.contextValue = this.kind;
+    this.setBaseIcon('symbol-misc');
+
+    this.command = {
+      command: 'vscode.open',
+      title: 'Open',
+      arguments: [uriFromPathy(asset.gmlFile?.path || asset.yyPath)],
+    };
+  }
+}
+
 class ObjectEvents extends StitchTreeItemBase<'inspector-object-events'> {
   override readonly kind = 'inspector-object-events';
   parent = undefined;
@@ -38,8 +55,8 @@ class ObjectEvents extends StitchTreeItemBase<'inspector-object-events'> {
   }
 }
 
-class ObjectEventItem extends StitchTreeItemBase<'asset-objects'> {
-  override readonly kind = 'asset-objects';
+class ObjectEventItem extends StitchTreeItemBase<'code'> {
+  override readonly kind = 'code';
   parent = undefined;
 
   constructor(readonly code: Code) {
@@ -71,18 +88,18 @@ class ObjectSpriteContainer extends StitchTreeItemBase<'inspector-sprites'> {
   }
 }
 
-class ObjectSpriteItem extends StitchTreeItemBase<'inspector-sprite'> {
-  override readonly kind = 'inspector-sprite';
+class ObjectSpriteItem extends StitchTreeItemBase<'asset-sprites'> {
+  override readonly kind = 'asset-sprites';
   parent = undefined;
 
-  constructor(readonly imagePath: Pathy<Buffer>, readonly idx: number) {
-    super(`[${idx}] ${imagePath.name}`);
+  constructor(readonly sprite: Asset<'sprites'>) {
+    super(sprite.name);
     this.contextValue = this.kind;
-    this.iconPath = vscode.Uri.file(imagePath.absolute);
+    this.setGameMakerIcon('sprite');
     this.command = {
       command: 'vscode.open',
       title: 'Open',
-      arguments: [this.iconPath],
+      arguments: [uriFromPathy(this.sprite.framePaths[0])],
     };
   }
 }
@@ -121,10 +138,14 @@ export class GameMakerInspectorProvider
         new ObjectSpriteContainer(),
         new ObjectEvents(),
       ];
-    } else if (element instanceof ObjectParentContainer) {
-      return undefined;
+    } else if (element instanceof ObjectParentContainer && this.asset.parent) {
+      return [new ObjectParentItem(this.asset.parent)];
     } else if (element instanceof ObjectSpriteContainer) {
-      return this.asset.framePaths.map((p, i) => new ObjectSpriteItem(p, i));
+      const sprite = this.asset.sprite;
+      logger.info('Found sprite?', !!sprite, sprite?.name);
+      if (sprite) {
+        return [new ObjectSpriteItem(sprite)];
+      }
     } else if (element instanceof ObjectEvents) {
       const events = this.asset.gmlFilesArray.map((code) => {
         return new ObjectEventItem(code);
@@ -147,6 +168,7 @@ export class GameMakerInspectorProvider
     logger.info('Rebuilding inspector tree', this.asset.name);
 
     this._onDidChangeTreeData.fire();
+    this.view.title = `Inspector: ${this.asset.name}`;
   }
 
   register(): vscode.Disposable[] {

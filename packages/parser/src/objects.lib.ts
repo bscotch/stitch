@@ -12,27 +12,22 @@ export interface ObjectEvent {
 export type ObjectEventName = (typeof objectEvents)[number]['name'];
 export type ObjectEventLabel = (typeof objectEvents)[number]['label'];
 
-interface ObjectUserEvent<N extends number> extends ObjectEvent {
-  label: `User Event ${N}`;
-  name: `Other_1${N}`;
+interface ObjectAlarmEvent<N extends number> extends ObjectEvent {
+  label: `Alarm ${N}`;
+  name: `Alarm_${N}`;
   eventNum: N;
-  eventType: 7;
-  group: 'user-event';
+  eventType: 2;
+  group: 'alarm';
 }
 
-const objectUserEvents: ObjectUserEvent<
-  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
->[] = [];
+const objectAlarmEvents: ObjectAlarmEvent<number>[] = [];
 for (let i = 0; i < 10; i++) {
-  objectUserEvents.push({
-    // @ts-expect-error
-    label: `User Event ${i}`,
-    // @ts-expect-error
-    name: `Other_1${i}`,
-    // @ts-expect-error
+  objectAlarmEvents.push({
+    label: `Alarm ${i}`,
+    name: `Alarm_${i}`,
     eventNum: i,
-    eventType: 7,
-    group: 'user-event',
+    eventType: 2,
+    group: 'alarm',
   });
 }
 
@@ -203,7 +198,7 @@ export const objectEvents = [
     eventType: 7,
     group: 'async',
   },
-  ...objectUserEvents,
+  ...objectAlarmEvents,
 ] as const;
 Object.freeze(Object.seal(objectEvents));
 
