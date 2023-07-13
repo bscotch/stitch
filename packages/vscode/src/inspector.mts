@@ -59,7 +59,7 @@ class ObjectItem extends StitchTreeItemBase<'asset-objects'> {
 class ObjectEvents extends StitchTreeItemBase<'inspector-object-events'> {
   override readonly kind = 'inspector-object-events';
   parent = undefined;
-  constructor() {
+  constructor(readonly asset: Asset<'objects'>) {
     super('Events');
     this.contextValue = this.kind;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
@@ -147,7 +147,7 @@ export class GameMakerInspectorProvider
       return [
         new ObjectParentFolder(),
         new ObjectSpriteFolder(),
-        new ObjectEvents(),
+        new ObjectEvents(this.asset),
         new ObjectChildren(),
       ];
     } else if (element instanceof ObjectParentFolder && this.asset.parent) {

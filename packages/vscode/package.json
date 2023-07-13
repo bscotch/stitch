@@ -92,7 +92,7 @@
       {
         "command": "stitch.assets.newEvent",
         "title": "New Event...",
-        "enablement": "stitch.projectCount > 0 && (view == bscotch-stitch-resources || view == bscotch-stitch-inspector)"
+        "enablement": "stitch.projectCount > 0"
       },
       {
         "command": "stitch.openIde",
@@ -327,7 +327,7 @@
         },
         {
           "command": "stitch.assets.newEvent",
-          "when": "stitch.projectCount > 0 && (view == bscotch-stitch-resources || view == bscotch-stitch-inspector) && viewItem == asset-objects",
+          "when": "(view == bscotch-stitch-resources && viewItem == asset-objects) || (view == bscotch-stitch-inspector && viewItem == inspector-object-events)",
           "group": "navigation@1"
         },
         {
