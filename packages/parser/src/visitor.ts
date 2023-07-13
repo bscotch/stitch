@@ -653,9 +653,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     ctx.signifier = undefined;
     ctx.docs = undefined;
 
-    // Change the self scope to the struct
-    this.PROCESSOR.scope.setEnd(children.StartBrace[0], false);
-    this.PROCESSOR.pushSelfScope(children.StartBrace[0], struct, true);
+    // The self-scope remains unchanged for struct literals!
     for (const entry of children.structLiteralEntry || []) {
       const docs = this.PROCESSOR.consumeJsdoc();
       const parts = entry.children;
@@ -721,9 +719,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         }
       }
     }
-
-    this.PROCESSOR.scope.setEnd(children.EndBrace[0], false);
-    this.PROCESSOR.popSelfScope(children.EndBrace[0], true);
     return struct;
   }
   override stringLiteral(
