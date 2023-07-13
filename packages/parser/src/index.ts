@@ -1,5 +1,5 @@
 export * from './jsdoc.js';
-export * from './objects.lib.js';
+export * from './lib.objects.js';
 export * from './project.asset.js';
 export { Code } from './project.code.js';
 export type { Diagnostic } from './project.diagnostics.js';

@@ -6,6 +6,7 @@ import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
 import { Signifier } from './signifiers.js';
 import { Type, type StructType } from './types.js';
 import { primitiveNames } from './types.primitives.js';
+import { addSpriteInfoStruct } from './types.sprites.js';
 import { assert } from './util.js';
 
 export class Native {
@@ -23,6 +24,7 @@ export class Native {
       const type = new Type(name);
       this.types.set(name, type);
     });
+    addSpriteInfoStruct(this.types);
   }
 
   get version() {

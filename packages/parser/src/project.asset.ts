@@ -10,8 +10,8 @@ import {
   yyObjectEventSchema,
   yySchemas,
 } from '@bscotch/yy';
+import type { ObjectEvent, ObjectEventName } from './lib.objects.js';
 import { logger } from './logger.js';
-import type { ObjectEvent, ObjectEventName } from './objects.lib.js';
 import { Code } from './project.code.js';
 import { Project } from './project.js';
 import { Signifier } from './signifiers.js';
