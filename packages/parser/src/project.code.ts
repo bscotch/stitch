@@ -508,8 +508,10 @@ export class Code {
     for (const ref of this.refs) {
       if (
         !ref.isDef ||
+        ref.item.native ||
         ref.item.refs.size > 1 ||
-        !ref.item.getTypeByKind('Function')
+        !ref.item.getTypeByKind('Function') ||
+        !ref.item.global // For now restrict to global functions. The rest requires some nuance!
       ) {
         continue;
       }
