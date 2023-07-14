@@ -12,9 +12,7 @@ export const yyExtensionValueTypeSchema = z.union([
   yyExtensionNumberTypeSchema,
 ]);
 
-export type YyExtensionConstantSchema = z.infer<
-  typeof yyExtensionConstantSchema
->;
+export type YyExtensionConstant = z.infer<typeof yyExtensionConstantSchema>;
 const yyExtensionConstantSchema = z.object({
   resourceType: z.literal('GMExtensionConstant').default('GMExtensionConstant'),
   resourceVersion: z.string().default('1.0'),
@@ -27,9 +25,7 @@ const yyExtensionConstantSchema = z.object({
     ),
 });
 
-export type YyExtensionFunctionSchema = z.infer<
-  typeof yyExtensionFunctionSchema
->;
+export type YyExtensionFunction = z.infer<typeof yyExtensionFunctionSchema>;
 const yyExtensionFunctionSchema = z.object({
   resourceType: z.literal('GMExtensionFunction').default('GMExtensionFunction'),
   resourceVersion: z.string().default('1.0'),
@@ -46,16 +42,17 @@ const yyExtensionFunctionSchema = z.object({
   returnType: yyExtensionValueTypeSchema,
 });
 
-export type YyExtensionFileSchema = z.infer<typeof yyExtensionFileSchema>;
+export type YyExtensionFile = z.infer<typeof yyExtensionFileSchema>;
 const yyExtensionFileSchema = z
   .object({
     resourceType: z.literal('GMExtensionFile'),
     resourceVersion: z.string().default('1.0'),
+    constants: z.array(yyExtensionConstantSchema).default([]),
     functions: z.array(yyExtensionFunctionSchema).default([]),
   })
   .passthrough();
 
-export type YyExtensionSchema = z.infer<typeof yyExtensionSchema>;
+export type YyExtension = z.infer<typeof yyExtensionSchema>;
 export const yyExtensionSchema = z
   .object({
     resourceType: z.literal('GMExtension').default('GMExtension'),
