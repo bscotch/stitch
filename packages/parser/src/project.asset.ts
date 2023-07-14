@@ -2,6 +2,7 @@ import { Pathy, pathy } from '@bscotch/pathy';
 import {
   Yy,
   YyDataStrict,
+  YyExtension,
   YyObject,
   YyResourceType,
   YySchemas,
@@ -61,7 +62,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     this.signifier.setType(type);
 
     // Add this asset to the project lookup, unless it is a script.
-    if (this.assetKind !== 'scripts') {
+    if (!['scripts', 'extensions'].includes(this.assetKind)) {
       this.project.self.addMember(this.signifier);
       if (type.kind !== 'Any') {
         this.project.types.set(`${type.kind}.${this.name}`, type);
@@ -313,6 +314,72 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       this.addScriptFile(children as Pathy<string>[]);
     } else if (this.assetKind === 'objects') {
       this.addObjectFile(children as Pathy<string>[]);
+    } else if (this.assetKind === 'extensions') {
+      // Load constants and functions from the extension
+      const typeIndexToName = (idx: 1 | 2): 'String' | 'Real' => {
+        return idx === 1 ? 'String' : 'Real';
+      };
+
+      const yy = this.yy as YyExtension;
+      for (const file of yy.files) {
+        for (const constant of file.constants) {
+          if (constant.hidden) {
+            continue;
+          }
+          if (this.project.self.getMember(constant.name)) {
+            logger.warn(
+              `Constant ${constant.name} from extension ${this.name} already exists`,
+            );
+            continue;
+          }
+          // TODO: Get the type by parsing the value. For now we'll just check for number or string, else "Any".
+          const type = constant.value.startsWith('"')
+            ? 'String'
+            : constant.value.match(/^-?[\d_.]+$/)
+            ? 'Real'
+            : 'Any';
+          const signifier = new Signifier(
+            this.project.self,
+            constant.name,
+            new Type(type),
+          );
+          signifier.macro = true;
+          signifier.global = true;
+          signifier.writable = false;
+          signifier.def = {};
+
+          this.project.self.addMember(signifier);
+        }
+        for (const func of file.functions) {
+          if (func.hidden) {
+            continue;
+          }
+          if (this.project.self.getMember(func.externalName)) {
+            logger.warn(
+              `Constant ${func.externalName} from extension ${this.name} already exists`,
+            );
+            continue;
+          }
+          const type = new Type('Function')
+            .named(func.externalName)
+            .describe(func.help);
+          type.setReturnType(new Type(typeIndexToName(func.returnType)));
+          for (let i = 0; i < func.args.length; i++) {
+            const typeIdx = func.args[i];
+            type.addParameter(
+              i,
+              `argument${i}`,
+              new Type(typeIndexToName(typeIdx)),
+            );
+          }
+          const signifier = new Signifier(this.project.self, func.name, type);
+          signifier.global = true;
+          signifier.writable = false;
+          signifier.def = {};
+          this.project.self.addMember(signifier);
+          this.project.types.set(`Function.${func.externalName}`, type);
+        }
+      }
     }
     await this.initiallyReadAndParseGml();
   }
@@ -337,7 +404,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     const matches = children.filter(
       (p) =>
         p.basename.toLocaleLowerCase() ===
-        `${this.name.toLocaleLowerCase()}.gml`,
+        `${this.name?.toLocaleLowerCase?.()}.gml`,
     );
     if (matches.length !== 1) {
       logger.error(
