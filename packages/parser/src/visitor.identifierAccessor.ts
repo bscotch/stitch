@@ -143,7 +143,7 @@ export function visitIdentifierAccessor(
               propertyIdentifier.name,
             );
             if (existingProperty) {
-              existingProperty.addRef(propertyNameRange);
+              const ref = existingProperty.addRef(propertyNameRange);
               accessing = {
                 type: existingProperty.type,
                 range: propertyNameRange,
@@ -153,6 +153,7 @@ export function visitIdentifierAccessor(
               // still exists.
               if (isLastSuffix && assignmentCst && !existingProperty.def) {
                 existingProperty.definedAt(propertyNameRange);
+                ref.isDef = true;
                 if (docs) {
                   existingProperty.describe(docs.jsdoc.description);
                   existingProperty.setType(docs.type);
@@ -171,12 +172,13 @@ export function visitIdentifierAccessor(
                 propertyIdentifier.name,
               );
               newMember.instance = true;
-              newMember.addRef(propertyNameRange);
+              const ref = newMember.addRef(propertyNameRange);
               // If this is the last suffix and this is
               // an assignment, then also set the `def` of the
               // new member.
               if (isLastSuffix && assignmentCst) {
                 newMember.definedAt(propertyNameRange);
+                ref.isDef = true;
                 if (docs) {
                   newMember.describe(docs.jsdoc.description);
                   newMember.setType(docs.type);

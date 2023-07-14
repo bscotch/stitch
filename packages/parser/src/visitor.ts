@@ -291,56 +291,13 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     children: StaticVarDeclarationsCstChildren,
     ctx: VisitorContext,
   ) {
-    const docs = this.PROCESSOR.consumeJsdoc();
-    // Ensure that this variable exists
-    const self = this.PROCESSOR.currentSelf;
-    const range = this.PROCESSOR.range(children.Identifier[0]);
-    const signifier = self
-      .addMember(children.Identifier[0].image)
-      .definedAt(range);
-    signifier.addRef(range);
-    signifier.static = true;
-    signifier.instance = true;
-
-    // Ensure that the type is up to date
-    const assignedToFunction =
-      children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
-        .children;
-    const assignedToStructLiteral =
-      !assignedToFunction &&
-      children.assignmentRightHandSide?.[0].children.structLiteral?.[0]
-        .children;
-
-    if (assignedToFunction || assignedToStructLiteral) {
-      ctx.signifier = signifier;
-      ctx.docs = docs;
-      if (assignedToFunction) {
-        this.functionExpression(assignedToFunction, ctx);
-      } else if (assignedToStructLiteral) {
-        this.structLiteral(assignedToStructLiteral, ctx);
-      }
-    } else {
-      const inferredType = this.assignmentRightHandSide(
-        children.assignmentRightHandSide[0].children,
-        withCtxKind(ctx, 'assignment'),
-      );
-
-      if (docs) {
-        signifier.describe(docs.jsdoc.description);
-        signifier.setType(docs.type);
-        if (
-          docs.jsdoc.kind === 'type' &&
-          docs.jsdoc.type &&
-          docs.type[0].signifier
-        ) {
-          docs.type[0].signifier.addRef(
-            Range.from(this.PROCESSOR.file, docs.jsdoc.type),
-          );
-        }
-      } else if (inferredType) {
-        signifier.setType(inferredType);
-      }
+    // The same as a regular non-var assignment, except we
+    // need to indicate that it is static.
+    const info = this.variableAssignment(children, { ...ctx, isStatic: true });
+    if (info) {
+      info.item.static = true;
     }
+    return info;
   }
 
   override localVarDeclaration(
@@ -356,7 +313,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       .addMember(children.Identifier[0].image)
       .definedAt(range);
     signifier.local = true;
-    signifier.addRef(range);
+    signifier.addRef(range, true);
 
     // Ensure that the type is up to date
     const assignedToFunction =
@@ -411,16 +368,28 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     let signifier = identified?.item as Signifier | undefined;
     const name = children.Identifier[0].image;
     const range = this.PROCESSOR.range(children.Identifier[0]);
+    let ref: Reference | undefined = undefined;
+    const { isStatic } = ctx;
+    ctx.isStatic = false; // Reset to prevent downstream confusion
 
     let wasUndeclared = false;
     if (!signifier) {
       wasUndeclared = true;
-      // Create a new member on the self scope, unless it's global
       const fullScope = this.PROCESSOR.fullScope;
-      if (fullScope.self !== fullScope.global) {
+      // Add to the self-scope unless it's a static inside a non-constructor function, and if that scope is not global.
+      const parentType = fullScope.self.signifier?.getTypeByKind('Function');
+      const addTo =
+        isStatic && !parentType?.isConstructor
+          ? fullScope.local
+          : fullScope.self;
+
+      if (addTo !== fullScope.global) {
         // Then we can add a new member
-        signifier = fullScope.self.addMember(name).definedAt(range);
-        signifier.addRef(range);
+        signifier = addTo.addMember(name).definedAt(range);
+        if (isStatic) {
+          signifier.static = true;
+        }
+        ref = signifier.addRef(range, true);
         signifier.instance = true;
       } else {
         this.PROCESSOR.addDiagnostic(
@@ -431,12 +400,13 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       }
     } else {
       // Add a reference to the item.
-      signifier.addRef(range);
+      ref = signifier.addRef(range);
       // If this is the first time we've seen it, and it wouldn't have
       // an unambiguous declaration, add its definition
       if (!signifier.def) {
         wasUndeclared = true;
         signifier.definedAt(range);
+        ref.isDef = true;
       }
     }
 
@@ -482,6 +452,13 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         }
       }
     }
+    if (signifier && ref) {
+      return {
+        item: signifier,
+        ref: ref,
+      };
+    }
+    return;
   }
 
   /**
@@ -490,7 +467,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
    * to make that work.*/
   override identifier(
     children: IdentifierCstChildren,
-  ): { item: Signifier; ref: Reference<Signifier> } | undefined {
+  ): { item: Signifier; ref: Reference } | undefined {
     const item = this.FIND_ITEM(children);
     if (item) {
       const ref = (item.item as Signifier).addRef(item.range);
@@ -673,7 +650,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       // Ensure the member exists
       const signifier = struct.addMember(name).definedAt(range);
       signifier.instance = true;
-      signifier.addRef(range);
+      signifier.addRef(range, true);
 
       // Parse any Jsdocs
       if (parts.jsdoc) {

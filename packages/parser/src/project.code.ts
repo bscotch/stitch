@@ -300,6 +300,7 @@ export class Code {
       UNDECLARED_GLOBAL_REFERENCE: [],
       UNDECLARED_VARIABLE_REFERENCE: [],
       JSDOC: [],
+      UNUSED: [],
     };
   }
 
@@ -502,13 +503,20 @@ export class Code {
     }
   }
 
-  updateGlobals() {
-    this.reset();
-    return registerGlobals(this);
-  }
-
-  updateAllSymbols() {
-    registerSignifiers(this);
+  computeUnusedSymbolDiagnostics() {
+    this.diagnostics.UNUSED = [];
+    for (const ref of this.refs) {
+      if (
+        !ref.isDef ||
+        ref.item.refs.size > 1 ||
+        !ref.item.getTypeByKind('Function')
+      ) {
+        continue;
+      }
+      this.diagnostics.UNUSED.push(
+        Diagnostic.warn(`Unused function \`${ref.item.name}\``, ref),
+      );
+    }
   }
 
   /** Update and emit diagnostics */
@@ -517,11 +525,21 @@ export class Code {
     this.computeFunctionCallDiagnostics();
     this.computeUndeclaredSymbolDiagnostics();
     this.computeJsdocDiagnostics();
+    this.computeUnusedSymbolDiagnostics();
     const allDiagnostics: Diagnostic[] = [];
     for (const items of Object.values(this.diagnostics)) {
       allDiagnostics.push(...items);
     }
     this.project.emitDiagnostics(this, allDiagnostics);
     return allDiagnostics;
+  }
+
+  updateGlobals() {
+    this.reset();
+    return registerGlobals(this);
+  }
+
+  updateAllSymbols() {
+    registerSignifiers(this);
   }
 }

@@ -55,7 +55,7 @@ export function visitFunctionExpression(
       signifier = new Signifier(this.PROCESSOR.project.self, functionName);
     }
     signifier?.definedAt(nameLocation);
-    signifier?.addRef(nameLocation!);
+    signifier?.addRef(nameLocation!, true);
     // Add to the current scope (globals have already been handled)
     this.PROCESSOR.currentSelf.addMember(signifier);
   }
@@ -170,7 +170,7 @@ export function visitFunctionExpression(
     param.local = true;
     param.parameter = true;
     param.optional = fromJsdoc?.optional || !!cstParams[i].children.Assign;
-    param.addRef(range);
+    param.addRef(range, true);
 
     let inferredType: (Type | TypeStore)[] | undefined;
     if (cstParams[i].children.assignmentRightHandSide) {
@@ -182,7 +182,7 @@ export function visitFunctionExpression(
     const paramType = fromJsdoc?.type.type || inferredType || this.ANY;
     param.setType(paramType);
 
-    // Add a reference to the jsdoc hame
+    // Add a reference to the jsdoc name
     if (paramDoc?.name) {
       param.addRef(Range.from(this.PROCESSOR.file, paramDoc.name));
     }

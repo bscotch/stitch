@@ -98,7 +98,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     }
     // Ensure it's defined here.
     symbol.definedAt(range);
-    symbol.addRef(range);
+    symbol.addRef(range, true);
     symbol.global = true;
     symbol.macro = false; // Reset macro status
     return symbol;
@@ -135,7 +135,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       member.setType(memberType);
       member.idx = i;
       member.definedAt(range);
-      member.addRef(range);
+      member.addRef(range, true);
     }
   }
 

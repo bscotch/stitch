@@ -1,7 +1,7 @@
 import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
 import type { Signifier } from './signifiers.js';
-import { EnumType, FunctionType, StructType, Type } from './types.js';
+import { EnumType, FunctionType, StructType } from './types.js';
 import { assert, type Constructor } from './util.js';
 
 export const firstLineIndex = 1;
@@ -175,8 +175,9 @@ export function Refs<TBase extends Constructor>(Base: TBase) {
     def: Range | { file?: undefined } | undefined = undefined;
     refs = new Set<Reference>();
 
-    addRef(location: Range): Reference {
+    addRef(location: Range, isDef = false): Reference {
       const ref = Reference.fromRange(location, this as any);
+      ref.isDef = isDef;
       this.refs.add(ref);
       location.file.addRef(ref);
       return ref;
@@ -188,8 +189,6 @@ export function Refs<TBase extends Constructor>(Base: TBase) {
     }
   };
 }
-
-export class Referenceable extends Refs(class {}) {}
 
 export const enum ScopeFlag {
   DotAccessor = 1 << 0,
@@ -247,12 +246,12 @@ export class Scope extends Range {
 
 export type ReferenceableType = Signifier;
 
-export class Reference<
-  T extends ReferenceableType = ReferenceableType,
-> extends Range {
+export class Reference extends Range {
   override readonly $tag = 'Ref';
-  type: Type = new Type('Unknown');
-  constructor(readonly item: T, start: Position, end: Position) {
+  /** If this is reference marks the declaration */
+  isDef = false;
+
+  constructor(readonly item: Signifier, start: Position, end: Position) {
     super(start, end);
   }
 

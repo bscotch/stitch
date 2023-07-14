@@ -830,6 +830,8 @@ export interface Docs {
 }
 
 export interface VisitorContext {
+  /** We're processing a static variable declaration */
+  isStatic?: boolean;
   /** While processing a function expression or struct literal, the signifier may come from an assignment operation. */
   signifier?: Signifier;
   /** While processing `method()` calls, we may find the self-context
