@@ -27,7 +27,9 @@ export function typeToHoverDetails(type: Type) {
       .listMembers()
       .filter((x) => x.name !== 'self' && x.def)
       .sort((a, b) =>
-        a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()),
+        a.name
+          ?.toLocaleLowerCase?.()
+          .localeCompare(b.name?.toLocaleLowerCase?.()),
       );
     if (!members.length) {
       return '';

@@ -134,7 +134,7 @@ export class Project {
   }
 
   getAssetByName(name: string): Asset | undefined {
-    return this.assets.get(name.toLocaleLowerCase());
+    return this.assets.get(name?.toLocaleLowerCase?.());
   }
 
   getAsset(path: Pathy<any>): Asset | undefined {
@@ -328,7 +328,7 @@ export class Project {
    */
   assetNameFromPath(path: Pathy<any>): string {
     const parts = path.relativeFrom(this.projectDir).split(/[/\\]+/);
-    return parts[1].toLocaleLowerCase();
+    return parts[1]?.toLocaleLowerCase?.();
   }
 
   /**
@@ -356,6 +356,8 @@ export class Project {
       }
     }
 
+    // Load Extension functions and constants
+
     // Collect the asset dirs since we can run into capitalization issues.
     // We'll use these as a backup for "missing" resources.
     const assetNameToYy = new Map<string, Pathy>();
@@ -367,8 +369,8 @@ export class Project {
         onInclude: (p) => {
           // Sometimes there is more than one yy file. Make sure that
           // we only keep the one matching the name.
-          const dirname = p.up().name.toLocaleLowerCase();
-          const assetName = p.name.toLocaleLowerCase();
+          const dirname = p.up().name?.toLocaleLowerCase();
+          const assetName = p.name?.toLocaleLowerCase();
           if (dirname !== assetName) {
             return;
           }
@@ -386,7 +388,7 @@ export class Project {
         Asset.from(
           this,
           resourceInfo,
-          assetNameToYy.get(resourceInfo.id.name.toLocaleLowerCase())!,
+          assetNameToYy.get(resourceInfo.id.name?.toLocaleLowerCase())!,
         ).then((r) => {
           this.addAsset(r);
           options?.onLoadProgress?.(

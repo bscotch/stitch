@@ -34,9 +34,9 @@ export function typeFromIdentifier(
     identifier.match(/^[A-Z][A-Z0-9._]*$/i),
     `Invalid type name ${identifier}`,
   );
-  const normalizedName = identifier.toLocaleLowerCase();
+  const normalizedName = identifier?.toLocaleLowerCase?.();
   const primitiveType = primitiveNames.find(
-    (n) => n.toLocaleLowerCase() === normalizedName,
+    (n) => n?.toLocaleLowerCase?.() === normalizedName,
   );
   if (primitiveType) {
     return new Type(primitiveType);

@@ -59,8 +59,8 @@ export function findProject(
 
 export function createSorter<T extends string>(sortByField: T) {
   return (a: { [key in T]: string }, b: { [key in T]: string }) => {
-    const aValue = a[sortByField].toLocaleLowerCase();
-    const bValue = b[sortByField].toLocaleLowerCase();
-    return aValue.localeCompare(bValue);
+    const aValue = a[sortByField]?.toLocaleLowerCase?.();
+    const bValue = b[sortByField]?.toLocaleLowerCase?.();
+    return aValue?.localeCompare(bValue) || 0;
   };
 }
