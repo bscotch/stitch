@@ -42,6 +42,7 @@
     {"id":{"name":"o_object","path":"objects/o_object/o_object.yy",},},
     {"id":{"name":"o_child1","path":"objects/o_child1/o_child1.yy",},},
     {"id":{"name":"Complicated","path":"scripts/Complicated/Complicated.yy",},},
+    {"id":{"name":"Extension1","path":"extensions/Extension1/Extension1.yy",},},
     {"id":{"name":"Script1","path":"scripts/Script1/Script1.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"Withing","path":"scripts/Withing/Withing.yy",},},

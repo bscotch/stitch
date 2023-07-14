@@ -2,6 +2,14 @@
 import { z } from 'zod';
 import { unstable } from './utility.js';
 
+export type yyParentSchema = z.infer<typeof yyParentSchema>;
+export const yyParentSchema = z
+  .object({
+    name: z.string().describe("Folder's 'name' field"),
+    path: z.string().describe("Folder's 'folderPath' field"),
+  })
+  .default({ name: 'NEW', path: 'folders/NEW.yy' });
+
 export type YyBase = z.infer<typeof yyBaseSchema>;
 export const yyBaseSchema = unstable({
   ConfigValues: z.record(z.record(z.string())).optional(),
@@ -11,14 +19,7 @@ export const yyBaseSchema = unstable({
   /**
    * Parent folder
    */
-  parent: z
-    .object({
-      /** Folder's 'name' field */
-      name: z.string(),
-      /** Folder's 'folderPath' field */
-      path: z.string(),
-    })
-    .default({ name: 'NEW', path: 'folders/NEW.yy' }),
+  parent: yyParentSchema,
   resourceVersion: z.string().default('1.0'),
 });
 
@@ -32,6 +33,7 @@ export const yyResourceTypes = [
   'particles',
   'paths',
   'rooms',
+  'extensions',
   'scripts',
   'sequences',
   'shaders',

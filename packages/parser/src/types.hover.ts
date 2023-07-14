@@ -67,7 +67,9 @@ export function typeToHoverText(type: Type) {
     code += `: ${
       type.constructs
         ? type.constructs.toFeatherString()
-        : type.returns?.toFeatherString() || 'Undefined'
+        : type.returns?.type.length
+        ? type.returns.toFeatherString()
+        : 'Undefined'
     }`;
   } else {
     code += type.toFeatherString();

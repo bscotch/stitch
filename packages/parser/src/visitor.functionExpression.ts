@@ -241,7 +241,9 @@ export function visitFunctionExpression(
     );
     // TODO: Check against the inferred return types
   } else {
-    functionType.setReturnType(ctx.returns || this.UNDEFINED);
+    functionType.setReturnType(
+      ctx.returns?.length ? ctx.returns : this.UNDEFINED,
+    );
   }
 
   // End the scope

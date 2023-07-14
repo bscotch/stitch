@@ -8,6 +8,7 @@ import { Schema, z } from 'zod';
 import { parseYy } from './Yy.parse.js';
 import { stringifyYy } from './Yy.stringify.js';
 import { YyResourceType } from './types/YyBase.js';
+import { yyExtensionSchema } from './types/YyExtension.js';
 import { yyObjectSchema } from './types/YyObject.js';
 import { yyRoomSchema } from './types/YyRoom.js';
 import { yyScriptSchema } from './types/YyScript.js';
@@ -35,7 +36,7 @@ export type YySchemas = typeof yySchemas;
 export const yySchemas = {
   project: yypSchema,
   animcurves: anyObject,
-  extensions: anyObject,
+  extensions: yyExtensionSchema,
   fonts: anyObject,
   notes: anyObject,
   objects: yyObjectSchema,
