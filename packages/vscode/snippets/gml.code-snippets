@@ -39,19 +39,19 @@
   },
   "GML: JSDoc Description": {
     "scope": "gml",
-    "prefix": "///-description",
+    "prefix": "/// description",
     "description": "Create a JSDoc description",
     "body": ["/// @description ${0}"]
   },
   "GML: JSDoc Param": {
     "scope": "gml",
-    "prefix": "///-param",
+    "prefix": "/// param",
     "description": "Create a JSDoc description",
     "body": ["/// @param {${2:Any}} ${1} ${0}"]
   },
   "GML: JSDoc Returns": {
     "scope": "gml",
-    "prefix": "///-returns",
+    "prefix": "/// returns",
     "description": "Create a JSDoc description",
     "body": ["/// @returns {${1:Any}} ${0}"]
   }
