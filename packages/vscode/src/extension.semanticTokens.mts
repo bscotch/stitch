@@ -1,4 +1,4 @@
-import { ReferenceableType, type Signifier } from '@bscotch/gml-parser';
+import { Reference, ReferenceableType } from '@bscotch/gml-parser';
 import { literal } from '@bscotch/utility';
 import vscode from 'vscode';
 import type { StitchProvider } from './extension.provider.mjs';
@@ -23,6 +23,7 @@ const semanticTokenModifiers = literal([
   'defaultLibrary',
   'declaration',
   'static',
+  'deprecated',
   // Custom
   'local',
   'asset',
@@ -81,11 +82,11 @@ export class GameMakerSemanticTokenProvider
         }
 
         // Figure out what the semantic details are
-        let tokenType = inferSemanticToken(signifier);
+        let tokenType = inferSemanticToken(ref);
         if (tokenType === 'variable' && signifier.instance) {
           tokenType = 'property';
         }
-        const tokenModifiers = inferSemanticModifiers(signifier);
+        const tokenModifiers = inferSemanticModifiers(ref);
         const isAsset = signifier.type.type.find((t) =>
           t.kind.startsWith('Asset.'),
         );
@@ -123,20 +124,16 @@ export class GameMakerSemanticTokenProvider
   }
 }
 
-function inferSemanticToken(signifier: Signifier): SemanticTokenType {
-  if (signifier.parameter) {
-    return 'parameter';
-  }
-  if (signifier.instance) {
-    return 'property';
-  }
+function inferSemanticToken(ref: Reference): SemanticTokenType {
+  const signifier = ref.item;
+  const functionType = signifier.getTypeByKind('Function');
+
   if (signifier.getTypeByKind('Enum')) {
     return 'enum';
   }
   if (signifier.getTypeByKind('EnumMember')) {
     return 'enumMember';
   }
-  const functionType = signifier.getTypeByKind('Function');
   if (functionType?.isConstructor) {
     return 'class';
   }
@@ -146,14 +143,30 @@ function inferSemanticToken(signifier: Signifier): SemanticTokenType {
   if (signifier.macro) {
     return 'macro';
   }
+  if (signifier.parameter) {
+    return 'parameter';
+  }
+  if (signifier.instance) {
+    return 'property';
+  }
   return 'variable';
 }
 
 /** Clobbers conflicting, allowing e.g. overriding type modifiers with symbol modifiers. */
 function inferSemanticModifiers(
-  signifier: Signifier,
+  ref: Reference,
   modifiers = new Set<SemanticTokenModifier>(),
 ): Set<SemanticTokenModifier> {
+  const signifier = ref.item;
+  // const isDeclaration = signifier.def?.file && ref.isDef;
+
+  // // If only the only reference is also the declaration,
+  // // then this is an unused variable.
+  // const unused = isDeclaration && signifier.refs.size === 1;
+  // if (unused) {
+  //   modifiers.add('deprecated');
+  // }
+
   if (signifier.native) {
     modifiers.add('defaultLibrary');
   } else {
