@@ -22,20 +22,27 @@ type InspectorItem =
 class ObjectParentFolder extends StitchTreeItemBase<'inspector-object-parents'> {
   override readonly kind = 'inspector-object-parents';
   parent = undefined;
-  constructor() {
+  constructor(hasParent: boolean) {
     super('Parent');
+    this.description = hasParent ? undefined : '(none)';
     this.contextValue = this.kind;
-    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+    this.collapsibleState = hasParent
+      ? vscode.TreeItemCollapsibleState.Expanded
+      : vscode.TreeItemCollapsibleState.None;
   }
 }
 
 class ObjectChildren extends StitchTreeItemBase<'inspector-object-children'> {
   override readonly kind = 'inspector-object-children';
   parent = undefined;
-  constructor() {
+  constructor(totalChildren: number) {
     super('Children');
     this.contextValue = this.kind;
-    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+    this.description = totalChildren > 0 ? `${totalChildren}` : '(none)';
+    this.collapsibleState =
+      totalChildren > 0
+        ? vscode.TreeItemCollapsibleState.Expanded
+        : vscode.TreeItemCollapsibleState.None;
   }
 }
 
@@ -43,10 +50,20 @@ class ObjectItem extends StitchTreeItemBase<'asset-objects'> {
   override readonly kind = 'asset-objects';
   parent = undefined;
 
-  constructor(readonly asset: Asset<'objects'>) {
+  constructor(
+    readonly asset: Asset<'objects'>,
+    readonly listing: 'children' | 'parents',
+  ) {
     super(asset.name);
     this.contextValue = this.kind;
     this.setBaseIcon('symbol-misc');
+
+    const hasEntries =
+      (listing === 'children' && asset.children.length > 0) ||
+      (listing === 'parents' && asset.parent);
+    this.collapsibleState = hasEntries
+      ? vscode.TreeItemCollapsibleState.Collapsed
+      : vscode.TreeItemCollapsibleState.None;
 
     this.command = {
       command: 'vscode.open',
@@ -158,13 +175,13 @@ export class GameMakerInspectorProvider
     if (!element) {
       // Then we're at the root.
       return [
-        new ObjectParentFolder(),
+        new ObjectParentFolder(!!this.asset.parent),
         new ObjectSpriteFolder(),
         new ObjectEvents(this.asset, this),
-        new ObjectChildren(),
+        new ObjectChildren(this.asset.children.length),
       ];
     } else if (element instanceof ObjectParentFolder && this.asset.parent) {
-      return [new ObjectItem(this.asset.parent)];
+      return [new ObjectItem(this.asset.parent, 'parents')];
     } else if (element instanceof ObjectSpriteFolder) {
       const sprite = this.asset.sprite;
       logger.info('Found sprite?', !!sprite, sprite?.name);
@@ -177,11 +194,21 @@ export class GameMakerInspectorProvider
       });
       return events;
     } else if (element instanceof ObjectChildren) {
-      return this.asset.children.sort(createSorter('name')).map((child) => {
-        return new ObjectItem(child);
-      });
+      return GameMakerInspectorProvider.getChildrenAsTreeItems(this.asset);
+    } else if (element instanceof ObjectItem) {
+      if (element.listing === 'children') {
+        return GameMakerInspectorProvider.getChildrenAsTreeItems(element.asset);
+      } else if (element.asset.parent) {
+        return [new ObjectItem(element.asset.parent, 'parents')];
+      }
     }
     return;
+  }
+
+  static getChildrenAsTreeItems(asset: Asset<'objects'>) {
+    return asset.children.sort(createSorter('name')).map((child) => {
+      return new ObjectItem(child, 'children');
+    });
   }
 
   rebuild() {
