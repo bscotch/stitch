@@ -537,6 +537,11 @@ export class Project {
     }
     // Second pass
     // TODO: Find a better way than brute-forcing to resolve cross-file references
+    logger.info('Second pass...');
+    for (const asset of assets) {
+      asset.updateGlobals();
+      asset.updateAllSymbols();
+    }
     // But for now, that's what we'll do!
     logger.info('Updating diagnostics...');
     for (const asset of assets) {
