@@ -1,6 +1,7 @@
 import { pathy } from '@bscotch/pathy';
 import { keysOf } from '@bscotch/utility';
 import {
+  asEditorContextMenuEntry,
   asViewItemContextMenuEntry,
   asViewTitleEntry,
   canShowInPalette,
@@ -36,6 +37,10 @@ async function main() {
   manifest.contributes.menus['view/item/context'] = commandNames
     .filter(asViewItemContextMenuEntry)
     .map(asViewItemContextMenuEntry)
+    .flat() as MenuItem[];
+  manifest.contributes.menus['editor/context'] = commandNames
+    .filter(asEditorContextMenuEntry)
+    .map(asEditorContextMenuEntry)
     .flat() as MenuItem[];
 
   // Write out the updated manifest

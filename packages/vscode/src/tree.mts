@@ -9,7 +9,7 @@ import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import type { StitchProvider } from './extension.provider.mjs';
-import { uriFromCodeFile } from './lib.mjs';
+import { registerCommand, uriFromCodeFile } from './lib.mjs';
 import { warn } from './log.mjs';
 import {
   GameMakerFolder,
@@ -411,46 +411,28 @@ export class GameMakerTreeProvider
     });
     const subscriptions = [
       this.view,
-      vscode.commands.registerCommand(
-        'stitch.assets.newFolder',
-        this.createFolder.bind(this),
-      ),
-      vscode.commands.registerCommand(
-        'stitch.assets.newScript',
-        this.createScript.bind(this),
-      ),
-      vscode.commands.registerCommand(
-        'stitch.assets.newObject',
-        this.createObject.bind(this),
-      ),
-      vscode.commands.registerCommand(
-        'stitch.assets.newEvent',
-        this.createEvent.bind(this),
-      ),
-      vscode.commands.registerCommand(
-        'stitch.assets.reveal',
-        this.reveal.bind(this),
-      ),
-      vscode.commands.registerCommand(
+      registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
+      registerCommand('stitch.assets.newScript', this.createScript.bind(this)),
+      registerCommand('stitch.assets.newObject', this.createObject.bind(this)),
+      registerCommand('stitch.assets.newEvent', this.createEvent.bind(this)),
+      registerCommand('stitch.assets.reveal', this.reveal.bind(this)),
+      registerCommand(
         'stitch.assets.filters.delete',
         this.deleteFilter.bind(this),
       ),
-      vscode.commands.registerCommand(
+      registerCommand(
         'stitch.assets.filters.enable',
         this.enableFilter.bind(this),
       ),
-      vscode.commands.registerCommand(
+      registerCommand(
         'stitch.assets.filters.disable',
         this.disableFilter.bind(this),
       ),
-      vscode.commands.registerCommand(
+      registerCommand(
         'stitch.assets.filters.new',
         this.createFilter.bind(this),
       ),
-      vscode.commands.registerCommand(
-        'stitch.assets.filters.edit',
-        this.editFilter.bind(this),
-      ),
+      registerCommand('stitch.assets.filters.edit', this.editFilter.bind(this)),
     ];
     return subscriptions;
   }

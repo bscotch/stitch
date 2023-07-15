@@ -17,6 +17,11 @@ import {
   jsdocCompletions,
 } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
+import {
+  createCopyAsJsdocSelfCallback,
+  createCopyAsJsdocTypeCallback,
+  createCopyAsTypeCallback,
+} from './extension.copyType.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { GameMakerHoverProvider } from './extension.hover.mjs';
 import { GameMakerProject } from './extension.project.mjs';
@@ -28,6 +33,7 @@ import {
   locationOf,
   pathyFromUri,
   rangeFrom,
+  registerCommand,
   uriFromCodeFile,
 } from './lib.mjs';
 import { Timer, info, logger, warn } from './log.mjs';
@@ -277,9 +283,18 @@ export class StitchProvider
   }
 
   getReference(
-    document: vscode.TextDocument,
+    where: vscode.TextDocument | vscode.Uri,
     position: vscode.Position,
   ): Reference | undefined {
+    const document =
+      where instanceof vscode.Uri
+        ? vscode.workspace.textDocuments.find(
+            (d) => d.uri.fsPath === where.fsPath,
+          )
+        : where;
+    if (!document) {
+      return;
+    }
     const offset = document.offsetAt(position);
     info('getSymbol', document, offset);
     const file = this.getGmlFile(document);
@@ -484,7 +499,19 @@ export class StitchProvider
       vscode.languages.registerWorkspaceSymbolProvider(
         new GameMakerWorkspaceSymbolProvider(this.provider.projects),
       ),
-      vscode.commands.registerCommand(
+      registerCommand(
+        'stitch.types.copy',
+        createCopyAsTypeCallback(this.provider),
+      ),
+      registerCommand(
+        'stitch.types.copyAsJsdocSelf',
+        createCopyAsJsdocSelfCallback(this.provider),
+      ),
+      registerCommand(
+        'stitch.types.copyAsJsdocType',
+        createCopyAsJsdocTypeCallback(this.provider),
+      ),
+      registerCommand(
         'stitch.run',
         (uriOrFolder: string[] | GameMakerFolder) => {
           const project = findProject(this.provider, uriOrFolder);
@@ -495,7 +522,7 @@ export class StitchProvider
           project.run();
         },
       ),
-      vscode.commands.registerCommand(
+      registerCommand(
         'stitch.clean',
         (uriOrFolder: string[] | GameMakerFolder) => {
           const project = findProject(this.provider, uriOrFolder);
@@ -506,7 +533,7 @@ export class StitchProvider
           project.run({ clean: true });
         },
       ),
-      vscode.commands.registerCommand('stitch.openIde', (...args) => {
+      registerCommand('stitch.openIde', (...args) => {
         const uri = vscode.Uri.parse(
           args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
         );

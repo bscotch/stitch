@@ -4,6 +4,7 @@ import type { ViewContainerId } from './manifest.views.mjs';
 export const $showInPalette = Symbol('showInPalette');
 export const $showInViewTitle = Symbol('showInViewTitle');
 export const $showInViewItemContextMenu = Symbol('showInViewItemMenu');
+export const $showInEditorContextMenu = Symbol('showInEditorContextMenu');
 
 interface ManifestCommandMenuEntry {
   when: string;
@@ -21,6 +22,7 @@ export interface ManifestCommand {
   [$showInViewItemContextMenu]?:
     | ManifestCommandMenuEntry
     | ManifestCommandMenuEntry[];
+  [$showInEditorContextMenu]?: ManifestCommandMenuEntry;
 }
 
 export interface ManifestView {
@@ -36,7 +38,7 @@ export interface ManifestViewContainer {
   icon: './images/stitch-logo-mono.svg';
 }
 
-export type MenuItemGroup = `${'navigation' | 'inline'}@${number}`;
+export type MenuItemGroup = `${'navigation' | 'inline' | '1_stitch'}@${number}`;
 
 export interface MenuItem {
   command: CommandName;
@@ -48,6 +50,7 @@ export interface ManifestMenus {
   'view/title': MenuItem[];
   'view/item/context': MenuItem[];
   'explorer/context': MenuItem[];
+  'editor/context': MenuItem[];
   commandPalette: ManifestCommandPalette[];
 }
 

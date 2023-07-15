@@ -118,6 +118,18 @@
         "title": "Stitch: Refresh Project",
         "shortTitle": "Refresh Project",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "stitch.types.copy",
+        "title": "Stitch: Copy Type"
+      },
+      {
+        "command": "stitch.types.copyAsJsdocType",
+        "title": "Stitch: Copy @type"
+      },
+      {
+        "command": "stitch.types.copyAsJsdocSelf",
+        "title": "Stitch: Copy @self"
       }
     ],
     "configuration": {
@@ -368,6 +380,23 @@
         },
         {
           "command": "stitch.refresh"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "stitch.types.copy",
+          "when": "resourceExtname == .gml",
+          "group": "1_stitch@1"
+        },
+        {
+          "command": "stitch.types.copyAsJsdocType",
+          "when": "resourceExtname == .gml",
+          "group": "1_stitch@2"
+        },
+        {
+          "command": "stitch.types.copyAsJsdocSelf",
+          "when": "resourceExtname == .gml",
+          "group": "1_stitch@3"
         }
       ]
     },

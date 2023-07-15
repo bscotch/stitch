@@ -1,5 +1,6 @@
 import { arrayWrapped, keysOf } from '@bscotch/utility';
 import {
+  $showInEditorContextMenu,
   $showInPalette,
   $showInViewItemContextMenu,
   $showInViewTitle,
@@ -159,6 +160,30 @@ export const commands = {
     icon: '$(refresh)',
     [$showInPalette]: true,
   },
+  'stitch.types.copy': {
+    command: 'stitch.types.copy',
+    title: 'Stitch: Copy Type',
+    [$showInEditorContextMenu]: {
+      when: when.resourceIsGml,
+      group: '1_stitch@1',
+    },
+  },
+  'stitch.types.copyAsJsdocType': {
+    command: 'stitch.types.copyAsJsdocType',
+    title: 'Stitch: Copy @type',
+    [$showInEditorContextMenu]: {
+      when: when.resourceIsGml,
+      group: '1_stitch@2',
+    },
+  },
+  'stitch.types.copyAsJsdocSelf': {
+    command: 'stitch.types.copyAsJsdocSelf',
+    title: 'Stitch: Copy @self',
+    [$showInEditorContextMenu]: {
+      when: when.resourceIsGml,
+      group: '1_stitch@3',
+    },
+  },
 } satisfies Record<string, ManifestCommand>;
 export const commandNames = keysOf(commands);
 export type CommandName = keyof typeof commands;
@@ -167,6 +192,18 @@ export function canShowInPalette(commandName: CommandName): boolean {
   const command = commands[commandName] as ManifestCommand;
   if (!($showInPalette in command)) return false;
   return command[$showInPalette]!;
+}
+
+export function asEditorContextMenuEntry(
+  commandName: CommandName,
+): MenuItem | undefined {
+  const command = commands[commandName] as ManifestCommand;
+  if (!($showInEditorContextMenu in command)) return;
+  return {
+    command: commandName,
+    when: command[$showInEditorContextMenu]!.when,
+    group: command[$showInEditorContextMenu]!.group,
+  };
 }
 
 export function asViewTitleEntry(

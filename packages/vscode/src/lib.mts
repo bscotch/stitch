@@ -4,6 +4,7 @@ import vscode from 'vscode';
 import { logThrown } from './assert.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchProvider } from './extension.provider.mjs';
+import type { CommandName } from './manifest.commands.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
 
 export function pathyFromUri(uri: vscode.TextDocument | vscode.Uri): Pathy {
@@ -63,4 +64,15 @@ export function createSorter<T extends string>(sortByField: T) {
     const bValue = b[sortByField]?.toLocaleLowerCase?.();
     return aValue?.localeCompare(bValue) || 0;
   };
+}
+
+export function registerCommand(
+  command: CommandName,
+  callback: (...args: any[]) => any,
+) {
+  return vscode.commands.registerCommand(command, callback);
+}
+
+export function copyToClipboard(text: string) {
+  vscode.env.clipboard.writeText(text);
 }
