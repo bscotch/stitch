@@ -1,5 +1,7 @@
 import { logger } from './logger.js';
 import type { IRange, LinePosition } from './project.location.js';
+import { getTypeOfKind } from './types.checks.js';
+import { Type, TypeStore } from './types.js';
 
 export class StitchParserError extends Error {
   constructor(message?: string, assertion?: Function) {
@@ -118,4 +120,18 @@ export function isBeforeRange(range: IRange, offset: number | LinePosition) {
 
 export function isArray<T>(value: unknown): value is T[] | readonly T[] {
   return Array.isArray(value);
+}
+
+export function normalizeInferredType(
+  type: Type | TypeStore | (Type | TypeStore)[],
+) {
+  const enumMemberType = getTypeOfKind(type, 'EnumMember');
+  if (enumMemberType) {
+    const enumMemberSignifier = enumMemberType.signifier;
+    const enumType = enumMemberSignifier?.parent;
+    if (enumType) {
+      return enumType;
+    }
+  }
+  return type;
 }

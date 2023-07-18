@@ -45,6 +45,23 @@ export function typeToHoverDetails(type: Type) {
       }
     }
     code += '}\n```';
+  } else if (type.kind === 'Enum') {
+    const members = type
+      .listMembers()
+      .filter((x) => x.name !== 'self' && x.def);
+    if (!members.length) {
+      return '';
+    }
+    code = '```ts\n{\n';
+    let i = 0;
+    for (const member of members) {
+      code += `  ${member.name},\n`;
+      i++;
+      if (i > 19) {
+        code += '  // ... and more!\n';
+        break;
+      }
+    }
   }
   return code;
 }

@@ -22,6 +22,7 @@ import {
   isTypeOrStoreOfKind,
 } from './types.checks.js';
 import { Type, TypeStore } from './types.js';
+import { normalizeInferredType } from './util.js';
 import type { GmlSignifierVisitor } from './visitor.js';
 
 export function visitIdentifierAccessor(
@@ -82,12 +83,14 @@ export function visitIdentifierAccessor(
   const docs = this.PROCESSOR.consumeJsdoc();
   const assignmentCst =
     children.assignment?.[0]?.children.assignmentRightHandSide?.[0].children;
-  const inferredType = assignmentCst
-    ? this.assignmentRightHandSide(
-        assignmentCst,
-        withCtxKind(ctx, 'assignment'),
-      )
-    : this.ANY;
+  const inferredType = normalizeInferredType(
+    assignmentCst
+      ? this.assignmentRightHandSide(
+          assignmentCst,
+          withCtxKind(ctx, 'assignment'),
+        )
+      : this.ANY,
+  );
 
   // For each suffix in turn, try to figure out how it changes the scope,
   // find the corresponding symbol, etc.

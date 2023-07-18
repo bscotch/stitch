@@ -41,7 +41,7 @@ import { Signifier } from './signifiers.js';
 import { getTypeOfKind, getTypes, isTypeOfKind } from './types.checks.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
 import { EnumType, Type, TypeStore, type StructType } from './types.js';
-import { assert } from './util.js';
+import { assert, normalizeInferredType } from './util.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
 import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
 import {
@@ -287,9 +287,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // that they exist.
     const signifier = this.FIND_ITEM_BY_NAME(children.Identifier[0].image);
     assert(signifier, 'Macro should exist');
-    const inferredType = this.assignmentRightHandSide(
-      children.assignmentRightHandSide[0].children,
-      withCtxKind(ctx, 'assignment'),
+    const inferredType = normalizeInferredType(
+      this.assignmentRightHandSide(
+        children.assignmentRightHandSide[0].children,
+        withCtxKind(ctx, 'assignment'),
+      ),
     );
     signifier.setType(inferredType);
   }
@@ -364,12 +366,14 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         this.structLiteral(assignedToStructLiteral, ctx);
       }
     } else {
-      const inferredType = children.assignmentRightHandSide
-        ? this.assignmentRightHandSide(
-            children.assignmentRightHandSide[0].children,
-            withCtxKind(ctx, 'assignment'),
-          )
-        : new Type('Any');
+      const inferredType = normalizeInferredType(
+        children.assignmentRightHandSide
+          ? this.assignmentRightHandSide(
+              children.assignmentRightHandSide[0].children,
+              withCtxKind(ctx, 'assignment'),
+            )
+          : new Type('Any'),
+      );
 
       if (docs) {
         signifier.describe(docs.jsdoc.description);
@@ -460,9 +464,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         this.structLiteral(assignedToStructLiteral, ctx);
       }
     } else {
-      const inferredType = this.assignmentRightHandSide(
-        children.assignmentRightHandSide[0].children,
-        withCtxKind(ctx, 'assignment'),
+      const inferredType = normalizeInferredType(
+        this.assignmentRightHandSide(
+          children.assignmentRightHandSide[0].children,
+          withCtxKind(ctx, 'assignment'),
+        ),
       );
       const forceOverride = docs?.jsdoc.kind === 'type';
       if (signifier && (!signifier.isTyped || wasUndeclared || forceOverride)) {
@@ -704,12 +710,14 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           this.structLiteral(assignedToStructLiteral, ctx);
         }
       } else {
-        const inferredType = parts.assignmentRightHandSide
-          ? this.assignmentRightHandSide(
-              parts.assignmentRightHandSide[0].children,
-              withCtxKind(ctx, 'assignment'),
-            )
-          : this.ANY;
+        const inferredType = normalizeInferredType(
+          parts.assignmentRightHandSide
+            ? this.assignmentRightHandSide(
+                parts.assignmentRightHandSide[0].children,
+                withCtxKind(ctx, 'assignment'),
+              )
+            : this.ANY,
+        );
         if (docs) {
           signifier.describe(docs.jsdoc.description);
           signifier.setType(docs.type);
