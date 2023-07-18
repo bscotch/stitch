@@ -52,7 +52,7 @@ export function visitFunctionExpression(
     if (matching?.item.$tag === 'Sym') {
       signifier = matching.item;
     } else {
-      signifier = new Signifier(this.PROCESSOR.project.self, functionName);
+      signifier = new Signifier(this.PROCESSOR.currentSelf, functionName);
     }
     signifier?.definedAt(nameLocation);
     signifier?.addRef(nameLocation!, true);
