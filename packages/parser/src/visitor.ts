@@ -80,14 +80,20 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     return super.visit(cstNode, ctx);
   }
 
-  protected FIND_ITEM_BY_NAME(name: string): Signifier | undefined {
+  protected FIND_ITEM_BY_NAME(
+    name: string,
+    excludeParents = false,
+  ): Signifier | undefined {
     const scope = this.PROCESSOR.fullScope;
-    let item: Signifier | undefined = scope.local.getMember(name);
+    let item: Signifier | undefined = scope.local.getMember(
+      name,
+      excludeParents,
+    );
     if (!item && !scope.selfIsGlobal) {
-      item = scope.self.getMember(name);
+      item = scope.self.getMember(name, excludeParents);
     }
     if (!item) {
-      item = this.PROCESSOR.globalSelf.getMember(name);
+      item = this.PROCESSOR.globalSelf.getMember(name, excludeParents);
       if (item?.instance) {
         // Then this is a native "instance" variable. Ignore it
         // to allow falling back on the self scope.
@@ -100,6 +106,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   /** Given an identifier in the current scope, find the corresponding item. */
   protected FIND_ITEM(
     children: IdentifierCstChildren,
+    excludeParents = false,
   ): { item: Signifier | StructType | EnumType; range: Range } | undefined {
     const identifier = identifierFrom(children);
     if (!identifier) {
@@ -129,7 +136,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         break;
       default:
         const { name } = identifier;
-        item = this.FIND_ITEM_BY_NAME(name);
+        item = this.FIND_ITEM_BY_NAME(name, excludeParents);
         break;
     }
     if (item) {

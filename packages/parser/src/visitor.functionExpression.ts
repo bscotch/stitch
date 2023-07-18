@@ -48,7 +48,7 @@ export function visitFunctionExpression(
     // Then this function is being created by declaration,
     // without being assigned to a variable. Find or create
     // the signifier and update its definedAt & refs.
-    const matching = this.FIND_ITEM(children);
+    const matching = this.FIND_ITEM(children, true);
     if (matching?.item.$tag === 'Sym') {
       signifier = matching.item;
     } else {
