@@ -7,6 +7,7 @@ import type {
   ExpressionCstChildren,
   FunctionExpressionCstChildren,
   FunctionStatementCstChildren,
+  GlobalVarDeclarationCstChildren,
   IdentifierAccessorCstChildren,
   IdentifierCstChildren,
   JsdocGmlCstChildren,
@@ -305,6 +306,29 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       info.item.static = true;
     }
     return info;
+  }
+
+  override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
+    // Allow overriding the type with JSDocs
+    const identity = identifierFrom(children);
+    const docs = this.PROCESSOR.consumeJsdoc();
+    if (!identity) {
+      return;
+    }
+    const signifier = this.PROCESSOR.globalSelf.getMember(identity.name);
+    assert(signifier, `Global var ${identity.name} should exist`);
+    // Get the reference added
+    const ref = signifier.addRef(this.PROCESSOR.range(identity.token), true);
+    // This signifier should already be registered via the global pass
+    // so we just need to update its type.
+    if (docs?.jsdoc.kind && ['type', 'description'].includes(docs.jsdoc.kind)) {
+      signifier.describe(docs.jsdoc.description);
+      signifier.setType(docs.type);
+    }
+    return {
+      item: signifier,
+      ref,
+    };
   }
 
   override localVarDeclaration(
