@@ -48,6 +48,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     readonly resource: YypResource,
     yyPath: Pathy,
   ) {
+    assert(yyPath, 'Must provide a YY path');
     this.assetKind = resource.id.path.split(/[/\\]/)[0] as T;
     this.yyPath = yyPath.withValidator(yySchemas[this.assetKind]) as any;
 

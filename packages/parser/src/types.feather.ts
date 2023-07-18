@@ -15,6 +15,7 @@ export function typeFromFeatherString(
   const parsed = parseFeatherTypeString(typeString);
   return typeFromParsedFeatherString(parsed, knownTypes);
 }
+
 /**
  * Given a type identifier, get a parsed Type instance. Useful for
  * the "leaves" of a type tree, e.g. "String" or "Struct.Mystruct".

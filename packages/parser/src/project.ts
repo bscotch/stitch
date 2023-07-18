@@ -384,12 +384,16 @@ export class Project {
     const perAssetIncrement = this.yyp.resources.length / 80;
     const resourceWaits: Promise<any>[] = [];
     for (const resourceInfo of this.yyp.resources) {
+      assert(
+        resourceInfo.id.name,
+        `Resource ${resourceInfo.id.path} has no name`,
+      );
+      const assetYy = assetNameToYy.get(
+        resourceInfo.id.name.toLocaleLowerCase(),
+      );
+      assert(assetYy, `Resource ${resourceInfo.id.name} has no yy file`);
       resourceWaits.push(
-        Asset.from(
-          this,
-          resourceInfo,
-          assetNameToYy.get(resourceInfo.id.name?.toLocaleLowerCase())!,
-        ).then((r) => {
+        Asset.from(this, resourceInfo, assetYy).then((r) => {
           this.addAsset(r);
           options?.onLoadProgress?.(
             perAssetIncrement,
