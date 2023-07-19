@@ -337,6 +337,7 @@ export interface ArrayAccessSuffixCstNode extends CstNode {
 export type ArrayAccessSuffixCstChildren = {
   StartBracket: IToken[];
   expression: ExpressionCstNode[];
+  Comma?: IToken[];
   EndBracket: IToken[];
 };
 

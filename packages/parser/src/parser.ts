@@ -421,6 +421,11 @@ export class GmlParser extends CstParser {
   readonly arrayAccessSuffix = this.RULE('arrayAccessSuffix', () => {
     this.CONSUME(t.StartBracket);
     this.SUBRULE(this.expression);
+    // Support for legacy 2D array access
+    this.OPTION(() => {
+      this.CONSUME(t.Comma);
+      this.SUBRULE2(this.expression);
+    });
     this.CONSUME(t.EndBracket);
   });
 
