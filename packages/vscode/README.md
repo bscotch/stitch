@@ -20,6 +20,27 @@ Once we got the chance to use GitHub Copilot for other projects, we wanted to be
 
 Stitch provides Intellisense (auto-complete, hovertext, function signature helpers, go-to-definition, find-references, etc) for all built-in and user-defined symbols.
 
+### 🪶 Feather and Type Support
+
+GameMaker includes a type system called "Feather", which Stitch tries to provide parity with. However, Stitch does take a different overall approach and does provide some extensions to the Feather type system and additional features that are not currently available in GameMaker.
+
+- **Declarations are King:** Stitch only infers types at the time an identifier is *declared*. When a variable is declared without assignment, Stitch will infer its type using the first assignment it sees, but that might result in surprises! For best results, use the `@type` JSDoc tag to specify the type of a variable when it is declared if there is any ambiguity. (Typescript and JavaScript+JSDoc programmers will be familiar with this approach.)
+- **Union Type Support:** Feather technically supports "union" types (e.g. `String|Number`), but with limitations. Stitch tries to provide more robust support for union types, though this is a work in progress.
+- **`@self` tag for `with` statements:** the `with` statement changes the scope of your code, but Feather does not provide a way to tell it what that scope should be. Stitch allows you to use the `@self` (or `@context`) tag before a `with` statement to specify its context for cases where inference is insufficient:
+    ```js
+    /// @self {Struct.Player}
+    with (player) {
+      // ...
+    }
+    ```
+- **`@type` tag:** Stitch supports the [JSDoc `@type` tag](https://jsdoc.app/tags-type.html), which allows you to specify the type of a symbol inline in a JSDoc comment. Just use it right before a symbol declaration:
+    ```js
+    /// @type {Array<String>}
+    var strings = [];
+    ```
+- **JSDoc Autocompletes:** Stitch provides autocompletes and syntax highlighting for Feather types within JSDoc comments.
+- **JSDoc helpers:** Stitch provides snippets for JSDoc tags, and context menus to copy the Feather type of a symbol to your clipboard.
+
 ### 🔍 Navigating your project
 
 Stitch provides a tree view that mirrors the project resources in the GameMaker IDE. You can open it by clicking the Stitch icon in the Activity Bar.
