@@ -153,6 +153,7 @@ export interface IfStatementCstNode extends CstNode {
 export type IfStatementCstChildren = {
   If: IToken[];
   expression: ExpressionCstNode[];
+  Then?: IToken[];
   blockableStatement: BlockableStatementCstNode[];
   elseIfStatement?: ElseIfStatementCstNode[];
   elseStatement?: ElseStatementCstNode[];

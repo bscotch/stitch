@@ -285,6 +285,7 @@ export class GmlParser extends CstParser {
   readonly ifStatement = this.RULE('ifStatement', () => {
     this.CONSUME(t.If);
     this.SUBRULE(this.expression);
+    this.OPTION2(() => this.CONSUME(t.Then));
     this.SUBRULE(this.blockableStatement);
     this.MANY(() => this.SUBRULE2(this.elseIfStatement));
     this.OPTION(() => {
