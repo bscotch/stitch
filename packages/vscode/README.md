@@ -38,6 +38,11 @@ GameMaker includes a type system called "Feather", which Stitch tries to provide
     /// @type {Array<String>}
     var strings = [];
     ```
+- **`@localvar`, `@globalvar`, `@instancevar`:** Stitch supports custom JSDoc tags for declaring local, global, and instance variables. These are useful for declaring variables that are not otherwise declared in your code, for example dynamically created variables:
+    ```js
+    /// @globalvar {Array<String>} MY_STRINGS
+    var strings = MY_STRINGS; // Stitch will not error on this reference
+    ```
 - **JSDoc Autocompletes:** Stitch provides autocompletes and syntax highlighting for Feather types within JSDoc comments.
 - **JSDoc helpers:** Stitch provides snippets for JSDoc tags, and context menus to copy the Feather type of a symbol to your clipboard.
 

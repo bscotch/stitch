@@ -26,7 +26,7 @@ import type {
   VariableAssignmentCstChildren,
   WithStatementCstChildren,
 } from '../gml-cst.js';
-import { JsdocSummary, parseJsdoc } from './jsdoc.js';
+import { JsdocSummary, gmlLinesByGroup, parseJsdoc } from './jsdoc.js';
 import { logger } from './logger.js';
 import {
   GmlVisitorBase,
@@ -223,7 +223,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
   override jsdocGml(children: JsdocGmlCstChildren) {
     // This *could* actually be several JSDocs,
-    this.PREPARE_JSDOC(parseJsdoc(children.JsdocGmlLine));
+    const jsdocGroups = gmlLinesByGroup(children.JsdocGmlLine);
+    for (const group of jsdocGroups) {
+      const parsed = parseJsdoc(group);
+      this.PREPARE_JSDOC(parsed);
+    }
   }
 
   override withStatement(

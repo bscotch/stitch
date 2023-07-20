@@ -249,11 +249,11 @@ function jsdocStringToLines(
  * tell when we're in a NEW doc, we need to break lines into
  * groups
  */
-export function gmlLinesByGroup(gmlLines: IToken[]) {
+export function gmlLinesByGroup(gmlLines: IToken[]): JsdocLine[][] {
   const lines = jsdocGmlToLines(gmlLines);
-  const groups: JsdocLine[][] = [];
-  const lastKind: JsdocTagKind | null = null;
-  for (const line of lines) {
+  const groups: JsdocLine[][] = [[]];
+  let currentGroup = groups[0];
+  lines: for (const line of lines) {
     if (!line) {
       continue;
     }
@@ -263,12 +263,23 @@ export function gmlLinesByGroup(gmlLines: IToken[]) {
       if (!match) {
         continue;
       }
-      const parts = match?.groups as MatchGroups;
-      // TODO: HOW?
+      const parts = match.groups as MatchGroups;
+      // Consider simpler groups and let the rest fall together
+      if (parts.localvar || parts.globalvar || parts.instancevar) {
+        // Then this is a new block!
+        currentGroup = [];
+        groups.push(currentGroup);
+      }
+      currentGroup.push(line);
+      continue lines; // Matches are exclusive, so go to the next line
     }
+    // If we make it here then we didn't fine a match. Just add it to the currentgruop
+    currentGroup.push(line);
   }
+  return groups.filter((g) => g.length);
 }
 
+export function parseJsdoc(jsdocLines: JsdocLine[]): JsdocSummary;
 export function parseJsdoc(gmlLines: IToken[]): JsdocSummary;
 export function parseJsdoc(jsBlock: IToken): JsdocSummary;
 export function parseJsdoc(
@@ -281,7 +292,7 @@ export function parseJsdoc(
   startPosition?: IPosition,
 ): JsdocSummary;
 export function parseJsdoc(
-  raw: string | IToken | IToken[],
+  raw: string | IToken | IToken[] | JsdocLine[],
   /**
    * The position of the first character of the jsdoc string,
    * if it has been parsed out of a larger document. This is
@@ -289,12 +300,21 @@ export function parseJsdoc(
    */
   startPosition?: IPosition,
 ): JsdocSummary | undefined {
-  const lines: JsdocLine[] =
-    typeof raw === 'string'
-      ? jsdocStringToLines(raw, startPosition)
-      : Array.isArray(raw)
-      ? jsdocGmlToLines(raw)
-      : jsdocBlockToLines(raw);
+  let lines: JsdocLine[];
+  if (typeof raw === 'string') {
+    lines = jsdocStringToLines(raw, startPosition);
+  } else if (Array.isArray(raw)) {
+    if (raw[0] && 'image' in raw[0]) {
+      // Then this is a list of ITokens
+      lines = jsdocGmlToLines(raw as IToken[]);
+    } else {
+      // Then this is a list of JsdocLines
+      lines = raw as JsdocLine[];
+    }
+  } else {
+    // Then this is a single IToken
+    lines = jsdocBlockToLines(raw as IToken);
+  }
   assert(lines, 'Lines must be an array');
   if (!lines.length) return undefined;
   assert(lines[0], 'No lines found in jsdoc block');

@@ -491,7 +491,7 @@ function validateFunctionContexts(project: Project) {
 function validateJsdocs(project: Project) {
   const jsdocsFile = project.getAssetByName('Jsdocs')!.gmlFile;
   const jsdocs = jsdocsFile.jsdocs;
-  expect(jsdocs).to.have.lengthOf(5);
+  expect(jsdocs).to.have.lengthOf(7);
 
   // Check positions
   let jsdoc = jsdocs[0];
