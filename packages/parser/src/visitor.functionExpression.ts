@@ -2,8 +2,9 @@ import type { FunctionExpressionCstChildren } from '../gml-cst.js';
 import { VisitorContext, withCtxKind } from './parser.js';
 import { Range, fixITokenLocation } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import { getTypeOfKind, isTypeOfKind } from './types.checks.js';
-import { Type, TypeStore, type StructType } from './types.js';
+import { getTypeOfKind } from './types.checks.js';
+import { Type, TypeStore, WithableType, type StructType } from './types.js';
+import { withableTypes } from './types.primitives.js';
 import { assert } from './util.js';
 import type { GmlSignifierVisitor } from './visitor.js';
 
@@ -82,25 +83,14 @@ export function visitFunctionExpression(
       : docs?.jsdoc.kind === 'function'
       ? docs.type[0]?.context
       : undefined,
-    ['Struct', 'Asset.GMObject', 'Id.Instance'],
+    withableTypes,
   );
-  let context: StructType | undefined;
+  let context: WithableType | undefined;
+
   if (isConstructor) {
     context = functionType.constructs!;
-  } else if (isTypeOfKind(docContext, 'Struct')) {
+  } else if (docContext) {
     context = docContext;
-  } else if (
-    (isTypeOfKind(docContext, 'Asset.GMObject') ||
-      isTypeOfKind(docContext, 'Id.Instance')) &&
-    docContext.name
-  ) {
-    // Then we want to use the associated instance struct as the self
-    const instanceStruct = this.PROCESSOR.project.getAssetByName(
-      docContext.name,
-    )?.instanceType;
-    if (instanceStruct) {
-      context = instanceStruct;
-    }
   } else if (ctx.self) {
     // Then we're inside of a method() call, and the self
     // is from the prior argument, and we aren't overriding

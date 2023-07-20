@@ -12,7 +12,7 @@ import {
   type IRange,
   type Scope,
 } from './project.location.js';
-import { type EnumType, type StructType } from './types.js';
+import { Type, WithableType, type EnumType, type StructType } from './types.js';
 import { assert } from './util.js';
 
 export const diagnosticCollections = [
@@ -24,7 +24,7 @@ export const diagnosticCollections = [
 
 export class SignifierProcessor {
   protected readonly localScopeStack: StructType[] = [];
-  protected readonly selfStack: (StructType | EnumType)[] = [];
+  protected readonly selfStack: (WithableType | EnumType)[] = [];
   /** The current ScopeRange, updated as we push/pop local and self */
   public scope: Scope;
   readonly position: Position;
@@ -118,12 +118,12 @@ export class SignifierProcessor {
   }
 
   createStruct(token: CstNodeLocation, endToken?: CstNodeLocation) {
-    return this.project.createStructType('self');
+    return new Type('Struct');
   }
 
   pushScope(
     startToken: CstNodeLocation,
-    self: StructType | EnumType,
+    self: WithableType | EnumType,
     fromTokenEnd: boolean,
   ) {
     const localScope = this.createStruct(startToken);
@@ -146,7 +146,7 @@ export class SignifierProcessor {
 
   pushSelfScope(
     startToken: CstNodeLocation,
-    self: StructType | EnumType,
+    self: EnumType | WithableType,
     fromTokenEnd: boolean,
     options?: { accessorScope?: boolean },
   ) {

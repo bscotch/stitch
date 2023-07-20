@@ -16,12 +16,9 @@ import {
   fixITokenLocation,
 } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import {
-  getTypeOfKind,
-  getTypeStoreOrType,
-  isTypeOrStoreOfKind,
-} from './types.checks.js';
+import { getTypeOfKind, getTypeStoreOrType } from './types.checks.js';
 import { Type, TypeStore } from './types.js';
+import { withableTypes } from './types.primitives.js';
 import { normalizeInferredType } from './util.js';
 import type { GmlSignifierVisitor } from './visitor.js';
 
@@ -120,7 +117,7 @@ export function visitIdentifierAccessor(
         const dotAccessor = suffix.children;
         const dot = fixITokenLocation(dotAccessor.Dot[0]);
         const dottableType = accessing.type
-          ? getTypeOfKind(accessing.type, ['Struct', 'Enum'])
+          ? getTypeOfKind(accessing.type, [...withableTypes, 'Enum'])
           : undefined;
         if (dottableType) {
           this.PROCESSOR.scope.setEnd(dot);
@@ -166,12 +163,15 @@ export function visitIdentifierAccessor(
               }
             } else if (
               !existingProperty &&
-              isTypeOrStoreOfKind(accessing.type, 'Struct')
+              getTypeOfKind(accessing.type, withableTypes)
             ) {
               // Then this variable is not yet defined on this struct.
               // We need to add it!
-              const accessingStruct = getTypeOfKind(accessing.type, 'Struct')!;
-              const newMember: Signifier = accessingStruct.addMember(
+              const accessingType = getTypeOfKind(
+                accessing.type,
+                withableTypes,
+              )!;
+              const newMember: Signifier = accessingType.addMember(
                 propertyIdentifier.name,
               );
               newMember.instance = true;
@@ -193,8 +193,8 @@ export function visitIdentifierAccessor(
               // allow it to be "defined" since the user has no opinions about its existence.
               // TODO: This should probably be an OPTION
               else if (
-                accessingStruct.totalMembers() === 0 &&
-                !accessingStruct.items?.type.length
+                accessingType.totalMembers() === 0 &&
+                !accessingType.items?.type.length
               ) {
                 newMember.def = {}; // Prevents "Undeclared" errors
               }
@@ -214,12 +214,7 @@ export function visitIdentifierAccessor(
           // TODO: Handle dot accessors for other valid dot-accessible types.
           // But for now, just emit an error for definitenly invalid types.
           const isDotAccessible =
-            getTypeOfKind(accessing.type, [
-              'Id.Instance',
-              'Asset.GMObject',
-              'Any',
-              'Unknown',
-            ]) ||
+            getTypeOfKind(accessing.type, ['Any', 'Unknown']) ||
             !accessing.type ||
             (accessing.type instanceof TypeStore &&
               accessing.type.type.length === 0);

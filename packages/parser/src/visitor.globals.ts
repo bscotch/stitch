@@ -48,7 +48,7 @@ class GlobalDeclarationsProcessor {
   }
 
   pushLocalScope() {
-    const localScope = this.project.createStructType();
+    const localScope = new Type('Struct');
     this.localScopeStack.push(localScope);
   }
 
@@ -199,9 +199,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       }
       // If it's a constructor, ensure the type exists
       if (isConstructor && !type.constructs) {
-        type.constructs = this.PROCESSOR.project
-          .createStructType('self')
-          .named(name.image);
+        type.constructs = new Type('Struct').named(name.image);
         type.constructs.signifier = signifier;
         this.PROCESSOR.project.types.set(
           `Struct.${name.image}`,

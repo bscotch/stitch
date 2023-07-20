@@ -409,7 +409,7 @@ export class Code {
     // BUT. If this event does not call `event_inherited()`, then we
     // need to unlink the type.
     if (!this.callsSuper) {
-      this.asset.instanceType!.parent = undefined;
+      this.asset.variables!.parent = this.project.native.objectInstanceBase;
       this.diagnostics.MISSING_EVENT_INHERITED.push({
         $tag: 'diagnostic',
         message: `Event does not call \`event_inherited()\`, so it will not inherit from its parent.`,

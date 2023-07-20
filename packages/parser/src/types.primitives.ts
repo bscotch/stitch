@@ -1,3 +1,9 @@
+export const withableTypes = [
+  'Struct',
+  'Asset.GMObject',
+  'Id.Instance',
+] as const;
+
 /** Base types, like Array, Real, Struct, etc */
 export type BaseName = (typeof baseNames)[number];
 export const baseNames = [

@@ -30,7 +30,7 @@ export function isTypeOrStoreOfKind<T extends PrimitiveName>(
  */
 export function getTypeOfKind<T extends PrimitiveName>(
   from: undefined | Signifier | Type | TypeStore | (Type | TypeStore)[],
-  kind: T | T[],
+  kind: T | ReadonlyArray<T>,
 ): { [Kind in T]: Type<Kind> }[T] | undefined {
   if (!from) return undefined;
   const types = getTypes(from);

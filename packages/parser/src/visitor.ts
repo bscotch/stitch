@@ -38,9 +38,16 @@ import {
 import type { Code } from './project.code.js';
 import { Range, Reference } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import { getTypeOfKind, getTypes, isTypeOfKind } from './types.checks.js';
+import { getTypeOfKind, getTypes } from './types.checks.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
-import { EnumType, Type, TypeStore, type StructType } from './types.js';
+import {
+  EnumType,
+  Type,
+  TypeStore,
+  WithableType,
+  type StructType,
+} from './types.js';
+import { withableTypes } from './types.primitives.js';
 import { assert, normalizeInferredType } from './util.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
 import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
@@ -108,13 +115,13 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   protected FIND_ITEM(
     children: IdentifierCstChildren,
     excludeParents = false,
-  ): { item: Signifier | StructType | EnumType; range: Range } | undefined {
+  ): { item: Signifier | WithableType | EnumType; range: Range } | undefined {
     const identifier = identifierFrom(children);
     if (!identifier) {
       return;
     }
     const scope = this.PROCESSOR.fullScope;
-    let item: Signifier | StructType | EnumType | undefined;
+    let item: Signifier | WithableType | EnumType | undefined;
     const range = this.PROCESSOR.range(identifier.token);
     switch (identifier.type) {
       case 'Global':
@@ -234,40 +241,27 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     children: WithStatementCstChildren,
     context: VisitorContext,
   ) {
+    const blockLocation = children.blockableStatement[0].location!;
     // With statements change the self scope to
     // whatever their expression evaluates to.
     // Evaluate the expression and try to use its type as the self scope
     const docs = this.PROCESSOR.consumeJsdoc();
-
-    const conditionType = getTypeOfKind(
-      this.expression(
-        children.expression[0].children,
-        withCtxKind(context, 'withCondition'),
-      ),
-      ['Struct', 'Asset.GMObject', 'Id.Instance'],
+    const contextExpression = this.expression(
+      children.expression[0].children,
+      withCtxKind(context, 'withCondition'),
     );
-    const blockLocation = children.blockableStatement[0].location!;
-    const selfType = docs?.jsdoc.kind === 'self' ? docs.type[0] : conditionType;
+    const contextFromDocs =
+      docs?.jsdoc.kind === 'self' ? docs.type[0] : undefined;
+
+    const self =
+      getTypeOfKind(contextFromDocs, withableTypes) ||
+      getTypeOfKind(contextExpression, withableTypes) ||
+      this.PROCESSOR.createStruct(blockLocation);
+
     const docsSelfRange = docs?.jsdoc.self
       ? Range.from(this.PROCESSOR.file, docs.jsdoc.self)
       : undefined;
-    // See if there are JSDocs providing more specific self context
-    let self: StructType;
-    if (isTypeOfKind(selfType, 'Struct')) {
-      self = selfType;
-    } else if (
-      (isTypeOfKind(selfType, 'Asset.GMObject') ||
-        isTypeOfKind(selfType, 'Id.Instance')) &&
-      selfType.name
-    ) {
-      // Then we want to use the associated instance struct as the self
-      const asset = this.PROCESSOR.project.getAssetByName(selfType.name);
-      const instanceStruct = asset?.instanceType;
-      if (instanceStruct) {
-        self = instanceStruct;
-      }
-    }
-    self ||= this.PROCESSOR.createStruct(blockLocation);
+
     if (docsSelfRange && self.signifier) {
       self.signifier.addRef(docsSelfRange);
     }

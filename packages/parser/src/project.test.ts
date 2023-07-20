@@ -302,7 +302,7 @@ describe('Project', function () {
     ok(dotAssignedRef);
     ok(dotAssignedRef.item.name === dotAssignedRefName);
     ok(dotAssignedType);
-    ok(dotAssignedType.parent === obj.instanceType);
+    ok(dotAssignedType.parent === obj.instanceType?.parent);
     //#endregion DOT ASSIGNMENTS
 
     //#region FUNCTIONS
@@ -474,7 +474,7 @@ function validateFunctionContexts(project: Project) {
   const functionWithObjectContext = functionScriptFile.getScopeRangeAt(7, 25)!;
   ok(
     functionWithObjectContext &&
-      functionWithObjectContext.self === obj.instanceType,
+      functionWithObjectContext.self === obj.assetType,
   );
 
   // INSTANCE CONTEXT
@@ -569,7 +569,7 @@ function validateWithContexts(project: Project) {
   const obj = project.getAssetByName('o_object')!;
   ok(obj && obj.instanceType);
   const withIntoObject = withingScriptFile.getScopeRangeAt(6, 16)!;
-  ok(withIntoObject && withIntoObject.self === obj.instanceType);
+  ok(withIntoObject && withIntoObject.self === obj.assetType);
 
   // WITHING INTO AN OBJECT INSTANCE
   const instanceVar = withingScriptFile.getReferenceAt(11, 11)!.item;

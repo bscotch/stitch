@@ -1,7 +1,7 @@
 import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
 import type { Signifier } from './signifiers.js';
-import { EnumType, FunctionType, StructType } from './types.js';
+import { EnumType, FunctionType, StructType, WithableType } from './types.js';
 import { assert, type Constructor } from './util.js';
 
 export const firstLineIndex = 1;
@@ -202,7 +202,7 @@ export class Scope extends Range {
   constructor(
     start: Position,
     public local: StructType,
-    public self: StructType | EnumType,
+    public self: WithableType | EnumType,
   ) {
     super(start);
   }

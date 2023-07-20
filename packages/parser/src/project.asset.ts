@@ -34,7 +34,9 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   readonly yyPath: Pathy<YySchemas[T]>;
   readonly signifier: Signifier;
   /** For objects, their instance type. */
-  instanceType: StructType | undefined;
+  instanceType: Type<'Id.Instance'> | undefined;
+  assetType: Type<Asset['assetTypeKind']>;
+  variables: StructType | undefined;
   /** For objects, their parent */
   protected _parent: Asset<'objects'> | undefined = undefined;
 
@@ -59,26 +61,36 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     this.signifier.asset = true;
 
     // Create the Asset.<> type
-    const type = new Type(this.assetTypeKind).named(this.name);
-    this.signifier.setType(type);
+    this.assetType = new Type(this.assetTypeKind).named(this.name);
+    this.signifier.setType(this.assetType);
 
     // Add this asset to the project lookup, unless it is a script.
     if (!['scripts', 'extensions'].includes(this.assetKind)) {
       this.project.self.addMember(this.signifier);
-      if (type.kind !== 'Any') {
-        this.project.types.set(`${type.kind}.${this.name}`, type);
+      if (this.assetType.kind !== 'Any') {
+        this.project.types.set(
+          `${this.assetType.kind}.${this.name}`,
+          this.assetType,
+        );
       }
     }
 
     // If this is an object, also create the instance type
     if (this.assetKind === 'objects') {
-      this.instanceType = this.project
-        .createStructType('instance')
-        .named(this.name);
-      const id = this.instanceType.addMember('id', this.instanceType);
+      // Create the base struct-type to store all of the variables.
+      this.variables = new Type('Struct');
+      this.variables.parent = this.project.native.objectInstanceBase;
+
+      // It will be used as the parent for the Instance/Asset types
+      this.assetType.parent = this.variables;
+
+      this.instanceType = new Type('Id.Instance').named(this.name);
+      this.instanceType.parent = this.variables;
+      const id = this.variables.addMember('id', this.instanceType);
       id.instance = true;
       id.def = {};
       id.writable = false;
+
       this.instanceType.signifier = this.signifier;
       this.project.types.set(`Id.Instance.${this.name}`, this.instanceType);
     }
@@ -126,9 +138,12 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   set parent(parent: Asset<'objects'> | undefined) {
     this._parent = parent;
     if (parent) {
-      this.instanceType!.parent = parent.instanceType;
+      // The instanceType parent is a struct that holds all of this
+      // object's instance variables. We need to set ITS parent to
+      // the parent's instanceType.
+      this.variables!.parent = parent.variables;
     } else {
-      this.instanceType!.parent = undefined;
+      this.variables!.parent = this.project.native.objectInstanceBase;
     }
   }
 

@@ -5,7 +5,7 @@ import { getTypes, narrows } from './types.checks.js';
 import { typeFromFeatherString } from './types.feather.js';
 import { Flags } from './types.flags.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
-import { PrimitiveName } from './types.primitives.js';
+import { PrimitiveName, withableTypes } from './types.primitives.js';
 import { assert, ok } from './util.js';
 
 export type AnyType = Type<'Any'>;
@@ -19,6 +19,7 @@ export type StringType = Type<'String'>;
 export type StructType = Type<'Struct'>;
 export type UndefinedType = Type<'Undefined'>;
 export type UnknownType = Type<'Unknown'>;
+export type WithableType = Type<(typeof withableTypes)[number]>;
 
 /**
  * A stable entity that represents a type. It should be used
@@ -101,7 +102,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * It will only "match" another type if that type is in its
    * parent somewhere. Useful for struct/constructor inheritence, as well
    * as for e.g. representing a subset of Real constants in a type. */
-  parent: Type<T> | undefined = undefined;
+  parent: Type | undefined = undefined;
 
   /** Named members of Structs and Enums */
   protected _members: Map<string, Signifier> | undefined = undefined;
@@ -114,7 +115,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * If this is a constructor function, then this is the
    * type of the struct that it constructs. */
   constructs: Type<'Struct'> | undefined = undefined;
-  context: Type<'Struct'> | undefined = undefined;
+  context: WithableType | undefined = undefined;
   protected _params: Signifier[] | undefined = undefined;
   returns: TypeStore | undefined = undefined;
 
@@ -225,6 +226,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   totalMembers(excludeParents = false): number {
+    if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
+      return this.parent?.totalMembers(excludeParents) || 0;
+    }
     if (excludeParents || !this.parent) {
       return this._members?.size || 0;
     }
@@ -234,6 +238,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   listMembers(excludeParents = false): Signifier[] {
+    // Handle pass-through types
+    if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
+      return this.parent?.listMembers(excludeParents) || [];
+    }
     const members = this._members?.values() || [];
     if (excludeParents || !this.parent) {
       return [...members];
@@ -242,6 +250,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   getMember(name: string, excludeParents = false): Signifier | undefined {
+    // Handle pass-through types
+    if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
+      return this.parent?.getMember(name, excludeParents);
+    }
     return (
       this._members?.get(name) ||
       (excludeParents ? undefined : this.parent?.getMember(name))
@@ -252,10 +264,23 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   addMember(signifier: Signifier): Signifier;
   addMember(name: string, type?: Type | Type[], writable?: boolean): Signifier;
   addMember(
-    name: string | Signifier,
-    type?: Type | Type[],
-    writable?: boolean,
+    ...args: [
+      name: string | Signifier,
+      type?: Type | Type[],
+      writable?: boolean,
+    ]
   ): Signifier {
+    // If this is a Id.Instance or Asset.GMObject type, then we want to add
+    // the member to the parent Struct instead.
+
+    if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
+      // @ts-expect-error
+      return this.parent?.addMember(...args);
+    }
+    const name = args[0];
+    const type = args[1];
+    const writable = args[2];
+
     const member =
       (typeof name === 'string' ? this._members?.get(name) : name) ||
       new Signifier(this, name as string);
