@@ -391,7 +391,10 @@ export class Project {
       const assetYy = assetNameToYy.get(
         resourceInfo.id.name.toLocaleLowerCase(),
       );
-      assert(assetYy, `Resource ${resourceInfo.id.name} has no yy file`);
+      if (!assetYy) {
+        logger.warn(`Resource ${resourceInfo.id.name} has no yy file`);
+        continue;
+      }
       resourceWaits.push(
         Asset.from(this, resourceInfo, assetYy).then((r) => {
           this.addAsset(r);
