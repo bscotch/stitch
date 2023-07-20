@@ -69,7 +69,9 @@ export function typeFromParsedJsdocs(
   if (jsdoc.kind === 'description') {
     // Then we have no type info.
     return [];
-  } else if (jsdoc.kind === 'type') {
+  } else if (
+    ['type', 'instancevar', 'globalvar', 'localvar'].includes(jsdoc.kind)
+  ) {
     // Then this was purely a type annotation. Create the type and
     // add any metadata.
     return typeFromFeatherString(jsdoc.type?.content || 'Any', knownTypes);

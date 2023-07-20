@@ -18,3 +18,7 @@ anonymous_instance_function = function different_name(firstArg, secondArg){
 }
 
 self.another_instance_variable = "An instance var";
+
+/// @instancevar {Array<Real>} an_instance_array
+
+an_instance_array

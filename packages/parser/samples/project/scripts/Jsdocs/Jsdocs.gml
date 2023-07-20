@@ -34,3 +34,7 @@ function Jsdocs(){
  * @self Struct.AnotherConstructor */
 function JsdocsJsStyle(first, second){
 }
+
+/// @localvar {String} a_local_var With a description!
+/// @globalvar {Any} a_global OH NOOO
+/// @globalvar {Real} another_global_var With a description!

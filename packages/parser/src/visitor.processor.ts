@@ -6,7 +6,12 @@ import {
   DiagnosticCollectionName,
   DiagnosticSeverity,
 } from './project.diagnostics.js';
-import { Position, Range, type Scope } from './project.location.js';
+import {
+  Position,
+  Range,
+  type IRange,
+  type Scope,
+} from './project.location.js';
 import { type EnumType, type StructType } from './types.js';
 import { assert } from './util.js';
 
@@ -55,13 +60,13 @@ export class SignifierProcessor {
 
   addDiagnostic(
     kind: (typeof diagnosticCollections)[number],
-    where: CstNodeLocation,
+    where: IRange | CstNodeLocation,
     message: string,
     severity: DiagnosticSeverity = 'warning',
   ) {
     this.file.addDiagnostic(
       kind,
-      new Diagnostic(message, Range.fromCst(this.file, where), severity),
+      new Diagnostic(message, Range.from(this.file, where), severity),
     );
   }
 

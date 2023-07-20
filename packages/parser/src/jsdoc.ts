@@ -13,6 +13,9 @@ interface MatchGroups {
   deprecated?: string;
   self?: string;
   type?: string;
+  localvar?: string;
+  globalvar?: string;
+  instancevar?: string;
   unknown?: string;
   typeGroup?: string;
   typeUnion?: string;
@@ -37,6 +40,9 @@ const patterns = {
   deprecated: `@deprecated\\b`,
   self: `@(context|self)\\b`,
   type: `@type\\b`,
+  localvar: `@(localvar|var)\\b`,
+  globalvar: `@globalvar\\b`,
+  instancevar: `@(instancevar|prop(erty)?)\\b`,
   unknown: `@\\w+\\b`,
 };
 const typeGroupPattern = `(?<typeGroup>{\\s*(?<typeUnion>[^}]*?)?\\s*})`;
@@ -64,6 +70,13 @@ for (const tagName of typeTags) {
 // Params
 patterns.param = `${patterns.param}(\\s+${typeGroupPattern})?\\s+(${paramNamePattern}|${optionalParamNamePattern})`;
 
+// Variable declarations
+for (const tagName of ['localvar', 'globalvar', 'instancevar'] as const) {
+  patterns[
+    tagName
+  ] = `${patterns[tagName]}(\\s+${typeGroupPattern})?\\s+${paramNamePattern}`;
+}
+
 // Self (has a type but no group. Make brackets optional to be more forgiving)
 patterns.self = `${patterns.self}\\s+(?<extraBracket>\\{\\s*)?(?<type>[a-zA-Z_.]+)(?:\\s*\\})?`;
 
@@ -90,6 +103,9 @@ export type JsdocKind =
   | 'type'
   | 'param'
   | 'self'
+  | 'localvar'
+  | 'globalvar'
+  | 'instancevar'
   | 'returns';
 
 export interface JsdocComponent extends IRange {
@@ -106,18 +122,26 @@ export interface Jsdoc<T extends JsdocKind = JsdocKind> extends IRange {
   params?: Jsdoc<'param'>[];
   /** Return type as GML typestring */
   returns?: Jsdoc<'returns'>;
-  /** Parameter name */
+  /** Parameter or variable name */
   name?: JsdocComponent;
   /** If is an optional param */
   optional?: boolean;
-  /** The GML typestring, for use by a @param or @type */
+  /** The GML typestring, for use by a @param, @type, @localvar, etc */
   type?: JsdocComponent;
   /** For functions or self docs, the GML typestring for an @self/@context */
   self?: JsdocComponent;
 }
 
 export interface JsdocSummary
-  extends Jsdoc<'description' | 'function' | 'type' | 'self'> {
+  extends Jsdoc<
+    | 'description'
+    | 'function'
+    | 'type'
+    | 'self'
+    | 'globalvar'
+    | 'instancevar'
+    | 'localvar'
+  > {
   /**
    * The list of all tags found in this block, and their
    * respective locations, for use e.g. syntax highlighting.
@@ -218,6 +242,31 @@ function jsdocStringToLines(
     startOffset: startPosition?.offset || 0,
   };
   return jsdocBlockToLines(asIToken);
+}
+
+/**
+ * Since single-line style comments make it impossible to
+ * tell when we're in a NEW doc, we need to break lines into
+ * groups
+ */
+export function gmlLinesByGroup(gmlLines: IToken[]) {
+  const lines = jsdocGmlToLines(gmlLines);
+  const groups: JsdocLine[][] = [];
+  const lastKind: JsdocTagKind | null = null;
+  for (const line of lines) {
+    if (!line) {
+      continue;
+    }
+    let match: RegExpMatchArray | null = null;
+    for (const tagName of names) {
+      match = line.content.match(regexes[tagName]) as RegExpMatchArray;
+      if (!match) {
+        continue;
+      }
+      const parts = match?.groups as MatchGroups;
+      // TODO: HOW?
+    }
+  }
 }
 
 export function parseJsdoc(gmlLines: IToken[]): JsdocSummary;
@@ -328,28 +377,47 @@ export function parseJsdoc(
         // Unset the describe target
         describing = null;
       }
-      // Handle params
-      else if (parts.param) {
+      // Handle params and variables
+      else if (
+        parts.param ||
+        parts.localvar ||
+        parts.globalvar ||
+        parts.instancevar
+      ) {
         // Until VSCode ships Node 18, and therefore has group
         // indices, we'll have to get positions with a simple search
         // per group.
+        const kind = parts.param
+          ? 'param'
+          : parts.localvar
+          ? 'localvar'
+          : parts.globalvar
+          ? 'globalvar'
+          : 'instancevar';
 
-        const param: Jsdoc<'param'> = {
-          kind: 'param',
+        const entity: Jsdoc<typeof kind> = {
+          kind,
           name: substringRange(
             line.content,
             parts.name || parts.optionalName!,
             line.start,
           ),
           optional: !!parts.optionalName,
-          type: substringRange(line.content, parts.typeUnion!, line.start),
+          type: substringRange(line.content, parts.typeUnion, line.start),
           description: parts.info || '',
           ...entireMatchRange,
         };
-        doc.params = doc.params || [];
-        doc.params.push(param);
+        if (kind === 'param') {
+          doc.params = doc.params || [];
+          doc.params.push(entity as Jsdoc<'param'>);
+        } else {
+          doc.kind = kind;
+          doc.type = entity.type;
+          doc.name = entity.name;
+          doc.description = entity.description;
+        }
         // Update the current describing object in case the next line is a description
-        describing = param;
+        describing = entity;
       }
       // Handle returns
       else if (parts.returns) {

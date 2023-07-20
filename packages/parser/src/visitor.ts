@@ -176,6 +176,45 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       type,
     };
     this.PROCESSOR.file.jsdocs.push(jsdoc);
+    // If we're documenting a variable, then we need to
+    // go ahead and consume the doc.
+    // globalvars should have already been handled and can be skipped
+    if (!['localvar', 'instancevar', 'globalvar'].includes(jsdoc.kind)) {
+      return;
+    }
+    const info = this.PROCESSOR.consumeJsdoc()!;
+    if (jsdoc.kind === 'globalvar') {
+      return;
+    }
+    const container =
+      jsdoc.kind === 'localvar'
+        ? this.PROCESSOR.currentLocalScope
+        : this.PROCESSOR.currentSelf;
+    if (container === this.PROCESSOR.globalSelf) {
+      // Then this is being used improperly
+      this.PROCESSOR.addDiagnostic(
+        'GLOBAL_SELF',
+        jsdoc.name!,
+        `Invalid variable documentation. Did you mean to use @globalvar?`,
+        'error',
+      );
+      return;
+    }
+    let signifier = container.getMember(jsdoc.name!.content);
+    const nameRange = Range.from(this.PROCESSOR.file, jsdoc.name!);
+    if (!signifier) {
+      signifier = new Signifier(container, jsdoc.name!.content);
+      container.addMember(signifier);
+    }
+    signifier.describe(jsdoc.description);
+    signifier.setType(info.type);
+    signifier.addRef(nameRange, true);
+    signifier.definedAt(nameRange);
+    if (jsdoc.kind === 'localvar') {
+      signifier.local = true;
+    } else {
+      signifier.instance = true;
+    }
   }
 
   override jsdocJs(children: JsdocJsCstChildren) {
@@ -183,6 +222,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   }
 
   override jsdocGml(children: JsdocGmlCstChildren) {
+    // This *could* actually be several JSDocs,
     this.PREPARE_JSDOC(parseJsdoc(children.JsdocGmlLine));
   }
 

@@ -1,17 +1,21 @@
 // CST Visitor for creating an AST etc
 import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
-import type {
+import {
   EnumStatementCstChildren,
   FunctionExpressionCstChildren,
   GlobalVarDeclarationCstChildren,
   IdentifierAccessorCstChildren,
+  JsdocGmlCstChildren,
+  JsdocJsCstChildren,
   MacroStatementCstChildren,
 } from '../gml-cst.js';
+import { JsdocSummary, parseJsdoc } from './jsdoc.js';
 import { logger } from './logger.js';
 import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
 import { Position, Range } from './project.location.js';
 import { Signifier } from './signifiers.js';
+import { typeFromParsedJsdocs } from './types.feather.js';
 import { StructType, Type } from './types.js';
 import { assert } from './util.js';
 
@@ -88,11 +92,14 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     const name = children.Identifier?.[0];
     if (!name) return;
     const range = this.PROCESSOR.range(name);
+    return this.REGISTER_GLOBAL_BY_NAME(name.image, range);
+  }
 
+  REGISTER_GLOBAL_BY_NAME(name: string, range: Range) {
     // Create it if it doesn't already exist.
-    let symbol = this.PROCESSOR.globalSelf.getMember(name.image);
+    let symbol = this.PROCESSOR.globalSelf.getMember(name);
     if (!symbol) {
-      symbol = new Signifier(this.PROCESSOR.project.self, name.image);
+      symbol = new Signifier(this.PROCESSOR.project.self, name);
       // Add the symbol and type to the project.
       this.PROCESSOR.globalSelf.addMember(symbol);
     }
@@ -102,6 +109,28 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     symbol.global = true;
     symbol.macro = false; // Reset macro status
     return symbol;
+  }
+
+  REGISTER_JSDOC_GLOBAL(jsdoc: JsdocSummary) {
+    if (jsdoc.kind !== 'globalvar') {
+      return;
+    }
+    const symbol = this.REGISTER_GLOBAL_BY_NAME(
+      jsdoc.name!.content,
+      Range.from(this.PROCESSOR.file, jsdoc.name!),
+    );
+    symbol.setType(typeFromParsedJsdocs(jsdoc, this.PROCESSOR.project.types));
+    symbol.describe(jsdoc.description);
+  }
+
+  override jsdocJs(children: JsdocJsCstChildren) {
+    this.REGISTER_JSDOC_GLOBAL(parseJsdoc(children.JsdocJs[0]));
+  }
+
+  override jsdocGml(children: JsdocGmlCstChildren) {
+    for (const line of children.JsdocGmlLine) {
+      this.REGISTER_JSDOC_GLOBAL(parseJsdoc(line));
+    }
   }
 
   /**
