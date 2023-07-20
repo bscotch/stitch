@@ -8,7 +8,6 @@ import {
   DiagnosticCollectionName,
   DiagnosticCollections,
 } from './project.diagnostics.js';
-import { registerGlobals } from './project.globals.js';
 import {
   FunctionArgRange,
   IPosition,
@@ -23,6 +22,7 @@ import {
 import { Signifier } from './signifiers.js';
 import { Type } from './types.js';
 import { assert, isBeforeRange, isInRange } from './util.js';
+import { registerGlobals } from './visitor.globals.js';
 import { registerSignifiers } from './visitor.js';
 
 /** Represenation of a GML code file. */

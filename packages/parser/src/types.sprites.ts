@@ -348,22 +348,22 @@ const slotVariables = [
     description: '(Internal to Spine) Blend mode for the slot',
   },
   {
-    variable: 'dark_red*',
+    variable: 'dark_red',
     type: 'Real',
     description: "Red component of the slot's dark colour (0-1)",
   },
   {
-    variable: 'dark_green*',
+    variable: 'dark_green',
     type: 'Real',
     description: "Green component of the slot's dark colour (0-1)",
   },
   {
-    variable: 'dark_blue*',
+    variable: 'dark_blue',
     type: 'Real',
     description: "Blue component of the slot's dark colour (0-1)",
   },
   {
-    variable: 'dark_alpha*',
+    variable: 'dark_alpha',
     type: 'String',
     description: "Alpha component of the slot's dark colour (0-1)",
   },

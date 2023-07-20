@@ -75,6 +75,10 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       this.instanceType = this.project
         .createStructType('instance')
         .named(this.name);
+      const id = this.instanceType.addMember('id', this.instanceType);
+      id.instance = true;
+      id.def = {};
+      id.writable = false;
       this.instanceType.signifier = this.signifier;
       this.project.types.set(`Id.Instance.${this.name}`, this.instanceType);
     }

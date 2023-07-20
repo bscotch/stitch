@@ -70,7 +70,7 @@ export function typeToHoverText(type: Type) {
   let code = '';
   if (type.isFunction) {
     code = `function ${type.name || ''}(`;
-    const params = type._params || [];
+    const params = type.listParameters();
     for (let i = 0; i < params.length; i++) {
       const param = params[i];
       assert(param, 'Param is undefined');

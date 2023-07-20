@@ -104,7 +104,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   parent: Type<T> | undefined = undefined;
 
   /** Named members of Structs and Enums */
-  _members: Map<string, Signifier> | undefined = undefined;
+  protected _members: Map<string, Signifier> | undefined = undefined;
 
   /** Types of the items found in arrays and various ds types, or the fallback type found in Structs */
   items: TypeStore | undefined = undefined;
@@ -115,7 +115,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * type of the struct that it constructs. */
   constructs: Type<'Struct'> | undefined = undefined;
   context: Type<'Struct'> | undefined = undefined;
-  _params: Signifier[] | undefined = undefined;
+  protected _params: Signifier[] | undefined = undefined;
   returns: TypeStore | undefined = undefined;
 
   constructor(protected _kind: T) {}
