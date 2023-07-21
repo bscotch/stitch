@@ -346,6 +346,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   derive(): Type<T> {
     const derived = new Type(this.kind) as Type<T>;
     derived.parent = this;
+    derived.name = this.name;
     return derived;
   }
 

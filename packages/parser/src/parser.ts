@@ -777,18 +777,20 @@ export class GmlParser extends CstParser {
 
   readonly tryStatement = this.RULE('tryStatement', () => {
     this.CONSUME(t.Try);
-    this.SUBRULE(this.blockStatement);
-    this.OPTION1(() => {
-      this.CONSUME(t.Catch);
-      this.CONSUME(t.StartParen);
-      this.CONSUME(t.Identifier);
-      this.CONSUME(t.EndParen);
-      this.SUBRULE2(this.blockStatement);
-    });
+    this.SUBRULE1(this.blockStatement);
+    this.OPTION1(() => this.SUBRULE2(this.catchStatement));
     this.OPTION2(() => {
       this.CONSUME(t.Finally);
       this.SUBRULE3(this.blockStatement);
     });
+  });
+
+  readonly catchStatement = this.RULE('catchStatement', () => {
+    this.CONSUME(t.Catch);
+    this.CONSUME(t.StartParen);
+    this.CONSUME(t.Identifier);
+    this.CONSUME(t.EndParen);
+    this.SUBRULE2(this.blockStatement);
   });
 
   constructor() {

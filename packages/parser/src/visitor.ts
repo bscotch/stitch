@@ -4,6 +4,7 @@ import type { CstNode } from 'chevrotain';
 import type {
   ArrayLiteralCstChildren,
   AssignmentRightHandSideCstChildren,
+  CatchStatementCstChildren,
   ExpressionCstChildren,
   FunctionExpressionCstChildren,
   FunctionStatementCstChildren,
@@ -282,6 +283,36 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     this.PROCESSOR.scope.setEnd(blockLocation, true);
     this.PROCESSOR.popSelfScope(blockLocation, true);
     return;
+  }
+
+  override catchStatement(
+    children: CatchStatementCstChildren,
+    ctx: VisitorContext,
+  ) {
+    // Catch statements are weird because they add a new variable
+    // the the current localscope, but only within themselves. We
+    // can get a reasonable approximation of this behavior by creating
+    // a new localscope that has the current localscope as a parent.
+    this.PROCESSOR.pushLocalScope(children.Catch[0], true);
+
+    // Add the identifier to the new localscope
+    const identifier = identifierFrom(children);
+    if (identifier) {
+      const range = this.PROCESSOR.range(identifier.token);
+      const type =
+        this.PROCESSOR.project.types.get('Struct.Exception')?.derive() ||
+        new Type('Any');
+      const signifier = this.PROCESSOR.currentLocalScope.addMember(
+        identifier.name,
+        type,
+      )!;
+      signifier.addRef(range, true);
+      signifier.definedAt(range);
+      signifier.local = true;
+    }
+    this.visit(children.blockStatement, ctx);
+
+    this.PROCESSOR.popLocalScope(children.blockStatement[0].location!, true);
   }
 
   override functionStatement(

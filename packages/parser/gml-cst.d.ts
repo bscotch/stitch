@@ -812,11 +812,21 @@ export interface TryStatementCstNode extends CstNode {
 export type TryStatementCstChildren = {
   Try: IToken[];
   blockStatement: BlockStatementCstNode[];
-  Catch?: IToken[];
-  StartParen?: IToken[];
-  Identifier?: IToken[];
-  EndParen?: IToken[];
+  catchStatement?: CatchStatementCstNode[];
   Finally?: IToken[];
+};
+
+export interface CatchStatementCstNode extends CstNode {
+  name: 'catchStatement';
+  children: CatchStatementCstChildren;
+}
+
+export type CatchStatementCstChildren = {
+  Catch: IToken[];
+  StartParen: IToken[];
+  Identifier: IToken[];
+  EndParen: IToken[];
+  blockStatement: BlockStatementCstNode[];
 };
 
 export interface GmlVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
@@ -935,4 +945,5 @@ export interface GmlVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
   exitStatement(children: ExitStatementCstChildren, param?: IN): OUT;
   withStatement(children: WithStatementCstChildren, param?: IN): OUT;
   tryStatement(children: TryStatementCstChildren, param?: IN): OUT;
+  catchStatement(children: CatchStatementCstChildren, param?: IN): OUT;
 }

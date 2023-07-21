@@ -144,6 +144,12 @@ export class SignifierProcessor {
     this.scope.self = this.currentSelf;
   }
 
+  pushLocalScope(startToken: CstNodeLocation, fromTokenEnd: boolean) {
+    const localScope = this.createStruct(startToken);
+    this.localScopeStack.push(localScope);
+    this.nextScope(startToken, fromTokenEnd).local = localScope;
+  }
+
   pushSelfScope(
     startToken: CstNodeLocation,
     self: EnumType | WithableType,
@@ -156,6 +162,15 @@ export class SignifierProcessor {
     if (options?.accessorScope) {
       nextScope.isDotAccessor = true;
     }
+  }
+
+  popLocalScope(
+    nextScopeToken: CstNodeLocation,
+    nextScopeStartsFromTokenEnd: boolean,
+  ) {
+    this.localScopeStack.pop();
+    this.nextScope(nextScopeToken, nextScopeStartsFromTokenEnd).local =
+      this.currentLocalScope;
   }
 
   popSelfScope(
