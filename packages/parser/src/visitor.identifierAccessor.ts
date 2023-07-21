@@ -15,7 +15,7 @@ import {
   Range,
   fixITokenLocation,
 } from './project.location.js';
-import { getTypeOfKind, getTypeStoreOrType } from './types.checks.js';
+import { getTypeOfKind, getTypeStoreOrType, getTypes } from './types.checks.js';
 import { Type, TypeStore } from './types.js';
 import { withableTypes } from './types.primitives.js';
 import { normalizeInferredType } from './util.js';
@@ -249,6 +249,7 @@ export function visitIdentifierAccessor(
         let lastDelimiter: IToken;
         let lastTokenWasDelimiter = true;
         const ranges: FunctionArgRange[] = [];
+        const generics: Record<string, TypeStore> = {};
 
         for (let i = 0; i < argsAndSeps.length; i++) {
           const token = argsAndSeps[i];
@@ -295,10 +296,19 @@ export function visitIdentifierAccessor(
             if (isMethodCall && argIdx === 1 && methodSelf) {
               functionCtx.self = methodSelf;
             }
+            const expectedType = functionType?.getParameter(argIdx);
             const inferredType = this.assignmentRightHandSide(
               token.children.assignmentRightHandSide[0].children,
               functionCtx,
             );
+            if (expectedType?.type.type[0].generic) {
+              // Then we want to set the type of this generic
+              // for use by the return type.
+              generics[expectedType.type.type[0].name!] ||= new TypeStore();
+              generics[expectedType.type.type[0].name!].addType(
+                getTypes(inferredType),
+              );
+            }
             if (isMethodCall && argIdx === 0) {
               methodSelf = getTypeOfKind(inferredType, [
                 'Id.Instance',
@@ -309,10 +319,16 @@ export function visitIdentifierAccessor(
           }
         }
         // The returntype of this function may be used in another accessor
-        const returnType =
+        let returnType =
           (usesNew && isLastSuffix
             ? functionType?.constructs
             : functionType?.returns) || this.ANY;
+        const returnTypes = getTypes(returnType);
+        if (returnTypes[0].generic && generics[returnTypes[0].name!]) {
+          // Then we want to return the inferred type instead
+          // of the generic
+          returnType = generics[returnTypes[0].name!];
+        }
         accessing = { type: returnType };
         lastAccessedType = returnType;
         // Add the function call to the file for diagnostics
