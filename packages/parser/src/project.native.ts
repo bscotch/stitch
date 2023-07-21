@@ -5,7 +5,6 @@ import { parseStringPromise } from 'xml2js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
 import { Signifier } from './signifiers.js';
 import { Type, type StructType } from './types.js';
-import { primitiveNames } from './types.primitives.js';
 import { addSpriteInfoStruct } from './types.sprites.js';
 import { assert } from './util.js';
 
@@ -20,11 +19,10 @@ export class Native {
   ) {
     // Initialize all of the primitives so we can guarantee
     // they exist on any lookup.
-    primitiveNames.forEach((name) => {
-      const type = new Type(name);
-      this.types.set(name, type);
-    });
-    addSpriteInfoStruct(this.types);
+    // primitiveNames.forEach((name) => {
+    //   const type = new Type(name);
+    //   this.types.set(name, type);
+    // });
   }
 
   get version() {
@@ -44,12 +42,25 @@ export class Native {
         this.objectInstanceBase.addMember(member);
       }
     }
+    this.objectInstanceBase.readonly = true;
+
+    // Have the base Id.Instance and Asset.GmObject types
+    // use the object instance base as their parent, and make them readonly.
+    const idInstance = new Type('Id.Instance');
+    idInstance.parent = this.objectInstanceBase;
+    idInstance.readonly = true;
+    this.types.set('Id.Instance', idInstance);
+
+    const assetGmObject = new Type('Asset.GMObject');
+    assetGmObject.parent = this.objectInstanceBase;
+    assetGmObject.readonly = true;
+    this.types.set('Asset.GMObject', assetGmObject);
   }
 
   protected loadVariables() {
     for (const variable of this.spec.variables) {
       assert(variable, 'Variable must be defined');
-      const type = Type.fromFeatherString(variable.type, this.types);
+      const type = Type.fromFeatherString(variable.type, this.types, true);
       const symbol = new Signifier(this.globalSelf, variable.name, type)
         .describe(variable.description)
         .deprecate(variable.deprecated);
@@ -95,13 +106,15 @@ export class Native {
       for (let i = 0; i < func.parameters.length; i++) {
         const param = func.parameters[i];
         assert(param, 'Parameter must be defined');
-        const paramType = Type.fromFeatherString(param.type, this.types);
+        const paramType = Type.fromFeatherString(param.type, this.types, true);
         type
           .addParameter(i, param.name, paramType, param.optional)
           .describe(param.description);
       }
       // Add return type to the type.
-      type.addReturnType(Type.fromFeatherString(func.returnType, this.types));
+      type.addReturnType(
+        Type.fromFeatherString(func.returnType, this.types, true),
+      );
 
       const symbol = new Signifier(this.globalSelf, func.name, type).deprecate(
         func.deprecated,
@@ -138,7 +151,7 @@ export class Native {
           const symbol = new Signifier(
             this.globalSelf,
             constant.name,
-            Type.fromFeatherString(constant.type, this.types),
+            Type.fromFeatherString(constant.type, this.types, true),
           ).describe(constant.description);
           symbol.writable = false;
           symbol.native = true;
@@ -158,9 +171,11 @@ export class Native {
       // Create the base type for the class.
       const classTypeName = `Constant.${klass}`;
       const typeString = [...typeNames.values()].join('|');
-      const classType = Type.fromFeatherString(typeString, this.types)[0].named(
-        klass,
-      );
+      const classType = Type.fromFeatherString(
+        typeString,
+        this.types,
+        true,
+      )[0].named(klass);
       const existingType = this.types.get(classTypeName);
       assert(!existingType, `Type ${classTypeName} already exists`);
 
@@ -184,6 +199,7 @@ export class Native {
 
   protected loadStructs() {
     // Create struct types. Each one extends the base Struct type.
+    addSpriteInfoStruct(this.types);
     for (const struct of this.spec.structures) {
       if (!struct.name) {
         continue;
@@ -196,7 +212,7 @@ export class Native {
 
       for (const prop of struct.properties) {
         assert(prop, 'Property must be defined');
-        const type = Type.fromFeatherString(prop.type, this.types);
+        const type = Type.fromFeatherString(prop.type, this.types, true);
         structType
           .addMember(prop.name, type, prop.writable)!
           .describe(prop.description);

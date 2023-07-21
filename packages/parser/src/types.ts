@@ -359,7 +359,8 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   static fromFeatherString(
     typeString: string,
     knownTypes: Map<string, Type>,
+    addMissing: boolean,
   ): Type[] {
-    return typeFromFeatherString(typeString, knownTypes);
+    return typeFromFeatherString(typeString, knownTypes, addMissing);
   }
 }

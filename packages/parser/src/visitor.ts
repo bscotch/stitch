@@ -177,7 +177,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
    * it for use by the next symbol.
    */
   PREPARE_JSDOC(jsdoc: JsdocSummary) {
-    const type = typeFromParsedJsdocs(jsdoc, this.PROCESSOR.project.types);
+    const type = typeFromParsedJsdocs(
+      jsdoc,
+      this.PROCESSOR.project.types,
+      false,
+    );
     this.PROCESSOR.unusedJsdoc = {
       jsdoc,
       type,

@@ -119,7 +119,9 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       jsdoc.name!.content,
       Range.from(this.PROCESSOR.file, jsdoc.name!),
     );
-    symbol.setType(typeFromParsedJsdocs(jsdoc, this.PROCESSOR.project.types));
+    symbol.setType(
+      typeFromParsedJsdocs(jsdoc, this.PROCESSOR.project.types, false),
+    );
     symbol.describe(jsdoc.description);
   }
 
