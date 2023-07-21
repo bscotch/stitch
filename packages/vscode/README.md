@@ -24,8 +24,9 @@ Stitch provides Intellisense (auto-complete, hovertext, function signature helpe
 
 GameMaker includes a type system called "Feather", which Stitch tries to provide parity with. However, Stitch does take a different overall approach and does provide some extensions to the Feather type system and additional features that are not currently available in GameMaker.
 
-- **Declarations are King:** Stitch only infers types at the time an identifier is *declared*. When a variable is declared without assignment, Stitch will infer its type using the first assignment it sees, but that might result in surprises! For best results, use the `@type` JSDoc tag to specify the type of a variable when it is declared if there is any ambiguity. (Typescript and JavaScript+JSDoc programmers will be familiar with this approach.)
+- **Declarations FTW:** Stitch only infers types at the time an identifier is *declared*. When a variable is declared without assignment, Stitch will infer its type using the first assignment it sees, but that might result in surprises! For best results, use the `@type` JSDoc tag to specify the type of a variable when it is declared if there is any ambiguity. (Typescript and JavaScript+JSDoc programmers will be familiar with this approach.)
 - **Union Type Support:** Feather technically supports "union" types (e.g. `String|Number`), but with limitations. Stitch tries to provide more robust support for union types, though this is a work in progress.
+- **`InstanceType<>`, `ObjectType<>`:** Stitch provides custom "Utility Types" that you can use to get one type from another. For example, `InstanceType<Asset.GMObject.my_object>` evaluates to `Id.Instance.my_object`.
 - **`@self` tag for `with` statements:** the `with` statement changes the scope of your code, but Feather does not provide a way to tell it what that scope should be. Stitch allows you to use the `@self` (or `@context`) tag before a `with` statement to specify its context for cases where inference is insufficient:
     ```js
     /// @self {Struct.Player}
@@ -42,6 +43,24 @@ GameMaker includes a type system called "Feather", which Stitch tries to provide
     ```js
     /// @globalvar {Array<String>} MY_STRINGS
     var strings = MY_STRINGS; // Stitch will not error on this reference
+    ```
+- **`@template` tag:** Stitch provides basic generics support through the JSDoc `@template` tag. This feature lets you get more specific inferred return types from functions. It optionally takes a type parameter, which will eventually be used for type-checking. Examples:
+    ```js
+    /// @template T
+    /// @param {T} value
+    /// @returns {T}
+    function identity(value) {
+      return value;
+    }
+    var str = identity("hello"); // str get type "String"
+    var num = identity(42); // num gets type "Real"
+
+    /// @description When this function is called, the return type will be an `Id.Instance` for the same object as the argument.
+    /// @template  {Asset.GMObject} T
+    /// @param {T} obj
+    /// @returns {InstanceType<T>}
+    function instance_create(obj){/*...*/}
+    var inst = instance_create(my_object); // inst gets type "Id.Instance.my_object", assuming my_object is an object ID.
     ```
 - **JSDoc Autocompletes:** Stitch provides autocompletes and syntax highlighting for Feather types within JSDoc comments.
 - **JSDoc helpers:** Stitch provides snippets for JSDoc tags, and context menus to copy the Feather type of a symbol to your clipboard.
