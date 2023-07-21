@@ -104,6 +104,13 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * as for e.g. representing a subset of Real constants in a type. */
   parent: Type | undefined = undefined;
 
+  /**
+   * Native and primitive types are typically read-only once
+   * they've been defined. This property should be set once a type
+   * is intended to be immutable.
+   */
+  readonly = false;
+
   /** Named members of Structs and Enums */
   protected _members: Map<string, Signifier> | undefined = undefined;
 
@@ -261,15 +268,24 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   /** For container types that have named members, like Structs and Enums */
-  addMember(signifier: Signifier): Signifier;
-  addMember(name: string, type?: Type | Type[], writable?: boolean): Signifier;
+  addMember(signifier: Signifier): Signifier | undefined;
+  addMember(
+    name: string,
+    type?: Type | Type[],
+    writable?: boolean,
+  ): Signifier | undefined;
   addMember(
     ...args: [
       name: string | Signifier,
       type?: Type | Type[],
       writable?: boolean,
     ]
-  ): Signifier {
+  ): Signifier | undefined {
+    // If this is an immutable type, then we can't add members to it.
+    if (this.readonly) {
+      return;
+    }
+
     // If this is a Id.Instance or Asset.GMObject type, then we want to add
     // the member to the parent Struct instead.
 

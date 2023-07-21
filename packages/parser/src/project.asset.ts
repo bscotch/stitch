@@ -86,7 +86,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
 
       this.instanceType = new Type('Id.Instance').named(this.name);
       this.instanceType.parent = this.variables;
-      const id = this.variables.addMember('id', this.instanceType);
+      const id = this.variables.addMember('id', this.instanceType)!;
       id.instance = true;
       id.def = {};
       id.writable = false;

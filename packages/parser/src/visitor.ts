@@ -381,7 +381,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
     // Ensure that this variable exists
     const signifier = local
-      .addMember(children.Identifier[0].image)
+      .addMember(children.Identifier[0].image)! // Locals will always get added
       .definedAt(range);
     signifier.local = true;
     signifier.addRef(range, true);
@@ -458,12 +458,22 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
       if (addTo !== fullScope.global) {
         // Then we can add a new member
-        signifier = addTo.addMember(name).definedAt(range);
-        if (isStatic) {
-          signifier.static = true;
+        signifier = addTo.addMember(name);
+        if (signifier) {
+          signifier.definedAt(range);
+          if (isStatic) {
+            signifier.static = true;
+          }
+          ref = signifier.addRef(range, true);
+          signifier.instance = true;
+        } else {
+          // Then this is an immutable type
+          this.PROCESSOR.addDiagnostic(
+            'INVALID_OPERATION',
+            range,
+            `Type does not allow dot accessors.`,
+          );
         }
-        ref = signifier.addRef(range, true);
-        signifier.instance = true;
       } else {
         this.PROCESSOR.addDiagnostic(
           'UNDECLARED_GLOBAL_REFERENCE',
@@ -723,7 +733,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         );
       }
       // Ensure the member exists
-      const signifier = struct.addMember(name).definedAt(range);
+      const signifier = struct.addMember(name)!.definedAt(range);
       signifier.instance = true;
       signifier.addRef(range, true);
 

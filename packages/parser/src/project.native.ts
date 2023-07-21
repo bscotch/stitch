@@ -198,9 +198,19 @@ export class Native {
         assert(prop, 'Property must be defined');
         const type = Type.fromFeatherString(prop.type, this.types);
         structType
-          .addMember(prop.name, type, prop.writable)
+          .addMember(prop.name, type, prop.writable)!
           .describe(prop.description);
       }
+    }
+    // Set all native structs as read-only
+    for (const struct of this.spec.structures) {
+      if (!struct.name) {
+        continue;
+      }
+      const typeName = `Struct.${struct.name}`;
+      const structType = this.types.get(typeName);
+      ok(structType, `Type ${typeName} does not exist`);
+      structType.readonly = true;
     }
   }
 

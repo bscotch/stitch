@@ -39,7 +39,10 @@ export function typeFromIdentifier(
   const primitiveType = primitiveNames.find(
     (n) => n?.toLocaleLowerCase?.() === normalizedName,
   );
-  if (primitiveType) {
+  if (
+    primitiveType
+    //&& !['asset.gmobject', 'id.instance'].includes(normalizedName as any)
+  ) {
     return new Type(primitiveType);
   }
 
@@ -54,6 +57,7 @@ export function typeFromIdentifier(
     if (__isRootRequest && type) {
       // Then add to the known types map
       const derivedTyped = type.derive().named(nameParts.join('.'));
+      // TODO: This is probably the cause of the partial type names appearing in autocompletes
       knownTypes.set(identifier, derivedTyped);
       return derivedTyped;
     }

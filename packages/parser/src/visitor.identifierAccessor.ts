@@ -15,7 +15,6 @@ import {
   Range,
   fixITokenLocation,
 } from './project.location.js';
-import { Signifier } from './signifiers.js';
 import { getTypeOfKind, getTypeStoreOrType } from './types.checks.js';
 import { Type, TypeStore } from './types.js';
 import { withableTypes } from './types.primitives.js';
@@ -61,12 +60,14 @@ export function visitIdentifierAccessor(
     // later.
     const range = this.PROCESSOR.range(children.identifier[0].location!);
     const newMember = fullScope.self.addMember(name);
-    newMember.addRef(range);
-    newMember.instance = true;
-    accessing = {
-      type: newMember.type,
-      range,
-    };
+    if (newMember) {
+      newMember.addRef(range);
+      newMember.instance = true;
+      accessing = {
+        type: newMember.type,
+        range,
+      };
+    }
   }
 
   let lastAccessedType: Type | TypeStore = accessing.type || this.ANY;
@@ -161,48 +162,47 @@ export function visitIdentifierAccessor(
                   existingProperty.setType(inferredType);
                 }
               }
-            } else if (
-              !existingProperty &&
-              getTypeOfKind(accessing.type, withableTypes)
-            ) {
+            } else if (!existingProperty && dottableType.kind !== 'Enum') {
               // Then this variable is not yet defined on this struct.
               // We need to add it!
-              const accessingType = getTypeOfKind(
-                accessing.type,
-                withableTypes,
-              )!;
-              const newMember: Signifier = accessingType.addMember(
-                propertyIdentifier.name,
-              );
-              newMember.instance = true;
-              const ref = newMember.addRef(propertyNameRange);
-              // If this is the last suffix and this is
-              // an assignment, then also set the `def` of the
-              // new member.
-              if (isLastSuffix && assignmentCst) {
-                newMember.definedAt(propertyNameRange);
-                ref.isDef = true;
-                if (docs) {
-                  newMember.describe(docs.jsdoc.description);
-                  newMember.setType(docs.type);
-                } else if (inferredType) {
-                  newMember.setType(inferredType);
+              const newMember = dottableType.addMember(propertyIdentifier.name);
+              if (newMember) {
+                newMember.instance = true;
+                const ref = newMember.addRef(propertyNameRange);
+                // If this is the last suffix and this is
+                // an assignment, then also set the `def` of the
+                // new member.
+                if (isLastSuffix && assignmentCst) {
+                  newMember.definedAt(propertyNameRange);
+                  ref.isDef = true;
+                  if (docs) {
+                    newMember.describe(docs.jsdoc.description);
+                    newMember.setType(docs.type);
+                  } else if (inferredType) {
+                    newMember.setType(inferredType);
+                  }
                 }
+                // Else if this is a struct without any type info,
+                // allow it to be "defined" since the user has no opinions about its existence.
+                // TODO: This should probably be an OPTION
+                else if (
+                  dottableType.totalMembers() === 0 &&
+                  !dottableType.items?.type.length
+                ) {
+                  newMember.def = {}; // Prevents "Undeclared" errors
+                }
+                accessing = {
+                  type: newMember.type,
+                  range: propertyNameRange,
+                };
+                lastAccessedType = newMember.type;
+              } else {
+                this.PROCESSOR.addDiagnostic(
+                  'INVALID_OPERATION',
+                  suffix.location!,
+                  `Cannot add properties to immutable types.`,
+                );
               }
-              // Else if this is a struct without any type info,
-              // allow it to be "defined" since the user has no opinions about its existence.
-              // TODO: This should probably be an OPTION
-              else if (
-                accessingType.totalMembers() === 0 &&
-                !accessingType.items?.type.length
-              ) {
-                newMember.def = {}; // Prevents "Undeclared" errors
-              }
-              accessing = {
-                type: newMember.type,
-                range: propertyNameRange,
-              };
-              lastAccessedType = newMember.type;
             } else {
               accessing = {};
               lastAccessedType = this.ANY;

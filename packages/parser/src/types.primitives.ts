@@ -1,8 +1,13 @@
+export type WithablePrimitiveName = (typeof withableTypes)[number];
 export const withableTypes = [
   'Struct',
   'Asset.GMObject',
   'Id.Instance',
 ] as const;
+
+export const withableTypesLower = withableTypes.map((t) =>
+  t.toLowerCase(),
+) as Lowercase<WithablePrimitiveName>[];
 
 /** Base types, like Array, Real, Struct, etc */
 export type BaseName = (typeof baseNames)[number];

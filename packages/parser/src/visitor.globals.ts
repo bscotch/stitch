@@ -160,7 +160,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       const memberType = new Type('EnumMember').named(name.image);
       // Does member already exist?
       const member =
-        type.getMember(name.image) || type.addMember(name.image, memberType);
+        type.getMember(name.image) || type.addMember(name.image, memberType)!;
       member.setType(memberType);
       member.idx = i;
       member.definedAt(range);
