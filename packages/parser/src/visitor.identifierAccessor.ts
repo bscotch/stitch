@@ -309,13 +309,12 @@ export function visitIdentifierAccessor(
               ),
               this.PROCESSOR.project.types,
             );
-            if (expectedType?.type.type[0].generic) {
+            if (expectedType?.type.type[0]?.generic) {
               // Then we want to set the type of this generic
               // for use by the return type.
               generics[expectedType.type.type[0].name!] ||= new TypeStore();
-              generics[expectedType.type.type[0].name!].addType(
-                getTypes(inferredType),
-              );
+              generics[expectedType.type.type[0].name!].type =
+                getTypes(inferredType);
             }
             if (isMethodCall && argIdx === 0) {
               methodSelf = getTypeOfKind(inferredType, [
@@ -333,16 +332,16 @@ export function visitIdentifierAccessor(
             : functionType?.returns) || this.ANY;
         const returnTypes = getTypes(returnType);
         // Handle utility types
-        const itemType = returnTypes[0].items?.type[0].generic
+        const itemType = returnTypes[0]?.items?.type[0]?.generic
           ? generics[returnTypes[0].items.type[0].name!]
-          : returnTypes[0].items;
-        const itemTypeName = itemType?.type[0].name;
-        if (returnTypes[0].kind === 'InstanceType') {
+          : returnTypes[0]?.items;
+        const itemTypeName = itemType?.type[0]?.name;
+        if (returnTypes[0]?.kind === 'InstanceType') {
           returnType =
             (itemTypeName
               ? this.PROCESSOR.project.types.get(`Id.Instance.${itemTypeName}`)
               : this.PROCESSOR.project.types.get('Id.Instance')!) || this.ANY;
-        } else if (returnTypes[0].kind === 'ObjectType') {
+        } else if (returnTypes[0]?.kind === 'ObjectType') {
           returnType =
             (itemTypeName
               ? this.PROCESSOR.project.types.get(
@@ -350,7 +349,7 @@ export function visitIdentifierAccessor(
                 )
               : this.PROCESSOR.project.types.get('Asset.GMObject')!) ||
             this.ANY;
-        } else if (returnTypes[0].generic && generics[returnTypes[0].name!]) {
+        } else if (returnTypes[0]?.generic && generics[returnTypes[0].name!]) {
           // Then we want to return the inferred type instead
           // of the generic
           returnType = generics[returnTypes[0].name!];

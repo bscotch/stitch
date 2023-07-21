@@ -481,7 +481,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           this.PROCESSOR.addDiagnostic(
             'INVALID_OPERATION',
             range,
-            `Type does not allow dot accessors.`,
+            `Cannot add variables to this type.`,
           );
         }
       } else {
