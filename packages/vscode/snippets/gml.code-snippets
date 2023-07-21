@@ -37,6 +37,30 @@
     "description": "Create a JSDoc type",
     "body": ["/// @self ${1:Any}"]
   },
+  "GML: JSDoc Template": {
+    "scope": "gml",
+    "prefix": "/// @template",
+    "description": "Create a JSDoc Template",
+    "body": ["/// @template {${2:Any}} ${1} ${0}"]
+  },
+  "GML: JSDoc GlobalVar": {
+    "scope": "gml",
+    "prefix": "/// @globalvar",
+    "description": "Create a JSDoc Global Variable",
+    "body": ["/// @globalvar {${2:Any}} ${1} ${0}"]
+  },
+  "GML: JSDoc InstanceVar": {
+    "scope": "gml",
+    "prefix": "/// @instancevar",
+    "description": "Create a JSDoc Instance Variable",
+    "body": ["/// @instancevar {${2:Any}} ${1} ${0}"]
+  },
+  "GML: JSDoc LocalVar": {
+    "scope": "gml",
+    "prefix": "/// @localvar",
+    "description": "Create a JSDoc Local Variable",
+    "body": ["/// @localvar {${2:Any}} ${1} ${0}"]
+  },
   "GML: JSDoc Description": {
     "scope": "gml",
     "prefix": "/// @description",
