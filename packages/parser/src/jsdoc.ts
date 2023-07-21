@@ -16,6 +16,7 @@ interface MatchGroups {
   localvar?: string;
   globalvar?: string;
   instancevar?: string;
+  template?: string;
   unknown?: string;
   typeGroup?: string;
   typeUnion?: string;
@@ -43,6 +44,7 @@ const patterns = {
   localvar: `@(localvar|var)\\b`,
   globalvar: `@globalvar\\b`,
   instancevar: `@(instancevar|prop(erty)?)\\b`,
+  template: `@template\\b`,
   unknown: `@\\w+\\b`,
 };
 const typeGroupPattern = `(?<typeGroup>{\\s*(?<typeUnion>[^}]*?)?\\s*})`;
@@ -70,8 +72,13 @@ for (const tagName of typeTags) {
 // Params
 patterns.param = `${patterns.param}(\\s+${typeGroupPattern})?\\s+(${paramNamePattern}|${optionalParamNamePattern})`;
 
-// Variable declarations
-for (const tagName of ['localvar', 'globalvar', 'instancevar'] as const) {
+// Variable declaration patterns
+for (const tagName of [
+  'localvar',
+  'globalvar',
+  'instancevar',
+  'template',
+] as const) {
   patterns[
     tagName
   ] = `${patterns[tagName]}(\\s+${typeGroupPattern})?\\s+${paramNamePattern}`;
@@ -101,6 +108,7 @@ export type JsdocKind =
   | 'function'
   | 'description'
   | 'type'
+  | 'template'
   | 'param'
   | 'self'
   | 'localvar'
@@ -119,6 +127,7 @@ export interface Jsdoc<T extends JsdocKind = JsdocKind> extends IRange {
   description: string;
   ignore?: boolean;
   deprecated?: boolean;
+  templates?: Jsdoc<'template'>[];
   params?: Jsdoc<'param'>[];
   /** Return type as GML typestring */
   returns?: Jsdoc<'returns'>;
@@ -376,7 +385,11 @@ export function parseJsdoc(
 
       // Based on the tag type, update the doc
       const impliesFunction =
-        parts.function || parts.param || parts.returns || parts.pure;
+        parts.function ||
+        parts.param ||
+        parts.returns ||
+        parts.pure ||
+        parts.template;
       if (impliesFunction) {
         doc.kind = 'function';
       }
@@ -397,9 +410,10 @@ export function parseJsdoc(
         // Unset the describe target
         describing = null;
       }
-      // Handle params and variables
+      // Handle params, templates, and variables
       else if (
         parts.param ||
+        parts.template ||
         parts.localvar ||
         parts.globalvar ||
         parts.instancevar
@@ -409,6 +423,8 @@ export function parseJsdoc(
         // per group.
         const kind = parts.param
           ? 'param'
+          : parts.template
+          ? 'template'
           : parts.localvar
           ? 'localvar'
           : parts.globalvar
@@ -430,6 +446,9 @@ export function parseJsdoc(
         if (kind === 'param') {
           doc.params = doc.params || [];
           doc.params.push(entity as Jsdoc<'param'>);
+        } else if (kind === 'template') {
+          doc.templates = doc.templates || [];
+          doc.templates.push(entity as Jsdoc<'template'>);
         } else {
           doc.kind = kind;
           doc.type = entity.type;
