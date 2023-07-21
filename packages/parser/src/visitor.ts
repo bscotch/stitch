@@ -102,7 +102,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     }
     if (!item) {
       item = this.PROCESSOR.globalSelf.getMember(name, excludeParents);
-      if (item?.instance) {
+      if (item?.instance && name !== 'id') {
         // Then this is a native "instance" variable. Ignore it
         // to allow falling back on the self scope.
         item = undefined;
