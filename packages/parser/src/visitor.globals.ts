@@ -95,7 +95,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     return this.REGISTER_GLOBAL_BY_NAME(name.image, range);
   }
 
-  REGISTER_GLOBAL_BY_NAME(name: string, range: Range) {
+  REGISTER_GLOBAL_BY_NAME(name: string, range: Range, isNotDef = false) {
     // Create it if it doesn't already exist.
     let symbol = this.PROCESSOR.globalSelf.getMember(name);
     if (!symbol) {
@@ -104,8 +104,10 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       this.PROCESSOR.globalSelf.addMember(symbol);
     }
     // Ensure it's defined here.
-    symbol.definedAt(range);
-    symbol.addRef(range, true);
+    if (!isNotDef) {
+      symbol.definedAt(range);
+    }
+    symbol.addRef(range, !isNotDef);
     symbol.global = true;
     symbol.macro = false; // Reset macro status
     return symbol;
@@ -187,7 +189,34 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
 
     if (name && isGlobal) {
       // Add the function to a table of functions
-      const isConstructor = !!children.constructorSuffix?.[0];
+      const constructorNode = children.constructorSuffix?.[0];
+      let parentConstructs: StructType | undefined;
+
+      if (constructorNode?.children.Identifier) {
+        // Ensure that the parent type exists
+        const parentName = constructorNode.children.Identifier[0]?.image;
+        if (parentName) {
+          const parentNameRange = this.PROCESSOR.range(
+            constructorNode.children.Identifier[0],
+          );
+          const parentSignifier = this.REGISTER_GLOBAL_BY_NAME(
+            parentName,
+            parentNameRange,
+            true,
+          );
+          // Ensure it has a constructs type
+          parentConstructs =
+            parentSignifier.type.type[0].constructs ||
+            new Type('Struct').named(parentName);
+          parentSignifier.type.type[0].constructs = parentConstructs;
+          parentConstructs.signifier = parentSignifier;
+          this.PROCESSOR.project.types.set(
+            `Struct.${parentName}`,
+            parentConstructs,
+          );
+        }
+      }
+
       const signifier = this.REGISTER_GLOBAL(children)!;
       // Make sure that the types all exist
       let type = signifier.getTypeByKind('Function');
@@ -200,13 +229,18 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         signifier.setType(type);
       }
       // If it's a constructor, ensure the type exists
-      if (isConstructor && !type.constructs) {
-        type.constructs = new Type('Struct').named(name.image);
+      if (constructorNode && !type.constructs) {
+        type.constructs = (this.PROCESSOR.project.types.get(
+          `Struct.${name.image}`,
+        ) || new Type('Struct').named(name.image)) as StructType;
         type.constructs.signifier = signifier;
         this.PROCESSOR.project.types.set(
           `Struct.${name.image}`,
           type.constructs,
         );
+      }
+      if (parentConstructs && type.constructs) {
+        type.constructs.parent = parentConstructs;
       }
     }
     this.visit(children.blockStatement);
