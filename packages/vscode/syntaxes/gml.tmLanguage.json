@@ -352,7 +352,7 @@
         },
         {
           "name": "comment.block.documentation.gml",
-          "begin": "(///|\\*)\\s*(@(?:param|arg|argument|parameter|localvar|var|globalvar|prop|property|instancevar))\\b(?:\\s*(?:(\\{)\\s*([^}]+)\\s*(\\})))?(?:\\s*(?:(\\[)?\\s*([_$[:alpha:]][_$[:alnum:]]*)\\s*(\\])?))?",
+          "begin": "(///|\\*)\\s*(@(?:param|arg|argument|parameter|localvar|var|globalvar|prop|property|instancevar|template))\\b(?:\\s*(?:(\\{)\\s*([^}]+)\\s*(\\})))?(?:\\s*(?:(\\[)?\\s*([_$[:alpha:]][_$[:alnum:]]*)\\s*(\\])?))?",
           "end": "$",
           "beginCaptures": {
             "1": {

@@ -1,3 +1,4 @@
+import { undent } from '@bscotch/utility';
 import { expect } from 'chai';
 import { parseFeatherTypeString } from './jsdoc.feather.js';
 import { parseJsdoc } from './jsdoc.js';
@@ -158,5 +159,25 @@ describe('JSDocs', function () {
     const parsed = parseJsdoc(jsdoc);
     expect(parsed.kind).to.equal('self');
     expect(parsed.self?.content).to.equal('Struct.Hello');
+  });
+
+  it('can parse template tags', function () {
+    const jsdoc = undent`
+      /// @template T
+      /// @template {String} U
+      /// @param {T} first
+      /// @returns {U}
+    `;
+    const parsed = parseJsdoc(jsdoc);
+    expect(parsed.kind).to.equal('function');
+    expect(parsed.templates).to.have.lengthOf(2);
+    expect(parsed.templates![0].name?.content).to.equal('T');
+    expect(parsed.templates![0].type).to.be.undefined;
+    expect(parsed.templates![1].name?.content).to.equal('U');
+    expect(parsed.templates![1].type?.content).to.equal('String');
+    expect(parsed.params).to.have.lengthOf(1);
+    expect(parsed.params![0].name?.content).to.equal('first');
+    expect(parsed.params![0].type?.content).to.equal('T');
+    expect(parsed.returns?.type?.content).to.equal('U');
   });
 });

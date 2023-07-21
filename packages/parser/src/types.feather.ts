@@ -1,3 +1,4 @@
+import { arrayWrapped } from '@bscotch/utility';
 import {
   parseFeatherTypeString,
   type FeatherType,
@@ -8,9 +9,32 @@ import { Type } from './types.js';
 import { primitiveNames } from './types.primitives.js';
 import { ok } from './util.js';
 
+export type KnownTypesMap = Map<string, Type>;
+export type GenericsMap = Record<string, Type[]>;
+export type KnownOrGenerics = KnownTypesMap | GenericsMap;
+
+function findInKnownOrGenerics(
+  identifier: string,
+  knownTypes: KnownTypesMap | KnownOrGenerics[],
+): Type[] | undefined {
+  const collections = arrayWrapped(knownTypes);
+  for (const collection of collections) {
+    let found: Type | Type[] | undefined;
+    if (collection instanceof Map) {
+      found = collection.get(identifier);
+    } else {
+      found = collection[identifier];
+    }
+    if (found) {
+      return arrayWrapped(found);
+    }
+  }
+  return;
+}
+
 export function typeFromFeatherString(
   typeString: string,
-  knownTypes: Map<string, Type>,
+  knownTypes: KnownTypesMap | KnownOrGenerics[],
   addMissing: boolean,
 ): Type[] {
   const parsed = parseFeatherTypeString(typeString);
@@ -29,7 +53,7 @@ export function typeFromFeatherString(
  */
 export function typeFromIdentifier(
   identifier: string,
-  knownTypes: Map<string, Type>,
+  knownTypes: KnownTypesMap | KnownOrGenerics[],
   addMissing: boolean,
   __isRootRequest = true,
 ): Type {
@@ -42,7 +66,7 @@ export function typeFromIdentifier(
     normalizedName as any,
   );
 
-  const knownType = knownTypes.get(identifier);
+  const knownType = findInKnownOrGenerics(identifier, knownTypes)?.[0];
   if (knownType && isObjectType) {
     // Need a derived type to prevent mutation of the parent!
     return knownType.derive();
@@ -66,7 +90,10 @@ export function typeFromIdentifier(
       const derivedTyped = type.derive().named(nameParts.join('.'));
       // Types should only be auto-added when loading the native spec
       if (addMissing) {
-        knownTypes.set(identifier, derivedTyped);
+        const map = arrayWrapped(knownTypes).find(
+          (collection) => collection instanceof Map,
+        ) as KnownTypesMap | undefined;
+        map?.set(identifier, derivedTyped);
       }
       return derivedTyped;
     }
@@ -102,6 +129,19 @@ export function typeFromParsedJsdocs(
   } else if (jsdoc.kind === 'function') {
     const type = new Type('Function').describe(jsdoc.description);
     let i = 0;
+    const generics: Record<string, Type[]> = {};
+    for (const generic of jsdoc.templates || []) {
+      generics[generic.name!.content] = typeFromFeatherString(
+        generic.type?.content || 'Any',
+        knownTypes,
+        addMissing,
+      );
+      // Flag them all as generic, named after the generic name
+      for (const genericType of generics[generic.name!.content]) {
+        genericType.generic = true;
+        genericType.named(generic.name!.content);
+      }
+    }
     if (jsdoc.self) {
       type.context = typeFromFeatherString(
         jsdoc.self!.content,
@@ -112,7 +152,7 @@ export function typeFromParsedJsdocs(
     if (jsdoc.returns) {
       const returnType = typeFromFeatherString(
         jsdoc.returns.type!.content,
-        knownTypes,
+        [knownTypes, generics],
         addMissing,
       );
       type.addReturnType(returnType);
@@ -121,7 +161,11 @@ export function typeFromParsedJsdocs(
       const member = type.addParameter(i, param.name!.content);
       if (param.type) {
         member.setType(
-          typeFromFeatherString(param.type.content, knownTypes, addMissing),
+          typeFromFeatherString(
+            param.type.content,
+            [knownTypes, generics],
+            addMissing,
+          ),
         );
       }
       i++;
@@ -134,7 +178,7 @@ export function typeFromParsedJsdocs(
 }
 export function typeFromParsedFeatherString(
   node: FeatherTypeUnion | FeatherType,
-  knownTypes: Map<string, Type>,
+  knownTypes: KnownTypesMap | KnownOrGenerics[],
   addMissing: boolean,
 ): Type[] {
   if (node.kind === 'type') {

@@ -49,6 +49,7 @@
     {"id":{"name":"FunctionSelf","path":"scripts/FunctionSelf/FunctionSelf.yy",},},
     {"id":{"name":"Reactions","path":"scripts/Reactions/Reactions.yy",},},
     {"id":{"name":"o_world_element","path":"objects/o_world_element/o_world_element.yy",},},
+    {"id":{"name":"Generics","path":"scripts/Generics/Generics.yy",},},
   ],
   "RoomOrderNodes": [
     {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
@@ -56,4 +57,5 @@
   "TextureGroups": [
     {"resourceType":"GMTextureGroup","resourceVersion":"1.3","name":"Default","autocrop":true,"border":2,"compressFormat":"bz2","directory":"","groupParent":null,"isScaled":true,"loadType":"default","mipsToGenerate":0,"targets":-1,},
   ],
+  "Options": [],
 }

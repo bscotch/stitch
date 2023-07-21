@@ -110,6 +110,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * is intended to be immutable.
    */
   readonly = false;
+  /**
+   * If this is a type used as a generic, then this will be true
+   */
+  generic = false;
 
   /** Named members of Structs and Enums */
   protected _members: Map<string, Signifier> | undefined = undefined;
