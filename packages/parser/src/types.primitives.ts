@@ -5,6 +5,8 @@ export const withableTypes = [
   'Id.Instance',
 ] as const;
 
+export const utilityTypes = ['InstanceType', 'ObjectType'] as const;
+
 export const withableTypesLower = withableTypes.map((t) =>
   t.toLowerCase(),
 ) as Lowercase<WithablePrimitiveName>[];
@@ -85,5 +87,6 @@ export const primitiveNames = [
   'EnumMember',
   'Unknown',
   'Never', // For things that throw
+  ...utilityTypes,
 ] as const;
 Object.freeze(Object.seal(primitiveNames));

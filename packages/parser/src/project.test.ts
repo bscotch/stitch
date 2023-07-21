@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { logger } from './logger.js';
+import type { Asset } from './project.asset.js';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
 import { Signifier } from './signifiers.js';
@@ -317,6 +318,7 @@ describe('Project', function () {
     //#endregion FUNCTIONS
 
     await validateCrossFileDiagnostics(project);
+    validateGenerics(project);
     validateWithContexts(project);
     validateFunctionContexts(project);
     validateJsdocs(project);
@@ -339,6 +341,30 @@ describe('Project', function () {
     const project = await Project.initialize(projectDir);
   });
 });
+
+function validateGenerics(project: Project) {
+  const scriptFile = project.getAssetByName('Generics')!.gmlFile;
+  const o_object = project.getAssetByName('o_object')! as Asset<'objects'>;
+
+  // SIMPLE IDENTIFY FUNCTION
+  const identifyFunc = scriptFile.getReferenceAt(4, 15)!.item;
+  const returns = identifyFunc.type.returns;
+  expect(returns).to.have.lengthOf(1);
+  expect(returns[0].type[0].name).to.equal('T');
+
+  const sampleType = scriptFile.getReferenceAt(8, 9)!.item.type.type[0];
+  const returnedSampleType = scriptFile.getReferenceAt(11, 11)!.item.type
+    .type[0];
+  ok(sampleType === returnedSampleType);
+
+  // TODO InstanceType<>
+  const returnedInstance = scriptFile.getReferenceAt(24, 7)!.item.type.type[0];
+  ok(returnedInstance === o_object.instanceType);
+
+  // TODO ObjectType<>
+  const returnedObject = scriptFile.getReferenceAt(25, 7)!.item.type.type[0];
+  ok(returnedObject === o_object.assetType);
+}
 
 async function validateCrossFileDiagnostics(project: Project) {
   // In VSCode, we were finding that when a Create event was updated

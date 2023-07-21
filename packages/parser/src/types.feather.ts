@@ -193,10 +193,13 @@ export function typeFromParsedFeatherString(
       // Then we need to create a new type instead of mutating
       // the one we found.
       type = type.derive();
-      if (type.kind.match(/^(Array|Struct|Id.Ds)/)) {
-        for (const subtype of subtypes) {
-          type.addItemType(subtype);
-        }
+      // While only some types are "containers", we can
+      // go ahead and add any contained types and worry
+      // about the consequences later. That way we don't
+      // need to keep updating this as we add more container
+      // types.
+      for (const subtype of subtypes) {
+        type.addItemType(subtype);
       }
       // TODO: Else create a diagnostic?
     }

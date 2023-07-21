@@ -1,6 +1,7 @@
 import { arrayWrapped, isArray } from '@bscotch/utility';
 import type { Signifier } from './signifiers.js';
-import type { Type, TypeStore } from './types.js';
+import { KnownTypesMap } from './types.feather.js';
+import { Type, TypeStore } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 
 export function isTypeOfKind<T extends PrimitiveName>(
@@ -154,4 +155,31 @@ function narrowsType(narrowType: Type, broadType: Type): boolean {
   }
 
   return true;
+}
+
+export function normalizeInferredType(
+  type: Type | TypeStore | (Type | TypeStore)[],
+  knownTypes: KnownTypesMap,
+) {
+  const enumMemberType = getTypeOfKind(type, 'EnumMember');
+  const instanceUtilityType = getTypeOfKind(type, 'InstanceType');
+  const assetUtilityType = getTypeOfKind(type, 'ObjectType');
+  if (enumMemberType) {
+    const enumMemberSignifier = enumMemberType.signifier;
+    const enumType = enumMemberSignifier?.parent;
+    if (enumType) {
+      return enumType;
+    }
+  } else if (instanceUtilityType || assetUtilityType) {
+    // return the contained type. If it's empty,
+    // return the generic container type.
+    const items = instanceUtilityType?.items || assetUtilityType?.items!;
+    if (!items.type.length) {
+      return instanceUtilityType
+        ? knownTypes.get('Id.Instance') || new Type('Id.Instance')
+        : knownTypes.get('Asset.GMObject') || new Type('Asset.GMObject');
+    }
+    return items;
+  }
+  return type;
 }

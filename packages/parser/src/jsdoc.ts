@@ -135,7 +135,7 @@ export interface Jsdoc<T extends JsdocKind = JsdocKind> extends IRange {
   name?: JsdocComponent;
   /** If is an optional param */
   optional?: boolean;
-  /** The GML typestring, for use by a @param, @type, @localvar, etc */
+  /** The GML typestring, for use by a param, type, localvar, etc */
   type?: JsdocComponent;
   /** For functions or self docs, the GML typestring for an @self/@context */
   self?: JsdocComponent;

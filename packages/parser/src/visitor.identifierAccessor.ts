@@ -15,10 +15,14 @@ import {
   Range,
   fixITokenLocation,
 } from './project.location.js';
-import { getTypeOfKind, getTypeStoreOrType, getTypes } from './types.checks.js';
+import {
+  getTypeOfKind,
+  getTypeStoreOrType,
+  getTypes,
+  normalizeInferredType,
+} from './types.checks.js';
 import { Type, TypeStore } from './types.js';
 import { withableTypes } from './types.primitives.js';
-import { normalizeInferredType } from './util.js';
 import type { GmlSignifierVisitor } from './visitor.js';
 
 export function visitIdentifierAccessor(
@@ -88,6 +92,7 @@ export function visitIdentifierAccessor(
           withCtxKind(ctx, 'assignment'),
         )
       : this.ANY,
+    this.PROCESSOR.project.types,
   );
 
   // For each suffix in turn, try to figure out how it changes the scope,
@@ -297,9 +302,12 @@ export function visitIdentifierAccessor(
               functionCtx.self = methodSelf;
             }
             const expectedType = functionType?.getParameter(argIdx);
-            const inferredType = this.assignmentRightHandSide(
-              token.children.assignmentRightHandSide[0].children,
-              functionCtx,
+            const inferredType = normalizeInferredType(
+              this.assignmentRightHandSide(
+                token.children.assignmentRightHandSide[0].children,
+                functionCtx,
+              ),
+              this.PROCESSOR.project.types,
             );
             if (expectedType?.type.type[0].generic) {
               // Then we want to set the type of this generic
@@ -319,12 +327,30 @@ export function visitIdentifierAccessor(
           }
         }
         // The returntype of this function may be used in another accessor
-        let returnType =
+        let returnType: TypeStore | Type =
           (usesNew && isLastSuffix
             ? functionType?.constructs
             : functionType?.returns) || this.ANY;
         const returnTypes = getTypes(returnType);
-        if (returnTypes[0].generic && generics[returnTypes[0].name!]) {
+        // Handle utility types
+        const itemType = returnTypes[0].items?.type[0].generic
+          ? generics[returnTypes[0].items.type[0].name!]
+          : returnTypes[0].items;
+        const itemTypeName = itemType?.type[0].name;
+        if (returnTypes[0].kind === 'InstanceType') {
+          returnType =
+            (itemTypeName
+              ? this.PROCESSOR.project.types.get(`Id.Instance.${itemTypeName}`)
+              : this.PROCESSOR.project.types.get('Id.Instance')!) || this.ANY;
+        } else if (returnTypes[0].kind === 'ObjectType') {
+          returnType =
+            (itemTypeName
+              ? this.PROCESSOR.project.types.get(
+                  `Asset.GMObject.${itemTypeName}`,
+                )
+              : this.PROCESSOR.project.types.get('Asset.GMObject')!) ||
+            this.ANY;
+        } else if (returnTypes[0].generic && generics[returnTypes[0].name!]) {
           // Then we want to return the inferred type instead
           // of the generic
           returnType = generics[returnTypes[0].name!];

@@ -180,4 +180,21 @@ describe('JSDocs', function () {
     expect(parsed.params![0].type?.content).to.equal('T');
     expect(parsed.returns?.type?.content).to.equal('U');
   });
+
+  it('can parse utility types', function () {
+    const jsdoc = undent`
+      /// @template {Asset.GMObject} T
+      /// @param {T} first
+      /// @returns {InstanceType<T>}
+    `;
+    const parsed = parseJsdoc(jsdoc);
+    expect(parsed.kind).to.equal('function');
+    expect(parsed.templates).to.have.lengthOf(1);
+    expect(parsed.templates![0].name?.content).to.equal('T');
+    expect(parsed.templates![0].type?.content).to.equal('Asset.GMObject');
+    expect(parsed.params).to.have.lengthOf(1);
+    expect(parsed.params![0].name?.content).to.equal('first');
+    expect(parsed.params![0].type?.content).to.equal('T');
+    expect(parsed.returns?.type?.content).to.equal('InstanceType<T>');
+  });
 });

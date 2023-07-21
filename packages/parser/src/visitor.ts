@@ -38,7 +38,11 @@ import {
 import type { Code } from './project.code.js';
 import { Range, Reference } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import { getTypeOfKind, getTypes } from './types.checks.js';
+import {
+  getTypeOfKind,
+  getTypes,
+  normalizeInferredType,
+} from './types.checks.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
 import {
   EnumType,
@@ -48,7 +52,7 @@ import {
   type StructType,
 } from './types.js';
 import { withableTypes } from './types.primitives.js';
-import { assert, normalizeInferredType } from './util.js';
+import { assert } from './util.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
 import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
 import {
@@ -334,6 +338,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         children.assignmentRightHandSide[0].children,
         withCtxKind(ctx, 'assignment'),
       ),
+      this.PROCESSOR.project.types,
     );
     signifier.setType(inferredType);
   }
@@ -415,6 +420,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
               withCtxKind(ctx, 'assignment'),
             )
           : new Type('Any'),
+        this.PROCESSOR.project.types,
       );
 
       if (docs) {
@@ -521,6 +527,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           children.assignmentRightHandSide[0].children,
           withCtxKind(ctx, 'assignment'),
         ),
+        this.PROCESSOR.project.types,
       );
       const forceOverride = docs?.jsdoc.kind === 'type';
       if (signifier && (!signifier.isTyped || wasUndeclared || forceOverride)) {
@@ -769,6 +776,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
                 withCtxKind(ctx, 'assignment'),
               )
             : this.ANY,
+          this.PROCESSOR.project.types,
         );
         if (docs) {
           signifier.describe(docs.jsdoc.description);
