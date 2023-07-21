@@ -204,11 +204,16 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
             parentNameRange,
             true,
           );
+          let parentType = parentSignifier.type.type[0];
+          if (!parentType) {
+            parentType = new Type('Function').named(parentName);
+            parentSignifier.setType(parentType);
+          }
+
           // Ensure it has a constructs type
           parentConstructs =
-            parentSignifier.type.type[0].constructs ||
-            new Type('Struct').named(parentName);
-          parentSignifier.type.type[0].constructs = parentConstructs;
+            parentType.constructs || new Type('Struct').named(parentName);
+          parentType.constructs = parentConstructs;
           parentConstructs.signifier = parentSignifier;
           this.PROCESSOR.project.types.set(
             `Struct.${parentName}`,

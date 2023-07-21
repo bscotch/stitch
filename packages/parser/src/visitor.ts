@@ -719,7 +719,10 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         context,
       );
     }
-    assert(type, 'No type found for primary expression');
+    if (!type) {
+      logger.warn('No type found for primary expression');
+    }
+    type ||= this.ANY;
     // Override the type if we have a unary operator
 
     const prefixOperator = children.UnaryPrefixOperator?.[0].image;

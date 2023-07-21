@@ -178,7 +178,7 @@ export function visitFunctionExpression(
     }
 
     // Add a reference to the jsdoc type if it is associated with a signifier
-    if (paramDoc?.type && param.type.type[0].signifier) {
+    if (paramDoc?.type && param.type.type[0]?.signifier) {
       // Then we need a reference in the JSDocs
       param.type.type[0].signifier.addRef(
         Range.from(this.PROCESSOR.file, paramDoc.type),
