@@ -30,6 +30,13 @@ export class Native {
   }
 
   protected load() {
+    const idInstance = new Type('Id.Instance');
+    this.types.set('Id.Instance', idInstance);
+    idInstance.parent = this.objectInstanceBase;
+    const assetGmObject = new Type('Asset.GMObject');
+    assetGmObject.parent = this.objectInstanceBase;
+    this.types.set('Asset.GMObject', assetGmObject);
+
     this.loadConstants();
     this.loadVariables();
     this.loadStructs();
@@ -46,15 +53,8 @@ export class Native {
 
     // Have the base Id.Instance and Asset.GmObject types
     // use the object instance base as their parent, and make them readonly.
-    const idInstance = new Type('Id.Instance');
-    idInstance.parent = this.objectInstanceBase;
     idInstance.readonly = true;
-    this.types.set('Id.Instance', idInstance);
-
-    const assetGmObject = new Type('Asset.GMObject');
-    assetGmObject.parent = this.objectInstanceBase;
     assetGmObject.readonly = true;
-    this.types.set('Asset.GMObject', assetGmObject);
   }
 
   protected loadVariables() {

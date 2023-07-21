@@ -706,12 +706,12 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     ctx: VisitorContext,
   ): Type<'Struct'> {
     // We may already have a struct type attached to a signfier,
-    // which should be updated instaed of replaced.
-    const structType =
-      ctx.signifier?.getTypeByKind('Struct') ||
-      (ctx.docs?.type[0]?.kind === 'Struct'
+    // which should be updated instead of replaced.
+    const structFromDocs =
+      ctx.docs?.type[0]?.kind === 'Struct'
         ? (ctx.docs?.type[0] as StructType)
-        : undefined);
+        : undefined;
+    const structType = structFromDocs || ctx.signifier?.getTypeByKind('Struct');
     const struct =
       structType ||
       this.PROCESSOR.createStruct(children.StartBrace[0], children.EndBrace[0]);

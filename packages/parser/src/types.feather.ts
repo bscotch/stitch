@@ -37,19 +37,23 @@ export function typeFromIdentifier(
     identifier.match(/^[A-Z][A-Z0-9._]*$/i),
     `Invalid type name ${identifier}`,
   );
+  const normalizedName = identifier?.toLocaleLowerCase?.();
+  const isObjectType = ['asset.gmobject', 'id.instance'].includes(
+    normalizedName as any,
+  );
+
   const knownType = knownTypes.get(identifier);
-  if (knownType) {
+  if (knownType && isObjectType) {
+    // Need a derived type to prevent mutation of the parent!
+    return knownType.derive();
+  } else if (knownType) {
     return knownType;
   }
 
-  const normalizedName = identifier?.toLocaleLowerCase?.();
   const primitiveType = primitiveNames.find(
     (n) => n?.toLocaleLowerCase?.() === normalizedName,
   );
-  if (
-    primitiveType &&
-    !['asset.gmobject', 'id.instance'].includes(normalizedName as any)
-  ) {
+  if (primitiveType && !isObjectType) {
     return new Type(primitiveType);
   }
 
