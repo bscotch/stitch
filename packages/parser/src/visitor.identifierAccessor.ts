@@ -205,7 +205,7 @@ export function visitIdentifierAccessor(
                 this.PROCESSOR.addDiagnostic(
                   'INVALID_OPERATION',
                   suffix.location!,
-                  `Cannot add properties to immutable types.`,
+                  `Unknown property.`,
                 );
               }
             } else {
