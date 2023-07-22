@@ -17,12 +17,10 @@ export class Native {
     readonly globalSelf: StructType,
     readonly types: Map<string, Type>,
   ) {
-    // Initialize all of the primitives so we can guarantee
-    // they exist on any lookup.
-    // primitiveNames.forEach((name) => {
-    //   const type = new Type(name);
-    //   this.types.set(name, type);
-    // });
+    // Add the ArgumentIdentity type as a generic
+    const argIdType = new Type('ArgumentIdentity');
+    argIdType.generic = true;
+    this.types.set('ArgumentIdentity', argIdType);
   }
 
   get version() {

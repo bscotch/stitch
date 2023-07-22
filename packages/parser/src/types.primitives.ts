@@ -23,6 +23,7 @@ export const baseNames = [
   'String',
   'Struct',
   'Undefined',
+  'ArgumentIdentity',
 ] as const;
 Object.freeze(Object.seal(baseNames));
 
