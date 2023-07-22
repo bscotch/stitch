@@ -34,6 +34,13 @@ GameMaker includes a type system called "Feather", which Stitch tries to provide
       // ...
     }
     ```
+- **`@self` support for Function types:** Normally the `@self` tag should have its type set to something with-able, like a Struct, Instance, or Object type. Stitch also allows using function types -- if that function is a constructor the constructed type will be used as the context, otherwise the function's context will be used.
+    ```js
+    /// @self {Function.my_func}
+    function do_stuff() {
+      // ...
+    }
+    ```
 - **`@type` tag:** Stitch supports the [JSDoc `@type` tag](https://jsdoc.app/tags-type.html), which allows you to specify the type of a symbol inline in a JSDoc comment. Just use it right before a symbol declaration:
     ```js
     /// @type {Array<String>}

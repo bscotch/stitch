@@ -81,14 +81,18 @@ export function visitFunctionExpression(
   functionType.returns ||= new TypeStore();
 
   // Determine the function context.
-  const docContext = getTypeOfKind(
+  let docContextRaw =
     docs?.jsdoc.kind === 'self'
       ? docs.type[0]
       : docs?.jsdoc.kind === 'function'
       ? docs.type[0]?.context
-      : undefined,
-    withableTypes,
-  );
+      : undefined;
+  if (docContextRaw && docContextRaw.kind === 'Function') {
+    // Then we use the function's construct if it is a constructor, else its context.
+    docContextRaw = docContextRaw.constructs || docContextRaw.context;
+  }
+
+  const docContext = getTypeOfKind(docContextRaw, withableTypes);
   let context: WithableType | undefined;
 
   if (isConstructor) {
