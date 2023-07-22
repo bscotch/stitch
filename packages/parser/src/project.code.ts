@@ -476,13 +476,15 @@ export class Code {
 
   protected computeUndeclaredSymbolDiagnostics() {
     this.diagnostics.UNDECLARED_VARIABLE_REFERENCE = [];
+    const undeclaredSymbols = new Set<Signifier>();
     for (const ref of this._refs) {
-      if (ref.item.def || ref.item.native) {
+      if (ref.item.def || ref.item.native || undeclaredSymbols.has(ref.item)) {
         continue;
       }
       this.diagnostics.UNDECLARED_VARIABLE_REFERENCE.push(
         Diagnostic.error(`Undeclared symbol \`${ref.item.name}\``, ref, 'warn'),
       );
+      undeclaredSymbols.add(ref.item);
     }
   }
 
