@@ -135,7 +135,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         item = scope.global;
         break;
       case 'Self':
-        // Then we're reference our current self context
+        // Then we're referencing our current self context
         item = scope.self;
         // If this self scope is also global, emit a diagnostic
         // (should not use self to refer to global)
@@ -145,6 +145,23 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
             children.Self![0],
             '`self` refers to the global scope here, which is probably unintentional.',
           );
+        } else {
+          item.signifier?.addRef(range);
+        }
+        break;
+      case 'Other':
+        // Then we're referencing the self-scope upstream of this one.
+        item = this.PROCESSOR.outerSelf;
+        // If this self scope is also global, emit a diagnostic
+        // (should not use self to refer to global)
+        if (this.PROCESSOR.outerSelf === scope.global) {
+          this.PROCESSOR.addDiagnostic(
+            'GLOBAL_SELF',
+            children.Self![0],
+            '`other` refers to the global scope here, which is probably unintentional.',
+          );
+        } else {
+          item.signifier?.addRef(range);
         }
         break;
       default:

@@ -99,6 +99,10 @@ export class SignifierProcessor {
     return this.selfStack.at(-1) || this.project.self;
   }
 
+  get outerSelf() {
+    return this.selfStack.at(-2) || this.project.self;
+  }
+
   protected nextScope(token: CstNodeLocation, fromTokenEnd: boolean) {
     this.scope = this.scope.createNext(token, fromTokenEnd);
     this.file.scopes.push(this.scope);
