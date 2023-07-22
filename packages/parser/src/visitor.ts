@@ -762,8 +762,12 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
     // The self-scope remains unchanged for struct literals!
     for (const entry of children.structLiteralEntry || []) {
-      const docs = this.PROCESSOR.consumeJsdoc();
       const parts = entry.children;
+      // Visit the JSDocs, if there are any
+      if (parts.jsdoc) {
+        this.visit(parts.jsdoc, ctx);
+      }
+      const docs = this.PROCESSOR.consumeJsdoc();
       // The name is either a direct variable name or a string literal.
       let name: string;
       let range: Range;
@@ -781,11 +785,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       const signifier = struct.addMember(name)!.definedAt(range);
       signifier.instance = true;
       signifier.addRef(range, true);
-
-      // Parse any Jsdocs
-      if (parts.jsdoc) {
-        this.visit(parts.jsdoc, ctx);
-      }
 
       const assignedToFunction =
         parts.assignmentRightHandSide?.[0].children.functionExpression?.[0]
