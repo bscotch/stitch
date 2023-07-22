@@ -238,6 +238,19 @@ export function visitIdentifierAccessor(
       case 'functionArguments':
         const functionType = getTypeOfKind(accessing.type, 'Function');
 
+        // If this is a mixin call, then we need to ensure that the context
+        // includes the variables created by the mixin function.
+        // if (functionType?.signifier?.mixin) {
+        //   debugger;
+        // }
+        if (functionType?.signifier?.mixin && functionType.context) {
+          const variables = functionType.context;
+          // debugger;
+          for (const member of variables.listMembers()) {
+            this.PROCESSOR.currentSelf.replaceMember(member);
+          }
+        }
+
         /**
          * The native `method` function has the unique property
          * of causing its first argument to be used as the scope

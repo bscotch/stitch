@@ -62,6 +62,13 @@ GameMaker includes a type system called "Feather", which Stitch tries to provide
     function instance_create(obj){/*...*/}
     var inst = instance_create(my_object); // inst gets type "Id.Instance.my_object", assuming my_object is an object ID.
     ```
+- **`@mixin`:** Stitch provides the `@mixin` tag to indicate that a function will be called inside of constructor/create contexts in order to add variables to the caller. Any context that calls such a function will have those variables added to its `self`, providing editor support for this pattern:
+    ```js
+    /// @mixin
+    function add_variables() {
+      added_variable = 42;
+    }
+    ```
 - **JSDoc Autocompletes:** Stitch provides autocompletes and syntax highlighting for Feather types within JSDoc comments.
 - **JSDoc helpers:** Stitch provides snippets for JSDoc tags, and context menus to copy the Feather type of a symbol to your clipboard.
 

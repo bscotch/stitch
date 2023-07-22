@@ -242,7 +242,7 @@ repository:
   jsdoc:
     patterns:
       - name: comment.block.documentation.gml
-        match: (///|\*)\s*(@(?:description|desc|deprecated|ignore|pure))\b.*$\n?
+        match: (///|\*)\s*(@(?:description|desc|deprecated|ignore|pure|mixin))\b.*$\n?
         captures:
           '1': { name: punctuation.definition.comment.gml }
           '2': { name: storage.type.class.gml }

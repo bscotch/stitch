@@ -319,6 +319,32 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return member;
   }
 
+  /**
+   * Replace a member, ensuring that all references are updated to
+   * point to the new member.
+   */
+  replaceMember(newMember: Signifier): Signifier | undefined {
+    if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
+      return this.parent?.replaceMember(newMember);
+    }
+    const existing = this.getMember(newMember.name, true);
+    if (!existing) {
+      return this.addMember(newMember);
+    }
+    // Update all of the original refs to point to this signifier,
+    // and add them to the new member. That way wherever they are
+    // being reference elsewhere they'll now be accurate.
+    for (const ref of existing.refs) {
+      ref.item = newMember;
+      newMember.refs.add(ref);
+      ref.file.dirty = true;
+    }
+    // TODO: There may be some jank here related to inheritance...
+    this._members ||= new Map();
+    this._members.set(newMember.name, newMember);
+    return newMember;
+  }
+
   removeMember(name: string) {
     const member = this.getMember(name, true);
     if (!member) {

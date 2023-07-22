@@ -11,6 +11,7 @@ export const enum Flag {
   Optional = 1 << 9,
   Macro = 1 << 10, // Is a macro
   Asset = 1 << 11, // Is an asset
+  Mixin = 1 << 12, // Is a mixin
   ReadWrite = Readable | Writable,
 }
 
@@ -106,6 +107,13 @@ export class Flags {
   }
   set deprecated(deprecated: boolean) {
     this.setFlag(Flag.Deprecated, deprecated);
+  }
+
+  get mixin() {
+    return !!(this.flags & Flag.Mixin);
+  }
+  set mixin(mixin: boolean) {
+    this.setFlag(Flag.Mixin, mixin);
   }
 
   deprecate(deprecated = true): this {

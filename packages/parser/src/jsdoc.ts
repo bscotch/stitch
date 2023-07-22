@@ -18,6 +18,7 @@ interface MatchGroups {
   instancevar?: string;
   template?: string;
   unknown?: string;
+  mixin?: string;
   typeGroup?: string;
   typeUnion?: string;
   delim?: string;
@@ -37,6 +38,7 @@ const patterns = {
   function: `@func(tion)?\\b`,
   returns: `@returns?\\b`,
   pure: `@pure\\b`,
+  mixin: `@mixin\\b`,
   ignore: `@ignore\\b`,
   deprecated: `@deprecated\\b`,
   self: `@(context|self)\\b`,
@@ -127,6 +129,7 @@ export interface Jsdoc<T extends JsdocKind = JsdocKind> extends IRange {
   description: string;
   ignore?: boolean;
   deprecated?: boolean;
+  mixin?: boolean;
   templates?: Jsdoc<'template'>[];
   params?: Jsdoc<'param'>[];
   /** Return type as GML typestring */
@@ -496,6 +499,8 @@ export function parseJsdoc(
         doc.deprecated = true;
       } else if (parts.ignore) {
         doc.ignore = true;
+      } else if (parts.mixin) {
+        doc.mixin = true;
       }
       break;
     }

@@ -251,7 +251,7 @@ export class Reference extends Range {
   /** If this is reference marks the declaration */
   isDef = false;
 
-  constructor(readonly item: Signifier, start: Position, end: Position) {
+  constructor(public item: Signifier, start: Position, end: Position) {
     super(start, end);
   }
 

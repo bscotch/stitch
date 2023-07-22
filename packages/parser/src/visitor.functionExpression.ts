@@ -34,6 +34,7 @@ export function visitFunctionExpression(
   const isConstructor = !!children.constructorSuffix;
   const bodyLocation = children.blockStatement[0].location!;
   const isFunctionStatement = ctx.ctxKindStack.at(-1) === 'functionStatement';
+  const isMixin = !!docs?.jsdoc.mixin;
 
   /** If this function has a corresponding signfiier, either
    * because it is a function declaration or because it is a
@@ -70,6 +71,9 @@ export function visitFunctionExpression(
   if (signifier && docs?.jsdoc.deprecated) {
     signifier.deprecated = true;
   }
+  if (signifier && docs?.jsdoc.mixin) {
+    signifier.mixin = true;
+  }
   functionType.constructs = isConstructor
     ? functionType.constructs || this.PROCESSOR.createStruct(bodyLocation)
     : undefined;
@@ -96,6 +100,15 @@ export function visitFunctionExpression(
     // is from the prior argument, and we aren't overriding
     // using jsdoc.
     context = ctx.self as StructType;
+  } else if (isMixin) {
+    // Then we want to use a new struct type as the context,
+    // allowing calls to this function to add those variables to themselves.
+    // Try to keep the old context if possible.
+    context =
+      functionType.context &&
+      functionType.context !== this.PROCESSOR.currentSelf
+        ? functionType.context
+        : this.PROCESSOR.createStruct(bodyLocation);
   }
   ctx.self = undefined; // Just to make sure nothing downstream uses it
 
