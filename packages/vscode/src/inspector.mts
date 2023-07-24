@@ -34,7 +34,6 @@ class ObjectParentFolder extends StitchTreeItemBase<'inspector-object-parents'> 
 
   onSetParent(parent: Asset<'objects'> | undefined) {
     this.provider.onUpdate(this);
-    this.provider.view.reveal(this, { expand: true });
   }
 }
 

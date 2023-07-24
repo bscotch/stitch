@@ -404,10 +404,31 @@ export class StitchProvider
         if (doc.languageId !== 'gml') {
           return;
         }
+
+        // Only reprocess on trigger characters, since autocompletes are the most sensitive to changes.
+        if (
+          'contentChanges' in event &&
+          event.contentChanges.length === 1 &&
+          event.contentChanges[0].text.length
+        ) {
+          const isTriggerCharacter = [
+            ...completionTriggerCharacters,
+            ' ',
+            '\r\n',
+            '\n',
+            ';',
+            ',',
+          ].includes(event.contentChanges[0].text as any);
+          if (!isTriggerCharacter) {
+            return;
+          }
+        }
+
         if (this.provider.processingFiles.has(doc.uri.fsPath)) {
           logger.info('Already processing file', doc.uri.fsPath);
           return;
         }
+
         this.provider.diagnosticCollection.delete(doc.uri);
         // Add the processing promise to a map so
         // that other functionality can wait for it
