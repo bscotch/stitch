@@ -20,6 +20,7 @@ import {
   Scope,
 } from './project.location.js';
 import { Signifier } from './signifiers.js';
+import { getTypeOfKind } from './types.checks.js';
 import { Type } from './types.js';
 import { assert, isBeforeRange, isInRange } from './util.js';
 import { registerGlobals } from './visitor.globals.js';
@@ -203,9 +204,18 @@ export class Code {
     }
     if (scopeRange.isDotAccessor) {
       // Then only return self variables
-      // TODO: Filter out those that cannot be dot-accessed on global
+      // Filter out those that cannot be dot-accessed on global
       // (native functions, etc.)
-      return scopeRange.self.listMembers() || [];
+      if (scopeRange.self === this.project.self) {
+        return this.project.self.listMembers().filter((x) => {
+          // Only stuff defined in the project could appear as an autocomplete
+          const definedInProject = !x.native && !!x.def?.file;
+          const canLiveOnGlobal = !x.macro && !getTypeOfKind(x, ['Enum']);
+          return definedInProject && canLiveOnGlobal;
+        });
+      } else {
+        return scopeRange.self.listMembers().filter((x) => x.def || x.native);
+      }
     }
     // Add to a flat list, and remove all entries that don't have
     // a definition if they are not native

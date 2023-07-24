@@ -637,7 +637,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         this.functionExpression(
           children.functionExpression[0].children,
           context,
-        ),
+        ) || this.ANY,
       ];
     }
     return [this.ANY];

@@ -191,7 +191,6 @@ export class StitchProvider
           }
         }
       }
-      info('No definition found for', item?.name);
       return;
     });
   }
@@ -202,7 +201,6 @@ export class StitchProvider
     token: CancellationToken,
     context: CompletionContext,
   ): Promise<vscode.CompletionItem[] | undefined> {
-    info('provideCompletionItems', document, position);
     // If we're already processing this file, wait for it to finish so that we get up-to-date completions.
     await this.processingFiles.get(document.uri.fsPath);
     const gmlFile = this.getGmlFile(document);
@@ -228,7 +226,6 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.SignatureHelp | undefined {
-    info('provideSignatureHelp', document, position);
     const argRange = this.getFunctionArg(document, position);
     if (!argRange) {
       return;
@@ -256,7 +253,6 @@ export class StitchProvider
    * and pass an update request to that project.
    */
   async updateFile(document: vscode.TextDocument): Promise<Code | undefined> {
-    info('updateFile', document);
     const code = this.getGmlFile(document);
     await code?.reload(document.getText(), {
       reloadDirty: true,
@@ -277,7 +273,6 @@ export class StitchProvider
     document: vscode.TextDocument,
     position: vscode.Position,
   ): FunctionArgRange | undefined {
-    info('getFunctionArg', document);
     const offset = document.offsetAt(position);
     return this.getGmlFile(document)?.getFunctionArgRangeAt(offset);
   }
@@ -296,7 +291,6 @@ export class StitchProvider
       return;
     }
     const offset = document.offsetAt(position);
-    info('getSymbol', document, offset);
     const file = this.getGmlFile(document);
     if (!file) {
       warn(`Could not find file for ${document}`);
@@ -420,6 +414,7 @@ export class StitchProvider
             ',',
           ].includes(event.contentChanges[0].text as any);
           if (!isTriggerCharacter) {
+            logger.info('Ignoring change', event.contentChanges[0].text);
             return;
           }
         }

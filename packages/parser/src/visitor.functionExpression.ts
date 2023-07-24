@@ -13,11 +13,16 @@ export function visitFunctionExpression(
   this: GmlSignifierVisitor,
   children: FunctionExpressionCstChildren,
   ctx: VisitorContext,
-): Type<'Function'> {
+): Type<'Function'> | undefined {
   const docs = ctx.docs || this.PROCESSOR.consumeJsdoc();
   ctx.docs = undefined;
   const assignedTo = ctx.signifier;
   ctx.signifier = undefined;
+
+  if (!children.blockStatement) {
+    // Then we're in a recovery situation and should just move along
+    return;
+  }
 
   // Reset the list of return values
   ctx = {
