@@ -131,6 +131,10 @@ export class GameMakerTreeProvider
     this.view.reveal(treeItem);
   }
 
+  async setParent(objectItem: TreeAsset) {
+    console.log(objectItem);
+  }
+
   async createEvent(objectItem: TreeAsset) {
     const asset = objectItem.asset;
     assertLoudly(
@@ -415,6 +419,7 @@ export class GameMakerTreeProvider
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),
       registerCommand('stitch.assets.newObject', this.createObject.bind(this)),
       registerCommand('stitch.assets.newEvent', this.createEvent.bind(this)),
+      registerCommand('stitch.assets.setParent', this.setParent.bind(this)),
       registerCommand('stitch.assets.reveal', this.reveal.bind(this)),
       registerCommand(
         'stitch.assets.filters.delete',

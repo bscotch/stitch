@@ -98,6 +98,15 @@ export const commands = {
       group: 'navigation@2',
     },
   },
+  'stitch.assets.setParent': {
+    command: 'stitch.assets.setParent',
+    title: 'Set Parent...',
+    enablement: when.hasProjects,
+    [$showInViewItemContextMenu]: {
+      when: `(${when.assetTreeFocused} && ${when.viewItemIsObject}) || (${when.inspectorFocused} && ${when.viewItemIsInspectorParents})`,
+      group: 'navigation@1',
+    },
+  },
   'stitch.assets.newEvent': {
     command: 'stitch.assets.newEvent',
     title: 'New Event...',
@@ -152,13 +161,6 @@ export const commands = {
       when: when.isInlineProject,
       group: 'inline@3',
     },
-  },
-  'stitch.refresh': {
-    command: 'stitch.refresh',
-    title: 'Stitch: Refresh Project',
-    shortTitle: 'Refresh Project',
-    icon: '$(refresh)',
-    [$showInPalette]: true,
   },
   'stitch.types.copy': {
     command: 'stitch.types.copy',

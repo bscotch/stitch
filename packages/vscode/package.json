@@ -90,6 +90,11 @@
         "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
       },
       {
+        "command": "stitch.assets.setParent",
+        "title": "Set Parent...",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.assets.newEvent",
         "title": "New Event...",
         "enablement": "stitch.projectCount > 0"
@@ -112,12 +117,6 @@
         "title": "Stitch: Clean Project Cache",
         "shortTitle": "Clean Cache",
         "icon": "$(history)"
-      },
-      {
-        "command": "stitch.refresh",
-        "title": "Stitch: Refresh Project",
-        "shortTitle": "Refresh Project",
-        "icon": "$(refresh)"
       },
       {
         "command": "stitch.types.copy",
@@ -338,6 +337,11 @@
           "group": "navigation@2"
         },
         {
+          "command": "stitch.assets.setParent",
+          "when": "(view == bscotch-stitch-resources && viewItem == asset-objects) || (view == bscotch-stitch-inspector && viewItem == inspector-object-parents)",
+          "group": "navigation@1"
+        },
+        {
           "command": "stitch.assets.newEvent",
           "when": "(view == bscotch-stitch-resources && viewItem == asset-objects) || (view == bscotch-stitch-inspector && viewItem == inspector-object-events)",
           "group": "navigation@1"
@@ -377,9 +381,6 @@
         },
         {
           "command": "stitch.clean"
-        },
-        {
-          "command": "stitch.refresh"
         }
       ],
       "editor/context": [
