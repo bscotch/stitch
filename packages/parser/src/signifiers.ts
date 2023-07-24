@@ -12,6 +12,11 @@ export class Signifier extends Refs(Flags) {
   idx: number | undefined = undefined;
   /** The Type containing this member */
   readonly parent: Type;
+  /**
+   * If this is a native entity (built into GameMaker),
+   * this is set to the name of the module it came from.
+   */
+  native?: string = undefined;
 
   constructor(parent: Type, readonly name: string, type?: Type | Type[]) {
     super();

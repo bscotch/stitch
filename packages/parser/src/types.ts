@@ -394,4 +394,8 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   ): Type[] {
     return typeFromFeatherString(typeString, knownTypes, addMissing);
   }
+
+  static get Any() {
+    return new Type('Any');
+  }
 }

@@ -7,11 +7,10 @@ export const enum Flag {
   Local = 1 << 5,
   Global = 1 << 6,
   Parameter = 1 << 7,
-  Native = 1 << 8, // Is a built-in
-  Optional = 1 << 9,
-  Macro = 1 << 10, // Is a macro
-  Asset = 1 << 11, // Is an asset
-  Mixin = 1 << 12, // Is a mixin
+  Optional = 1 << 8,
+  Macro = 1 << 9, // Is a macro
+  Asset = 1 << 10, // Is an asset
+  Mixin = 1 << 11, // Is a mixin
   ReadWrite = Readable | Writable,
 }
 
@@ -45,13 +44,6 @@ export class Flags {
   }
   set optional(optional: boolean) {
     this.setFlag(Flag.Optional, optional);
-  }
-
-  get native() {
-    return !!(this.flags & Flag.Native);
-  }
-  set native(native: boolean) {
-    this.setFlag(Flag.Native, native);
   }
 
   get instance() {

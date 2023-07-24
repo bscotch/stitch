@@ -1,5 +1,4 @@
 import { pathy, Pathy } from '@bscotch/pathy';
-import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { Yy, Yyp, YypFolder, yypFolderSchema, YypResource } from '@bscotch/yy';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
@@ -338,7 +337,6 @@ export class Project {
         );
         signifier.global = true;
         signifier.writable = false;
-        signifier.native = true;
         this.self.addMember(signifier);
       }
     }
@@ -424,43 +422,12 @@ export class Project {
       const config = await stitchConfig.read();
       runtimeVersion = config.runtimeVersion;
     }
-    if (!runtimeVersion) {
-      logger.warn('No stitch config found, looking up runtime version');
-      // Look up the runtime version that matches the project's IDE version.
-      await this.yypWaiter;
-      const usingRelease = await GameMakerIde.findRelease({
-        ideVersion: this.ideVersion,
-      });
-      // const releases = await fetchReleasesSummaryWithNotes();
-      // const usingRelease = releases.find(
-      //   (r) => r.ide.version === this.ideVersion,
-      // );
-      // Look up the GML Spec file that matches the project's runtime version.
-      runtimeVersion = usingRelease?.runtime.version;
-    }
-    if (runtimeVersion) {
-      // Find the locally installed runtime folder
-      const installedRuntime = await GameMakerLauncher.findInstalledRuntime({
-        version: runtimeVersion,
-      });
-      if (installedRuntime) {
-        const gmlSpecPath = pathy(installedRuntime.directory).join(
-          'GmlSpec.xml',
-        );
-        await gmlSpecPath.exists({ assert: true });
-        this.native = await Native.from(
-          gmlSpecPath.absolute,
-          this.self,
-          this.types,
-        );
-      }
-    }
-    // If we don't have a spec yet, use the fallback
-    if (!this.native) {
-      logger.error('No spec found, using fallback');
-      this.native = await Native.from(undefined, this.self, this.types);
-      ok(this.native, 'Failed to load fallback GML spec');
-    }
+    await this.yypWaiter; // To ensure that `this.ideVersion` exists
+    const specFiles = await Native.listSpecFiles({
+      ideVersion: this.ideVersion,
+      runtimeVersion,
+    });
+    this.native = await Native.from(specFiles, this.self, this.types);
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);
   }
 

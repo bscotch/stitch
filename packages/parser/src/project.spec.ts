@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { ZodTypeAny, z } from 'zod';
 import { normalizeTypeString } from './util.js';
 export type GmlSpec = z.output<typeof gmlSpecSchema>;
 export type GmlSpecFunction = GmlSpec['functions'][number];
@@ -17,6 +17,14 @@ const numberSchema = z
   .transform((v) => +v);
 const featureFlagSchema = z.enum(['rollback', 'audio-fx']);
 
+const optionalTuple = (types: [ZodTypeAny, ...ZodTypeAny[]]) => {
+  return z.preprocess((d) => {
+    if (!Array.isArray(d) || d.length === 0) {
+      return undefined;
+    }
+  }, z.tuple(types).optional());
+};
+
 const gmlSpecFunctionSchema = z
   .object({
     $: z
@@ -29,7 +37,7 @@ const gmlSpecFunctionSchema = z
         FeatureFlag: featureFlagSchema.optional(),
       })
       .strict(),
-    Description: z.tuple([z.string()]).optional(),
+    Description: optionalTuple([z.string()]),
     Parameter: z
       .array(
         z
@@ -50,6 +58,7 @@ const gmlSpecFunctionSchema = z
   })
   .strict()
   .transform((v) => ({
+    module: '',
     name: v.$.Name,
     description: v.Description?.[0],
     deprecated: v.$.Deprecated,
@@ -84,6 +93,7 @@ const gmlSpecVariableSchema = z
   })
   .strict()
   .transform((v) => ({
+    module: '',
     name: v.$.Name,
     description: v._,
     type: v.$.Type,
@@ -111,6 +121,7 @@ const gmlSpecConstantSchema = z
   })
   .strict()
   .transform((v) => ({
+    module: '',
     name: v.$.Name,
     description: v._,
     class: v.$.Class,
@@ -155,6 +166,7 @@ const gmlSpecStructureSchema = z
   })
   .strict()
   .transform((v) => ({
+    module: '',
     name: v.$.Name,
     featureFlag: v.$.FeatureFlag,
     properties: v.Field,
@@ -190,6 +202,7 @@ const gmlSpecEnumerationSchema = z
   })
   .strict()
   .transform((v) => ({
+    module: '',
     name: v.$.Name,
     members: v.Member,
   }));
@@ -200,35 +213,73 @@ export const gmlSpecSchema = z
       .object({
         $: z.object({
           RuntimeVersion: z.string(),
+          Module: z.string().default('Unknown'),
         }),
-        Functions: z.tuple([
-          z.object({
-            Function: z.array(gmlSpecFunctionSchema),
-          }),
-        ]),
-        Variables: z.tuple([
-          z.object({ Variable: z.array(gmlSpecVariableSchema) }),
-        ]),
-        Constants: z.tuple([
-          z.object({ Constant: z.array(gmlSpecConstantSchema) }),
-        ]),
-        Structures: z.tuple([
-          z.object({ Structure: z.array(gmlSpecStructureSchema) }),
-        ]),
+        // Should have length 0 or 1
+        Functions: z
+          .array(
+            z.object({
+              Function: z.array(gmlSpecFunctionSchema).default([]),
+            }),
+          )
+          .optional(),
+        // Should have length 0 or 1
+        Variables: z
+          .array(
+            z.object({
+              Variable: z.array(gmlSpecVariableSchema).default([]),
+            }),
+          )
+          .optional(),
+        // Should have length 0 or 1
+        Constants: z
+          .array(
+            z.object({
+              Constant: z.array(gmlSpecConstantSchema).default([]),
+            }),
+          )
+          .optional(),
+        // Should have length 0 or 1
+        Structures: z
+          .array(
+            z.object({
+              Structure: z.array(gmlSpecStructureSchema).default([]),
+            }),
+          )
+          .optional(),
+        // Should have length 0 or 1
         Enumerations: z
-          .tuple([z.object({ Enumeration: z.array(gmlSpecEnumerationSchema) })])
+          .array(
+            z.object({
+              Enumeration: z.array(gmlSpecEnumerationSchema).default([]),
+            }),
+          )
           .optional(),
       })
       .strict()
       .transform((v) => {
-        return {
+        const out = {
           runtime: v.$.RuntimeVersion,
-          functions: v.Functions[0].Function,
-          variables: v.Variables[0].Variable,
-          constants: v.Constants[0].Constant,
-          structures: v.Structures[0].Structure,
+          module: v.$.Module,
+          functions: v.Functions?.[0].Function || [],
+          variables: v.Variables?.[0].Variable || [],
+          constants: v.Constants?.[0].Constant || [],
+          structures: v.Structures?.[0].Structure || [],
           enumerations: v.Enumerations?.[0].Enumeration || [],
         };
+        // Update all the entries to have the correct module name.
+        for (const entryType of [
+          'functions',
+          'variables',
+          'constants',
+          'structures',
+          'enumerations',
+        ] as const) {
+          for (const entry of out[entryType]) {
+            entry.module = out.module;
+          }
+        }
+        return out;
       }),
   })
   .strict()

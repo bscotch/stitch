@@ -1,7 +1,9 @@
-import { pathy } from '@bscotch/pathy';
+import { Pathy, pathy } from '@bscotch/pathy';
+import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
+import { logger } from './logger.js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
 import { Signifier } from './signifiers.js';
 import { Type, type StructType } from './types.js';
@@ -9,25 +11,24 @@ import { addSpriteInfoStruct } from './types.sprites.js';
 import { assert } from './util.js';
 
 export class Native {
-  protected spec!: GmlSpec;
+  protected specs!: GmlSpec[];
   objectInstanceBase!: StructType;
 
   protected constructor(
-    readonly filePath: string,
     readonly globalSelf: StructType,
     readonly types: Map<string, Type>,
-  ) {
+  ) {}
+
+  protected load() {
+    assert(this.specs.length, 'No specs to load!');
+
     // Add the ArgumentIdentity type as a generic
     const argIdType = new Type('ArgumentIdentity');
     argIdType.generic = true;
     this.types.set('ArgumentIdentity', argIdType);
-  }
 
-  get version() {
-    return this.spec.runtime;
-  }
-
-  protected load() {
+    // Prepare the base object instance type.
+    this.objectInstanceBase = new Type('Struct');
     const idInstance = new Type('Id.Instance');
     this.types.set('Id.Instance', idInstance);
     idInstance.parent = this.objectInstanceBase;
@@ -35,16 +36,26 @@ export class Native {
     assetGmObject.parent = this.objectInstanceBase;
     this.types.set('Asset.GMObject', assetGmObject);
 
-    this.loadConstants();
-    this.loadVariables();
-    this.loadStructs();
-    this.loadFunctions();
+    // The `throw` function is not in the spec, so add it manually.
+    const throwsType = new Type('Function').named('throw');
+    throwsType.addParameter(0, 'message', Type.Any, false);
+    const throws = new Signifier(this.globalSelf, 'throw', throwsType);
+    this.globalSelf.replaceMember(throws);
+    this.types.set('Function.throw', throwsType);
 
-    // Create the base object instance type using instance variables.
-    this.objectInstanceBase = new Type('Struct');
+    // Process all of the found specs
+    for (const spec of this.specs) {
+      logger.info(`Loading spec for module ${spec.module}`);
+      this.loadConstants(spec);
+      this.loadVariables(spec);
+      this.loadStructs(spec);
+      this.loadFunctions(spec);
+    }
+
+    // Update the base instance type using instance variables.
     for (const member of this.globalSelf.listMembers()) {
       if (member.instance) {
-        this.objectInstanceBase.addMember(member);
+        this.objectInstanceBase.replaceMember(member);
       }
     }
     this.objectInstanceBase.readonly = true;
@@ -55,43 +66,23 @@ export class Native {
     assetGmObject.readonly = true;
   }
 
-  protected loadVariables() {
-    for (const variable of this.spec.variables) {
+  protected loadVariables(spec: GmlSpec) {
+    for (const variable of spec.variables) {
       assert(variable, 'Variable must be defined');
       const type = Type.fromFeatherString(variable.type, this.types, true);
       const symbol = new Signifier(this.globalSelf, variable.name, type)
         .describe(variable.description)
         .deprecate(variable.deprecated);
       symbol.writable = variable.writable;
-      symbol.native = true;
+      symbol.native = variable.module;
       symbol.global = !variable.instance;
       symbol.instance = variable.instance;
-      this.globalSelf.addMember(symbol);
+      this.globalSelf.replaceMember(symbol);
     }
   }
 
-  protected loadFunctions() {
-    // As of writing, the `throw` function was not in the spec.
-    this.spec.functions.push({
-      name: 'throw',
-      description: 'Throws an error with the given message.',
-      parameters: [
-        {
-          name: 'message',
-          type: 'Any',
-          description: 'The message to throw. Can be any type.',
-          optional: false,
-          coerce: undefined,
-        },
-      ],
-      returnType: 'Never',
-      deprecated: false,
-      locale: undefined,
-      featureFlag: undefined,
-      pure: true,
-    });
-
-    for (const func of this.spec.functions) {
+  protected loadFunctions(spec: GmlSpec) {
+    for (const func of spec.functions) {
       const typeName = `Function.${func.name}`;
       // Need a type and a symbol for each function.
       const type = (
@@ -118,12 +109,12 @@ export class Native {
         func.deprecated,
       );
       symbol.writable = false;
-      symbol.native = true;
-      this.globalSelf.addMember(symbol);
+      symbol.native = func.module;
+      this.globalSelf.replaceMember(symbol);
     }
   }
 
-  protected loadConstants() {
+  protected loadConstants(spec: GmlSpec) {
     // Handle the constants.
     // Each constant value represents a unique expression
     // of its type (e.g. it's not just a Real, it's the Real
@@ -136,7 +127,7 @@ export class Native {
     // First group them all by "class". The empty-string
     // class represents the absence of a class.
     const constantsByClass = new Map<string, GmlSpecConstant[]>();
-    for (const constant of this.spec.constants) {
+    for (const constant of spec.constants) {
       const klass = constant.class || '';
       constantsByClass.set(klass, constantsByClass.get(klass) || []);
       constantsByClass.get(klass)!.push(constant);
@@ -146,14 +137,16 @@ export class Native {
       if (!klass) {
         for (const constant of constants) {
           assert(constant, 'Constant must be defined');
-          const symbol = new Signifier(
-            this.globalSelf,
-            constant.name,
-            Type.fromFeatherString(constant.type, this.types, true),
-          ).describe(constant.description);
+          const symbol =
+            this.globalSelf.getMember(constant.name) ||
+            new Signifier(
+              this.globalSelf,
+              constant.name,
+              Type.fromFeatherString(constant.type, this.types, true),
+            ).describe(constant.description);
           symbol.writable = false;
-          symbol.native = true;
-          this.globalSelf.addMember(symbol);
+          symbol.native = constant.module;
+          this.globalSelf.replaceMember(symbol);
         }
         continue;
       }
@@ -169,36 +162,35 @@ export class Native {
       // Create the base type for the class.
       const classTypeName = `Constant.${klass}`;
       const typeString = [...typeNames.values()].join('|');
-      const classType = Type.fromFeatherString(
-        typeString,
-        this.types,
-        true,
-      )[0].named(klass);
-      const existingType = this.types.get(classTypeName);
-      assert(!existingType, `Type ${classTypeName} already exists`);
+      const classType =
+        this.types.get(classTypeName) ||
+        Type.fromFeatherString(typeString, this.types, true)[0].named(klass);
 
       this.types.set(classTypeName, classType);
 
       // Create symbols for each class member.
       for (const constant of constants) {
-        const symbol = new Signifier(this.globalSelf, constant.name).describe(
-          constant.description,
-        );
+        const symbol =
+          this.globalSelf.getMember(constant.name) ||
+          new Signifier(this.globalSelf, constant.name).describe(
+            constant.description,
+          );
         symbol.writable = false;
         symbol.def = {}; // Prevent "not found" errors
+        symbol.native = constant.module;
         symbol.setType(classType);
         const typeName = `${classTypeName}.${constant.name}`;
         this.types.set(typeName, classType);
 
-        this.globalSelf.addMember(symbol);
+        this.globalSelf.replaceMember(symbol);
       }
     }
   }
 
-  protected loadStructs() {
+  protected loadStructs(spec: GmlSpec) {
     // Create struct types. Each one extends the base Struct type.
     addSpriteInfoStruct(this.types);
-    for (const struct of this.spec.structures) {
+    for (const struct of spec.structures) {
       if (!struct.name) {
         continue;
       }
@@ -209,15 +201,16 @@ export class Native {
       this.types.set(typeName, structType);
 
       for (const prop of struct.properties) {
-        assert(prop, 'Property must be defined');
-        const type = Type.fromFeatherString(prop.type, this.types, true);
-        structType
-          .addMember(prop.name, type, prop.writable)!
-          .describe(prop.description);
+        if (prop && !structType.getMember(prop.name)) {
+          const type = Type.fromFeatherString(prop.type, this.types, true);
+          structType
+            .addMember(prop.name, type, prop.writable)!
+            .describe(prop.description);
+        }
       }
     }
     // Set all native structs as read-only
-    for (const struct of this.spec.structures) {
+    for (const struct of spec.structures) {
       if (!struct.name) {
         continue;
       }
@@ -229,16 +222,36 @@ export class Native {
   }
 
   static async from(
-    filePath: string | undefined,
+    filePaths: Pathy[] | undefined,
     globalSelf: StructType,
     types: Map<string, Type>,
   ): Promise<Native> {
-    filePath ||= Native.fallbackGmlSpecPath.absolute;
-    const parsedSpec = await Native.parse(filePath);
-    const spec = new Native(filePath, globalSelf, types);
-    spec.spec = parsedSpec;
-    spec.load();
-    return spec;
+    filePaths = filePaths || [Native.fallbackGmlSpecPath];
+    const parsed = (
+      await Promise.all(
+        filePaths.map((path) => {
+          try {
+            return Native.parse(path.absolute);
+          } catch (err) {
+            logger.error(err);
+          }
+          return;
+        }),
+      )
+    ).filter((x) => !!x) as GmlSpec[];
+    const native = new Native(globalSelf, types);
+    native.specs = parsed;
+    // Ensure the base module is always first
+    native.specs.sort((a, b) => {
+      if (a.module.toLowerCase() === 'base') {
+        return -1;
+      } else if (b.module.toLowerCase() === 'base') {
+        return 1;
+      }
+      return 0;
+    });
+    native.load();
+    return native;
   }
 
   static async parse(specFilePath: string): Promise<GmlSpec> {
@@ -246,11 +259,67 @@ export class Native {
     const asJson = await parseStringPromise(specRaw.replace('\ufeff', ''), {
       trim: true,
       normalize: true,
+      emptyTag() {
+        return {};
+      },
+      // Prevent surprises if modules provide single entries
+      explicitArray: true,
     }); // Prevent possible errors: "Non-white space before first tag"
-    return gmlSpecSchema.parse(asJson);
+    try {
+      return gmlSpecSchema.parse(asJson);
+    } catch (err) {
+      logger.error(`Error parsing spec file "${specFilePath}"`);
+      throw err;
+    }
   }
 
   static readonly fallbackGmlSpecPath = pathy(import.meta.url).resolveTo(
     '../../assets/GmlSpec.xml',
   );
+
+  static async listSpecFiles(options: {
+    runtimeVersion?: string;
+    ideVersion?: string;
+  }): Promise<Pathy[]> {
+    if (!options.runtimeVersion && options.ideVersion) {
+      logger.warn('No stitch config found, looking up runtime version');
+      // Look up the runtime version that matches the project's IDE version.
+      const usingRelease = await GameMakerIde.findRelease({
+        ideVersion: options.ideVersion,
+      });
+      options.runtimeVersion = usingRelease?.runtime.version;
+    }
+    if (options.runtimeVersion) {
+      // Find the locally installed runtime folder
+      const installedRuntime = await GameMakerLauncher.findInstalledRuntime({
+        version: options.runtimeVersion,
+      });
+      if (installedRuntime) {
+        logger.info(
+          `Looking for spec files in "${installedRuntime.directory.absolute}"`,
+        );
+        const specs = await pathy(
+          installedRuntime.directory,
+        ).listChildrenRecursively({
+          filter(path) {
+            return path.basename === 'GmlSpec.xml' || undefined;
+          },
+          maxDepth: 3,
+        });
+        if (specs.length) {
+          return specs;
+        } else {
+          logger.warn(
+            'Found runtime, but could not find any GmlSpec.xml files!',
+          );
+        }
+      } else {
+        logger.warn(
+          `Could not find runtime version ${options.runtimeVersion} locally!`,
+        );
+      }
+    }
+    logger.warn('Falling back to default GmlSpec.xml included with Stitch.');
+    return [Native.fallbackGmlSpecPath];
+  }
 }
