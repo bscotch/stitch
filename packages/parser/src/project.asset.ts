@@ -136,6 +136,11 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return this._parent;
   }
   set parent(parent: Asset<'objects'> | undefined) {
+    const oldParent = this._parent;
+    if (oldParent === parent) {
+      // No change!
+      return;
+    }
     this._parent = parent;
     if (parent) {
       // The instanceType parent is a struct that holds all of this
@@ -145,6 +150,32 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     } else {
       this.variables!.parent = this.project.native.objectInstanceBase;
     }
+    // Do we need to change the yy file?
+    const yy = this.yy as YyObject;
+    const parentFromYy = this.project.getAssetByName(yy.parentObjectId?.name);
+    if (parentFromYy !== parent) {
+      // Then we need to update the yy. Just fire it off async for now so
+      // that this function can remain synchronous.
+      if (!parent) {
+        yy.parentObjectId = null;
+      } else {
+        yy.parentObjectId = parent.resource.id;
+      }
+      // TODO: Maybe reprocess?
+      this.updateDiagnostics();
+      void this.saveYy();
+    }
+  }
+
+  /**
+   * Get the entire parent heirarchy, with immediate first
+   * and most-distant last
+   */
+  get parents(): Asset<'objects'>[] {
+    if (!this.parent) {
+      return [];
+    }
+    return [this.parent, ...this.parent.parents];
   }
 
   /**
@@ -264,7 +295,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return this.gmlFiles.get(path.absolute);
   }
 
-  updateParent() {
+  protected updateParent() {
     if (this.assetKind !== 'objects') {
       return;
     }

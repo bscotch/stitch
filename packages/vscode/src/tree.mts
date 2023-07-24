@@ -9,8 +9,9 @@ import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import type { StitchProvider } from './extension.provider.mjs';
+import type { ObjectParentFolder } from './inspector.mjs';
 import { registerCommand, uriFromCodeFile } from './lib.mjs';
-import { warn } from './log.mjs';
+import { logger, warn } from './log.mjs';
 import {
   GameMakerFolder,
   GameMakerProjectFolder,
@@ -131,8 +132,55 @@ export class GameMakerTreeProvider
     this.view.reveal(treeItem);
   }
 
-  async setParent(objectItem: TreeAsset) {
-    console.log(objectItem);
+  async setParent(objectItem: ObjectParentFolder | TreeAsset) {
+    const asset = objectItem.asset;
+    if (!isAssetOfKind(asset, 'objects')) {
+      return;
+    }
+    const possibleParents: Asset<'objects'>[] = [];
+    for (const [, possibleParent] of asset.project.assets) {
+      if (!isAssetOfKind(possibleParent, 'objects')) {
+        continue;
+      }
+      // Ensure no circularity
+      if (possibleParent === asset || possibleParent.parents.includes(asset)) {
+        continue;
+      }
+      possibleParents.push(possibleParent);
+    }
+    const parentOptions = possibleParents
+      .map((p) => ({
+        label: p.name,
+        asset: p as Asset<'objects'> | undefined,
+        description: undefined as string | undefined,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+    if (asset.parent) {
+      parentOptions.unshift({
+        label: 'Objects',
+        //@ts-expect-error
+        kind: vscode.QuickPickItemKind.Separator,
+      });
+      parentOptions.unshift({
+        label: 'None',
+        description: 'Remove the parent object',
+        asset: undefined,
+      });
+    }
+    const parentChoice = await vscode.window.showQuickPick(parentOptions, {
+      title: 'Select the parent object',
+    });
+    if (!parentChoice || (!parentChoice.asset && !asset.parent)) {
+      return;
+    }
+    logger.info('Setting parent', parentChoice);
+    asset.parent = parentChoice.asset || undefined;
+    if (
+      'onSetParent' in objectItem &&
+      typeof objectItem.onSetParent === 'function'
+    ) {
+      objectItem.onSetParent(parentChoice.asset);
+    }
   }
 
   async createEvent(objectItem: TreeAsset) {

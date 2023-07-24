@@ -117,7 +117,10 @@ export class Project {
     this.emitter.emit('diagnostics', { code, diagnostics });
   }
 
-  getAssetByName(name: string): Asset | undefined {
+  getAssetByName(name: string | undefined): Asset | undefined {
+    if (!name) {
+      return;
+    }
     return this.assets.get(name?.toLocaleLowerCase?.());
   }
 

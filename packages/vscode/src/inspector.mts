@@ -9,6 +9,7 @@ import type { StitchProvider } from './extension.provider.mjs';
 import { createSorter, uriFromPathy } from './lib.mjs';
 import { logger } from './log.mjs';
 import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
+export type { ObjectParentFolder };
 
 type InspectorItem =
   | ObjectItem
@@ -22,13 +23,18 @@ type InspectorItem =
 class ObjectParentFolder extends StitchTreeItemBase<'inspector-object-parents'> {
   override readonly kind = 'inspector-object-parents';
   parent = undefined;
-  constructor(hasParent: boolean) {
+  constructor(
+    readonly asset: Asset<'objects'>,
+    readonly provider: GameMakerInspectorProvider,
+  ) {
     super('Parent');
-    this.description = hasParent ? undefined : '(none)';
     this.contextValue = this.kind;
-    this.collapsibleState = hasParent
-      ? vscode.TreeItemCollapsibleState.Expanded
-      : vscode.TreeItemCollapsibleState.None;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+  }
+
+  onSetParent(parent: Asset<'objects'> | undefined) {
+    this.provider.onUpdate(this);
+    this.provider.view.reveal(this, { expand: true });
   }
 }
 
@@ -175,7 +181,7 @@ export class GameMakerInspectorProvider
     if (!element) {
       // Then we're at the root.
       return [
-        new ObjectParentFolder(!!this.asset.parent),
+        new ObjectParentFolder(this.asset, this),
         new ObjectSpriteFolder(),
         new ObjectEvents(this.asset, this),
         new ObjectChildren(this.asset.children.length),
