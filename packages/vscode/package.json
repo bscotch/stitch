@@ -167,6 +167,12 @@
           ],
           "default": "vm"
         },
+        "stitch.editing.reprocessOnTypeDelay": {
+          "title": "Reprocess on type delay",
+          "type": "number",
+          "default": 250,
+          "description": "The delay in milliseconds to wait after a keypress before reprocessing the document. This is used to avoid reprocessing the document while the user is typing. Increase this value if the editor is feeling sluggish. Note that certain actions and typed characters will trigger a reprocess no matter what this is set to."
+        },
         "stitch.run.defaultConfig": {
           "title": "Default GameMaker config",
           "type": [

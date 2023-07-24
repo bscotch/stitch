@@ -35,6 +35,9 @@ export class StitchConfig {
   get runConfigDefault(): string | null {
     return this.config.get<string>('run.defaultConfig') || null;
   }
+  get reprocessOnTypeDelay(): number {
+    return this.config.get<number>('editing.reprocessOnTypeDelay') || 250;
+  }
 }
 
 export const config = new StitchConfig();

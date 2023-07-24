@@ -59,6 +59,7 @@ export class StitchProvider
   static config = config;
 
   readonly processingFiles = new Map<string, Promise<any>>();
+  readonly debouncingOnChange = new Map<string, NodeJS.Timeout>();
 
   protected constructor() {
     this.signatureHelpStatus.hide();
@@ -365,15 +366,64 @@ export class StitchProvider
     return file;
   }
 
-  static positionToWord(
-    document: vscode.TextDocument,
-    position: vscode.Position,
+  /**
+   * A general function for reprocessing files upon change. Handles
+   * debounding and the like.
+   */
+  async onChangeDoc(
+    event: vscode.TextDocumentChangeEvent | vscode.TextDocument | undefined,
   ) {
-    const range = document.getWordRangeAtPosition(
-      position,
-      /(#macro|@?[a-zA-Z0-9_]+)/,
-    );
-    return document.getText(range);
+    if (!event) {
+      return;
+    }
+    const doc = 'document' in event ? event.document : event;
+    if (doc.languageId !== 'gml') {
+      return;
+    }
+
+    // While actively typing, we don't want to reprocess on
+    // every keystroke since that'll make things feel sluggish.
+    // So for calls to this function triggered by typing, we
+    // only immediately reprocess if the character is a trigger
+    // character. Otherwise, we debounce.
+    if (
+      'contentChanges' in event &&
+      event.contentChanges.length === 1 &&
+      event.contentChanges[0].text.length
+    ) {
+      const isTriggerCharacter = [
+        ...completionTriggerCharacters,
+        ' ',
+        '\r\n',
+        '\n',
+        ';',
+        ',',
+      ].includes(event.contentChanges[0].text as any);
+      if (!isTriggerCharacter) {
+        // TODO: Debounce this so that we still get reprocessing
+        // while editing, but only when not actively typing.
+        clearTimeout(this.debouncingOnChange.get(doc.uri.fsPath));
+        this.debouncingOnChange.set(
+          doc.uri.fsPath,
+          setTimeout(() => this.onChangeDoc(doc), config.reprocessOnTypeDelay),
+        );
+        return;
+      }
+    }
+
+    if (this.processingFiles.has(doc.uri.fsPath)) {
+      logger.info('Already processing file', doc.uri.fsPath);
+      return;
+    }
+
+    this.diagnosticCollection.delete(doc.uri);
+    // Add the processing promise to a map so
+    // that other functionality can wait for it
+    // to complete.
+    const updateWait = StitchProvider.provider.updateFile(doc);
+    this.processingFiles.set(doc.uri.fsPath, updateWait);
+    await updateWait;
+    this.processingFiles.delete(doc.uri.fsPath);
   }
 
   /**
@@ -384,84 +434,46 @@ export class StitchProvider
 
   static async activate(ctx: vscode.ExtensionContext) {
     info('Activating extension...');
+    if (this.provider) {
+      info('Extension already active!');
+      return this.provider;
+    }
     const t = Timer.start();
     this.ctx ||= ctx;
-    if (!this.provider) {
-      this.provider = new StitchProvider();
-      const onChangeDoc = async (
-        event: vscode.TextDocumentChangeEvent | vscode.TextDocument | undefined,
-      ) => {
-        if (!event) {
-          return;
-        }
-        const doc = 'document' in event ? event.document : event;
-        if (doc.languageId !== 'gml') {
-          return;
-        }
 
-        // Only reprocess on trigger characters, since autocompletes are the most sensitive to changes.
-        if (
-          'contentChanges' in event &&
-          event.contentChanges.length === 1 &&
-          event.contentChanges[0].text.length
-        ) {
-          const isTriggerCharacter = [
-            ...completionTriggerCharacters,
-            ' ',
-            '\r\n',
-            '\n',
-            ';',
-            ',',
-          ].includes(event.contentChanges[0].text as any);
-          if (!isTriggerCharacter) {
-            logger.info('Ignoring change', event.contentChanges[0].text);
-            return;
-          }
-        }
-
-        if (this.provider.processingFiles.has(doc.uri.fsPath)) {
-          logger.info('Already processing file', doc.uri.fsPath);
-          return;
-        }
-
-        this.provider.diagnosticCollection.delete(doc.uri);
-        // Add the processing promise to a map so
-        // that other functionality can wait for it
-        // to complete.
-        const updateWait = StitchProvider.provider.updateFile(doc);
-        this.provider.processingFiles.set(doc.uri.fsPath, updateWait);
-        const code = await updateWait;
-        this.provider.processingFiles.delete(doc.uri.fsPath);
-      };
-      const watcher = vscode.workspace.createFileSystemWatcher('**/*.gml');
-      // Ensure that things stay up to date!
-      vscode.window.onDidChangeActiveTextEditor((editor) => {
-        if (!editor) {
-          return;
-        }
-        const code = this.provider.getGmlFile(editor.document);
+    this.provider = new StitchProvider();
+    const watcher = vscode.workspace.createFileSystemWatcher('**/*.gml');
+    // Ensure that things stay up to date!
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (!editor) {
+        return;
+      }
+      const code = this.provider.getGmlFile(editor.document);
+    });
+    vscode.workspace.onDidChangeTextDocument((event) =>
+      this.provider.onChangeDoc(event),
+    );
+    vscode.workspace.onDidOpenTextDocument((event) =>
+      this.provider.onChangeDoc(event),
+    );
+    watcher.onDidChange((uri): any => {
+      // Find the corresponding document, if there is one
+      const doc = vscode.workspace.textDocuments.find(
+        (d) => d.uri.fsPath === uri.fsPath,
+      );
+      info('changedOnDisk', uri.fsPath);
+      if (doc) {
+        // Then we might have just saved this doc, or
+        // it's open but got changed externally. Either way,
+        // the onChangeDoc handler is already debouncing
+        return this.provider.onChangeDoc(doc);
+      }
+      // Otherwise the file isn't open, so we need to
+      // reprocess it more directly.
+      this.provider.getGmlFile(uri)?.reload(undefined, {
+        reloadDirty: true,
       });
-      vscode.workspace.onDidChangeTextDocument(onChangeDoc);
-      vscode.workspace.onDidOpenTextDocument(onChangeDoc);
-      watcher.onDidChange((uri): any => {
-        // Find the corresponding document, if there is one
-        const doc = vscode.workspace.textDocuments.find(
-          (d) => d.uri.fsPath === uri.fsPath,
-        );
-        info('changedOnDisk', uri.fsPath);
-        if (doc) {
-          // Then we might have just saved this doc, or
-          // it's open but got changed externally. Either way,
-          // the onChangeDoc handler is already debouncing
-          return onChangeDoc(doc);
-        }
-        // Otherwise the file isn't open, so we need to
-        // reprocess it more directly.
-        this.provider.getGmlFile(uri)?.reload(undefined, {
-          reloadDirty: true,
-        });
-      });
-    }
+    });
 
     // Dispose any existing subscriptions
     // to allow for reloading the extension
@@ -485,6 +497,9 @@ export class StitchProvider
         pt.seconds('Loaded project in');
       } catch (error) {
         logger.error('Error loading project', yypFile, error);
+        vscode.window.showErrorMessage(
+          `Could not load project ${pathyFromUri(yypFile).basename}`,
+        );
       }
     }
 
