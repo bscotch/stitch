@@ -23,3 +23,8 @@ function object_get(instance){}
 
 var obj = instance_create(o_object);
 var inst = object_get(obj);
+
+/// @type {Id.DsMap<Asset.GMObject>}
+var map = ds_map_create();
+ds_map_add(map, "hello", "world");
+var value = ds_map_find_value(map, "hello");

@@ -328,6 +328,15 @@ export function visitIdentifierAccessor(
               generics[expectedType.type.type[0].name!] ||= new TypeStore();
               generics[expectedType.type.type[0].name!].type =
                 getTypes(inferredType);
+            } else if (expectedType?.type.type[0]?.items?.type[0]?.generic) {
+              // Same deal, but for a container type!
+              const inferredContainedType = getTypes(inferredType).find(
+                (t) => t.items?.type.length,
+              )?.items;
+              if (inferredContainedType) {
+                generics[expectedType?.type.type[0].items.type[0].name!] =
+                  inferredContainedType;
+              }
             }
             if (isMethodCall && argIdx === 0) {
               methodSelf = getTypeOfKind(inferredType, [

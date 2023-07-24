@@ -22,11 +22,6 @@ export class Native {
   protected load() {
     assert(this.specs.length, 'No specs to load!');
 
-    // Add the ArgumentIdentity type as a generic
-    const argIdType = new Type('ArgumentIdentity');
-    argIdType.generic = true;
-    this.types.set('ArgumentIdentity', argIdType);
-
     // Prepare the base object instance type.
     this.objectInstanceBase = new Type('Struct');
     const idInstance = new Type('Id.Instance');
@@ -85,29 +80,56 @@ export class Native {
     for (const func of spec.functions) {
       const typeName = `Function.${func.name}`;
       // Need a type and a symbol for each function.
-      const type = (
+      const functionType = (
         this.types.get(typeName) || new Type('Function').named(func.name)
       ).describe(func.description);
-      this.types.set(typeName, type);
+      this.types.set(typeName, functionType);
+
+      // Create a new generic type for this function (in particular, to be re-used by types that contain it!)
+      const genericType = new Type('ArgumentIdentity');
+      genericType.generic = true;
+      const generics = { ArgumentIdentity: [genericType] };
+      const usesGenerics =
+        func.parameters?.some((param) =>
+          param.name.includes('ArgumentIdentity'),
+        ) || func.returnType?.includes('ArgumentIdentity');
+      const addGenericToContainer = (typeString: string) => {
+        if (!usesGenerics) return typeString;
+        const replaced = typeString.replace(
+          /^(id.ds[a-z]+|array)(<\w+>)?/i,
+          `$1<ArgumentIdentity>`,
+        );
+        return replaced;
+      };
 
       // Add parameters to the type.
       assert(func.parameters, 'Function must have parameters');
       for (let i = 0; i < func.parameters.length; i++) {
         const param = func.parameters[i];
         assert(param, 'Parameter must be defined');
-        const paramType = Type.fromFeatherString(param.type, this.types, true);
-        type
+        const paramType = Type.fromFeatherString(
+          addGenericToContainer(param.type),
+          [generics, this.types],
+          true,
+        );
+        functionType
           .addParameter(i, param.name, paramType, param.optional)
           .describe(param.description);
       }
       // Add return type to the type.
-      type.addReturnType(
-        Type.fromFeatherString(func.returnType, this.types, true),
+      functionType.addReturnType(
+        Type.fromFeatherString(
+          addGenericToContainer(func.returnType),
+          [generics, this.types],
+          true,
+        ),
       );
 
-      const symbol = new Signifier(this.globalSelf, func.name, type).deprecate(
-        func.deprecated,
-      );
+      const symbol = new Signifier(
+        this.globalSelf,
+        func.name,
+        functionType,
+      ).deprecate(func.deprecated);
       symbol.writable = false;
       symbol.native = func.module;
       this.globalSelf.replaceMember(symbol);

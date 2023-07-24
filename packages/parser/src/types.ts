@@ -2,7 +2,11 @@ import { arrayWrapped } from '@bscotch/utility';
 import { typeToFeatherString } from './jsdoc.feather.js';
 import { Signifier } from './signifiers.js';
 import { getTypes, narrows } from './types.checks.js';
-import { typeFromFeatherString } from './types.feather.js';
+import {
+  typeFromFeatherString,
+  type KnownOrGenerics,
+  type KnownTypesMap,
+} from './types.feather.js';
 import { Flags } from './types.flags.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
 import { PrimitiveName, withableTypes } from './types.primitives.js';
@@ -367,6 +371,15 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   /**
+   * For container types that have non-named members, like arrays and DsTypes.
+   * Can also be used for default Struct values. */
+  setItemType(type: Type): this {
+    this.items ||= new TypeStore();
+    this.items.type = type;
+    return this;
+  }
+
+  /**
    * Create a derived type: of the same kind, pointing to
    * this type as its parent. */
   derive(): Type<T> {
@@ -389,7 +402,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   /** Given a Feather-compatible type string, get a fully parsed type. */
   static fromFeatherString(
     typeString: string,
-    knownTypes: Map<string, Type>,
+    knownTypes: KnownTypesMap | KnownOrGenerics[],
     addMissing: boolean,
   ): Type[] {
     return typeFromFeatherString(typeString, knownTypes, addMissing);
