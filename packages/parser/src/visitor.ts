@@ -157,7 +157,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         if (this.PROCESSOR.outerSelf === scope.global) {
           this.PROCESSOR.addDiagnostic(
             'GLOBAL_SELF',
-            children.Self![0],
+            children.Other![0],
             '`other` refers to the global scope here, which is probably unintentional.',
           );
         } else {
