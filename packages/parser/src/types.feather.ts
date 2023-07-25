@@ -77,7 +77,7 @@ export function typeFromIdentifier(
   const primitiveType = primitiveNames.find(
     (n) => n?.toLocaleLowerCase?.() === normalizedName,
   );
-  if (primitiveType && !isObjectType) {
+  if (primitiveType) {
     return new Type(primitiveType);
   }
 

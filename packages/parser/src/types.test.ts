@@ -24,6 +24,16 @@ describe('Types', function () {
     );
     expect(resolved.get('T')!.type[0].kind).to.equal('Struct');
     expect(resolved.get('T')!.type[0].items!.type[0].kind).to.equal('String');
+
+    // For cases with mixed types, this should still all work!
+    resolved = updateGenericsMap(
+      toType('Real|Array<T>|Struct<Array<T>>'),
+      toType('Real|Struct<String>|Array<Id.DsMap>|Struct<Array<Id.Instance>>'),
+    );
+    const resolvedTypes = resolved.get('T')!.type;
+    expect(resolvedTypes.length).to.equal(2);
+    expect(resolvedTypes[0].kind).to.equal('Id.DsMap');
+    expect(resolvedTypes[1].kind).to.equal('Id.Instance');
   });
 
   it('can check whether one simple type satisfies another', function () {
