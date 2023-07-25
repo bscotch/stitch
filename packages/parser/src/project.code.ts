@@ -521,15 +521,18 @@ export class Code {
       if (
         !ref.isDef ||
         ref.item.native ||
-        ref.item.refs.size > 1 ||
         !ref.item.getTypeByKind('Function') ||
         !ref.item.global // For now restrict to global functions. The rest requires some nuance!
       ) {
         continue;
       }
-      this.diagnostics.UNUSED.push(
-        Diagnostic.warn(`Unused function \`${ref.item.name}\``, ref),
-      );
+      // Are all refs to the definition?
+      const hasNonDefRefs = [...ref.item.refs.values()].some((r) => !r.isDef);
+      if (!hasNonDefRefs) {
+        this.diagnostics.UNUSED.push(
+          Diagnostic.info(`Unused function \`${ref.item.name}\``, ref),
+        );
+      }
     }
   }
 
