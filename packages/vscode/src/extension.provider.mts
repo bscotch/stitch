@@ -46,6 +46,7 @@ export class StitchProvider
     vscode.DefinitionProvider,
     vscode.ReferenceProvider
 {
+  readonly semanticHighlightProvider = new GameMakerSemanticTokenProvider(this);
   readonly signatureHelpStatus = vscode.window.createStatusBarItem(
     config.functionSignatureStatusAlignment,
     config.functionSignatureStatusAlignment === vscode.StatusBarAlignment.Left
@@ -405,7 +406,9 @@ export class StitchProvider
         clearTimeout(this.debouncingOnChange.get(doc.uri.fsPath));
         this.debouncingOnChange.set(
           doc.uri.fsPath,
-          setTimeout(() => this.onChangeDoc(doc), config.reprocessOnTypeDelay),
+          setTimeout(() => {
+            this.onChangeDoc(doc);
+          }, config.reprocessOnTypeDelay),
         );
         return;
       }
@@ -420,7 +423,12 @@ export class StitchProvider
     // Add the processing promise to a map so
     // that other functionality can wait for it
     // to complete.
-    const updateWait = StitchProvider.provider.updateFile(doc);
+    const updateWait = StitchProvider.provider.updateFile(doc).finally(() => {
+      // Semantic highlighting is normally updated by VSCode
+      // upon change. But since we're delaying processing of the
+      // file, we need to manually trigger a refresh.
+      this.semanticHighlightProvider.refresh();
+    });
     this.processingFiles.set(doc.uri.fsPath, updateWait);
     await updateWait;
     this.processingFiles.delete(doc.uri.fsPath);
@@ -570,7 +578,7 @@ export class StitchProvider
         );
         this.provider.getProject(uri)?.openInIde();
       }),
-      new GameMakerSemanticTokenProvider(this.provider).register(),
+      this.provider.semanticHighlightProvider.register(),
       this.provider.signatureHelpStatus,
       vscode.window.onDidChangeTextEditorSelection((e) => {
         // This includes events from the output window, so skip those

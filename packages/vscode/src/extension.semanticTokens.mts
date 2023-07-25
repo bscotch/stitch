@@ -40,6 +40,14 @@ export class GameMakerSemanticTokenProvider
 {
   constructor(readonly provider: StitchProvider) {}
 
+  private _onDidChangeSemanticTokens: vscode.EventEmitter<void> =
+    new vscode.EventEmitter();
+  readonly onDidChangeSemanticTokens = this._onDidChangeSemanticTokens.event;
+
+  refresh() {
+    this._onDidChangeSemanticTokens.fire();
+  }
+
   provideDocumentSemanticTokens(
     document: vscode.TextDocument,
   ): vscode.SemanticTokens | undefined {
@@ -57,6 +65,14 @@ export class GameMakerSemanticTokenProvider
         { type: SemanticTokenType; mods: Set<SemanticTokenModifier> }
       >();
       for (const ref of file.refs) {
+        if (
+          !ref.start ||
+          isNaN(ref.start.line) ||
+          !ref.end ||
+          isNaN(ref.end.line)
+        ) {
+          continue;
+        }
         // Get the location as a vscode range
         const signifier = ref.item;
 
@@ -103,7 +119,11 @@ export class GameMakerSemanticTokenProvider
         } catch (err) {
           warn(err);
           warn('PUSH ERROR');
-          console.dir({ range, tokenType, tokenModifiers });
+          console.dir({
+            range,
+            tokenType,
+            tokenModifiers,
+          });
         }
       }
       const tokens = tokensBuilder.build();
@@ -146,7 +166,7 @@ function inferSemanticToken(ref: Reference): SemanticTokenType {
   if (signifier.parameter) {
     return 'parameter';
   }
-  if (signifier.instance) {
+  if (signifier.instance && !!signifier.def) {
     return 'property';
   }
   return 'variable';
