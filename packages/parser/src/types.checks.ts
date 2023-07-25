@@ -56,9 +56,10 @@ export function getTypeStoreOrType(
   return arrayWrapped(item);
 }
 
-export function getTypes(
-  items: Signifier | Type | TypeStore | (Type | TypeStore)[],
-): Type[] {
+/** Things that can be converted into an array of types */
+export type Typeable = Signifier | Type | TypeStore | (Type | TypeStore)[];
+
+export function getTypes(items: Typeable): Type[] {
   const types: Type[] = [];
   for (const item of arrayWrapped(items)) {
     if (item.$tag === 'Sym') {
@@ -182,4 +183,52 @@ export function normalizeInferredType(
     return items;
   }
   return type;
+}
+
+/**
+ * Given an expected type that might include generics, and an inferred
+ * type that should map onto it, update a generics map lining generics
+ * to inferred types by name.
+ */
+export function updateGenericsMap(
+  expected: Typeable,
+  inferred: Typeable,
+  /** Map of generics by name to their *inferred type* */
+  generics: Map<string, TypeStore> = new Map(),
+) {
+  const expectedTypes = getTypes(expected);
+  const inferredTypes = getTypes(inferred);
+
+  // The collection of 1 or more expected types is supposed
+  // to match up with the collection of 1 or more inferred types.
+  // For the overlap of compatible types we need to recurse through
+  // the types and their contained types (stored on the `items` property)
+  // to identify any generics specified in the expected types that we
+  // can resolve with the inferred types.
+  for (const expectedType of expectedTypes) {
+    let generic: TypeStore | undefined;
+    if (expectedType.generic) {
+      const genericName = expectedType.name!;
+      generic = generics.get(genericName) || new TypeStore();
+      generics.set(genericName, generic);
+    }
+    for (const inferredType of inferredTypes) {
+      if (narrows(inferredType, expectedType)) {
+        if (generic) {
+          // Then we can use this inferred type to resolve the generic
+          // But if we already have a compatible type, skip it!
+          if (generic.hasTypes && narrows(generic, inferredType)) {
+            continue;
+          }
+          generic.addType(inferredType);
+        }
+        // Repeat on contained types, if there are any
+        if (inferredType.items?.hasTypes && expectedType.items?.hasTypes) {
+          updateGenericsMap(expectedType.items, inferredType.items, generics);
+        }
+      }
+    }
+  }
+
+  return generics;
 }

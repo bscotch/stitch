@@ -1,7 +1,31 @@
 import { expect } from 'chai';
+import { updateGenericsMap } from './types.checks.js';
+import { typeFromFeatherString } from './types.feather.js';
 import { Type, TypeStore } from './types.js';
 
 describe('Types', function () {
+  it('can resursively resolve generic types', function () {
+    const genericType = new Type('Any').named('T').genericize();
+    const generics = [{ T: [genericType] }];
+    const toType = (s: string) => typeFromFeatherString(s, generics, false);
+
+    let resolved = updateGenericsMap(genericType, new Type('String'));
+    expect(resolved.get('T')!.type[0].kind).to.equal('String');
+
+    resolved = updateGenericsMap(toType('Array<T>'), new Type('String'));
+    expect(resolved.get('T')).to.be.undefined;
+
+    resolved = updateGenericsMap(toType('Array<T>'), toType('Array<String>'));
+    expect(resolved.get('T')!.type[0].kind).to.equal('String');
+
+    resolved = updateGenericsMap(
+      toType('Array<T>'),
+      toType('Array<Struct<String>>'),
+    );
+    expect(resolved.get('T')!.type[0].kind).to.equal('Struct');
+    expect(resolved.get('T')!.type[0].items!.type[0].kind).to.equal('String');
+  });
+
   it('can check whether one simple type satisfies another', function () {
     const string = new Type('String');
     expect(string.narrows(new Type('String'))).to.be.true;

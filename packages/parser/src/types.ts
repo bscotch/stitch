@@ -56,6 +56,10 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
     this._types = arrayWrapped(types);
   }
 
+  get hasTypes() {
+    return this._types.length > 0;
+  }
+
   get constructs(): StructType[] {
     return this.type
       .map((t) => t.constructs)
@@ -396,6 +400,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   describe(description: string | undefined): this {
     this.description = description;
+    return this;
+  }
+
+  genericize(): this {
+    this.generic = true;
     return this;
   }
 
