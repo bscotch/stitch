@@ -232,3 +232,28 @@ export function updateGenericsMap(
 
   return generics;
 }
+
+export function replaceGenerics(
+  startingType: Typeable,
+  generics: Map<string, TypeStore>,
+): TypeStore {
+  // TODO: TEST THIS
+  const startingTypes = getTypes(startingType);
+  // Recurse through the types and, if we find a generic, replace it!
+  // The complication is that we don't want to mutate the starting types, we need to replace them (or their containers!) with a new type. The easiest way to do this is to just create new types from the jump.
+  const replacedTypes = new TypeStore();
+  for (const startingType of startingTypes) {
+    const newTypes =
+      startingType.generic && generics.has(startingType.name!)
+        ? generics.get(startingType.name!)?.type
+        : [startingType];
+    for (const type of newTypes || []) {
+      const newType = type.derive();
+      if (type.items) {
+        newType.items = replaceGenerics(type.items, generics);
+      }
+      replacedTypes.addType(newType);
+    }
+  }
+  return replacedTypes;
+}
