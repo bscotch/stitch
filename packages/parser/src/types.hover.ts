@@ -26,11 +26,17 @@ export function typeToHoverDetails(type: Type) {
     const members = type
       .listMembers()
       .filter((x) => x.name !== 'self' && x.def)
-      .sort((a, b) =>
-        a.name
+      .sort((a, b) => {
+        // underscore-prefixed should be sorted last
+        const a_prefix_count = a.name?.match(/^_+/)?.[0]?.length || 0;
+        const b_prefix_count = b.name?.match(/^_+/)?.[0]?.length || 0;
+        if (a_prefix_count !== b_prefix_count) {
+          return a_prefix_count - b_prefix_count;
+        }
+        return a.name
           ?.toLocaleLowerCase?.()
-          .localeCompare(b.name?.toLocaleLowerCase?.()),
-      );
+          .localeCompare(b.name?.toLocaleLowerCase?.());
+      });
     if (!members.length) {
       return '';
     }
