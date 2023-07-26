@@ -204,7 +204,7 @@ export class StitchProvider
     position: vscode.Position,
   ): vscode.SignatureHelp | undefined {
     const argRange = this.getFunctionArg(document, position);
-    if (!argRange) {
+    if (!argRange?.param?.parent) {
       return;
     }
     const param = argRange.param;

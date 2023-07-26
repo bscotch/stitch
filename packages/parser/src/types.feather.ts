@@ -149,9 +149,9 @@ export function typeFromParsedJsdocs(
         addMissing,
       )[0] as Type<any>;
     }
-    if (jsdoc.returns) {
+    if (jsdoc.returns && jsdoc.returns.type) {
       const returnType = typeFromFeatherString(
-        jsdoc.returns.type!.content,
+        jsdoc.returns.type.content,
         [knownTypes, generics],
         addMissing,
       );
