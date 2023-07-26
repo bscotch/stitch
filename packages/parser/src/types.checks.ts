@@ -128,14 +128,14 @@ function narrowsType(narrowType: Type, broadType: Type): boolean {
   // The subtype must have all of the same members, though it could also have others
   for (const member of broadType.listMembers()) {
     const matching = narrowType.getMember(member.name);
-    if (!matching || !narrows(matching.type, member.type)) {
+    if (!matching) {
       return false;
     }
   }
   // Similarly, the subtype must have the same params (though it could have others)
   for (const param of broadType.listParameters()) {
     const matching = narrowType.getParameter(param.idx!);
-    if (!matching || !narrows(matching.type, param.type)) {
+    if (!matching) {
       return false;
     }
   }
@@ -158,31 +158,44 @@ function narrowsType(narrowType: Type, broadType: Type): boolean {
   return true;
 }
 
-export function normalizeInferredType(
-  type: Type | TypeStore | (Type | TypeStore)[],
+/**
+ * For types inferred from expressions, normalize away utility
+ * types like `InstanceType` and `ObjectType`, and perform any
+ * other type-normalization tasks. Returns a new TypeStore, so
+ * if maintaining reference links is essential this function should
+ * not be used.
+ */
+export function normalizeType(
+  inferred: Typeable,
   knownTypes: KnownTypesMap,
-) {
-  const enumMemberType = getTypeOfKind(type, 'EnumMember');
-  const instanceUtilityType = getTypeOfKind(type, 'InstanceType');
-  const assetUtilityType = getTypeOfKind(type, 'ObjectType');
-  if (enumMemberType) {
-    const enumMemberSignifier = enumMemberType.signifier;
-    const enumType = enumMemberSignifier?.parent;
-    if (enumType) {
-      return enumType;
+): TypeStore {
+  const normalized = new TypeStore();
+  type: for (const type of getTypes(inferred)) {
+    if (type.kind === 'EnumMember') {
+      normalized.addType(type.signifier?.parent || type);
+      continue;
+    } else {
+      for (const [utilityKind, kind] of [
+        ['InstanceType', 'Id.Instance'],
+        ['ObjectType', 'Asset.GMObject'],
+      ] as const) {
+        if (type.kind !== utilityKind) continue;
+        if (!type.items?.type.length) {
+          normalized.addType(knownTypes.get(kind) || new Type(kind));
+        }
+        for (const itemType of getTypes(type.items || [])) {
+          // Try to convert the type.
+          const name = itemType.name ? `${kind}.${itemType.name}` : kind;
+          normalized.addType(
+            knownTypes.get(name) || knownTypes.get(kind) || new Type(kind),
+          );
+        }
+        continue type; // so that the fall-through only happens if we didn't find a match
+      }
     }
-  } else if (instanceUtilityType || assetUtilityType) {
-    // return the contained type. If it's empty,
-    // return the generic container type.
-    const items = instanceUtilityType?.items || assetUtilityType?.items!;
-    if (!items.type.length) {
-      return instanceUtilityType
-        ? knownTypes.get('Id.Instance') || new Type('Id.Instance')
-        : knownTypes.get('Asset.GMObject') || new Type('Asset.GMObject');
-    }
-    return items;
+    normalized.addType(type);
   }
-  return type;
+  return normalized;
 }
 
 /**
@@ -193,11 +206,16 @@ export function normalizeInferredType(
 export function updateGenericsMap(
   expected: Typeable,
   inferred: Typeable,
+  knownTypes: KnownTypesMap,
   /** Map of generics by name to their *inferred type* */
   generics: Map<string, TypeStore> = new Map(),
 ) {
-  const expectedTypes = getTypes(expected);
-  const inferredTypes = getTypes(inferred);
+  const expectedTypes = getTypes(expected)
+    .map((t) => normalizeType(t, knownTypes).type)
+    .flat();
+  const inferredTypes = getTypes(inferred)
+    .map((t) => normalizeType(t, knownTypes).type)
+    .flat();
 
   // The collection of 1 or more expected types is supposed
   // to match up with the collection of 1 or more inferred types.
@@ -213,18 +231,19 @@ export function updateGenericsMap(
       generics.set(genericName, generic);
     }
     for (const inferredType of inferredTypes) {
-      if (narrows(inferredType, expectedType)) {
+      if (narrowsType(inferredType, expectedType)) {
         if (generic) {
           // Then we can use this inferred type to resolve the generic
-          // But if we already have a compatible type, skip it!
-          if (generic.hasTypes && narrows(generic, inferredType)) {
-            continue;
-          }
           generic.addType(inferredType);
         }
         // Repeat on contained types, if there are any
         if (inferredType.items?.hasTypes && expectedType.items?.hasTypes) {
-          updateGenericsMap(expectedType.items, inferredType.items, generics);
+          updateGenericsMap(
+            expectedType.items,
+            inferredType.items,
+            knownTypes,
+            generics,
+          );
         }
       }
     }
@@ -235,9 +254,10 @@ export function updateGenericsMap(
 
 export function replaceGenerics(
   startingType: Typeable,
+  knownTypes: KnownTypesMap,
   generics: Map<string, TypeStore>,
 ): TypeStore {
-  const startingTypes = getTypes(startingType);
+  const startingTypes = normalizeType(startingType, knownTypes).type;
   // Recurse through the types and, if we find a generic, replace it!
   // The complication is that we don't want to mutate the starting types, we need to replace them (or their containers!) with a new type. The easiest way to do this is to just create new types from the jump.
   const replacedTypes = new TypeStore();
@@ -249,7 +269,7 @@ export function replaceGenerics(
     for (const type of newTypes || []) {
       const newType = type.derive();
       if (type.items) {
-        newType.items = replaceGenerics(type.items, generics);
+        newType.items = replaceGenerics(type.items, knownTypes, generics);
       }
       replacedTypes.addType(newType);
     }

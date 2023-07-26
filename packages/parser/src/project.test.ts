@@ -353,17 +353,17 @@ function validateGenerics(project: Project) {
   expect(returns[0].type[0].name).to.equal('T');
 
   const sampleType = scriptFile.getReferenceAt(8, 9)!.item.type.type[0];
-  const returnedSampleType = scriptFile.getReferenceAt(11, 11)!.item.type
-    .type[0];
-  ok(sampleType === returnedSampleType);
+  const returnedSample = scriptFile.getReferenceAt(11, 11)!.item;
+  const returnedSampleType = returnedSample.type.type[0];
+  ok(sampleType.kind === returnedSampleType.kind);
 
   // TODO InstanceType<>
   const returnedInstance = scriptFile.getReferenceAt(24, 7)!.item.type.type[0];
-  ok(returnedInstance === o_object.instanceType);
+  ok(returnedInstance.kind === o_object.instanceType!.kind);
 
   // TODO ObjectType<>
   const returnedObject = scriptFile.getReferenceAt(25, 7)!.item.type.type[0];
-  ok(returnedObject === o_object.assetType);
+  ok(returnedObject.kind === o_object.assetType.kind);
 }
 
 async function validateCrossFileDiagnostics(project: Project) {

@@ -517,8 +517,10 @@ export class Code {
 
   computeUnusedSymbolDiagnostics() {
     this.diagnostics.UNUSED = [];
+    const unused = new Set<Signifier>();
     for (const ref of this.refs) {
       if (
+        unused.has(ref.item) ||
         !ref.isDef ||
         ref.item.native ||
         !ref.item.getTypeByKind('Function') ||
@@ -529,6 +531,7 @@ export class Code {
       // Are all refs to the definition?
       const hasNonDefRefs = [...ref.item.refs.values()].some((r) => !r.isDef);
       if (!hasNonDefRefs) {
+        unused.add(ref.item);
         this.diagnostics.UNUSED.push(
           Diagnostic.info(`Unused function \`${ref.item.name}\``, ref),
         );

@@ -18,8 +18,9 @@ import {
 import {
   getTypeOfKind,
   getTypeStoreOrType,
-  getTypes,
-  normalizeInferredType,
+  normalizeType,
+  replaceGenerics,
+  updateGenericsMap,
 } from './types.checks.js';
 import { Type, TypeStore } from './types.js';
 import { withableTypes } from './types.primitives.js';
@@ -85,7 +86,7 @@ export function visitIdentifierAccessor(
   const docs = this.PROCESSOR.consumeJsdoc();
   const assignmentCst =
     children.assignment?.[0]?.children.assignmentRightHandSide?.[0].children;
-  const inferredType = normalizeInferredType(
+  const inferredType = normalizeType(
     assignmentCst
       ? this.assignmentRightHandSide(
           assignmentCst,
@@ -267,7 +268,7 @@ export function visitIdentifierAccessor(
         let lastDelimiter: IToken;
         let lastTokenWasDelimiter = true;
         const ranges: FunctionArgRange[] = [];
-        const generics: Record<string, TypeStore> = {};
+        const generics = new Map<string, TypeStore>();
 
         for (let i = 0; i < argsAndSeps.length; i++) {
           const token = argsAndSeps[i];
@@ -315,28 +316,20 @@ export function visitIdentifierAccessor(
               functionCtx.self = methodSelf;
             }
             const expectedType = functionType?.getParameter(argIdx);
-            const inferredType = normalizeInferredType(
+            const inferredType = normalizeType(
               this.assignmentRightHandSide(
                 token.children.assignmentRightHandSide[0].children,
                 functionCtx,
               ),
               this.PROCESSOR.project.types,
             );
-            if (expectedType?.type.type[0]?.generic) {
-              // Then we want to set the type of this generic
-              // for use by the return type.
-              generics[expectedType.type.type[0].name!] ||= new TypeStore();
-              generics[expectedType.type.type[0].name!].type =
-                getTypes(inferredType);
-            } else if (expectedType?.type.type[0]?.items?.type[0]?.generic) {
-              // Same deal, but for a container type!
-              const inferredContainedType = getTypes(inferredType).find(
-                (t) => t.items?.type.length,
-              )?.items;
-              if (inferredContainedType) {
-                generics[expectedType?.type.type[0].items.type[0].name!] =
-                  inferredContainedType;
-              }
+            if (expectedType) {
+              updateGenericsMap(
+                expectedType,
+                inferredType,
+                this.PROCESSOR.project.types,
+                generics,
+              );
             }
             if (isMethodCall && argIdx === 0) {
               methodSelf = getTypeOfKind(inferredType, [
@@ -348,34 +341,13 @@ export function visitIdentifierAccessor(
           }
         }
         // The returntype of this function may be used in another accessor
-        let returnType: TypeStore | Type =
+        const returnType = replaceGenerics(
           (usesNew && isLastSuffix
             ? functionType?.constructs
-            : functionType?.returns) || this.ANY;
-        const returnTypes = getTypes(returnType);
-        // Handle utility types
-        const itemType = returnTypes[0]?.items?.type[0]?.generic
-          ? generics[returnTypes[0].items.type[0].name!]
-          : returnTypes[0]?.items;
-        const itemTypeName = itemType?.type[0]?.name;
-        if (returnTypes[0]?.kind === 'InstanceType') {
-          returnType =
-            (itemTypeName
-              ? this.PROCESSOR.project.types.get(`Id.Instance.${itemTypeName}`)
-              : this.PROCESSOR.project.types.get('Id.Instance')!) || this.ANY;
-        } else if (returnTypes[0]?.kind === 'ObjectType') {
-          returnType =
-            (itemTypeName
-              ? this.PROCESSOR.project.types.get(
-                  `Asset.GMObject.${itemTypeName}`,
-                )
-              : this.PROCESSOR.project.types.get('Asset.GMObject')!) ||
-            this.ANY;
-        } else if (returnTypes[0]?.generic && generics[returnTypes[0].name!]) {
-          // Then we want to return the inferred type instead
-          // of the generic
-          returnType = generics[returnTypes[0].name!];
-        }
+            : functionType?.returns) || this.ANY,
+          this.PROCESSOR.project.types,
+          generics,
+        );
         accessing = { type: returnType };
         lastAccessedType = returnType;
         // Add the function call to the file for diagnostics

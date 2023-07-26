@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { replaceGenerics, updateGenericsMap } from './types.checks.js';
-import { typeFromFeatherString } from './types.feather.js';
+import { KnownTypesMap, typeFromFeatherString } from './types.feather.js';
 import { Type, TypeStore } from './types.js';
 
 describe('Types', function () {
@@ -9,18 +9,33 @@ describe('Types', function () {
     const generics = [{ T: [genericType] }];
     const toType = (s: string) => typeFromFeatherString(s, generics, false);
 
-    let resolved = updateGenericsMap(genericType, new Type('String'));
+    const knownTypes: KnownTypesMap = new Map();
+
+    let resolved = updateGenericsMap(
+      genericType,
+      new Type('String'),
+      knownTypes,
+    );
     expect(resolved.get('T')!.type[0].kind).to.equal('String');
 
-    resolved = updateGenericsMap(toType('Array<T>'), new Type('String'));
+    resolved = updateGenericsMap(
+      toType('Array<T>'),
+      new Type('String'),
+      knownTypes,
+    );
     expect(resolved.get('T')).to.be.undefined;
 
-    resolved = updateGenericsMap(toType('Array<T>'), toType('Array<String>'));
+    resolved = updateGenericsMap(
+      toType('Array<T>'),
+      toType('Array<String>'),
+      knownTypes,
+    );
     expect(resolved.get('T')!.type[0].kind).to.equal('String');
 
     resolved = updateGenericsMap(
       toType('Array<T>'),
       toType('Array<Struct<String>>'),
+      knownTypes,
     );
     expect(resolved.get('T')!.type[0].kind).to.equal('Struct');
     expect(resolved.get('T')!.type[0].items!.type[0].kind).to.equal('String');
@@ -29,6 +44,7 @@ describe('Types', function () {
     resolved = updateGenericsMap(
       toType('Real|Array<T>|Struct<Array<T>>'),
       toType('Real|Struct<String>|Array<Id.DsMap>|Struct<Array<Id.Instance>>'),
+      knownTypes,
     );
     const resolvedTypes = resolved.get('T')!.type;
     expect(resolvedTypes.length).to.equal(2);
@@ -37,7 +53,8 @@ describe('Types', function () {
 
     // Make sure we can substitue generics
     const replaced = replaceGenerics(
-      toType('Real|Array<T>|Struct<Array<T>>'),
+      toType('Real|Array<T>|Struct<Array<T>>|ObjectType<Id.Instance>'),
+      knownTypes,
       resolved,
     );
     expect(replaced.type[0].kind).to.equal('Real');

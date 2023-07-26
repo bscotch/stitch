@@ -39,11 +39,7 @@ import {
 import type { Code } from './project.code.js';
 import { Range, Reference } from './project.location.js';
 import { Signifier } from './signifiers.js';
-import {
-  getTypeOfKind,
-  getTypes,
-  normalizeInferredType,
-} from './types.checks.js';
+import { getTypeOfKind, getTypes, normalizeType } from './types.checks.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
 import {
   EnumType,
@@ -381,7 +377,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // that they exist.
     const signifier = this.FIND_ITEM_BY_NAME(children.Identifier[0].image);
     assert(signifier, 'Macro should exist');
-    const inferredType = normalizeInferredType(
+    const inferredType = normalizeType(
       this.assignmentRightHandSide(
         children.assignmentRightHandSide[0].children,
         withCtxKind(ctx, 'assignment'),
@@ -461,7 +457,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         this.structLiteral(assignedToStructLiteral, ctx);
       }
     } else {
-      const inferredType = normalizeInferredType(
+      const inferredType = normalizeType(
         children.assignmentRightHandSide
           ? this.assignmentRightHandSide(
               children.assignmentRightHandSide[0].children,
@@ -570,7 +566,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         this.structLiteral(assignedToStructLiteral, ctx);
       }
     } else {
-      const inferredType = normalizeInferredType(
+      const inferredType = normalizeType(
         this.assignmentRightHandSide(
           children.assignmentRightHandSide[0].children,
           withCtxKind(ctx, 'assignment'),
@@ -819,7 +815,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           this.structLiteral(assignedToStructLiteral, ctx);
         }
       } else {
-        const inferredType = normalizeInferredType(
+        const inferredType = normalizeType(
           parts.assignmentRightHandSide
             ? this.assignmentRightHandSide(
                 parts.assignmentRightHandSide[0].children,

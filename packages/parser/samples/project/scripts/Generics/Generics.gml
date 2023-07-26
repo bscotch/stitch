@@ -1,4 +1,4 @@
-/// @template {String} T
+/// @template {Any} T
 /// @param {T} value
 /// @return {T}
 function identity(value) {
