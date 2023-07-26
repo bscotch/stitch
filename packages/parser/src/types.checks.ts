@@ -187,7 +187,7 @@ export function normalizeInferredType(
 
 /**
  * Given an expected type that might include generics, and an inferred
- * type that should map onto it, update a generics map lining generics
+ * type that should map onto it, update a generics map linking generics
  * to inferred types by name.
  */
 export function updateGenericsMap(
@@ -237,7 +237,6 @@ export function replaceGenerics(
   startingType: Typeable,
   generics: Map<string, TypeStore>,
 ): TypeStore {
-  // TODO: TEST THIS
   const startingTypes = getTypes(startingType);
   // Recurse through the types and, if we find a generic, replace it!
   // The complication is that we don't want to mutate the starting types, we need to replace them (or their containers!) with a new type. The easiest way to do this is to just create new types from the jump.

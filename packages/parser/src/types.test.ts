@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { updateGenericsMap } from './types.checks.js';
+import { replaceGenerics, updateGenericsMap } from './types.checks.js';
 import { typeFromFeatherString } from './types.feather.js';
 import { Type, TypeStore } from './types.js';
 
@@ -34,6 +34,24 @@ describe('Types', function () {
     expect(resolvedTypes.length).to.equal(2);
     expect(resolvedTypes[0].kind).to.equal('Id.DsMap');
     expect(resolvedTypes[1].kind).to.equal('Id.Instance');
+
+    // Make sure we can substitue generics
+    const replaced = replaceGenerics(
+      toType('Real|Array<T>|Struct<Array<T>>'),
+      resolved,
+    );
+    expect(replaced.type[0].kind).to.equal('Real');
+    expect(replaced.type[1].kind).to.equal('Array');
+    expect(replaced.type[1].items!.type[0].kind).to.equal('Id.DsMap');
+    expect(replaced.type[1].items!.type[1].kind).to.equal('Id.Instance');
+    expect(replaced.type[2].kind).to.equal('Struct');
+    expect(replaced.type[2].items!.type[0].kind).to.equal('Array');
+    expect(replaced.type[2].items!.type[0].items!.type[0].kind).to.equal(
+      'Id.DsMap',
+    );
+    expect(replaced.type[2].items!.type[0].items!.type[1].kind).to.equal(
+      'Id.Instance',
+    );
   });
 
   it('can check whether one simple type satisfies another', function () {
