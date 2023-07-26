@@ -37,6 +37,23 @@ export class Native {
     const throws = new Signifier(this.globalSelf, 'throw', throwsType);
     this.globalSelf.replaceMember(throws);
     this.types.set('Function.throw', throwsType);
+    throws.def = {};
+    throws.native = 'Base';
+
+    // The `display_get_frequency` function is not in the spec, so add it manually.
+    const displayGetFrequencyType = new Type('Function').named(
+      'display_get_frequency',
+    );
+    displayGetFrequencyType.addReturnType(Type.Real);
+    const displayGetFrequency = new Signifier(
+      this.globalSelf,
+      'display_get_frequency',
+      displayGetFrequencyType,
+    );
+    this.globalSelf.replaceMember(displayGetFrequency);
+    this.types.set('Function.display_get_frequency', displayGetFrequencyType);
+    displayGetFrequency.def = {};
+    displayGetFrequency.native = 'Base';
 
     // Process all of the found specs
     for (const spec of this.specs) {
