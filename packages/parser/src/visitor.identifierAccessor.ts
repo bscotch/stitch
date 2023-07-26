@@ -341,12 +341,15 @@ export function visitIdentifierAccessor(
           }
         }
         // The returntype of this function may be used in another accessor
-        const returnType = replaceGenerics(
-          (usesNew && isLastSuffix
-            ? functionType?.constructs
-            : functionType?.returns) || this.ANY,
+        const returnType = normalizeType(
+          replaceGenerics(
+            (usesNew && isLastSuffix
+              ? functionType?.constructs
+              : functionType?.returns) || this.ANY,
+            this.PROCESSOR.project.types,
+            generics,
+          ),
           this.PROCESSOR.project.types,
-          generics,
         );
         accessing = { type: returnType };
         lastAccessedType = returnType;

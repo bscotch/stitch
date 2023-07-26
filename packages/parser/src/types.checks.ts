@@ -186,9 +186,13 @@ export function normalizeType(
         for (const itemType of getTypes(type.items || [])) {
           // Try to convert the type.
           const name = itemType.name ? `${kind}.${itemType.name}` : kind;
-          normalized.addType(
-            knownTypes.get(name) || knownTypes.get(kind) || new Type(kind),
-          );
+          let type =
+            knownTypes.get(name) || knownTypes.get(kind) || new Type(kind);
+          if (itemType.generic) {
+            // Then extend the type to allow having a generic without mutating the original
+            type = type.derive().genericize().named(itemType.name);
+          }
+          normalized.addType(type);
         }
         continue type; // so that the fall-through only happens if we didn't find a match
       }
@@ -257,7 +261,7 @@ export function replaceGenerics(
   knownTypes: KnownTypesMap,
   generics: Map<string, TypeStore>,
 ): TypeStore {
-  const startingTypes = normalizeType(startingType, knownTypes).type;
+  const startingTypes = getTypes(startingType);
   // Recurse through the types and, if we find a generic, replace it!
   // The complication is that we don't want to mutate the starting types, we need to replace them (or their containers!) with a new type. The easiest way to do this is to just create new types from the jump.
   const replacedTypes = new TypeStore();

@@ -420,4 +420,24 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   static get Any() {
     return new Type('Any');
   }
+
+  static get Real() {
+    return new Type('Real');
+  }
+
+  static get String() {
+    return new Type('String');
+  }
+
+  static get Bool() {
+    return new Type('Bool');
+  }
+
+  static get Undefined() {
+    return new Type('Undefined');
+  }
+
+  static get Struct() {
+    return new Type('Struct');
+  }
 }
