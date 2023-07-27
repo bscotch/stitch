@@ -103,7 +103,16 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     }
     if (!item) {
       item = this.PROCESSOR.globalSelf.getMember(name, excludeParents);
-      if (item?.instance && name !== 'id') {
+      // If the current scope is an instance allow for instance variables
+      // (but skip `id` since we're doing special things with that).
+      // Otherwise instance variables should be skipped.
+      const isInstance =
+        !scope.selfIsGlobal &&
+        (['Id.Instance', 'Asset.GMObject'].includes(scope.self.kind) ||
+          scope.self.signifier?.instance);
+      if (!isInstance && item?.instance) {
+        item = undefined;
+      } else if (isInstance && item?.instance && name === 'id') {
         // Then this is a native "instance" variable. Ignore it
         // to allow falling back on the self scope.
         item = undefined;
