@@ -67,9 +67,9 @@ export async function activateStitchExtension(
     vscode.workspace.onDidChangeTextDocument((event) =>
       provider.onChangeDoc(event),
     ),
-    vscode.workspace.onDidOpenTextDocument((event) =>
-      provider.onChangeDoc(event),
-    ),
+    vscode.workspace.onDidOpenTextDocument((event) => {
+      // provider.onChangeDoc(event),
+    }),
     watcher.onDidChange((uri): any => {
       // Find the corresponding document, if there is one
       const doc = vscode.workspace.textDocuments.find(
