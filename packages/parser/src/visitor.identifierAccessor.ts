@@ -261,6 +261,8 @@ export function visitIdentifierAccessor(
           functionType?.signifier ===
           this.PROCESSOR.project.self.getMember('method');
         let methodSelf: Type | undefined;
+        /** If this is a `method()` call, the 2nd argument is the return type */
+        let methodReturns: Type | undefined;
 
         // Create the argumentRanges between the parens and each comma
         const argsAndSeps = sortedFunctionCallParts(suffix);
@@ -323,6 +325,10 @@ export function visitIdentifierAccessor(
               ),
               this.PROCESSOR.project.types,
             );
+            if (isMethodCall && argIdx === 1) {
+              // Then the inferred argument type is the return type
+              methodReturns = getTypeOfKind(inferredType, ['Function']);
+            }
             if (expectedType) {
               updateGenericsMap(
                 expectedType,
@@ -345,6 +351,8 @@ export function visitIdentifierAccessor(
           replaceGenerics(
             (usesNew && isLastSuffix
               ? functionType?.constructs
+              : isMethodCall
+              ? methodReturns
               : functionType?.returns) || this.ANY,
             this.PROCESSOR.project.types,
             generics,
