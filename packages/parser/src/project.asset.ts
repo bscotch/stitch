@@ -37,6 +37,8 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   instanceType: Type<'Id.Instance'> | undefined;
   assetType: Type<Asset['assetTypeKind']>;
   variables: StructType | undefined;
+  nativeVariables: StructType | undefined;
+
   /** For objects, their parent */
   protected _parent: Asset<'objects'> | undefined = undefined;
 
@@ -75,9 +77,14 @@ export class Asset<T extends YyResourceType = YyResourceType> {
 
     // If this is an object, also create the instance type
     if (this.assetKind === 'objects') {
+      this.nativeVariables = Type.Struct;
       // Create the base struct-type to store all of the variables.
+      for (const member of this.project.native.objectInstanceBase.listMembers()) {
+        this.nativeVariables.addMember(member.copy());
+      }
+
       this.variables = new Type('Struct');
-      this.variables.parent = this.project.native.objectInstanceBase;
+      this.variables.parent = this.nativeVariables;
       this.variables.signifier = this.signifier;
 
       // It will be used as the parent for the Instance/Asset types
@@ -156,7 +163,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       // the parent's instanceType.
       this.variables!.parent = parent.variables;
     } else {
-      this.variables!.parent = this.project.native.objectInstanceBase;
+      this.variables!.parent = this.nativeVariables;
     }
     // Do we need to change the yy file?
     const yy = this.yy as YyObject;

@@ -35,6 +35,21 @@ export class Signifier extends Flags {
     this.parent = parent;
   }
 
+  /**
+   * Create a new Signifier instance with the same properties as this one,
+   * except for its refs. Note that it is a shallow copy!
+   */
+  copy(): this {
+    const copy = new Signifier(this.parent, this.name);
+    copy.description = this.description;
+    copy.type = this.type;
+    copy.idx = this.idx;
+    copy._native = this._native;
+    copy._def = this._def;
+    copy.flags = this.flags;
+    return copy as this;
+  }
+
   addRef(location: Range, isDef = false): Reference {
     const ref = Reference.fromRange(location, this as any);
     ref.isDef = isDef;
@@ -67,14 +82,6 @@ export class Signifier extends Flags {
     if (nativeModule) {
       this._def = {};
     }
-  }
-
-  toJSON() {
-    return {
-      $tag: this.$tag,
-      name: this.name,
-      type: this.type,
-    };
   }
 
   describe(description: string | undefined): this {
