@@ -119,7 +119,7 @@ export class GameMakerProject extends Project {
 
   includesFile(document: vscode.Uri | vscode.TextDocument): boolean {
     const file = document instanceof vscode.Uri ? document : document.uri;
-    const relative = path.relative(this.projectDir.absolute, file.fsPath);
+    const relative = path.relative(this.dir.absolute, file.fsPath);
     return !relative || !relative.startsWith('..');
   }
 

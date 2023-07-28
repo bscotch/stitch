@@ -68,10 +68,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     if (!['scripts', 'extensions'].includes(this.assetKind)) {
       this.project.self.addMember(this.signifier);
       if (this.assetType.kind !== 'Any') {
-        this.project.types.set(
-          `${this.assetType.kind}.${this.name}`,
-          this.assetType,
-        );
+        this.project.types.set(this.typeName, this.assetType);
       }
     }
 
@@ -92,11 +89,20 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       id.writable = false;
 
       this.instanceType.signifier = this.signifier;
-      this.project.types.set(`Id.Instance.${this.name}`, this.instanceType);
+      this.project.types.set(this.instanceTypeName, this.instanceType);
     }
   }
 
+  get typeName() {
+    return `${this.assetType.kind}.${this.name}`;
+  }
+
+  get instanceTypeName() {
+    return `Id.Instance.${this.name}`;
+  }
+
   async saveYy() {
+    assert(this.yyPath, 'Cannot save YY without a path');
     await Yy.write(this.yyPath.absolute, this.yy, this.assetKind);
   }
 
@@ -292,7 +298,8 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   }
 
   getGmlFile(path: Pathy) {
-    return this.gmlFiles.get(path.absolute);
+    assert(path, 'GML Path does not exist');
+    return this.gmlFiles.get(path.absolute.toLocaleLowerCase());
   }
 
   protected updateParent() {
@@ -351,11 +358,12 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     const gml =
       this.getGmlFile(path) ||
       new Code(this as Asset<'scripts' | 'objects'>, path);
-    this.gmlFiles.set(path.absolute, gml);
+    assert(path, 'Cannot add GML file, path does not exist');
+    this.gmlFiles.set(path.absolute.toLocaleLowerCase(), gml);
     return gml;
   }
 
-  protected async load() {
+  async reload() {
     // Find all immediate children, which might include legacy GML files
     const [, children] = await Promise.all([
       await this.readYy(),
@@ -378,9 +386,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
             continue;
           }
           if (this.project.self.getMember(constant.name)) {
-            logger.warn(
-              `Constant ${constant.name} from extension ${this.name} already exists`,
-            );
             continue;
           }
           // TODO: Get the type by parsing the value. For now we'll just check for number or string, else "Any".
@@ -406,9 +411,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
             continue;
           }
           if (this.project.self.getMember(func.externalName)) {
-            logger.warn(
-              `Constant ${func.externalName} from extension ${this.name} already exists`,
-            );
             continue;
           }
           const type = new Type('Function')
@@ -436,7 +438,20 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   }
 
   onRemove() {
-    this.gmlFiles.forEach((gml) => gml.onRemove());
+    const files = this.gmlFilesArray;
+    files.forEach((gml) => gml.onRemove());
+    // Remove this signifier and any global types from the project
+    this.project.self.removeMember(this.signifier.name);
+    for (const typeName of [this.typeName, this.instanceTypeName]) {
+      const type = this.project.types.get(typeName);
+      if (type) {
+        this.project.types.delete(this.typeName);
+        // Try to get any refereneces using this type updated
+        for (const ref of type.signifier?.refs || []) {
+          ref.file.dirty = true;
+        }
+      }
+    }
   }
 
   protected addObjectFile(children: Pathy<string>[]) {
@@ -502,10 +517,28 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   static async from<T extends YyResourceType>(
     project: Project,
     resource: YypResource,
-    yyPath: Pathy,
-  ): Promise<Asset<T>> {
+  ): Promise<Asset<T> | undefined> {
+    let yyPath: Pathy | undefined = project.dir.join(resource.id.path);
+    if (!(await yyPath.exists())) {
+      const dir = await project.dir
+        .up(2)
+        .findChild(new RegExp(`^${resource.id.name}$`, 'i'));
+      if (dir) {
+        yyPath = await dir.findChild(
+          new RegExp(`^${resource.id.name}\\.yy$`, 'i'),
+        );
+        if (!yyPath) {
+          logger.warn(`Could not find file for "${resource.id.path}"`);
+        }
+      } else {
+        logger.warn(`Could not find folder for "${resource.id.path}"`);
+      }
+    }
+    if (!yyPath) {
+      return;
+    }
     const item = new Asset(project, resource, yyPath) as Asset<T>;
-    await item.load();
+    await item.reload();
 
     return item;
   }

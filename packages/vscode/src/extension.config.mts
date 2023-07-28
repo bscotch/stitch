@@ -38,6 +38,9 @@ export class StitchConfig {
   get reprocessOnTypeDelay(): number {
     return this.config.get<number>('editing.reprocessOnTypeDelay') || 50;
   }
+  get externalChangeDelay(): number {
+    return this.config.get<number>('editing.externalChangeDelay') || 100;
+  }
 }
 
 export const config = new StitchConfig();

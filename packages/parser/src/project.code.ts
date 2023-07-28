@@ -56,7 +56,7 @@ export class Code {
   /** When set to `true`, this file will be flagged for reprocessing. */
   set dirty(value: boolean) {
     if (value) {
-      this.project.queueDiagnosticsUpdate(this);
+      this.project.queueDirtyFileUpdate(this);
     }
   }
 
@@ -280,8 +280,8 @@ export class Code {
         : diagnostic.token;
       logger.debug(
         'SYNTAX ERROR',
-        diagnostic.message,
-        this.path.absolute,
+        diagnostic?.message,
+        this.path?.absolute,
         fromToken,
       );
       this.diagnostics.SYNTAX_ERROR.push(
@@ -402,7 +402,7 @@ export class Code {
     this.updateDiagnostics();
     // Re-run diagnostics on everything that ended up dirty due to the changes
     if (options?.reloadDirty) {
-      this.project.drainDiagnosticsUpdateQueue();
+      await this.project.drainDirtyFileUpdateQueue();
     }
   }
 

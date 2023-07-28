@@ -23,7 +23,6 @@ export async function activateStitchExtension(
 ) {
   info('Activating extension...');
   const t = Timer.start();
-  const watcher = vscode.workspace.createFileSystemWatcher('**/*.gml');
   // Ensure that things stay up to date!
 
   // Dispose any existing subscriptions
@@ -53,6 +52,7 @@ export async function activateStitchExtension(
       );
     }
   }
+  const watcher = vscode.workspace.createFileSystemWatcher('**/*.{gml,yy,yyp}');
 
   const treeProvider = new GameMakerTreeProvider(provider);
   const inspectorProvider = new GameMakerInspectorProvider(provider);
@@ -70,23 +70,14 @@ export async function activateStitchExtension(
     vscode.workspace.onDidOpenTextDocument((event) => {
       // provider.onChangeDoc(event),
     }),
-    watcher.onDidChange((uri): any => {
-      // Find the corresponding document, if there is one
-      const doc = vscode.workspace.textDocuments.find(
-        (d) => d.uri.fsPath === uri.fsPath,
-      );
-      info('changedOnDisk', uri.fsPath);
-      if (doc) {
-        // Then we might have just saved this doc, or
-        // it's open but got changed externally. Either way,
-        // the onChangeDoc handler is already debouncing
-        return provider.onChangeDoc(doc);
-      }
-      // Otherwise the file isn't open, so we need to
-      // reprocess it more directly.
-      provider.getGmlFile(uri)?.reload(undefined, {
-        reloadDirty: true,
-      });
+    watcher.onDidCreate((uri) => {
+      provider.externalChangeTracker.addChange({ uri, type: 'create' });
+    }),
+    watcher.onDidDelete((uri) => {
+      provider.externalChangeTracker.addChange({ uri, type: 'delete' });
+    }),
+    watcher.onDidChange((uri) => {
+      provider.externalChangeTracker.addChange({ uri, type: 'change' });
     }),
     ...treeProvider.register(),
     ...inspectorProvider.register(),

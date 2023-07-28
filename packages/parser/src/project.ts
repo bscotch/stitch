@@ -76,26 +76,27 @@ export class Project {
 
   protected emitter = new EventEmitter();
   /** Code that needs to be reprocessed, for one reason or another. */
-  protected needsDiagnosticsUpdate = new Set<Code>();
+  protected dirtyFiles = new Set<Code>();
 
   protected constructor(readonly yypPath: Pathy) {}
 
-  queueDiagnosticsUpdate(code: Code): void {
-    this.needsDiagnosticsUpdate.add(code);
+  queueDirtyFileUpdate(code: Code): void {
+    this.dirtyFiles.add(code);
   }
 
-  drainDiagnosticsUpdateQueue() {
-    for (const code of this.needsDiagnosticsUpdate) {
-      code.updateDiagnostics();
+  async drainDirtyFileUpdateQueue() {
+    for (const code of this.dirtyFiles) {
+      // code.updateDiagnostics();
+      await code.reload(code.content);
     }
-    this.needsDiagnosticsUpdate.clear();
+    this.dirtyFiles.clear();
   }
 
   get ideVersion(): string {
     return this.yyp.MetaData.IDEVersion;
   }
 
-  get projectDir(): Pathy {
+  get dir(): Pathy {
     return pathy(this.yypPath).up();
   }
 
@@ -123,6 +124,15 @@ export class Project {
     return this.assets.get(name?.toLocaleLowerCase?.());
   }
 
+  protected removeAssetByName(name: string | undefined) {
+    if (!name) return;
+    name = name.toLocaleLowerCase();
+    const asset = this.assets.get(name);
+    if (!asset) return;
+    asset.onRemove();
+    this.assets.delete(name);
+  }
+
   getAsset(path: Pathy<any>): Asset | undefined {
     return this.assets.get(this.assetNameFromPath(path));
   }
@@ -141,14 +151,6 @@ export class Project {
     this.assets.set(name, resource);
   }
 
-  protected removeAsset(path: Pathy<any>): void {
-    const name = this.assetNameFromPath(path);
-    const resource = this.assets.get(name);
-    ok(resource, `Resource ${name} does not exist`);
-    resource.onRemove();
-    this.assets.delete(name);
-  }
-
   /**
    * Add an object to the yyp file. The string can include separators,
    * in which case folders will be ensured up to the final component.
@@ -160,7 +162,7 @@ export class Project {
       return;
     }
     const { name, folder } = parsed;
-    const objectDir = this.projectDir.join(`objects/${name}`);
+    const objectDir = this.dir.join(`objects/${name}`);
     await objectDir.ensureDirectory();
     const objectYy = objectDir.join(`${name}.yy`);
     const objectCreateFile = objectDir.join('Create_0.gml');
@@ -184,8 +186,10 @@ export class Project {
     const info = await this.addAssetToYyp(objectYy.absolute);
 
     // Create and add the asset
-    const asset = await Asset.from(this, info, objectYy);
-    this.addAsset(asset);
+    const asset = await Asset.from(this, info);
+    if (asset) {
+      this.addAsset(asset);
+    }
     return asset;
   }
 
@@ -200,7 +204,7 @@ export class Project {
       return;
     }
     const { name, folder } = parsed;
-    const scriptDir = this.projectDir.join(`scripts/${name}`);
+    const scriptDir = this.dir.join(`scripts/${name}`);
     await scriptDir.ensureDirectory();
     const scriptYy = scriptDir.join(`${name}.yy`);
     await Yy.write(
@@ -223,8 +227,10 @@ export class Project {
     const info = await this.addAssetToYyp(scriptYy.absolute);
 
     // Create and add the asset
-    const asset = await Asset.from(this, info, scriptYy);
-    this.addAsset(asset);
+    const asset = await Asset.from(this, info);
+    if (asset) {
+      this.addAsset(asset);
+    }
     return asset;
   }
 
@@ -313,7 +319,7 @@ export class Project {
    * that folder.
    */
   assetNameFromPath(path: Pathy<any>): string {
-    const parts = path.relativeFrom(this.projectDir).split(/[/\\]+/);
+    const parts = path.relativeFrom(this.dir).split(/[/\\]+/);
     return parts[1]?.toLocaleLowerCase?.();
   }
 
@@ -322,9 +328,13 @@ export class Project {
    * content into memory for fast access. In particular, we need all
    * yyp, yy, and gml files for scripts and objects. For other asset types
    * we just need their names and yyp filepaths.
+   *
+   * Can be called at any time -- will only operate on new assets.
+   *
+   * Returns the list of added assets. Assets are instanced and registered but their
+   * code is not parsed!
    */
-  protected async loadAssets(options?: ProjectOptions): Promise<void> {
-    // TODO: Allow for reloading of resources, so that we only need to keep track of new/deleted resources.
+  protected async loadAssets(options?: ProjectOptions): Promise<Asset[]> {
     const t = Date.now();
 
     // Load AudioGroup assets
@@ -341,58 +351,40 @@ export class Project {
       }
     }
 
-    // Load Extension functions and constants
-
-    // Collect the asset dirs since we can run into capitalization issues.
-    // We'll use these as a backup for "missing" resources.
-    const assetNameToYy = new Map<string, Pathy>();
-    const [yyp] = await Promise.all([
-      Yy.read(this.yypPath.absolute, 'project'),
-      this.projectDir.listChildrenRecursively({
-        includeExtension: 'yy',
-        maxDepth: 2,
-        onInclude: (p) => {
-          // Sometimes there is more than one yy file. Make sure that
-          // we only keep the one matching the name.
-          const dirname = p.up().name?.toLocaleLowerCase();
-          const assetName = p.name?.toLocaleLowerCase();
-          if (dirname !== assetName) {
-            return;
-          }
-          assetNameToYy.set(this.assetNameFromPath(p), p);
-        },
-      }),
-    ]);
-    this.yyp = yyp;
     // We'll say that resources take 80% of loading,
     // and distribute that across the number of resources.
     const perAssetIncrement = this.yyp.resources.length / 80;
-    const resourceWaits: Promise<any>[] = [];
+    const resourceWaits: Promise<Asset | undefined>[] = [];
     for (const resourceInfo of this.yyp.resources) {
       assert(
         resourceInfo.id.name,
         `Resource ${resourceInfo.id.path} has no name`,
       );
-      const assetYy = assetNameToYy.get(
-        resourceInfo.id.name.toLocaleLowerCase(),
-      );
-      if (!assetYy) {
-        logger.warn(`Resource ${resourceInfo.id.name} has no yy file`);
+      const name = resourceInfo.id.name.toLocaleLowerCase();
+      // Skip it if we already have it
+      if (this.assets.has(name)) {
         continue;
       }
+
       resourceWaits.push(
-        Asset.from(this, resourceInfo, assetYy).then((r) => {
+        Asset.from(this, resourceInfo).then((r) => {
+          if (!r) {
+            logger.warn(`Resource ${resourceInfo.id.name} has no yy file`);
+            return;
+          }
           this.addAsset(r);
           options?.onLoadProgress?.(
             perAssetIncrement,
             `Loaded asset ${r.name}`,
           );
+          return r;
         }),
       );
     }
-    await Promise.all(resourceWaits);
+    const addedAssets = await Promise.all(resourceWaits);
     options?.onLoadProgress?.(1, `Loaded ${this.assets.size} resources`);
     logger.log(`Loaded ${this.assets.size} resources in ${Date.now() - t}ms`);
+    return addedAssets.filter((x) => x) as Asset[];
   }
 
   /**
@@ -412,7 +404,7 @@ export class Project {
     // Check for a stitch config file that specifies the runtime version.
     // If it exists, use that version. It's likely that it is correct, and this
     // way we don't have to download the releases summary.
-    const stitchConfig = this.projectDir
+    const stitchConfig = this.dir
       .join('stitch.config.json')
       .withValidator(
         z.object({ runtimeVersion: z.string().optional() }).passthrough(),
@@ -431,41 +423,36 @@ export class Project {
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);
   }
 
-  async initialize(options?: ProjectOptions): Promise<void> {
-    logger.info('Initializing project...');
-    if (options?.onDiagnostics) {
-      this.onDiagnostics(options.onDiagnostics);
-    }
-    let t = Date.now();
-    this.nativeWaiter = this.loadGmlSpec();
-    this.yypWaiter = Yy.read(this.yypPath.absolute, 'project').then((yyp) => {
-      this.yyp = yyp;
-      options?.onLoadProgress?.(5, 'Loaded project file');
-      logger.info('Loaded yyp file!');
-    });
-    void this.nativeWaiter.then(() => {
-      options?.onLoadProgress?.(5, 'Loaded GML spec');
-    });
-    logger.info('Loading asset files...');
-    await Promise.all([this.nativeWaiter, this.yypWaiter]);
+  /**
+   * Call to reload the project's yyp file (e.g. because it has changed
+   * on disk) and add/remove any resources.
+   */
+  async reloadYyp() {
+    // Update the YYP and identify new/deleted assets
+    const oldYyp = this.yyp;
+    assert(this.yypPath, 'Cannot reload YYP without a path');
+    this.yyp = await Yy.read(this.yypPath.absolute, 'project');
+    const assetIds = new Map(this.yyp.resources.map((r) => [r.id.path, r.id]));
 
-    await this.loadAssets(options);
-    logger.log(
-      'Resources',
-      this.assets.size,
-      'loaded files in',
-      Date.now() - t,
-      'ms',
+    // Remove old assets
+    const removedAssets = oldYyp.resources.filter(
+      (r) => !assetIds.has(r.id.path),
     );
+    for (const removedAsset of removedAssets) {
+      this.removeAssetByName(removedAsset.id.name);
+    }
 
-    t = Date.now();
-    // Discover all globals
-    // Sort assets by type, with objects 2nd to last and scripts last
-    // to minimize the number of things that need to be updated after
-    // loading.
-    options?.onLoadProgress?.(1, 'Parsing resource code...');
+    // Add new assets
+    const newAssets = await this.loadAssets();
+    this.initiallyParseAssetCode(newAssets);
 
-    const assets = [...this.assets.values()].sort((a, b) => {
+    // Try to keep anything that got touched *clean*
+    await this.drainDirtyFileUpdateQueue();
+  }
+
+  /** Initialize a collection of new assets by parsing their GML */
+  protected initiallyParseAssetCode(assets: Asset[]) {
+    assets = [...this.assets.values()].sort((a, b) => {
       if (a.assetKind === b.assetKind) {
         return a.name.localeCompare(b.name);
       }
@@ -488,9 +475,6 @@ export class Project {
     for (const asset of assets) {
       asset.updateGlobals(true);
     }
-    logger.log('Globals discovered in', Date.now() - t, 'ms');
-
-    t = Date.now();
     // Discover all symbols and their references
     logger.info('Discovering symbols...');
     for (const asset of assets) {
@@ -511,10 +495,44 @@ export class Project {
       //   await file.reload(file._content);
       // }
     }
-    logger.info('Symbols discovered in', Date.now() - t, 'ms');
-    // if (options?.watch) {
-    //   this.watch();
-    // }
+  }
+
+  async initialize(options?: ProjectOptions): Promise<void> {
+    logger.info('Initializing project...');
+    if (options?.onDiagnostics) {
+      this.onDiagnostics(options.onDiagnostics);
+    }
+    let t = Date.now();
+    this.nativeWaiter = this.loadGmlSpec();
+    assert(this.yypPath, 'Cannot initialize without a path');
+    this.yypWaiter = Yy.read(this.yypPath.absolute, 'project').then((yyp) => {
+      this.yyp = yyp;
+      options?.onLoadProgress?.(5, 'Loaded project file');
+      logger.info('Loaded yyp file!');
+    });
+    void this.nativeWaiter.then(() => {
+      options?.onLoadProgress?.(5, 'Loaded GML spec');
+    });
+    logger.info('Loading asset files...');
+    await Promise.all([this.nativeWaiter, this.yypWaiter]);
+
+    const assets = await this.loadAssets(options);
+    logger.log(
+      'Resources',
+      this.assets.size,
+      'loaded files in',
+      Date.now() - t,
+      'ms',
+    );
+
+    t = Date.now();
+    // Discover all globals
+    // Sort assets by type, with objects 2nd to last and scripts last
+    // to minimize the number of things that need to be updated after
+    // loading.
+    options?.onLoadProgress?.(1, 'Parsing resource code...');
+
+    this.initiallyParseAssetCode(assets);
   }
 
   static async initialize(

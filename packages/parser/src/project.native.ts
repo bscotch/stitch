@@ -335,7 +335,7 @@ export class Native {
       });
       if (installedRuntime) {
         logger.info(
-          `Looking for spec files in "${installedRuntime.directory.absolute}"`,
+          `Looking for spec files in "${installedRuntime.directory?.absolute}"`,
         );
         const specs = await pathy(
           installedRuntime.directory,

@@ -171,7 +171,13 @@
           "title": "Reprocess on type delay",
           "type": "number",
           "default": 50,
-          "description": "The delay in milliseconds to wait after a keypress before reprocessing the document. This is used to avoid reprocessing the document while the user is typing. Increase this value if the editor is feeling sluggish. Note that certain actions and typed characters will trigger a reprocess no matter what this is set to."
+          "description": "The delay in milliseconds to wait after a keypress before reprocessing the document. This is used to avoid reprocessing the document while the user is typing. Increase this value if the editor is feeling sluggish. Decrease this value if you want syntax highlighting to update faster."
+        },
+        "stitch.editing.externalChangeDelay": {
+          "title": "Reprocess on external change delay",
+          "type": "number",
+          "default": 100,
+          "description": "The delay in milliseconds to wait after a file is changed on disk before processing it. Increase this number if you are getting weird results when files change externally to VSCode and Stitch."
         },
         "stitch.run.defaultConfig": {
           "title": "Default GameMaker config",
