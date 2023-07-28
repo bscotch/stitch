@@ -13,6 +13,7 @@ import { JsdocSummary, parseJsdoc } from './jsdoc.js';
 import { logger } from './logger.js';
 import { GmlVisitorBase, identifierFrom } from './parser.js';
 import type { Code } from './project.code.js';
+import { Diagnostic } from './project.diagnostics.js';
 import { Position, Range } from './project.location.js';
 import { Signifier } from './signifiers.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
@@ -107,8 +108,13 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     if (!isNotDef && !symbol.native) {
       symbol.definedAt(range);
     } else if (!isNotDef) {
-      logger.warn(
-        `Global ${name} is native there was an attempt to redefine it.`,
+      this.PROCESSOR.file.addDiagnostic(
+        'INVALID_OPERATION',
+        new Diagnostic(
+          `"${name}" already exists as a built-in symbol.`,
+          range,
+          'warning',
+        ),
       );
     }
     symbol.addRef(range, !isNotDef && !symbol.native);
