@@ -2,6 +2,7 @@ import { pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
 import { config } from './extension.config.mjs';
 import type { StitchProvider } from './extension.provider.mjs';
+import { logger } from './log.mjs';
 
 interface ChangeEvent {
   type: 'change' | 'create' | 'delete';
@@ -46,12 +47,14 @@ export class ChangeTracker {
       const { type, uri } = event;
       const project = this.provider.getProject(uri);
       if (!project) {
+        logger.warn(`For change event ${type} ${uri.path}, no project found.`);
         continue;
       }
 
       // Change to the yyp file implies that we have deleted
       // or added an asset, so we need to respond to that.
       if (type === 'change' && uri.path.endsWith('.yyp')) {
+        logger.info(`yyp file changed on disk. Reloading!`);
         await project.reloadYyp();
         continue;
       }
@@ -64,6 +67,7 @@ export class ChangeTracker {
       }
       // Changes to existing GML files can be handled immediately.
       if (type === 'change' && uri.path.endsWith('.gml')) {
+        logger.info(`GML file "${uri.path}" changed on disk. Reloading!`);
         await this.provider.getGmlFile(uri)?.reload(undefined, {
           reloadDirty: true,
         });
@@ -74,7 +78,11 @@ export class ChangeTracker {
       // only care about objects, since object yy files list
       // their events.
       if (type === 'change' && uri.path.endsWith('.yy')) {
+        logger.info(`yy file "${uri.path}" changed on disk. Reloading!`);
         const asset = project.getAsset(pathy(uri.fsPath));
+        if (!asset) {
+          logger.warn(`No asset found for yy file "${uri.fsPath}".`);
+        }
         await asset?.reload();
       }
     }
