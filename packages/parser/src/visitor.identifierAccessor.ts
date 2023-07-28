@@ -244,12 +244,8 @@ export function visitIdentifierAccessor(
 
         // If this is a mixin call, then we need to ensure that the context
         // includes the variables created by the mixin function.
-        // if (functionType?.signifier?.mixin) {
-        //   debugger;
-        // }
         if (functionType?.signifier?.mixin && functionType.context) {
           const variables = functionType.context;
-          // debugger;
           for (const member of variables.listMembers()) {
             this.PROCESSOR.currentSelf.replaceMember(member);
           }

@@ -487,13 +487,6 @@ export class Code {
   protected computeUndeclaredSymbolDiagnostics() {
     this.diagnostics.UNDECLARED_VARIABLE_REFERENCE = [];
     const undeclaredSymbols = new Set<Signifier>();
-
-    // if (
-    //   this.asset.name === 'button_cl2_confirmation' &&
-    //   this.name === 'Draw_64'
-    // ) {
-    //   debugger;
-    // }
     for (const ref of this._refs) {
       if (ref.item.def || ref.item.native || undeclaredSymbols.has(ref.item)) {
         continue;

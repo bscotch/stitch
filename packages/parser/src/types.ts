@@ -339,6 +339,13 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     if (!existing) {
       return this.addMember(newMember);
     }
+    if (existing.native) {
+      return existing;
+    }
+    // Start by keeping the original def
+    if (!newMember.def) {
+      newMember.def = existing.def;
+    }
     // Update all of the original refs to point to this signifier,
     // and add them to the new member. That way wherever they are
     // being reference elsewhere they'll now be accurate.
