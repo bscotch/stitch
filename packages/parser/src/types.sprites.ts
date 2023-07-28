@@ -416,7 +416,6 @@ function variablesToStruct(
     const type = typeFromFeatherString(v.type, globalTypes, false);
     const newVar = new Signifier(struct, v.variable, type);
     newVar.native = 'Base';
-    newVar.def = {};
     newVar.describe(v.description);
     struct.addMember(newVar);
   }

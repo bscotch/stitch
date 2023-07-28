@@ -2,7 +2,7 @@ import type { CstNodeLocation, IToken } from 'chevrotain';
 import type { Code } from './project.code.js';
 import type { Signifier } from './signifiers.js';
 import { EnumType, FunctionType, StructType, WithableType } from './types.js';
-import { assert, type Constructor } from './util.js';
+import { assert } from './util.js';
 
 export const firstLineIndex = 1;
 export const firstColumnIndex = 1;
@@ -161,33 +161,6 @@ export class FunctionArgRange extends Range {
     assert(this.type, 'FunctionArgRange must have a type');
     return this.type.getParameter(this.idx)!;
   }
-}
-
-/** Extend a class to add `def`, `refs`, and related fields and methods. */
-export function Refs<TBase extends Constructor>(Base: TBase) {
-  return class extends Base {
-    /**
-     * If `true`, then this definitely exists but may not have a place where it
-     * is declared. E.g. the `global` variable. In that case this would be set to
-     * `true`. Otherwise `undefined` is interpreted to mean that this thing
-     * does not have a definite declaration.
-     */
-    def: Range | { file?: undefined } | undefined = undefined;
-    refs = new Set<Reference>();
-
-    addRef(location: Range, isDef = false): Reference {
-      const ref = Reference.fromRange(location, this as any);
-      ref.isDef = isDef;
-      this.refs.add(ref);
-      location.file.addRef(ref);
-      return ref;
-    }
-
-    definedAt(location: Range | undefined): this {
-      this.def = location;
-      return this;
-    }
-  };
 }
 
 export const enum ScopeFlag {

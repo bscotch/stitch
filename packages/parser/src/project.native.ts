@@ -215,7 +215,6 @@ export class Native {
             constant.description,
           );
         symbol.writable = false;
-        symbol.def = {}; // Prevent "not found" errors
         symbol.native = constant.module;
         symbol.setType(classType);
         const typeName = `${classTypeName}.${constant.name}`;

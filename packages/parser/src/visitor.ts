@@ -98,6 +98,12 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       name,
       excludeParents,
     );
+    // if (
+    //   this.PROCESSOR.file.asset.name === 'button_cl2_confirmation' &&
+    //   this.PROCESSOR.file.name === 'Draw_64'
+    // ) {
+    //   debugger;
+    // }
     if (!item && !scope.selfIsGlobal) {
       item = scope.self.getMember(name, excludeParents);
     }
@@ -109,7 +115,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       const isInstance =
         !scope.selfIsGlobal &&
         (['Id.Instance', 'Asset.GMObject'].includes(scope.self.kind) ||
-          scope.self.signifier?.instance);
+          scope.self.signifier?.asset);
       if (!isInstance && item?.instance) {
         item = undefined;
       } else if (isInstance && item?.instance && name === 'id') {
@@ -819,6 +825,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         ctx.signifier = signifier;
         ctx.docs = docs;
         if (assignedToFunction) {
+          ctx.self = struct;
           this.functionExpression(assignedToFunction, ctx);
         } else if (assignedToStructLiteral) {
           this.structLiteral(assignedToStructLiteral, ctx);

@@ -63,6 +63,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     // Create the Asset.<> type
     this.assetType = new Type(this.assetTypeKind).named(this.name);
     this.signifier.setType(this.assetType);
+    this.assetType.signifier = this.signifier;
 
     // Add this asset to the project lookup, unless it is a script.
     if (!['scripts', 'extensions'].includes(this.assetKind)) {
@@ -77,18 +78,19 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       // Create the base struct-type to store all of the variables.
       this.variables = new Type('Struct');
       this.variables.parent = this.project.native.objectInstanceBase;
+      this.variables.signifier = this.signifier;
 
       // It will be used as the parent for the Instance/Asset types
       this.assetType.parent = this.variables;
 
       this.instanceType = new Type('Id.Instance').named(this.name);
       this.instanceType.parent = this.variables;
+      this.instanceType.signifier = this.signifier;
       const id = this.variables.addMember('id', this.instanceType)!;
       id.instance = true;
       id.def = {};
       id.writable = false;
 
-      this.instanceType.signifier = this.signifier;
       this.project.types.set(this.instanceTypeName, this.instanceType);
     }
   }

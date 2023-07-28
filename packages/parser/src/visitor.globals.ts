@@ -104,10 +104,14 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       this.PROCESSOR.globalSelf.addMember(symbol);
     }
     // Ensure it's defined here.
-    if (!isNotDef) {
+    if (!isNotDef && !symbol.native) {
       symbol.definedAt(range);
+    } else if (!isNotDef) {
+      logger.warn(
+        `Global ${name} is native there was an attempt to redefine it.`,
+      );
     }
-    symbol.addRef(range, !isNotDef);
+    symbol.addRef(range, !isNotDef && !symbol.native);
     symbol.global = true;
     symbol.macro = false; // Reset macro status
     return symbol;

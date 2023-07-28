@@ -1,10 +1,11 @@
-import { Refs } from './project.location.js';
+import { Range, Reference } from './project.location.js';
 import { getTypes } from './types.checks.js';
 import { Flags } from './types.flags.js';
 import { Type, TypeStore } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
+import { assert } from './util.js';
 
-export class Signifier extends Refs(Flags) {
+export class Signifier extends Flags {
   readonly $tag = 'Sym';
   description: string | undefined = undefined;
   type: TypeStore = new TypeStore();
@@ -16,7 +17,15 @@ export class Signifier extends Refs(Flags) {
    * If this is a native entity (built into GameMaker),
    * this is set to the name of the module it came from.
    */
-  native?: string = undefined;
+  protected _native?: string = undefined;
+  /**
+   * If `true`, then this definitely exists but may not have a place where it
+   * is declared. E.g. the `global` variable. In that case this would be set to
+   * `true`. Otherwise `undefined` is interpreted to mean that this thing
+   * does not have a definite declaration.
+   */
+  protected _def: Range | { file?: undefined } | undefined = undefined;
+  refs = new Set<Reference>();
 
   constructor(parent: Type, readonly name: string, type?: Type | Type[]) {
     super();
@@ -24,6 +33,40 @@ export class Signifier extends Refs(Flags) {
       this.setType(type);
     }
     this.parent = parent;
+  }
+
+  addRef(location: Range, isDef = false): Reference {
+    const ref = Reference.fromRange(location, this as any);
+    ref.isDef = isDef;
+    this.refs.add(ref);
+    location.file.addRef(ref);
+    return ref;
+  }
+
+  get def() {
+    return this._def;
+  }
+  set def(location: Range | { file?: undefined } | undefined) {
+    assert(
+      !this.native,
+      'Cannot change declaration location on a native entity',
+    );
+    this._def = location;
+  }
+
+  definedAt(location: Range | undefined): this {
+    this.def = location;
+    return this;
+  }
+
+  get native() {
+    return this._native;
+  }
+  set native(nativeModule: string | undefined) {
+    this._native = nativeModule;
+    if (nativeModule) {
+      this._def = {};
+    }
   }
 
   toJSON() {

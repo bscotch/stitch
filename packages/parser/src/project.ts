@@ -84,7 +84,7 @@ export class Project {
     this.dirtyFiles.add(code);
   }
 
-  async drainDirtyFileUpdateQueue() {
+  drainDirtyFileUpdateQueue() {
     for (const code of this.dirtyFiles) {
       code.updateDiagnostics();
       // await code.reload(code.content);
@@ -447,7 +447,7 @@ export class Project {
     this.initiallyParseAssetCode(newAssets);
 
     // Try to keep anything that got touched *clean*
-    await this.drainDirtyFileUpdateQueue();
+    this.drainDirtyFileUpdateQueue();
   }
 
   /** Initialize a collection of new assets by parsing their GML */

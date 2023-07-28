@@ -152,7 +152,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   get signifier(): Signifier | undefined {
-    return this._signifier;
+    return this._signifier || this.parent?.signifier;
   }
   set signifier(signifier: Signifier) {
     // assert(!this._signifier, 'Cannot change type signifier');

@@ -40,6 +40,9 @@ export function visitIdentifierAccessor(
   const { name } = identifier || {};
   const initialItem = this.FIND_ITEM(children.identifier[0].children);
   const fullScope = this.PROCESSOR.fullScope;
+  const initialType = initialItem?.item
+    ? getTypeStoreOrType(initialItem.item)
+    : undefined;
 
   if (initialItem) {
     const type = getTypeStoreOrType(initialItem.item);
@@ -92,7 +95,7 @@ export function visitIdentifierAccessor(
           assignmentCst,
           withCtxKind(ctx, 'assignment'),
         )
-      : this.ANY,
+      : initialType || this.ANY,
     this.PROCESSOR.project.types,
   );
 
