@@ -86,8 +86,8 @@ export class Project {
 
   async drainDirtyFileUpdateQueue() {
     for (const code of this.dirtyFiles) {
-      // code.updateDiagnostics();
-      await code.reload(code.content);
+      code.updateDiagnostics();
+      // await code.reload(code.content);
     }
     this.dirtyFiles.clear();
   }
