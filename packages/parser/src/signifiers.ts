@@ -71,6 +71,20 @@ export class Signifier extends Flags {
 
   definedAt(location: Range | undefined): this {
     this.def = location;
+    // If we have set a declaration location for this variable,
+    // and there exists a child of the struct-like holding onto
+    // this variable, then we should replace any child's *undefined*
+    // variable with this one.
+    if (location?.file && this.parent) {
+      for (const child of this.parent.listChildren(true)) {
+        const existingMember = child.getMember(this.name, true);
+        if (existingMember && !existingMember.def) {
+          // Then that member is likely intended to be a reference to
+          // this one, so we should replace it.
+          child.replaceMember(this);
+        }
+      }
+    }
     return this;
   }
 

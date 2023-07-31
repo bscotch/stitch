@@ -177,8 +177,17 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       this._parent._children.add(this);
     }
   }
-  get children(): Type[] {
-    return this._children ? [...this._children] : [];
+  listChildren(recursive = false): Type[] {
+    if (!this._children) {
+      return [];
+    }
+    const children = [...this._children];
+    if (recursive) {
+      for (const child of this._children) {
+        children.push(...child.listChildren(true));
+      }
+    }
+    return children;
   }
 
   get canBeSelf() {
@@ -379,9 +388,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       return existing;
     }
     // Start by keeping the original def
-    if (!newMember.def) {
-      newMember.def = existing.def;
-    }
+    const def = existing.def;
     // Update all of the original refs to point to this signifier,
     // and add them to the new member. That way wherever they are
     // being reference elsewhere they'll now be accurate.
@@ -393,6 +400,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     // TODO: There may be some jank here related to inheritance...
     this._members ||= new Map();
     this._members.set(newMember.name, newMember);
+    // Set the def here, since that will trigger an update of all
+    // parent's children that have a variable with this same name.
+    newMember.def = def;
     return newMember;
   }
 
