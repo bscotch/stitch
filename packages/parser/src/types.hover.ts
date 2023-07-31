@@ -14,8 +14,8 @@ export function typeMemberToHoverText(member: Signifier) {
 export function typeToHoverDetails(type: Type) {
   let code = '';
   if (type.isFunction) {
-    if (type.context) {
-      code += `\n\n*@self* ${type.context.toFeatherString()}`;
+    if (type.self) {
+      code += `\n\n*@self* ${type.self.toFeatherString()}`;
     }
     for (const param of type.listParameters()) {
       if (param.def && param.description) {
@@ -90,8 +90,8 @@ export function typeToHoverText(type: Type) {
       code += ` constructor`;
     }
     code += `: ${
-      type.constructs
-        ? type.constructs.toFeatherString()
+      type.isConstructor
+        ? type.self!.toFeatherString()
         : type.returns?.type.length
         ? type.returns.toFeatherString()
         : 'Undefined'

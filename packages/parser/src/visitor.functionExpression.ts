@@ -79,10 +79,13 @@ export function visitFunctionExpression(
   if (signifier && docs?.jsdoc.mixin) {
     signifier.mixin = true;
   }
-  functionType.constructs = isConstructor
-    ? functionType.constructs || this.PROCESSOR.createStruct(bodyLocation)
+  functionType.isConstructor = isConstructor;
+  functionType.self = isConstructor
+    ? functionType.self || this.PROCESSOR.createStruct(bodyLocation)
     : undefined;
-  functionType.constructs?.named(functionName);
+  if (isConstructor) {
+    functionType.self?.named(functionName);
+  }
   functionType.returns ||= new TypeStore();
 
   // Determine the function context.
@@ -90,18 +93,18 @@ export function visitFunctionExpression(
     docs?.jsdoc.kind === 'self'
       ? docs.type[0]
       : docs?.jsdoc.kind === 'function'
-      ? docs.type[0]?.context
+      ? docs.type[0]?.self
       : undefined;
   if (docContextRaw && docContextRaw.kind === 'Function') {
     // Then we use the function's construct if it is a constructor, else its context.
-    docContextRaw = docContextRaw.constructs || docContextRaw.context;
+    docContextRaw = docContextRaw.self;
   }
 
   const docContext = getTypeOfKind(docContextRaw, withableTypes);
   let context: WithableType | undefined;
 
   if (isConstructor) {
-    context = functionType.constructs!;
+    context = functionType.self!;
   } else if (docContext) {
     context = docContext;
   } else if (ctx.self) {
@@ -114,9 +117,8 @@ export function visitFunctionExpression(
     // allowing calls to this function to add those variables to themselves.
     // Try to keep the old context if possible.
     context =
-      functionType.context &&
-      functionType.context !== this.PROCESSOR.currentSelf
-        ? functionType.context
+      functionType.self && functionType.self !== this.PROCESSOR.currentSelf
+        ? functionType.self
         : this.PROCESSOR.createStruct(bodyLocation);
   }
   ctx.self = undefined; // Just to make sure nothing downstream uses it
@@ -129,14 +131,7 @@ export function visitFunctionExpression(
   }
   context ||= this.PROCESSOR.currentSelf as StructType;
 
-  functionType.context = context;
-
-  // Identify the "self" struct for scope. If this is a constructor, "self" is the
-  // constructed type. Otherwise, for now just create a new struct type
-  // for the self scope.
-  const functionSelfScope = (
-    isConstructor ? functionType.constructs : functionType.context
-  )!;
+  functionType.self = context;
 
   // Functions have their own localscope as well as their self scope,
   // so we need to push both.
@@ -144,7 +139,7 @@ export function visitFunctionExpression(
     children.functionParameters[0].children.StartParen[0],
   );
   this.PROCESSOR.scope.setEnd(startParen);
-  this.PROCESSOR.pushScope(startParen, functionSelfScope, true);
+  this.PROCESSOR.pushScope(startParen, functionType.self, true);
   const functionLocalScope = this.PROCESSOR.currentLocalScope;
 
   // TODO: Handle constructor inheritance. The `constructs` type should

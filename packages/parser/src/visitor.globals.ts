@@ -221,9 +221,11 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
           }
 
           // Ensure it has a constructs type
+          parentType.isConstructor = true;
           parentConstructs =
-            parentType.constructs || new Type('Struct').named(parentName);
-          parentType.constructs = parentConstructs;
+            (parentType.self as StructType) ||
+            new Type('Struct').named(parentName);
+          parentType.self = parentConstructs;
           parentConstructs.signifier = parentSignifier;
           this.PROCESSOR.project.types.set(
             `Struct.${parentName}`,
@@ -244,18 +246,14 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         signifier.setType(type);
       }
       // If it's a constructor, ensure the type exists
-      if (constructorNode && !type.constructs) {
-        type.constructs = (this.PROCESSOR.project.types.get(
-          `Struct.${name.image}`,
-        ) || new Type('Struct').named(name.image)) as StructType;
-        type.constructs.signifier = signifier;
-        this.PROCESSOR.project.types.set(
-          `Struct.${name.image}`,
-          type.constructs,
-        );
+      if (constructorNode && !type.self) {
+        type.self = (this.PROCESSOR.project.types.get(`Struct.${name.image}`) ||
+          new Type('Struct').named(name.image)) as StructType;
+        type.self.signifier = signifier;
+        this.PROCESSOR.project.types.set(`Struct.${name.image}`, type.self);
       }
-      if (parentConstructs && type.constructs) {
-        type.constructs.parent = parentConstructs;
+      if (parentConstructs && type.self) {
+        type.self.parent = parentConstructs;
       }
     }
     this.visit(children.blockStatement);

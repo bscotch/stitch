@@ -62,7 +62,7 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
 
   get constructs(): StructType[] {
     return this.type
-      .map((t) => t.constructs)
+      .map((t) => (t.isConstructor ? t.self : undefined))
       .filter((x) => !!x) as StructType[];
   }
 
@@ -117,11 +117,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * they've been defined. This property should be set once a type
    * is intended to be immutable.
    */
-  readonly = false;
+  isReadonly = false;
   /**
    * If this is a type used as a generic, then this will be true
    */
-  generic = false;
+  isGeneric = false;
 
   /** Named members of Structs and Enums */
   protected _members: Map<string, Signifier> | undefined = undefined;
@@ -130,11 +130,16 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   items: TypeStore | undefined = undefined;
 
   // Applicable to Functions
+  isConstructor = false;
+  /**
+   * For functions, the local variables declared within the function
+   */
+  local: Type<'Struct'> | undefined = undefined;
   /**
    * If this is a constructor function, then this is the
-   * type of the struct that it constructs. */
-  constructs: Type<'Struct'> | undefined = undefined;
-  context: WithableType | undefined = undefined;
+   * type of the struct that it constructs.
+   * Otherwise it's the self-context of the function */
+  self: WithableType | undefined = undefined;
   protected _params: Signifier[] | undefined = undefined;
   returns: TypeStore | undefined = undefined;
 
@@ -183,10 +188,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   get isFunction() {
     return this.kind === 'Function';
-  }
-
-  get isConstructor() {
-    return this.kind === 'Function' && !!this.constructs;
   }
 
   setReturnType(type: Type | TypeStore | (Type | TypeStore)[]) {
@@ -294,7 +295,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     ]
   ): Signifier | undefined {
     // If this is an immutable type, then we can't add members to it.
-    if (this.readonly) {
+    if (this.isReadonly) {
       return;
     }
 
@@ -411,7 +412,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   genericize(): this {
-    this.generic = true;
+    this.isGeneric = true;
     return this;
   }
 

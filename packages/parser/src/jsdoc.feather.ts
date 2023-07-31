@@ -107,7 +107,7 @@ export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
 
 export function typeToFeatherString(type: Type): string {
   // Functions, Structs, and Enums are the only types that can have names
-  if (type.generic && type.name) {
+  if (type.isGeneric && type.name) {
     return type.name;
   }
   if (type.name) {

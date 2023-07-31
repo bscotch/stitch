@@ -70,12 +70,12 @@ export class Native {
         this.objectInstanceBase.replaceMember(member);
       }
     }
-    this.objectInstanceBase.readonly = true;
+    this.objectInstanceBase.isReadonly = true;
 
     // Have the base Id.Instance and Asset.GmObject types
     // use the object instance base as their parent, and make them readonly.
-    idInstance.readonly = true;
-    assetGmObject.readonly = true;
+    idInstance.isReadonly = true;
+    assetGmObject.isReadonly = true;
   }
 
   protected loadVariables(spec: GmlSpec) {
@@ -104,7 +104,7 @@ export class Native {
 
       // Create a new generic type for this function (in particular, to be re-used by types that contain it!)
       const genericType = new Type('ArgumentIdentity');
-      genericType.generic = true;
+      genericType.isGeneric = true;
       const generics = { ArgumentIdentity: [genericType] };
       const usesGenerics =
         func.parameters?.some((param) =>
@@ -255,7 +255,7 @@ export class Native {
       const typeName = `Struct.${struct.name}`;
       const structType = this.types.get(typeName);
       ok(structType, `Type ${typeName} does not exist`);
-      structType.readonly = true;
+      structType.isReadonly = true;
     }
   }
 

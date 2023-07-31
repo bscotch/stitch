@@ -148,9 +148,8 @@ function narrowsType(narrowType: Type, broadType: Type): boolean {
   }
   // Check the constructs type
   if (
-    broadType.constructs &&
-    (!narrowType.constructs ||
-      !narrows(narrowType.constructs, broadType.constructs))
+    broadType.isConstructor &&
+    (!narrowType.isConstructor || !narrows(narrowType.self!, broadType.self!))
   ) {
     return false;
   }
@@ -188,7 +187,7 @@ export function normalizeType(
           const name = itemType.name ? `${kind}.${itemType.name}` : kind;
           let type =
             knownTypes.get(name) || knownTypes.get(kind) || new Type(kind);
-          if (itemType.generic) {
+          if (itemType.isGeneric) {
             // Then extend the type to allow having a generic without mutating the original
             type = type.derive().genericize().named(itemType.name);
           }
@@ -229,7 +228,7 @@ export function updateGenericsMap(
   // can resolve with the inferred types.
   for (const expectedType of expectedTypes) {
     let generic: TypeStore | undefined;
-    if (expectedType.generic) {
+    if (expectedType.isGeneric) {
       const genericName = expectedType.name!;
       generic = generics.get(genericName) || new TypeStore();
       generics.set(genericName, generic);
@@ -267,7 +266,7 @@ export function replaceGenerics(
   const replacedTypes = new TypeStore();
   for (const startingType of startingTypes) {
     const newTypes =
-      startingType.generic && generics.has(startingType.name!)
+      startingType.isGeneric && generics.has(startingType.name!)
         ? generics.get(startingType.name!)?.type
         : [startingType];
     for (const type of newTypes || []) {

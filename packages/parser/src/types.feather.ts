@@ -138,12 +138,12 @@ export function typeFromParsedJsdocs(
       );
       // Flag them all as generic, named after the generic name
       for (const genericType of generics[generic.name!.content]) {
-        genericType.generic = true;
+        genericType.isGeneric = true;
         genericType.named(generic.name!.content);
       }
     }
     if (jsdoc.self) {
-      type.context = typeFromFeatherString(
+      type.self = typeFromFeatherString(
         jsdoc.self!.content,
         knownTypes,
         addMissing,

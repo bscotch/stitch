@@ -98,10 +98,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       name,
       excludeParents,
     );
-    // if (
-    //   this.PROCESSOR.file.asset.name === 'button_cl2_confirmation' &&
-    //   this.PROCESSOR.file.name === 'Draw_64'
-    // ) {
+    // if (this.PROCESSOR.file.asset.name === 'PlayerJuke' && name === 'x') {
     //   debugger;
     // }
     if (!item && !scope.selfIsGlobal) {

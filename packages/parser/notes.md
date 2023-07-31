@@ -13,7 +13,7 @@ At root, the parser's job is to identify every signifier (named entity that poin
 Since so much of what we need to be able to do is based on position, a natural way to describe scope and signifier information is by breaking GameMaker files apart into a series of consecutive "Scope Ranges", where each Scope Range is defined by a specific combination of:
 
 - Local Scope (only changed when entering a new function body or file)
-- Self Scope (a struct or instance scope, only changing when entering a struct literal body, a function body, a with statement, a struct accessor, or a new file)
+- Self Scope (a struct or instance scope, only changing when entering a function body, a with statement, a struct accessor, or a new file)
 - Global Scope (a particular kind of Self Scope, containing globalvars, global functions, enums, and macros, which is always visibile)
 
 Defining scopes in this way makes it easy to determine which signifiers are visible at a given position.

@@ -244,8 +244,8 @@ export function visitIdentifierAccessor(
 
         // If this is a mixin call, then we need to ensure that the context
         // includes the variables created by the mixin function.
-        if (functionType?.signifier?.mixin && functionType.context) {
-          const variables = functionType.context;
+        if (functionType?.signifier?.mixin && functionType.self) {
+          const variables = functionType.self;
           for (const member of variables.listMembers()) {
             this.PROCESSOR.currentSelf.replaceMember(member);
           }
@@ -349,7 +349,7 @@ export function visitIdentifierAccessor(
         const returnType = normalizeType(
           replaceGenerics(
             (usesNew && isLastSuffix
-              ? functionType?.constructs
+              ? functionType?.self
               : isMethodCall
               ? methodReturns
               : functionType?.returns) || this.ANY,
