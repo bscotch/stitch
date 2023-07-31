@@ -8,6 +8,7 @@ import {
   createCopyAsJsdocTypeCallback,
   createCopyAsTypeCallback,
 } from './extension.copyType.mjs';
+import { StitchDefinitionsProvider } from './extension.definitions.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { GameMakerHoverProvider } from './extension.hover.mjs';
 import type { StitchProvider } from './extension.provider.mjs';
@@ -56,6 +57,7 @@ export async function activateStitchExtension(
 
   const treeProvider = new GameMakerTreeProvider(provider);
   const inspectorProvider = new GameMakerInspectorProvider(provider);
+  const definitionsProvider = new StitchDefinitionsProvider(provider);
 
   ctx.subscriptions.push(
     // vscode.window.onDidChangeActiveTextEditor((editor) => {
@@ -81,6 +83,7 @@ export async function activateStitchExtension(
     }),
     ...treeProvider.register(),
     ...inspectorProvider.register(),
+    definitionsProvider.register(),
     GameMakerHoverProvider.register(provider),
     vscode.languages.registerCompletionItemProvider(
       'gml',
@@ -92,7 +95,6 @@ export async function activateStitchExtension(
       'yy',
       new StitchYyFormatProvider(),
     ),
-    vscode.languages.registerDefinitionProvider('gml', provider),
     vscode.languages.registerReferenceProvider('gml', provider),
     vscode.languages.registerWorkspaceSymbolProvider(
       new GameMakerWorkspaceSymbolProvider(provider.projects),
