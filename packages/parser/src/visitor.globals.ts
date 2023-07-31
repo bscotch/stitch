@@ -255,6 +255,8 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       if (parentConstructs && type.self) {
         type.self.parent = parentConstructs;
       }
+      // Initialize the local scope
+      type.local ||= Type.Struct;
     }
     this.visit(children.blockStatement);
 

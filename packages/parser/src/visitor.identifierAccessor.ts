@@ -247,7 +247,12 @@ export function visitIdentifierAccessor(
         if (functionType?.signifier?.mixin && functionType.self) {
           const variables = functionType.self;
           for (const member of variables.listMembers()) {
+            const matchingMember = this.PROCESSOR.currentSelf.getMember(
+              member.name,
+            );
+            if (matchingMember?.native) continue;
             this.PROCESSOR.currentSelf.replaceMember(member);
+            member.addRef(suffixRange);
           }
         }
 

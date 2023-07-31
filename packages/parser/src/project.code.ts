@@ -345,12 +345,12 @@ export class Code {
   }
 
   protected initializeScopeRanges() {
-    assert(this.scopes, 'Scopes must be initialized');
+    const self = this.asset.instanceType || this.project.self;
+    // Re-use the root local scope if it exists
+    const local = this.scopes[0]?.local || new Type('Struct');
     this.scopes.length = 0;
     this.jsdocs.length = 0;
     const position = Position.fromFileStart(this);
-    const self = this.asset.instanceType || this.project.self;
-    const local = new Type('Struct');
     this.scopes.push(new Scope(position, local, self));
   }
 

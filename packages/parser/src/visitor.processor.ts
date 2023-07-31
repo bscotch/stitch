@@ -128,9 +128,9 @@ export class SignifierProcessor {
   pushScope(
     startToken: CstNodeLocation,
     self: WithableType | EnumType,
+    localScope: StructType,
     fromTokenEnd: boolean,
   ) {
-    const localScope = this.createStruct(startToken);
     this.localScopeStack.push(localScope);
     this.nextScope(startToken, fromTokenEnd).local = localScope;
     this.selfStack.push(self);

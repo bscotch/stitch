@@ -133,13 +133,21 @@ export function visitFunctionExpression(
 
   functionType.self = context;
 
+  // Ensure local context
+  functionType.local ||= Type.Struct;
+
   // Functions have their own localscope as well as their self scope,
   // so we need to push both.
   const startParen = fixITokenLocation(
     children.functionParameters[0].children.StartParen[0],
   );
   this.PROCESSOR.scope.setEnd(startParen);
-  this.PROCESSOR.pushScope(startParen, functionType.self, true);
+  this.PROCESSOR.pushScope(
+    startParen,
+    functionType.self,
+    functionType.local,
+    true,
+  );
   const functionLocalScope = this.PROCESSOR.currentLocalScope;
 
   // TODO: Handle constructor inheritance. The `constructs` type should
@@ -149,6 +157,7 @@ export function visitFunctionExpression(
   // be updating after an edit.
   const cstParams =
     children.functionParameters?.[0]?.children.functionParameter || [];
+  let totalParams = 0;
   for (let i = 0; i < cstParams.length; i++) {
     const paramCtx = withCtxKind(ctx, 'functionParam');
     const paramToken = cstParams[i].children.Identifier[0];
@@ -203,7 +212,8 @@ export function visitFunctionExpression(
     }
 
     // Also add to the function's local scope.
-    functionLocalScope.addMember(param);
+    functionLocalScope.replaceMember(param);
+    totalParams++;
   }
   // If we have more args defined in JSDocs, add them!
   if ((docs?.type[0]?.listParameters().length || 0) > cstParams.length) {
@@ -230,12 +240,14 @@ export function visitFunctionExpression(
           Range.from(this.PROCESSOR.file, paramDoc.type!),
         );
       }
+      totalParams++;
     }
   }
 
   // TODO: Remove any excess parameters, e.g. if we're updating a
   // prior definition. This is tricky since we may need to do something
   // about references to legacy params.
+  functionType.truncateParameters(totalParams);
 
   // Process the function body
   this.visit(children.blockStatement, withCtxKind(ctx, 'functionBody'));

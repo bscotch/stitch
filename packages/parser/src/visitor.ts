@@ -98,7 +98,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       name,
       excludeParents,
     );
-    // if (this.PROCESSOR.file.asset.name === 'PlayerJuke' && name === 'x') {
+    // if (
+    //   this.PROCESSOR.file.asset.name === 'o_boss' &&
+    //   this.PROCESSOR.file.name === 'Draw_0' &&
+    //   name === 'x'
+    // ) {
     //   debugger;
     // }
     if (!item && !scope.selfIsGlobal) {
@@ -443,11 +447,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const docs = this.PROCESSOR.consumeJsdoc();
     const local = this.PROCESSOR.currentLocalScope;
     const range = this.PROCESSOR.range(children.Identifier[0]);
+    const name = children.Identifier[0].image;
 
     // Ensure that this variable exists
-    const signifier = local
-      .addMember(children.Identifier[0].image)! // Locals will always get added
-      .definedAt(range);
+    const signifier = local.getMember(name) || local.addMember(name)!;
+    signifier.definedAt(range);
     signifier.local = true;
     signifier.addRef(range, true);
 

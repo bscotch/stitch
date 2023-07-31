@@ -245,6 +245,12 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return param;
   }
 
+  truncateParameters(count: number) {
+    this._params = this._params?.filter(
+      (p) => typeof p.idx !== 'number' || p.idx < count,
+    );
+  }
+
   totalMembers(excludeParents = false): number {
     if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
       return this.parent?.totalMembers(excludeParents) || 0;
@@ -309,6 +315,18 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     const name = args[0];
     const type = args[1];
     const writable = args[2];
+
+    // If we're "adding" a native instance variable, make sure it doesn't
+    // exist anywhere in the hierarchy.
+    const existingMemberFromHeirarchy = this.getMember(
+      typeof name === 'string' ? name : name.name,
+      false,
+    );
+    assert(
+      (name instanceof Signifier && name.native) ||
+        !existingMemberFromHeirarchy?.native,
+      'Cannot add native member that already exists in a parent',
+    );
 
     const member =
       (typeof name === 'string' ? this._members?.get(name) : name) ||
