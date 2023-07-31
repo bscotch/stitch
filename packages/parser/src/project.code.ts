@@ -419,14 +419,16 @@ export class Code {
     // BUT. If this event does not call `event_inherited()`, then we
     // need to unlink the type.
     if (!this.callsSuper) {
-      this.asset.variables!.parent = this.project.native.objectInstanceBase;
       this.diagnostics.MISSING_EVENT_INHERITED.push({
         $tag: 'diagnostic',
         message: `Event does not call \`event_inherited()\`, so it will not inherit from its parent.`,
         severity: 'warning',
         location: this.startRange,
       });
-    } else {
+      if (this.isCreateEvent) {
+        this.asset.variables!.setParent(this.project.native.objectInstanceBase);
+      }
+    } else if (this.isCreateEvent) {
       // Ensure that the type is set as the parent by re-assigning it.
       // eslint-disable-next-line no-self-assign
       this.asset.parent = this.asset.parent;

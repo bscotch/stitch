@@ -253,7 +253,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         this.PROCESSOR.project.types.set(`Struct.${name.image}`, type.self);
       }
       if (parentConstructs && type.self) {
-        type.self.parent = parentConstructs;
+        type.self.setParent(parentConstructs);
       }
       // Initialize the local scope
       type.local ||= Type.Struct;

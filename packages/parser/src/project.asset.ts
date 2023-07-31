@@ -84,14 +84,14 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       }
 
       this.variables = new Type('Struct');
-      this.variables.parent = this.nativeVariables;
+      this.variables.setParent(this.nativeVariables);
       this.variables.signifier = this.signifier;
 
       // It will be used as the parent for the Instance/Asset types
-      this.assetType.parent = this.variables;
+      this.assetType.setParent(this.variables);
 
       this.instanceType = new Type('Id.Instance').named(this.name);
-      this.instanceType.parent = this.variables;
+      this.instanceType.setParent(this.variables);
       this.instanceType.signifier = this.signifier;
       const id = new Signifier(this.variables, 'id', this.instanceType);
       id.instance = true;
@@ -163,9 +163,9 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       // The instanceType parent is a struct that holds all of this
       // object's instance variables. We need to set ITS parent to
       // the parent's instanceType.
-      this.variables!.parent = parent.variables;
+      this.variables!.setParent(parent.variables);
     } else {
-      this.variables!.parent = this.nativeVariables;
+      this.variables!.setParent(this.nativeVariables);
     }
     // Do we need to change the yy file?
     const yy = this.yy as YyObject;
