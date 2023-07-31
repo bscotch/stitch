@@ -252,7 +252,6 @@ export function visitIdentifierAccessor(
             );
             if (matchingMember?.native) continue;
             this.PROCESSOR.currentSelf.replaceMember(member);
-            member.addRef(suffixRange);
           }
         }
 
