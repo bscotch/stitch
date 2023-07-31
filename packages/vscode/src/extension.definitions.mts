@@ -12,6 +12,11 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
     return swallowThrown(() => {
       const ref = this.provider.getReference(document, position);
       const item = ref?.item;
+      const assetName = item?.asset
+        ? item.name
+        : item?.getTypeByKind('Id.Instance')?.name ||
+          item?.getTypeByKind('Asset.GMObject')?.name;
+
       if (item && !item.native && item.def?.file) {
         return locationOf(item.def);
       } else if (ref && item?.name === 'event_inherited') {
@@ -32,9 +37,9 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
           }
           parent = parent.parent;
         }
-      } else if (ref && item?.asset) {
+      } else if (ref && item && assetName) {
         // Then we can go to the asset's defining file.
-        const asset = ref.file.project.getAssetByName(item.name);
+        const asset = ref.file.project.getAssetByName(assetName);
         if (asset?.assetKind === 'objects') {
           const files = asset.gmlFilesArray;
           for (const file of files) {
