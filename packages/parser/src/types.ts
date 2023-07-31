@@ -111,6 +111,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * parent somewhere. Useful for struct/constructor inheritence, as well
    * as for e.g. representing a subset of Real constants in a type. */
   protected _parent: Type | undefined = undefined;
+  protected _children: Set<Type> | undefined = undefined;
 
   /**
    * Native and primitive types are typically read-only once
@@ -167,11 +168,17 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   get parent() {
     return this._parent;
   }
-
-  setParent(type: Type | undefined) {
+  set parent(type: Type | undefined) {
     const oldParent = this._parent;
     this._parent = type;
-    //
+    oldParent?._children?.delete(this);
+    if (this._parent) {
+      this._parent._children ||= new Set();
+      this._parent._children.add(this);
+    }
+  }
+  get children(): Type[] {
+    return this._children ? [...this._children] : [];
   }
 
   get canBeSelf() {
@@ -424,7 +431,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * this type as its parent. */
   derive(): Type<T> {
     const derived = new Type(this.kind) as Type<T>;
-    derived.setParent(this);
+    derived.parent = this;
     derived.name = this.name;
     return derived;
   }

@@ -426,7 +426,7 @@ export class Code {
         location: this.startRange,
       });
       if (this.isCreateEvent) {
-        this.asset.variables!.setParent(this.project.native.objectInstanceBase);
+        this.asset.variables!.parent = this.project.native.objectInstanceBase;
       }
     } else if (this.isCreateEvent) {
       // Ensure that the type is set as the parent by re-assigning it.
