@@ -11,6 +11,7 @@ export const enum Flag {
   Macro = 1 << 9, // Is a macro
   Asset = 1 << 10, // Is an asset
   Mixin = 1 << 11, // Is a mixin
+  Override = 1 << 12, // Is an override for a parent variable
   ReadWrite = Readable | Writable,
 }
 
@@ -23,6 +24,13 @@ export class Flags {
     } else {
       this.flags &= ~flag;
     }
+  }
+
+  get override() {
+    return !!(this.flags & Flag.Override);
+  }
+  set override(override: boolean) {
+    this.setFlag(Flag.Override, override);
   }
 
   get asset() {

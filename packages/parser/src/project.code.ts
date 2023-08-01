@@ -367,7 +367,7 @@ export class Code {
       // to flag it as undeclared.
       const isDefinedInThisFile = this === signifier.def?.file;
       if (isDefinedInThisFile) {
-        signifier.def = undefined;
+        signifier.unsetDef();
       }
       // Remove all references to this symbol found in this file.
       // Flag all other files as being dirty so they get reprocessed.

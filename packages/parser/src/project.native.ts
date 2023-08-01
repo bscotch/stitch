@@ -35,12 +35,13 @@ export class Native {
     const throwsType = new Type('Function').named('throw');
     throwsType.addParameter(0, 'message', Type.Any, false);
     const throws = new Signifier(this.globalSelf, 'throw', throwsType);
-    this.globalSelf.replaceMember(throws);
+    this.globalSelf.addMember(throws);
     this.types.set('Function.throw', throwsType);
     throws.def = {};
     throws.native = 'Base';
 
     // The `display_get_frequency` function is not in the spec, so add it manually.
+
     const displayGetFrequencyType = new Type('Function').named(
       'display_get_frequency',
     );
@@ -50,7 +51,7 @@ export class Native {
       'display_get_frequency',
       displayGetFrequencyType,
     );
-    this.globalSelf.replaceMember(displayGetFrequency);
+    this.globalSelf.addMember(displayGetFrequency);
     this.types.set('Function.display_get_frequency', displayGetFrequencyType);
     displayGetFrequency.def = {};
     displayGetFrequency.native = 'Base';
@@ -67,7 +68,7 @@ export class Native {
     // Update the base instance type using instance variables.
     for (const member of this.globalSelf.listMembers()) {
       if (member.instance) {
-        this.objectInstanceBase.replaceMember(member);
+        this.objectInstanceBase.addMember(member);
       }
     }
     this.objectInstanceBase.isReadonly = true;
@@ -89,12 +90,17 @@ export class Native {
       symbol.native = variable.module;
       symbol.global = !variable.instance;
       symbol.instance = variable.instance;
-      this.globalSelf.replaceMember(symbol);
+      this.globalSelf.addMember(symbol);
     }
   }
 
   protected loadFunctions(spec: GmlSpec) {
     for (const func of spec.functions) {
+      if (this.globalSelf.getMember(func.name)) {
+        logger.warn(`Native function ${func.name} already exists, skipping.`);
+        continue;
+      }
+
       const typeName = `Function.${func.name}`;
       // Need a type and a symbol for each function.
       const functionType = (
@@ -149,7 +155,7 @@ export class Native {
       ).deprecate(func.deprecated);
       symbol.writable = false;
       symbol.native = func.module;
-      this.globalSelf.replaceMember(symbol);
+      this.globalSelf.addMember(symbol);
     }
   }
 
@@ -185,7 +191,7 @@ export class Native {
             ).describe(constant.description);
           symbol.writable = false;
           symbol.native = constant.module;
-          this.globalSelf.replaceMember(symbol);
+          this.globalSelf.addMember(symbol);
         }
         continue;
       }
@@ -220,7 +226,7 @@ export class Native {
         const typeName = `${classTypeName}.${constant.name}`;
         this.types.set(typeName, classType);
 
-        this.globalSelf.replaceMember(symbol);
+        this.globalSelf.addMember(symbol);
       }
     }
   }

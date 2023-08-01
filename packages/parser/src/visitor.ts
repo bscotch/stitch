@@ -99,9 +99,9 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       excludeParents,
     );
     // if (
-    //   this.PROCESSOR.file.asset.name === 'o_world_element' &&
-    //   this.PROCESSOR.file.name === 'Create_0' &&
-    //   name === 'stats'
+    //   this.PROCESSOR.file.asset.name === 'o_artisan_oowee' &&
+    //   this.PROCESSOR.file.name === 'Step_0' &&
+    //   name === 'z_previous'
     // ) {
     //   debugger;
     // }

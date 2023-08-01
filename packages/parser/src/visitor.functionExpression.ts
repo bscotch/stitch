@@ -61,8 +61,10 @@ export function visitFunctionExpression(
     } else {
       signifier = new Signifier(this.PROCESSOR.currentSelf, functionName);
     }
-    signifier?.definedAt(nameLocation);
-    signifier?.addRef(nameLocation!, true);
+    if (nameLocation && signifier && !signifier.def) {
+      signifier?.definedAt(nameLocation);
+      signifier?.addRef(nameLocation!, true);
+    }
     // Add to the current scope (globals have already been handled)
     this.PROCESSOR.currentSelf.addMember(signifier);
   }
@@ -212,7 +214,7 @@ export function visitFunctionExpression(
     }
 
     // Also add to the function's local scope.
-    functionLocalScope.replaceMember(param);
+    functionLocalScope.addMember(param);
     totalParams++;
   }
   // If we have more args defined in JSDocs, add them!

@@ -80,7 +80,10 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       this.nativeVariables = Type.Struct;
       // Create the base struct-type to store all of the variables.
       for (const member of this.project.native.objectInstanceBase.listMembers()) {
-        this.nativeVariables.addMember(member.copy());
+        if (member.name === 'id') continue; // This is added later
+        const copy = member.copy();
+        copy.override = true; // Guarantee we keep this as a copy
+        this.nativeVariables.addMember(copy);
       }
 
       this.variables = new Type('Struct');
@@ -97,6 +100,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       id.instance = true;
       id.native = 'Base';
       id.writable = false;
+      id.override = true; // We are guaranteeing that we're using
 
       this.variables.addMember(id)!;
 

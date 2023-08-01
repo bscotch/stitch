@@ -257,8 +257,8 @@ export function visitIdentifierAccessor(
             const matchingMember = this.PROCESSOR.currentSelf.getMember(
               member.name,
             );
-            if (matchingMember?.native) continue;
-            this.PROCESSOR.currentSelf.replaceMember(member);
+            if (matchingMember) continue;
+            this.PROCESSOR.currentSelf.addMember(member);
           }
         }
 

@@ -306,10 +306,10 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
       return this.parent?.getMember(name, excludeParents);
     }
-    return (
-      this._members?.get(name) ||
-      (excludeParents ? undefined : this.parent?.getMember(name))
-    );
+    if (excludeParents) {
+      return this._members?.get(name);
+    }
+    return this._members?.get(name) || this.parent?.getMember(name);
   }
 
   /** For container types that have named members, like Structs and Enums */
@@ -326,11 +326,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       writable?: boolean,
     ]
   ): Signifier | undefined {
-    // If this is an immutable type, then we can't add members to it.
-    if (this.isReadonly) {
-      return;
-    }
-
     // If this is a Id.Instance or Asset.GMObject type, then we want to add
     // the member to the parent Struct instead.
 
@@ -338,72 +333,76 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       // @ts-expect-error
       return this.parent?.addMember(...args);
     }
-    const name = args[0];
+    // If this is an immutable type, then we can't add members to it.
+    if (this.isReadonly) {
+      return;
+    }
+
+    const nameArg = args[0];
     const type = args[1];
     const writable = args[2];
 
-    // If we're "adding" a native instance variable, make sure it doesn't
-    // exist anywhere in the hierarchy.
-    const existingMemberFromHeirarchy = this.getMember(
-      typeof name === 'string' ? name : name.name,
-      false,
-    );
-    assert(
-      (name instanceof Signifier && name.native) ||
-        !existingMemberFromHeirarchy?.native,
-      'Cannot add native member that already exists in a parent',
-    );
+    const name = typeof nameArg === 'string' ? nameArg : nameArg.name;
+    const signifierArg = typeof nameArg === 'string' ? undefined : nameArg;
 
-    const member =
-      (typeof name === 'string' ? this._members?.get(name) : name) ||
-      new Signifier(this, name as string);
-    const existing = this.getMember(member.name, true);
+    // Only add if this doesn't exist on *any parent*
+    const existing = this.getMember(name, false);
     assert(
-      !existing || existing === member,
-      'Cannot add member with same name as existing member',
+      !existing ||
+        !signifierArg ||
+        existing === nameArg ||
+        signifierArg.override,
+      'Cannot replace existing member with new member',
     );
-    this._members ??= new Map();
-    this._members.set(member.name, member);
-
-    member.writable = writable ?? true;
-    if (type) {
-      member.setType(type);
+    let member: Signifier;
+    if (signifierArg?.override) {
+      // Then we want to override the existing member
+      member = signifierArg;
+      // But this should only happen for inheritance (the *current* type
+      // should not already have this member!)
+      assert(
+        !this._members?.get(name),
+        'Cannot override a member on the same heirarchy level',
+      );
+    } else {
+      // Then we want to preferentially use the existing member
+      member = existing || signifierArg || new Signifier(this, name);
+    }
+    if (member !== existing) {
+      this._members ??= new Map();
+      this._members.set(member.name, member);
+      member.writable = writable ?? true;
+      if (type) {
+        member.setType(type);
+      }
+      // Ensure that all children of this parent are referencing
+      // the same root-most member.
+      this.parent?.replaceMemberInChildren(member);
     }
     return member;
   }
 
-  /**
-   * Replace a member, ensuring that all references are updated to
-   * point to the new member.
-   */
-  replaceMember(newMember: Signifier): Signifier | undefined {
-    if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
-      return this.parent?.replaceMember(newMember);
+  protected replaceMemberInChildren(member: Signifier) {
+    for (const child of this.listChildren()) {
+      const toReplace = child._members?.get(member.name);
+      if (toReplace?.override) {
+        // Then we skip this and all descendents of it
+        continue;
+      }
+      if (toReplace) {
+        // Remove from the child
+        child._members!.delete(member.name);
+        // Inherit its refs
+        for (const ref of toReplace.refs) {
+          ref.item = member;
+          ref.isDef = false; // Definition must come from rootmost
+          member.refs.add(ref);
+          ref.file.dirty = true;
+        }
+      }
+      // Continue down the tree
+      child.replaceMemberInChildren(member);
     }
-    const existing = this.getMember(newMember.name, true);
-    if (!existing) {
-      return this.addMember(newMember);
-    }
-    if (existing.native) {
-      return existing;
-    }
-    // Start by keeping the original def
-    const def = existing.def;
-    // Update all of the original refs to point to this signifier,
-    // and add them to the new member. That way wherever they are
-    // being reference elsewhere they'll now be accurate.
-    for (const ref of existing.refs) {
-      ref.item = newMember;
-      newMember.refs.add(ref);
-      ref.file.dirty = true;
-    }
-    // TODO: There may be some jank here related to inheritance...
-    this._members ||= new Map();
-    this._members.set(newMember.name, newMember);
-    // Set the def here, since that will trigger an update of all
-    // parent's children that have a variable with this same name.
-    newMember.def = def;
-    return newMember;
   }
 
   removeMember(name: string) {

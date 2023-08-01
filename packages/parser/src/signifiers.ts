@@ -58,33 +58,26 @@ export class Signifier extends Flags {
     return ref;
   }
 
-  get def() {
+  unsetDef() {
+    assert(!this.native, 'Cannot unset def on a native entity');
+    this._def = undefined;
+  }
+
+  get def(): Range | { file?: undefined } | undefined {
     return this._def;
   }
-  set def(location: Range | { file?: undefined } | undefined) {
-    assert(
-      !this.native,
-      'Cannot change declaration location on a native entity',
-    );
+  set def(location: Range | { file?: undefined }) {
+    assert(location, 'Cannot set def to undefined');
+    if (this._def || this.native) {
+      // Then we have already set a declaration location, so we should
+      // not be setting it again.
+      return;
+    }
     this._def = location;
   }
 
-  definedAt(location: Range | undefined): this {
+  definedAt(location: Range): this {
     this.def = location;
-    // If we have set a declaration location for this variable,
-    // and there exists a child of the struct-like holding onto
-    // this variable, then we should replace any child's *undefined*
-    // variable with this one.
-    if (location?.file && this.parent) {
-      for (const child of this.parent.listChildren(true)) {
-        const existingMember = child.getMember(this.name, true);
-        if (existingMember && !existingMember.def) {
-          // Then that member is likely intended to be a reference to
-          // this one, so we should replace it.
-          child.replaceMember(this);
-        }
-      }
-    }
     return this;
   }
 
