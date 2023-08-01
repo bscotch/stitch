@@ -359,12 +359,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     if (signifierArg?.override) {
       // Then we want to override the existing member
       member = signifierArg;
-      // But this should only happen for inheritance (the *current* type
-      // should not already have this member!)
-      assert(
-        !this._members?.get(name),
-        'Cannot override a member on the same heirarchy level',
-      );
     } else {
       // Then we want to preferentially use the existing member
       member = existing || signifierArg;
@@ -382,7 +376,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       // If the existing member has no def, then replace it
       // and transfer its refs
       const existingOnThis = this._members.get(name);
-      if (existingOnThis && !existingOnThis.def) {
+      if (existingOnThis) {
         for (const ref of existingOnThis.refs) {
           ref.item = member;
           ref.isDef = false; // Definition must come from rootmost

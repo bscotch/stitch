@@ -444,29 +444,30 @@ export class Project {
 
     // Add new assets
     const newAssets = await this.loadAssets();
-    this.initiallyParseAssetCode(newAssets);
+    await this.initiallyParseAssetCode(newAssets);
 
     // Try to keep anything that got touched *clean*
     this.drainDirtyFileUpdateQueue();
   }
 
   /** Initialize a collection of new assets by parsing their GML */
-  protected initiallyParseAssetCode(assets: Asset[]) {
-    assets = [...this.assets.values()].sort((a, b) => {
+  protected async initiallyParseAssetCode(assets: Asset[]) {
+    // Do scripts before objects
+    assets = [...assets.values()].sort((a, b) => {
       if (a.assetKind === b.assetKind) {
         return a.name.localeCompare(b.name);
       }
       if (a.assetKind === 'scripts') {
-        return 1;
+        return -1;
       }
       if (b.assetKind === 'scripts') {
-        return -1;
-      }
-      if (a.assetKind === 'objects') {
         return 1;
       }
-      if (b.assetKind === 'objects') {
+      if (a.assetKind === 'objects') {
         return -1;
+      }
+      if (b.assetKind === 'objects') {
+        return 1;
       }
       return a.name.localeCompare(b.name);
     });
@@ -483,10 +484,21 @@ export class Project {
     // Second pass
     // TODO: Find a better way than brute-forcing to resolve cross-file references
     logger.info('Second pass...');
+    const reloads: Promise<any>[] = [];
     for (const asset of assets) {
-      asset.updateGlobals();
-      asset.updateAllSymbols();
+      // asset.updateGlobals();
+      // asset.updateAllSymbols();
+      for (const file of asset.gmlFilesArray) {
+        reloads.push(file.reload(file.content));
+      }
     }
+    await Promise.all(reloads);
+    // logger.info('Third pass...');
+    // for (const asset of assets) {
+    //   asset.updateGlobals();
+    //   asset.updateAllSymbols();
+    // }
+
     // But for now, that's what we'll do!
     logger.info('Updating diagnostics...');
     for (const asset of assets) {
@@ -532,7 +544,7 @@ export class Project {
     // loading.
     options?.onLoadProgress?.(1, 'Parsing resource code...');
 
-    this.initiallyParseAssetCode(assets);
+    await this.initiallyParseAssetCode(assets);
   }
 
   static async initialize(

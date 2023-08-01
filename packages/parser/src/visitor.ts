@@ -103,13 +103,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       name,
       options?.excludeParents,
     );
-    // if (
-    //   this.PROCESSOR.file.asset.name === 'o_artisan_oowee' &&
-    //   this.PROCESSOR.file.name === 'Step_0' &&
-    //   name === 'z_previous'
-    // ) {
-    //   debugger;
-    // }
     if (!item && !scope.selfIsGlobal) {
       item = scope.self.getMember(name, options?.excludeParents);
     }
@@ -542,9 +535,9 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       wasUndeclared = true;
       const fullScope = this.PROCESSOR.fullScope;
       // Add to the self-scope unless it's a static inside a non-constructor function, and if that scope is not global.
-      const parentType = fullScope.self.signifier?.getTypeByKind('Function');
+      const outerFunction = fullScope.self.signifier?.getTypeByKind('Function');
       const addTo =
-        isStatic && !parentType?.isConstructor
+        isStatic && !outerFunction?.isConstructor
           ? fullScope.local
           : fullScope.self;
 
