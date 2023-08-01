@@ -303,7 +303,7 @@ describe('Project', function () {
     ok(dotAssignedRef);
     ok(dotAssignedRef.item.name === dotAssignedRefName);
     ok(dotAssignedType);
-    ok(dotAssignedType.parent === obj.instanceType?.parent);
+    ok(dotAssignedType.parent === obj.instanceType?.extends);
     //#endregion DOT ASSIGNMENTS
 
     //#region FUNCTIONS

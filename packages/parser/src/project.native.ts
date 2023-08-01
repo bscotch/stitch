@@ -26,9 +26,9 @@ export class Native {
     this.objectInstanceBase = new Type('Struct');
     const idInstance = new Type('Id.Instance');
     this.types.set('Id.Instance', idInstance);
-    idInstance.parent = this.objectInstanceBase;
+    idInstance.extends = this.objectInstanceBase;
     const assetGmObject = new Type('Asset.GMObject');
-    assetGmObject.parent = this.objectInstanceBase;
+    assetGmObject.extends = this.objectInstanceBase;
     this.types.set('Asset.GMObject', assetGmObject);
 
     // The `throw` function is not in the spec, so add it manually.

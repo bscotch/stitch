@@ -110,8 +110,8 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * It will only "match" another type if that type is in its
    * parent somewhere. Useful for struct/constructor inheritence, as well
    * as for e.g. representing a subset of Real constants in a type. */
-  protected _parent: Type | undefined = undefined;
-  protected _children: Set<Type> | undefined = undefined;
+  protected _extends: Type | undefined = undefined;
+  protected _derived: Set<Type> | undefined = undefined;
 
   /**
    * Native and primitive types are typically read-only once
@@ -158,36 +158,36 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   get signifier(): Signifier | undefined {
-    return this._signifier || this.parent?.signifier;
+    return this._signifier || this.extends?.signifier;
   }
   set signifier(signifier: Signifier) {
     // assert(!this._signifier, 'Cannot change type signifier');
     this._signifier = signifier;
   }
 
-  get parent() {
-    return this._parent;
+  get extends() {
+    return this._extends;
   }
-  set parent(type: Type | undefined) {
-    const oldParent = this._parent;
-    this._parent = type;
-    oldParent?._children?.delete(this);
-    if (this._parent) {
-      this._parent._children ||= new Set();
-      this._parent._children.add(this);
+  set extends(type: Type | undefined) {
+    const oldParent = this._extends;
+    this._extends = type;
+    oldParent?._derived?.delete(this);
+    if (this._extends) {
+      this._extends._derived ||= new Set();
+      this._extends._derived.add(this);
     }
   }
-  listChildren(recursive = false): Type[] {
-    if (!this._children) {
+  listDerived(recursive = false): Type[] {
+    if (!this._derived) {
       return [];
     }
-    const children = [...this._children];
+    const derived = [...this._derived];
     if (recursive) {
-      for (const child of this._children) {
-        children.push(...child.listChildren(true));
+      for (const child of this._derived) {
+        derived.push(...child.listDerived(true));
       }
     }
-    return children;
+    return derived;
   }
 
   get canBeSelf() {
@@ -279,37 +279,37 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   totalMembers(excludeParents = false): number {
     if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
-      return this.parent?.totalMembers(excludeParents) || 0;
+      return this.extends?.totalMembers(excludeParents) || 0;
     }
-    if (excludeParents || !this.parent) {
+    if (excludeParents || !this.extends) {
       return this._members?.size || 0;
     }
     return (
-      (this._members?.size || 0) + this.parent.totalMembers(excludeParents)
+      (this._members?.size || 0) + this.extends.totalMembers(excludeParents)
     );
   }
 
   listMembers(excludeParents = false): Signifier[] {
     // Handle pass-through types
     if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
-      return this.parent?.listMembers(excludeParents) || [];
+      return this.extends?.listMembers(excludeParents) || [];
     }
     const members = this._members?.values() || [];
-    if (excludeParents || !this.parent) {
+    if (excludeParents || !this.extends) {
       return [...members];
     }
-    return [...members, ...this.parent.listMembers()];
+    return [...members, ...this.extends.listMembers()];
   }
 
   getMember(name: string, excludeParents = false): Signifier | undefined {
     // Handle pass-through types
     if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
-      return this.parent?.getMember(name, excludeParents);
+      return this.extends?.getMember(name, excludeParents);
     }
     if (excludeParents) {
       return this._members?.get(name);
     }
-    return this._members?.get(name) || this.parent?.getMember(name);
+    return this._members?.get(name) || this.extends?.getMember(name);
   }
 
   /** For container types that have named members, like Structs and Enums */
@@ -331,7 +331,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
     if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
       // @ts-expect-error
-      return this.parent?.addMember(...args);
+      return this.extends?.addMember(...args);
     }
     // If this is an immutable type, then we can't add members to it.
     if (this.isReadonly) {
@@ -377,13 +377,13 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       }
       // Ensure that all children of this parent are referencing
       // the same root-most member.
-      this.parent?.replaceMemberInChildren(member);
+      this.replaceMemberInChildren(member);
     }
     return member;
   }
 
   protected replaceMemberInChildren(member: Signifier) {
-    for (const child of this.listChildren()) {
+    for (const child of this.listDerived()) {
       const toReplace = child._members?.get(member.name);
       if (toReplace?.override) {
         // Then we skip this and all descendents of it
@@ -440,7 +440,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * this type as its parent. */
   derive(): Type<T> {
     const derived = new Type(this.kind) as Type<T>;
-    derived.parent = this;
+    derived.extends = this;
     derived.name = this.name;
     return derived;
   }
