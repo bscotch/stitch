@@ -187,7 +187,7 @@ export function visitFunctionExpression(
       : undefined;
 
     const paramSignifier =
-      functionType.local.getMember(name) || functionType.getParameter(name);
+      functionType.getParameter(name) || functionType.local.getMember(name);
     const param = functionType
       .addParameter(i, paramSignifier || name)
       .definedAt(range);
@@ -221,11 +221,20 @@ export function visitFunctionExpression(
     }
 
     // Also add to the function's local scope.
-    // const localVar = functionType.local.getMember(param.name);
+    const localVar = functionType.local.getMember(param.name);
     // if (localVar && localVar !== param) {
     //   debugger;
     // }
-    functionType.local.addMember(param);
+    if (!localVar) {
+      functionType.local.addMember(param);
+    } else if (localVar !== param) {
+      this.PROCESSOR.addDiagnostic(
+        'INVALID_OPERATION',
+        range,
+        `Parameter ${param.name} already defined in local scope`,
+        'warning',
+      );
+    }
     totalParams++;
   }
   // If we have more args defined in JSDocs, add them!

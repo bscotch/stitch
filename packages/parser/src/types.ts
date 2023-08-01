@@ -355,7 +355,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
         options?.override,
       'Cannot replace existing member with new member',
     );
-    let member: Signifier;
+    let member: Signifier | undefined;
     if (signifierArg?.override) {
       // Then we want to override the existing member
       member = signifierArg;
@@ -367,18 +367,31 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       );
     } else {
       // Then we want to preferentially use the existing member
-      member = existing || signifierArg || new Signifier(this, name);
-      if (options?.override) {
-        member.override = true;
+      member = existing || signifierArg;
+      if (!member) {
+        member = new Signifier(this, name);
+        member.override = !!options?.override;
+        member.writable = options?.writable ?? true;
+        if (type) {
+          member.setType(type);
+        }
       }
     }
     if (member !== existing) {
       this._members ??= new Map();
-      this._members.set(member.name, member);
-      member.writable = options?.writable ?? true;
-      if (type) {
-        member.setType(type);
+      // If the existing member has no def, then replace it
+      // and transfer its refs
+      const existingOnThis = this._members.get(name);
+      if (existingOnThis && !existingOnThis.def) {
+        for (const ref of existingOnThis.refs) {
+          ref.item = member;
+          ref.isDef = false; // Definition must come from rootmost
+          member.refs.add(ref);
+          ref.file.dirty = true;
+        }
       }
+
+      this._members.set(member.name, member);
       // Ensure that all children of this parent are referencing
       // the same root-most member.
       this.replaceMemberInChildren(member);
