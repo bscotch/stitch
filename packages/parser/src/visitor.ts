@@ -71,6 +71,11 @@ export function registerSignifiers(file: Code) {
   }
 }
 
+export interface FindSignifierOptions {
+  excludeParents?: boolean;
+  excludeGlobal?: boolean;
+}
+
 export class GmlSignifierVisitor extends GmlVisitorBase {
   static validated = false;
   constructor(readonly PROCESSOR: SignifierProcessor) {
@@ -91,12 +96,12 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
   protected FIND_ITEM_BY_NAME(
     name: string,
-    excludeParents = false,
+    options?: FindSignifierOptions,
   ): Signifier | undefined {
     const scope = this.PROCESSOR.fullScope;
     let item: Signifier | undefined = scope.local.getMember(
       name,
-      excludeParents,
+      options?.excludeParents,
     );
     // if (
     //   this.PROCESSOR.file.asset.name === 'o_artisan_oowee' &&
@@ -106,10 +111,10 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     //   debugger;
     // }
     if (!item && !scope.selfIsGlobal) {
-      item = scope.self.getMember(name, excludeParents);
+      item = scope.self.getMember(name, options?.excludeParents);
     }
-    if (!item) {
-      item = this.PROCESSOR.globalSelf.getMember(name, excludeParents);
+    if (!item && !options?.excludeGlobal) {
+      item = this.PROCESSOR.globalSelf.getMember(name, options?.excludeParents);
       // If the current scope is an instance allow for instance variables
       // (but skip `id` since we're doing special things with that).
       // Otherwise instance variables should be skipped.
@@ -131,7 +136,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   /** Given an identifier in the current scope, find the corresponding item. */
   protected FIND_ITEM(
     children: IdentifierCstChildren,
-    excludeParents = false,
+    options?: FindSignifierOptions,
   ): { item: Signifier | WithableType | EnumType; range: Range } | undefined {
     const identifier = identifierFrom(children);
     if (!identifier) {
@@ -178,7 +183,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         break;
       default:
         const { name } = identifier;
-        item = this.FIND_ITEM_BY_NAME(name, excludeParents);
+        item = this.FIND_ITEM_BY_NAME(name, options);
         break;
     }
     if (item) {
@@ -333,7 +338,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         new Type('Any');
       const signifier = this.PROCESSOR.currentLocalScope.addMember(
         identifier.name,
-        type,
+        { type },
       )!;
       signifier.addRef(range, true);
       signifier.definedAt(range);
@@ -505,15 +510,32 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     children: VariableAssignmentCstChildren,
     ctx: VisitorContext,
   ) {
+    const assignedToFunction =
+      children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
+        .children;
+    const assignedToStructLiteral =
+      !assignedToFunction &&
+      children.assignmentRightHandSide?.[0].children.structLiteral?.[0]
+        .children;
+
+    const { isStatic } = ctx;
+    ctx.isStatic = false; // Reset to prevent downstream confusion
+
+    // When searching for the matching identifier, we need
+    // to exclude globalvars and parents under some cirumstances.
+    const excludeGlobal = !!(isStatic || assignedToFunction);
+    const excludeParents = !!(isStatic || assignedToFunction);
+
     const docs = this.PROCESSOR.consumeJsdoc();
     // See if this identifier is known.
-    const identified = this.FIND_ITEM(children);
+    const identified = this.FIND_ITEM(children, {
+      excludeGlobal,
+      excludeParents,
+    });
     let signifier = identified?.item as Signifier | undefined;
     const name = children.Identifier[0].image;
     const range = this.PROCESSOR.range(children.Identifier[0]);
     let ref: Reference | undefined = undefined;
-    const { isStatic } = ctx;
-    ctx.isStatic = false; // Reset to prevent downstream confusion
 
     let wasUndeclared = false;
     if (!signifier) {
@@ -565,13 +587,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
     // If we don't have any type on this signifier yet, use the
     // assigned type.
-    const assignedToFunction =
-      children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
-        .children;
-    const assignedToStructLiteral =
-      !assignedToFunction &&
-      children.assignmentRightHandSide?.[0].children.structLiteral?.[0]
-        .children;
 
     if (assignedToFunction || assignedToStructLiteral) {
       ctx.signifier = signifier;

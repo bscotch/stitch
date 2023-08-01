@@ -50,6 +50,7 @@
     {"id":{"name":"Reactions","path":"scripts/Reactions/Reactions.yy",},},
     {"id":{"name":"o_world_element","path":"objects/o_world_element/o_world_element.yy",},},
     {"id":{"name":"Generics","path":"scripts/Generics/Generics.yy",},},
+    {"id":{"name":"Futures","path":"scripts/Futures/Futures.yy",},},
   ],
   "RoomOrderNodes": [
     {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},

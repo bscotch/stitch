@@ -132,9 +132,10 @@ export class SignifierProcessor {
     fromTokenEnd: boolean,
   ) {
     this.localScopeStack.push(localScope);
-    this.nextScope(startToken, fromTokenEnd).local = localScope;
     this.selfStack.push(self);
+    this.nextScope(startToken, fromTokenEnd);
     this.scope.self = self;
+    this.scope.local = localScope;
   }
 
   popScope(

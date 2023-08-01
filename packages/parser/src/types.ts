@@ -249,12 +249,20 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   addParameter(
     idx: number,
-    name: string,
+    nameOrParam: string | Signifier,
     type?: Type | Type[],
     optional = false,
   ): Signifier {
     assert(this.isFunction, `Cannot add param to ${this.kind} type`);
-    const param = this.getParameter(name) || new Signifier(this, name);
+    const name =
+      typeof nameOrParam === 'string' ? nameOrParam : nameOrParam.name;
+    const existing = this.getParameter(name);
+    assert(
+      !existing || typeof nameOrParam === 'string' || nameOrParam === existing,
+      `Cannot replace existing param with a new one by the same name`,
+    );
+
+    const param = existing || new Signifier(this, name);
     if (this._params?.[idx] && this._params[idx] !== param) {
       // Then we're overriding by position
       this._params[idx].idx = undefined;
@@ -313,45 +321,38 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   /** For container types that have named members, like Structs and Enums */
-  addMember(signifier: Signifier): Signifier | undefined;
   addMember(
-    name: string,
-    type?: Type | Type[],
-    writable?: boolean,
-  ): Signifier | undefined;
-  addMember(
-    ...args: [
-      name: string | Signifier,
-      type?: Type | Type[],
-      writable?: boolean,
-    ]
+    newMember: Signifier | string,
+    options?: {
+      type?: Type | Type[];
+      writable?: boolean;
+      override?: boolean;
+    },
   ): Signifier | undefined {
     // If this is a Id.Instance or Asset.GMObject type, then we want to add
     // the member to the parent Struct instead.
 
     if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
-      // @ts-expect-error
-      return this.extends?.addMember(...args);
+      return this.extends?.addMember(newMember, options);
     }
     // If this is an immutable type, then we can't add members to it.
     if (this.isReadonly) {
       return;
     }
 
-    const nameArg = args[0];
-    const type = args[1];
-    const writable = args[2];
+    const type = options?.type;
 
-    const name = typeof nameArg === 'string' ? nameArg : nameArg.name;
-    const signifierArg = typeof nameArg === 'string' ? undefined : nameArg;
+    const name = typeof newMember === 'string' ? newMember : newMember.name;
+    const signifierArg = typeof newMember === 'string' ? undefined : newMember;
 
     // Only add if this doesn't exist on *any parent*
     const existing = this.getMember(name, false);
     assert(
       !existing ||
         !signifierArg ||
-        existing === nameArg ||
-        signifierArg.override,
+        existing === signifierArg ||
+        signifierArg.override ||
+        options?.override,
       'Cannot replace existing member with new member',
     );
     let member: Signifier;
@@ -367,11 +368,14 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     } else {
       // Then we want to preferentially use the existing member
       member = existing || signifierArg || new Signifier(this, name);
+      if (options?.override) {
+        member.override = true;
+      }
     }
     if (member !== existing) {
       this._members ??= new Map();
       this._members.set(member.name, member);
-      member.writable = writable ?? true;
+      member.writable = options?.writable ?? true;
       if (type) {
         member.setType(type);
       }

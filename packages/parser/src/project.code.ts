@@ -408,11 +408,7 @@ export class Code {
 
   protected discoverEventInheritanceWarnings() {
     this.diagnostics.MISSING_EVENT_INHERITED = [];
-    if (
-      this.asset.assetKind !== 'objects' ||
-      !this.isCreateEvent ||
-      !this.asset.parent
-    ) {
+    if (this.asset.assetKind !== 'objects' || !this.asset.parent) {
       return;
     }
     // Then the type will have been set up to inherit from the parent.
@@ -426,6 +422,8 @@ export class Code {
         location: this.startRange,
       });
       if (this.isCreateEvent) {
+        // Unlink the type from the parent.
+        // (If there is no create event, then event_inherited is implicit)
         this.asset.variables!.extends = this.project.native.objectInstanceBase;
       }
     } else if (this.isCreateEvent) {

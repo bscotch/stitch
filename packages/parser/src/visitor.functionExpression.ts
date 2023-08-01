@@ -41,7 +41,7 @@ export function visitFunctionExpression(
   const isFunctionStatement = ctx.ctxKindStack.at(-1) === 'functionStatement';
   const isMixin = !!docs?.jsdoc.mixin;
 
-  /** If this function has a corresponding signfiier, either
+  /** If this function has a corresponding signifier, either
    * because it is a function declaration or because it is a
    * function expression assigned to a variable, then that's
    * what this is.
@@ -55,7 +55,7 @@ export function visitFunctionExpression(
     // Then this function is being created by declaration,
     // without being assigned to a variable. Find or create
     // the signifier and update its definedAt & refs.
-    const matching = this.FIND_ITEM(children, true);
+    const matching = this.FIND_ITEM(children, { excludeParents: true });
     if (matching?.item.$tag === 'Sym') {
       signifier = matching.item;
     } else {
@@ -137,7 +137,12 @@ export function visitFunctionExpression(
   functionType.self = context;
 
   // Ensure local context
+  const currentLocalContext = this.PROCESSOR.currentLocalScope;
   functionType.local ||= Type.Struct;
+  assert(
+    functionType.local !== currentLocalContext,
+    'Function local context incorrectly set to prior local context.',
+  );
 
   // Functions have their own localscope as well as their self scope,
   // so we need to push both.
@@ -151,7 +156,6 @@ export function visitFunctionExpression(
     functionType.local,
     true,
   );
-  const functionLocalScope = this.PROCESSOR.currentLocalScope;
 
   // TODO: Handle constructor inheritance. The `constructs` type should
   // be based off of the parent.
@@ -182,8 +186,10 @@ export function visitFunctionExpression(
       ? docs?.jsdoc.params?.find((p) => p.name?.content === name)
       : undefined;
 
+    const paramSignifier =
+      functionType.local.getMember(name) || functionType.getParameter(name);
     const param = functionType
-      .addParameter(i, paramToken.image)
+      .addParameter(i, paramSignifier || name)
       .definedAt(range);
     param.describe(fromJsdoc?.description);
     param.local = true;
@@ -215,7 +221,11 @@ export function visitFunctionExpression(
     }
 
     // Also add to the function's local scope.
-    functionLocalScope.addMember(param);
+    // const localVar = functionType.local.getMember(param.name);
+    // if (localVar && localVar !== param) {
+    //   debugger;
+    // }
+    functionType.local.addMember(param);
     totalParams++;
   }
   // If we have more args defined in JSDocs, add them!
@@ -274,5 +284,9 @@ export function visitFunctionExpression(
   );
   this.PROCESSOR.scope.setEnd(endBrace);
   this.PROCESSOR.popScope(endBrace, true);
+  assert(
+    functionType.local !== this.PROCESSOR.currentLocalScope,
+    'Local scope not popped correctly',
+  );
   return functionType;
 }

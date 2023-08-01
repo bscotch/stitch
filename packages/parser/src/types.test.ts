@@ -87,8 +87,8 @@ describe('Types', function () {
     const narrowStruct = new Type('Struct');
 
     for (const struct of [broadStruct, narrowStruct]) {
-      struct.addMember('name', new Type('String'));
-      struct.addMember('id', new Type('Real'));
+      struct.addMember('name', { type: new Type('String') });
+      struct.addMember('id', { type: new Type('Real') });
     }
 
     // They are the same at the moment, so should be true both ways
@@ -96,7 +96,7 @@ describe('Types', function () {
     expect(broadStruct.narrows(narrowStruct)).to.be.true;
 
     // Now making the narrow struct more specific
-    narrowStruct.addMember('specialty', new Type('String'));
+    narrowStruct.addMember('specialty', { type: new Type('String') });
     expect(narrowStruct.narrows(broadStruct)).to.be.true;
     expect(broadStruct.narrows(narrowStruct)).to.be.false;
   });

@@ -248,7 +248,7 @@ export class Native {
         if (prop && !structType.getMember(prop.name)) {
           const type = Type.fromFeatherString(prop.type, this.types, true);
           structType
-            .addMember(prop.name, type, prop.writable)!
+            .addMember(prop.name, { type, writable: prop.writable })!
             .describe(prop.description);
         }
       }
