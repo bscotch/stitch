@@ -60,13 +60,14 @@ export function visitFunctionExpression(
       signifier = matching.item;
     } else {
       signifier = new Signifier(this.PROCESSOR.currentSelf, functionName);
+      // This function is overriding any parent function of the same name
+      signifier.override = true;
+      this.PROCESSOR.currentSelf.addMember(signifier);
     }
     if (nameLocation && signifier && !signifier.def) {
       signifier?.definedAt(nameLocation);
       signifier?.addRef(nameLocation!, true);
     }
-    // Add to the current scope (globals have already been handled)
-    this.PROCESSOR.currentSelf.addMember(signifier);
   }
 
   // Get or create the function type. Use the existing type if there is one.
