@@ -261,6 +261,7 @@ export function visitIdentifierAccessor(
           // }
           const variables = functionType.self;
           for (const member of variables.listMembers()) {
+            if (!member.def) continue;
             member.override = true; // Ensure it's set as an override variable
             const currentMember = this.PROCESSOR.currentSelf.getMember(
               member.name,
