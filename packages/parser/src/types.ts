@@ -355,6 +355,12 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
         options?.override,
       'Cannot replace existing member with new member',
     );
+    const existingOnThis = this.getMember(name, true);
+    // assert(
+    //   !existingOnThis || !existingOnThis.override,
+    //   'Cannot override already-overridden member',
+    // );
+
     let member: Signifier | undefined;
     if (signifierArg?.override) {
       // Then we want to override the existing member
@@ -375,7 +381,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       this._members ??= new Map();
       // If the existing member has no def, then replace it
       // and transfer its refs
-      const existingOnThis = this._members.get(name);
       if (existingOnThis) {
         for (const ref of existingOnThis.refs) {
           ref.item = member;
