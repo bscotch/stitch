@@ -1,4 +1,9 @@
-import { type Asset, type Signifier, type Type } from '@bscotch/gml-parser';
+import {
+  type Asset,
+  type Code,
+  type Signifier,
+  type Type,
+} from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { config } from './extension.config.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
@@ -7,6 +12,7 @@ import { locationOf } from './lib.mjs';
 import { info, warn } from './log.mjs';
 
 type SearchMatcher = (name: string) => boolean;
+type SymbolResults = Map<Signifier | Code | Asset, vscode.SymbolInformation>;
 
 export class StitchWorkspaceSymbolProvider
   implements vscode.WorkspaceSymbolProvider
@@ -19,15 +25,16 @@ export class StitchWorkspaceSymbolProvider
 
   protected variablesToSymbols(
     variables: Type,
-    symbols: vscode.SymbolInformation[] = [],
-    isMatch?: SearchMatcher,
-  ): vscode.SymbolInformation[] {
+    symbols: SymbolResults,
+    isMatch: SearchMatcher,
+  ): SymbolResults {
     // Add any variables defined in this object
     if (!variables) return symbols;
     for (const member of variables.listMembers(true)) {
+      if (symbols.has(member)) continue;
       const symbol = this.signifierToSymbol(member, isMatch);
       if (symbol) {
-        symbols.push(symbol);
+        symbols.set(member, symbol);
       }
     }
     return symbols;
@@ -35,15 +42,17 @@ export class StitchWorkspaceSymbolProvider
 
   protected assetContentsToSymbols(
     resource: Asset,
-    symbols: vscode.SymbolInformation[] = [],
-    isMatch?: SearchMatcher,
-  ): vscode.SymbolInformation[] {
+    symbols: SymbolResults,
+    isMatch: SearchMatcher,
+  ): SymbolResults {
     const start = new vscode.Position(0, 0);
 
     if (resource.assetKind === 'scripts') {
       // Add the script itself
-      if (!isMatch || isMatch(resource.name)) {
-        symbols.push(
+      const canAdd = isMatch(resource.name) && !symbols.has(resource);
+      if (canAdd) {
+        symbols.set(
+          resource,
           new vscode.SymbolInformation(
             resource.name,
             vscode.SymbolKind.Module,
@@ -58,14 +67,15 @@ export class StitchWorkspaceSymbolProvider
     } else if (resource.assetKind === 'objects') {
       for (const file of resource.gmlFiles.values()) {
         // Add the object event itself
-        if (!isMatch || isMatch(resource.name)) {
+        const canAdd = isMatch(resource.name) && !symbols.has(file);
+        if (canAdd) {
           const symbol = new vscode.SymbolInformation(
             resource.name,
             vscode.SymbolKind.Class,
             `${resource.assetKind} (${file.path.name})`,
             new vscode.Location(vscode.Uri.file(file.path.absolute), start),
           );
-          symbols.push(symbol);
+          symbols.set(file, symbol);
         }
 
         // Add any variables defined in this object
@@ -74,8 +84,10 @@ export class StitchWorkspaceSymbolProvider
       }
     } else {
       // Add the asset yy file for all other asset types
-      if (!isMatch || isMatch(resource.name)) {
-        symbols.push(
+      const canAdd = isMatch(resource.name) && !symbols.has(resource);
+      if (canAdd) {
+        symbols.set(
+          resource,
           new vscode.SymbolInformation(
             resource.name,
             vscode.SymbolKind.File,
@@ -93,14 +105,16 @@ export class StitchWorkspaceSymbolProvider
 
   protected globalsToSymbols(
     project: GameMakerProject,
-    symbols: vscode.SymbolInformation[] = [],
-    isMatch?: SearchMatcher,
-  ): vscode.SymbolInformation[] {
+    symbols: SymbolResults,
+    isMatch: SearchMatcher,
+  ): SymbolResults {
     for (const item of project.self.listMembers()) {
       // Assets are already handled by the resource cache.
-      const symbol = this.signifierToSymbol(item, isMatch);
-      if (symbol) {
-        symbols.push(symbol);
+      if (!symbols.has(item)) {
+        const symbol = this.signifierToSymbol(item, isMatch);
+        if (symbol) {
+          symbols.set(item, symbol);
+        }
       }
 
       // Even if the symbol itself doesn't match, it may have members that do!
@@ -150,7 +164,7 @@ export class StitchWorkspaceSymbolProvider
       return [];
     }
     try {
-      const filteredSymbols: vscode.SymbolInformation[] = [];
+      const symbols: SymbolResults = new Map();
       query = query.trim();
       const pattern = new RegExp(query.split('').join('.*'));
       const isMatch: SearchMatcher = (name: string) =>
@@ -161,13 +175,24 @@ export class StitchWorkspaceSymbolProvider
         return [];
       }
 
-      this.globalsToSymbols(project, filteredSymbols, isMatch);
+      this.globalsToSymbols(project, symbols, isMatch);
       for (const resource of project.assets.values()) {
-        this.assetContentsToSymbols(resource, filteredSymbols, isMatch);
+        this.assetContentsToSymbols(resource, symbols, isMatch);
+      }
+      if (config.symbolsIncludeLocalVars) {
+        // Add the local variables defined in the current document
+        const activeFile = this.provider.getGmlFile(undefined);
+        if (activeFile) {
+          for (const scope of activeFile.scopes) {
+            this.variablesToSymbols(scope.local, symbols, isMatch);
+          }
+        }
       }
 
       // Sort by match quality and then only return the top results.
-      filteredSymbols.sort(this.resultSorter(query, pattern));
+      const filteredSymbols = [...symbols.values()].sort(
+        this.resultSorter(query, pattern),
+      );
       info(`Found ${filteredSymbols.length} symbols matching "${query}"`);
       const results = filteredSymbols.slice(0, config.symbolsMaxSearchResults);
       return results;

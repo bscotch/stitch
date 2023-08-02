@@ -147,7 +147,13 @@
           "title": "Include instance variables in workspace symbols",
           "type": "boolean",
           "default": true,
-          "description": "Whether to include instance variables in the workspace symbols list."
+          "description": "Whether to include object/instance, constructor, and mixin variables in the workspace symbols list."
+        },
+        "stitch.editing.workspaceSymbols.includeLocalVariables": {
+          "title": "Include local variables in workspace symbols",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include local variables in the workspace symbols list. Only symbols from the active editor are included."
         },
         "stitch.editing.workspaceSymbols.maxResults": {
           "title": "Maximum workspace symbols results",

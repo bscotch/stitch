@@ -22,6 +22,13 @@ export class StitchConfig {
       ) ?? true
     );
   }
+  get symbolsIncludeLocalVars() {
+    return (
+      this.config.get<boolean>(
+        'editing.workspaceSymbols.includeLocalVariables',
+      ) ?? true
+    );
+  }
   get symbolsMaxSearchResults() {
     return this.config.get<number>('editing.workspaceSymbols.maxResults') || 30;
   }

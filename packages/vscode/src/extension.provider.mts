@@ -287,7 +287,14 @@ export class StitchProvider
     return asset;
   }
 
-  getGmlFile(document: vscode.TextDocument | vscode.Uri): Code | undefined {
+  getGmlFile(
+    document: vscode.TextDocument | vscode.Uri | undefined,
+  ): Code | undefined {
+    document ||= this.getActiveDocument();
+    if (!document) {
+      warn(`getGmlFile: Could not find document`);
+      return;
+    }
     const path = pathyFromUri(document);
     const project = this.getProject(document);
     if (!project) {
