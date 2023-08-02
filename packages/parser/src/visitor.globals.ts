@@ -17,7 +17,7 @@ import { Diagnostic } from './project.diagnostics.js';
 import { Position, Range } from './project.location.js';
 import { Signifier } from './signifiers.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
-import { StructType, Type } from './types.js';
+import { FunctionType, StructType, Type } from './types.js';
 import { assert } from './util.js';
 
 export function registerGlobals(file: Code) {
@@ -236,18 +236,30 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       }
 
       const signifier = this.REGISTER_GLOBAL(children)!;
+
       // Make sure that the types all exist
       let type = signifier.getTypeByKind('Function');
       if (!type) {
-        signifier.setType(new Type('Function').named(name.image));
+        // Create the type if needed, but if there's already an existing
+        // type with this name grab that instead (helps reduce reference
+        // problems during editing)
+        const typeName = `Function.${name.image}`;
+        type = (this.PROCESSOR.project.types.get(typeName) ||
+          new Type('Function').named(name.image)) as FunctionType;
+        signifier.setType(type);
         type = signifier.getTypeByKind('Function')!;
-        this.PROCESSOR.project.types.set(`Function.${name.image}`, type);
+        this.PROCESSOR.project.types.set(typeName, type);
       }
       if (signifier.type.type.length > 1) {
         signifier.setType(type);
       }
+
+      // Reset the self context to account for the user changing a function
+      // from a constructor to a regular function and vice versa
+      type.self = undefined;
+
       // If it's a constructor, ensure the type exists
-      if (constructorNode && !type.self) {
+      if (constructorNode) {
         type.self = (this.PROCESSOR.project.types.get(`Struct.${name.image}`) ||
           new Type('Struct').named(name.image)) as StructType;
         type.self.signifier = signifier;
