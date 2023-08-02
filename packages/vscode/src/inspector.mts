@@ -189,7 +189,6 @@ export class GameMakerInspectorProvider
       return [new ObjectItem(this.asset.parent, 'parents')];
     } else if (element instanceof ObjectSpriteFolder) {
       const sprite = this.asset.sprite;
-      logger.info('Found sprite?', !!sprite, sprite?.name);
       if (sprite) {
         return [new ObjectSpriteItem(sprite)];
       }
