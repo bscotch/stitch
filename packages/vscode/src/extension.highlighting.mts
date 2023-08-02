@@ -137,7 +137,7 @@ export class GameMakerSemanticTokenProvider
 
   register() {
     return vscode.languages.registerDocumentSemanticTokensProvider(
-      'gml',
+      { language: 'gml', scheme: 'file' }, // By excluding "git" scheme, we avoid wonky highlighting in the diff view
       this,
       semanticTokensLegend,
     );

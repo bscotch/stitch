@@ -20,9 +20,9 @@ import {
   jsdocCompletions,
 } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
+import { GameMakerSemanticTokenProvider } from './extension.highlighting.mjs';
 import { ChangeTracker } from './extension.onChange.mjs';
 import { GameMakerProject } from './extension.project.mjs';
-import { GameMakerSemanticTokenProvider } from './extension.semanticTokens.mjs';
 import { locationOf, pathyFromUri, uriFromCodeFile } from './lib.mjs';
 import { info, logger, warn } from './log.mjs';
 
