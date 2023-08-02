@@ -465,12 +465,15 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         .children;
 
     if (assignedToFunction || assignedToStructLiteral) {
-      ctx.signifier = signifier;
-      ctx.docs = docs;
+      const newCtx = {
+        ...ctx,
+        signifier,
+        docs,
+      };
       if (assignedToFunction) {
-        this.functionExpression(assignedToFunction, ctx);
+        this.functionExpression(assignedToFunction, newCtx);
       } else if (assignedToStructLiteral) {
-        this.structLiteral(assignedToStructLiteral, ctx);
+        this.structLiteral(assignedToStructLiteral, newCtx);
       }
     } else {
       const inferredType = normalizeType(

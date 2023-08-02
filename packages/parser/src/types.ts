@@ -331,7 +331,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   ): Signifier | undefined {
     // If this is a Id.Instance or Asset.GMObject type, then we want to add
     // the member to the parent Struct instead.
-
     if (this.kind === 'Id.Instance' || this.kind === 'Asset.GMObject') {
       return this.extends?.addMember(newMember, options);
     }
@@ -356,10 +355,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
       'Cannot replace existing member with new member',
     );
     const existingOnThis = this.getMember(name, true);
-    // assert(
-    //   !existingOnThis || !existingOnThis.override,
-    //   'Cannot override already-overridden member',
-    // );
 
     let member: Signifier | undefined;
     if (signifierArg?.override) {

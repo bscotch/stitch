@@ -483,29 +483,21 @@ export class Project {
     }
     // Second pass
     // TODO: Find a better way than brute-forcing to resolve cross-file references
-    logger.info('Second pass...');
-    const reloads: Promise<any>[] = [];
-    for (const asset of assets) {
-      // asset.updateGlobals();
-      // asset.updateAllSymbols();
-      for (const file of asset.gmlFilesArray) {
-        reloads.push(file.reload(file.content));
+    for (const pass of [1]) {
+      logger.info(`Re-processing pass ${pass}...`);
+      const reloads: Promise<any>[] = [];
+      for (const asset of assets) {
+        for (const file of asset.gmlFilesArray) {
+          reloads.push(file.reload(file.content));
+        }
       }
+      await Promise.all(reloads);
     }
-    await Promise.all(reloads);
-    // logger.info('Third pass...');
-    // for (const asset of assets) {
-    //   asset.updateGlobals();
-    //   asset.updateAllSymbols();
-    // }
 
     // But for now, that's what we'll do!
     logger.info('Updating diagnostics...');
     for (const asset of assets) {
       asset.updateDiagnostics();
-      // for (const file of asset.gmlFilesArray) {
-      //   await file.reload(file._content);
-      // }
     }
   }
 

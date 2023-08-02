@@ -14,6 +14,7 @@ export function visitFunctionExpression(
   children: FunctionExpressionCstChildren,
   ctx: VisitorContext,
 ): Type<'Function'> | undefined {
+  const functionName: string | undefined = children.Identifier?.[0]?.image;
   const docs = ctx.docs || this.PROCESSOR.consumeJsdoc();
   ctx.docs = undefined;
   const assignedTo = ctx.signifier;
@@ -32,7 +33,6 @@ export function visitFunctionExpression(
 
   // Compute useful properties of this function to help figure out
   // how to define its symbol, type, scope, etc.
-  const functionName: string | undefined = children.Identifier?.[0]?.image;
   const nameLocation = functionName
     ? this.PROCESSOR.range(children.Identifier![0])
     : undefined;
@@ -222,9 +222,6 @@ export function visitFunctionExpression(
 
     // Also add to the function's local scope.
     const localVar = functionType.local.getMember(param.name);
-    // if (localVar && localVar !== param) {
-    //   debugger;
-    // }
     if (!localVar) {
       functionType.local.addMember(param);
     } else if (localVar !== param) {

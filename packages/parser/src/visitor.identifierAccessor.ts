@@ -240,25 +240,11 @@ export function visitIdentifierAccessor(
         }
         break;
       case 'functionArguments':
-        // if (
-        //   this.PROCESSOR.file.asset.name === 'o_world_element' &&
-        //   this.PROCESSOR.file.name === 'Create_0' &&
-        //   name === 'z_setup'
-        // ) {
-        //   debugger;
-        // }
         const functionType = getTypeOfKind(accessing.type, 'Function');
 
         // If this is a mixin call, then we need to ensure that the context
         // includes the variables created by the mixin function.
         if (functionType?.signifier?.mixin && functionType.self) {
-          // if (
-          //   this.PROCESSOR.file.asset.name === 'o_world_element' &&
-          //   this.PROCESSOR.file.name === 'Create_0' &&
-          //   name === 'z_setup'
-          // ) {
-          //   debugger;
-          // }
           const variables = functionType.self;
           for (const member of variables.listMembers()) {
             if (!member.def) continue;

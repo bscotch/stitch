@@ -121,11 +121,17 @@ export function typeFromParsedJsdocs(
       addMissing,
     );
   } else if (jsdoc.kind === 'self') {
-    return typeFromFeatherString(
+    // The self-type could be a function, in which case
+    // we want to use its "self" as the type instead of
+    // the function itself.
+    const matchingType = typeFromFeatherString(
       jsdoc.self?.content || 'Any',
       knownTypes,
       addMissing,
-    );
+    )
+      .map((t) => (t.kind === 'Function' ? t.self : t))
+      .filter((x) => !!x) as Type[];
+    return matchingType;
   } else if (jsdoc.kind === 'function') {
     const type = new Type('Function').describe(jsdoc.description);
     let i = 0;
