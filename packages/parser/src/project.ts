@@ -485,13 +485,15 @@ export class Project {
     // TODO: Find a better way than brute-forcing to resolve cross-file references
     for (const pass of [1]) {
       logger.info(`Re-processing pass ${pass}...`);
-      const reloads: Promise<any>[] = [];
+      // const reloads: Promise<any>[] = [];
       for (const asset of assets) {
-        for (const file of asset.gmlFilesArray) {
-          reloads.push(file.reload(file.content));
-        }
+        asset.updateGlobals();
+        asset.updateAllSymbols();
+        //   for (const file of asset.gmlFilesArray) {
+        //     reloads.push(file.reload(file.content));
+        //   }
       }
-      await Promise.all(reloads);
+      // await Promise.all(reloads);
     }
 
     // But for now, that's what we'll do!

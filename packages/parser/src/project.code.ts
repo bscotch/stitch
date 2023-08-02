@@ -141,15 +141,6 @@ export class Code {
     return undefined;
   }
 
-  /** @private Not yet implemented */
-  canAddJsdocTagAt(offset: number | LinePosition, column?: number): boolean {
-    const inJsdoc = this.getJsdocAt(offset, column);
-    if (!inJsdoc) {
-      return false;
-    }
-    return false;
-  }
-
   getFunctionArgRangeAt(
     offset: number | LinePosition,
     column?: number,
