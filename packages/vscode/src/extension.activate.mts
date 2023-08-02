@@ -12,7 +12,7 @@ import { StitchDefinitionsProvider } from './extension.definitions.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { GameMakerHoverProvider } from './extension.hover.mjs';
 import type { StitchProvider } from './extension.provider.mjs';
-import { GameMakerWorkspaceSymbolProvider } from './extension.symbols.mjs';
+import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { GameMakerInspectorProvider } from './inspector.mjs';
 import { findProject, pathyFromUri, registerCommand } from './lib.mjs';
 import { Timer, info, logger, warn } from './log.mjs';
@@ -85,6 +85,7 @@ export async function activateStitchExtension(
     ...inspectorProvider.register(),
     definitionsProvider.register(),
     GameMakerHoverProvider.register(provider),
+    StitchWorkspaceSymbolProvider.register(provider),
     vscode.languages.registerCompletionItemProvider(
       'gml',
       provider,
@@ -96,9 +97,7 @@ export async function activateStitchExtension(
       new StitchYyFormatProvider(),
     ),
     vscode.languages.registerReferenceProvider('gml', provider),
-    vscode.languages.registerWorkspaceSymbolProvider(
-      new GameMakerWorkspaceSymbolProvider(provider.projects),
-    ),
+
     registerCommand('stitch.types.copy', createCopyAsTypeCallback(provider)),
     registerCommand(
       'stitch.types.copyAsJsdocSelf',

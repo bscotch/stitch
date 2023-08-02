@@ -13,6 +13,7 @@ export {
   type ReferenceableType,
 } from './project.location.js';
 export { Signifier } from './signifiers.js';
+export { isTypeInstance, isTypeOfKind } from './types.checks.js';
 export * from './types.flags.js';
 export type * from './types.js';
 export { primitiveNames, type PrimitiveName } from './types.primitives.js';

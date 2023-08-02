@@ -141,7 +141,19 @@
             "null"
           ],
           "default": null,
-          "description": "Variables with this prefix will be skipped in autocomplete suggestions, unless those variables are within the same scope or file as the cursor."
+          "description": "Variables with this prefix will be skipped in autocomplete suggestions, unless those variables are within the same scope or file as the active editor."
+        },
+        "stitch.editing.workspaceSymbols.includeInstanceVariables": {
+          "title": "Include instance variables in workspace symbols",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include instance variables in the workspace symbols list."
+        },
+        "stitch.editing.workspaceSymbols.maxResults": {
+          "title": "Maximum workspace symbols results",
+          "type": "number",
+          "default": 30,
+          "description": "When searching workspace symbols, the maximum number that Stitch will contribute. Decrease this value if you have performance issue with the workspace symbols list."
         },
         "stitch.editing.signatureStatus.enable": {
           "title": "Enable signature status",

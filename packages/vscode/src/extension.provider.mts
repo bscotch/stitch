@@ -187,6 +187,16 @@ export class StitchProvider
     return code;
   }
 
+  getActiveDocument(): vscode.TextDocument | undefined {
+    return vscode.window.activeTextEditor?.document;
+  }
+
+  getActiveProject(): GameMakerProject | undefined {
+    const doc = this.getActiveDocument();
+    const project = doc ? this.getProject(doc) : undefined;
+    return project || this.projects[0];
+  }
+
   getProject(
     document: vscode.TextDocument | vscode.Uri,
   ): GameMakerProject | undefined {

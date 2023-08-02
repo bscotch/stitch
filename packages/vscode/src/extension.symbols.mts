@@ -1,147 +1,175 @@
-import type { Asset } from '@bscotch/gml-parser';
+import { type Asset, type Signifier, type Type } from '@bscotch/gml-parser';
 import vscode from 'vscode';
+import { config } from './extension.config.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
+import type { StitchProvider } from './extension.provider.mjs';
 import { locationOf } from './lib.mjs';
 import { info, warn } from './log.mjs';
 
-export class GameMakerWorkspaceSymbolProvider
+type SearchMatcher = (name: string) => boolean;
+
+export class StitchWorkspaceSymbolProvider
   implements vscode.WorkspaceSymbolProvider
 {
-  resourceCache: Map<GameMakerProject, Map<Asset, vscode.SymbolInformation[]>> =
-    new Map();
-  globalsCache: Map<GameMakerProject, vscode.SymbolInformation[]> = new Map();
+  constructor(readonly provider: StitchProvider) {}
 
-  constructor(readonly projects: GameMakerProject[]) {
-    this.updateCache();
+  get projects() {
+    return this.provider.projects;
   }
 
-  updateCache() {
-    for (const project of this.projects) {
-      try {
-        this.updateProjectCache(project);
-      } catch (err) {
-        warn(`Error updating cache for project ${project.name}: ${err}`);
-      }
-    }
-  }
-
-  protected updateProjectCache(project: GameMakerProject) {
-    this.resourceCache.set(project, new Map());
-    for (const [, resource] of project.assets) {
-      try {
-        this.updateResourceCache(project, resource);
-      } catch (err) {
-        warn(`Error updating cache for ${resource.name}: ${err}`);
-      }
-    }
-    try {
-      this.updateGlobalsCache(project);
-    } catch (err) {
-      warn(`Error updating cache for globals: ${err}`);
-    }
-  }
-
-  protected updateResourceCache(project: GameMakerProject, resource: Asset) {
-    const symbols: vscode.SymbolInformation[] = [];
-    this.resourceCache.get(project)!.set(resource, symbols);
-    // Then add the resource itself. Scripts and objects should point to their GML, while everything else should point to yy files.
-    const start = new vscode.Position(0, 0);
-    if (resource.assetKind === 'scripts') {
-      symbols.push(
-        new vscode.SymbolInformation(
-          resource.name,
-          vscode.SymbolKind.Module,
-          resource.assetKind,
-          new vscode.Location(
-            vscode.Uri.file(resource.gmlFile!.path.absolute),
-            start,
-          ),
-        ),
-      );
-    } else if (resource.assetKind === 'objects') {
-      for (const file of resource.gmlFiles.values()) {
-        const symbol = new vscode.SymbolInformation(
-          resource.name,
-          vscode.SymbolKind.Class,
-          `${resource.assetKind} (${file.path.name})`,
-          new vscode.Location(vscode.Uri.file(file.path.absolute), start),
-        );
+  protected variablesToSymbols(
+    variables: Type,
+    symbols: vscode.SymbolInformation[] = [],
+    isMatch?: SearchMatcher,
+  ): vscode.SymbolInformation[] {
+    // Add any variables defined in this object
+    if (!variables) return symbols;
+    for (const member of variables.listMembers(true)) {
+      const symbol = this.signifierToSymbol(member, isMatch);
+      if (symbol) {
         symbols.push(symbol);
       }
-    } else {
-      symbols.push(
-        new vscode.SymbolInformation(
-          resource.name,
-          vscode.SymbolKind.File,
-          resource.assetKind,
-          new vscode.Location(vscode.Uri.file(resource.yyPath.absolute), start),
-        ),
-      );
     }
+    return symbols;
   }
 
-  protected updateGlobalsCache(project: GameMakerProject) {
-    const symbols: vscode.SymbolInformation[] = [];
-    this.globalsCache.set(project, symbols);
-    const globals = [...project.self.listMembers()];
-    for (const item of globals) {
-      const type = item.type;
-      const location = item.def;
-      // Assets are already handled by the resource cache.
-      if (type.kind.startsWith('Asset')) {
-        continue;
-      }
-      if (!location?.file) {
-        continue;
-      }
-      const functionType = item.getTypeByKind('Function');
+  protected assetContentsToSymbols(
+    resource: Asset,
+    symbols: vscode.SymbolInformation[] = [],
+    isMatch?: SearchMatcher,
+  ): vscode.SymbolInformation[] {
+    const start = new vscode.Position(0, 0);
 
-      const kind =
-        type.kind === 'Enum'
-          ? vscode.SymbolKind.Enum
-          : functionType?.isConstructor
-          ? vscode.SymbolKind.Constructor
-          : functionType
-          ? vscode.SymbolKind.Function
-          : vscode.SymbolKind.Variable;
-      symbols.push(
-        new vscode.SymbolInformation(
-          item.name!,
-          kind,
-          type.kind,
-          locationOf(location)!,
-        ),
-      );
+    if (resource.assetKind === 'scripts') {
+      // Add the script itself
+      if (!isMatch || isMatch(resource.name)) {
+        symbols.push(
+          new vscode.SymbolInformation(
+            resource.name,
+            vscode.SymbolKind.Module,
+            resource.assetKind,
+            new vscode.Location(
+              vscode.Uri.file(resource.gmlFile!.path.absolute),
+              start,
+            ),
+          ),
+        );
+      }
+    } else if (resource.assetKind === 'objects') {
+      for (const file of resource.gmlFiles.values()) {
+        // Add the object event itself
+        if (!isMatch || isMatch(resource.name)) {
+          const symbol = new vscode.SymbolInformation(
+            resource.name,
+            vscode.SymbolKind.Class,
+            `${resource.assetKind} (${file.path.name})`,
+            new vscode.Location(vscode.Uri.file(file.path.absolute), start),
+          );
+          symbols.push(symbol);
+        }
+
+        // Add any variables defined in this object
+        if (!config.symbolsIncludeInstanceVars) continue;
+        this.variablesToSymbols(file.asset.variables!, symbols, isMatch);
+      }
+    } else {
+      // Add the asset yy file for all other asset types
+      if (!isMatch || isMatch(resource.name)) {
+        symbols.push(
+          new vscode.SymbolInformation(
+            resource.name,
+            vscode.SymbolKind.File,
+            resource.assetKind,
+            new vscode.Location(
+              vscode.Uri.file(resource.yyPath.absolute),
+              start,
+            ),
+          ),
+        );
+      }
     }
+    return symbols;
+  }
+
+  protected globalsToSymbols(
+    project: GameMakerProject,
+    symbols: vscode.SymbolInformation[] = [],
+    isMatch?: SearchMatcher,
+  ): vscode.SymbolInformation[] {
+    for (const item of project.self.listMembers()) {
+      // Assets are already handled by the resource cache.
+      const symbol = this.signifierToSymbol(item, isMatch);
+      if (symbol) {
+        symbols.push(symbol);
+      }
+
+      // Even if the symbol itself doesn't match, it may have members that do!
+      if (!config.symbolsIncludeInstanceVars) continue;
+
+      // If it's a mixin or constructor, add its members
+      const functionType = item.getTypeByKind('Function');
+      if (functionType?.self && (item.mixin || functionType.isConstructor)) {
+        // Add any variables defined in this object
+        this.variablesToSymbols(functionType.self, symbols, isMatch);
+      }
+    }
+    return symbols;
+  }
+
+  protected signifierToSymbol(
+    item: Signifier,
+    isMatch?: SearchMatcher,
+  ): vscode.SymbolInformation | undefined {
+    if (!item.def?.file || !item.name || (isMatch && !isMatch(item.name))) {
+      return;
+    }
+
+    const type = item.type;
+    const functionType = item.getTypeByKind('Function');
+
+    const kind =
+      type.kind === 'Enum'
+        ? vscode.SymbolKind.Enum
+        : functionType?.isConstructor
+        ? vscode.SymbolKind.Constructor
+        : functionType
+        ? vscode.SymbolKind.Function
+        : vscode.SymbolKind.Variable;
+    return new vscode.SymbolInformation(
+      item.name,
+      kind,
+      type.kind,
+      locationOf(item.def)!,
+    );
   }
 
   provideWorkspaceSymbols(query: string): vscode.SymbolInformation[] {
+    if (!query?.trim()) {
+      // No value in searching for nothing, unless we start doing
+      // active-editor-dependent searching.
+      return [];
+    }
     try {
       const filteredSymbols: vscode.SymbolInformation[] = [];
       query = query.trim();
       const pattern = new RegExp(query.split('').join('.*'));
-      const isMatch = (item: { name: string }) =>
-        this.scoreResult(query, pattern, item.name) > 0;
-      for (const project of this.projects) {
-        const resourceCache = this.resourceCache.get(project)!;
-        for (const [resource, symbols] of resourceCache.entries()) {
-          if (isMatch(resource)) {
-            for (const symbol of symbols) {
-              filteredSymbols.push(symbol);
-            }
-          }
-        }
-        const globalsCache = this.globalsCache.get(project)!;
-        for (const symbol of globalsCache) {
-          if (isMatch(symbol)) {
-            filteredSymbols.push(symbol);
-          }
-        }
+      const isMatch: SearchMatcher = (name: string) =>
+        this.scoreResult(query, pattern, name) > 0;
+
+      const project = this.provider.getActiveProject();
+      if (!project) {
+        return [];
       }
+
+      this.globalsToSymbols(project, filteredSymbols, isMatch);
+      for (const resource of project.assets.values()) {
+        this.assetContentsToSymbols(resource, filteredSymbols, isMatch);
+      }
+
       // Sort by match quality and then only return the top results.
       filteredSymbols.sort(this.resultSorter(query, pattern));
       info(`Found ${filteredSymbols.length} symbols matching "${query}"`);
-      const results = filteredSymbols.slice(0, 20);
+      const results = filteredSymbols.slice(0, config.symbolsMaxSearchResults);
       return results;
     } catch (error) {
       warn(error);
@@ -169,7 +197,7 @@ export class GameMakerWorkspaceSymbolProvider
       const characterProximityScore = query.length / match[0].length;
       const matchLengthScore = query.length / result.length;
       const positionScore = 1 - match.index! / result.length;
-      score += characterProximityScore + positionScore + matchLengthScore;
+      score += characterProximityScore * 2 + positionScore + matchLengthScore;
     }
     return score;
   }
@@ -180,5 +208,11 @@ export class GameMakerWorkspaceSymbolProvider
       const bScore = this.scoreResult(query, pattern, b.name);
       return bScore - aScore || a.name.localeCompare(b.name);
     };
+  }
+
+  static register(provider: StitchProvider) {
+    return vscode.languages.registerWorkspaceSymbolProvider(
+      new StitchWorkspaceSymbolProvider(provider),
+    );
   }
 }

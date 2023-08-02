@@ -15,6 +15,16 @@ export class StitchConfig {
   get autocompleteIgnoredPrefix() {
     return this.config.get<string | null>('editing.autocomplete.ignoredPrefix');
   }
+  get symbolsIncludeInstanceVars() {
+    return (
+      this.config.get<boolean>(
+        'editing.workspaceSymbols.includeInstanceVariables',
+      ) ?? true
+    );
+  }
+  get symbolsMaxSearchResults() {
+    return this.config.get<number>('editing.workspaceSymbols.maxResults') || 30;
+  }
   get functionSignatureStatusAlignment(): vscode.StatusBarAlignment {
     const alignment = this.config.get<'left' | 'right'>(
       'editing.signatureStatus.alignment',
