@@ -149,8 +149,11 @@ export class SignifierProcessor {
     this.scope.self = this.currentSelf;
   }
 
-  pushLocalScope(startToken: CstNodeLocation, fromTokenEnd: boolean) {
-    const localScope = this.createStruct(startToken);
+  pushLocalScope(
+    startToken: CstNodeLocation,
+    fromTokenEnd: boolean,
+    localScope = this.createStruct(startToken),
+  ) {
     this.localScopeStack.push(localScope);
     this.nextScope(startToken, fromTokenEnd).local = localScope;
   }

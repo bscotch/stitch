@@ -101,7 +101,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const scope = this.PROCESSOR.fullScope;
     let item: Signifier | undefined = scope.local.getMember(
       name,
-      options?.excludeParents,
+      false, // Locals should always search parents, since `catch` statements are the only thing that extend local scope
     );
     if (!item && !scope.selfIsGlobal) {
       item = scope.self.getMember(name, options?.excludeParents);
@@ -320,7 +320,9 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // the the current localscope, but only within themselves. We
     // can get a reasonable approximation of this behavior by creating
     // a new localscope that has the current localscope as a parent.
-    this.PROCESSOR.pushLocalScope(children.Catch[0], true);
+    const catchLocal = Type.Struct;
+    catchLocal.extends = this.PROCESSOR.currentLocalScope;
+    this.PROCESSOR.pushLocalScope(children.Catch[0], true, catchLocal);
 
     // Add the identifier to the new localscope
     const identifier = identifierFrom(children);
