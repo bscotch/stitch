@@ -436,12 +436,13 @@ export class Code {
     // BUT. If this event does not call `event_inherited()`, then we
     // need to unlink the type.
     if (!this.callsSuper) {
-      this.diagnostics.MISSING_EVENT_INHERITED.push({
-        $tag: 'diagnostic',
-        message: `Event does not call \`event_inherited()\`, so it will not inherit from its parent.`,
-        severity: 'warning',
-        location: this.startRange,
-      });
+      // TODO: Provide this as an option?
+      // this.diagnostics.MISSING_EVENT_INHERITED.push({
+      //   $tag: 'diagnostic',
+      //   message: `Event does not call \`event_inherited()\`, so it will not inherit from its parent.`,
+      //   severity: 'warning',
+      //   location: this.startRange,
+      // });
       if (this.isCreateEvent) {
         // Unlink the type from the parent.
         // (If there is no create event, then event_inherited is implicit)
