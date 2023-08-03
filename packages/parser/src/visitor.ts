@@ -33,11 +33,17 @@ import {
   GmlVisitorBase,
   VisitorContext,
   identifierFrom,
+  sortChildren,
   stringLiteralAsString,
   withCtxKind,
 } from './parser.js';
 import type { Code } from './project.code.js';
-import { Range, Reference } from './project.location.js';
+import {
+  Position,
+  Range,
+  Reference,
+  StructNewMemberRange,
+} from './project.location.js';
 import { Signifier } from './signifiers.js';
 import { getTypeOfKind, getTypes, normalizeType } from './types.checks.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
@@ -814,13 +820,43 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       ctx.docs?.type[0]?.kind === 'Struct'
         ? (ctx.docs?.type[0] as StructType)
         : undefined;
-    const structType = structFromDocs || ctx.signifier?.getTypeByKind('Struct');
     const struct =
-      structType ||
+      structFromDocs ||
+      ctx.signifier?.getTypeByKind('Struct') ||
       this.PROCESSOR.createStruct(children.StartBrace[0], children.EndBrace[0]);
     ctx.signifier?.setType(struct);
     ctx.signifier = undefined;
     ctx.docs = undefined;
+
+    // TODO
+    // // If we are creating a struct literal to match a doc-described
+    // // struct, we should *extend* that underlying struct so we don't
+    // // mutate the parent (and so we can differientiate between)
+    // if (structFromDocs) {
+    //   struct = structFromDocs.derive();
+    // }
+
+    // Create the newMember ranges, to help with autocompletes
+    const sortedParts = sortChildren(children);
+    let nextRange: StructNewMemberRange | undefined;
+    for (let i = 0; i < sortedParts.length; i++) {
+      const part = sortedParts[i];
+      const isStart = 'image' in part && [',', '{'].includes(part.image);
+      if (isStart) {
+        // Then we're starting a range!
+        const startPosition = Position.fromCstEnd(this.PROCESSOR.file, part);
+        // Loop through the next parts until we find
+        nextRange = new StructNewMemberRange(struct, startPosition);
+      } else if (nextRange) {
+        const endPosition = Position.fromCstStart(
+          this.PROCESSOR.file,
+          'image' in part ? part : part.location!,
+        );
+        nextRange.end = endPosition;
+        this.PROCESSOR.file.addStructNewMemberRange(nextRange);
+        nextRange = undefined;
+      }
+    }
 
     // The self-scope remains unchanged for struct literals!
     for (const entry of children.structLiteralEntry || []) {

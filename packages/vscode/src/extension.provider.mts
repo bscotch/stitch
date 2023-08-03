@@ -8,17 +8,13 @@ import {
   type ReferenceableType,
   type Type,
 } from '@bscotch/gml-parser';
-import vscode, { CancellationToken, CompletionContext } from 'vscode';
+import vscode from 'vscode';
 import {
   diagnosticCollection,
   normalizeDiagnosticsEvents,
 } from './diagnostics.mjs';
 import { activateStitchExtension } from './extension.activate.mjs';
-import {
-  completionTriggerCharacters,
-  inScopeSymbolsToCompletions,
-  jsdocCompletions,
-} from './extension.completions.mjs';
+import { completionTriggerCharacters } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.highlighting.mjs';
 import { ChangeTracker } from './extension.onChange.mjs';
@@ -27,10 +23,7 @@ import { locationOf, pathyFromUri, uriFromCodeFile } from './lib.mjs';
 import { info, logger, warn } from './log.mjs';
 
 export class StitchProvider
-  implements
-    vscode.CompletionItemProvider,
-    vscode.SignatureHelpProvider,
-    vscode.ReferenceProvider
+  implements vscode.SignatureHelpProvider, vscode.ReferenceProvider
 {
   readonly semanticHighlightProvider = new GameMakerSemanticTokenProvider(this);
   readonly signatureHelpStatus = vscode.window.createStatusBarItem(
@@ -120,33 +113,6 @@ export class StitchProvider
         return locationOf(ref);
       })
       .filter((loc) => !!loc) as vscode.Location[];
-  }
-
-  async provideCompletionItems(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    token: CancellationToken,
-    context: CompletionContext,
-  ): Promise<vscode.CompletionItem[] | undefined> {
-    // If we're already processing this file, wait for it to finish so that we get up-to-date completions.
-    await this.processingFiles.get(document.uri.fsPath);
-    const gmlFile = this.getGmlFile(document);
-    const offset = document.offsetAt(position);
-    if (!gmlFile) {
-      return undefined;
-    }
-    // Are we inside a JSDoc comment?
-    const jsdoc = gmlFile.getJsdocAt(offset);
-    if (jsdoc && context.triggerCharacter === '.') {
-      // Then abort!
-      return;
-    } else if (jsdoc) {
-      return jsdocCompletions(document, position, gmlFile, jsdoc);
-    } else if (context.triggerCharacter === '.' || !context.triggerCharacter) {
-      const items = gmlFile.getInScopeSymbolsAt(offset);
-      return inScopeSymbolsToCompletions(document, items);
-    }
-    return undefined;
   }
 
   provideSignatureHelp(

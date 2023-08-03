@@ -18,6 +18,7 @@ import {
   Reference,
   ReferenceableType,
   Scope,
+  StructNewMemberRange,
 } from './project.location.js';
 import { Signifier } from './signifiers.js';
 import { getTypeOfKind } from './types.checks.js';
@@ -38,10 +39,13 @@ export class Code {
   /** Ranges representing function call arguments,
    * in order of appearance. Useful for signature help. */
   protected _functionArgRanges: FunctionArgRange[] = [];
+  /** Ranges representing locations where new struct
+   * members could be added. Useful for autocomplete. */
+  protected _structNewMemberRanges: StructNewMemberRange[] = [];
   /** List of function calls, where each root item is a list
    * of argument ranges for that call. Useful for diagnostics.*/
   protected _functionCalls: FunctionArgRange[][] = [];
-  protected _refsAreSorted = false;
+  protected _rangesAreSorted = false;
   content!: string;
   protected _parsed!: GmlParsed;
 
@@ -165,6 +169,25 @@ export class Code {
     return match;
   }
 
+  getStructNewMemberRangeAt(
+    offset: number | LinePosition,
+    column?: number,
+  ): StructNewMemberRange | undefined {
+    if (typeof offset === 'number' && typeof column === 'number') {
+      offset = { line: offset, column };
+    }
+    const ranges = this.structNewMemberRanges;
+    for (let i = 0; i < ranges.length; i++) {
+      const range = ranges[i];
+      if (this.isInRange(range, offset)) {
+        return range;
+      } else if (this.isBeforeRange(range, offset)) {
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
   getScopeRangeAt(
     offset: number | LinePosition,
     column?: number,
@@ -227,19 +250,18 @@ export class Code {
   }
 
   get refs() {
-    if (!this._refsAreSorted) {
-      this.sortRefs();
-      this._refsAreSorted = true;
-    }
+    this.sortRanges();
     return [...this._refs];
   }
 
   get functionArgRanges() {
-    if (!this._refsAreSorted) {
-      this.sortRefs();
-      this._refsAreSorted = true;
-    }
+    this.sortRanges();
     return [...this._functionArgRanges];
+  }
+
+  get structNewMemberRanges() {
+    this.sortRanges();
+    return [...this._structNewMemberRanges];
   }
 
   get name() {
@@ -313,6 +335,10 @@ export class Code {
     this._refs.push(ref);
   }
 
+  addStructNewMemberRange(range: StructNewMemberRange) {
+    this._structNewMemberRanges.push(range);
+  }
+
   addFunctionArgRange(range: FunctionArgRange) {
     this._functionArgRanges.push(range);
   }
@@ -321,7 +347,8 @@ export class Code {
     this._functionCalls.push(call);
   }
 
-  sortRefs() {
+  protected sortRanges() {
+    if (this._rangesAreSorted) return;
     interface Offset {
       start: { offset: number };
     }
@@ -333,6 +360,8 @@ export class Code {
     };
     this._refs.sort(sorter);
     this._functionArgRanges.sort(sorter);
+    this._structNewMemberRanges.sort(sorter);
+    this._rangesAreSorted = true;
   }
 
   protected initializeScopeRanges() {
@@ -374,8 +403,9 @@ export class Code {
     // Reset this file's refs list
     this._refs = [];
     this._functionArgRanges = [];
+    this._structNewMemberRanges = [];
     this._functionCalls = [];
-    this._refsAreSorted = false;
+    this._rangesAreSorted = false;
   }
 
   onRemove() {

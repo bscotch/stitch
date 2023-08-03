@@ -1,7 +1,7 @@
 import { GameMakerFolder } from 'tree.folder.mjs';
 import vscode from 'vscode';
 import { swallowThrown } from './assert.mjs';
-import { completionTriggerCharacters } from './extension.completions.mjs';
+import { StitchCompletionProvider } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
 import {
   createCopyAsJsdocSelfCallback,
@@ -86,11 +86,7 @@ export async function activateStitchExtension(
     definitionsProvider.register(),
     GameMakerHoverProvider.register(provider),
     StitchWorkspaceSymbolProvider.register(provider),
-    vscode.languages.registerCompletionItemProvider(
-      'gml',
-      provider,
-      ...completionTriggerCharacters,
-    ),
+    StitchCompletionProvider.register(provider),
     vscode.languages.registerSignatureHelpProvider('gml', provider, '(', ','),
     vscode.languages.registerDocumentFormattingEditProvider(
       'yy',

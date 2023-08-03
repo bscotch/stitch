@@ -163,6 +163,18 @@ export class FunctionArgRange extends Range {
   }
 }
 
+export class StructNewMemberRange extends Range {
+  override $tag = 'NewMemberRange';
+  constructor(
+    /** The function reference this call belongs to */
+    readonly type: StructType,
+    start: Position,
+    end?: Position,
+  ) {
+    super(start, end);
+  }
+}
+
 export const enum ScopeFlag {
   DotAccessor = 1 << 0,
 }

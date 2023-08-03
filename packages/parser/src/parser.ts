@@ -87,12 +87,18 @@ export function stringLiteralAsString(
     .join('')}${end}`;
 }
 
-function sortItokenRecords(records: Record<string, IToken[]>): IToken[] {
-  const sorted: IToken[] = [];
+function getStartOffset(node: CstNode | IToken): number {
+  return 'startOffset' in node ? node.startOffset : node.location!.startOffset;
+}
+
+export function sortChildren(
+  records: Record<string, (IToken | CstNode)[]>,
+): (IToken | CstNode)[] {
+  const sorted: (IToken | CstNode)[] = [];
   for (const key of keysOf(records)) {
     sorted.push(...records[key]);
   }
-  sorted.sort((a, b) => a.startOffset - b.startOffset);
+  sorted.sort((a, b) => getStartOffset(a) - getStartOffset(b));
   return sorted;
 }
 

@@ -4,10 +4,58 @@ import {
   Signifier,
   primitiveNames,
 } from '@bscotch/gml-parser';
-import vscode from 'vscode';
+import vscode, { CancellationToken, CompletionContext } from 'vscode';
 import { config } from './extension.config.mjs';
+import type { StitchProvider } from './extension.provider.mjs';
 
 export const completionTriggerCharacters = ['.', '{', '<', '|'] as const;
+
+export class StitchCompletionProvider implements vscode.CompletionItemProvider {
+  constructor(readonly provider: StitchProvider) {}
+
+  async provideCompletionItems(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token: CancellationToken,
+    context: CompletionContext,
+  ): Promise<vscode.CompletionItem[] | undefined> {
+    // If we're already processing this file, wait for it to finish so that we get up-to-date completions.
+    await this.provider.processingFiles.get(document.uri.fsPath);
+    const gmlFile = this.provider.getGmlFile(document);
+    const offset = document.offsetAt(position);
+    if (!gmlFile) {
+      return undefined;
+    }
+    // Are we inside a JSDoc comment?
+    const jsdoc = gmlFile.getJsdocAt(offset);
+    if (jsdoc && context.triggerCharacter === '.') {
+      // Then abort!
+      return;
+    } else if (jsdoc) {
+      return jsdocCompletions(document, position, gmlFile, jsdoc);
+    } else if (context.triggerCharacter === '.' || !context.triggerCharacter) {
+      // Are we in a StructNewMember range?
+      const inStruct = gmlFile.getStructNewMemberRangeAt(offset);
+      if (inStruct) {
+        return inScopeSymbolsToCompletions(
+          document,
+          inStruct.type.listMembers(),
+        );
+      }
+      const items = gmlFile.getInScopeSymbolsAt(offset);
+      return inScopeSymbolsToCompletions(document, items);
+    }
+    return undefined;
+  }
+
+  static register(provider: StitchProvider) {
+    return vscode.languages.registerCompletionItemProvider(
+      { language: 'gml', scheme: 'file' },
+      new StitchCompletionProvider(provider),
+      ...completionTriggerCharacters,
+    );
+  }
+}
 
 export function jsdocCompletions(
   document: vscode.TextDocument,
