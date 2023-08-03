@@ -98,9 +98,9 @@ export class Signifier extends Flags {
 
   setType(newType: Type | TypeStore | (TypeStore | Type)[]): this {
     this.type.type = getTypes(newType);
-    if (newType instanceof Type) {
-      newType.signifier = this;
-    }
+    // if (newType instanceof Type) {
+    //   newType.signifier = this;
+    // }
     return this;
   }
 

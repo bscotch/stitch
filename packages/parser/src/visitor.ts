@@ -821,8 +821,8 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         ? (ctx.docs?.type[0] as StructType)
         : undefined;
     const struct =
-      structFromDocs ||
       ctx.signifier?.getTypeByKind('Struct') ||
+      structFromDocs ||
       this.PROCESSOR.createStruct(children.StartBrace[0], children.EndBrace[0]);
     ctx.signifier?.setType(struct);
     ctx.signifier = undefined;
@@ -858,6 +858,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       }
     }
 
+    // Manage the struct members
     // The self-scope remains unchanged for struct literals!
     for (const entry of children.structLiteralEntry || []) {
       const parts = entry.children;
@@ -880,9 +881,18 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         );
       }
       // Ensure the member exists
-      const signifier = struct.addMember(name)!.definedAt(range);
-      signifier.instance = true;
-      signifier.addRef(range, true);
+      const existingMember = struct.getMember(name);
+      let signifier: Signifier;
+      if (!existingMember) {
+        signifier = struct.addMember(name)!;
+        signifier.instance = true;
+      } else {
+        signifier = existingMember;
+      }
+      signifier.addRef(range, !signifier.def);
+      if (!signifier.def) {
+        signifier.definedAt(range);
+      }
 
       const assignedToFunction =
         parts.assignmentRightHandSide?.[0].children.functionExpression?.[0]
@@ -910,7 +920,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
             : this.ANY,
           this.PROCESSOR.project.types,
         );
-        if (docs) {
+        if (docs && !existingMember) {
           signifier.describe(docs.jsdoc.description);
           signifier.setType(docs.type);
           if (
