@@ -99,29 +99,49 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     options?: FindSignifierOptions,
   ): Signifier | undefined {
     const scope = this.PROCESSOR.fullScope;
-    let item: Signifier | undefined = scope.local.getMember(
+
+    // Find matches from all scopes, then return the first declared one.
+    // If none are declared, return the first found.
+    const matches = [
+      // Local scope
+      scope.local.getMember(
+        name,
+        false, // Locals should always search parents, since `catch` statements are the only thing that extend local scope
+      ),
+      // Self scope
+      scope.selfIsGlobal
+        ? undefined
+        : scope.self.getMember(name, options?.excludeParents),
+      // Global scope
+      options?.excludeGlobal
+        ? undefined
+        : this.FIND_GLOBAL_BY_NAME(name, options),
+    ].filter((i) => i !== undefined) as Signifier[];
+    return matches.find((i) => i.def) || matches[0];
+  }
+
+  protected FIND_GLOBAL_BY_NAME(
+    name: string,
+    options: FindSignifierOptions | undefined,
+  ) {
+    const scope = this.PROCESSOR.fullScope;
+    const item: Signifier | undefined = this.PROCESSOR.globalSelf.getMember(
       name,
-      false, // Locals should always search parents, since `catch` statements are the only thing that extend local scope
+      options?.excludeParents,
     );
-    if (!item && !scope.selfIsGlobal) {
-      item = scope.self.getMember(name, options?.excludeParents);
-    }
-    if (!item && !options?.excludeGlobal) {
-      item = this.PROCESSOR.globalSelf.getMember(name, options?.excludeParents);
-      // If the current scope is an instance allow for instance variables
-      // (but skip `id` since we're doing special things with that).
-      // Otherwise instance variables should be skipped.
-      const isInstance =
-        !scope.selfIsGlobal &&
-        (['Id.Instance', 'Asset.GMObject'].includes(scope.self.kind) ||
-          scope.self.signifier?.asset);
-      if (!isInstance && item?.instance) {
-        item = undefined;
-      } else if (isInstance && item?.instance && name === 'id') {
-        // Then this is a native "instance" variable. Ignore it
-        // to allow falling back on the self scope.
-        item = undefined;
-      }
+    // If the current scope is an instance allow for instance variables
+    // (but skip `id` since we're doing special things with that).
+    // Otherwise instance variables should be skipped.
+    const isInstance =
+      !scope.selfIsGlobal &&
+      (['Id.Instance', 'Asset.GMObject'].includes(scope.self.kind) ||
+        scope.self.signifier?.asset);
+    if (!isInstance && item?.instance) {
+      return undefined;
+    } else if (isInstance && item?.instance && name === 'id') {
+      // Then this is a native "instance" variable. Ignore it
+      // to allow falling back on the self scope.
+      return undefined;
     }
     return item;
   }

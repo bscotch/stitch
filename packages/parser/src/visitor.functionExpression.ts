@@ -264,7 +264,7 @@ export function visitFunctionExpression(
     }
   }
 
-  // TODO: Remove any excess parameters, e.g. if we're updating a
+  // Remove any excess parameters, e.g. if we're updating a
   // prior definition. This is tricky since we may need to do something
   // about references to legacy params.
   functionType.truncateParameters(totalParams);
