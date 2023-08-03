@@ -257,10 +257,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     const name =
       typeof nameOrParam === 'string' ? nameOrParam : nameOrParam.name;
     const existing = this.getParameter(name);
-    assert(
-      !existing || typeof nameOrParam === 'string' || nameOrParam === existing,
-      `Cannot replace existing param with a new one by the same name`,
-    );
 
     const param = existing || new Signifier(this, name);
     if (this._params?.[idx] && this._params[idx] !== param) {

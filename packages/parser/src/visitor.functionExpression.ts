@@ -187,7 +187,7 @@ export function visitFunctionExpression(
       : undefined;
 
     const paramSignifier =
-      functionType.getParameter(name) || functionType.local.getMember(name);
+      functionType.local.getMember(name) || functionType.getParameter(name);
     const param = functionType
       .addParameter(i, paramSignifier || name)
       .definedAt(range);
@@ -225,12 +225,13 @@ export function visitFunctionExpression(
     if (!localVar) {
       functionType.local.addMember(param);
     } else if (localVar !== param) {
-      this.PROCESSOR.addDiagnostic(
-        'INVALID_OPERATION',
-        range,
-        `Parameter ${param.name} already defined in local scope`,
-        'warning',
-      );
+      // NOTE: Something needs to be done here, but this behaves weirdly
+      // this.PROCESSOR.addDiagnostic(
+      //   'INVALID_OPERATION',
+      //   range,
+      //   `Parameter ${param.name} already defined in local scope`,
+      //   'warning',
+      // );
     }
     totalParams++;
   }
