@@ -29,6 +29,15 @@ export class SignifierProcessor {
   public scope: Scope;
   readonly position: Position;
   public unusedJsdoc: Docs | undefined;
+  /**
+   * For the current node, the "definitive" self. This is the
+   * self that is used definitionally, e.g. a constructor's self
+   * or a Create event's self. This is only set when we are inside
+   * a "definitive" location for the self, so that we can use this
+   * value to determine if currentSelf is also the definitiveSelf,
+   * or if we are accessing that self externally to where it is defined.
+   */
+  protected readonly definitiveSelfStack: (StructType | undefined)[] = [];
 
   constructor(readonly file: Code) {
     this.scope = file.scopes[0];
@@ -39,6 +48,7 @@ export class SignifierProcessor {
     this.localScopeStack.push(this.scope.local);
     this.selfStack.push(this.scope.self);
     this.position = this.scope.start;
+    this.definitiveSelfStack.push(this.file.definitiveSelf);
   }
 
   consumeJsdoc() {
@@ -97,6 +107,10 @@ export class SignifierProcessor {
 
   get currentSelf() {
     return this.selfStack.at(-1) || this.project.self;
+  }
+
+  get currentDefinitiveSelf() {
+    return this.definitiveSelfStack.at(-1);
   }
 
   get outerSelf() {
@@ -188,5 +202,13 @@ export class SignifierProcessor {
     this.selfStack.pop();
     this.nextScope(nextScopeToken, nextScopeStartsFromTokenEnd).self =
       this.currentSelf;
+  }
+
+  pushDefinitiveSelf(self: StructType | undefined) {
+    this.definitiveSelfStack.push(self);
+  }
+
+  popDefinitiveSelf() {
+    this.definitiveSelfStack.pop();
   }
 }

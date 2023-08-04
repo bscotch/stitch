@@ -62,6 +62,10 @@ export class Position implements IPosition {
     return Position.fromCstEnd(this.file, loc);
   }
 
+  equals(other: Position) {
+    return Position.equals(this, other);
+  }
+
   static from(
     file: Code,
     loc: CstNodeLocation | Position | IPosition,
@@ -99,6 +103,14 @@ export class Position implements IPosition {
       location.endColumn ?? firstColumnIndex,
     );
   }
+
+  static equals(a: Position, b: Position) {
+    return a.file === b.file && a.offset === b.offset;
+  }
+}
+
+export function isRange(value: unknown): value is Range {
+  return value instanceof Range;
 }
 
 export class Range implements IRange {
@@ -136,6 +148,10 @@ export class Range implements IRange {
       Position.fromCstStart(fileName, location),
       Position.fromCstEnd(fileName, location),
     );
+  }
+
+  static equals(a: Range, b: Range) {
+    return Position.equals(a.start, b.start) && Position.equals(a.end, b.end);
   }
 }
 

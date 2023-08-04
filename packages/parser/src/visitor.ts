@@ -561,16 +561,19 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const range = this.PROCESSOR.range(children.Identifier[0]);
     let ref: Reference | undefined = undefined;
 
+    const fullScope = this.PROCESSOR.fullScope;
+    // Add to the self-scope unless it's a static inside a non-constructor function, and if that scope is not global.
+    const outerFunction = fullScope.self.signifier?.getTypeByKind('Function');
+    const addTo =
+      isStatic && !outerFunction?.isConstructor
+        ? fullScope.local
+        : fullScope.self;
+    // Are we in the definitiveSelf?
+    const inDefinitiveSelf = addTo === this.PROCESSOR.currentDefinitiveSelf;
+
     let wasUndeclared = false;
     if (!signifier) {
       wasUndeclared = true;
-      const fullScope = this.PROCESSOR.fullScope;
-      // Add to the self-scope unless it's a static inside a non-constructor function, and if that scope is not global.
-      const outerFunction = fullScope.self.signifier?.getTypeByKind('Function');
-      const addTo =
-        isStatic && !outerFunction?.isConstructor
-          ? fullScope.local
-          : fullScope.self;
 
       if (addTo !== fullScope.global) {
         // Then we can add a new member
