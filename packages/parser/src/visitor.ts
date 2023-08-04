@@ -274,10 +274,21 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     if (!signifier) {
       signifier = new Signifier(container, jsdoc.name!.content);
       container.addMember(signifier);
+      if (container === this.PROCESSOR.currentDefinitiveSelf) {
+        signifier.definitive = true;
+      }
+      signifier.addRef(nameRange, true);
+    } else {
+      const ref = signifier.addRef(nameRange);
+      ensureDefinitive(
+        container as WithableType,
+        this.PROCESSOR.currentDefinitiveSelf,
+        signifier,
+        ref,
+      );
     }
     signifier.describe(jsdoc.description);
     signifier.setType(info.type);
-    signifier.addRef(nameRange, true);
     signifier.definedAt(nameRange);
     if (jsdoc.kind === 'localvar') {
       signifier.local = true;
@@ -583,6 +594,9 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           if (isStatic) {
             signifier.static = true;
           }
+          if (inDefinitiveSelf) {
+            signifier.definitive = true;
+          }
           ref = signifier.addRef(range, true);
           signifier.instance = true;
         } else {
@@ -610,6 +624,14 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
         signifier.definedAt(range);
         ref.isDef = true;
       }
+      // If this variable comes from a non-definitive declaration,
+      // and *would* be definitive here, then we need to update it.
+      ensureDefinitive(
+        addTo as WithableType,
+        this.PROCESSOR.currentDefinitiveSelf,
+        signifier,
+        ref,
+      );
     }
 
     // If we don't have any type on this signifier yet, use the
@@ -657,6 +679,136 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       };
     }
     return;
+  }
+
+  override structLiteral(
+    children: StructLiteralCstChildren,
+    ctx: VisitorContext,
+  ): Type<'Struct'> {
+    // We may already have a struct type attached to a signfier,
+    // which should be updated instead of replaced.
+    const structFromDocs =
+      ctx.docs?.type[0]?.kind === 'Struct'
+        ? (ctx.docs?.type[0] as StructType)
+        : undefined;
+    const struct =
+      ctx.signifier?.getTypeByKind('Struct') ||
+      structFromDocs ||
+      this.PROCESSOR.createStruct(children.StartBrace[0], children.EndBrace[0]);
+    ctx.signifier?.setType(struct);
+    ctx.signifier = undefined;
+    ctx.docs = undefined;
+
+    // TODO
+    // // If we are creating a struct literal to match a doc-described
+    // // struct, we should *extend* that underlying struct so we don't
+    // // mutate the parent (and so we can differientiate between)
+    // if (structFromDocs) {
+    //   struct = structFromDocs.derive();
+    // }
+
+    // Create the newMember ranges, to help with autocompletes
+    const sortedParts = sortChildren(children);
+    let nextRange: StructNewMemberRange | undefined;
+    for (let i = 0; i < sortedParts.length; i++) {
+      const part = sortedParts[i];
+      const isStart = 'image' in part && [',', '{'].includes(part.image);
+      if (isStart) {
+        // Then we're starting a range!
+        const startPosition = Position.fromCstEnd(this.PROCESSOR.file, part);
+        // Loop through the next parts until we find
+        nextRange = new StructNewMemberRange(struct, startPosition);
+      } else if (nextRange) {
+        const endPosition = Position.fromCstStart(
+          this.PROCESSOR.file,
+          'image' in part ? part : part.location!,
+        );
+        nextRange.end = endPosition;
+        this.PROCESSOR.file.addStructNewMemberRange(nextRange);
+        nextRange = undefined;
+      }
+    }
+
+    // Manage the struct members
+    // The self-scope remains unchanged for struct literals!
+    for (const entry of children.structLiteralEntry || []) {
+      const parts = entry.children;
+      // Visit the JSDocs, if there are any
+      if (parts.jsdoc) {
+        this.visit(parts.jsdoc, ctx);
+      }
+      const docs = this.PROCESSOR.consumeJsdoc();
+      // The name is either a direct variable name or a string literal.
+      let name: string;
+      let range: Range;
+      if (parts.Identifier) {
+        name = parts.Identifier[0].image;
+        range = this.PROCESSOR.range(parts.Identifier[0]);
+      } else {
+        name = stringLiteralAsString(parts.stringLiteral![0].children);
+        range = this.PROCESSOR.range(
+          parts.stringLiteral![0].children.StringStart[0],
+          parts.stringLiteral![0].children.StringEnd[0],
+        );
+      }
+      // Ensure the member exists
+      const existingMember = struct.getMember(name);
+      let signifier: Signifier;
+      if (!existingMember) {
+        signifier = struct.addMember(name)!;
+        signifier.instance = true;
+      } else {
+        signifier = existingMember;
+      }
+      signifier.addRef(range, !signifier.def);
+      if (!signifier.def) {
+        signifier.definedAt(range);
+      }
+
+      const assignedToFunction =
+        parts.assignmentRightHandSide?.[0].children.functionExpression?.[0]
+          .children;
+      const assignedToStructLiteral =
+        !assignedToFunction &&
+        parts.assignmentRightHandSide?.[0].children.structLiteral?.[0].children;
+
+      if (assignedToFunction || assignedToStructLiteral) {
+        ctx.signifier = signifier;
+        ctx.docs = docs;
+        if (assignedToFunction) {
+          ctx.self = struct;
+          this.functionExpression(assignedToFunction, ctx);
+        } else if (assignedToStructLiteral) {
+          this.structLiteral(assignedToStructLiteral, ctx);
+        }
+      } else {
+        const inferredType = normalizeType(
+          parts.assignmentRightHandSide
+            ? this.assignmentRightHandSide(
+                parts.assignmentRightHandSide[0].children,
+                withCtxKind(ctx, 'assignment'),
+              )
+            : this.ANY,
+          this.PROCESSOR.project.types,
+        );
+        if (docs && !existingMember) {
+          signifier.describe(docs.jsdoc.description);
+          signifier.setType(docs.type);
+          if (
+            docs.jsdoc.kind === 'type' &&
+            docs.jsdoc.type &&
+            docs.type[0].signifier
+          ) {
+            docs.type[0].signifier.addRef(
+              Range.from(this.PROCESSOR.file, docs.jsdoc.type),
+            );
+          }
+        } else if (inferredType) {
+          signifier.setType(inferredType);
+        }
+      }
+    }
+    return struct;
   }
 
   /**
@@ -813,135 +965,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     return this.expression(children.expression[0].children, context);
   }
 
-  override structLiteral(
-    children: StructLiteralCstChildren,
-    ctx: VisitorContext,
-  ): Type<'Struct'> {
-    // We may already have a struct type attached to a signfier,
-    // which should be updated instead of replaced.
-    const structFromDocs =
-      ctx.docs?.type[0]?.kind === 'Struct'
-        ? (ctx.docs?.type[0] as StructType)
-        : undefined;
-    const struct =
-      ctx.signifier?.getTypeByKind('Struct') ||
-      structFromDocs ||
-      this.PROCESSOR.createStruct(children.StartBrace[0], children.EndBrace[0]);
-    ctx.signifier?.setType(struct);
-    ctx.signifier = undefined;
-    ctx.docs = undefined;
-
-    // TODO
-    // // If we are creating a struct literal to match a doc-described
-    // // struct, we should *extend* that underlying struct so we don't
-    // // mutate the parent (and so we can differientiate between)
-    // if (structFromDocs) {
-    //   struct = structFromDocs.derive();
-    // }
-
-    // Create the newMember ranges, to help with autocompletes
-    const sortedParts = sortChildren(children);
-    let nextRange: StructNewMemberRange | undefined;
-    for (let i = 0; i < sortedParts.length; i++) {
-      const part = sortedParts[i];
-      const isStart = 'image' in part && [',', '{'].includes(part.image);
-      if (isStart) {
-        // Then we're starting a range!
-        const startPosition = Position.fromCstEnd(this.PROCESSOR.file, part);
-        // Loop through the next parts until we find
-        nextRange = new StructNewMemberRange(struct, startPosition);
-      } else if (nextRange) {
-        const endPosition = Position.fromCstStart(
-          this.PROCESSOR.file,
-          'image' in part ? part : part.location!,
-        );
-        nextRange.end = endPosition;
-        this.PROCESSOR.file.addStructNewMemberRange(nextRange);
-        nextRange = undefined;
-      }
-    }
-
-    // Manage the struct members
-    // The self-scope remains unchanged for struct literals!
-    for (const entry of children.structLiteralEntry || []) {
-      const parts = entry.children;
-      // Visit the JSDocs, if there are any
-      if (parts.jsdoc) {
-        this.visit(parts.jsdoc, ctx);
-      }
-      const docs = this.PROCESSOR.consumeJsdoc();
-      // The name is either a direct variable name or a string literal.
-      let name: string;
-      let range: Range;
-      if (parts.Identifier) {
-        name = parts.Identifier[0].image;
-        range = this.PROCESSOR.range(parts.Identifier[0]);
-      } else {
-        name = stringLiteralAsString(parts.stringLiteral![0].children);
-        range = this.PROCESSOR.range(
-          parts.stringLiteral![0].children.StringStart[0],
-          parts.stringLiteral![0].children.StringEnd[0],
-        );
-      }
-      // Ensure the member exists
-      const existingMember = struct.getMember(name);
-      let signifier: Signifier;
-      if (!existingMember) {
-        signifier = struct.addMember(name)!;
-        signifier.instance = true;
-      } else {
-        signifier = existingMember;
-      }
-      signifier.addRef(range, !signifier.def);
-      if (!signifier.def) {
-        signifier.definedAt(range);
-      }
-
-      const assignedToFunction =
-        parts.assignmentRightHandSide?.[0].children.functionExpression?.[0]
-          .children;
-      const assignedToStructLiteral =
-        !assignedToFunction &&
-        parts.assignmentRightHandSide?.[0].children.structLiteral?.[0].children;
-
-      if (assignedToFunction || assignedToStructLiteral) {
-        ctx.signifier = signifier;
-        ctx.docs = docs;
-        if (assignedToFunction) {
-          ctx.self = struct;
-          this.functionExpression(assignedToFunction, ctx);
-        } else if (assignedToStructLiteral) {
-          this.structLiteral(assignedToStructLiteral, ctx);
-        }
-      } else {
-        const inferredType = normalizeType(
-          parts.assignmentRightHandSide
-            ? this.assignmentRightHandSide(
-                parts.assignmentRightHandSide[0].children,
-                withCtxKind(ctx, 'assignment'),
-              )
-            : this.ANY,
-          this.PROCESSOR.project.types,
-        );
-        if (docs && !existingMember) {
-          signifier.describe(docs.jsdoc.description);
-          signifier.setType(docs.type);
-          if (
-            docs.jsdoc.kind === 'type' &&
-            docs.jsdoc.type &&
-            docs.type[0].signifier
-          ) {
-            docs.type[0].signifier.addRef(
-              Range.from(this.PROCESSOR.file, docs.jsdoc.type),
-            );
-          }
-        } else if (inferredType) {
-          signifier.setType(inferredType);
-        }
-      }
-    }
-    return struct;
-  }
   override stringLiteral(
     children: StringLiteralCstChildren,
     context: VisitorContext,
@@ -1001,4 +1024,27 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   }
 
   //#endregion
+}
+
+function ensureDefinitive(
+  self: WithableType,
+  currentDefinitiveSelf: WithableType | undefined,
+  member: Signifier,
+  ref: Reference,
+) {
+  if (!currentDefinitiveSelf) return;
+  // If this variable comes from a non-definitive declaration,
+  // and *would* be definitive here, then we need to update it.
+  const inDefinitiveSelf = currentDefinitiveSelf === self;
+  const isSelfOwned = self.getMember(member.name, true) === member;
+  if (isSelfOwned && !member.definitive && inDefinitiveSelf) {
+    member.definitive = true;
+    // Ensure the definition is HERE
+    member.unsetDef();
+    member.definedAt(ref);
+    for (const otherRef of member.refs) {
+      otherRef.isDef = false; // Unset all other definitions
+    }
+    ref.isDef = true;
+  }
 }

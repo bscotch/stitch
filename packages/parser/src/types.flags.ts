@@ -12,11 +12,12 @@ export const enum Flag {
   Asset = 1 << 10, // Is an asset
   Mixin = 1 << 11, // Is a mixin
   Override = 1 << 12, // Is an override for a parent variable
+  Definitive = 1 << 13, // Is a definitive variable (defined in a definitiveSelf, such as a constructor or Create event)
   ReadWrite = Readable | Writable,
 }
 
 export class Flags {
-  flags: Flag = Flag.ReadWrite;
+  protected flags: Flag = Flag.ReadWrite;
 
   protected setFlag(flag: Flag, value: boolean) {
     if (value) {
@@ -31,6 +32,13 @@ export class Flags {
   }
   set override(override: boolean) {
     this.setFlag(Flag.Override, override);
+  }
+
+  get definitive() {
+    return !!(this.flags & Flag.Definitive);
+  }
+  set definitive(definitive: boolean) {
+    this.setFlag(Flag.Definitive, definitive);
   }
 
   get asset() {
