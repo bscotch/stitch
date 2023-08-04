@@ -157,8 +157,11 @@ export function visitFunctionExpression(
     true,
   );
 
-  // TODO: Handle constructor inheritance. The `constructs` type should
-  // be based off of the parent.
+  // Handle definitiveScope -- if this is a constructor or mixin,
+  // we want to push a new definitiveScope.
+  this.PROCESSOR.pushDefinitiveSelf(
+    isConstructor || isMixin ? (functionType.self as StructType) : undefined,
+  );
 
   // Add function signature components. Must take into account that we may
   // be updating after an edit.
@@ -271,6 +274,9 @@ export function visitFunctionExpression(
 
   // Process the function body
   this.visit(children.blockStatement, withCtxKind(ctx, 'functionBody'));
+
+  // Pop the definitiveScope
+  this.PROCESSOR.popDefinitiveSelf();
 
   // Update the RETURN type based on the return statements found in the body
   if (docs?.type[0]?.returns) {

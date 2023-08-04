@@ -1,5 +1,5 @@
 import type { Pathy } from '@bscotch/pathy';
-import { JsdocSummary } from './jsdoc.js';
+import type { JsdocSummary } from './jsdoc.js';
 import { logger } from './logger.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
@@ -20,9 +20,9 @@ import {
   Scope,
   StructNewMemberRange,
 } from './project.location.js';
-import { Signifier } from './signifiers.js';
+import type { Signifier } from './signifiers.js';
 import { getTypeOfKind } from './types.checks.js';
-import { Type } from './types.js';
+import { Type, type StructType } from './types.js';
 import { assert, isBeforeRange, isInRange } from './util.js';
 import { registerGlobals } from './visitor.globals.js';
 import { registerSignifiers } from './visitor.js';
@@ -55,6 +55,18 @@ export class Code {
 
   constructor(readonly asset: Asset, readonly path: Pathy<string>) {
     this.clearAllDiagnostics();
+  }
+
+  /**
+   * If this is the Create event for an object, that object's
+   * variables. Else undefined. Used for determining the initial
+   * "definitive self" during code processing.
+   */
+  get definitiveSelf(): StructType | undefined {
+    if (this.isCreateEvent) {
+      return this.asset.variables;
+    }
+    return;
   }
 
   /** When set to `true`, this file will be flagged for reprocessing. */
@@ -365,7 +377,7 @@ export class Code {
   }
 
   protected initializeScopeRanges() {
-    const self = this.asset.instanceType || this.project.self;
+    const self = this.asset.variables || this.project.self;
     // Re-use the root local scope if it exists
     const local = this.scopes[0]?.local || new Type('Struct');
     this.scopes.length = 0;
