@@ -30,6 +30,45 @@ export interface File extends BaseNode {
   body: Array<Statement>;
 }
 
+export type FunctionNode =
+  | FunctionStatement
+  | FunctionExpression
+  | ConstructorStatement;
+
+export interface BaseFunction extends BaseNode {
+  params: (Identifier | Assignment)[];
+  body: BlockStatement;
+}
+
+export interface FunctionStatement extends BaseFunction, BaseDeclaration {
+  type: 'FunctionStatement';
+  id: Identifier;
+}
+
+export interface FunctionExpression extends BaseFunction, BaseExpression {
+  type: 'FunctionExpression';
+  id?: Identifier;
+}
+
+export interface ConstructorStatement extends BaseFunction, BaseExpression {
+  type: 'ConstructorStatement';
+  id: Identifier;
+  extends?: ConstructorParent;
+}
+
+export interface ConstructorParent extends BaseNode {
+  type: 'ConstructorParent';
+  id: Identifier;
+  arguments: Expression[];
+}
+
+export interface Assignment extends BasePattern {
+  type: 'Assignment';
+  operator: AssignmentOperator;
+  left: Identifier;
+  right: Expression;
+}
+
 export interface EnumStatement extends BaseNode {
   type: 'EnumStatement';
   id: Identifier;
@@ -82,6 +121,7 @@ export interface BooleanLiteral extends LiteralBase {
 ////////////
 
 export interface NodeMap {
+  Statement: Statement;
   AssignmentProperty: AssignmentProperty;
   CatchClause: CatchClause;
   Class: Class;
@@ -98,7 +138,6 @@ export interface NodeMap {
   Program: File;
   Property: Property;
   PropertyDefinition: PropertyDefinition;
-  Statement: Statement;
   Super: Super;
   SwitchCase: SwitchCase;
   TemplateElement: TemplateElement;
@@ -112,18 +151,9 @@ export interface Comment extends BaseNodeWithoutComments {
   value: string;
 }
 
-export interface BaseFunction extends BaseNode {
-  params: Pattern[];
-  generator?: boolean | undefined;
-  // The body is either BlockStatement or Expression because arrow functions
-  // can have a body that's either. FunctionDeclarations and
-  // FunctionExpressions have only BlockStatement bodies.
-  body: BlockStatement | Expression;
-}
-
-export type FunctionNode = FunctionDeclaration | FunctionExpression;
-
 export type Statement =
+  | FunctionStatement
+  | ConstructorStatement
   | EnumStatement
   | ExpressionStatement
   | BlockStatement
@@ -254,18 +284,11 @@ export interface DebuggerStatement extends BaseStatement {
 }
 
 export type Declaration =
-  | FunctionDeclaration
+  | FunctionStatement
   | VariableDeclaration
   | ClassDeclaration;
 
 export interface BaseDeclaration extends BaseStatement {}
-
-export interface FunctionDeclaration extends BaseFunction, BaseDeclaration {
-  type: 'FunctionDeclaration';
-  /** It is null when a function declaration is a part of the `export default function` statement */
-  id: Identifier | null;
-  body: BlockStatement;
-}
 
 export interface VariableDeclaration extends BaseDeclaration {
   type: 'VariableDeclaration';
@@ -299,7 +322,6 @@ export interface ExpressionMap {
   TemplateLiteral: TemplateLiteral;
   ThisExpression: ThisExpression;
   UnaryExpression: UnaryExpression;
-  UpdateExpression: UpdateExpression;
 }
 
 export type Expression = ExpressionMap[keyof ExpressionMap];
@@ -350,12 +372,6 @@ export interface PropertyDefinition extends BaseNode {
   static: boolean;
 }
 
-export interface FunctionExpression extends BaseFunction, BaseExpression {
-  id?: Identifier | null | undefined;
-  type: 'FunctionExpression';
-  body: BlockStatement;
-}
-
 export interface SequenceExpression extends BaseExpression {
   type: 'SequenceExpression';
   expressions: Expression[];
@@ -380,13 +396,6 @@ export interface AssignmentExpression extends BaseExpression {
   operator: AssignmentOperator;
   left: Pattern | MemberExpression;
   right: Expression;
-}
-
-export interface UpdateExpression extends BaseExpression {
-  type: 'UpdateExpression';
-  operator: UpdateOperator;
-  argument: Expression;
-  prefix: boolean;
 }
 
 export interface LogicalExpression extends BaseExpression {
@@ -447,60 +456,13 @@ export interface CatchClause extends BaseNode {
   body: BlockStatement;
 }
 
-export type UnaryOperator =
-  | '-'
-  | '+'
-  | '!'
-  | '~'
-  | 'typeof'
-  | 'void'
-  | 'delete';
+export type UnaryOperator = string & { __unaryOperator: never };
 
-export type BinaryOperator =
-  | '=='
-  | '!='
-  | '==='
-  | '!=='
-  | '<'
-  | '<='
-  | '>'
-  | '>='
-  | '<<'
-  | '>>'
-  | '>>>'
-  | '+'
-  | '-'
-  | '*'
-  | '/'
-  | '%'
-  | '**'
-  | '|'
-  | '^'
-  | '&'
-  | 'in'
-  | 'instanceof';
+export type BinaryOperator = string & { __binaryOperator: never };
 
-export type LogicalOperator = '||' | '&&' | '??';
+export type LogicalOperator = string & { __logicalOperator: never };
 
-export type AssignmentOperator =
-  | '='
-  | '+='
-  | '-='
-  | '*='
-  | '/='
-  | '%='
-  | '**='
-  | '<<='
-  | '>>='
-  | '>>>='
-  | '|='
-  | '^='
-  | '&='
-  | '||='
-  | '&&='
-  | '??=';
-
-export type UpdateOperator = '++' | '--';
+export type AssignmentOperator = string & { __assignmentOperator: never };
 
 export interface ForOfStatement extends BaseForXStatement {
   type: 'ForOfStatement';

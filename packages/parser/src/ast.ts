@@ -1,16 +1,25 @@
 import { CstNode, IToken } from 'chevrotain';
 import type {
+  BlockStatementCstChildren,
   EnumMemberCstChildren,
   EnumStatementCstChildren,
   FileCstChildren,
+  FunctionExpressionCstChildren,
+  FunctionStatementCstChildren,
   GmlVisitor,
   StatementCstChildren,
   StatementsCstChildren,
 } from '../gml-cst.js';
 import {
+  Assignment,
+  BlockStatement,
+  ConstructorParent,
+  ConstructorStatement,
   EnumMember,
   EnumStatement,
   File,
+  FunctionExpression,
+  FunctionStatement,
   Identifier,
   Node,
   RealLiteral,
@@ -136,8 +145,62 @@ export class GmlCstGenerator extends GmlCstVisitorBase {
         ...param,
         loc,
       });
+    } else if (children.functionStatement) {
+      const loc = this.locFromNode(children.functionStatement[0]);
+      return this.functionStatement(children.functionStatement[0].children, {
+        ...param,
+        loc,
+      });
     }
     return {} as Statement;
+  }
+
+  override functionExpression(
+    children: FunctionExpressionCstChildren,
+    param?: Context | undefined,
+  ): FunctionStatement | FunctionExpression | ConstructorStatement {
+    const isConstructor = !!children.constructorSuffix;
+    const id = this.normalizeIdentifier(children.Identifier, param);
+
+    const params: (Identifier | Assignment)[] = [];
+
+    let parent: ConstructorParent | undefined;
+    if (isConstructor) {
+      const parentIdentifier =
+        children.constructorSuffix![0]?.children?.Identifier;
+      parent = {
+        type: 'ConstructorParent',
+        id: this.normalizeIdentifier(parentIdentifier),
+        loc: this.locFromToken(parentIdentifier?.[0]),
+        arguments: [],
+      };
+    }
+    const base: FunctionStatement | FunctionExpression | ConstructorStatement =
+      {
+        type: isConstructor ? 'ConstructorStatement' : 'FunctionExpression',
+        id,
+        params,
+        extends: parent,
+        body: this.blockStatement(children.blockStatement[0].children, {
+          loc: this.locFromNode(children.blockStatement[0]),
+        }),
+      };
+    return base;
+  }
+
+  override blockStatement(
+    children: BlockStatementCstChildren,
+    param?: Context | undefined,
+  ): BlockStatement {
+    return {
+      type: 'BlockStatement',
+      loc: param?.loc,
+      body:
+        children.statement?.map((statement) => {
+          const loc = this.locFromNode(statement);
+          return this.statement(statement.children, { ...param, loc });
+        }) ?? [],
+    };
   }
 
   override enumStatement(
@@ -148,10 +211,11 @@ export class GmlCstGenerator extends GmlCstVisitorBase {
       type: 'EnumStatement',
       id: this.normalizeIdentifier(children.Identifier, param),
       loc: param?.loc,
-      body: children.enumMember?.map((member, idx) => {
-        const loc = this.locFromNode(member);
-        return this.enumMember(member.children, { ...param, idx, loc });
-      }),
+      body:
+        children.enumMember?.map((member, idx) => {
+          const loc = this.locFromNode(member);
+          return this.enumMember(member.children, { ...param, idx, loc });
+        }) || [],
     };
   }
 
@@ -183,5 +247,20 @@ export class GmlCstGenerator extends GmlCstVisitorBase {
       value,
       loc: param?.loc,
     };
+  }
+
+  override functionStatement(
+    children: FunctionStatementCstChildren,
+    param?: Context | undefined,
+  ): FunctionStatement | ConstructorStatement {
+    const func = this.functionExpression(
+      children.functionExpression[0].children,
+      param,
+    );
+    if (func.type === 'FunctionExpression') {
+      // @ts-expect-error
+      func.type = 'FunctionStatement';
+    }
+    return func as FunctionStatement | ConstructorStatement;
   }
 }

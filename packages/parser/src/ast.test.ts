@@ -7,6 +7,12 @@ enum my_enum {
   b,
   hello = 10
 }
+
+function my_function() {}
+
+function my_constructor(a, b=undefined) constructor {}
+
+function my_extended_constructor(): my_constructor (10,"nope", my_enum.hello) {}
 `;
 
 describe.only('GML AST', function () {
