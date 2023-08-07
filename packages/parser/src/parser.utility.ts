@@ -4,6 +4,7 @@ import type {
   AccessorSuffixesCstChildren,
   AccessorSuffixesCstNode,
   AssignmentRightHandSideCstChildren,
+  AssignmentRightHandSideCstNode,
   FunctionArgumentCstNode,
   FunctionArgumentsCstNode,
   IdentifierCstChildren,
@@ -12,24 +13,40 @@ import type {
   MultilineSingleStringLiteralCstChildren,
   StringLiteralCstChildren,
 } from '../gml-cst.js';
-import { ok } from './util.js';
+import { isArray, ok } from './util.js';
 
-export function functionFromRhs(
-  rhs: AssignmentRightHandSideCstChildren | undefined,
-) {
-  return rhs?.functionExpression?.[0].children;
+/** Right-hand side from the CST, normalized via `rhsFrom` */
+export type Rhs =
+  | AssignmentRightHandSideCstNode[]
+  | AssignmentRightHandSideCstNode
+  | AssignmentRightHandSideCstChildren
+  | undefined;
+
+export function rhsFrom(
+  item: Rhs,
+): AssignmentRightHandSideCstChildren | undefined {
+  if (item === undefined) {
+    return;
+  }
+  if (isArray(item)) {
+    return item[0]?.children;
+  }
+  if ('name' in item && item.name === 'assignmentRightHandSide') {
+    return item.children;
+  }
+  return item as AssignmentRightHandSideCstChildren;
 }
 
-export function structLiteralFromRhs(
-  rhs: AssignmentRightHandSideCstChildren | undefined,
-) {
-  return rhs?.structLiteral?.[0].children;
+export function functionFromRhs(rhs: Rhs) {
+  return rhsFrom(rhs)?.functionExpression?.[0].children;
 }
 
-export function arrayLiteralFromRhs(
-  rhs: AssignmentRightHandSideCstChildren | undefined,
-) {
-  return rhs?.expression?.[0].children.primaryExpression?.[0].children
+export function structLiteralFromRhs(rhs: Rhs) {
+  return rhsFrom(rhs)?.structLiteral?.[0].children;
+}
+
+export function arrayLiteralFromRhs(rhs: Rhs) {
+  return rhsFrom(rhs)?.expression?.[0].children.primaryExpression?.[0].children
     .arrayLiteral?.[0]?.children;
 }
 
