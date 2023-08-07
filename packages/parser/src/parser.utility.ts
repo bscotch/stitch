@@ -3,6 +3,8 @@ import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
 import type {
   AccessorSuffixesCstChildren,
   AccessorSuffixesCstNode,
+  AssignmentCstChildren,
+  AssignmentCstNode,
   AssignmentRightHandSideCstChildren,
   AssignmentRightHandSideCstNode,
   FunctionArgumentCstNode,
@@ -17,9 +19,12 @@ import { isArray, ok } from './util.js';
 
 /** Right-hand side from the CST, normalized via `rhsFrom` */
 export type Rhs =
+  | AssignmentCstNode[]
+  | AssignmentCstNode
   | AssignmentRightHandSideCstNode[]
   | AssignmentRightHandSideCstNode
   | AssignmentRightHandSideCstChildren
+  | AssignmentCstChildren
   | undefined;
 
 export function rhsFrom(
@@ -29,10 +34,20 @@ export function rhsFrom(
     return;
   }
   if (isArray(item)) {
-    return item[0]?.children;
+    return rhsFrom(item[0]?.children);
   }
-  if ('name' in item && item.name === 'assignmentRightHandSide') {
-    return item.children;
+  if ('name' in item) {
+    if (item.name === 'assignmentRightHandSide') {
+      return item.children;
+    } else if (item.name == 'assignment') {
+      return rhsFrom(item.children);
+    } else {
+      // Unexpected item type
+      return undefined;
+    }
+  }
+  if ('assignmentRightHandSide' in item) {
+    return item.assignmentRightHandSide[0].children;
   }
   return item as AssignmentRightHandSideCstChildren;
 }

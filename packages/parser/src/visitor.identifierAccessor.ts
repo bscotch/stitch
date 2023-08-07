@@ -5,6 +5,7 @@ import { withCtxKind, type VisitorContext } from './parser.js';
 import {
   identifierFrom,
   isEmpty,
+  rhsFrom,
   sortedAccessorSuffixes,
   sortedFunctionCallParts,
 } from './parser.utility.js';
@@ -23,6 +24,7 @@ import {
 } from './types.checks.js';
 import { Type, TypeStore } from './types.js';
 import { withableTypes } from './types.primitives.js';
+import type { AssignmentInfo, AssignmentVariable } from './visitor.assign.js';
 import type { GmlSignifierVisitor } from './visitor.js';
 
 export function visitIdentifierAccessor(
@@ -30,6 +32,17 @@ export function visitIdentifierAccessor(
   children: IdentifierAccessorCstChildren,
   ctx: VisitorContext,
 ): Type | TypeStore {
+  const docs = this.PROCESSOR.consumeJsdoc();
+  /** Collection of info for variable assignment, if there is one. */
+  const assignment = {
+    variable: {} as Partial<AssignmentVariable>,
+    rhs: rhsFrom(children.assignment),
+    info: {
+      ctx,
+      docs,
+    } as AssignmentInfo,
+  };
+
   /** The type or signifier we're using an accessor on */
   let accessing: {
     type?: Type | TypeStore;
@@ -85,9 +98,7 @@ export function visitIdentifierAccessor(
   /** If true, then the `new` keyword prefixes this. */
   const usesNew = !!children.New?.length;
   /** If not `undefined`, this is the assignment node */
-  const docs = this.PROCESSOR.consumeJsdoc();
-  const rhs =
-    children.assignment?.[0]?.children.assignmentRightHandSide?.[0].children;
+  const rhs = rhsFrom(children.assignment);
   const inferredType = normalizeType(
     rhs
       ? this.assignmentRightHandSide(rhs, withCtxKind(ctx, 'assignment'))
