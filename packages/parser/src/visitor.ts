@@ -542,130 +542,117 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     }
   }
 
-  override variableAssignment(
-    children: VariableAssignmentCstChildren,
-    ctx: VisitorContext,
+  /**
+   * Given a signifier, its RHS, and any other details discovered
+   * during visiting, handle tasks related to variable assignment.
+   */
+  ASSIGN(
+    variable: { name: string; range: Range; container: WithableType },
+    rhs: AssignmentRightHandSideCstChildren | undefined,
+    info: {
+      static?: boolean;
+      docs?: Docs;
+      ctx: VisitorContext;
+    },
   ) {
-    const assignedToFunction =
-      children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
-        .children;
-    const assignedToStructLiteral =
-      !assignedToFunction &&
-      children.assignmentRightHandSide?.[0].children.structLiteral?.[0]
-        .children;
-
-    const { isStatic } = ctx;
-    ctx.isStatic = false; // Reset to prevent downstream confusion
-
-    // When searching for the matching identifier, we need
-    // to exclude globalvars and parents under some cirumstances.
-    const excludeGlobal = !!(isStatic || assignedToFunction);
-    const excludeParents = !!(isStatic || assignedToFunction);
-
-    const docs = this.PROCESSOR.consumeJsdoc();
-    // See if this identifier is known.
-    const identified = this.FIND_ITEM(children, {
-      excludeGlobal,
-      excludeParents,
-    });
-    let signifier = identified?.item as Signifier | undefined;
-    const name = children.Identifier[0].image;
-    const range = this.PROCESSOR.range(children.Identifier[0]);
-    let ref: Reference | undefined = undefined;
-
+    //#region Collect useful info
+    // Figure out what we're assigning to so we can handle
+    // already-known types (from JSDocs).
+    const assignedToFunction = functionFromRhs(rhs);
+    const assignedToStructLiteral = structLiteralFromRhs(rhs);
+    const assignedToArrayLiteral = arrayLiteralFromRhs(rhs);
     const fullScope = this.PROCESSOR.fullScope;
-    // Add to the self-scope unless it's a static inside a non-constructor function, and if that scope is not global.
-    const outerFunction = fullScope.self.signifier?.getTypeByKind('Function');
-    const addTo =
-      isStatic && !outerFunction?.isConstructor
-        ? fullScope.local
-        : fullScope.self;
     // Are we in the definitiveSelf?
-    const inDefinitiveSelf = addTo === this.PROCESSOR.currentDefinitiveSelf;
+    const inDefinitiveSelf = variable.container === fullScope.definitiveSelf;
+    //#endregion
 
+    // Find the existing variable
+    let signifier = variable.container.getMember(variable.name);
+    const isSelfOwned =
+      !!signifier && !!variable.container.getMember(variable.name, true);
+    let ref: Reference | undefined;
+
+    // Add the variable if missing
     let wasUndeclared = false;
     if (!signifier) {
       wasUndeclared = true;
 
-      if (addTo !== fullScope.global) {
+      if (variable.container !== fullScope.global) {
         // Then we can add a new member
-        signifier = addTo.addMember(name);
+        signifier = variable.container.addMember(variable.name);
         if (signifier) {
-          signifier.definedAt(range);
-          if (isStatic) {
+          signifier.definedAt(variable.range);
+          if (info.static) {
             signifier.static = true;
           }
           if (inDefinitiveSelf) {
             signifier.definitive = true;
           }
-          ref = signifier.addRef(range, true);
+          ref = signifier.addRef(variable.range, true);
           signifier.instance = true;
         } else {
           // Then this is an immutable type
           this.PROCESSOR.addDiagnostic(
             'INVALID_OPERATION',
-            range,
+            variable.range,
             `Cannot add variables to this type.`,
           );
         }
       } else {
         this.PROCESSOR.addDiagnostic(
           'UNDECLARED_GLOBAL_REFERENCE',
-          children.Identifier[0],
-          `${children.Identifier[0].image} is not declared anywhere but is assigned in global scope.`,
+          variable.range,
+          `${variable.name} is not declared anywhere but is assigned in global scope.`,
         );
       }
     } else {
       // Add a reference to the item.
-      ref = signifier.addRef(range);
+      ref = signifier.addRef(variable.range);
       // If this is the first time we've seen it, and it wouldn't have
       // an unambiguous declaration, add its definition
       if (!signifier.def) {
         wasUndeclared = true;
-        signifier.definedAt(range);
+        signifier.definedAt(variable.range);
         ref.isDef = true;
       }
       // If this variable comes from a non-definitive declaration,
       // and *would* be definitive here, then we need to update it.
       ensureDefinitive(
-        addTo as WithableType,
+        variable.container as WithableType,
         this.PROCESSOR.currentDefinitiveSelf,
         signifier,
         ref,
       );
     }
 
-    // If we don't have any type on this signifier yet, use the
-    // assigned type.
+    // Handle RHS
 
+    const ctx = { ...info.ctx };
     if (assignedToFunction || assignedToStructLiteral) {
       ctx.signifier = signifier;
-      ctx.docs = docs;
+      ctx.docs = info.docs;
       if (assignedToFunction) {
         this.functionExpression(assignedToFunction, ctx);
       } else if (assignedToStructLiteral) {
         this.structLiteral(assignedToStructLiteral, ctx);
       }
-    } else {
+    } else if (rhs) {
       const inferredType = normalizeType(
-        this.assignmentRightHandSide(
-          children.assignmentRightHandSide[0].children,
-          withCtxKind(ctx, 'assignment'),
-        ),
+        this.assignmentRightHandSide(rhs, withCtxKind(ctx, 'assignment')),
         this.PROCESSOR.project.types,
       );
-      const forceOverride = docs?.jsdoc.kind === 'type';
+      const forceOverride = info.docs?.jsdoc.kind === 'type';
       if (signifier && (!signifier.isTyped || wasUndeclared || forceOverride)) {
-        if (docs) {
-          signifier.describe(docs.jsdoc.description);
-          signifier.setType(docs.type);
+        if (info.docs) {
+          signifier.describe(info.docs.jsdoc.description);
+          signifier.setType(info.docs.type);
           if (
-            docs.jsdoc.kind === 'type' &&
-            docs.jsdoc.type &&
-            docs.type[0].signifier
+            info.docs.jsdoc.kind === 'type' &&
+            info.docs.jsdoc.type &&
+            info.docs.type[0].signifier
           ) {
-            docs.type[0].signifier.addRef(
-              Range.from(this.PROCESSOR.file, docs.jsdoc.type),
+            info.docs.type[0].signifier.addRef(
+              Range.from(this.PROCESSOR.file, info.docs.jsdoc.type),
             );
           }
         } else if (inferredType) {
@@ -680,6 +667,45 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       };
     }
     return;
+  }
+
+  override variableAssignment(
+    children: VariableAssignmentCstChildren,
+    ctx: VisitorContext,
+  ) {
+    // Determine the args for ASSIGN
+    const name = children.Identifier[0].image;
+    const range = this.PROCESSOR.range(children.Identifier[0]);
+    const rhs = children.assignmentRightHandSide?.[0].children;
+    const docs = this.PROCESSOR.consumeJsdoc();
+
+    // Determine the container for this variable
+    const { isStatic } = ctx;
+    ctx.isStatic = false; // Reset to prevent downstream confusion
+    const assignedToFunction = !!functionFromRhs(rhs);
+    const excludeGlobal = !!(isStatic || assignedToFunction);
+    const excludeParents = !!(isStatic || assignedToFunction);
+    let container: WithableType | undefined = (
+      this.FIND_ITEM(children, {
+        excludeGlobal,
+        excludeParents,
+      })?.item as Signifier | undefined
+    )?.parent as WithableType | undefined;
+    if (!container) {
+      const fullScope = this.PROCESSOR.fullScope;
+      // Add to the self-scope unless it's a static inside a non-constructor function, and if that scope is not global.
+      const outerFunction = fullScope.self.signifier?.getTypeByKind('Function');
+      container =
+        isStatic && !outerFunction?.isConstructor
+          ? fullScope.local
+          : (fullScope.self as WithableType);
+    }
+
+    return this.ASSIGN({ name, range, container }, rhs, {
+      static: isStatic,
+      docs,
+      ctx,
+    });
   }
 
   override structLiteral(

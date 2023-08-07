@@ -84,6 +84,7 @@ export class SignifierProcessor {
     return {
       local: this.currentLocalScope,
       self: this.currentSelf,
+      definitiveSelf: this.currentDefinitiveSelf,
       global: this.project.self,
       selfIsGlobal: this.currentSelf === this.project.self,
     };
