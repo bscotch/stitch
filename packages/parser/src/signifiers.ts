@@ -1,6 +1,6 @@
 import { Range, Reference } from './project.location.js';
+import { Flags } from './signifiers.flags.js';
 import { getTypes } from './types.checks.js';
-import { Flags } from './types.flags.js';
 import { Type, TypeStore } from './types.js';
 import { PrimitiveName } from './types.primitives.js';
 import { assert } from './util.js';

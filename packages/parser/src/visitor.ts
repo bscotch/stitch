@@ -29,14 +29,15 @@ import type {
 } from '../gml-cst.js';
 import { JsdocSummary, gmlLinesByGroup, parseJsdoc } from './jsdoc.js';
 import { logger } from './logger.js';
+import { Docs, GmlVisitorBase, VisitorContext, withCtxKind } from './parser.js';
 import {
-  GmlVisitorBase,
-  VisitorContext,
+  arrayLiteralFromRhs,
+  functionFromRhs,
   identifierFrom,
   sortChildren,
   stringLiteralAsString,
-  withCtxKind,
-} from './parser.js';
+  structLiteralFromRhs,
+} from './parser.utility.js';
 import type { Code } from './project.code.js';
 import {
   Position,

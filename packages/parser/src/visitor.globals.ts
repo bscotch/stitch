@@ -11,7 +11,8 @@ import {
 } from '../gml-cst.js';
 import { JsdocSummary, parseJsdoc } from './jsdoc.js';
 import { logger } from './logger.js';
-import { GmlVisitorBase, identifierFrom } from './parser.js';
+import { GmlVisitorBase } from './parser.js';
+import { identifierFrom } from './parser.utility.js';
 import type { Code } from './project.code.js';
 import { Diagnostic } from './project.diagnostics.js';
 import { Position, Range } from './project.location.js';

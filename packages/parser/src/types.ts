@@ -1,5 +1,6 @@
 import { arrayWrapped } from '@bscotch/utility';
 import { typeToFeatherString } from './jsdoc.feather.js';
+import { Flags } from './signifiers.flags.js';
 import { Signifier } from './signifiers.js';
 import { getTypes, narrows } from './types.checks.js';
 import {
@@ -7,7 +8,6 @@ import {
   type KnownOrGenerics,
   type KnownTypesMap,
 } from './types.feather.js';
-import { Flags } from './types.flags.js';
 import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
 import { PrimitiveName, withableTypes } from './types.primitives.js';
 import { assert, ok } from './util.js';

@@ -1,14 +1,13 @@
 import { arrayUnwrapped, isArray } from '@bscotch/utility';
 import type { IToken } from 'chevrotain';
 import type { IdentifierAccessorCstChildren } from '../gml-cst.js';
+import { withCtxKind, type VisitorContext } from './parser.js';
 import {
   identifierFrom,
   isEmpty,
   sortedAccessorSuffixes,
   sortedFunctionCallParts,
-  withCtxKind,
-  type VisitorContext,
-} from './parser.js';
+} from './parser.utility.js';
 import {
   FunctionArgRange,
   Position,
