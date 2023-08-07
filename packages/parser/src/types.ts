@@ -94,6 +94,12 @@ export class TypeStore<T extends PrimitiveName = PrimitiveName> extends Flags {
   }
 }
 
+const typeFlags = {
+  READONLY: 1 << 0,
+  GENERIC: 1 << 1,
+  CONSTRUCTOR: 1 << 2,
+};
+
 export class Type<T extends PrimitiveName = PrimitiveName> {
   readonly $tag = 'Type';
   // Some types have names. It only counts as a name if it
@@ -113,16 +119,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   protected _extends: Type | undefined = undefined;
   protected _derived: Set<Type> | undefined = undefined;
 
-  /**
-   * Native and primitive types are typically read-only once
-   * they've been defined. This property should be set once a type
-   * is intended to be immutable.
-   */
-  isReadonly = false;
-  /**
-   * If this is a type used as a generic, then this will be true
-   */
-  isGeneric = false;
+  protected flags = 0;
 
   /** Named members of Structs and Enums */
   protected _members: Map<string, Signifier> | undefined = undefined;
@@ -131,7 +128,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   items: TypeStore | undefined = undefined;
 
   // Applicable to Functions
-  isConstructor = false;
   /**
    * For functions, the local variables declared within the function
    */
@@ -145,6 +141,44 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   returns: TypeStore | undefined = undefined;
 
   constructor(protected _kind: T) {}
+
+  protected setFlag(flag: number, value: boolean) {
+    if (value) {
+      this.flags |= flag;
+    } else {
+      this.flags &= ~flag;
+    }
+  }
+  protected getFlag(flag: number) {
+    return !!(this.flags & flag);
+  }
+
+  /**
+   * Native and primitive types are typically read-only once
+   * they've been defined. This property should be set once a type
+   * is intended to be immutable.
+   */
+  get isReadonly() {
+    return this.getFlag(typeFlags.READONLY);
+  }
+  set isReadonly(value: boolean) {
+    this.setFlag(typeFlags.READONLY, value);
+  }
+  /**
+   * If this is a type used as a generic, then this will be true
+   */
+  get isGeneric() {
+    return this.getFlag(typeFlags.GENERIC);
+  }
+  set isGeneric(value: boolean) {
+    this.setFlag(typeFlags.GENERIC, value);
+  }
+  get isConstructor() {
+    return this.getFlag(typeFlags.CONSTRUCTOR);
+  }
+  set isConstructor(value: boolean) {
+    this.setFlag(typeFlags.CONSTRUCTOR, value);
+  }
 
   get kind() {
     return this._kind;
