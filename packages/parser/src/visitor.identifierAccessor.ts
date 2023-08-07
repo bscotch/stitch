@@ -86,14 +86,11 @@ export function visitIdentifierAccessor(
   const usesNew = !!children.New?.length;
   /** If not `undefined`, this is the assignment node */
   const docs = this.PROCESSOR.consumeJsdoc();
-  const assignmentCst =
+  const rhs =
     children.assignment?.[0]?.children.assignmentRightHandSide?.[0].children;
   const inferredType = normalizeType(
-    assignmentCst
-      ? this.assignmentRightHandSide(
-          assignmentCst,
-          withCtxKind(ctx, 'assignment'),
-        )
+    rhs
+      ? this.assignmentRightHandSide(rhs, withCtxKind(ctx, 'assignment'))
       : initialType || this.ANY,
     this.PROCESSOR.project.types,
   );
@@ -160,7 +157,7 @@ export function visitIdentifierAccessor(
               lastAccessedType = existingProperty.type;
               // On update, we need to make sure that the definition
               // still exists.
-              if (isLastSuffix && assignmentCst && !existingProperty.def) {
+              if (isLastSuffix && rhs && !existingProperty.def) {
                 existingProperty.definedAt(propertyNameRange);
                 ref.isDef = true;
                 if (docs) {
@@ -180,7 +177,7 @@ export function visitIdentifierAccessor(
                 // If this is the last suffix and this is
                 // an assignment, then also set the `def` of the
                 // new member.
-                if (isLastSuffix && assignmentCst) {
+                if (isLastSuffix && rhs) {
                   newMember.definedAt(propertyNameRange);
                   ref.isDef = true;
                   if (docs) {

@@ -31,12 +31,11 @@ import { JsdocSummary, gmlLinesByGroup, parseJsdoc } from './jsdoc.js';
 import { logger } from './logger.js';
 import { Docs, GmlVisitorBase, VisitorContext, withCtxKind } from './parser.js';
 import {
-  arrayLiteralFromRhs,
+  Rhs,
   functionFromRhs,
   identifierFrom,
   sortChildren,
   stringLiteralAsString,
-  structLiteralFromRhs,
 } from './parser.utility.js';
 import type { Code } from './project.code.js';
 import {
@@ -57,6 +56,7 @@ import {
 } from './types.js';
 import { withableTypes } from './types.primitives.js';
 import { assert } from './util.js';
+import { assignVariable, ensureDefinitive } from './visitor.assign.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
 import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
 import {
@@ -448,11 +448,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   ) {
     // The same as a regular non-var assignment, except we
     // need to indicate that it is static.
-    const info = this.variableAssignment(children, { ...ctx, isStatic: true });
-    if (info) {
-      info.item.static = true;
-    }
-    return info;
+    return this.variableAssignment(children, { ...ctx, isStatic: true });
   }
 
   override globalVarDeclaration(children: GlobalVarDeclarationCstChildren) {
@@ -486,60 +482,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const local = this.PROCESSOR.currentLocalScope;
     const range = this.PROCESSOR.range(children.Identifier[0]);
     const name = children.Identifier[0].image;
-
-    // Ensure that this variable exists
-    const signifier = local.getMember(name) || local.addMember(name)!;
-    signifier.definedAt(range);
-    signifier.local = true;
-    signifier.addRef(range, true);
-
-    // Ensure that the type is up to date
-    const assignedToFunction =
-      children.assignmentRightHandSide?.[0].children.functionExpression?.[0]
-        .children;
-    const assignedToStructLiteral =
-      !assignedToFunction &&
-      children.assignmentRightHandSide?.[0].children.structLiteral?.[0]
-        .children;
-
-    if (assignedToFunction || assignedToStructLiteral) {
-      const newCtx = {
-        ...ctx,
-        signifier,
-        docs,
-      };
-      if (assignedToFunction) {
-        this.functionExpression(assignedToFunction, newCtx);
-      } else if (assignedToStructLiteral) {
-        this.structLiteral(assignedToStructLiteral, newCtx);
-      }
-    } else {
-      const inferredType = normalizeType(
-        children.assignmentRightHandSide
-          ? this.assignmentRightHandSide(
-              children.assignmentRightHandSide[0].children,
-              withCtxKind(ctx, 'assignment'),
-            )
-          : new Type('Any'),
-        this.PROCESSOR.project.types,
-      );
-
-      if (docs) {
-        signifier.describe(docs.jsdoc.description);
-        signifier.setType(docs.type);
-        if (
-          docs.jsdoc.kind === 'type' &&
-          docs.jsdoc.type &&
-          docs.type[0].signifier
-        ) {
-          docs.type[0].signifier.addRef(
-            Range.from(this.PROCESSOR.file, docs.jsdoc.type),
-          );
-        }
-      } else if (inferredType) {
-        signifier.setType(inferredType);
-      }
-    }
+    return this.ASSIGN(
+      { container: local, name, range },
+      children.assignmentRightHandSide,
+      { ctx, docs, local: true },
+    );
   }
 
   /**
@@ -548,125 +495,16 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
    */
   ASSIGN(
     variable: { name: string; range: Range; container: WithableType },
-    rhs: AssignmentRightHandSideCstChildren | undefined,
+    rhs: Rhs,
     info: {
       static?: boolean;
+      instance?: boolean;
+      local?: boolean;
       docs?: Docs;
       ctx: VisitorContext;
     },
   ) {
-    //#region Collect useful info
-    // Figure out what we're assigning to so we can handle
-    // already-known types (from JSDocs).
-    const assignedToFunction = functionFromRhs(rhs);
-    const assignedToStructLiteral = structLiteralFromRhs(rhs);
-    const assignedToArrayLiteral = arrayLiteralFromRhs(rhs);
-    const fullScope = this.PROCESSOR.fullScope;
-    // Are we in the definitiveSelf?
-    const inDefinitiveSelf = variable.container === fullScope.definitiveSelf;
-    //#endregion
-
-    // Find the existing variable
-    let signifier = variable.container.getMember(variable.name);
-    const isSelfOwned =
-      !!signifier && !!variable.container.getMember(variable.name, true);
-    let ref: Reference | undefined;
-
-    // Add the variable if missing
-    let wasUndeclared = false;
-    if (!signifier) {
-      wasUndeclared = true;
-
-      if (variable.container !== fullScope.global) {
-        // Then we can add a new member
-        signifier = variable.container.addMember(variable.name);
-        if (signifier) {
-          signifier.definedAt(variable.range);
-          if (info.static) {
-            signifier.static = true;
-          }
-          if (inDefinitiveSelf) {
-            signifier.definitive = true;
-          }
-          ref = signifier.addRef(variable.range, true);
-          signifier.instance = true;
-        } else {
-          // Then this is an immutable type
-          this.PROCESSOR.addDiagnostic(
-            'INVALID_OPERATION',
-            variable.range,
-            `Cannot add variables to this type.`,
-          );
-        }
-      } else {
-        this.PROCESSOR.addDiagnostic(
-          'UNDECLARED_GLOBAL_REFERENCE',
-          variable.range,
-          `${variable.name} is not declared anywhere but is assigned in global scope.`,
-        );
-      }
-    } else {
-      // Add a reference to the item.
-      ref = signifier.addRef(variable.range);
-      // If this is the first time we've seen it, and it wouldn't have
-      // an unambiguous declaration, add its definition
-      if (!signifier.def) {
-        wasUndeclared = true;
-        signifier.definedAt(variable.range);
-        ref.isDef = true;
-      }
-      // If this variable comes from a non-definitive declaration,
-      // and *would* be definitive here, then we need to update it.
-      ensureDefinitive(
-        variable.container as WithableType,
-        this.PROCESSOR.currentDefinitiveSelf,
-        signifier,
-        ref,
-      );
-    }
-
-    // Handle RHS
-
-    const ctx = { ...info.ctx };
-    if (assignedToFunction || assignedToStructLiteral) {
-      ctx.signifier = signifier;
-      ctx.docs = info.docs;
-      if (assignedToFunction) {
-        this.functionExpression(assignedToFunction, ctx);
-      } else if (assignedToStructLiteral) {
-        this.structLiteral(assignedToStructLiteral, ctx);
-      }
-    } else if (rhs) {
-      const inferredType = normalizeType(
-        this.assignmentRightHandSide(rhs, withCtxKind(ctx, 'assignment')),
-        this.PROCESSOR.project.types,
-      );
-      const forceOverride = info.docs?.jsdoc.kind === 'type';
-      if (signifier && (!signifier.isTyped || wasUndeclared || forceOverride)) {
-        if (info.docs) {
-          signifier.describe(info.docs.jsdoc.description);
-          signifier.setType(info.docs.type);
-          if (
-            info.docs.jsdoc.kind === 'type' &&
-            info.docs.jsdoc.type &&
-            info.docs.type[0].signifier
-          ) {
-            info.docs.type[0].signifier.addRef(
-              Range.from(this.PROCESSOR.file, info.docs.jsdoc.type),
-            );
-          }
-        } else if (inferredType) {
-          signifier.setType(inferredType);
-        }
-      }
-    }
-    if (signifier && ref) {
-      return {
-        item: signifier,
-        ref: ref,
-      };
-    }
-    return;
+    return assignVariable.bind(this)(variable, rhs, info);
   }
 
   override variableAssignment(
@@ -676,7 +514,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // Determine the args for ASSIGN
     const name = children.Identifier[0].image;
     const range = this.PROCESSOR.range(children.Identifier[0]);
-    const rhs = children.assignmentRightHandSide?.[0].children;
+    const rhs = children.assignmentRightHandSide;
     const docs = this.PROCESSOR.consumeJsdoc();
 
     // Determine the container for this variable
@@ -778,62 +616,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           parts.stringLiteral![0].children.StringEnd[0],
         );
       }
-      // Ensure the member exists
-      const existingMember = struct.getMember(name);
-      let signifier: Signifier;
-      if (!existingMember) {
-        signifier = struct.addMember(name)!;
-        signifier.instance = true;
-      } else {
-        signifier = existingMember;
-      }
-      signifier.addRef(range, !signifier.def);
-      if (!signifier.def) {
-        signifier.definedAt(range);
-      }
-
-      const assignedToFunction =
-        parts.assignmentRightHandSide?.[0].children.functionExpression?.[0]
-          .children;
-      const assignedToStructLiteral =
-        !assignedToFunction &&
-        parts.assignmentRightHandSide?.[0].children.structLiteral?.[0].children;
-
-      if (assignedToFunction || assignedToStructLiteral) {
-        ctx.signifier = signifier;
-        ctx.docs = docs;
-        if (assignedToFunction) {
-          ctx.self = struct;
-          this.functionExpression(assignedToFunction, ctx);
-        } else if (assignedToStructLiteral) {
-          this.structLiteral(assignedToStructLiteral, ctx);
-        }
-      } else {
-        const inferredType = normalizeType(
-          parts.assignmentRightHandSide
-            ? this.assignmentRightHandSide(
-                parts.assignmentRightHandSide[0].children,
-                withCtxKind(ctx, 'assignment'),
-              )
-            : this.ANY,
-          this.PROCESSOR.project.types,
-        );
-        if (docs && !existingMember) {
-          signifier.describe(docs.jsdoc.description);
-          signifier.setType(docs.type);
-          if (
-            docs.jsdoc.kind === 'type' &&
-            docs.jsdoc.type &&
-            docs.type[0].signifier
-          ) {
-            docs.type[0].signifier.addRef(
-              Range.from(this.PROCESSOR.file, docs.jsdoc.type),
-            );
-          }
-        } else if (inferredType) {
-          signifier.setType(inferredType);
-        }
-      }
+      this.ASSIGN(
+        { name, range, container: struct },
+        parts.assignmentRightHandSide,
+        { docs, ctx, instance: true },
+      );
     }
     return struct;
   }
@@ -1051,27 +838,4 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   }
 
   //#endregion
-}
-
-function ensureDefinitive(
-  self: WithableType,
-  currentDefinitiveSelf: WithableType | undefined,
-  member: Signifier,
-  ref: Reference,
-) {
-  if (!currentDefinitiveSelf) return;
-  // If this variable comes from a non-definitive declaration,
-  // and *would* be definitive here, then we need to update it.
-  const inDefinitiveSelf = currentDefinitiveSelf === self;
-  const isSelfOwned = self.getMember(member.name, true) === member;
-  if (isSelfOwned && !member.definitive && inDefinitiveSelf) {
-    member.definitive = true;
-    // Ensure the definition is HERE
-    member.unsetDef();
-    member.definedAt(ref);
-    for (const otherRef of member.refs) {
-      otherRef.isDef = false; // Unset all other definitions
-    }
-    ref.isDef = true;
-  }
 }
