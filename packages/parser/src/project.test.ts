@@ -332,7 +332,7 @@ describe('Project', function () {
     validateBschemaConstructor(project);
   });
 
-  xit('can parse sample project', async function () {
+  it('can parse sample project', async function () {
     const projectDir = process.env.GML_PARSER_SAMPLE_PROJECT_DIR;
     ok(
       projectDir,

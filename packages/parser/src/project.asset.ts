@@ -535,12 +535,15 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   ): Promise<Asset<T> | undefined> {
     let yyPath: Pathy | undefined = project.dir.join(resource.id.path);
     if (!(await yyPath.exists())) {
-      const dir = await project.dir
-        .up(2)
-        .findChild(new RegExp(`^${resource.id.name}$`, 'i'));
+      const assetsDir = yyPath.up(2);
+      const namePattern = new RegExp(`^${resource.id.name}$`, 'i');
+      const dir = (await assetsDir.listChildren()).find((p) =>
+        p.basename.match(namePattern),
+      );
       if (dir) {
-        yyPath = await dir.findChild(
-          new RegExp(`^${resource.id.name}\\.yy$`, 'i'),
+        const yyPattern = new RegExp(`^${resource.id.name}\\.yy$`, 'i');
+        yyPath = (await dir.listChildren()).find((p) =>
+          p.basename.match(yyPattern),
         );
         if (!yyPath) {
           logger.warn(`Could not find file for "${resource.id.path}"`);
