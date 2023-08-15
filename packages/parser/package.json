@@ -26,20 +26,20 @@
   },
   "dependencies": {
     "@bscotch/gamemaker-releases": "workspace:*",
-    "@bscotch/pathy": "^2.7.3",
+    "@bscotch/pathy": "^2.7.4",
     "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/utility": "^6.8.3",
     "@bscotch/yy": "workspace:*",
-    "chevrotain": "10.5.0",
-    "xml2js": "0.6.0",
-    "zod": "^3.21.4"
+    "chevrotain": "11.0.3",
+    "xml2js": "0.6.2",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
     "@types/xml2js": "0.4.11",
     "chai": "^4.3.7",
     "dotenv": "16.3.1",
     "mocha": "^10.2.0",
-    "prettier": "^2.8.8",
+    "prettier": "^3.0.1",
     "typescript": "5.1.6"
   }
 }

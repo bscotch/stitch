@@ -5,7 +5,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build:all": "turbo run build --force",
+    "build:all": "turbo run build",
+    "test:all": "turbo run test",
     "clean:artifacts": "node ./scripts/nuke-builds.mjs",
     "clean:deps": "node ./scripts/nuke-deps.mjs",
     "fix:deps": "syncpack fix-mismatches",
@@ -13,22 +14,22 @@
     "setup:pnpm": "corepack prepare $npm_package_packageManager --activate"
   },
   "dependencies": {
-    "@bscotch/pathy": "^2.7.3",
-    "@bscotch/trebuchet": "2.8.4",
+    "@bscotch/pathy": "^2.7.4",
+    "@bscotch/trebuchet": "2.8.5",
     "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^20.1.4",
-    "@typescript-eslint/eslint-plugin": "~5.59.6",
-    "@typescript-eslint/parser": "~5.59.6",
-    "@typescript-eslint/utils": "^5.59.6",
+    "@types/node": "^20.5.0",
+    "@typescript-eslint/eslint-plugin": "~6.4.0",
+    "@typescript-eslint/parser": "~6.4.0",
+    "@typescript-eslint/utils": "^6.4.0",
     "del": "7.0.0",
-    "eslint": "^8.40.0",
-    "eslint-config-prettier": "^8.8.0",
+    "eslint": "^8.47.0",
+    "eslint-config-prettier": "^9.0.0",
     "mocha": "^10.2.0",
-    "prettier": "^2.8.8",
-    "syncpack": "^9.8.6",
-    "turbo": "^1.9.5",
-    "zx": "^7.2.2"
+    "prettier": "^3.0.1",
+    "syncpack": "^11.2.1",
+    "turbo": "^1.10.12",
+    "zx": "^7.2.3"
   },
   "engines": {
     "node": ">=18",
@@ -50,6 +51,6 @@
     "packages/*"
   ],
   "devDependencies": {
-    "typescript": "5.0.4"
+    "typescript": "5.1.6"
   }
 }
