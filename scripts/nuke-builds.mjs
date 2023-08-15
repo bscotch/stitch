@@ -4,6 +4,7 @@ const toDelete = ['node_modules/.cache', 'dist'];
 const projectFolders = ['packages'];
 const outPaths = [
   'build',
+  'bundle',
   'dist',
   'app',
   'out',
