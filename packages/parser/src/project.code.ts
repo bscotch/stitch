@@ -1,5 +1,7 @@
 import type { Pathy } from '@bscotch/pathy';
+import { YyObject } from '@bscotch/yy';
 import type { JsdocSummary } from './jsdoc.js';
+import { ObjectEvent, getEventFromFilename } from './lib.objects.js';
 import { logger } from './logger.js';
 import { parser, type GmlParsed } from './parser.js';
 import type { Asset } from './project.asset.js';
@@ -98,6 +100,15 @@ export class Code {
 
   get startPosition() {
     return Position.fromFileStart(this);
+  }
+
+  /**
+   * If this is an object event and Stitch knows about
+   * its type, return the info about that event.
+   */
+  get objectEventInfo(): ObjectEvent|undefined {
+    if(!this.isObjectEvent) return undefined;
+    return getEventFromFilename(this.path.absolute);
   }
 
   /** A zero-length range at the start of the file. */
@@ -420,7 +431,31 @@ export class Code {
     this._rangesAreSorted = false;
   }
 
-  onRemove() {
+  protected async removeFromYy() {
+    if (!this.asset.isObject) return;
+    const eventInfo = this.objectEventInfo;
+    if (!eventInfo) {
+      logger.warn(`Stitch does not know about the ${this.name} event type!`)
+      return;
+    }
+
+    // find the match for this event
+    const yy = this.asset.yy as YyObject;
+    const eventIdx = yy.eventList.findIndex((event) => event.eventNum === eventInfo.eventNum && event.eventType === eventInfo.eventType);
+    if (eventIdx > -1) {
+      yy.eventList.splice(eventIdx, 1);
+      await this.asset.saveYy();
+    }
+  }
+
+  async remove() {
+    // update yy file
+    await this.removeFromYy();
+    // remove from asset's list of files
+    this.asset.gmlFiles.delete(this.path.absolute.toLocaleLowerCase());
+    // remove file
+    await this.path.delete();
+    // reset to clear refs and diagnostics
     this.reset();
   }
 

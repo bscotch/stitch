@@ -454,7 +454,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
 
   async onRemove() {
     const files = this.gmlFilesArray;
-    files.forEach((gml) => gml.onRemove());
+    files.forEach((gml) => gml.remove());
     // Remove this signifier and any global types from the project
     this.project.self.removeMember(this.signifier.name);
     for (const typeName of [this.typeName, this.instanceTypeName]) {
