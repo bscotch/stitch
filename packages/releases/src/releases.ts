@@ -8,7 +8,7 @@ import { fetchJson } from './fetch.js';
  * releases object can be downloaded from this URL.
  */
 export const releasesUrl =
-  'https://gist.githubusercontent.com/adam-coster/ff8bf0f892f40ca353a94103015b6493/raw/releases-summary.json';
+  'https://bscotch.github.io/stitch/artifacts/gamemaker/releases-summary.json';
 
 /**
  * Given a URL to an already-synthesized
