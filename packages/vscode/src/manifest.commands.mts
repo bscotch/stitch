@@ -80,6 +80,16 @@ export const commands = {
       },
     ],
   },
+  'stitch.assets.delete': {
+    command: 'stitch.assets.delete',
+    title: 'Delete',
+    icon: '$(close)',
+    enablement: when.assetTreeFocusedAndHasProjects,
+    [$showInViewItemContextMenu]: {
+      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsAsset}`,
+      group: '7_modification@9',
+    },
+  },
   'stitch.assets.newScript': {
     command: 'stitch.assets.newScript',
     title: 'New Script...',
@@ -120,7 +130,7 @@ export const commands = {
     command: 'stitch.openIde',
     title: 'Stitch: Open in GameMaker',
     shortTitle: 'Open in GameMaker',
-    enablement: `(resourceExtname =~ /\\.(yy|yyp|gml)$/) || (${when.assetTreeFocused} && ${when.hasProjects})`,
+    enablement: when.hasProjects,
     icon: '$(edit)',
     [$showInPalette]: true,
     [$showInViewTitle]: {
@@ -137,6 +147,7 @@ export const commands = {
     title: 'Stitch: Run Project',
     shortTitle: 'Run',
     icon: '$(play)',
+    enablement: when.hasProjects,
     [$showInPalette]: true,
     [$showInViewTitle]: {
       when: when.assetTreeFocusedAndHasOneProject,

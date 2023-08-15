@@ -1,3 +1,4 @@
+import { Asset } from '@bscotch/gml-parser';
 import { GameMakerFolder } from 'tree.folder.mjs';
 import vscode from 'vscode';
 import { swallowThrown } from './assert.mjs';
@@ -19,7 +20,7 @@ import { Timer, info, logger, warn } from './log.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 
 export async function activateStitchExtension(
-  provider: StitchWorkspace,
+  workspace: StitchWorkspace,
   ctx: vscode.ExtensionContext,
 ) {
   info('Activating extension...');
@@ -30,7 +31,7 @@ export async function activateStitchExtension(
   // to allow for reloading the extension
   ctx.subscriptions.forEach((s) => s.dispose());
 
-  provider.clearProjects();
+  workspace.clearProjects();
 
   info('Loading projects...');
   const yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
@@ -41,9 +42,9 @@ export async function activateStitchExtension(
     info('Loading project', yypFile);
     const pt = Timer.start();
     try {
-      await provider.loadProject(
+      await workspace.loadProject(
         yypFile,
-        provider.emitDiagnostics.bind(provider),
+        workspace.emitDiagnostics.bind(workspace),
       );
       pt.seconds('Loaded project in');
     } catch (error) {
@@ -55,9 +56,9 @@ export async function activateStitchExtension(
   }
   const watcher = vscode.workspace.createFileSystemWatcher('**/*.{gml,yy,yyp}');
 
-  const treeProvider = new GameMakerTreeProvider(provider);
-  const inspectorProvider = new GameMakerInspectorProvider(provider);
-  const definitionsProvider = new StitchDefinitionsProvider(provider);
+  const treeProvider = new GameMakerTreeProvider(workspace);
+  const inspectorProvider = new GameMakerInspectorProvider(workspace);
+  const definitionsProvider = new StitchDefinitionsProvider(workspace);
 
   ctx.subscriptions.push(
     // vscode.window.onDidChangeActiveTextEditor((editor) => {
@@ -67,44 +68,59 @@ export async function activateStitchExtension(
     //   const code = provider.getGmlFile(editor.document);
     // }),
     vscode.workspace.onDidChangeTextDocument((event) =>
-      provider.onChangeDoc(event),
+      workspace.onChangeDoc(event),
     ),
     vscode.workspace.onDidOpenTextDocument((event) => {
       // provider.onChangeDoc(event),
     }),
     watcher.onDidCreate((uri) => {
-      provider.externalChangeTracker.addChange({ uri, type: 'create' });
+      workspace.externalChangeTracker.addChange({ uri, type: 'create' });
     }),
     watcher.onDidDelete((uri) => {
-      provider.externalChangeTracker.addChange({ uri, type: 'delete' });
+      workspace.externalChangeTracker.addChange({ uri, type: 'delete' });
     }),
     watcher.onDidChange((uri) => {
-      provider.externalChangeTracker.addChange({ uri, type: 'change' });
+      workspace.externalChangeTracker.addChange({ uri, type: 'change' });
     }),
     ...treeProvider.register(),
     ...inspectorProvider.register(),
     definitionsProvider.register(),
-    GameMakerHoverProvider.register(provider),
-    StitchWorkspaceSymbolProvider.register(provider),
-    StitchCompletionProvider.register(provider),
-    vscode.languages.registerSignatureHelpProvider('gml', provider, '(', ','),
+    GameMakerHoverProvider.register(workspace),
+    StitchWorkspaceSymbolProvider.register(workspace),
+    StitchCompletionProvider.register(workspace),
+    vscode.languages.registerSignatureHelpProvider('gml', workspace, '(', ','),
     vscode.languages.registerDocumentFormattingEditProvider(
       'yy',
       new StitchYyFormatProvider(),
     ),
-    vscode.languages.registerReferenceProvider('gml', provider),
-
-    registerCommand('stitch.types.copy', createCopyAsTypeCallback(provider)),
+    vscode.languages.registerReferenceProvider('gml', workspace),
+    registerCommand('stitch.assets.delete', (what) => {
+      // Convert the incoming argument to an Asset, then emit the event
+      let asset: Asset | undefined;
+      if (what && typeof what === 'object') {
+        if (what instanceof Asset) {
+          asset = what;
+        } else if ('asset' in what && what.asset instanceof Asset) {
+          asset = what.asset;
+        }
+      }
+      if (!asset) {
+        logger.warn('stitch.assets.delete called on unknown type', what);
+        return;
+      }
+      workspace.deleteAsset(asset);
+    }),
+    registerCommand('stitch.types.copy', createCopyAsTypeCallback(workspace)),
     registerCommand(
       'stitch.types.copyAsJsdocSelf',
-      createCopyAsJsdocSelfCallback(provider),
+      createCopyAsJsdocSelfCallback(workspace),
     ),
     registerCommand(
       'stitch.types.copyAsJsdocType',
-      createCopyAsJsdocTypeCallback(provider),
+      createCopyAsJsdocTypeCallback(workspace),
     ),
     registerCommand('stitch.run', (uriOrFolder: string[] | GameMakerFolder) => {
-      const project = findProject(provider, uriOrFolder);
+      const project = findProject(workspace, uriOrFolder);
       if (!project) {
         void vscode.window.showErrorMessage('No project found to run!');
         return;
@@ -114,7 +130,7 @@ export async function activateStitchExtension(
     registerCommand(
       'stitch.clean',
       (uriOrFolder: string[] | GameMakerFolder) => {
-        const project = findProject(provider, uriOrFolder);
+        const project = findProject(workspace, uriOrFolder);
         if (!project) {
           void vscode.window.showErrorMessage('No project found to run!');
           return;
@@ -126,17 +142,17 @@ export async function activateStitchExtension(
       const uri = vscode.Uri.parse(
         args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
       );
-      provider.getProject(uri)?.openInIde();
+      workspace.getProject(uri)?.openInIde();
     }),
-    provider.semanticHighlightProvider.register(),
-    provider.signatureHelpStatus,
+    workspace.semanticHighlightProvider.register(),
+    workspace.signatureHelpStatus,
     vscode.window.onDidChangeTextEditorSelection((e) => {
       // This includes events from the output window, so skip those
       if (e.textEditor.document.uri.scheme !== 'file') {
         return;
       }
-      provider.signatureHelpStatus.text = '';
-      provider.signatureHelpStatus.hide();
+      workspace.signatureHelpStatus.text = '';
+      workspace.signatureHelpStatus.hide();
       if (!config.enableFunctionSignatureStatus) {
         return;
       }
@@ -149,7 +165,7 @@ export async function activateStitchExtension(
       // Get the signature helper.
       const signatureHelp = swallowThrown(
         () =>
-          provider.provideSignatureHelp(
+          workspace.provideSignatureHelp(
             e.textEditor.document,
             e.selections[0].start,
           )!,
@@ -176,12 +192,12 @@ export async function activateStitchExtension(
           return p.label;
         })
         .join(', ')})`;
-      provider.signatureHelpStatus.text = asString;
-      provider.signatureHelpStatus.show();
+      workspace.signatureHelpStatus.text = asString;
+      workspace.signatureHelpStatus.show();
     }),
-    provider.diagnosticCollection,
+    workspace.diagnosticCollection,
   );
 
   t.seconds('Extension activated in');
-  return provider;
+  return workspace;
 }

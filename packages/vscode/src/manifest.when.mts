@@ -24,6 +24,7 @@ export const when = {
   viewItemIsFolder: 'viewItem == folder',
   viewItemIsAsset: 'viewItem =~ /^asset-/',
   viewItemIsObject: 'viewItem == asset-objects',
+  viewItemIsCode: 'viewItem == code',
   viewItemIsInspectorEvents: 'viewItem == inspector-object-events',
   viewItemIsInspectorParents: 'viewItem == inspector-object-parents',
 } as const;

@@ -13,6 +13,7 @@ import {
   diagnosticCollection,
   normalizeDiagnosticsEvents,
 } from './diagnostics.mjs';
+import { stitchEvents } from './events.mjs';
 import { activateStitchExtension } from './extension.activate.mjs';
 import { completionTriggerCharacters } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
@@ -98,6 +99,11 @@ export class StitchWorkspace
       this.projects.length,
     );
     return project;
+  }
+
+  async deleteAsset(asset: Asset) {
+    await asset.project.removeAssetByName(asset.name);
+    stitchEvents.emit('asset-deleted', asset);
   }
 
   provideReferences(

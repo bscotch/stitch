@@ -465,6 +465,7 @@ importers:
 
   packages/vscode:
     specifiers:
+      '@bscotch/emitter': 0.2.0
       '@bscotch/gml-parser': workspace:*
       '@bscotch/pathy': ^2.7.4
       '@bscotch/stitch': workspace:*
@@ -487,6 +488,8 @@ importers:
       zod: ^3.22.0
       zod-to-json-schema: 3.21.4
       zx: ^7.2.3
+    dependencies:
+      '@bscotch/emitter': 0.2.0
     devDependencies:
       '@bscotch/gml-parser': link:../parser
       '@bscotch/pathy': 2.7.4
@@ -613,6 +616,12 @@ packages:
       tslib: 2.6.1
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /@bscotch/emitter/0.2.0:
+    resolution: {integrity: sha512-ZJoRd1fgGlsEiBy68tGWhXrqOcOn3+VPxCB4KsvwWtN1w18xJDJaEMPrsKskjbCUXdXa8GQboch81gQTRUwirw==}
+    dependencies:
+      eventemitter2: 6.4.9
     dev: false
 
   /@bscotch/pathy/2.7.4:

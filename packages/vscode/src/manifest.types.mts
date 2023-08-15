@@ -38,7 +38,11 @@ export interface ManifestViewContainer {
   icon: './images/stitch-logo-mono.svg';
 }
 
-export type MenuItemGroup = `${'navigation' | 'inline' | '1_stitch'}@${number}`;
+export type MenuItemGroup = `${
+  | 'navigation'
+  | 'inline'
+  | '1_stitch'
+  | '7_modification'}@${number}`;
 
 export interface MenuItem {
   command: CommandName;

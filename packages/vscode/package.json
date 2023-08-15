@@ -80,6 +80,12 @@
         "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
       },
       {
+        "command": "stitch.assets.delete",
+        "title": "Delete",
+        "icon": "$(close)",
+        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.assets.newScript",
         "title": "New Script...",
         "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
@@ -100,17 +106,23 @@
         "enablement": "stitch.projectCount > 0"
       },
       {
+        "command": "stitch.assets.deleteCode",
+        "title": "Delete",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.openIde",
         "title": "Stitch: Open in GameMaker",
         "shortTitle": "Open in GameMaker",
-        "enablement": "(resourceExtname =~ /\\.(yy|yyp|gml)$/) || (view == bscotch-stitch-resources && stitch.projectCount > 0)",
+        "enablement": "stitch.projectCount > 0",
         "icon": "$(edit)"
       },
       {
         "command": "stitch.run",
         "title": "Stitch: Run Project",
         "shortTitle": "Run",
-        "icon": "$(play)"
+        "icon": "$(play)",
+        "enablement": "stitch.projectCount > 0"
       },
       {
         "command": "stitch.clean",
@@ -357,6 +369,11 @@
           "group": "inline@1"
         },
         {
+          "command": "stitch.assets.delete",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem =~ /^asset-/",
+          "group": "7_modification@9"
+        },
+        {
           "command": "stitch.assets.newScript",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",
           "group": "navigation@1"
@@ -375,6 +392,11 @@
           "command": "stitch.assets.newEvent",
           "when": "(view == bscotch-stitch-resources && viewItem == asset-objects) || (view == bscotch-stitch-inspector && viewItem == inspector-object-events)",
           "group": "navigation@1"
+        },
+        {
+          "command": "stitch.assets.deleteCode",
+          "when": "viewItem == code || viewItem == inspector-object-events",
+          "group": "7_modification@9"
         },
         {
           "command": "stitch.openIde",
@@ -541,5 +563,8 @@
       ]
     },
     "hoverProvider": "true"
+  },
+  "dependencies": {
+    "@bscotch/emitter": "0.2.0"
   }
 }

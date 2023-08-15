@@ -86,6 +86,13 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
     }
     return resource;
   }
+
+  removeResource(resource: TreeAsset) {
+    const index = this.resources.indexOf(resource);
+    if (index > -1) {
+      this.resources.splice(index, 1);
+    }
+  }
 }
 
 export class GameMakerProjectFolder extends GameMakerFolder {

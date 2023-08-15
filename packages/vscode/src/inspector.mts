@@ -5,6 +5,7 @@ import {
   isAssetOfKind,
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
+import { stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { createSorter, uriFromPathy } from './lib.mjs';
 import { logger } from './log.mjs';
@@ -241,6 +242,17 @@ export class GameMakerInspectorProvider
     );
 
     this.rebuild();
+
+    // Handle emitted events
+    // Handle emitted events
+    stitchEvents.on('asset-deleted', (asset) => {
+      if (this.asset === asset) {
+        this.asset = undefined;
+      }
+      this.rebuild();
+    });
+
+    // Return subscriptions to owned events and this view
     const subscriptions = [this.view, activeEditorMonitor];
     return subscriptions;
   }

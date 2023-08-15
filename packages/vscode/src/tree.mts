@@ -7,6 +7,7 @@ import {
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
+import { stitchEvents } from './events.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import type { ObjectParentFolder } from './inspector.mjs';
@@ -461,6 +462,19 @@ export class GameMakerTreeProvider
       treeDataProvider: this.rebuild(),
       showCollapseAll: true,
     });
+
+    // Handle emitted events
+    stitchEvents.on('asset-deleted', (asset) => {
+      const treeItem = TreeAsset.lookup.get(asset);
+      if (!treeItem) {
+        return;
+      }
+      TreeAsset.lookup.delete(asset);
+      treeItem.parent.removeResource(treeItem);
+      this._onDidChangeTreeData.fire(treeItem.parent);
+    });
+
+    // Return subscriptions to owned commands and this view
     const subscriptions = [
       this.view,
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
