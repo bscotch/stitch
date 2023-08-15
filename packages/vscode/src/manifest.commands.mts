@@ -126,6 +126,15 @@ export const commands = {
       group: 'navigation@1',
     },
   },
+  'stitch.assets.deleteCode': {
+    command: 'stitch.assets.deleteCode',
+    title: 'Delete',
+    enablement: when.hasProjects,
+    [$showInViewItemContextMenu]: {
+      when: `${when.viewItemIsCode} || ${when.viewItemIsInspectorEvents}`,
+      group: '7_modification@9',
+    },
+  },
   'stitch.openIde': {
     command: 'stitch.openIde',
     title: 'Stitch: Open in GameMaker',

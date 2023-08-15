@@ -1,7 +1,8 @@
-import { Asset } from '@bscotch/gml-parser';
+import { Asset, Code } from '@bscotch/gml-parser';
 import { GameMakerFolder } from 'tree.folder.mjs';
 import vscode from 'vscode';
 import { swallowThrown } from './assert.mjs';
+import { stitchEvents } from './events.mjs';
 import { StitchCompletionProvider } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
 import {
@@ -109,6 +110,24 @@ export async function activateStitchExtension(
         return;
       }
       workspace.deleteAsset(asset);
+    }),
+    registerCommand('stitch.assets.deleteCode', async (what) => {
+      // Convert the incoming argument to a Code instance, then emit the event
+      let code: Code | undefined;
+      if (what && typeof what === 'object') {
+        if (what instanceof Code) {
+          code = what;
+        } else if ('code' in what && what.code instanceof Code) {
+          code = what.code;
+        }
+      }
+      // Actually delete the code!
+      if (!code) {
+        logger.warn('stitch.assets.deleteCode called on unknown type', what);
+        return;
+      }
+      await code.remove();
+      stitchEvents.emit('code-file-deleted', code);
     }),
     registerCommand('stitch.types.copy', createCopyAsTypeCallback(workspace)),
     registerCommand(

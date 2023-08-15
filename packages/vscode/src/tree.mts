@@ -473,6 +473,14 @@ export class GameMakerTreeProvider
       treeItem.parent.removeResource(treeItem);
       this._onDidChangeTreeData.fire(treeItem.parent);
     });
+    stitchEvents.on('code-file-deleted', (code) => {
+      const treeItem = TreeCode.lookup.get(code);
+      if (!treeItem) {
+        return;
+      }
+      TreeCode.lookup.delete(code);
+      this._onDidChangeTreeData.fire(treeItem.parent);
+    });
 
     // Return subscriptions to owned commands and this view
     const subscriptions = [
