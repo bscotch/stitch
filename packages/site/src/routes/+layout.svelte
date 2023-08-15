@@ -7,7 +7,7 @@
 
 <nav>
 	<a href={base || '/'} title="Go home">
-		<img src={Logo} alt="SvelteKit" />
+		<img src={Logo} alt="Stitch Logo" />
 		<span class="name">Stitch</span>
 	</a>
 	<menu class="reset">
