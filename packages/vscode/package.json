@@ -1,7 +1,7 @@
 {
   "name": "bscotch-stitch-vscode",
   "displayName": "Stitch",
-  "version": "1.19.1",
+  "version": "1.20.0",
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
@@ -511,6 +511,9 @@
     "onLanguage:gml",
     "onCommand:stitch.openIde"
   ],
+  "dependencies": {
+    "@bscotch/emitter": "0.2.0"
+  },
   "devDependencies": {
     "@bscotch/gml-parser": "workspace:*",
     "@bscotch/pathy": "^2.7.4",
@@ -563,8 +566,5 @@
       ]
     },
     "hoverProvider": "true"
-  },
-  "dependencies": {
-    "@bscotch/emitter": "0.2.0"
   }
 }
