@@ -539,7 +539,7 @@
     "zx": "^7.2.3"
   },
   "engines": {
-    "vscode": "^1.80.0"
+    "vscode": "^1.81.0"
   },
   "icon": "./images/stitch-logo.png",
   "galleryBanner": {
