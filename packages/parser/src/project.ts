@@ -124,13 +124,23 @@ export class Project {
     return this.assets.get(name?.toLocaleLowerCase?.());
   }
 
-  protected removeAssetByName(name: string | undefined) {
+  async removeAssetByName(name: string | undefined) {
     if (!name) return;
     name = name.toLocaleLowerCase();
     const asset = this.assets.get(name);
     if (!asset) return;
-    asset.onRemove();
     this.assets.delete(name);
+    // Remove the asset from the yyp
+    const inYyp = this.yyp.resources.findIndex(
+      (r) => r.id.name.toLocaleLowerCase() === name,
+    );
+    if (inYyp) {
+      this.yyp.resources.splice(inYyp, 1);
+      await this.saveYyp();
+    }
+
+    // Clean up
+    await asset.onRemove();
   }
 
   getAsset(path: Pathy<any>): Asset | undefined {
@@ -373,10 +383,7 @@ export class Project {
             return;
           }
           this.addAsset(r);
-          options?.onLoadProgress?.(
-            perAssetIncrement,
-            `Loaded asset ${r.name}`,
-          );
+          options?.onLoadProgress?.(perAssetIncrement, `Loading assets...`);
           return r;
         }),
       );
@@ -439,7 +446,7 @@ export class Project {
       (r) => !assetIds.has(r.id.path),
     );
     for (const removedAsset of removedAssets) {
-      this.removeAssetByName(removedAsset.id.name);
+      await this.removeAssetByName(removedAsset.id.name);
     }
 
     // Add new assets

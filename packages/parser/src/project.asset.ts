@@ -452,7 +452,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     await this.initiallyReadAndParseGml();
   }
 
-  onRemove() {
+  async onRemove() {
     const files = this.gmlFilesArray;
     files.forEach((gml) => gml.onRemove());
     // Remove this signifier and any global types from the project
@@ -467,6 +467,8 @@ export class Asset<T extends YyResourceType = YyResourceType> {
         }
       }
     }
+    // Remove the associated files
+    await this.dir.delete({ force: true, recursive: true });
   }
 
   protected addObjectFile(children: Pathy<string>[]) {
