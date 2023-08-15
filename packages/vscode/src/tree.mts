@@ -8,7 +8,7 @@ import {
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { GameMakerProject } from './extension.project.mjs';
-import type { StitchProvider } from './extension.provider.mjs';
+import type { StitchWorkspace } from './extension.workspace.mjs';
 import type { ObjectParentFolder } from './inspector.mjs';
 import { registerCommand, uriFromCodeFile } from './lib.mjs';
 import { logger, warn } from './log.mjs';
@@ -51,7 +51,7 @@ export class GameMakerTreeProvider
   > = new vscode.EventEmitter<Treeable | undefined | null | void>();
   readonly onDidCollapseElement = this._onDidCollapseElement.event;
 
-  constructor(readonly provider: StitchProvider) {}
+  constructor(readonly provider: StitchWorkspace) {}
 
   get projects(): GameMakerProject[] {
     return this.provider.projects;

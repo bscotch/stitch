@@ -6,12 +6,12 @@ import {
 } from '@bscotch/gml-parser';
 import vscode, { CancellationToken, CompletionContext } from 'vscode';
 import { config } from './extension.config.mjs';
-import type { StitchProvider } from './extension.provider.mjs';
+import type { StitchWorkspace } from './extension.workspace.mjs';
 
 export const completionTriggerCharacters = ['.', '{', '<', '|'] as const;
 
 export class StitchCompletionProvider implements vscode.CompletionItemProvider {
-  constructor(readonly provider: StitchProvider) {}
+  constructor(readonly provider: StitchWorkspace) {}
 
   async provideCompletionItems(
     document: vscode.TextDocument,
@@ -48,7 +48,7 @@ export class StitchCompletionProvider implements vscode.CompletionItemProvider {
     return undefined;
   }
 
-  static register(provider: StitchProvider) {
+  static register(provider: StitchWorkspace) {
     return vscode.languages.registerCompletionItemProvider(
       { language: 'gml', scheme: 'file' },
       new StitchCompletionProvider(provider),

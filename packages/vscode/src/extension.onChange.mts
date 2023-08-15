@@ -1,7 +1,7 @@
 import { pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
 import { config } from './extension.config.mjs';
-import type { StitchProvider } from './extension.provider.mjs';
+import type { StitchWorkspace } from './extension.workspace.mjs';
 import { logger } from './log.mjs';
 
 interface ChangeEvent {
@@ -13,7 +13,7 @@ export class ChangeTracker {
   protected queue: ChangeEvent[] = [];
   protected timeout: NodeJS.Timeout | undefined;
 
-  constructor(readonly provider: StitchProvider) {}
+  constructor(readonly provider: StitchWorkspace) {}
 
   addChange(event: ChangeEvent) {
     this.queue.push(event);

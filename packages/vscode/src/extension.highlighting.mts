@@ -1,7 +1,7 @@
 import { Reference, ReferenceableType } from '@bscotch/gml-parser';
 import { literal } from '@bscotch/utility';
 import vscode from 'vscode';
-import type { StitchProvider } from './extension.provider.mjs';
+import type { StitchWorkspace } from './extension.workspace.mjs';
 import { locationOf } from './lib.mjs';
 import { warn } from './log.mjs';
 
@@ -38,7 +38,7 @@ export const semanticTokensLegend = new vscode.SemanticTokensLegend(
 export class GameMakerSemanticTokenProvider
   implements vscode.DocumentSemanticTokensProvider
 {
-  constructor(readonly provider: StitchProvider) {}
+  constructor(readonly provider: StitchWorkspace) {}
 
   private _onDidChangeSemanticTokens: vscode.EventEmitter<void> =
     new vscode.EventEmitter();

@@ -3,7 +3,7 @@ import { Pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
 import { logThrown } from './assert.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
-import type { StitchProvider } from './extension.provider.mjs';
+import type { StitchWorkspace } from './extension.workspace.mjs';
 import type { CommandName } from './manifest.commands.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
 
@@ -37,7 +37,7 @@ export function rangeFrom(location: Range) {
 }
 
 export function findProject(
-  provider: StitchProvider,
+  provider: StitchWorkspace,
   uriOrFolder: string[] | GameMakerFolder,
 ): GameMakerProject | undefined {
   // Identify the target project

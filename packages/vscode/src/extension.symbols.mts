@@ -7,7 +7,7 @@ import {
 import vscode from 'vscode';
 import { config } from './extension.config.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
-import type { StitchProvider } from './extension.provider.mjs';
+import type { StitchWorkspace } from './extension.workspace.mjs';
 import { locationOf } from './lib.mjs';
 import { info, warn } from './log.mjs';
 
@@ -17,7 +17,7 @@ type SymbolResults = Map<Signifier | Code | Asset, vscode.SymbolInformation>;
 export class StitchWorkspaceSymbolProvider
   implements vscode.WorkspaceSymbolProvider
 {
-  constructor(readonly provider: StitchProvider) {}
+  constructor(readonly provider: StitchWorkspace) {}
 
   get projects() {
     return this.provider.projects;
@@ -235,7 +235,7 @@ export class StitchWorkspaceSymbolProvider
     };
   }
 
-  static register(provider: StitchProvider) {
+  static register(provider: StitchWorkspace) {
     return vscode.languages.registerWorkspaceSymbolProvider(
       new StitchWorkspaceSymbolProvider(provider),
     );

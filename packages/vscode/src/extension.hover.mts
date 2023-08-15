@@ -1,10 +1,10 @@
 import { YySprite } from '@bscotch/yy';
 import vscode from 'vscode';
 import { assert } from './assert.mjs';
-import type { StitchProvider } from './extension.provider.mjs';
+import type { StitchWorkspace } from './extension.workspace.mjs';
 
 export class GameMakerHoverProvider implements vscode.HoverProvider {
-  constructor(readonly provider: StitchProvider) {}
+  constructor(readonly provider: StitchWorkspace) {}
 
   provideHover(
     document: vscode.TextDocument,
@@ -68,7 +68,7 @@ export class GameMakerHoverProvider implements vscode.HoverProvider {
     return new vscode.Hover(hoverContents);
   }
 
-  static register(provider: StitchProvider) {
+  static register(provider: StitchWorkspace) {
     return vscode.languages.registerHoverProvider(
       'gml',
       new GameMakerHoverProvider(provider),

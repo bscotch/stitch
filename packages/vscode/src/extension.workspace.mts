@@ -22,7 +22,7 @@ import { GameMakerProject } from './extension.project.mjs';
 import { locationOf, pathyFromUri, uriFromCodeFile } from './lib.mjs';
 import { info, logger, warn } from './log.mjs';
 
-export class StitchProvider
+export class StitchWorkspace
   implements vscode.SignatureHelpProvider, vscode.ReferenceProvider
 {
   readonly semanticHighlightProvider = new GameMakerSemanticTokenProvider(this);
@@ -258,10 +258,11 @@ export class StitchProvider
   ): Code | undefined {
     document ||= this.getActiveDocument();
     if (!document) {
-      warn(`getGmlFile: Could not find document`);
+      // warn(`getGmlFile: Could not find document`);
       return;
     }
     const path = pathyFromUri(document);
+    if (!path.hasExtension('gml')) return;
     const project = this.getProject(document);
     if (!project) {
       warn(`getGmlFile: Could not find project for`, path);
@@ -331,7 +332,7 @@ export class StitchProvider
     // Add the processing promise to a map so
     // that other functionality can wait for it
     // to complete.
-    const updateWait = StitchProvider.provider.updateFile(doc).finally(() => {
+    const updateWait = StitchWorkspace.provider.updateFile(doc).finally(() => {
       // Semantic highlighting is normally updated by VSCode
       // upon change. But since we're delaying processing of the
       // file, we need to manually trigger a refresh.
@@ -345,7 +346,7 @@ export class StitchProvider
   /**
    * Only allow a single instance at a time.
    */
-  protected static provider: StitchProvider;
+  protected static provider: StitchWorkspace;
   protected static ctx: vscode.ExtensionContext;
 
   static async activate(ctx: vscode.ExtensionContext) {
@@ -354,7 +355,7 @@ export class StitchProvider
       info('Extension already active!');
       return this.provider;
     }
-    this.provider = new StitchProvider();
+    this.provider = new StitchWorkspace();
     await activateStitchExtension(this.provider, ctx);
     return this.provider;
   }

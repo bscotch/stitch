@@ -1,10 +1,10 @@
 import { Signifier } from '@bscotch/gml-parser';
 import vscode from 'vscode';
-import type { StitchProvider } from './extension.provider.mjs';
+import type { StitchWorkspace } from './extension.workspace.mjs';
 import { locationOf } from './lib.mjs';
 
 export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
-  constructor(readonly provider: StitchProvider) {}
+  constructor(readonly provider: StitchWorkspace) {}
   provideDefinition(
     document: vscode.TextDocument,
     position: vscode.Position,

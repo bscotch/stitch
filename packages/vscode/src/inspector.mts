@@ -5,7 +5,7 @@ import {
   isAssetOfKind,
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
-import type { StitchProvider } from './extension.provider.mjs';
+import type { StitchWorkspace } from './extension.workspace.mjs';
 import { createSorter, uriFromPathy } from './lib.mjs';
 import { logger } from './log.mjs';
 import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
@@ -161,7 +161,7 @@ export class GameMakerInspectorProvider
   > = new vscode.EventEmitter<InspectorItem | undefined | null | void>();
   readonly onDidCollapseElement = this._onDidCollapseElement.event;
 
-  constructor(readonly provider: StitchProvider) {}
+  constructor(readonly provider: StitchWorkspace) {}
 
   onUpdate(updated: InspectorItem) {
     this._onDidChangeTreeData.fire(updated);

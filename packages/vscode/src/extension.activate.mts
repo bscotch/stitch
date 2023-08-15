@@ -11,15 +11,15 @@ import {
 import { StitchDefinitionsProvider } from './extension.definitions.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { GameMakerHoverProvider } from './extension.hover.mjs';
-import type { StitchProvider } from './extension.provider.mjs';
 import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
+import type { StitchWorkspace } from './extension.workspace.mjs';
 import { GameMakerInspectorProvider } from './inspector.mjs';
 import { findProject, pathyFromUri, registerCommand } from './lib.mjs';
 import { Timer, info, logger, warn } from './log.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 
 export async function activateStitchExtension(
-  provider: StitchProvider,
+  provider: StitchWorkspace,
   ctx: vscode.ExtensionContext,
 ) {
   info('Activating extension...');
