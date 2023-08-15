@@ -1,5 +1,5 @@
 import { assert } from '@bscotch/utility';
-import { autoUpdater, type BrowserWindow, dialog } from 'electron';
+import { autoUpdater, dialog, type BrowserWindow } from 'electron';
 import { updateFeed } from './constants.mjs';
 
 export class Updater {
@@ -16,7 +16,7 @@ export class Updater {
       },
     });
     autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-      const dialogOpts = {
+      const dialogOpts: Electron.MessageBoxOptions = {
         type: 'info',
         buttons: ['Restart', 'Later'],
         title: 'Application Update',
@@ -96,8 +96,11 @@ export class Updater {
     // Check immediately
     await this.checkForUpdates(true);
     // THen every 10 minutes (or whatever)
-    setInterval(async () => {
-      await this.checkForUpdates(true);
-    }, 1000 * 60 * intervalMinutes);
+    setInterval(
+      async () => {
+        await this.checkForUpdates(true);
+      },
+      1000 * 60 * intervalMinutes,
+    );
   }
 }
