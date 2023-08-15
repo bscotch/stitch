@@ -218,11 +218,7 @@ export class GameMakerInspectorProvider
 
   rebuild() {
     const currentAsset = this.provider.getCurrentAsset();
-    if (
-      !currentAsset ||
-      !isAssetOfKind(currentAsset, 'objects') ||
-      this.asset === currentAsset
-    ) {
+    if (!currentAsset || !isAssetOfKind(currentAsset, 'objects')) {
       return;
     }
     this.asset = currentAsset;
@@ -244,12 +240,19 @@ export class GameMakerInspectorProvider
     this.rebuild();
 
     // Handle emitted events
-    // Handle emitted events
     stitchEvents.on('asset-deleted', (asset) => {
       if (this.asset === asset) {
         this.asset = undefined;
       }
+      // Just always rebuild. It's a rare event, and it's
+      // a bit complicated to do this in a sparse way (e.g. we'd
+      // need to check parents/children etc)
       this.rebuild();
+    });
+    stitchEvents.on('code-file-deleted', (code) => {
+      if (this.asset === code.asset) {
+        this.rebuild();
+      }
     });
 
     // Return subscriptions to owned events and this view
