@@ -318,6 +318,13 @@ export class GmlParser extends CstParser {
     ]);
   });
 
+  readonly blockableStatements = this.RULE('blockableStatements', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.statements) },
+      { ALT: () => this.SUBRULE(this.blockStatement) },
+    ]);
+  });
+
   readonly blockStatement = this.RULE('blockStatement', () => {
     this.CONSUME(t.StartBrace);
     this.MANY(() => this.SUBRULE(this.statement));
@@ -742,8 +749,10 @@ export class GmlParser extends CstParser {
     this.CONSUME(t.Switch);
     this.SUBRULE(this.expression);
     this.CONSUME(t.StartBrace);
-    this.MANY(() => this.SUBRULE(this.caseStatement));
-    this.OPTION(() => this.SUBRULE(this.defaultStatement));
+    this.MANY(() => this.OR([
+      { ALT: () => this.SUBRULE(this.caseStatement) },
+      { ALT: () => this.SUBRULE(this.defaultStatement) },
+    ]));
     this.CONSUME(t.EndBrace);
   });
 
@@ -751,13 +760,13 @@ export class GmlParser extends CstParser {
     this.CONSUME(t.Case);
     this.SUBRULE(this.expression);
     this.CONSUME(t.Colon);
-    this.SUBRULE(this.statements);
+    this.SUBRULE(this.blockableStatements);
   });
 
   readonly defaultStatement = this.RULE('defaultStatement', () => {
     this.CONSUME(t.Default);
     this.CONSUME(t.Colon);
-    this.SUBRULE(this.statements);
+    this.SUBRULE(this.blockableStatements);
   });
 
   readonly breakStatement = this.RULE('breakStatement', () => {
