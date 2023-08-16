@@ -41,6 +41,16 @@ export function getTypeOfKind<T extends PrimitiveName>(
     | undefined;
 }
 
+export function getTypesOfKind<T extends PrimitiveName>(
+  from: undefined | Signifier | Type | TypeStore | (Type | TypeStore)[],
+  kind: T | ReadonlyArray<T>,
+): { [Kind in T]: Type<Kind> }[T][] {
+  if (!from) return [];
+  const types = getTypes(from);
+  const kinds = arrayWrapped(kind) as T[];
+  return types.filter((t) => kinds.includes(t.kind as any)) as any;
+}
+
 /** Get the typestore of item, if present. Else get the type on item. */
 export function getTypeStoreOrType(
   item: Signifier | Type | TypeStore | Type[],

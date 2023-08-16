@@ -9,6 +9,8 @@ export class StitchParserError extends Error {
   }
 }
 
+export type Defined<T> = Exclude<T, undefined>;
+export type Values<T> = T[keyof T];
 export type Constructor<T = {}> = new (...args: any[]) => T;
 
 export const runningInVscode = !!process.env.VSCODE_IPC_HOOK;
