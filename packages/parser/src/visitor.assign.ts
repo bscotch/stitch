@@ -109,7 +109,7 @@ export function assignVariable(
     ctx.signifier = signifier;
     ctx.docs = info.docs;
     if (assignedToFunction) {
-      // ctx.self = struct;
+      ctx.self = variable.container;
       visitor.functionExpression(assignedToFunction, ctx);
     } else if (assignedToStructLiteral) {
       visitor.structLiteral(assignedToStructLiteral, ctx);
