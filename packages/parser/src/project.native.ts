@@ -155,6 +155,7 @@ export class Native {
       ).deprecate(func.deprecated);
       symbol.writable = false;
       symbol.native = func.module;
+      functionType.signifier = symbol;
       this.globalSelf.addMember(symbol);
     }
   }
