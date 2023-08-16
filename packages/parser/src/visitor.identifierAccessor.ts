@@ -1,6 +1,17 @@
-import { Defined, arrayUnwrapped, arrayWrapped, isArray } from '@bscotch/utility';
+import {
+  Defined,
+  arrayUnwrapped,
+  arrayWrapped,
+  isArray,
+} from '@bscotch/utility';
 import type { IToken } from 'chevrotain';
-import type { AccessorSuffixesCstChildren, AssignmentRightHandSideCstChildren, DotAccessSuffixCstNode, FunctionArgumentsCstNode, IdentifierAccessorCstChildren } from '../gml-cst.js';
+import type {
+  AccessorSuffixesCstChildren,
+  AssignmentRightHandSideCstChildren,
+  DotAccessSuffixCstNode,
+  FunctionArgumentsCstNode,
+  IdentifierAccessorCstChildren,
+} from '../gml-cst.js';
 import { Docs, withCtxKind, type VisitorContext } from './parser.js';
 import {
   identifierFrom,
@@ -13,7 +24,7 @@ import {
   FunctionArgRange,
   Position,
   Range,
-  fixITokenLocation
+  fixITokenLocation,
 } from './project.location.js';
 import type { Signifier } from './signifiers.js';
 import {
@@ -25,10 +36,14 @@ import {
   replaceGenerics,
   updateGenericsMap,
 } from './types.checks.js';
-import { EnumType, Type, TypeStore, WithableType } from './types.js';
+import { Type, TypeStore, WithableType } from './types.js';
 import { withableTypes } from './types.primitives.js';
 import { Values } from './util.js';
-import { assignVariable, type AssignmentInfo, type AssignmentVariable } from './visitor.assign.js';
+import {
+  assignVariable,
+  type AssignmentInfo,
+  type AssignmentVariable,
+} from './visitor.assign.js';
 import type { GmlSignifierVisitor } from './visitor.js';
 
 interface LastAccessed {
@@ -40,7 +55,6 @@ interface LastAccessed {
   range: Range;
   /** The types from the thing we accessed */
   types?: Type[] | TypeStore[];
-  scope?: WithableType | EnumType;
   /** If this is an assignment, what we're assigning to */
   rhs?: AssignmentRightHandSideCstChildren;
   /** If the `new` keyword prefixed the accessor */
@@ -56,10 +70,11 @@ type AccessorNode = Defined<Values<AccessorSuffixesCstChildren>>[number];
 export function visitIdentifierAccessor(
   this: GmlSignifierVisitor,
   children: IdentifierAccessorCstChildren,
-  ctx: VisitorContext,): Type[] |TypeStore[] {
+  ctx: VisitorContext,
+): Type[] | TypeStore[] {
   const docs = this.PROCESSOR.consumeJsdoc();
   const suffixes = sortedAccessorSuffixes(children.accessorSuffixes);
-    // Compute useful metadata
+  // Compute useful metadata
   /** If true, then the `new` keyword prefixes this. */
   const usesNew = !!children.New?.length;
   /** If not `undefined`, this is the assignment node */
@@ -67,16 +82,17 @@ export function visitIdentifierAccessor(
   const scope = this.PROCESSOR.fullScope;
 
   // Use the starting identifier to construct the initial `lastAccessed` object
+  const identifierName = identifierFrom(children.identifier[0].children)?.name;
   let lastAccessed: LastAccessed = {
-    name: identifierFrom(children.identifier[0].children)?.name,
+    name: identifierName,
     range: Range.fromCst(this.PROCESSOR.file, children.identifier[0].location!),
     usesNew,
-    ctx
-  }
+    ctx,
+  };
 
   // Early exit if we don't have a name, since that should only
   // happen in a broken state (e.g. during editing)
-  if (!lastAccessed.name) return [this.ANY]
+  if (!lastAccessed.name) return [this.ANY];
 
   // See if this is a known identifier. If not, create it in an
   // "undeclared" state.
@@ -106,13 +122,15 @@ export function visitIdentifierAccessor(
   // Update lastAccessed with the signifier info
   if (item?.$tag === 'Sym') {
     lastAccessed.signifier = item;
-    lastAccessed.scope = item.parent as WithableType | EnumType;
     lastAccessed.types = arrayWrapped(getTypeStoreOrType(item));
     // Add a reference! But if this is an assignment that'll be
     // handled later.
     if (!rhs) {
       item.addRef(lastAccessed.range);
     }
+  } else if (item?.$tag === 'Type') {
+    lastAccessed.signifier = item.signifier;
+    lastAccessed.types = [item];
   }
 
   // Now that we have the initial "lastAccessed" content,
@@ -122,9 +140,14 @@ export function visitIdentifierAccessor(
     // info that is applicable to it.
     if (i === suffixes.length - 1) {
       lastAccessed.rhs = rhs;
-      lastAccessed.docs = docs; 
+      lastAccessed.docs = docs;
     }
-    lastAccessed = processNextAccessor(this,lastAccessed, suffixes[i], suffixes[i + 1]); 
+    lastAccessed = processNextAccessor(
+      this,
+      lastAccessed,
+      suffixes[i],
+      suffixes[i + 1],
+    );
   }
 
   return lastAccessed.types || [this.ANY];
@@ -133,12 +156,17 @@ export function visitIdentifierAccessor(
 /**
  * @param nextAccessor If there is another accessor after this one, having it as a lookahead is useful in some cases. */
 function processNextAccessor(
-  visitor: GmlSignifierVisitor, lastAccessed: LastAccessed, accessor: AccessorNode,
-  nextAccessor?: AccessorNode
+  visitor: GmlSignifierVisitor,
+  lastAccessed: LastAccessed,
+  accessor: AccessorNode,
+  nextAccessor?: AccessorNode,
 ): LastAccessed {
   // Many suffix cases include an expression we need to evaluate.
   // For example, `hello[expression]`
-  const accessorExpressionType = 'expression' in accessor.children ? visitor.visit(accessor.children.expression, lastAccessed.ctx) : visitor.ANY;
+  const accessorExpressionType =
+    'expression' in accessor.children
+      ? visitor.visit(accessor.children.expression, lastAccessed.ctx)
+      : visitor.ANY;
 
   let nextAccessed: LastAccessed;
 
@@ -153,27 +181,35 @@ function processNextAccessor(
       // return the type of the items in the container. First
       // restrict the incoming types to those that are supported
       // by the accessor type.
-      const allowedTypes = getTypesOfKind(lastAccessed.types,
+      const allowedTypes = getTypesOfKind(
+        lastAccessed.types,
         accessor.name.startsWith('array')
           ? 'Array'
           : accessor.name === 'mapAccessSuffix'
-            ? 'Id.DsMap'
-            : accessor.name === 'gridAccessSuffix'
-              ? 'Id.DsGrid'
-              : accessor.name === 'listAccessSuffix'
-                ? 'Id.DsList'
-                : accessor.name === 'structAccessSuffix'
-                  ? 'Struct'
-                  : 'Any'
+          ? 'Id.DsMap'
+          : accessor.name === 'gridAccessSuffix'
+          ? 'Id.DsGrid'
+          : accessor.name === 'listAccessSuffix'
+          ? 'Id.DsList'
+          : accessor.name === 'structAccessSuffix'
+          ? 'Struct'
+          : 'Any',
       );
       nextAccessed = {
-            range: Range.fromCst(visitor.PROCESSOR.file, accessor.location!),
-    ctx: lastAccessed.ctx,
-      }
-      nextAccessed.types = allowedTypes.map(t => t.items).filter(t => !!t) as TypeStore[];
+        range: Range.fromCst(visitor.PROCESSOR.file, accessor.location!),
+        ctx: lastAccessed.ctx,
+      };
+      nextAccessed.types = allowedTypes
+        .map((t) => t.items)
+        .filter((t) => !!t) as TypeStore[];
       break;
     case 'dotAccessSuffix':
-      nextAccessed = processDotAccessor(visitor, lastAccessed, accessor, nextAccessor);
+      nextAccessed = processDotAccessor(
+        visitor,
+        lastAccessed,
+        accessor,
+        nextAccessor,
+      );
       break;
     case 'functionArguments':
       nextAccessed = processFunctionArguments(visitor, lastAccessed, accessor);
@@ -183,11 +219,15 @@ function processNextAccessor(
   return nextAccessed;
 }
 
-function processFunctionArguments(visitor: GmlSignifierVisitor, lastAccessed: LastAccessed, suffix: FunctionArgumentsCstNode):LastAccessed {
+function processFunctionArguments(
+  visitor: GmlSignifierVisitor,
+  lastAccessed: LastAccessed,
+  suffix: FunctionArgumentsCstNode,
+): LastAccessed {
   const nextAccessed: LastAccessed = {
     range: Range.fromCst(visitor.PROCESSOR.file, suffix.location!),
     ctx: lastAccessed.ctx,
-  }
+  };
 
   // Get the first function type from the lastAccessed types
   const functionType = getTypeOfKind(lastAccessed.types, 'Function');
@@ -323,20 +363,30 @@ function processFunctionArguments(visitor: GmlSignifierVisitor, lastAccessed: La
   return nextAccessed;
 }
 
-function processDotAccessor(visitor: GmlSignifierVisitor, lastAccessed: LastAccessed, accessor: DotAccessSuffixCstNode, nextAccessor?: AccessorNode): LastAccessed {
+function processDotAccessor(
+  visitor: GmlSignifierVisitor,
+  lastAccessed: LastAccessed,
+  accessor: DotAccessSuffixCstNode,
+  nextAccessor?: AccessorNode,
+): LastAccessed {
   const nextAccessed: LastAccessed = {
     range: Range.fromCst(visitor.PROCESSOR.file, accessor.location!),
     ctx: lastAccessed.ctx,
-  }
-  
+  };
+
   // Reduce the available types from lastAccessed to those that
   // are dot-accessible
-  const dottableTypes = getTypesOfKind(lastAccessed.types, [...withableTypes, 'Enum']);
+  const dottableTypes = getTypesOfKind(lastAccessed.types, [
+    ...withableTypes,
+    'Enum',
+  ]);
 
   if (!dottableTypes.length) {
     // Early return. Just set the type to ANY and move along.
     nextAccessed.types = [visitor.ANY];
-    const isDotAccessible = !lastAccessed.types?.length || getTypeOfKind(lastAccessed.types, ['Any', 'Unknown', 'Mixed']);
+    const isDotAccessible =
+      !lastAccessed.types?.length ||
+      getTypeOfKind(lastAccessed.types, ['Any', 'Unknown', 'Mixed']);
     if (!isDotAccessible) {
       visitor.PROCESSOR.addDiagnostic(
         'INVALID_OPERATION',
@@ -347,15 +397,19 @@ function processDotAccessor(visitor: GmlSignifierVisitor, lastAccessed: LastAcce
     return nextAccessed;
   }
 
-
   let dottableType = dottableTypes[0];
   if (dottableTypes.length > 1) {
     // We may have a union of valid types, so it's helpful to know
     // the subsequent accessor (if there is one) -- we can use it
     // to narrow down which type is likely intended.
-    const nextAccessorName = nextAccessor?.name === 'dotAccessSuffix' ? identifierFrom(nextAccessor.children.identifier)?.name : undefined;
+    const nextAccessorName =
+      nextAccessor?.name === 'dotAccessSuffix'
+        ? identifierFrom(nextAccessor.children.identifier)?.name
+        : undefined;
     if (nextAccessorName) {
-      dottableType = dottableTypes.find(t => t.getMember(nextAccessorName)) || dottableType;
+      dottableType =
+        dottableTypes.find((t) => t.getMember(nextAccessorName)) ||
+        dottableType;
     }
   }
 
@@ -385,29 +439,39 @@ function processDotAccessor(visitor: GmlSignifierVisitor, lastAccessed: LastAcce
   // Then we've got an identifier! Get its info.
   const propertyIdentifier = identifierFrom(dotAccessor)!;
   const propertyNameLocation = dotAccessor.identifier[0].location!;
-  const propertyNameRange =
-    visitor.PROCESSOR.range(propertyNameLocation);
+  const propertyNameRange = visitor.PROCESSOR.range(propertyNameLocation);
   nextAccessed.range = propertyNameRange;
   nextAccessed.name = propertyIdentifier.name;
-  
+
   // If we have an existing property, we just need to add
   // a ref and update the nextAccessed info. If not, we'll
   // need to first create that property.
-  
-  let property = dottableType.getMember(
-    propertyIdentifier.name,
-  );
+
+  let property = dottableType.getMember(propertyIdentifier.name);
   if (property) {
     // If there's an assignment and this isn't an enum, then
     // handle then offload to the assignment logic
-    if (lastAccessed.rhs && !isTypeOfKind(dottableType, "Enum") && !property.def) {
-      property = assignVariable(visitor, { name: propertyIdentifier.name, container: dottableType, range: propertyNameRange }, lastAccessed.rhs, {
-        ctx: lastAccessed.ctx,
-        docs: lastAccessed.docs,
-        instance: true
-      })?.item || property;
-    }
-    else {
+    if (
+      lastAccessed.rhs &&
+      !isTypeOfKind(dottableType, 'Enum') &&
+      !property.def
+    ) {
+      property =
+        assignVariable(
+          visitor,
+          {
+            name: propertyIdentifier.name,
+            container: dottableType,
+            range: propertyNameRange,
+          },
+          lastAccessed.rhs,
+          {
+            ctx: lastAccessed.ctx,
+            docs: lastAccessed.docs,
+            instance: true,
+          },
+        )?.item || property;
+    } else {
       // Otherwise we'll need to manually add the reference
       property.addRef(propertyNameRange);
     }
@@ -418,17 +482,24 @@ function processDotAccessor(visitor: GmlSignifierVisitor, lastAccessed: LastAcce
       accessor.location!,
       `Undefined enum member.`,
     );
-  }
-  else if (lastAccessed.rhs) {
+  } else if (lastAccessed.rhs) {
     // Then this variable is not yet defined on this struct,
     // but we have an assignment operation to use to define it.
-    property = assignVariable(visitor, { name: propertyIdentifier.name, container: dottableType as WithableType, range: propertyNameRange }, lastAccessed.rhs, {
-      ctx: lastAccessed.ctx,
-      docs: lastAccessed.docs,
-      instance: true
-    })?.item;
-  }
-  else {
+    property = assignVariable(
+      visitor,
+      {
+        name: propertyIdentifier.name,
+        container: dottableType as WithableType,
+        range: propertyNameRange,
+      },
+      lastAccessed.rhs,
+      {
+        ctx: lastAccessed.ctx,
+        docs: lastAccessed.docs,
+        instance: true,
+      },
+    )?.item;
+  } else {
     // Then this variable is not yet defined on this struct.
     // We need to add it! If this is an assignment operation, then
     // we can use the central assignment logic. Otherwise we just
@@ -448,10 +519,9 @@ function processDotAccessor(visitor: GmlSignifierVisitor, lastAccessed: LastAcce
   visitor.PROCESSOR.scope.setEnd(propertyNameLocation, true);
   visitor.PROCESSOR.popSelfScope(propertyNameLocation, true);
   nextAccessed.signifier = property;
-  nextAccessed.types = arrayWrapped(property?.type || visitor.ANY)
+  nextAccessed.types = arrayWrapped(property?.type || visitor.ANY);
   return nextAccessed;
 }
-
 
 function visitIdentifierAccessorOld(
   this: GmlSignifierVisitor,
@@ -483,7 +553,10 @@ function visitIdentifierAccessorOld(
       name,
       type: isArray(type) ? type[0] : type,
       range: initialItem.range,
-      container: 'parent' in initialItem.item ? initialItem.item.parent as WithableType : undefined,
+      container:
+        'parent' in initialItem.item
+          ? (initialItem.item.parent as WithableType)
+          : undefined,
     };
     if ('addRef' in initialItem.item) {
       initialItem.item.addRef(initialItem.range);
@@ -510,13 +583,15 @@ function visitIdentifierAccessorOld(
         name,
         type: newMember.type,
         range,
-      container: fullScope.self as WithableType,
+        container: fullScope.self as WithableType,
       };
     }
   }
 
   let lastAccessedType: Type | TypeStore = assignment.variable.type || this.ANY;
-  assignment.variable.range = this.PROCESSOR.range(children.identifier[0].location!);
+  assignment.variable.range = this.PROCESSOR.range(
+    children.identifier[0].location!,
+  );
   const suffixes = sortedAccessorSuffixes(children.accessorSuffixes);
 
   // Compute useful metadata
@@ -546,7 +621,9 @@ function visitIdentifierAccessorOld(
       case 'listAccessSuffix':
       case 'structAccessSuffix':
         this.visit(suffix.children.expression, ctx);
-        const type = arrayUnwrapped(assignment.variable.type?.items || this.ANY);
+        const type = arrayUnwrapped(
+          assignment.variable.type?.items || this.ANY,
+        );
         assignment.variable = {
           type: type,
           range: suffixRange,
@@ -672,7 +749,10 @@ function visitIdentifierAccessorOld(
         }
         break;
       case 'functionArguments':
-        const functionType = getTypeOfKind(assignment.variable.type, 'Function');
+        const functionType = getTypeOfKind(
+          assignment.variable.type,
+          'Function',
+        );
 
         // If this is a mixin call, then we need to ensure that the context
         // includes the variables created by the mixin function.
