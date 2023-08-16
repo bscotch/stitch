@@ -504,7 +504,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       ctx: VisitorContext;
     },
   ) {
-    return assignVariable.bind(this)(variable, rhs, info);
+    return assignVariable(this,variable, rhs, info);
   }
 
   override variableAssignment(

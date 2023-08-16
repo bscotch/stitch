@@ -20,6 +20,7 @@ import {
   getTypeOfKind,
   getTypeStoreOrType,
   getTypesOfKind,
+  isTypeOfKind,
   normalizeType,
   replaceGenerics,
   updateGenericsMap,
@@ -27,7 +28,7 @@ import {
 import { EnumType, Type, TypeStore, WithableType } from './types.js';
 import { withableTypes } from './types.primitives.js';
 import { Values } from './util.js';
-import type { AssignmentInfo, AssignmentVariable } from './visitor.assign.js';
+import { assignVariable, type AssignmentInfo, type AssignmentVariable } from './visitor.assign.js';
 import type { GmlSignifierVisitor } from './visitor.js';
 
 interface LastAccessed {
@@ -50,7 +51,9 @@ interface LastAccessed {
   docs?: Docs;
 }
 
-function visitIdentifierAccessorNew(
+type AccessorNode = Defined<Values<AccessorSuffixesCstChildren>>[number];
+
+export function visitIdentifierAccessor(
   this: GmlSignifierVisitor,
   children: IdentifierAccessorCstChildren,
   ctx: VisitorContext,): Type[] |TypeStore[] {
@@ -121,14 +124,18 @@ function visitIdentifierAccessorNew(
       lastAccessed.rhs = rhs;
       lastAccessed.docs = docs; 
     }
-    lastAccessed = processNextAccessor(this,lastAccessed, suffixes[i]); 
+    lastAccessed = processNextAccessor(this,lastAccessed, suffixes[i], suffixes[i + 1]); 
   }
 
   return lastAccessed.types || [this.ANY];
 }
 
+/**
+ * @param nextAccessor If there is another accessor after this one, having it as a lookahead is useful in some cases. */
 function processNextAccessor(
-  visitor: GmlSignifierVisitor, lastAccessed: LastAccessed, accessor: Defined<Values<AccessorSuffixesCstChildren>>[number]): LastAccessed {
+  visitor: GmlSignifierVisitor, lastAccessed: LastAccessed, accessor: AccessorNode,
+  nextAccessor?: AccessorNode
+): LastAccessed {
   // Many suffix cases include an expression we need to evaluate.
   // For example, `hello[expression]`
   const accessorExpressionType = 'expression' in accessor.children ? visitor.visit(accessor.children.expression, lastAccessed.ctx) : visitor.ANY;
@@ -166,7 +173,7 @@ function processNextAccessor(
       nextAccessed.types = allowedTypes.map(t => t.items).filter(t => !!t) as TypeStore[];
       break;
     case 'dotAccessSuffix':
-      nextAccessed = processDotAccessor(visitor, lastAccessed, accessor);
+      nextAccessed = processDotAccessor(visitor, lastAccessed, accessor, nextAccessor);
       break;
     case 'functionArguments':
       nextAccessed = processFunctionArguments(visitor, lastAccessed, accessor);
@@ -316,133 +323,137 @@ function processFunctionArguments(visitor: GmlSignifierVisitor, lastAccessed: La
   return nextAccessed;
 }
 
-function processDotAccessor(visitor: GmlSignifierVisitor, lastAccessed: LastAccessed, suffix: DotAccessSuffixCstNode):LastAccessed {
+function processDotAccessor(visitor: GmlSignifierVisitor, lastAccessed: LastAccessed, accessor: DotAccessSuffixCstNode, nextAccessor?: AccessorNode): LastAccessed {
   const nextAccessed: LastAccessed = {
-    range: Range.fromCst(visitor.PROCESSOR.file, suffix.location!),
+    range: Range.fromCst(visitor.PROCESSOR.file, accessor.location!),
     ctx: lastAccessed.ctx,
+  }
+  
+  // Reduce the available types from lastAccessed to those that
+  // are dot-accessible
+  const dottableTypes = getTypesOfKind(lastAccessed.types, [...withableTypes, 'Enum']);
+
+  if (!dottableTypes.length) {
+    // Early return. Just set the type to ANY and move along.
+    nextAccessed.types = [visitor.ANY];
+    const isDotAccessible = !lastAccessed.types?.length || getTypeOfKind(lastAccessed.types, ['Any', 'Unknown', 'Mixed']);
+    if (!isDotAccessible) {
+      visitor.PROCESSOR.addDiagnostic(
+        'INVALID_OPERATION',
+        accessor.location!,
+        `Type does not allow dot accessors.`,
+      );
+    }
+    return nextAccessed;
+  }
+
+
+  let dottableType = dottableTypes[0];
+  if (dottableTypes.length > 1) {
+    // We may have a union of valid types, so it's helpful to know
+    // the subsequent accessor (if there is one) -- we can use it
+    // to narrow down which type is likely intended.
+    const nextAccessorName = nextAccessor?.name === 'dotAccessSuffix' ? identifierFrom(nextAccessor.children.identifier)?.name : undefined;
+    if (nextAccessorName) {
+      dottableType = dottableTypes.find(t => t.getMember(nextAccessorName)) || dottableType;
+    }
   }
 
   // Then we need to change self-scope to be inside
   // the prior dot-accessible.
-  const dotAccessor = suffix.children;
+  const dotAccessor = accessor.children;
   const dot = fixITokenLocation(dotAccessor.Dot[0]);
-  const dottableType = assignment.variable.type
-    ? getTypeOfKind(assignment.variable.type, [...withableTypes, 'Enum'])
-    : undefined;
-  if (dottableType) {
-    visitor.PROCESSOR.scope.setEnd(dot);
-    visitor.PROCESSOR.pushSelfScope(dot, dottableType, true, {
-      accessorScope: true,
-    });
-    // While editing a user will dot into something
-    // prior to actually adding the new identifier.
-    // To provide autocomplete options, we need to
-    // still add a scopeRange for the dot.
-    if (isEmpty(dotAccessor.identifier[0].children)) {
-      visitor.PROCESSOR.scope.setEnd(dot, true);
-      visitor.PROCESSOR.popSelfScope(dot, true);
-      assignment.variable = {};
-      lastAccessedType = visitor.ANY;
-    } else {
-      // Then this identifier should exist in the parent struct
-      const propertyIdentifier = identifierFrom(dotAccessor)!;
-      const propertyNameLocation = dotAccessor.identifier[0].location!;
-      const propertyNameRange =
-        visitor.PROCESSOR.range(propertyNameLocation);
-      const existingProperty = dottableType.getMember(
-        propertyIdentifier.name,
-      );
-      if (existingProperty) {
-        const ref = existingProperty.addRef(propertyNameRange);
-        assignment.variable = {
-          type: existingProperty.type,
-          range: propertyNameRange,
-        };
-        lastAccessedType = existingProperty.type;
-        // On update, we need to make sure that the definition
-        // still exists.
-        if (isLastSuffix && rhs && !existingProperty.def) {
-          existingProperty.definedAt(propertyNameRange);
-          ref.isDef = true;
-          if (docs) {
-            existingProperty.describe(docs.jsdoc.description);
-            existingProperty.setType(docs.type);
-          } else if (inferredType) {
-            existingProperty.setType(inferredType);
-          }
-        }
-      } else if (!existingProperty && dottableType.kind !== 'Enum') {
-        // Then this variable is not yet defined on this struct.
-        // We need to add it!
-        const newMember = dottableType.addMember(propertyIdentifier.name);
-        if (newMember) {
-          newMember.instance = true;
-          const ref = newMember.addRef(propertyNameRange);
-          // If this is the last suffix and this is
-          // an assignment, then also set the `def` of the
-          // new member.
-          if (isLastSuffix && rhs) {
-            newMember.definedAt(propertyNameRange);
-            ref.isDef = true;
-            if (docs) {
-              newMember.describe(docs.jsdoc.description);
-              newMember.setType(docs.type);
-            } else if (inferredType) {
-              newMember.setType(inferredType);
-            }
-          }
-          // Else if this is a struct without any type info,
-          // allow it to be "defined" since the user has no opinions about its existence.
-          // TODO: This should probably be an OPTION
-          else if (
-            dottableType.totalMembers() === 0 &&
-            !dottableType.items?.type.length
-          ) {
-            newMember.def = {}; // Prevents "Undeclared" errors
-          }
-          assignment.variable = {
-            type: newMember.type,
-            range: propertyNameRange,
-          };
-          lastAccessedType = newMember.type;
-        } else {
-          visitor.PROCESSOR.addDiagnostic(
-            'INVALID_OPERATION',
-            suffix.location!,
-            `Unknown property.`,
-          );
-        }
-      } else {
-        assignment.variable = {};
-        lastAccessedType = visitor.ANY;
-      }
-      visitor.PROCESSOR.scope.setEnd(propertyNameLocation, true);
-      visitor.PROCESSOR.popSelfScope(propertyNameLocation, true);
+
+  // Set the self-scope starting right after the dot operator
+  visitor.PROCESSOR.scope.setEnd(dot);
+  visitor.PROCESSOR.pushSelfScope(dot, dottableType, true, {
+    accessorScope: true,
+  });
+
+  // While editing a user will dot into something
+  // prior to actually adding the new identifier.
+  // To provide autocomplete options, we need to
+  // still add a scopeRange for the dot.
+  const hasIdentifier = !isEmpty(dotAccessor.identifier[0].children);
+  if (!hasIdentifier) {
+    visitor.PROCESSOR.scope.setEnd(dot, true);
+    visitor.PROCESSOR.popSelfScope(dot, true);
+    nextAccessed.types = [visitor.ANY];
+    return nextAccessed;
+  }
+
+  // Then we've got an identifier! Get its info.
+  const propertyIdentifier = identifierFrom(dotAccessor)!;
+  const propertyNameLocation = dotAccessor.identifier[0].location!;
+  const propertyNameRange =
+    visitor.PROCESSOR.range(propertyNameLocation);
+  nextAccessed.range = propertyNameRange;
+  nextAccessed.name = propertyIdentifier.name;
+  
+  // If we have an existing property, we just need to add
+  // a ref and update the nextAccessed info. If not, we'll
+  // need to first create that property.
+  
+  let property = dottableType.getMember(
+    propertyIdentifier.name,
+  );
+  if (property) {
+    // If there's an assignment and this isn't an enum, then
+    // handle then offload to the assignment logic
+    if (lastAccessed.rhs && !isTypeOfKind(dottableType, "Enum") && !property.def) {
+      property = assignVariable(visitor, { name: propertyIdentifier.name, container: dottableType, range: propertyNameRange }, lastAccessed.rhs, {
+        ctx: lastAccessed.ctx,
+        docs: lastAccessed.docs,
+        instance: true
+      })?.item || property;
     }
-  } else {
-    // TODO: Handle dot accessors for other valid dot-accessible types.
-    // But for now, just emit an error for definitenly invalid types.
-    const isDotAccessible =
-      getTypeOfKind(assignment.variable.type, ['Any', 'Unknown']) ||
-      !assignment.variable.type ||
-      (assignment.variable.type instanceof TypeStore &&
-        assignment.variable.type.type.length === 0);
-    assignment.variable = {};
-    lastAccessedType = visitor.ANY;
-    if (!isDotAccessible) {
+    else {
+      // Otherwise we'll need to manually add the reference
+      property.addRef(propertyNameRange);
+    }
+  } else if (dottableType.kind === 'Enum') {
+    // Then we're trying to get an enum member that doesn't exist!
+    visitor.PROCESSOR.addDiagnostic(
+      'INVALID_OPERATION',
+      accessor.location!,
+      `Undefined enum member.`,
+    );
+  }
+  else if (lastAccessed.rhs) {
+    // Then this variable is not yet defined on this struct,
+    // but we have an assignment operation to use to define it.
+    property = assignVariable(visitor, { name: propertyIdentifier.name, container: dottableType as WithableType, range: propertyNameRange }, lastAccessed.rhs, {
+      ctx: lastAccessed.ctx,
+      docs: lastAccessed.docs,
+      instance: true
+    })?.item;
+  }
+  else {
+    // Then this variable is not yet defined on this struct.
+    // We need to add it! If this is an assignment operation, then
+    // we can use the central assignment logic. Otherwise we just
+    // need to add an "undeclared" variable to the current type.
+    property = dottableType.addMember(propertyIdentifier.name);
+    if (property) {
+      property.instance = true;
+      property.addRef(propertyNameRange);
+    } else {
       visitor.PROCESSOR.addDiagnostic(
         'INVALID_OPERATION',
-        suffix.location!,
-        `Type does not allow dot accessors.`,
+        accessor.location!,
+        `Unknown property.`,
       );
     }
   }
-
+  visitor.PROCESSOR.scope.setEnd(propertyNameLocation, true);
+  visitor.PROCESSOR.popSelfScope(propertyNameLocation, true);
+  nextAccessed.signifier = property;
+  nextAccessed.types = arrayWrapped(property?.type || visitor.ANY)
   return nextAccessed;
 }
 
 
-export function visitIdentifierAccessor(
+function visitIdentifierAccessorOld(
   this: GmlSignifierVisitor,
   children: IdentifierAccessorCstChildren,
   ctx: VisitorContext,

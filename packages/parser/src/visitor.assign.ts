@@ -28,7 +28,7 @@ export interface AssignmentVariable {
 }
 
 export function assignVariable(
-  this: GmlSignifierVisitor,
+  visitor: GmlSignifierVisitor,
   variable: AssignmentVariable,
   rawRhs: Rhs,
   info: AssignmentInfo,
@@ -38,7 +38,7 @@ export function assignVariable(
   //#region Collect useful info
   // Figure out what we're assigning to so we can handle
   // already-known types (from JSDocs).
-  const fullScope = this.PROCESSOR.fullScope;
+  const fullScope = visitor.PROCESSOR.fullScope;
   // Are we in the definitiveSelf?
   const inDefinitiveSelf = variable.container === fullScope.definitiveSelf;
   //#endregion
@@ -67,14 +67,14 @@ export function assignVariable(
         signifier.instance = true;
       } else {
         // Then this is an immutable type
-        this.PROCESSOR.addDiagnostic(
+        visitor.PROCESSOR.addDiagnostic(
           'INVALID_OPERATION',
           variable.range,
           `Cannot add variables to this type.`,
         );
       }
     } else {
-      this.PROCESSOR.addDiagnostic(
+      visitor.PROCESSOR.addDiagnostic(
         'UNDECLARED_GLOBAL_REFERENCE',
         variable.range,
         `${variable.name} is not declared anywhere but is assigned in global scope.`,
@@ -94,7 +94,7 @@ export function assignVariable(
     // and *would* be definitive here, then we need to update it.
     ensureDefinitive(
       variable.container as WithableType,
-      this.PROCESSOR.currentDefinitiveSelf,
+      visitor.PROCESSOR.currentDefinitiveSelf,
       signifier,
       ref,
     );
@@ -110,16 +110,16 @@ export function assignVariable(
     ctx.docs = info.docs;
     if (assignedToFunction) {
       // ctx.self = struct;
-      this.functionExpression(assignedToFunction, ctx);
+      visitor.functionExpression(assignedToFunction, ctx);
     } else if (assignedToStructLiteral) {
-      this.structLiteral(assignedToStructLiteral, ctx);
+      visitor.structLiteral(assignedToStructLiteral, ctx);
     } else if (assignedToArrayLiteral) {
-      this.arrayLiteral(assignedToArrayLiteral, ctx);
+      visitor.arrayLiteral(assignedToArrayLiteral, ctx);
     }
   } else if (rhs) {
     const inferredType = normalizeType(
-      this.assignmentRightHandSide(rhs, withCtxKind(ctx, 'assignment')),
-      this.PROCESSOR.project.types,
+      visitor.assignmentRightHandSide(rhs, withCtxKind(ctx, 'assignment')),
+      visitor.PROCESSOR.project.types,
     );
     const forceOverride = info.docs?.jsdoc.kind === 'type';
     if (signifier && (!signifier.isTyped || wasUndeclared || forceOverride)) {
@@ -132,7 +132,7 @@ export function assignVariable(
           info.docs.type[0].signifier
         ) {
           info.docs.type[0].signifier.addRef(
-            Range.from(this.PROCESSOR.file, info.docs.jsdoc.type),
+            Range.from(visitor.PROCESSOR.file, info.docs.jsdoc.type),
           );
         }
       } else if (inferredType) {
