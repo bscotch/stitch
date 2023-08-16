@@ -125,7 +125,8 @@ export function visitIdentifierAccessor(
     lastAccessed.types = arrayWrapped(getTypeStoreOrType(item));
     // Add a reference! But if this is an assignment that'll be
     // handled later.
-    if (!rhs) {
+    const refAddedLater = rhs && !item.def;
+    if (!refAddedLater) {
       item.addRef(lastAccessed.range);
     }
   } else if (item?.$tag === 'Type') {

@@ -29,9 +29,8 @@ import type {
 } from '../gml-cst.js';
 import { JsdocSummary, gmlLinesByGroup, parseJsdoc } from './jsdoc.js';
 import { logger } from './logger.js';
-import { Docs, GmlVisitorBase, VisitorContext, withCtxKind } from './parser.js';
+import { GmlVisitorBase, VisitorContext, withCtxKind } from './parser.js';
 import {
-  Rhs,
   functionFromRhs,
   identifierFrom,
   sortChildren,
@@ -482,29 +481,12 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const local = this.PROCESSOR.currentLocalScope;
     const range = this.PROCESSOR.range(children.Identifier[0]);
     const name = children.Identifier[0].image;
-    return this.ASSIGN(
+    return assignVariable(
+      this,
       { container: local, name, range },
       children.assignmentRightHandSide,
       { ctx, docs, local: true },
     );
-  }
-
-  /**
-   * Given a signifier, its RHS, and any other details discovered
-   * during visiting, handle tasks related to variable assignment.
-   */
-  ASSIGN(
-    variable: { name: string; range: Range; container: WithableType },
-    rhs: Rhs,
-    info: {
-      static?: boolean;
-      instance?: boolean;
-      local?: boolean;
-      docs?: Docs;
-      ctx: VisitorContext;
-    },
-  ) {
-    return assignVariable(this,variable, rhs, info);
   }
 
   override variableAssignment(
@@ -539,7 +521,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           : (fullScope.self as WithableType);
     }
 
-    return this.ASSIGN({ name, range, container }, rhs, {
+    return assignVariable(this, { name, range, container }, rhs, {
       static: isStatic,
       docs,
       ctx,
@@ -616,7 +598,8 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           parts.stringLiteral![0].children.StringEnd[0],
         );
       }
-      this.ASSIGN(
+      assignVariable(
+        this,
         { name, range, container: struct },
         parts.assignmentRightHandSide,
         { docs, ctx, instance: true },
@@ -833,6 +816,9 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           arrayType.addItemType(itemType);
         }
       }
+    }
+    if (ctx.signifier) {
+      ctx.signifier.setType(ctx.docs?.type || arrayType);
     }
     return arrayType;
   }
