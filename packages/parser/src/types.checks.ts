@@ -69,8 +69,11 @@ export function getTypeStoreOrType(
 /** Things that can be converted into an array of types */
 export type Typeable = Signifier | Type | TypeStore | (Type | TypeStore)[];
 
-export function getTypes(items: Typeable): Type[] {
+export function getTypes(items: Typeable | undefined): Type[] {
   const types: Type[] = [];
+  if (!items) {
+    return types;
+  }
   for (const item of arrayWrapped(items)) {
     if (item.$tag === 'Sym') {
       types.push(...item.type.type);
