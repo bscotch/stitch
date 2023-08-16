@@ -55,7 +55,10 @@ export class Code {
   /** For object events, whether or not `event_inherited` is unambiguously being called */
   public callsSuper = false;
 
-  constructor(readonly asset: Asset, readonly path: Pathy<string>) {
+  constructor(
+    readonly asset: Asset,
+    readonly path: Pathy<string>,
+  ) {
     this.clearAllDiagnostics();
   }
 
@@ -106,8 +109,8 @@ export class Code {
    * If this is an object event and Stitch knows about
    * its type, return the info about that event.
    */
-  get objectEventInfo(): ObjectEvent|undefined {
-    if(!this.isObjectEvent) return undefined;
+  get objectEventInfo(): ObjectEvent | undefined {
+    if (!this.isObjectEvent) return undefined;
     return getEventFromFilename(this.path.absolute);
   }
 
@@ -435,13 +438,17 @@ export class Code {
     if (!this.asset.isObject) return;
     const eventInfo = this.objectEventInfo;
     if (!eventInfo) {
-      logger.warn(`Stitch does not know about the ${this.name} event type!`)
+      logger.warn(`Stitch does not know about the ${this.name} event type!`);
       return;
     }
 
     // find the match for this event
     const yy = this.asset.yy as YyObject;
-    const eventIdx = yy.eventList.findIndex((event) => event.eventNum === eventInfo.eventNum && event.eventType === eventInfo.eventType);
+    const eventIdx = yy.eventList.findIndex(
+      (event) =>
+        event.eventNum === eventInfo.eventNum &&
+        event.eventType === eventInfo.eventType,
+    );
     if (eventIdx > -1) {
       yy.eventList.splice(eventIdx, 1);
       await this.asset.saveYy();

@@ -84,14 +84,12 @@ export class Flags {
   }
   set local(local: boolean) {
     this.setFlag(signifierFlags.Local, local);
-    this.setFlag(signifierFlags.Global, !local);
   }
 
   get global() {
     return this.getFlag(signifierFlags.Global);
   }
   set global(global: boolean) {
-    this.setFlag(signifierFlags.Local, !global);
     this.setFlag(signifierFlags.Global, global);
   }
 
