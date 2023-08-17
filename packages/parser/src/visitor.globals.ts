@@ -251,6 +251,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
         type = signifier.getTypeByKind('Function')!;
         this.PROCESSOR.project.types.set(typeName, type);
       }
+      // Global functions can only have one type!
       if (signifier.type.type.length > 1) {
         signifier.setType(type);
       }
@@ -258,6 +259,9 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       // Reset the self context to account for the user changing a function
       // from a constructor to a regular function and vice versa
       type.self = undefined;
+
+      // Ensure that the type links back to the signifier
+      type.signifier = signifier;
 
       // If it's a constructor, ensure the type exists
       if (constructorNode) {
