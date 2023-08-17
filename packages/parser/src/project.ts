@@ -1,5 +1,12 @@
 import { pathy, Pathy } from '@bscotch/pathy';
-import { Yy, Yyp, YypFolder, yypFolderSchema, YypResource } from '@bscotch/yy';
+import {
+  Yy,
+  Yyp,
+  yyParentSchema,
+  YypFolder,
+  yypFolderSchema,
+  YypResource,
+} from '@bscotch/yy';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
 import { logger } from './logger.js';
@@ -155,7 +162,7 @@ export class Project {
     return resource.getGmlFile(path);
   }
 
-  protected addAsset(resource: Asset): void {
+  protected registerAsset(resource: Asset): void {
     const name = this.assetNameFromPath(resource.dir);
     ok(!this.assets.has(name), `Resource ${name} already exists`);
     this.assets.set(name, resource);
@@ -165,7 +172,7 @@ export class Project {
    * Add an object to the yyp file. The string can include separators,
    * in which case folders will be ensured up to the final component.
    */
-  async addObject(path: string) {
+  async createObject(path: string) {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(path);
     if (!parsed) {
@@ -198,7 +205,7 @@ export class Project {
     // Create and add the asset
     const asset = await Asset.from(this, info);
     if (asset) {
-      this.addAsset(asset);
+      this.registerAsset(asset);
     }
     return asset;
   }
@@ -207,7 +214,7 @@ export class Project {
    * Add a script to the yyp file. The string can include separators,
    * in which case folders will be ensured up to the final component.
    */
-  async addScript(path: string) {
+  async createScript(path: string) {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(path);
     if (!parsed) {
@@ -239,7 +246,7 @@ export class Project {
     // Create and add the asset
     const asset = await Asset.from(this, info);
     if (asset) {
-      this.addAsset(asset);
+      this.registerAsset(asset);
     }
     return asset;
   }
@@ -262,7 +269,7 @@ export class Project {
       logger.error(`Adding scripts to the root directory is not supported.`);
       return;
     }
-    const folder = (await this.addFolder(parts))!;
+    const folder = (await this.createFolder(parts))!;
     return { folder, name };
   }
 
@@ -289,10 +296,89 @@ export class Project {
   }
 
   /**
+   * Rename an existing folder. Allows for renaming any part of
+   * the path (useful both "moving" and "renaming" a folder).
+   * Array inputs are interpreted as pre-split paths. If the new
+   * name matches an existing folder, it will in effect be "merged"
+   * with that existing folder.
+   *
+   * Returns the list of folders and assets that are now in a new
+   * location. */
+  async renameFolder(oldPath: string | string[], newPath: string | string[]) {
+    const oldParts = Array.isArray(oldPath) ? oldPath : oldPath.split(/[/\\]+/);
+    const newParts = Array.isArray(newPath) ? newPath : newPath.split(/[/\\]+/);
+    if (!oldParts.length) {
+      logger.warn(`Cannot rename root folder`);
+      return;
+    }
+    if (oldParts.join('/') === newParts.join('/')) {
+      logger.warn(`Folder is already named that. Skipping rename.`);
+      return;
+    }
+    // Ensure the new folder exists
+    const targetFolder = await this.createFolder(newParts);
+    if (!targetFolder) return;
+
+    // Move subfolders from the old folder to the new folder
+    const oldPathFull = `folders/${oldParts.join('/')}.yy`;
+    const oldPathPrefix = `folders/${oldParts.join('/')}/`;
+    const newPathPrefix = `folders/${newParts.join('/')}/`;
+    const movedFolders: [from: YypFolder, to: YypFolder | undefined][] = [];
+    // Start from the end so we can delete as we go
+    for (let f = this.yyp.Folders.length - 1; f >= 0; f--) {
+      const currentFolder = this.yyp.Folders[f];
+      // If this is the "old" folder, delete it
+      if (oldPathFull === currentFolder.folderPath) {
+        this.yyp.Folders.splice(f, 1);
+        movedFolders.push([currentFolder, undefined]);
+        continue;
+      }
+      // If this is a subfolder of the old folder, move it
+      if (currentFolder.folderPath.startsWith(oldPathPrefix)) {
+        const newPath = currentFolder.folderPath.replace(
+          oldPathPrefix,
+          newPathPrefix,
+        );
+        this.yyp.Folders[f] = {
+          ...currentFolder,
+          folderPath: newPath,
+        };
+        movedFolders.push([currentFolder, this.yyp.Folders[f]]);
+      }
+    }
+
+    // Move assets from the old folder to the new folder
+    const movedAssets: Asset[] = [];
+    for (const asset of this.assets.values()) {
+      const assetFolder = asset.yy?.parent as yyParentSchema;
+      let moved = false;
+      if (assetFolder.path === oldPathFull) {
+        asset.yy.parent = {
+          name: targetFolder.name,
+          path: targetFolder.folderPath,
+        };
+        moved = true;
+      } else if (assetFolder.path.startsWith(oldPathPrefix)) {
+        // The name comes from a subfolder, so just need to update the path
+        asset.yy.parent = {
+          name: assetFolder.name,
+          path: assetFolder.path.replace(oldPathPrefix, newPathPrefix),
+        };
+        moved = true;
+      }
+      if (moved) {
+        movedAssets.push(asset);
+        await asset.saveYy();
+      }
+    }
+    return { movedFolders, movedAssets };
+  }
+
+  /**
    * Add a folder to the yyp file. The string can include separators,
    * in which case nested folders will be created. If an array is provided,
    * it is interpreted as a pre-split path. */
-  async addFolder(path: string | string[]): Promise<YypFolder | undefined> {
+  async createFolder(path: string | string[]): Promise<YypFolder | undefined> {
     const parts = Array.isArray(path) ? path : path.split(/[/\\]+/);
     const folders = this.yyp.Folders;
     let current = 'folders/';
@@ -382,7 +468,7 @@ export class Project {
             logger.warn(`Resource ${resourceInfo.id.name} has no yy file`);
             return;
           }
-          this.addAsset(r);
+          this.registerAsset(r);
           options?.onLoadProgress?.(perAssetIncrement, `Loading assets...`);
           return r;
         }),
