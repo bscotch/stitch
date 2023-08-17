@@ -51,6 +51,14 @@ export abstract class StitchTreeItemBase<
       icon + '.svg',
     );
   }
+
+  toJSON() {
+    // Without ensuring json-serializability, drag-n-drop fails for some reason.
+    return {
+      label: this.label,
+      kind: this.kind,
+    };
+  }
 }
 
 export function setEventIcon(this: StitchTreeItemBase & { code: Code }) {

@@ -60,6 +60,15 @@ export const commands = {
       group: 'inline@2',
     },
   },
+  'stitch.assets.renameFolder': {
+    command: 'stitch.assets.renameFolder',
+    title: 'Rename...',
+    enablement: when.assetTreeFocusedAndHasProjects,
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsFolder,
+      group: '7_modification@1',
+    },
+  },
   'stitch.assets.newFolder': {
     command: 'stitch.assets.newFolder',
     title: 'New Group...',

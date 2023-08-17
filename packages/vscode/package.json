@@ -74,6 +74,11 @@
         "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
       },
       {
+        "command": "stitch.assets.renameFolder",
+        "title": "Rename...",
+        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.assets.newFolder",
         "title": "New Group...",
         "icon": "$(new-folder)",
@@ -357,6 +362,11 @@
           "command": "stitch.assets.filters.delete",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem =~ /^tree-filter-(enabled|disabled)/",
           "group": "inline@2"
+        },
+        {
+          "command": "stitch.assets.renameFolder",
+          "when": "viewItem == folder",
+          "group": "7_modification@1"
         },
         {
           "command": "stitch.assets.newFolder",

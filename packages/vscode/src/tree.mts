@@ -26,6 +26,7 @@ import {
   TreeShaderFile,
   TreeSpriteFrame,
 } from './tree.items.mjs';
+import { ensureFolders, validateFolderName } from './tree.utility.mjs';
 
 export type Treeable =
   | TreeAsset
@@ -75,11 +76,13 @@ export class GameMakerTreeProvider
     target: Treeable | undefined,
     dataTransfer: vscode.DataTransfer,
   ): void | Thenable<void> {
-    try {
-      console.log('drop', target, dataTransfer.get(this.treeMimeType));
-    } catch {
-      console.log('drop', target);
-    }
+    const dropping = dataTransfer.get(this.treeMimeType)?.value as Treeable[];
+    console.log(
+      'dropping',
+      dropping.map((d) => d.label),
+      'into',
+      target?.label,
+    );
   }
 
   handleDrag(
@@ -265,7 +268,7 @@ export class GameMakerTreeProvider
       return;
     }
     const { folder, path } = info;
-    const asset = await where.project!.addObject(path);
+    const asset = await where.project!.createObject(path);
     this.afterNewAssetCreated(asset, folder, where);
   }
 
@@ -275,8 +278,28 @@ export class GameMakerTreeProvider
       return;
     }
     const { folder, path } = info;
-    const asset = await where.project!.addScript(path);
+    const asset = await where.project!.createScript(path);
     this.afterNewAssetCreated(asset, folder, where);
+  }
+
+  async renameFolder(where: GameMakerFolder) {
+    const newFolderName = await vscode.window.showInputBox({
+      prompt: 'Provide a new name for this folder',
+      value: where.path,
+      valueSelection: [
+        where.path.length - where.name.length,
+        where.path.length,
+      ],
+      validateInput: validateFolderName,
+    });
+    if (!newFolderName) {
+      return;
+    }
+    const folder = ensureFolders(newFolderName, where);
+    await where.project!.renameFolder(where.path, folder.path);
+    this._onDidChangeTreeData.fire(where);
+    this._onDidChangeTreeData.fire(folder);
+    this.view.reveal(folder);
   }
 
   /**
@@ -286,26 +309,14 @@ export class GameMakerTreeProvider
     const newFolderName = await vscode.window.showInputBox({
       prompt: 'Enter a name for the new folder',
       placeHolder: 'e.g. my/new/folder',
-      validateInput(value) {
-        if (!value) {
-          return;
-        }
-        if (!value.match(/^[a-zA-Z0-9_][a-zA-Z0-9_/ ]*/)) {
-          return 'Folder names must start with a letter or underscore, and can only contain letters, numbers, underscores, and spaces.';
-        }
-        return;
-      },
+      validateInput: validateFolderName,
     });
     if (!newFolderName) {
       return;
     }
-    const parts = newFolderName.split('/');
-    let folder = where;
-    for (const part of parts) {
-      folder = folder.addFolder(part);
-    }
+    const folder = ensureFolders(newFolderName, where);
     // Ensure that this folder exists in the actual project.
-    await where.project!.addFolder(folder.path);
+    await where.project!.createFolder(folder.path);
     this._onDidChangeTreeData.fire(where);
     this.view.reveal(folder);
   }
@@ -520,6 +531,10 @@ export class GameMakerTreeProvider
     // Return subscriptions to owned commands and this view
     const subscriptions = [
       this.view,
+      registerCommand(
+        'stitch.assets.renameFolder',
+        this.renameFolder.bind(this),
+      ),
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),
       registerCommand('stitch.assets.newObject', this.createObject.bind(this)),

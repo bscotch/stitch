@@ -26,6 +26,8 @@
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Sprites","folderPath":"folders/Sprites.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Tile Sets","folderPath":"folders/Tile Sets.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Timelines","folderPath":"folders/Timelines.yy",},
+    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Subfolder","folderPath":"folders/Scripts/Subfolder.yy",},
+    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Subsubfolder","folderPath":"folders/Scripts/Subfolder/Subsubfolder.yy",},
   ],
   "IncludedFiles": [],
   "isEcma": false,
