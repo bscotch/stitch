@@ -69,14 +69,17 @@ export class GameMakerTreeProvider
     return this.provider.projects;
   }
 
-  async handleDrop(
-    target: Treeable | undefined,
-    dataTransfer: vscode.DataTransfer,
-  ) {
+  handleDrop(target: Treeable | undefined, dataTransfer: vscode.DataTransfer) {
     if (!target) return;
     if (!(target instanceof GameMakerFolder)) return;
+
+    // Filter down the list to only root items.
+    // Basically, we want root - most folders only,
+    // and then any assets that are not in any of those folders.
+    // We also need to make sure that we aren't moving a folder
+    // into its own child!
+
     const dropping = dataTransfer.get(this.treeMimeType)?.value as Treeable[];
-    // Filter down the list to only root items. Basically, we want root-most folders only, and then any assets that are not in any of those folders.
     const folders = new Set<GameMakerFolder>();
     const assets = new Set<TreeAsset>();
     // First find the root-most folders
@@ -84,6 +87,11 @@ export class GameMakerTreeProvider
       if (!(item instanceof GameMakerFolder)) {
         continue;
       }
+      // Check for circularity
+      if (target.isChildOf(item) || target === item) {
+        continue;
+      }
+
       // If this is the first/only item, just add it
       if (!folders.size) {
         folders.add(item);
