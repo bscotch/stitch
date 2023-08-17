@@ -76,16 +76,78 @@ export class GameMakerTreeProvider
   //   console.log('drag', source, dataTransfer);
   // }
 
-  handleDrop(
+  async handleDrop(
     target: Treeable | undefined,
     dataTransfer: vscode.DataTransfer,
-  ): void | Thenable<void> {
+  ) {
+    if (!target) return;
+    if (!(target instanceof GameMakerFolder)) return;
     const dropping = dataTransfer.get(this.treeMimeType)?.value as Treeable[];
-    console.log(
-      'dropping',
-      dropping.map((d) => d.label),
-      'into',
-      target?.label,
+    // Filter down the list to only root items. Basically, we want root-most folders only, and then any assets that are not in any of those folders.
+    const folders = new Set<GameMakerFolder>();
+    const assets = new Set<TreeAsset>();
+    // First find the root-most folders
+    outer: for (const item of dropping) {
+      if (!(item instanceof GameMakerFolder)) {
+        continue;
+      }
+      // If this is the first/only item, just add it
+      if (!folders.size) {
+        folders.add(item);
+        continue;
+      }
+      // If this folder is a parent of any of the others, remove those others
+      for (const folder of folders) {
+        if (item.isChildOf(folder)) {
+          // Then we can skip this one!
+          continue outer;
+        }
+        if (item.isParentOf(folder)) {
+          // Then we need to remove that folder, since the current item
+          // is further rootward
+          folders.delete(folder);
+        }
+      }
+      folders.add(item);
+    }
+    // Then add any assets that aren't in any of these folders
+    outer: for (const item of dropping) {
+      if (item instanceof TreeAsset) {
+        for (const folder of folders) {
+          if (item.parent.isChildOf(folder)) {
+            continue outer;
+          }
+        }
+        assets.add(item);
+      }
+    }
+
+    // Now we have a NON-OVERLAPPING set of folders and assets to move!
+
+    // "Move" folders by renaming them. Basically just need to change their
+    // parent path to the target folder's path.
+    const totalRenames = folders.size + assets.size;
+    let renameCount = 0;
+    return vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Moving stuff.`,
+        cancellable: false,
+      },
+      async (progress) => {
+        for (const folder of folders) {
+          const newPath = `${target.path}/${folder.name}`;
+          ensureFolders(newPath, target.heirarchy[0]);
+          await target.project!.renameFolder(folder.path, newPath);
+          renameCount++;
+          progress.report({
+            increment: (renameCount / totalRenames) * 100,
+            message: `Moving root-most folders...`,
+          });
+        }
+        // TODO: Move all of the assets!
+        this.rebuild();
+      },
     );
   }
 
@@ -286,7 +348,7 @@ export class GameMakerTreeProvider
     this.afterNewAssetCreated(asset, folder, where);
   }
 
-  async renameFolder(where: GameMakerFolder) {
+  async promptToRenameFolder(where: GameMakerFolder) {
     const newFolderName = await vscode.window.showInputBox({
       prompt: 'Provide a new name for this folder',
       ...getPathWithSelection(where),
@@ -295,15 +357,12 @@ export class GameMakerTreeProvider
     if (!newFolderName) {
       return;
     }
+    await this.renameFolder(where, newFolderName);
+  }
+
+  protected async renameFolder(where: GameMakerFolder, newFolderName: string) {
     const folder = ensureFolders(newFolderName, where.heirarchy[0]);
-    // for (const child of where.folders) {
-    //   folder.addFolder(child);
-    // }
     await where.project!.renameFolder(where.path, folder.path);
-    // for (const changed of [where, folder]) {
-    //   this._onDidChangeTreeData.fire(changed);
-    //   this._onDidChangeTreeData.fire(changed.parent);
-    // }
     this.rebuild();
     this.view.reveal(GameMakerFolder.lookup.get(newFolderName)!);
   }
@@ -555,7 +614,7 @@ export class GameMakerTreeProvider
       this.view,
       registerCommand(
         'stitch.assets.renameFolder',
-        this.renameFolder.bind(this),
+        this.promptToRenameFolder.bind(this),
       ),
       registerCommand(
         'stitch.assets.deleteFolder',
