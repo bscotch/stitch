@@ -295,6 +295,53 @@ export class Project {
     return resourceEntry;
   }
 
+  protected parseFolderPath(path: string | string[]) {
+    const parts = Array.isArray(path) ? path : path.split(/[/\\]+/);
+    const full = `folders/${parts.join('/')}.yy`;
+    const prefix = `folders/${parts.join('/')}/`;
+    return { parts, full, prefix };
+  }
+
+  listAssetsInFolder(
+    path: string | string[],
+    options?: { recursive: boolean },
+  ) {
+    const { full, prefix } = this.parseFolderPath(path);
+    const foundAssets: Asset[] = [];
+
+    for (const asset of this.assets.values()) {
+      const assetFolder = asset.yy?.parent as yyParentSchema;
+      if (assetFolder.path === full) {
+        foundAssets.push(asset);
+      } else if (options?.recursive && assetFolder.path.startsWith(prefix)) {
+        foundAssets.push(asset);
+      }
+    }
+    return foundAssets;
+  }
+
+  /**
+   * Delete a folder recursively. Only allowed if there are no assets
+   * in this or any subfolder.
+   */
+  async deleteFolder(path: string | string[]) {
+    const assets = this.listAssetsInFolder(path, { recursive: true });
+    const { full, prefix } = this.parseFolderPath(path);
+    assert(!assets.length, 'Cannot delete folder containing assets!');
+    for (let f = this.yyp.Folders.length - 1; f >= 0; f--) {
+      const currentFolder = this.yyp.Folders[f];
+      // If this is the "old" folder, delete it
+      if (
+        full === currentFolder.folderPath ||
+        currentFolder.folderPath.startsWith(prefix)
+      ) {
+        this.yyp.Folders.splice(f, 1);
+        continue;
+      }
+    }
+    await this.saveYyp();
+  }
+
   /**
    * Rename an existing folder. Allows for renaming any part of
    * the path (useful both "moving" and "renaming" a folder).
@@ -346,6 +393,7 @@ export class Project {
         movedFolders.push([currentFolder, this.yyp.Folders[f]]);
       }
     }
+    await this.saveYyp();
 
     // Move assets from the old folder to the new folder
     const movedAssets: Asset[] = [];
