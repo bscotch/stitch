@@ -58,6 +58,18 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
       .join('/');
   }
 
+  /**
+   * Check through the entire parent heirarchy, returning `true` if
+   * the current folder appears in the `folder`'s heirarchy.
+   */
+  isChildOf(folder: GameMakerFolder): boolean {
+    return this.heirarchy.includes(folder);
+  }
+
+  isParentOf(folder: GameMakerFolder): boolean {
+    return folder.isChildOf(this);
+  }
+
   getFolder(name: string): GameMakerFolder | undefined {
     return this.folders.find((x) => x.name === name) as GameMakerFolder;
   }

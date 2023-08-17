@@ -69,23 +69,103 @@ export class GameMakerTreeProvider
     return this.provider.projects;
   }
 
-  // handleDrag(
-  //   source: readonly Treeable[],
-  //   dataTransfer: vscode.DataTransfer,
-  // ): void | Thenable<void> {
-  //   console.log('drag', source, dataTransfer);
-  // }
+  handleDrop(target: Treeable | undefined, dataTransfer: vscode.DataTransfer) {
+    if (!target) return;
+    if (!(target instanceof GameMakerFolder)) return;
 
-  handleDrop(
-    target: Treeable | undefined,
-    dataTransfer: vscode.DataTransfer,
-  ): void | Thenable<void> {
+    // Filter down the list to only root items.
+    // Basically, we want root - most folders only,
+    // and then any assets that are not in any of those folders.
+    // We also need to make sure that we aren't moving a folder
+    // into its own child!
+
     const dropping = dataTransfer.get(this.treeMimeType)?.value as Treeable[];
-    console.log(
-      'dropping',
-      dropping.map((d) => d.label),
-      'into',
-      target?.label,
+    const folders = new Set<GameMakerFolder>();
+    const assets = new Set<TreeAsset>();
+    // First find the root-most folders
+    outer: for (const item of dropping) {
+      if (!(item instanceof GameMakerFolder)) {
+        continue;
+      }
+      // Check for circularity
+      if (target.isChildOf(item) || target === item) {
+        continue;
+      }
+
+      // If this is the first/only item, just add it
+      if (!folders.size) {
+        folders.add(item);
+        continue;
+      }
+      // If this folder is a parent of any of the others, remove those others
+      for (const folder of folders) {
+        if (item.isChildOf(folder)) {
+          // Then we can skip this one!
+          continue outer;
+        }
+        if (item.isParentOf(folder)) {
+          // Then we need to remove that folder, since the current item
+          // is further rootward
+          folders.delete(folder);
+        }
+      }
+      folders.add(item);
+    }
+    // Then add any assets that aren't in any of these folders
+    outer: for (const item of dropping) {
+      if (item instanceof TreeAsset) {
+        for (const folder of folders) {
+          if (item.parent.isChildOf(folder)) {
+            continue outer;
+          }
+        }
+        assets.add(item);
+      }
+    }
+
+    // Now we have a NON-OVERLAPPING set of folders and assets to move!
+
+    // "Move" folders by renaming them. Basically just need to change their
+    // parent path to the target folder's path.
+    const totalRenames = folders.size + assets.size;
+    let renameCount = 0;
+    if (!totalRenames) return;
+
+    return vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Moving stuff.`,
+        cancellable: false,
+      },
+      async (progress) => {
+        for (const folder of folders) {
+          const newPath = `${target.path}/${folder.name}`;
+          ensureFolders(newPath, target.heirarchy[0]);
+          await target.project!.renameFolder(folder.path, newPath);
+          renameCount++;
+          progress.report({
+            increment: (renameCount / totalRenames) * 100,
+            message: `Moving root-most folders...`,
+          });
+        }
+        // Assets can be moved in parallel since they store their
+        // folder in their own file.
+        const waits: Promise<any>[] = [];
+        for (const asset of assets) {
+          waits.push(
+            asset.asset.moveToFolder(target.path).then(() => {
+              renameCount++;
+              progress.report({
+                increment: (renameCount / totalRenames) * 100,
+                message: `Moving assets...`,
+              });
+            }),
+          );
+        }
+        await Promise.all(waits);
+        // TODO: Move all of the assets!
+        this.rebuild();
+      },
     );
   }
 
@@ -95,7 +175,6 @@ export class GameMakerTreeProvider
   ): void | Thenable<void> {
     const item = new vscode.DataTransferItem(source);
     dataTransfer.set(this.treeMimeType, item);
-    console.log('drag', source, item);
   }
 
   /**
@@ -104,7 +183,6 @@ export class GameMakerTreeProvider
    * with `/` separators.
    */
   reveal(item: string | Asset | Code | undefined) {
-    console.log('reveal', item);
     item ||= this.provider.getCurrentAsset();
     if (!item) {
       return;
@@ -286,7 +364,7 @@ export class GameMakerTreeProvider
     this.afterNewAssetCreated(asset, folder, where);
   }
 
-  async renameFolder(where: GameMakerFolder) {
+  async promptToRenameFolder(where: GameMakerFolder) {
     const newFolderName = await vscode.window.showInputBox({
       prompt: 'Provide a new name for this folder',
       ...getPathWithSelection(where),
@@ -295,15 +373,12 @@ export class GameMakerTreeProvider
     if (!newFolderName) {
       return;
     }
+    await this.renameFolder(where, newFolderName);
+  }
+
+  protected async renameFolder(where: GameMakerFolder, newFolderName: string) {
     const folder = ensureFolders(newFolderName, where.heirarchy[0]);
-    // for (const child of where.folders) {
-    //   folder.addFolder(child);
-    // }
     await where.project!.renameFolder(where.path, folder.path);
-    // for (const changed of [where, folder]) {
-    //   this._onDidChangeTreeData.fire(changed);
-    //   this._onDidChangeTreeData.fire(changed.parent);
-    // }
     this.rebuild();
     this.view.reveal(GameMakerFolder.lookup.get(newFolderName)!);
   }
@@ -555,7 +630,7 @@ export class GameMakerTreeProvider
       this.view,
       registerCommand(
         'stitch.assets.renameFolder',
-        this.renameFolder.bind(this),
+        this.promptToRenameFolder.bind(this),
       ),
       registerCommand(
         'stitch.assets.deleteFolder',

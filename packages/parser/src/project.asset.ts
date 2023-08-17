@@ -246,6 +246,29 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return paths;
   }
 
+  /** Move to a different, *existing* folder. */
+  async moveToFolder(path: string) {
+    assert(path, 'Must provide a path with non-zero length!');
+    if (!path.endsWith('.yy')) {
+      path = `folders/${path}.yy`;
+    }
+    const folderName = path
+      .split(/[/\\]+/)
+      .pop()!
+      .replace(/\.yy$/, '');
+    // Make sure that folder exists.
+    assert(folderName, 'Folder name is empty');
+    assert(
+      this.project.yyp.Folders.find((x) => x.folderPath === path),
+      `Folder ${path} does not exist`,
+    );
+    assert(this.yy.parent, 'Asset has no folder field');
+    // @ts-expect-error
+    logger.info('moving', this.name, 'from', this.yy.parent.path, 'to', path);
+    this.yy.parent = { name: folderName, path };
+    await this.saveYy();
+  }
+
   async createEvent(eventInfo: ObjectEvent) {
     assert(this.isObject, 'Can only create events for objects');
     // Create the file if it doesn't already exist
