@@ -227,7 +227,10 @@ function processFunctionArguments(
 
   // If this is a mixin call, then we need to ensure that the context
   // includes the variables created by the mixin function.
-  if (functionType?.signifier?.mixin && functionType.self) {
+  if (
+    (lastAccessed.signifier?.mixin || functionType?.signifier?.mixin) &&
+    functionType?.self
+  ) {
     const variables = functionType.self;
     for (const member of variables.listMembers()) {
       if (!member.def) continue;

@@ -290,5 +290,9 @@ export function replaceGenerics(
       replacedTypes.addType(newType);
     }
   }
+  // Remove 'Any' types if there is something more specific
+  if (replacedTypes.type.find((t) => t.kind !== 'Any')) {
+    replacedTypes.type = replacedTypes.type.filter((t) => t.kind !== 'Any');
+  }
   return replacedTypes;
 }
