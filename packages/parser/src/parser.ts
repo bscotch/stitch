@@ -423,14 +423,7 @@ export class GmlParser extends CstParser {
   readonly macroStatement = this.RULE('macroStatement', () => {
     this.CONSUME(t.Macro);
     this.CONSUME(t.Identifier);
-    this.OPTION(() => {
-      this.CONSUME(t.Escape);
-    });
-    this.SUBRULE(this.assignmentRightHandSide);
-    this.MANY(() => {
-      this.CONSUME2(t.Escape);
-      this.SUBRULE2(this.assignmentRightHandSide);
-    });
+    this.SUBRULE(this.expressionStatement);
   });
 
   readonly forStatement = this.RULE('forStatement', () => {
@@ -605,10 +598,12 @@ export class GmlParser extends CstParser {
     this.CONSUME(t.Switch);
     this.SUBRULE(this.expression);
     this.CONSUME(t.StartBrace);
-    this.MANY(() => this.OR([
-      { ALT: () => this.SUBRULE(this.caseStatement) },
-      { ALT: () => this.SUBRULE(this.defaultStatement) },
-    ]));
+    this.MANY(() =>
+      this.OR([
+        { ALT: () => this.SUBRULE(this.caseStatement) },
+        { ALT: () => this.SUBRULE(this.defaultStatement) },
+      ]),
+    );
     this.CONSUME(t.EndBrace);
   });
 

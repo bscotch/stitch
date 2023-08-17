@@ -191,6 +191,16 @@ export type BlockableStatementCstChildren = {
   blockStatement?: BlockStatementCstNode[];
 };
 
+export interface BlockableStatementsCstNode extends CstNode {
+  name: 'blockableStatements';
+  children: BlockableStatementsCstChildren;
+}
+
+export type BlockableStatementsCstChildren = {
+  statements?: StatementsCstNode[];
+  blockStatement?: BlockStatementCstNode[];
+};
+
 export interface BlockStatementCstNode extends CstNode {
   name: 'blockStatement';
   children: BlockStatementCstChildren;
@@ -521,8 +531,7 @@ export interface MacroStatementCstNode extends CstNode {
 export type MacroStatementCstChildren = {
   Macro: IToken[];
   Identifier: IToken[];
-  Escape?: IToken[];
-  assignmentRightHandSide: AssignmentRightHandSideCstNode[];
+  expressionStatement: ExpressionStatementCstNode[];
 };
 
 export interface ForStatementCstNode extends CstNode {
@@ -749,7 +758,7 @@ export type CaseStatementCstChildren = {
   Case: IToken[];
   expression: ExpressionCstNode[];
   Colon: IToken[];
-  statements: StatementsCstNode[];
+  blockableStatements: BlockableStatementsCstNode[];
 };
 
 export interface DefaultStatementCstNode extends CstNode {
@@ -760,7 +769,7 @@ export interface DefaultStatementCstNode extends CstNode {
 export type DefaultStatementCstChildren = {
   Default: IToken[];
   Colon: IToken[];
-  statements: StatementsCstNode[];
+  blockableStatements: BlockableStatementsCstNode[];
 };
 
 export interface BreakStatementCstNode extends CstNode {
@@ -852,6 +861,10 @@ export interface GmlVisitor<IN, OUT> extends ICstVisitor<IN, OUT> {
   elseIfStatement(children: ElseIfStatementCstChildren, param?: IN): OUT;
   elseStatement(children: ElseStatementCstChildren, param?: IN): OUT;
   blockableStatement(children: BlockableStatementCstChildren, param?: IN): OUT;
+  blockableStatements(
+    children: BlockableStatementsCstChildren,
+    param?: IN,
+  ): OUT;
   blockStatement(children: BlockStatementCstChildren, param?: IN): OUT;
   expressionStatement(
     children: ExpressionStatementCstChildren,

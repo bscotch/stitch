@@ -89,6 +89,14 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     this.validateVisitor();
   }
 
+  get FILE() {
+    return this.PROCESSOR.file;
+  }
+
+  get ASSET() {
+    return this.PROCESSOR.asset;
+  }
+
   /** Entrypoint */
   UPDATE_SIGNIFIERS(input: CstNode) {
     this.visit(input, { ctxKindStack: [] });
@@ -430,13 +438,17 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     // that they exist.
     const signifier = this.FIND_ITEM_BY_NAME(children.Identifier[0].image);
     assert(signifier, 'Macro should exist');
-    const inferredType = normalizeType(
-      this.assignmentRightHandSide(
-        children.assignmentRightHandSide[0].children,
-        withCtxKind(ctx, 'assignment'),
-      ),
-      this.PROCESSOR.project.types,
-    );
+
+    // If the macro ends with a ';' then it's a statement, otherwise
+    // we can treat it like a variable.
+    const isStatement = children.expressionStatement?.[0]?.children.Semicolon;
+    const expression =
+      children.expressionStatement?.[0]?.children.expression?.[0]?.children;
+    const expressionType = expression && this.expression(expression, ctx);
+
+    const inferredType = isStatement
+      ? Type.Undefined
+      : normalizeType(expressionType, this.PROCESSOR.project.types);
     signifier.setType(inferredType);
   }
 
