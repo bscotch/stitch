@@ -8,11 +8,9 @@ Edit your [GameMaker](https://gamemaker.io/en) projects in VSCode! This extensio
 
 Stitch for VSCode is in active development. Expect bugs, missing features, and frequent breaking changes. To see the current list of known issues and feature requests, check out the [issues page](https://github.com/bscotch/stitch/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Akeyboard%3A+vscode%22).
 
-## 🤔 Why tho?
+## 🤔 Why?
 
-We've used GameMaker for the entire 10+ year history of our studio. While the GameMaker IDE has been rapidly improving, VSCode is able to improve even faster due to its enormous community, stellar extension APIs, and use of accessible web technologies.
-
-Once we got the chance to use GitHub Copilot for other projects, we wanted to be able to use it while working on our games. This extension is an effort to implement enough GameMaker code editing features that we can do most of our game programming in it, and thus leverage new tools like Copilot.
+We've used GameMaker for the entire 10+ year history of [our studio](https://www.bscotch.net). While the GameMaker IDE has been rapidly improving, VSCode is able to improve even faster due to its enormous community, extensions API, and use of accessible web technologies. We wanted to take advantage of those things to make our GameMaker development experience as good as possible.
 
 ## 💡 Features
 
@@ -22,9 +20,9 @@ Stitch provides Intellisense (auto-complete, hovertext, function signature helpe
 
 ### 🪶 Feather and Type Support
 
-GameMaker includes a type system called "Feather", which Stitch tries to provide parity with. However, Stitch does take a different overall approach and does provide some extensions to the Feather type system and additional features that are not currently available in GameMaker.
+GameMaker includes a type system called "Feather", which Stitch builds upon. Stitch does take a different overall approach and provides some extensions to the Feather type system and additional features that are not currently available in GameMaker.
 
-- **Declarations FTW:** Stitch only infers types at the time an identifier is *declared*. When a variable is declared without assignment, Stitch will infer its type using the first assignment it sees, but that might result in surprises! For best results, use the `@type` JSDoc tag to specify the type of a variable when it is declared if there is any ambiguity. (Typescript and JavaScript+JSDoc programmers will be familiar with this approach.)
+- **Declarations FTW:** Unlike Feather, Stitch only infers types at the time an identifier is *declared*. When a variable is declared without assignment, Stitch will infer its type using the first assignment it sees, but that might result in surprises! For best results, use the `@type` JSDoc tag to specify the type of a variable when it is declared if there is any ambiguity. (Typescript and JavaScript+JSDoc programmers will be familiar with this approach.)
 - **Union Type Support:** Feather technically supports "union" types (e.g. `String|Number`), but with limitations. Stitch tries to provide more robust support for union types, though this is a work in progress.
 - **`InstanceType<>`, `ObjectType<>`:** Stitch provides custom "Utility Types" that you can use to get one type from another. For example, `InstanceType<Asset.GMObject.my_object>` evaluates to `Id.Instance.my_object`.
 - **`@self` tag for `with` statements:** the `with` statement changes the scope of your code, but Feather does not provide a way to tell it what that scope should be. Stitch allows you to use the `@self` (or `@context`) tag before a `with` statement to specify its context for cases where inference is insufficient:
@@ -81,7 +79,7 @@ GameMaker includes a type system called "Feather", which Stitch tries to provide
 
 ### 🔍 Navigating your project
 
-Stitch provides a tree view that mirrors the project resources in the GameMaker IDE. You can open it by clicking the Stitch icon in the Activity Bar.
+Stitch provides a tree view that mirrors the project resources in the GameMaker IDE. You can open it by clicking the Stitch icon in the Activity Bar. From there you can filter and open resources, add new ones, reorganize things, and so on.
 
 Stitch also provides support for symbol search <kbd><kbd>Ctrl</kbd>+<kbd>T</kbd></kbd> via the command palette, which finds where all of your project's globals are defined. It will also pull up your asset and your object events, so you can find everything in one place.
 
@@ -167,6 +165,7 @@ Different GameMaker versions may have different features and built-in functions,
 
 To see the current list of known issues and feature requests, check out the [issues page](https://github.com/bscotch/stitch/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Akeyboard%3A+vscode%22).
 
+- 😕 **Code only**. Stitch leverages VSCode's power for editing *code*, and makes no attempt to provide visual editors for any type of GameMaker asset.
 - 😕 **Macro limitations**. The Stitch parser can only handle macros that are set to simple and complete expressions. There are no plans to extend the parser to support more complex macro usage.
 - 😕 **Extraneous Curlies**. To avoid some parser complexity, the Stitch parser does not support extraneous curly braces (`{}`). For example, if a random section of code (not following a `for`, `if`, etc) is wrapped in curlies, the parser will emit errors.
 - 😕 **IIFFEs**. Stitch does not support IIFEs (immediately-invoked function expressions), e.g. `(function(){})()`. This is due to parser complexity, but pull requests addressing this are welcome!
