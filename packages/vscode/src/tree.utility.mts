@@ -25,3 +25,13 @@ export function ensureFolders(
   }
   return folder;
 }
+
+export function getPathWithSelection(from: { path: string; name: string }): {
+  value: string;
+  valueSelection: [number, number];
+} {
+  return {
+    value: from.path,
+    valueSelection: [from.path.length - from.name.length, from.path.length],
+  };
+}

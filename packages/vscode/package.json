@@ -48,14 +48,12 @@
       {
         "command": "stitch.assets.filters.enable",
         "icon": "$(filter)",
-        "title": "Enable Filter",
-        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+        "title": "Enable Filter"
       },
       {
         "command": "stitch.assets.filters.disable",
         "icon": "$(filter-filled)",
-        "title": "Disable Filter",
-        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+        "title": "Disable Filter"
       },
       {
         "command": "stitch.assets.filters.edit",
@@ -64,56 +62,50 @@
       {
         "command": "stitch.assets.filters.new",
         "icon": "$(add)",
-        "title": "New Filter...",
-        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+        "title": "New Filter..."
       },
       {
         "command": "stitch.assets.filters.delete",
         "icon": "$(close)",
-        "title": "Delete Filter",
-        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+        "title": "Delete Filter"
       },
       {
         "command": "stitch.assets.renameFolder",
-        "title": "Rename...",
-        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+        "title": "Rename..."
+      },
+      {
+        "command": "stitch.assets.deleteFolder",
+        "title": "Delete"
       },
       {
         "command": "stitch.assets.newFolder",
         "title": "New Group...",
-        "icon": "$(new-folder)",
-        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+        "icon": "$(new-folder)"
       },
       {
         "command": "stitch.assets.delete",
         "title": "Delete",
-        "icon": "$(close)",
-        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+        "icon": "$(close)"
       },
       {
         "command": "stitch.assets.newScript",
-        "title": "New Script...",
-        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+        "title": "New Script..."
       },
       {
         "command": "stitch.assets.newObject",
-        "title": "New Object...",
-        "enablement": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+        "title": "New Object..."
       },
       {
         "command": "stitch.assets.setParent",
-        "title": "Set Parent...",
-        "enablement": "stitch.projectCount > 0"
+        "title": "Set Parent..."
       },
       {
         "command": "stitch.assets.newEvent",
-        "title": "New Event...",
-        "enablement": "stitch.projectCount > 0"
+        "title": "New Event..."
       },
       {
         "command": "stitch.assets.deleteCode",
-        "title": "Delete",
-        "enablement": "stitch.projectCount > 0"
+        "title": "Delete"
       },
       {
         "command": "stitch.openIde",
@@ -369,8 +361,13 @@
           "group": "7_modification@1"
         },
         {
+          "command": "stitch.assets.deleteFolder",
+          "when": "viewItem == folder",
+          "group": "7_modification@9"
+        },
+        {
           "command": "stitch.assets.newFolder",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",
+          "when": "viewItem == folder",
           "group": "navigation@3"
         },
         {
@@ -380,17 +377,17 @@
         },
         {
           "command": "stitch.assets.delete",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem =~ /^asset-/",
+          "when": "viewItem =~ /^asset-/",
           "group": "7_modification@9"
         },
         {
           "command": "stitch.assets.newScript",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",
+          "when": "viewItem == folder",
           "group": "navigation@1"
         },
         {
           "command": "stitch.assets.newObject",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == folder",
+          "when": "viewItem == folder",
           "group": "navigation@2"
         },
         {

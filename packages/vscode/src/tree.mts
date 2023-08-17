@@ -26,7 +26,11 @@ import {
   TreeShaderFile,
   TreeSpriteFrame,
 } from './tree.items.mjs';
-import { ensureFolders, validateFolderName } from './tree.utility.mjs';
+import {
+  ensureFolders,
+  getPathWithSelection,
+  validateFolderName,
+} from './tree.utility.mjs';
 
 export type Treeable =
   | TreeAsset
@@ -166,7 +170,7 @@ export class GameMakerTreeProvider
     }
     const treeItem = folder.addResource(new TreeAsset(folder, asset));
     this._onDidChangeTreeData.fire(addedTo);
-    this.view.reveal(treeItem);
+    this.view.reveal(treeItem, { focus: true });
   }
 
   async setParent(objectItem: ObjectParentFolder | TreeAsset) {
@@ -285,40 +289,58 @@ export class GameMakerTreeProvider
   async renameFolder(where: GameMakerFolder) {
     const newFolderName = await vscode.window.showInputBox({
       prompt: 'Provide a new name for this folder',
-      value: where.path,
-      valueSelection: [
-        where.path.length - where.name.length,
-        where.path.length,
-      ],
+      ...getPathWithSelection(where),
       validateInput: validateFolderName,
     });
     if (!newFolderName) {
       return;
     }
-    const folder = ensureFolders(newFolderName, where);
+    const folder = ensureFolders(newFolderName, where.heirarchy[0]);
+    // for (const child of where.folders) {
+    //   folder.addFolder(child);
+    // }
     await where.project!.renameFolder(where.path, folder.path);
-    this._onDidChangeTreeData.fire(where);
-    this._onDidChangeTreeData.fire(folder);
-    this.view.reveal(folder);
+    // for (const changed of [where, folder]) {
+    //   this._onDidChangeTreeData.fire(changed);
+    //   this._onDidChangeTreeData.fire(changed.parent);
+    // }
+    this.rebuild();
+    this.view.reveal(GameMakerFolder.lookup.get(newFolderName)!);
+  }
+
+  async deleteFolder(where: GameMakerFolder) {
+    try {
+      await where.project!.deleteFolder(where.path);
+    } catch {
+      vscode.window.showErrorMessage(
+        `Folders can only be deleted if they contain no assets.`,
+      );
+      return;
+    }
+    this.rebuild();
   }
 
   /**
    * Create a new folder in the GameMaker asset tree. */
   async createFolder(where: GameMakerFolder | undefined) {
+    const basePath = where ? where.path + '/' : '';
     where ||= this.tree;
     const newFolderName = await vscode.window.showInputBox({
       prompt: 'Enter a name for the new folder',
+      value: basePath,
+      valueSelection: [basePath.length, basePath.length],
       placeHolder: 'e.g. my/new/folder',
       validateInput: validateFolderName,
     });
     if (!newFolderName) {
       return;
     }
-    const folder = ensureFolders(newFolderName, where);
+    const folder = ensureFolders(newFolderName, where.heirarchy[0]);
+    this._onDidChangeTreeData.fire(where.heirarchy[0]);
     // Ensure that this folder exists in the actual project.
     await where.project!.createFolder(folder.path);
-    this._onDidChangeTreeData.fire(where);
-    this.view.reveal(folder);
+    this.rebuild();
+    this.view.reveal(GameMakerFolder.lookup.get(newFolderName)!);
   }
 
   getTreeItem(element: Treeable): vscode.TreeItem {
@@ -534,6 +556,10 @@ export class GameMakerTreeProvider
       registerCommand(
         'stitch.assets.renameFolder',
         this.renameFolder.bind(this),
+      ),
+      registerCommand(
+        'stitch.assets.deleteFolder',
+        this.deleteFolder.bind(this),
       ),
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),

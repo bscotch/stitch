@@ -20,7 +20,6 @@ export const commands = {
     command: 'stitch.assets.filters.enable',
     icon: '$(filter)',
     title: 'Enable Filter',
-    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilterDisabled}`,
       group: 'inline@1',
@@ -30,7 +29,6 @@ export const commands = {
     command: 'stitch.assets.filters.disable',
     icon: '$(filter-filled)',
     title: 'Disable Filter',
-    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilterEnabled}`,
       group: 'inline@1',
@@ -44,7 +42,6 @@ export const commands = {
     command: 'stitch.assets.filters.new',
     icon: '$(add)',
     title: 'New Filter...',
-    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilterGroup}`,
       group: 'inline@1',
@@ -54,7 +51,6 @@ export const commands = {
     command: 'stitch.assets.filters.delete',
     icon: '$(close)',
     title: 'Delete Filter',
-    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFilter}`,
       group: 'inline@2',
@@ -63,24 +59,30 @@ export const commands = {
   'stitch.assets.renameFolder': {
     command: 'stitch.assets.renameFolder',
     title: 'Rename...',
-    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsFolder,
       group: '7_modification@1',
+    },
+  },
+  'stitch.assets.deleteFolder': {
+    command: 'stitch.assets.deleteFolder',
+    title: 'Delete',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsFolder,
+      group: '7_modification@9',
     },
   },
   'stitch.assets.newFolder': {
     command: 'stitch.assets.newFolder',
     title: 'New Group...',
     icon: '$(new-folder)',
-    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewTitle]: {
       when: when.assetTreeFocusedAndHasOneProject,
       group: 'navigation@1',
     },
     [$showInViewItemContextMenu]: [
       {
-        when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFolder}`,
+        when: when.viewItemIsFolder,
         group: 'navigation@3',
       },
       {
@@ -93,34 +95,30 @@ export const commands = {
     command: 'stitch.assets.delete',
     title: 'Delete',
     icon: '$(close)',
-    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
-      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsAsset}`,
+      when: when.viewItemIsAsset,
       group: '7_modification@9',
     },
   },
   'stitch.assets.newScript': {
     command: 'stitch.assets.newScript',
     title: 'New Script...',
-    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
-      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFolder}`,
+      when: when.viewItemIsFolder,
       group: 'navigation@1',
     },
   },
   'stitch.assets.newObject': {
     command: 'stitch.assets.newObject',
     title: 'New Object...',
-    enablement: when.assetTreeFocusedAndHasProjects,
     [$showInViewItemContextMenu]: {
-      when: `${when.assetTreeFocusedAndHasProjects} && ${when.viewItemIsFolder}`,
+      when: when.viewItemIsFolder,
       group: 'navigation@2',
     },
   },
   'stitch.assets.setParent': {
     command: 'stitch.assets.setParent',
     title: 'Set Parent...',
-    enablement: when.hasProjects,
     [$showInViewItemContextMenu]: {
       when: `(${when.assetTreeFocused} && ${when.viewItemIsObject}) || (${when.inspectorFocused} && ${when.viewItemIsInspectorParents})`,
       group: 'navigation@1',
@@ -129,7 +127,6 @@ export const commands = {
   'stitch.assets.newEvent': {
     command: 'stitch.assets.newEvent',
     title: 'New Event...',
-    enablement: when.hasProjects,
     [$showInViewItemContextMenu]: {
       when: `(${when.assetTreeFocused} && ${when.viewItemIsObject}) || (${when.inspectorFocused} && ${when.viewItemIsInspectorEvents})`,
       group: 'navigation@1',
@@ -138,7 +135,6 @@ export const commands = {
   'stitch.assets.deleteCode': {
     command: 'stitch.assets.deleteCode',
     title: 'Delete',
-    enablement: when.hasProjects,
     [$showInViewItemContextMenu]: {
       when: `${when.viewItemIsCode} || ${when.viewItemIsInspectorEvents}`,
       group: '7_modification@9',
