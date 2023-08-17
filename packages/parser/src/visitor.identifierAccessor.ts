@@ -419,6 +419,13 @@ function processDotAccessor(
   visitor.PROCESSOR.pushSelfScope(dot, dottableType, true, {
     accessorScope: true,
   });
+  let scopeIsPopped = false;
+  const popSelfScope = (on = propertyNameLocation) => {
+    if (scopeIsPopped) return;
+    visitor.PROCESSOR.scope.setEnd(on, true);
+    visitor.PROCESSOR.popSelfScope(on, true);
+    scopeIsPopped = true;
+  };
 
   // While editing a user will dot into something
   // prior to actually adding the new identifier.
@@ -426,8 +433,7 @@ function processDotAccessor(
   // still add a scopeRange for the dot.
   const hasIdentifier = !isEmpty(dotAccessor.identifier[0].children);
   if (!hasIdentifier) {
-    visitor.PROCESSOR.scope.setEnd(dot, true);
-    visitor.PROCESSOR.popSelfScope(dot, true);
+    popSelfScope(dot);
     nextAccessed.types = [visitor.ANY];
     return nextAccessed;
   }
@@ -452,6 +458,8 @@ function processDotAccessor(
       !isTypeOfKind(dottableType, 'Enum') &&
       !property.def
     ) {
+      // Pop the self-scope so the RHS is in the right place!
+      popSelfScope();
       property =
         assignVariable(
           visitor,
@@ -481,6 +489,9 @@ function processDotAccessor(
   } else if (lastAccessed.rhs) {
     // Then this variable is not yet defined on this struct,
     // but we have an assignment operation to use to define it.
+    // We need to pop the scope first so that the RHS is evaluated
+    // in the correct scope!
+    popSelfScope();
     property = assignVariable(
       visitor,
       {
@@ -512,8 +523,7 @@ function processDotAccessor(
       );
     }
   }
-  visitor.PROCESSOR.scope.setEnd(propertyNameLocation, true);
-  visitor.PROCESSOR.popSelfScope(propertyNameLocation, true);
+  popSelfScope();
   nextAccessed.signifier = property;
   nextAccessed.types = arrayWrapped(property?.type || visitor.ANY);
   return nextAccessed;
