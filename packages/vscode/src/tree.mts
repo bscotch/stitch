@@ -37,10 +37,16 @@ export type Treeable =
   | GameMakerFolder;
 
 export class GameMakerTreeProvider
-  implements vscode.TreeDataProvider<Treeable>
+  implements
+    vscode.TreeDataProvider<Treeable>,
+    vscode.TreeDragAndDropController<Treeable>
 {
   tree = new GameMakerRootFolder();
   view!: vscode.TreeView<Treeable>;
+  protected readonly treeMimeType =
+    'application/vnd.code.tree.bscotch-stitch-resources';
+  readonly dragMimeTypes = [this.treeMimeType];
+  readonly dropMimeTypes = [this.treeMimeType];
 
   private _onDidChangeTreeData: vscode.EventEmitter<
     Treeable | undefined | null | void
@@ -56,6 +62,33 @@ export class GameMakerTreeProvider
 
   get projects(): GameMakerProject[] {
     return this.provider.projects;
+  }
+
+  // handleDrag(
+  //   source: readonly Treeable[],
+  //   dataTransfer: vscode.DataTransfer,
+  // ): void | Thenable<void> {
+  //   console.log('drag', source, dataTransfer);
+  // }
+
+  handleDrop(
+    target: Treeable | undefined,
+    dataTransfer: vscode.DataTransfer,
+  ): void | Thenable<void> {
+    try {
+      console.log('drop', target, dataTransfer.get(this.treeMimeType));
+    } catch {
+      console.log('drop', target);
+    }
+  }
+
+  handleDrag(
+    source: readonly Treeable[],
+    dataTransfer: vscode.DataTransfer,
+  ): void | Thenable<void> {
+    const item = new vscode.DataTransferItem(source);
+    dataTransfer.set(this.treeMimeType, item);
+    console.log('drag', source, item);
   }
 
   /**
@@ -461,6 +494,8 @@ export class GameMakerTreeProvider
     this.view = vscode.window.createTreeView('bscotch-stitch-resources', {
       treeDataProvider: this.rebuild(),
       showCollapseAll: true,
+      canSelectMany: true,
+      dragAndDropController: this,
     });
 
     // Handle emitted events
