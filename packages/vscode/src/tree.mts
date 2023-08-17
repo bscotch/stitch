@@ -69,13 +69,6 @@ export class GameMakerTreeProvider
     return this.provider.projects;
   }
 
-  // handleDrag(
-  //   source: readonly Treeable[],
-  //   dataTransfer: vscode.DataTransfer,
-  // ): void | Thenable<void> {
-  //   console.log('drag', source, dataTransfer);
-  // }
-
   async handleDrop(
     target: Treeable | undefined,
     dataTransfer: vscode.DataTransfer,
@@ -128,6 +121,8 @@ export class GameMakerTreeProvider
     // parent path to the target folder's path.
     const totalRenames = folders.size + assets.size;
     let renameCount = 0;
+    if (!totalRenames) return;
+
     return vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -145,6 +140,21 @@ export class GameMakerTreeProvider
             message: `Moving root-most folders...`,
           });
         }
+        // Assets can be moved in parallel since they store their
+        // folder in their own file.
+        const waits: Promise<any>[] = [];
+        for (const asset of assets) {
+          waits.push(
+            asset.asset.moveToFolder(target.path).then(() => {
+              renameCount++;
+              progress.report({
+                increment: (renameCount / totalRenames) * 100,
+                message: `Moving assets...`,
+              });
+            }),
+          );
+        }
+        await Promise.all(waits);
         // TODO: Move all of the assets!
         this.rebuild();
       },
@@ -157,7 +167,6 @@ export class GameMakerTreeProvider
   ): void | Thenable<void> {
     const item = new vscode.DataTransferItem(source);
     dataTransfer.set(this.treeMimeType, item);
-    console.log('drag', source, item);
   }
 
   /**
@@ -166,7 +175,6 @@ export class GameMakerTreeProvider
    * with `/` separators.
    */
   reveal(item: string | Asset | Code | undefined) {
-    console.log('reveal', item);
     item ||= this.provider.getCurrentAsset();
     if (!item) {
       return;
