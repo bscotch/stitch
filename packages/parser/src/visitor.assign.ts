@@ -60,11 +60,10 @@ export function assignVariable(
       if (signifier) {
         signifier.definedAt(variable.range);
         signifier.static = !!info.static;
-        signifier.instance = !!info.instance;
+        signifier.instance = !!info.instance || !info.local;
         signifier.local = !!info.local;
         signifier.definitive = inDefinitiveSelf;
         ref = signifier.addRef(variable.range, true);
-        signifier.instance = true;
       } else {
         // Then this is an immutable type
         visitor.PROCESSOR.addDiagnostic(
