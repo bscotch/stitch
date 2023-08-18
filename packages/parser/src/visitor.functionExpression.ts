@@ -234,14 +234,18 @@ export function visitFunctionExpression(
       const idx = cstParams.length + i;
       const paramDoc = extraParams[i];
       assert(paramDoc, 'Expected extra param');
+      const type = docs!.type[0]?.local?.getMember(paramDoc.name!.content)
+        ?.type;
       functionType
         .addParameter(idx, paramDoc.name!.content, {
           optional: paramDoc.optional,
-          type: typeFromFeatherString(
-            paramDoc.type?.content || 'Any',
-            this.PROCESSOR.project.types,
-            false,
-          ),
+          type:
+            type?.type ||
+            typeFromFeatherString(
+              paramDoc.type?.content || 'Any',
+              this.PROCESSOR.project.types,
+              false,
+            ),
         })
         .describe(paramDoc.description);
       totalParams++;
