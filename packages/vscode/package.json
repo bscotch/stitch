@@ -558,6 +558,7 @@
     "referencesProvider": "true",
     "definitionProvider": "true",
     "documentFormattingProvider": "true",
+    "renameProvider": "true",
     "completionProvider": {
       "resolveProvider": "true",
       "triggerCharacters": [

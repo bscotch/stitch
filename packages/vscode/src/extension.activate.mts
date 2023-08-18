@@ -12,7 +12,8 @@ import {
 } from './extension.copyType.mjs';
 import { StitchDefinitionsProvider } from './extension.definitions.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
-import { GameMakerHoverProvider } from './extension.hover.mjs';
+import { StitchHoverProvider } from './extension.hover.mjs';
+import { StitchRenameProvider } from './extension.rename.mjs';
 import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { GameMakerInspectorProvider } from './inspector.mjs';
@@ -86,7 +87,8 @@ export async function activateStitchExtension(
     ...treeProvider.register(),
     ...inspectorProvider.register(),
     definitionsProvider.register(),
-    GameMakerHoverProvider.register(workspace),
+    StitchRenameProvider.register(workspace),
+    StitchHoverProvider.register(workspace),
     StitchWorkspaceSymbolProvider.register(workspace),
     StitchCompletionProvider.register(workspace),
     vscode.languages.registerSignatureHelpProvider('gml', workspace, '(', ','),

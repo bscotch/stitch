@@ -130,6 +130,10 @@ export class Code {
     return isBeforeRange(range, offset);
   }
 
+  getTextAt(offsetStart: number, offsetEnd: number): string {
+    return this.content.slice(offsetStart, offsetEnd + 1);
+  }
+
   getReferenceAt(offset: number): Reference | undefined;
   getReferenceAt(position: LinePosition): Reference | undefined;
   getReferenceAt(line: number, column: number): Reference | undefined;

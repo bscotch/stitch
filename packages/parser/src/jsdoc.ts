@@ -543,9 +543,9 @@ function substringRange(
   return {
     start,
     end: {
-      column: start.column + substring.length,
+      column: start.column + substring.length - 1,
       line: start.line,
-      offset: start.offset + substring.length,
+      offset: start.offset + substring.length - 1,
     },
     content: substring,
   };

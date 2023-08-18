@@ -3,7 +3,7 @@ import vscode from 'vscode';
 import { assert } from './assert.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 
-export class GameMakerHoverProvider implements vscode.HoverProvider {
+export class StitchHoverProvider implements vscode.HoverProvider {
   constructor(readonly provider: StitchWorkspace) {}
 
   provideHover(
@@ -70,8 +70,8 @@ export class GameMakerHoverProvider implements vscode.HoverProvider {
 
   static register(provider: StitchWorkspace) {
     return vscode.languages.registerHoverProvider(
-      'gml',
-      new GameMakerHoverProvider(provider),
+      { language: 'gml', scheme: 'file' },
+      new StitchHoverProvider(provider),
     );
   }
 }
