@@ -52,10 +52,10 @@ const patterns = {
 const typeGroupPattern = `(?<typeGroup>{\\s*(?<typeUnion>[^}]*?)?\\s*})`;
 const linePrefixPattern = `^(\\s*(?<delim>///|\\*)\\s*)?`;
 const descriptionPattern = `(?:\\s*-\\s*)?(?<info>.*)`;
-const paramNamePattern = `(?<name>[a-zA-Z_]+)`;
+const paramNamePattern = `(?<name>[a-zA-Z_][a-zA-Z_0-9]*)`;
 const paramDefaultPattern = `(?:\\s*=\\s*(?<default>[^\\]]+?)\\s*)`;
 const dotdotdot = `\\.\\.\\.`;
-const optionalParamNamePattern = `\\[\\s*(?<optionalName>(?:[a-zA-Z_]+|${dotdotdot}))\\s*${paramDefaultPattern}?\\]`;
+const optionalParamNamePattern = `\\[\\s*(?<optionalName>(?:[a-zA-Z_][a-zA-Z_0-9]*|${dotdotdot}))\\s*${paramDefaultPattern}?\\]`;
 
 const names = keysOf(patterns);
 for (const tagName of names) {
@@ -87,7 +87,7 @@ for (const tagName of [
 }
 
 // Self (has a type but no group. Make brackets optional to be more forgiving)
-patterns.self = `${patterns.self}\\s+(?<extraBracket>\\{\\s*)?(?<type>[a-zA-Z_.]+)(?:\\s*\\})?`;
+patterns.self = `${patterns.self}\\s+(?<extraBracket>\\{\\s*)?(?<type>[a-zA-Z_][a-zA-Z_0-9.]*)(?:\\s*\\})?`;
 
 // Descriptions
 for (const tagName of names) {
@@ -522,6 +522,35 @@ export function parseJsdoc(
     // but it's useful to call it a self doc.
     doc.kind = 'self';
   }
+
+  // Ensure that there are no redundantly-named params, since that
+  // is both not allowed and likely to cause weird problems later.
+  // The safest thing to do if we see a duplicate is to skip it and all
+  // subsequent params.
+  const paramNames = new Set<string>();
+  for (let i = 0; i < (doc.params?.length || 0); i++) {
+    const param = doc.params![i];
+    if (paramNames.has(param.name!.content)) {
+      doc.diagnostics.push({
+        message: `Duplicate param name: ${param.name!.content}`,
+        start: param.name!.start,
+        end: param.name!.end,
+      });
+      // Add diagnostics for all subsequent params
+      for (let j = i + 1; j < doc.params!.length; j++) {
+        const laterParam = doc.params![j];
+        doc.diagnostics.push({
+          message: `Skipping due to previous duplicate param`,
+          start: laterParam.name!.start,
+          end: laterParam.name!.end,
+        });
+      }
+      doc.params!.splice(i);
+      break;
+    }
+    paramNames.add(param.name!.content);
+  }
+
   return doc;
 }
 

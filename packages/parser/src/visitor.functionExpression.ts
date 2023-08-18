@@ -3,6 +3,7 @@ import { VisitorContext, withCtxKind } from './parser.js';
 import { Range, fixITokenLocation } from './project.location.js';
 import { Signifier } from './signifiers.js';
 import { getTypeOfKind } from './types.checks.js';
+import { typeFromFeatherString } from './types.feather.js';
 import { Type, TypeStore, WithableType, type StructType } from './types.js';
 import { withableTypes } from './types.primitives.js';
 import { assert } from './util.js';
@@ -225,31 +226,24 @@ export function visitFunctionExpression(
   }
 
   // If we have more args defined in JSDocs, add them as *undeclared* params
-  if ((docs?.type[0]?.listParameters().length || 0) > cstParams.length) {
-    const extraParams = docs!.type[0].listParameters().slice(cstParams.length);
+  const docsParams = docs?.jsdoc.params;
+  if ((docsParams?.length || 0) > cstParams.length) {
+    const extraParams = docsParams!.slice(cstParams.length);
     assert(extraParams, 'Expected extra params');
     for (let i = 0; i < extraParams.length; i++) {
       const idx = cstParams.length + i;
-      /** The params generated from JSDoc parsing should be treated as temporary */
-      const tempParam = extraParams[i];
-      assert(tempParam, 'Expected extra param');
+      const paramDoc = extraParams[i];
+      assert(paramDoc, 'Expected extra param');
       functionType
-        .addParameter(idx, tempParam.name, {
-          optional: tempParam.optional,
-          type: tempParam.type.type,
+        .addParameter(idx, paramDoc.name!.content, {
+          optional: paramDoc.optional,
+          type: typeFromFeatherString(
+            paramDoc.type?.content || 'Any',
+            this.PROCESSOR.project.types,
+            false,
+          ),
         })
-        .describe(tempParam.description);
-
-      // Add a doc reference if needed
-      const paramDoc = docs!.jsdoc.params?.find(
-        (p) => p.name?.content === tempParam.name,
-      );
-      if (paramDoc?.type && tempParam.type.type[0]?.signifier) {
-        // Then we need a reference in the JSDocs
-        tempParam.type.type[0].signifier.addRef(
-          Range.from(this.PROCESSOR.file, paramDoc.type!),
-        );
-      }
+        .describe(paramDoc.description);
       totalParams++;
     }
   }
