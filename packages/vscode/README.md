@@ -2,11 +2,14 @@
 
 Edit your [GameMaker](https://gamemaker.io/en) projects in VSCode! This extension provides Intellisense and other features for GameMaker projects.
 
+**⚠️WARNING⚠️** Stitch is able to make large-scale, irreversible changes to GameMaker projects. Make sure you're using source control!
+
 *Stitch and its logo are trademarks of [Butterscotch Shenanigans](https://www.bscotch.net) (a.k.a. "Bscotch"). Stitch and Bscotch are unaffiliated with GameMaker.*
 
 ## 🐛 Project Status
 
 Stitch for VSCode is in active development. Expect bugs, missing features, and frequent breaking changes. To see the current list of known issues and feature requests, check out the [issues page](https://github.com/bscotch/stitch/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Akeyboard%3A+vscode%22).
+
 
 ## 🤔 Why?
 
