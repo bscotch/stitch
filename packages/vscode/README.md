@@ -13,13 +13,19 @@ Stitch for VSCode is in active development. Expect bugs, missing features, and f
 
 ## 🤔 Why?
 
-We've used GameMaker for the entire 10+ year history of [our studio](https://www.bscotch.net). While the GameMaker IDE has been rapidly improving, VSCode is able to improve even faster due to its enormous community, extensions API, and use of accessible web technologies. We wanted to take advantage of those things to make our GameMaker development experience as good as possible.
+We've used GameMaker for the entire 10+ year history of [our studio](https://www.bscotch.net). While the GameMaker IDE has been rapidly improving, VSCode is able to improve even faster due to its enormous community, extensions API, and use of popular web technologies. We wanted to take advantage of those things to make our GameMaker development experience as good as possible.
 
 ## 💡 Features
 
 ### 🤖 Intellisense
 
 Stitch provides Intellisense (auto-complete, hovertext, function signature helpers, go-to-definition, find-references, etc) for all built-in and user-defined symbols.
+
+### 📛 Renaming
+
+Since Stitch knows about all of your project's symbols, it can also rename them for you! Use the hotkey (`F2` by default) or the right-click context menu to "Rename" a symbol.
+
+> ⚠️ Note that it's possible to write GML code where references to the same symbol are not discoverable by static analysis tools like Stitch, so you may need to do some manual cleanup after renaming.
 
 ### 🪶 Feather and Type Support
 
@@ -172,6 +178,6 @@ To see the current list of known issues and feature requests, check out the [iss
 - 😕 **Macro limitations**. The Stitch parser can only handle macros that are set to simple and complete expressions. There are no plans to extend the parser to support more complex macro usage.
 - 😕 **Extraneous Curlies**. To avoid some parser complexity, the Stitch parser does not support extraneous curly braces (`{}`). For example, if a random section of code (not following a `for`, `if`, etc) is wrapped in curlies, the parser will emit errors.
 - 😕 **IIFFEs**. Stitch does not support IIFEs (immediately-invoked function expressions), e.g. `(function(){})()`. This is due to parser complexity, but pull requests addressing this are welcome!
-- 📝 **Stitch settings**. Stitch provides a number of settings that you can use to customize your experience. You can find them by opening the command palette and searching for "Preferences: Open Settings (JSON)".
+- 📝 **Stitch settings**. Stitch provides a number of settings that you can use to customize your experience. You can find them by opening the command palette and searching for "Preferences: Open Settings".
 - 🪵 **How to view logs**. If you run into trouble, you can view the extension's logs by opening the Output panel and selecting "Stitch" from the dropdown menu. These are particularly helpful for providing context when leaving bug reports!
 - ⁉️ **Unexpected projects appear in the tree view**. If you're seeing extra projects in your tree view, it's likely that these are being discovered inside `node_modules` or other normally-hidden locations. Stitch excludes the same files that your VSCode setup does via the `files.exclude` setting, so if you want to prevent those projects from appearing add their parent folders to your excluded files.
