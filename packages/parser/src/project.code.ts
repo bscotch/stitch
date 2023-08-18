@@ -263,7 +263,7 @@ export class Code {
     }
     // Add to a flat list, and remove all entries that don't have
     // a definition if they are not native
-    return [
+    const allSignifiers = [
       // Local variables
       ...(scopeRange.local.listMembers() || []),
       // Self variables, if not global
@@ -272,7 +272,21 @@ export class Code {
         : []) || []),
       // Project globals
       ...(this.project.self.listMembers() || []),
-    ].filter((x) => x.def || x.native);
+    ];
+
+    // Signifiers were added in order of precedence, so we can remove
+    // non-uniques by just keeping the first one we find.
+    const uniqueSignifiers = new Map<string, Signifier>();
+    for (const signifier of allSignifiers) {
+      if (
+        !uniqueSignifiers.has(signifier.name) &&
+        (signifier.def || signifier.native)
+      ) {
+        uniqueSignifiers.set(signifier.name, signifier);
+      }
+    }
+
+    return [...uniqueSignifiers.values()];
   }
 
   getDiagnostics() {
