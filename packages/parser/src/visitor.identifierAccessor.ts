@@ -195,6 +195,11 @@ function processNextAccessor(
       nextAccessed.types = allowedTypes
         .map((t) => t.items)
         .filter((t) => !!t) as TypeStore[];
+      // If there is a RHS, we can't create a variable from it but
+      // do need to process it!
+      if (lastAccessed.rhs) {
+        visitor.assignmentRightHandSide(lastAccessed.rhs, lastAccessed.ctx);
+      }
       break;
     case 'dotAccessSuffix':
       nextAccessed = processDotAccessor(
