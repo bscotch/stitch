@@ -175,7 +175,7 @@ export function visitFunctionExpression(
     const range = this.PROCESSOR.range(paramToken);
 
     // Use JSDocs to determine the type, description, etc of the parameter
-    let fromJsdoc = docs?.type?.[0]?.getParameter(name);
+    let fromJsdoc = docs?.type?.[0]?.local?.getMember(name);
     if (fromJsdoc && paramToken.image !== fromJsdoc.name) {
       this.PROCESSOR.addDiagnostic(
         'JSDOC_MISMATCH',
@@ -189,15 +189,14 @@ export function visitFunctionExpression(
       ? docs?.jsdoc.params?.find((p) => p.name?.content === name)
       : undefined;
 
-    const paramSignifier =
-      functionType.local.getMember(name) || functionType.getParameter(name);
-    const param = functionType
-      .addParameter(i, paramSignifier || name)
+    // Params are just local variables
+    let param = functionType.local.getMember(name);
+    param = functionType
+      .addParameter(i, param || name, {
+        optional: fromJsdoc?.optional || !!cstParams[i].children.Assign,
+      })
       .definedAt(range);
     param.describe(fromJsdoc?.description);
-    param.local = true;
-    param.parameter = true;
-    param.optional = fromJsdoc?.optional || !!cstParams[i].children.Assign;
     param.addRef(range, true);
 
     let inferredType: (Type | TypeStore)[] | undefined;
@@ -222,44 +221,32 @@ export function visitFunctionExpression(
         Range.from(this.PROCESSOR.file, paramDoc.type),
       );
     }
-
-    // Also add to the function's local scope.
-    const localVar = functionType.local.getMember(param.name);
-    if (!localVar) {
-      functionType.local.addMember(param);
-    } else if (localVar !== param) {
-      // NOTE: Something needs to be done here, but this behaves weirdly
-      // this.PROCESSOR.addDiagnostic(
-      //   'INVALID_OPERATION',
-      //   range,
-      //   `Parameter ${param.name} already defined in local scope`,
-      //   'warning',
-      // );
-    }
     totalParams++;
   }
-  // If we have more args defined in JSDocs, add them!
+
+  // If we have more args defined in JSDocs, add them as *undeclared* params
   if ((docs?.type[0]?.listParameters().length || 0) > cstParams.length) {
     const extraParams = docs!.type[0].listParameters().slice(cstParams.length);
     assert(extraParams, 'Expected extra params');
     for (let i = 0; i < extraParams.length; i++) {
       const idx = cstParams.length + i;
-      const param = extraParams[i];
-      assert(param, 'Expected extra param');
-      const paramType = param.type;
-      const optional = param.optional;
+      /** The params generated from JSDoc parsing should be treated as temporary */
+      const tempParam = extraParams[i];
+      assert(tempParam, 'Expected extra param');
       functionType
-        .addParameter(idx, param.name, paramType.type, optional)
-        .describe(param.description);
-      // Do not add to local scope, since if it's only defined
-      // in the JSDoc it's not a real parameter.
+        .addParameter(idx, tempParam.name, {
+          optional: tempParam.optional,
+          type: tempParam.type.type,
+        })
+        .describe(tempParam.description);
 
+      // Add a doc reference if needed
       const paramDoc = docs!.jsdoc.params?.find(
-        (p) => p.name?.content === param.name,
+        (p) => p.name?.content === tempParam.name,
       );
-      if (paramDoc?.type && param.type.type[0]?.signifier) {
+      if (paramDoc?.type && tempParam.type.type[0]?.signifier) {
         // Then we need a reference in the JSDocs
-        param.type.type[0].signifier.addRef(
+        tempParam.type.type[0].signifier.addRef(
           Range.from(this.PROCESSOR.file, paramDoc.type!),
         );
       }

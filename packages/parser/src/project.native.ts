@@ -33,7 +33,7 @@ export class Native {
 
     // The `throw` function is not in the spec, so add it manually.
     const throwsType = new Type('Function').named('throw');
-    throwsType.addParameter(0, 'message', Type.Any, false);
+    throwsType.addParameter(0, 'message', { type: Type.Any, optional: false });
     const throws = new Signifier(this.globalSelf, 'throw', throwsType);
     this.globalSelf.addMember(throws);
     this.types.set('Function.throw', throwsType);
@@ -136,7 +136,10 @@ export class Native {
           true,
         );
         functionType
-          .addParameter(i, param.name, paramType, param.optional)
+          .addParameter(i, param.name, {
+            type: paramType,
+            optional: param.optional,
+          })
           .describe(param.description);
       }
       // Add return type to the type.

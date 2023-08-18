@@ -530,12 +530,12 @@ function validateJsdocs(project: Project) {
   expect(jsdoc.params![2].name!.start.line).to.equal(6);
   expect(jsdoc.params![2].name!.end.line).to.equal(6);
   expect(jsdoc.params![2].name!.start.column).to.equal(22);
-  expect(jsdoc.params![2].name!.end.column).to.equal(27);
+  expect(jsdoc.params![2].name!.end.column).to.equal(26);
   expect(jsdoc.params![2].type!.content).to.equal('Struct');
   expect(jsdoc.params![2].type!.start.line).to.equal(6);
   expect(jsdoc.params![2].type!.end.line).to.equal(6);
   expect(jsdoc.params![2].type!.start.column).to.equal(13);
-  expect(jsdoc.params![2].type!.end.column).to.equal(19);
+  expect(jsdoc.params![2].type!.end.column).to.equal(18);
 
   jsdoc = jsdocs[1];
   expect(jsdoc.start.line).to.equal(13);
@@ -566,7 +566,7 @@ function validateJsdocs(project: Project) {
   expect(lastJsdoc.params![0].type!.start.line).to.equal(55);
   expect(lastJsdoc.params![0].type!.end.line).to.equal(55);
   expect(lastJsdoc.params![0].type!.start.column).to.equal(11);
-  expect(lastJsdoc.params![0].type!.end.column).to.equal(35);
+  expect(lastJsdoc.params![0].type!.end.column).to.equal(34);
 }
 
 function validateWithContexts(project: Project) {

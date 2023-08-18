@@ -457,11 +457,9 @@ export class Asset<T extends YyResourceType = YyResourceType> {
           type.setReturnType(new Type(typeIndexToName(func.returnType)));
           for (let i = 0; i < func.args.length; i++) {
             const typeIdx = func.args[i];
-            type.addParameter(
-              i,
-              `argument${i}`,
-              new Type(typeIndexToName(typeIdx)),
-            );
+            type.addParameter(i, `argument${i}`, {
+              type: new Type(typeIndexToName(typeIdx)),
+            });
           }
           const signifier = new Signifier(this.project.self, func.name, type);
           signifier.global = true;

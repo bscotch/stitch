@@ -129,7 +129,8 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   // Applicable to Functions
   /**
-   * For functions, the local variables declared within the function
+   * For functions, the local variables declared within the function.
+   * A subset of these will be parameters, which are also signifiers.
    */
   local: Type<'Struct'> | undefined = undefined;
   /**
@@ -137,7 +138,6 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
    * type of the struct that it constructs.
    * Otherwise it's the self-context of the function */
   self: WithableType | undefined = undefined;
-  protected _params: Signifier[] | undefined = undefined;
   returns: TypeStore | undefined = undefined;
 
   constructor(protected _kind: T) {}
@@ -266,53 +266,77 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   }
 
   listParameters(): Signifier[] {
-    return (this._params || []).filter((p) => p.idx !== undefined);
+    // Get the subset of local members that are parameters,
+    // and sort them by their index.
+    const params =
+      this.local
+        ?.listMembers(true)
+        .filter((m) => m.parameter && typeof m.idx === 'number') || [];
+    // Instead of sorting by index, we want to guarantee that the index positions
+    // *actually match*.
+    const sorted = Array(params.length);
+    for (const param of params) {
+      sorted[param.idx!] = param;
+    }
+    return sorted;
   }
 
   getParameter(name: string): Signifier | undefined;
   getParameter(idx: number): Signifier | undefined;
   getParameter(nameOrIdx: string | number): Signifier | undefined {
-    if (!this._params) {
-      return undefined;
-    }
+    const params = this.listParameters();
     if (typeof nameOrIdx === 'string') {
-      return this._params.find((p) => p.name === nameOrIdx);
+      return params.find((p) => p.name === nameOrIdx);
     }
-    return this._params[nameOrIdx];
+    return params[nameOrIdx];
   }
 
+  /** A parameter is a special type of local variable. */
   addParameter(
     idx: number,
     nameOrParam: string | Signifier,
-    type?: Type | Type[],
-    optional = false,
+    options?: {
+      type?: Type | Type[];
+      optional?: boolean;
+    },
   ): Signifier {
     assert(this.isFunction, `Cannot add param to ${this.kind} type`);
     const name =
       typeof nameOrParam === 'string' ? nameOrParam : nameOrParam.name;
-    const existing = this.getParameter(name);
+    let param = this.local?.getMember(name, true);
+    const existingAtThisIndex = this.getParameter(idx);
 
-    const param = existing || new Signifier(this, name);
-    if (this._params?.[idx] && this._params[idx] !== param) {
-      // Then we're overriding by position
-      this._params[idx].idx = undefined;
+    // Create the signifier if we need to
+    if (!param) {
+      this.local ||= Type.Struct;
+      param = this.local.addMember(nameOrParam)!;
+      assert(
+        param.parent === this.local,
+        'Param incorrectly added -- has the wrong parent',
+      );
     }
-    this._params ??= [];
-    this._params[idx] = param;
+
+    // Handle positional conflicts. If there is a param at this index already,
+    // unset its index so that it doesn't conflict with this one.
+    if (existingAtThisIndex && existingAtThisIndex !== param) {
+      existingAtThisIndex.idx = undefined;
+    }
     param.idx = idx;
     param.local = true;
-    param.optional = optional || name === '...';
     param.parameter = true;
-    if (type) {
-      param.setType(type);
+    param.optional = options?.optional || name === '...';
+    if (options?.type) {
+      param.setType(options.type);
     }
     return param;
   }
 
   truncateParameters(count: number) {
-    this._params = this._params?.filter(
-      (p) => typeof p.idx !== 'number' || p.idx < count,
-    );
+    this.listParameters().forEach((p) => {
+      if (p.idx !== undefined && p.idx >= count) {
+        p.idx = undefined;
+      }
+    });
   }
 
   totalMembers(excludeParents = false): number {
