@@ -1,5 +1,17 @@
 import { Pathy } from '@bscotch/pathy';
+import Sentry from '@sentry/node';
 import vscode from 'vscode';
+import { config } from './extension.config.mjs';
+
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    // Performance Monitoring
+    tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+    environment: STITCH_ENVIRONMENT,
+    release: `bscotch-stitch-vscode@${STITCH_VERSION}`,
+  });
+}
 
 /**
  * Create a drop-in replacement for `console` that will
@@ -8,7 +20,10 @@ import vscode from 'vscode';
 export class Logger {
   static outputChannels = new Map<string, vscode.OutputChannel>();
 
-  constructor(readonly channel: string, readonly prefix?: string) {
+  constructor(
+    readonly channel: string,
+    readonly prefix?: string,
+  ) {
     if (!Logger.outputChannels.has(channel)) {
       Logger.outputChannels.set(
         channel,
@@ -58,6 +73,17 @@ export class Logger {
     components.push(...args);
     this.output.appendLine(components.join(' '));
     console[type](this.channel, ...components);
+    if (config.enableSendingLogs) {
+      if (args[0] instanceof Error) {
+        Sentry.captureException(args[0], {
+          level: type === 'warn' ? 'warning' : type,
+          extra: {
+            issue: config.associatedIssue || undefined,
+            userId: config.userId,
+          },
+        });
+      }
+    }
   }
 
   log(...args: any[]) {

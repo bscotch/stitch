@@ -50,7 +50,8 @@ export async function activateStitchExtension(
       );
       pt.seconds('Loaded project in');
     } catch (error) {
-      logger.error('Error loading project', yypFile, error);
+      logger.error(error);
+      logger.error('Error loading project', yypFile);
       vscode.window.showErrorMessage(
         `Could not load project ${pathyFromUri(yypFile).basename}`,
       );

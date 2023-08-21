@@ -1,5 +1,8 @@
+import { config } from 'dotenv';
 import esbuild from 'esbuild';
 import { $ } from 'zx';
+
+config();
 
 // CREATE THE BUNDLE
 
@@ -19,6 +22,11 @@ const builder = esbuild.build({
   inject: ['./scripts/injection.js'],
   define: {
     'import.meta.url': 'import_meta_url',
+    STITCH_VERSION: JSON.stringify(process.env.npm_package_version || '0.0.0'),
+    STITCH_ENVIRONMENT: JSON.stringify(
+      process.env.CI ? 'production' : 'development',
+    ),
+    SENTRY_DSN: JSON.stringify(process.env.SENTRY_DSN || ''),
   },
 });
 

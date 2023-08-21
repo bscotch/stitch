@@ -30,7 +30,9 @@ jobs:
 
       # BUILD DEPS
       - name: Build
-        run: pnpm turbo run build --only --filter=bscotch-stitch-vscode... 
+        run: pnpm turbo run build --only --filter=bscotch-stitch-vscode...
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
       # PUBLISH
       - name: Publish
