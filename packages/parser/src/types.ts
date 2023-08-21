@@ -265,7 +265,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     return this;
   }
 
-  listParameters(): Signifier[] {
+  listParameters(): (Signifier | undefined)[] {
     // Get the subset of local members that are parameters,
     // and sort them by their index.
     const params =
@@ -286,7 +286,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   getParameter(nameOrIdx: string | number): Signifier | undefined {
     const params = this.listParameters();
     if (typeof nameOrIdx === 'string') {
-      return params.find((p) => p.name === nameOrIdx);
+      return params.find((p) => p?.name === nameOrIdx);
     }
     return params[nameOrIdx];
   }
@@ -333,7 +333,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   truncateParameters(count: number) {
     this.listParameters().forEach((p) => {
-      if (p.idx !== undefined && p.idx >= count) {
+      if (p?.idx !== undefined && p.idx >= count) {
         p.idx = undefined;
       }
     });

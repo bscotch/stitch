@@ -147,7 +147,7 @@ function narrowsType(narrowType: Type, broadType: Type): boolean {
   }
   // Similarly, the subtype must have the same params (though it could have others)
   for (const param of broadType.listParameters()) {
-    const matching = narrowType.getParameter(param.idx!);
+    const matching = !param || narrowType.getParameter(param.idx!);
     if (!matching) {
       return false;
     }

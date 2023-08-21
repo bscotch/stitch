@@ -548,7 +548,7 @@ export class Code {
         const param = params[j];
         const arg = args[j] as FunctionArgRange | undefined;
         const argIsEmpty = !arg?.hasExpression;
-        if (!param.optional && argIsEmpty) {
+        if (param && !param.optional && argIsEmpty) {
           this.diagnostics.MISSING_REQUIRED_ARGUMENT.push(
             Diagnostic.error(
               `Missing required argument \`${param.name}\` for function \`${func.name}\`.`,
