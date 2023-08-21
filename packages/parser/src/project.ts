@@ -99,6 +99,12 @@ export class Project {
     this.dirtyFiles.clear();
   }
 
+  async setIdeVersion(version: string) {
+    assert(version.match(/^\d+\.\d+\.\d+\.\d+$/), 'Invalid version string');
+    this.yyp.MetaData.IDEVersion = version;
+    await this.saveYyp();
+  }
+
   get ideVersion(): string {
     return this.yyp.MetaData.IDEVersion;
   }
