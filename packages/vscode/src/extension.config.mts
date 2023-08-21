@@ -1,3 +1,4 @@
+import type { Channel } from '@bscotch/gamemaker-releases';
 import { randomString } from '@bscotch/utility';
 import vscode from 'vscode';
 
@@ -11,6 +12,11 @@ export class StitchConfig {
       this.config.update('telemetry.userId', userId);
     }
     return this.config.get<string>('telemetry.userId');
+  }
+  get releaseNotesChannels(): Channel[] {
+    return (
+      this.config.get<Channel[]>('gameMaker.releases.notes.channels') || []
+    );
   }
   get enableSendingLogs() {
     return this.config.get<boolean>('telemetry.enable') ?? false;

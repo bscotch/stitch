@@ -10,7 +10,7 @@ import {
 import path from 'path';
 import vscode from 'vscode';
 import { StitchConfig } from './extension.config.mjs';
-import { logger, warn } from './log.mjs';
+import { logger, showErrorMessage, warn } from './log.mjs';
 
 setLogger(logger.withPrefix('PARSER'));
 

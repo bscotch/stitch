@@ -13,6 +13,7 @@ import {
 import { StitchDefinitionsProvider } from './extension.definitions.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { StitchHoverProvider } from './extension.hover.mjs';
+import { StitchReleasesProvider } from './extension.releases.mjs';
 import { StitchRenameProvider } from './extension.rename.mjs';
 import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
@@ -92,6 +93,7 @@ export async function activateStitchExtension(
     StitchHoverProvider.register(workspace),
     StitchWorkspaceSymbolProvider.register(workspace),
     StitchCompletionProvider.register(workspace),
+    ...StitchReleasesProvider.register(workspace),
     vscode.languages.registerSignatureHelpProvider('gml', workspace, '(', ','),
     vscode.languages.registerDocumentFormattingEditProvider(
       'yy',
@@ -165,11 +167,6 @@ export async function activateStitchExtension(
         args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
       );
       workspace.getProject(uri)?.openInIde();
-    }),
-    registerCommand('stitch.openGameMakerReleaseNotes', () => {
-      vscode.env.openExternal(
-        vscode.Uri.parse('https://bscotch.github.io/stitch/gamemaker/releases'),
-      );
     }),
     workspace.semanticHighlightProvider.register(),
     workspace.signatureHelpStatus,

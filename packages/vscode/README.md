@@ -164,6 +164,8 @@ Check out Stitch settings to configure how your project is run. In particular:
 
 Stitch provides context-menu entries and a command palette command (`Stitch: Open in GameMaker`) to open your project in the GameMaker IDE. It will ensure that you're always using the same version of GameMaker to open your projects, even automatically installing the correct version if you don't already have it!
 
+Stitch also provides commands for viewing the GameMaker release notes (`Stitch: Open GameMaker Release Notes`) and for setting the GameMaker IDE version to use for the active project (`Stitch: Set GameMaker Version`).
+
 ## ⚙️ Supported GameMaker versions
 
 Stitch supports projects that use recent versions of GameMaker, and makes no effort to support older versions.

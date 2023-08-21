@@ -15,6 +15,11 @@ export const commands = {
     title: 'Stitch: Open GameMaker Release Notes',
     [$showInPalette]: true,
   },
+  'stitch.setGameMakerVersion': {
+    command: 'stitch.setGameMakerVersion',
+    title: 'Stitch: Set GameMaker Version',
+    [$showInPalette]: true,
+  },
   'stitch.assets.reveal': {
     command: 'stitch.assets.reveal',
     title: 'Stitch: Show Asset',

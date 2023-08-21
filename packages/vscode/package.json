@@ -45,6 +45,10 @@
         "title": "Stitch: Open GameMaker Release Notes"
       },
       {
+        "command": "stitch.setGameMakerVersion",
+        "title": "Stitch: Set GameMaker Version"
+      },
+      {
         "command": "stitch.assets.reveal",
         "title": "Stitch: Show Asset",
         "enablement": "stitch.projectCount > 0 && resourceExtname =~ /\\.(yy|gml)$/"
@@ -147,6 +151,25 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.gameMaker.releases.notes.channels": {
+          "title": "GameMaker Release Notes Channels",
+          "type": "array",
+          "default": [
+            "lts",
+            "stable",
+            "beta"
+          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "lts",
+              "stable",
+              "beta",
+              "unstable"
+            ]
+          },
+          "description": "Which GameMaker release notes channels to show in the GameMaker version picker."
+        },
         "stitch.telemetry.enable": {
           "title": "Send log data",
           "type": "boolean",
@@ -453,6 +476,9 @@
           "command": "stitch.openGameMakerReleaseNotes"
         },
         {
+          "command": "stitch.setGameMakerVersion"
+        },
+        {
           "command": "stitch.assets.reveal"
         },
         {
@@ -547,6 +573,7 @@
   },
   "devDependencies": {
     "@bscotch/gml-parser": "workspace:*",
+    "@bscotch/gamemaker-releases": "workspace:*",
     "@bscotch/pathy": "^2.7.4",
     "@bscotch/stitch": "workspace:*",
     "@bscotch/stitch-launcher": "workspace:*",

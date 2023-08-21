@@ -466,6 +466,7 @@ importers:
   packages/vscode:
     specifiers:
       '@bscotch/emitter': 0.2.0
+      '@bscotch/gamemaker-releases': workspace:*
       '@bscotch/gml-parser': workspace:*
       '@bscotch/pathy': ^2.7.4
       '@bscotch/stitch': workspace:*
@@ -495,6 +496,7 @@ importers:
       '@bscotch/emitter': 0.2.0
       '@sentry/node': 7.64.0
     devDependencies:
+      '@bscotch/gamemaker-releases': link:../releases
       '@bscotch/gml-parser': link:../parser
       '@bscotch/pathy': 2.7.4
       '@bscotch/stitch': link:../core
