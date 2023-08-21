@@ -9,7 +9,7 @@ config();
 /** @type {any[]} */
 const plugins = [];
 
-if (process.env.CI && process.env.SENTRY_AUTH_TOKEN) {
+if (process.env.SENTRY_AUTH_TOKEN) {
   // Sentry plugin should be LAST!
   plugins.push(
     sentryEsbuildPlugin({
@@ -38,7 +38,7 @@ const builder = esbuild.build({
     'import.meta.url': 'import_meta_url',
     STITCH_VERSION: JSON.stringify(process.env.npm_package_version || '0.0.0'),
     STITCH_ENVIRONMENT: JSON.stringify(
-      process.env.CI ? 'production' : 'development',
+      process.env.SENTRY_AUTH_TOKEN ? 'production' : 'development',
     ),
     SENTRY_DSN: JSON.stringify(process.env.SENTRY_DSN || ''),
   },
