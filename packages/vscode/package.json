@@ -546,6 +546,7 @@
     "@bscotch/trebuchet": "2.8.5",
     "@bscotch/utility": "^6.8.3",
     "@bscotch/yy": "workspace:*",
+    "@sentry/esbuild-plugin": "2.7.0",
     "@types/plist": "3.0.2",
     "@types/vscode": "1.81.0",
     "@types/xml2js": "0.4.11",

@@ -1,3 +1,4 @@
+import { sentryEsbuildPlugin } from '@sentry/esbuild-plugin';
 import { config } from 'dotenv';
 import esbuild from 'esbuild';
 import { $ } from 'zx';
@@ -28,6 +29,14 @@ const builder = esbuild.build({
     ),
     SENTRY_DSN: JSON.stringify(process.env.SENTRY_DSN || ''),
   },
+  plugins: [
+    // Put the Sentry esbuild plugin after all other plugins
+    sentryEsbuildPlugin({
+      org: 'bscotch',
+      project: 'stitch-vscode',
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
+  ],
 });
 
 // Copy the template project from current stitch-core

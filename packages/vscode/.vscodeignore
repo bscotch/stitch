@@ -1,6 +1,7 @@
 **/*
 !assets/
 !dist/
+dist/manifest.*
 !images/
 !*.language-configuration.json
 !LICENSE.md
