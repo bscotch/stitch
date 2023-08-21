@@ -54,7 +54,7 @@ import {
   type StructType,
 } from './types.js';
 import { withableTypes } from './types.primitives.js';
-import { assert } from './util.js';
+import { StitchParserError, assert } from './util.js';
 import { assignVariable, ensureDefinitive } from './visitor.assign.js';
 import { visitFunctionExpression } from './visitor.functionExpression.js';
 import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
@@ -72,8 +72,12 @@ export function registerSignifiers(file: Code) {
     const processor = new SignifierProcessor(file);
     const visitor = new GmlSignifierVisitor(processor);
     visitor.UPDATE_SIGNIFIERS(file.cst);
-  } catch (error) {
-    logger.error(error);
+  } catch (parseErr) {
+    const err = new StitchParserError(
+      `Error identifying locals in ${file.path}`,
+    );
+    err.cause = parseErr;
+    logger.error(err);
   }
 }
 

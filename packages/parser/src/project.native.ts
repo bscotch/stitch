@@ -8,7 +8,7 @@ import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
 import { Signifier } from './signifiers.js';
 import { Type, type StructType } from './types.js';
 import { addSpriteInfoStruct } from './types.sprites.js';
-import { assert } from './util.js';
+import { StitchParserError, assert } from './util.js';
 
 export class Native {
   protected specs!: GmlSpec[];
@@ -315,8 +315,12 @@ export class Native {
     }); // Prevent possible errors: "Non-white space before first tag"
     try {
       return gmlSpecSchema.parse(asJson);
-    } catch (err) {
-      logger.error(`Error parsing spec file "${specFilePath}"`);
+    } catch (zodError) {
+      const err = new StitchParserError(
+        `Error parsing spec file "${specFilePath}"`,
+      );
+      err.cause = zodError;
+      logger.error(err);
       throw err;
     }
   }

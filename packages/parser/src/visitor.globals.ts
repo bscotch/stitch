@@ -19,14 +19,16 @@ import { Position, Range } from './project.location.js';
 import { Signifier } from './signifiers.js';
 import { typeFromParsedJsdocs } from './types.feather.js';
 import { FunctionType, StructType, Type } from './types.js';
-import { assert } from './util.js';
+import { StitchParserError, assert } from './util.js';
 
 export function registerGlobals(file: Code) {
   try {
     const processor = new GlobalDeclarationsProcessor(file);
     const visitor = new GmlGlobalDeclarationsVisitor(processor);
     visitor.EXTRACT_GLOBAL_DECLARATIONS(file.cst);
-  } catch (err) {
+  } catch (parseError) {
+    const err = new StitchParserError(`Error parsing globals in ${file.path}`);
+    err.cause = parseError;
     logger.error(err);
   }
 }

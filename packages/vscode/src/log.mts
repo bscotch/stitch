@@ -13,6 +13,16 @@ if (SENTRY_DSN) {
   });
 }
 
+export async function showErrorMessage<T extends string>(
+  message: string | Error,
+  ...items: T[]
+) {
+  return await vscode.window.showErrorMessage(
+    typeof message === 'string' ? message : message.message,
+    ...items,
+  );
+}
+
 /**
  * Create a drop-in replacement for `console` that will
  * write to both STDI/O and to a VSCode output channel.

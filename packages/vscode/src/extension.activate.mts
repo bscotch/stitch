@@ -18,7 +18,7 @@ import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { GameMakerInspectorProvider } from './inspector.mjs';
 import { findProject, pathyFromUri, registerCommand } from './lib.mjs';
-import { Timer, info, logger, warn } from './log.mjs';
+import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 
 export async function activateStitchExtension(
@@ -52,7 +52,7 @@ export async function activateStitchExtension(
     } catch (error) {
       logger.error(error);
       logger.error('Error loading project', yypFile);
-      vscode.window.showErrorMessage(
+      showErrorMessage(
         `Could not load project ${pathyFromUri(yypFile).basename}`,
       );
     }
@@ -144,7 +144,7 @@ export async function activateStitchExtension(
     registerCommand('stitch.run', (uriOrFolder: string[] | GameMakerFolder) => {
       const project = findProject(workspace, uriOrFolder);
       if (!project) {
-        void vscode.window.showErrorMessage('No project found to run!');
+        void showErrorMessage('No project found to run!');
         return;
       }
       project.run();
@@ -154,7 +154,7 @@ export async function activateStitchExtension(
       (uriOrFolder: string[] | GameMakerFolder) => {
         const project = findProject(workspace, uriOrFolder);
         if (!project) {
-          void vscode.window.showErrorMessage('No project found to run!');
+          void showErrorMessage('No project found to run!');
           return;
         }
         project.run({ clean: true });

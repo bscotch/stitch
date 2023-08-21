@@ -1,5 +1,4 @@
-import vscode from 'vscode';
-import { logger, warn } from './log.mjs';
+import { logger, showErrorMessage, warn } from './log.mjs';
 
 export interface AssertOptions {
   /** If true, this error should be posted to telemetry if enabled */
@@ -105,7 +104,7 @@ export function assertLoudly(
   message: string,
 ): asserts condition {
   if (!condition) {
-    vscode.window.showErrorMessage(message);
+    showErrorMessage(message);
     throw new Error(message);
   }
 }

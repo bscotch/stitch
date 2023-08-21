@@ -222,9 +222,7 @@ export class GameMakerTreeProvider
     }
     const existingAsset = where.project!.getAssetByName(newAssetName);
     if (existingAsset) {
-      vscode.window.showErrorMessage(
-        `An asset named ${newAssetName} already exists.`,
-      );
+      showErrorMessage(`An asset named ${newAssetName} already exists.`);
       return;
     }
     const parts = newAssetName.split('/');
@@ -243,7 +241,7 @@ export class GameMakerTreeProvider
     addedTo: GameMakerFolder,
   ) {
     if (!asset) {
-      vscode.window.showErrorMessage(`Failed to create new asset.`);
+      showErrorMessage(`Failed to create new asset.`);
       return;
     }
     const treeItem = folder.addResource(new TreeAsset(folder, asset));
@@ -387,7 +385,7 @@ export class GameMakerTreeProvider
     try {
       await where.project!.deleteFolder(where.path);
     } catch {
-      vscode.window.showErrorMessage(
+      showErrorMessage(
         `Folders can only be deleted if they contain no assets.`,
       );
       return;

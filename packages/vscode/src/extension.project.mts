@@ -78,7 +78,7 @@ export class GameMakerProject extends Project {
       ideVersion: this.ideVersion,
     });
     if (!release) {
-      vscode.window.showErrorMessage(
+      showErrorMessage(
         `Could not find a release of GameMaker v${this.ideVersion} to run this project.`,
       );
       return;
@@ -87,7 +87,7 @@ export class GameMakerProject extends Project {
       version: release.runtime.version,
     });
     if (!runtime) {
-      vscode.window.showErrorMessage(
+      showErrorMessage(
         `Could not find locally installed GameMaker Runtime v${this.ideVersion}. Please install it through the GameMaker IDE and try again.`,
       );
       return;

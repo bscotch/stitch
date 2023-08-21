@@ -6,6 +6,19 @@ import { $ } from 'zx';
 config();
 
 // CREATE THE BUNDLE
+/** @type {any[]} */
+const plugins = [];
+
+if (process.env.CI && process.env.SENTRY_AUTH_TOKEN) {
+  // Sentry plugin should be LAST!
+  plugins.push(
+    sentryEsbuildPlugin({
+      org: 'bscotch',
+      project: 'stitch-vscode',
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
+  );
+}
 
 const builder = esbuild.build({
   entryPoints: ['./src/extension.ts', './src/manifest.update.mts'],
@@ -29,14 +42,7 @@ const builder = esbuild.build({
     ),
     SENTRY_DSN: JSON.stringify(process.env.SENTRY_DSN || ''),
   },
-  plugins: [
-    // Put the Sentry esbuild plugin after all other plugins
-    sentryEsbuildPlugin({
-      org: 'bscotch',
-      project: 'stitch-vscode',
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-    }),
-  ],
+  plugins,
 });
 
 // Copy the template project from current stitch-core
