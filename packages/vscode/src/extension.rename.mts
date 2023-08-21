@@ -1,5 +1,5 @@
 import vscode from 'vscode';
-import { assert } from './assert.mjs';
+import { assertUserClaim } from './assert.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { rangeFrom } from './lib.mjs';
 
@@ -12,22 +12,22 @@ export class StitchRenameProvider implements vscode.RenameProvider {
     position: vscode.Position,
   ) {
     const ref = this.provider.getReference(document, position);
-    assert(ref, 'Not a symbol reference');
+    assertUserClaim(ref, 'Not a symbol reference');
     const range = rangeFrom(ref);
     const text = document.getText(range);
-    assert(
+    assertUserClaim(
       !['other', 'self', 'global'].includes(text),
       'Cannot rename special variables',
     );
     const signifier = ref.item;
-    assert(signifier, 'No signifier found for reference');
-    assert(signifier.name, 'No name found for signifier');
-    assert(
+    assertUserClaim(signifier, 'No signifier found for reference');
+    assertUserClaim(signifier.name, 'No name found for signifier');
+    assertUserClaim(
       text === ref.item.name,
       'Reference text does not match identifier name',
     );
-    assert(!signifier.native, 'Cannot rename native functions');
-    assert(!signifier.asset, 'Asset renaming not yet implemented');
+    assertUserClaim(!signifier.native, 'Cannot rename native functions');
+    assertUserClaim(!signifier.asset, 'Asset renaming not yet implemented');
     return { ref, text, range };
   }
 

@@ -1,6 +1,6 @@
 import { YySprite } from '@bscotch/yy';
 import vscode from 'vscode';
-import { assert } from './assert.mjs';
+import { assertUserClaim } from './assert.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 
 export class StitchHoverProvider implements vscode.HoverProvider {
@@ -39,7 +39,7 @@ export class StitchHoverProvider implements vscode.HoverProvider {
         this.provider.getAsset(document, item.name);
       if (sprite) {
         hoverContents.isTrusted = true;
-        assert(sprite.dir, 'Sprite must have a directory');
+        assertUserClaim(sprite.dir, 'Sprite must have a directory');
         hoverContents.baseUri = vscode.Uri.file(sprite.dir.absolute);
         hoverContents.supportHtml = true;
         const yy = sprite.yy as YySprite;
