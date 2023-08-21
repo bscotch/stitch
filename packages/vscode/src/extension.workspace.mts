@@ -6,7 +6,6 @@ import {
   type OnDiagnostics,
   type Reference,
   type ReferenceableType,
-  type Type,
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import {
@@ -130,7 +129,7 @@ export class StitchWorkspace
       return;
     }
     const param = argRange.param;
-    const func = param.parent as Type<'Function'>;
+    const func = argRange.type;
     // Create the signature help
     const signature = new vscode.SignatureInformation(
       func.code,
