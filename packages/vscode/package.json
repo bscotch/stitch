@@ -41,6 +41,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "stitch.openGameMakerReleaseNotes",
+        "title": "Stitch: Open GameMaker Release Notes"
+      },
+      {
         "command": "stitch.assets.reveal",
         "title": "Stitch: Show Asset",
         "enablement": "stitch.projectCount > 0 && resourceExtname =~ /\\.(yy|gml)$/"
@@ -445,6 +449,9 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "stitch.openGameMakerReleaseNotes"
+        },
         {
           "command": "stitch.assets.reveal"
         },

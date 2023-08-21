@@ -166,6 +166,11 @@ export async function activateStitchExtension(
       );
       workspace.getProject(uri)?.openInIde();
     }),
+    registerCommand('stitch.openGameMakerReleaseNotes', () => {
+      vscode.env.openExternal(
+        vscode.Uri.parse('https://bscotch.github.io/stitch/gamemaker/releases'),
+      );
+    }),
     workspace.semanticHighlightProvider.register(),
     workspace.signatureHelpStatus,
     vscode.window.onDidChangeTextEditorSelection((e) => {
