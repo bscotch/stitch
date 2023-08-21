@@ -458,11 +458,7 @@ function processDotAccessor(
   if (property) {
     // If there's an assignment and this isn't an enum, then
     // handle then offload to the assignment logic
-    if (
-      lastAccessed.rhs &&
-      !isTypeOfKind(dottableType, 'Enum') &&
-      !property.def
-    ) {
+    if (lastAccessed.rhs && !isTypeOfKind(dottableType, 'Enum')) {
       // Pop the self-scope so the RHS is in the right place!
       popSelfScope();
       property =
