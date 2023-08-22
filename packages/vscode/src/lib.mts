@@ -130,3 +130,22 @@ export async function showProgress<T extends (...args: any[]) => any>(
     },
   );
 }
+
+/**
+ * A tagged template that doesn't do anything interesting, but
+ * allows indicating that the template is HTML.
+ */
+export function html(
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): string {
+  const allStrings: string[] = [];
+  for (let i = 0; i < strings.length; i++) {
+    allStrings.push(strings[i]);
+    if (i < values.length) {
+      const value = values[i];
+      allStrings.push(Array.isArray(value) ? value.join(' ') : String(value));
+    }
+  }
+  return allStrings.join('');
+}

@@ -21,6 +21,7 @@ import type { StitchWorkspace } from './extension.workspace.mjs';
 import { GameMakerInspectorProvider } from './inspector.mjs';
 import { findProject, pathyFromUri, registerCommand } from './lib.mjs';
 import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
+import { StitchReleasePickerProvider } from './releasePicker.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 
 export async function activateStitchExtension(
@@ -90,6 +91,7 @@ export async function activateStitchExtension(
     ...treeProvider.register(),
     ...inspectorProvider.register(),
     definitionsProvider.register(),
+    ...StitchReleasePickerProvider.register(workspace),
     StitchRenameProvider.register(workspace),
     StitchHoverProvider.register(workspace),
     StitchWorkspaceSymbolProvider.register(workspace),

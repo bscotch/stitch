@@ -80,9 +80,6 @@ export class StitchReleasesProvider {
           ),
         );
       }),
-      registerCommand('stitch.setGameMakerVersion', async () => {
-        await releasesProvider.promptToSetGameMakerVersion();
-      }),
     ];
   }
 }
