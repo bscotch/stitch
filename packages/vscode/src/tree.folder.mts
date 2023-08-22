@@ -22,7 +22,7 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
 
     // Override the 'folder' value for projects
     this.contextValue = this.kind;
-    this.id = this.path;
+    this.id = this.path + ':group';
   }
 
   get isRoot(): boolean {

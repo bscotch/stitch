@@ -252,7 +252,7 @@ export class TreeShaderFile extends StitchTreeItemBase<'shader-file'> {
       title: 'Open',
       arguments: [this.uri],
     };
-    this.id = this.parent.id + '/' + this.path.name;
+    this.id = this.parent.id + '/' + this.path.basename;
     this.setFileIcon('shader');
   }
   get uri() {
