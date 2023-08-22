@@ -4,29 +4,17 @@ import vscode, { QuickPickItemKind } from 'vscode';
 import { assertUserClaim } from './assert.mjs';
 import { config } from './extension.config.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
-import { registerCommand } from './lib.mjs';
+import { registerCommand, showProgress } from './lib.mjs';
 
 export class StitchReleasesProvider {
   constructor(readonly workspace: StitchWorkspace) {}
 
   static async listReleases() {
-    return await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: `Fetching GameMaker release notes...`,
-        cancellable: false,
-      },
-      async (progress) => {
-        progress.report({
-          increment: 0,
-        });
-        const releases = await GameMakerIde.listReleases();
-        progress.report({
-          increment: 100,
-        });
-        return releases;
-      },
+    const releases = await showProgress(
+      () => GameMakerIde.listReleases(),
+      `Fetching GameMaker release notes...`,
     );
+    return releases;
   }
 
   async promptToSetGameMakerVersion() {

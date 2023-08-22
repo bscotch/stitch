@@ -45,8 +45,22 @@
         "title": "Stitch: Open GameMaker Release Notes"
       },
       {
+        "command": "stitch.openLocation.gameMaker",
+        "title": "Stitch: Open GameMaker Location"
+      },
+      {
+        "command": "stitch.openLocation.saveDirectory",
+        "title": "Stitch: Open Save Directory",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
+        "command": "stitch.openLocation.stitch",
+        "title": "Stitch: Open Stitch Location"
+      },
+      {
         "command": "stitch.setGameMakerVersion",
-        "title": "Stitch: Set GameMaker Version"
+        "title": "Stitch: Set GameMaker Version",
+        "enablement": "stitch.projectCount > 0"
       },
       {
         "command": "stitch.assets.reveal",
@@ -152,7 +166,7 @@
       "title": "Stitch",
       "properties": {
         "stitch.gameMaker.releases.notes.channels": {
-          "title": "GameMaker Release Notes Channels",
+          "title": "GameMaker Release Channels",
           "type": "array",
           "default": [
             "lts",
@@ -168,7 +182,7 @@
               "unstable"
             ]
           },
-          "description": "Which GameMaker release notes channels to show in the GameMaker version picker."
+          "description": "Which GameMaker release notes channels to show in the GameMaker version picker and other locations."
         },
         "stitch.telemetry.enable": {
           "title": "Send log data",
@@ -474,6 +488,15 @@
       "commandPalette": [
         {
           "command": "stitch.openGameMakerReleaseNotes"
+        },
+        {
+          "command": "stitch.openLocation.gameMaker"
+        },
+        {
+          "command": "stitch.openLocation.saveDirectory"
+        },
+        {
+          "command": "stitch.openLocation.stitch"
         },
         {
           "command": "stitch.setGameMakerVersion"

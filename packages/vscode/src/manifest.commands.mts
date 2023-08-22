@@ -15,9 +15,26 @@ export const commands = {
     title: 'Stitch: Open GameMaker Release Notes',
     [$showInPalette]: true,
   },
+  'stitch.openLocation.gameMaker': {
+    command: 'stitch.openLocation.gameMaker',
+    title: 'Stitch: Open GameMaker Location',
+    [$showInPalette]: true,
+  },
+  'stitch.openLocation.saveDirectory': {
+    command: 'stitch.openLocation.saveDirectory',
+    title: 'Stitch: Open Save Directory',
+    enablement: when.hasProjects,
+    [$showInPalette]: true,
+  },
+  'stitch.openLocation.stitch': {
+    command: 'stitch.openLocation.stitch',
+    title: 'Stitch: Open Stitch Location',
+    [$showInPalette]: true,
+  },
   'stitch.setGameMakerVersion': {
     command: 'stitch.setGameMakerVersion',
     title: 'Stitch: Set GameMaker Version',
+    enablement: when.hasProjects,
     [$showInPalette]: true,
   },
   'stitch.assets.reveal': {

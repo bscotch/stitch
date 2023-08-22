@@ -1,7 +1,7 @@
 import type { Code, Range } from '@bscotch/gml-parser';
-import { Pathy } from '@bscotch/pathy';
+import { Pathy, pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
-import { logThrown } from './assert.mjs';
+import { assertInternalClaim, assertLoudly, logThrown } from './assert.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import type { CommandName } from './manifest.commands.mjs';
@@ -75,4 +75,58 @@ export function registerCommand(
 
 export function copyToClipboard(text: string) {
   vscode.env.clipboard.writeText(text);
+}
+
+export async function openPath(
+  path: string | Pathy,
+  options?: { assertLoudly?: boolean },
+) {
+  path = pathy(path);
+  // Does it exist?
+  const exists = await path.exists();
+  if (!exists) {
+    const msg = `Path does not exist: "${path.absolute}"`;
+    if (options?.assertLoudly) {
+      assertLoudly(exists, msg);
+    } else {
+      assertInternalClaim(exists, msg);
+    }
+  }
+  // Is it a file or a folder?
+  const isFile = await path.isFile();
+  if (isFile) {
+    await vscode.commands.executeCommand(
+      'vscode.open',
+      vscode.Uri.file(path.absolute),
+    );
+  } else {
+    await vscode.commands.executeCommand(
+      'vscode.openFolder',
+      vscode.Uri.file(path.absolute),
+      { forceNewWindow: true },
+    );
+  }
+}
+
+export async function showProgress<T extends (...args: any[]) => any>(
+  func: T,
+  title: string,
+): Promise<ReturnType<T>> {
+  return await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title,
+      cancellable: false,
+    },
+    async (progress) => {
+      progress.report({
+        increment: 0,
+      });
+      const results = await func();
+      progress.report({
+        increment: 100,
+      });
+      return results;
+    },
+  );
 }

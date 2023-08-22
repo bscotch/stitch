@@ -137,7 +137,10 @@ export class StitchWorkspace
     );
     signature.activeParameter = param.idx!;
     signature.parameters = func.listParameters().map((p) => {
-      return new vscode.ParameterInformation(p.name, p.description);
+      return new vscode.ParameterInformation(
+        p?.name || 'unknown',
+        p?.description,
+      );
     });
     const help = new vscode.SignatureHelp();
     help.signatures = [signature];
