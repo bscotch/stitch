@@ -10,7 +10,10 @@ export class TreeFilterGroup extends StitchTreeItemBase<'tree-filter-group'> {
   override readonly kind = 'tree-filter-group';
   readonly filters: TreeFilter[] = [];
 
-  constructor(readonly parent: GameMakerFolder, readonly name: string) {
+  constructor(
+    readonly parent: GameMakerFolder,
+    readonly name: string,
+  ) {
     super(`Filter ${name}`);
     this.setBaseIcon('list-filter');
 
@@ -42,7 +45,10 @@ export class TreeFilterGroup extends StitchTreeItemBase<'tree-filter-group'> {
 export class TreeFilter extends StitchTreeItemBase<'tree-filter'> {
   override readonly kind = 'tree-filter';
 
-  constructor(readonly parent: TreeFilterGroup, public query: string) {
+  constructor(
+    readonly parent: TreeFilterGroup,
+    public query: string,
+  ) {
     super(query);
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
 
@@ -81,7 +87,10 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
   /** Asset:TreeItem lookup, for revealing items and filtering.  */
   static lookup: Map<Asset, TreeAsset> = new Map();
 
-  constructor(readonly parent: GameMakerFolder, asset: Asset) {
+  constructor(
+    readonly parent: GameMakerFolder,
+    asset: Asset,
+  ) {
     super(asset.name);
     this.contextValue = `asset-${asset.assetKind}`;
     TreeAsset.lookup.set(asset, this);
@@ -128,7 +137,13 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
         this.setGameMakerIcon('script');
         break;
       case 'sprites':
-        this.setGameMakerIcon('sprite');
+        // this.setGameMakerIcon('sprite');
+        const frame = this.asset.framePaths?.[0];
+        if (frame) {
+          this.iconPath = vscode.Uri.file(frame.absolute);
+        } else {
+          this.setGameMakerIcon('sprite');
+        }
         break;
       case 'sounds':
         this.setGameMakerIcon('audio');
@@ -156,7 +171,10 @@ export class TreeCode extends StitchTreeItemBase<'code'> {
   override readonly kind = 'code';
   static lookup: Map<Code, TreeCode> = new Map();
 
-  constructor(readonly parent: TreeAsset, readonly code: Code) {
+  constructor(
+    readonly parent: TreeAsset,
+    readonly code: Code,
+  ) {
     super(code.name);
     this.contextValue = this.kind;
     TreeCode.lookup.set(code, this);
@@ -202,7 +220,10 @@ export class TreeSpriteFrame extends StitchTreeItemBase<'sprite-frame'> {
 
 export class TreeShaderFile extends StitchTreeItemBase<'shader-file'> {
   override readonly kind = 'shader-file';
-  constructor(readonly parent: TreeAsset, readonly path: Pathy<string>) {
+  constructor(
+    readonly parent: TreeAsset,
+    readonly path: Pathy<string>,
+  ) {
     super(path.hasExtension('vsh') ? 'Vertex' : 'Fragment');
     this.contextValue = this.kind;
     this.command = {

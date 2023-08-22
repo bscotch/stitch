@@ -12,7 +12,7 @@ import { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import type { ObjectParentFolder } from './inspector.mjs';
 import { registerCommand, uriFromCodeFile } from './lib.mjs';
-import { logger, warn } from './log.mjs';
+import { logger, showErrorMessage, warn } from './log.mjs';
 import {
   GameMakerFolder,
   GameMakerProjectFolder,
