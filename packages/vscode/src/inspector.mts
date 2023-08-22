@@ -138,7 +138,12 @@ class ObjectSpriteItem extends StitchTreeItemBase<'asset-sprites'> {
   constructor(readonly sprite: Asset<'sprites'>) {
     super(sprite.name);
     this.contextValue = this.kind;
-    this.setGameMakerIcon('sprite');
+    const frame = this.sprite.framePaths?.[0];
+    if (frame) {
+      this.iconPath = vscode.Uri.file(frame.absolute);
+    } else {
+      this.setGameMakerIcon('sprite');
+    }
     this.command = {
       command: 'vscode.open',
       title: 'Open',
