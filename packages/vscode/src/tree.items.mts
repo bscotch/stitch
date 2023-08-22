@@ -177,6 +177,13 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
         break;
       case 'particles':
         this.setBaseIcon('flame');
+        break;
+      case 'animcurves':
+        this.setBaseIcon('graph-line');
+        break;
+      case 'extensions':
+        this.setBaseIcon('plug');
+        break;
     }
   }
 }
