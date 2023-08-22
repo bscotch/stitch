@@ -1,4 +1,9 @@
-import { Asset, Code, getEventFromFilename } from '@bscotch/gml-parser';
+import {
+  Asset,
+  Code,
+  getEventFromFilename,
+  isAssetOfKind,
+} from '@bscotch/gml-parser';
 import { Pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
 import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
@@ -106,12 +111,19 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
 
   protected refreshTreeItem() {
     let file: vscode.Uri;
-    if (this.asset.assetKind === 'scripts') {
-      const gmlFiles = [...this.asset.gmlFiles.values()];
-      file = vscode.Uri.file(gmlFiles[0].path.absolute);
-    } else {
-      file = vscode.Uri.file(this.asset.yyPath.absolute);
+    const asset = this.asset;
+    if (isAssetOfKind(asset, 'scripts') || isAssetOfKind(asset, 'objects')) {
+      const gmlFile = asset.gmlFilesArray?.[0];
+      file = vscode.Uri.file(
+        gmlFile?.path.absolute || this.asset.yyPath.absolute,
+      );
+    } else if (isAssetOfKind(asset, 'sounds')) {
+      file = vscode.Uri.file(asset.dir.join(asset.yy.soundFile).absolute);
+    } else if (isAssetOfKind(asset, 'sprites')) {
+      const frame = asset.framePaths?.[0];
+      file = vscode.Uri.file(frame?.absolute || this.asset.yyPath.absolute);
     }
+    file ||= vscode.Uri.file(this.asset.yyPath.absolute);
     this.command = {
       command: 'vscode.open',
       title: 'Open',
@@ -163,6 +175,8 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
       case 'tilesets':
         this.setBaseIcon('layers');
         break;
+      case 'particles':
+        this.setBaseIcon('flame');
     }
   }
 }
