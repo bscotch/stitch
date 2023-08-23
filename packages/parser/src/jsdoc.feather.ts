@@ -19,8 +19,35 @@ export interface FeatherTypeUnion {
 
 export interface FeatherType {
   kind: 'type';
-  name: string;
+  name: {
+    content: string;
+    offset: number;
+    inferred?: boolean;
+  };
   of?: FeatherTypeUnion;
+}
+
+/**
+ * Given a parsed feather type, create a flat array of flat types.
+ * Useful for e.g. getting the offsets of all types in a union.
+ * @param flattened The array collecting the flattened types
+ */
+export function flattenFeatherTypes(
+  type: FeatherTypeUnion | FeatherType | string,
+  flattened: FeatherType[] = [],
+): FeatherType[] {
+  if (typeof type === 'string') {
+    return flattenFeatherTypes(parseFeatherTypeString(type), flattened);
+  }
+  if (type.kind === 'type') {
+    flattened.push(type);
+    if (type.of) {
+      flattenFeatherTypes(type.of, flattened);
+    }
+  } else {
+    type.types.forEach((t) => flattenFeatherTypes(t, flattened));
+  }
+  return flattened;
 }
 
 export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
@@ -30,15 +57,15 @@ export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
   const rightBracket = /[>\]]/y;
   const or = /(\bOR\b|\bor\b|\||,)/y;
   const identifier = /[a-zA-Z_][a-zA-Z0-9_.]*/y;
-  let currentPosition = 0;
+  let offset = 0;
 
   const lex = (pattern: RegExp) => {
-    pattern.lastIndex = currentPosition;
+    pattern.lastIndex = offset;
     const match = pattern.exec(typeString);
     if (!match) {
       return;
     }
-    currentPosition = pattern.lastIndex;
+    offset = pattern.lastIndex;
     return match;
   };
   const rootUnion: FeatherTypeUnion = { kind: 'union', types: [] };
@@ -48,12 +75,15 @@ export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
   let currentType: FeatherType | undefined;
 
   if (!typeString?.trim()) {
-    rootUnion.types.push({ kind: 'type', name: 'Any' });
+    rootUnion.types.push({
+      kind: 'type',
+      name: { content: 'Any', inferred: true, offset },
+    });
     return rootUnion;
   }
 
   // Lex the string
-  while (currentPosition < typeString.length) {
+  while (offset < typeString.length) {
     let match: RegExpExecArray | undefined;
 
     match = lex(leftBracket);
@@ -87,7 +117,7 @@ export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
       // Create a new type
       const type: FeatherType = {
         kind: 'type',
-        name: match[0],
+        name: { content: match[0], offset: match.index },
       };
       // Add it to the current union
       currentUnion().types.push(type);

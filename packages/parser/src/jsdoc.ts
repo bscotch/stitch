@@ -1,5 +1,6 @@
 import { keysOf } from '@bscotch/utility';
 import type { IToken } from 'chevrotain';
+import { flattenFeatherTypes } from './jsdoc.feather.js';
 import type { IPosition, IRange } from './project.location.js';
 import { assert } from './util.js';
 
@@ -160,6 +161,8 @@ export interface JsdocSummary
    */
   tags: JsdocComponent[];
   diagnostics: (IRange & { message: string })[];
+  /** Locations of all of the types parsed from the JSDoc block */
+  typeRanges: JsdocComponent[];
 }
 
 interface JsdocLine {
@@ -344,7 +347,38 @@ export function parseJsdoc(
     end,
     tags: [],
     diagnostics: [],
+    typeRanges: [],
   };
+
+  const addTypeRanges = (component: JsdocComponent | undefined) => {
+    if (!component) return;
+    const types = flattenFeatherTypes(component.content);
+    for (const type of types) {
+      // Convert the offset to a range and add it to typeRanges
+      doc.typeRanges.push({
+        content: type.name.content,
+        start: {
+          line: component.start.line + type.name.offset,
+          column: component.start.column + type.name.offset,
+          offset: component.start.offset + type.name.offset,
+        },
+        end: {
+          line: component.start.line,
+          column:
+            component.start.column +
+            type.name.offset +
+            type.name.content.length -
+            1,
+          offset:
+            component.start.offset +
+            type.name.offset +
+            type.name.content.length -
+            1,
+        },
+      });
+    }
+  };
+
   let describing: Jsdoc | null = doc;
   const appendDescription = (
     currentDescription: string,
@@ -434,6 +468,13 @@ export function parseJsdoc(
           ? 'globalvar'
           : 'instancevar';
 
+        const typeString = substringRange(
+          line.content,
+          parts.typeUnion,
+          line.start,
+        );
+        addTypeRanges(typeString);
+
         const entity: Jsdoc<typeof kind> = {
           kind,
           name: substringRange(
@@ -442,7 +483,7 @@ export function parseJsdoc(
             line.start,
           ),
           optional: !!parts.optionalName,
-          type: substringRange(line.content, parts.typeUnion, line.start),
+          type: typeString,
           description: parts.info || '',
           ...entireMatchRange,
         };
@@ -467,9 +508,16 @@ export function parseJsdoc(
           // Then we don't want to overwrite.
           break;
         }
+        const typeString = substringRange(
+          line.content,
+          parts.typeUnion!,
+          line.start,
+        );
+        addTypeRanges(typeString);
+
         const returns: Jsdoc<'returns'> = {
           kind: 'returns',
-          type: substringRange(line.content, parts.typeUnion!, line.start),
+          type: typeString,
           description: parts.info || '',
           ...entireMatchRange,
         };
@@ -480,6 +528,7 @@ export function parseJsdoc(
       // Handle Self
       else if (parts.self) {
         doc.self = substringRange(line.content, parts.type!, line.start);
+        addTypeRanges(doc.self);
         if (parts.extraBracket) {
           doc.diagnostics.push({
             message: '@self types should not be wrapped in brackets',
@@ -492,6 +541,7 @@ export function parseJsdoc(
       else if (parts.type) {
         doc.kind = 'type';
         doc.type = substringRange(line.content, parts.typeUnion!, line.start);
+        addTypeRanges(doc.type);
         doc.description = appendDescription(doc.description, parts.info);
       }
       // Handle modifiers

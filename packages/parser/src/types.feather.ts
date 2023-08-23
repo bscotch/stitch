@@ -189,7 +189,7 @@ export function typeFromParsedFeatherString(
 ): Type[] {
   if (node.kind === 'type') {
     const identifier = node.name;
-    let type = typeFromIdentifier(identifier, knownTypes, addMissing);
+    let type = typeFromIdentifier(identifier.content, knownTypes, addMissing);
     if (node.of) {
       const subtypes = typeFromParsedFeatherString(
         node.of,
