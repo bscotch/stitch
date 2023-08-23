@@ -235,7 +235,7 @@ export class GameMakerComponent {
       });
     }
     for (const configFile of await listRuntimeFeedsConfigPaths()) {
-      const existingConfig = await configFile.read();
+      const existingConfig = await configFile.read({ fallback: [] });
       maybeNew: for (const feed of feedConfigs) {
         for (const existing of existingConfig) {
           if (existing.Value === feed.Value) {
