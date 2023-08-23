@@ -3,7 +3,9 @@ import { randomString } from '@bscotch/utility';
 import vscode from 'vscode';
 
 export class StitchConfig {
-  protected readonly config = vscode.workspace.getConfiguration('stitch');
+  get config() {
+    return vscode.workspace.getConfiguration('stitch');
+  }
   get userId() {
     let userId = this.config.get<string>('telemetry.userId');
     if (!userId) {
