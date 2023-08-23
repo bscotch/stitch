@@ -16,7 +16,7 @@
     () =>
       alerts.notify({
         kind: 'warning',
-        text: 'Deprecation notice: We\'re porting Stitch Desktop\'s features to <a href="https://tinybs.co/stitch-vscode">Stitch for VSCode</a> (<code>tinybs.co/stitch-vscode</code>). Stitch Desktop is no longer maintained.',
+        text: `NOTICE: Stitch Desktop is being deprecated in favor of <a href="https://tinybs.co/stitch-vscode">Stitch for VSCode</a> (see <a href="https://github.com/bscotch/stitch/issues/138">the announcement</a> for details). Stitch Desktop is no longer maintained.`,
         ttl: 15,
       }),
     5000,
