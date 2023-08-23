@@ -14,7 +14,6 @@ import { StitchDefinitionsProvider } from './extension.definitions.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { StitchHoverProvider } from './extension.hover.mjs';
 import { StitchLocationsProvider } from './extension.locations.mjs';
-import { StitchReleasesProvider } from './extension.releases.mjs';
 import { StitchRenameProvider } from './extension.rename.mjs';
 import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
@@ -97,7 +96,6 @@ export async function activateStitchExtension(
     StitchWorkspaceSymbolProvider.register(workspace),
     StitchCompletionProvider.register(workspace),
     ...StitchLocationsProvider.register(workspace),
-    ...StitchReleasesProvider.register(workspace),
     vscode.languages.registerSignatureHelpProvider('gml', workspace, '(', ','),
     vscode.languages.registerDocumentFormattingEditProvider(
       'yy',

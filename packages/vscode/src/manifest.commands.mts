@@ -10,11 +10,6 @@ import {
 import { when } from './manifest.when.mjs';
 
 export const commands = {
-  'stitch.openGameMakerReleaseNotes': {
-    command: 'stitch.openGameMakerReleaseNotes',
-    title: 'Stitch: Open GameMaker Release Notes',
-    [$showInPalette]: true,
-  },
   'stitch.openLocation.gameMaker': {
     command: 'stitch.openLocation.gameMaker',
     title: 'Stitch: Open GameMaker Location',

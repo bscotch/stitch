@@ -1,5 +1,7 @@
 import { GameMakerIde } from '@bscotch/stitch-launcher';
 import vscode from 'vscode';
+import { config } from './extension.config.mjs';
+import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { registerCommand, showProgress } from './lib.mjs';
 import { compile } from './releasePicker.template.mjs';
@@ -21,9 +23,23 @@ export class StitchReleasePickerProvider {
     return projects;
   }
 
+  /** If there is only one project in the workspace, return it. Otherwise prompt the user. */
+  protected async chooseProject(): Promise<GameMakerProject | undefined> {
+    if (this.projects.length === 1) {
+      return this.projects[0];
+    }
+    // Create a quickpick
+    const projectName = await vscode.window.showQuickPick(
+      this.projects.map((p) => p.name),
+      { title: 'Choose a project' },
+    );
+    if (!projectName) return;
+    return this.projects.find((p) => p.name === projectName);
+  }
+
   protected async getWebviewContent() {
     const releases = await StitchReleasePickerProvider.listReleases();
-    return compile(releases, this.projects);
+    return compile(releases, this.projects, config.releaseNotesChannels);
   }
 
   protected createPanel(): vscode.WebviewPanel {
@@ -34,13 +50,29 @@ export class StitchReleasePickerProvider {
       { enableScripts: true, enableFindWidget: true },
     );
     panel.webview.onDidReceiveMessage(
-      (message: {
-        type: 'toggleVersion';
-        version: string;
-        project: string;
-      }) => {
-        const project = this.projects.find((p) => p.name === message.project);
-        if (!project) return;
+      async (
+        message:
+          | {
+              type: 'setVersion';
+              version: string;
+            }
+          | { type: 'openChannelsSetting' },
+      ) => {
+        if (message.type === 'openChannelsSetting') {
+          vscode.commands.executeCommand(
+            'workbench.action.openSettings',
+            'stitch.gameMaker.releases.notes.channels',
+          );
+          // Dispose of the panel so it will be rebuilt
+          this.panel?.dispose();
+          return;
+        } else if (message.type === 'setVersion') {
+          const project = await this.chooseProject();
+          if (!project) return;
+          await project.setIdeVersion(message.version);
+          // Dispose of the panel so it will be rebuilt
+          this.revealPanel();
+        }
       },
     );
     return panel;
@@ -59,7 +91,9 @@ export class StitchReleasePickerProvider {
       () => GameMakerIde.listReleases(),
       `Fetching GameMaker release notes...`,
     );
-    return releases;
+    return releases.filter((release) =>
+      config.releaseNotesChannels.includes(release.channel),
+    );
   }
 
   static register(workspace: StitchWorkspace) {

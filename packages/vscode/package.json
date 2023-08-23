@@ -41,10 +41,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "stitch.openGameMakerReleaseNotes",
-        "title": "Stitch: Open GameMaker Release Notes"
-      },
-      {
         "command": "stitch.openLocation.gameMaker",
         "title": "Stitch: Open GameMaker Location"
       },
@@ -486,9 +482,6 @@
         }
       ],
       "commandPalette": [
-        {
-          "command": "stitch.openGameMakerReleaseNotes"
-        },
         {
           "command": "stitch.openLocation.gameMaker"
         },
