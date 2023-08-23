@@ -110,6 +110,13 @@ export function typeToFeatherString(type: Type): string {
   if (type.isGeneric && type.name) {
     return type.name;
   }
+  if (type.signifier?.enumMember) {
+    const parent = type.signifier.parent;
+    return `Enum.${parent.name}.${type.name}`;
+  }
+  if (type.signifier?.enum) {
+    return `Enum.${type.name}`;
+  }
   if (type.name) {
     if (['Real', 'String', 'Boolean'].includes(type.kind)) {
       // Then this is a constant, represented in Feather as `Constant.<Class>`

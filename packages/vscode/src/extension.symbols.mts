@@ -141,14 +141,17 @@ export class StitchWorkspaceSymbolProvider
     const type = item.type;
     const functionType = item.getTypeByKind('Function');
 
-    const kind =
-      type.kind === 'Enum'
-        ? vscode.SymbolKind.Enum
-        : functionType?.isConstructor
-        ? vscode.SymbolKind.Constructor
-        : functionType
-        ? vscode.SymbolKind.Function
-        : vscode.SymbolKind.Variable;
+    const kind = item.enum
+      ? vscode.SymbolKind.Enum
+      : item.enumMember
+      ? vscode.SymbolKind.EnumMember
+      : item.macro
+      ? vscode.SymbolKind.Constant
+      : functionType?.isConstructor
+      ? vscode.SymbolKind.Constructor
+      : functionType
+      ? vscode.SymbolKind.Function
+      : vscode.SymbolKind.Variable;
     return new vscode.SymbolInformation(
       item.name,
       kind,

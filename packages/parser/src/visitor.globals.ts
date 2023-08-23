@@ -123,6 +123,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     symbol.addRef(range, !isNotDef && !symbol.native);
     symbol.global = true;
     symbol.macro = false; // Reset macro status
+    symbol.enum = false; // Reset enum status
     return symbol;
   }
 
@@ -157,6 +158,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
   override enumStatement(children: EnumStatementCstChildren) {
     const symbol = this.REGISTER_GLOBAL(children)! as Signifier;
     assert(symbol, 'Enum symbol should exist');
+    symbol.enum = true;
     let type = symbol.getTypeByKind('Enum');
     if (!type) {
       symbol.setType(new Type('Enum'));
@@ -166,20 +168,20 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       symbol.setType(type);
     }
     type.named(symbol.name);
+    type.signifier = symbol;
     this.PROCESSOR.project.types.set(`Enum.${symbol.name}`, type);
 
     // Upsert the enum members
-    const keepNames = new Set<string>();
     for (let i = 0; i < children.enumMember.length; i++) {
       const name = children.enumMember[i].children.Identifier[0];
-      keepNames.add(name.image);
       const range = this.PROCESSOR.range(name);
-      const memberType = new Type('EnumMember').named(name.image);
       // Does member already exist?
-      const member =
-        type.getMember(name.image) ||
-        type.addMember(name.image, { type: memberType })!;
+      const member = type.getMember(name.image) || type.addMember(name.image)!;
+      const memberType =
+        member.type.type[0] || new Type('EnumMember').named(name.image);
       member.setType(memberType);
+      memberType.signifier = member;
+      member.enumMember = true;
       member.idx = i;
       member.definedAt(range);
       member.addRef(range, true);

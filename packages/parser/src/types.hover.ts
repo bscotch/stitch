@@ -2,7 +2,7 @@ import type { Signifier } from './signifiers.js';
 import type { Type } from './types.js';
 import { assert } from './util.js';
 
-export function typeMemberToHoverText(member: Signifier) {
+function typeMemberToHoverText(member: Signifier) {
   let code = member.name;
   if (member.optional) {
     code += '?';
@@ -52,9 +52,7 @@ export function typeToHoverDetails(type: Type) {
     }
     code += '}\n```';
   } else if (type.kind === 'Enum') {
-    const members = type
-      .listMembers()
-      .filter((x) => x.name !== 'self' && x.def);
+    const members = type.listMembers().filter((x) => x.def);
     if (!members.length) {
       return '';
     }

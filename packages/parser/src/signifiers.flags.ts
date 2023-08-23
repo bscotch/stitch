@@ -14,6 +14,8 @@ const signifierFlags = {
   Mixin: 1 << 11, // Is a mixin
   Override: 1 << 12, // Is an override for a parent variable
   Definitive: 1 << 13, // Is a definitive variable (defined in a definitiveSelf, such as a constructor or Create event)
+  Enum: 1 << 14, // Is an enum
+  EnumMember: 1 << 15, // Is an enum member
 };
 
 export class Flags {
@@ -123,6 +125,20 @@ export class Flags {
   }
   set mixin(mixin: boolean) {
     this.setFlag(signifierFlags.Mixin, mixin);
+  }
+
+  get enum() {
+    return this.getFlag(signifierFlags.Enum);
+  }
+  set enum(isEnum: boolean) {
+    this.setFlag(signifierFlags.Enum, isEnum);
+  }
+
+  get enumMember() {
+    return this.getFlag(signifierFlags.EnumMember);
+  }
+  set enumMember(enumMember: boolean) {
+    this.setFlag(signifierFlags.EnumMember, enumMember);
   }
 
   deprecate(deprecated = true): this {

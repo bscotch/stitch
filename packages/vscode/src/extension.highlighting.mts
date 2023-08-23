@@ -148,10 +148,10 @@ function inferSemanticToken(ref: Reference): SemanticTokenType {
   const signifier = ref.item;
   const functionType = signifier.getTypeByKind('Function');
 
-  if (signifier.getTypeByKind('Enum')) {
+  if (signifier.enum) {
     return 'enum';
   }
-  if (signifier.getTypeByKind('EnumMember')) {
+  if (signifier.enumMember) {
     return 'enumMember';
   }
   if (functionType?.isConstructor) {
