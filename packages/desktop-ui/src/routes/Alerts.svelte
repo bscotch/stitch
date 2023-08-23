@@ -12,6 +12,15 @@
   };
 
   window.electron?.onNotify(alerts.notify);
+  setTimeout(
+    () =>
+      alerts.notify({
+        kind: 'warning',
+        text: 'Deprecation notice: We\'re porting Stitch Desktop\'s features to <a href="https://tinybs.co/stitch-vscode">Stitch for VSCode</a> (<code>tinybs.co/stitch-vscode</code>). Stitch Desktop is no longer maintained.',
+        ttl: 15,
+      }),
+    5000,
+  );
 </script>
 
 <aside>
@@ -31,7 +40,7 @@
           icon={alert.icon || messageIcons[alert.kind]}
           label={alert.kind}
         />
-        <span class="message">{alert.text}</span>
+        <span class="message">{@html alert.text}</span>
       </li>
     {/each}
   </ul>
