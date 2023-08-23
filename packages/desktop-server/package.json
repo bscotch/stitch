@@ -29,12 +29,12 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/gamemaker-releases": "workspace:*",
+    "@bscotch/gamemaker-releases": "0.5.0",
     "@bscotch/pathy": "^2.7.4",
-    "@bscotch/stitch": "workspace:*",
-    "@bscotch/stitch-launcher": "workspace:*",
+    "@bscotch/stitch": "10.6.16",
+    "@bscotch/stitch-launcher": "1.4.2",
     "@bscotch/utility": "^6.8.3",
-    "@bscotch/yy": "workspace:*",
+    "@bscotch/yy": "0.12.1",
     "@trpc/server": "10.37.1",
     "express": "5.0.0-beta.1",
     "image-size": "1.0.2",
