@@ -139,6 +139,7 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
       typeFromParsedJsdocs(jsdoc, this.PROCESSOR.project.types, false),
     );
     symbol.describe(jsdoc.description);
+    // NOTE: references to types are added during local processing so they are not needed here
   }
 
   override jsdocJs(children: JsdocJsCstChildren) {

@@ -257,6 +257,15 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       type,
     };
     this.PROCESSOR.file.jsdocs.push(jsdoc);
+
+    // Add references to types where appropriate
+    for (const loc of jsdoc.typeRanges) {
+      const signifier = this.PROCESSOR.project.types.get(loc.content)
+        ?.signifier;
+      if (!signifier) continue;
+      signifier.addRef(Range.from(this.PROCESSOR.file, loc));
+    }
+
     // If we're documenting a variable, then we need to
     // go ahead and consume the doc.
     // globalvars should have already been handled and can be skipped
@@ -343,13 +352,13 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       getTypeOfKind(contextExpression, withableTypes) ||
       this.PROCESSOR.createStruct(blockLocation);
 
-    const docsSelfRange = docs?.jsdoc.self
-      ? Range.from(this.PROCESSOR.file, docs.jsdoc.self)
-      : undefined;
+    // const docsSelfRange = docs?.jsdoc.self
+    //   ? Range.from(this.PROCESSOR.file, docs.jsdoc.self)
+    //   : undefined;
 
-    if (docsSelfRange && self.signifier) {
-      self.signifier.addRef(docsSelfRange);
-    }
+    // if (docsSelfRange && self.signifier) {
+    //   self.signifier.addRef(docsSelfRange);
+    // }
 
     this.PROCESSOR.scope.setEnd(children.expression[0].location!, true);
     this.PROCESSOR.pushSelfScope(blockLocation, self, false);

@@ -1,4 +1,3 @@
-import { Signifier } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { locationOf } from './lib.mjs';
@@ -12,25 +11,24 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
     const offset = document.offsetAt(position);
     const file = this.provider.getGmlFile(document);
     const ref = file?.getReferenceAt(offset);
-    let item: Signifier | undefined;
+    const item = ref?.item;
 
-    if (!file) return;
+    if (!item) return;
 
-    // If we don't have a reference, see if we're on a typename in
-    // a JSDoc comment.
-    if (!ref) {
-      // Make sure we're in a JSDoc comment.
-      if (!file.getJsdocAt(offset)) return;
+    // // If we don't have a reference, see if we're on a typename in
+    // // a JSDoc comment.
+    // if (!ref) {
+    //   // Make sure we're in a JSDoc comment.
+    //   if (!file.getJsdocAt(offset)) return;
 
-      const wordRange = document.getWordRangeAtPosition(position, /[\w.]+/);
-      if (!wordRange) return;
-      const typeName = document.getText(wordRange);
-      console.log('WORD RANGE', typeName);
-      item = file.project.types.get(typeName)?.signifier;
-      if (!item) return;
-    }
+    //   const wordRange = document.getWordRangeAtPosition(position, /[\w.]+/);
+    //   if (!wordRange) return;
+    //   const typeName = document.getText(wordRange);
+    //   console.log('WORD RANGE', typeName);
+    //   item = file.project.types.get(typeName)?.signifier;
+    //   if (!item) return;
+    // }
 
-    item ||= ref?.item;
     const assetName = item?.asset
       ? item.name
       : item?.getTypeByKind('Id.Instance')?.name ||
