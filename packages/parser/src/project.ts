@@ -211,7 +211,7 @@ export class Project {
     yy.name = to;
     await Yy.write(newYyFile.absolute, yy, asset.assetKind);
     // Register the new asset
-    const info = await this.addAssetToYyp(yyFile.absolute);
+    const info = await this.addAssetToYyp(newYyFile.absolute);
     const newAsset = await Asset.from(this, info);
     assert(newAsset, `Could not create new asset ${to}`);
     this.registerAsset(newAsset);
