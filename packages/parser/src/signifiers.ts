@@ -27,12 +27,24 @@ export class Signifier extends Flags {
   protected _def: Range | { file?: undefined } | undefined = undefined;
   refs = new Set<Reference>();
 
-  constructor(parent: Type, readonly name: string, type?: Type | Type[]) {
+  constructor(
+    parent: Type,
+    readonly name: string,
+    type?: Type | Type[],
+  ) {
     super();
     if (type) {
       this.setType(type);
     }
     this.parent = parent;
+  }
+
+  get isRenameable(): boolean {
+    return (
+      !!this.name &&
+      !this.native &&
+      !['other', 'self', 'global'].includes(this.name)
+    );
   }
 
   /**

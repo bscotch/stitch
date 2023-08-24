@@ -24,7 +24,11 @@ export class StitchRenameProvider implements vscode.RenameProvider {
     assertUserClaim(signifier.name, 'No name found for signifier');
     assertUserClaim(text === ref.item.name, 'Cannot rename from type string');
     assertUserClaim(!signifier.native, 'Cannot rename native functions');
-    assertUserClaim(!signifier.asset, 'Asset renaming not yet implemented');
+    assertUserClaim(!signifier.asset, 'Rename assets using the asset tree');
+    assertUserClaim(
+      signifier.isRenameable && ref.isRenameable,
+      'Cannot rename this symbol',
+    );
     return { ref, text, range };
   }
 
@@ -47,18 +51,15 @@ export class StitchRenameProvider implements vscode.RenameProvider {
     const toRename = this.assertRenameableReference(document, position);
     const refs = toRename.ref.item.refs;
     const edits = new vscode.WorkspaceEdit();
-    const namePattern = new RegExp(`\\b${toRename.text}\\b`);
     for (const ref of refs) {
       // Get the corresponding URI
       const uri = vscode.Uri.file(ref.file.path.absolute);
-      const text = ref.file.getTextAt(ref.start.offset, ref.end.offset);
-      const renamed = text.replace(namePattern, newName);
-      if (text === renamed) {
+      const renamed = ref.toRenamed(newName);
+      if (ref.text === renamed) {
         continue;
       }
       edits.replace(uri, rangeFrom(ref), renamed);
     }
-
     return edits;
   }
 

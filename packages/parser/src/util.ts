@@ -29,14 +29,18 @@ export const log: Logger = Object.assign(
   { enabled: false },
 );
 
+export function throwError(message?: string, asserter?: Function): never {
+  const err = new StitchParserError(message, asserter || throwError);
+  if (runningInVscode) {
+    // VSCode swallows error messages, so we need to log them
+    logger.error(err);
+  }
+  throw err;
+}
+
 export function assert(condition: any, message?: string): asserts condition {
   if (!condition) {
-    const err = new StitchParserError(message, assert);
-    if (runningInVscode) {
-      // VSCode swallows error messages, so we need to log them
-      logger.error(err);
-    }
-    throw err;
+    throwError(message, assert);
   }
 }
 /** @alias assert */
@@ -120,4 +124,12 @@ export function isBeforeRange(range: IRange, offset: number | LinePosition) {
 
 export function isArray<T>(value: unknown): value is T[] | readonly T[] {
   return Array.isArray(value);
+}
+
+export function isValidIdentifier(name: string) {
+  return /^[a-z_][a-z0-9_]*$/i.test(name);
+}
+
+export function assertIsValidIdentifier(name: string) {
+  assert(isValidIdentifier(name), `Invalid identifier: ${name}`);
 }

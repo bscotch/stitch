@@ -6,6 +6,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": "src",
-    "moduleResolution": "nodenext"
+    "moduleResolution": "nodenext",
+    "experimentalDecorators": true
   }
 }

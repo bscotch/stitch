@@ -169,12 +169,18 @@ describe('Project', function () {
     ok(globalvarDef.item === otherGlobalvarRef.item);
     // The definition should exist and be named
     const item = globalvarDef.item;
+    ok(item.isRenameable);
     ok(item.def);
     ok(item.name === globalVarName);
     // The globalvar should have appropriate symbol and type info
     ok(item.$tag === 'Sym');
     ok(item.global === true);
     //#endregion GLOBALVARS
+
+    //#region REF RENAMING
+    expect(globalvarRef.text).to.equal(globalVarName);
+    expect(globalvarRef.isRenameable).to.equal(true);
+    //#endregion REF RENAMING
 
     //#region ROOT SCRIPT SCOPE
     const inRootScriptScope = scriptFile.getInScopeSymbolsAt(762);
@@ -210,6 +216,7 @@ describe('Project', function () {
     const paramName = '_name';
     const paramRef = scriptFile.getReferenceAt({ line: 18, column: 32 });
     ok(paramRef);
+    expect(paramRef.text).to.equal(paramName);
     const param = paramRef.item as Signifier;
     ok(param);
     ok(param.local);
@@ -233,6 +240,7 @@ describe('Project', function () {
     const objectType = obj.instanceType;
     ok(objectType);
     ok(inInstanceScope);
+    expect(inInstanceScope.text).to.equal(instanceVarName);
     ok(inInstanceScope.item.name === instanceVarName);
     ok(inInstanceScope.item.instance);
     // Are functions properly added to self?
@@ -247,6 +255,7 @@ describe('Project', function () {
     const enumDef = scriptFile.getReferenceAt(22, 12);
     const enumMemberDef = scriptFile.getReferenceAt(22, 40);
     ok(enumDef);
+    expect(enumDef.text).to.equal(enumName);
     ok(enumDef.item.name === enumName);
     ok(enumMemberDef);
     ok(enumMemberDef.item.name === enumMemberName);
@@ -256,6 +265,7 @@ describe('Project', function () {
     ok(enumRef);
     ok(enumRef.item.name === enumName);
     ok(enumMemberRef);
+    expect(enumMemberRef.text).to.equal(enumMemberName);
     ok(enumMemberRef.item.name === enumMemberName);
     //#endregion ENUMS
 
@@ -273,6 +283,7 @@ describe('Project', function () {
     const constructorSymbol = constructorDef!.item;
     const constructorType = constructorSymbol.type as TypeStore<'Function'>;
     ok(constructorDef);
+    expect(constructorDef.text).to.equal(constructorName);
     ok(constructorSymbol);
     ok(constructorType);
     ok(constructorSymbol.name === constructorName);
@@ -301,6 +312,7 @@ describe('Project', function () {
     const dotAssignedRef = objCreate.getReferenceAt(20, 14);
     const dotAssignedType = dotAssignedRef?.item as Signifier;
     ok(dotAssignedRef);
+    expect(dotAssignedRef.text).to.equal(dotAssignedRefName);
     ok(dotAssignedRef.item.name === dotAssignedRefName);
     ok(dotAssignedType);
     ok(dotAssignedType.parent === obj.instanceType?.extends);
@@ -597,9 +609,19 @@ function validateWithContexts(project: Project) {
   const withIntoObject = withingScriptFile.getScopeRangeAt(6, 16)!;
   ok(withIntoObject && withIntoObject.self === obj.assetType);
 
+  // TYPE TEXT
+  const typeTextRef = withingScriptFile.getReferenceAt(10, 20)!;
+  ok(typeTextRef);
+  expect(typeTextRef.text).to.equal('Id.Instance.o_object');
+  expect(typeTextRef.isRenameable).to.equal(true);
+  expect(typeTextRef.toRenamed('new_name')).to.equal('Id.Instance.new_name');
+
   // WITHING INTO AN OBJECT INSTANCE
-  const instanceVar = withingScriptFile.getReferenceAt(11, 11)!.item;
+  const instanceVarRef = withingScriptFile.getReferenceAt(11, 11)!;
+  const instanceVar = instanceVarRef.item;
   ok(instanceVar && instanceVar.type.type[0] === obj.instanceType);
+  expect(instanceVarRef.text).to.equal('o_instance');
+  expect(instanceVarRef.isRenameable).to.equal(true);
   const withIntoInstance = withingScriptFile.getScopeRangeAt(13, 18)!;
   ok(withIntoInstance && withIntoInstance.self === obj.instanceType);
 

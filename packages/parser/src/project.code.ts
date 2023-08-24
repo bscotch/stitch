@@ -1,5 +1,7 @@
 import type { Pathy } from '@bscotch/pathy';
+import { sequential } from '@bscotch/utility';
 import { YyObject } from '@bscotch/yy';
+import MagicString from 'magic-string';
 import type { JsdocSummary } from './jsdoc.js';
 import { ObjectEvent, getEventFromFilename } from './lib.objects.js';
 import { logger } from './logger.js';
@@ -349,6 +351,30 @@ export class Code {
         ),
       );
     }
+  }
+
+  /**
+   * Replace all refs for a signifier with a new name,
+   * followed by fully reprocessing the file.
+   */
+  @sequential
+  async renameSignifier(signifier: Signifier, newName: string) {
+    const renameableRefs = this.refs.filter(
+      (ref) => ref.item === signifier && ref.isRenameable,
+    );
+    // Rename using magic-string so we don't have to track changed positions
+    const updated = new MagicString(this.content);
+    for (const ref of renameableRefs) {
+      updated.update(
+        ref.start.offset,
+        ref.end.offset + 1,
+        ref.toRenamed(newName),
+      );
+    }
+    // Save to disk and reprocess
+    this.content = updated.toString();
+    await this.path.write(this.content);
+    await this.reload(this.content);
   }
 
   clearDiagnosticCollection(collection: DiagnosticCollectionName) {

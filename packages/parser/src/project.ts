@@ -1,4 +1,5 @@
 import { pathy, Pathy } from '@bscotch/pathy';
+import { sequential } from '@bscotch/utility';
 import {
   Yy,
   Yyp,
@@ -10,13 +11,13 @@ import {
 import { EventEmitter } from 'events';
 import { z } from 'zod';
 import { logger } from './logger.js';
-import { Asset } from './project.asset.js';
+import { Asset, isAssetOfKind } from './project.asset.js';
 import { Code } from './project.code.js';
 import { Diagnostic } from './project.diagnostics.js';
 import { Native } from './project.native.js';
 import { Signifier } from './signifiers.js';
 import { StructType, Type } from './types.js';
-import { assert, ok } from './util.js';
+import { assert, assertIsValidIdentifier, ok, throwError } from './util.js';
 export { setLogger, type Logger } from './logger.js';
 
 type AssetName = string;
@@ -130,13 +131,20 @@ export class Project {
     this.emitter.emit('diagnostics', { code, diagnostics });
   }
 
-  getAssetByName(name: string | undefined): Asset | undefined {
+  getAssetByName<Assert extends boolean>(
+    name: string | undefined,
+    options?: { assertExists: Assert },
+  ): Assert extends true ? Asset : Asset | undefined {
+    assert(name || !options?.assertExists, 'No asset name provided');
     if (!name) {
-      return;
+      return undefined as Assert extends true ? Asset : Asset | undefined;
     }
-    return this.assets.get(name?.toLocaleLowerCase?.());
+    const asset = this.assets.get(name.toLocaleLowerCase());
+    assert(asset || !options?.assertExists, `Asset "${name}" does not exist.`);
+    return asset as Assert extends true ? Asset : Asset | undefined;
   }
 
+  @sequential
   async removeAssetByName(name: string | undefined) {
     if (!name) return;
     name = name.toLocaleLowerCase();
@@ -174,10 +182,75 @@ export class Project {
     this.assets.set(name, resource);
   }
 
+  @sequential
+  async renameAsset(from: string, to: string) {
+    const asset = this.getAssetByName(from, { assertExists: true });
+    assertIsValidIdentifier(to);
+    const toAsset = this.getAssetByName(to);
+    assert(!toAsset, `Cannot rename. An asset named "${to}" already exists`);
+
+    // Create a new asset with the new name, copying over the old asset's files and updating them as needed
+    const newAssetDir = asset.dir.up().join(to);
+    const newYyFile = newAssetDir.join(`${to}.yy`);
+    await newAssetDir.ensureDirectory();
+    await newAssetDir.isEmptyDirectory({ assert: true });
+    await asset.dir.copy(newAssetDir);
+    // The yy files are the only thing that should contain the old name
+    const yyFile = (await newAssetDir.listChildren()).find(
+      (f) =>
+        f.hasExtension('yy') &&
+        f.name.toLocaleLowerCase() === from.toLocaleLowerCase(),
+    );
+    if (!yyFile) {
+      await newAssetDir.delete({ recursive: true, force: true });
+      throwError(`Could not find yy file for asset ${from}`);
+    }
+    await yyFile.copy(newYyFile);
+    await yyFile.delete();
+    const yy = await Yy.read(newYyFile.absolute, asset.assetKind);
+    yy.name = to;
+    await Yy.write(newYyFile.absolute, yy, asset.assetKind);
+    // Register the new asset
+    const info = await this.addAssetToYyp(yyFile.absolute);
+    const newAsset = await Asset.from(this, info);
+    assert(newAsset, `Could not create new asset ${to}`);
+    this.registerAsset(newAsset);
+
+    // Update the code from all refs to have the new name
+    await this.renameSignifier(asset.signifier, to);
+
+    // Update immediate children to have the new asset as the parent
+    if (isAssetOfKind(newAsset, 'objects')) {
+      for (const child of asset.children) {
+        child.parent = newAsset;
+      }
+    }
+
+    // Remove the old asset
+    await this.removeAssetByName(from);
+  }
+
+  async renameSignifier(signifier: Signifier, newName: string) {
+    assertIsValidIdentifier(newName);
+    // Make sure that there isn't already a signifier in this scope
+    // with the new name.
+    const existing = signifier.parent.getMember(newName, true);
+    assert(!existing?.def, `Cannot rename to ${newName}: already exists`);
+    // Rename the signifier
+    const files = new Set<Code>();
+    signifier.refs.forEach((ref) => files.add(ref.start.file));
+    const waits: Promise<any>[] = [];
+    for (const file of files) {
+      waits.push(file.renameSignifier(signifier, newName));
+    }
+    await Promise.all(waits);
+  }
+
   /**
    * Add an object to the yyp file. The string can include separators,
    * in which case folders will be ensured up to the final component.
    */
+  @sequential
   async createObject(path: string) {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(path);
@@ -185,6 +258,7 @@ export class Project {
       return;
     }
     const { name, folder } = parsed;
+    assertIsValidIdentifier(name);
     const objectDir = this.dir.join(`objects/${name}`);
     await objectDir.ensureDirectory();
     const objectYy = objectDir.join(`${name}.yy`);
@@ -220,6 +294,7 @@ export class Project {
    * Add a script to the yyp file. The string can include separators,
    * in which case folders will be ensured up to the final component.
    */
+  @sequential
   async createScript(path: string) {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(path);
@@ -227,6 +302,7 @@ export class Project {
       return;
     }
     const { name, folder } = parsed;
+    assertIsValidIdentifier(name);
     const scriptDir = this.dir.join(`scripts/${name}`);
     await scriptDir.ensureDirectory();
     const scriptYy = scriptDir.join(`${name}.yy`);
@@ -330,6 +406,7 @@ export class Project {
    * Delete a folder recursively. Only allowed if there are no assets
    * in this or any subfolder.
    */
+  @sequential
   async deleteFolder(path: string | string[]) {
     const assets = this.listAssetsInFolder(path, { recursive: true });
     const { full, prefix } = this.parseFolderPath(path);
@@ -357,6 +434,7 @@ export class Project {
    *
    * Returns the list of folders and assets that are now in a new
    * location. */
+  @sequential
   async renameFolder(oldPath: string | string[], newPath: string | string[]) {
     const oldParts = Array.isArray(oldPath) ? oldPath : oldPath.split(/[/\\]+/);
     const newParts = Array.isArray(newPath) ? newPath : newPath.split(/[/\\]+/);
@@ -457,6 +535,7 @@ export class Project {
     return folder;
   }
 
+  @sequential
   protected async saveYyp() {
     await Yy.write(this.yypPath.absolute, this.yyp, 'project');
   }

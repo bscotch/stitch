@@ -322,8 +322,10 @@ importers:
       chai: ^4.3.7
       chevrotain: 11.0.3
       dotenv: 16.3.1
+      magic-string: 0.30.3
       mocha: ^10.2.0
       prettier: ^3.0.1
+      tslib: ^2.6.1
       typescript: 5.1.6
       xml2js: 0.6.2
       zod: ^3.22.0
@@ -334,6 +336,8 @@ importers:
       '@bscotch/utility': 6.8.3
       '@bscotch/yy': link:../yy
       chevrotain: 11.0.3
+      magic-string: 0.30.3
+      tslib: 2.6.1
       xml2js: 0.6.2
       zod: 3.22.0
     devDependencies:
@@ -1697,7 +1701,6 @@ packages:
 
   /@jridgewell/sourcemap-codec/1.4.15:
     resolution: {integrity: sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==}
-    dev: true
 
   /@jridgewell/trace-mapping/0.3.18:
     resolution: {integrity: sha512-w+niJYzMHdd7USdiH2U6869nqhD2nbfZXND5Yp93qIbEmnDNk7PD48o+YchRVpzMU7M6jVCbenTR7PA1FLQ9pA==}
@@ -5743,6 +5746,13 @@ packages:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
+
+  /magic-string/0.30.3:
+    resolution: {integrity: sha512-B7xGbll2fG/VjP+SWg4sX3JynwIU0mjoTc6MPpKNuIvftk6u6vqhDnk1R80b8C2GBR6ywqy+1DcKBrevBg+bmw==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.4.15
+    dev: false
 
   /make-fetch-happen/10.2.1:
     resolution: {integrity: sha512-NgOPbRiaQM10DYXvN3/hhGVI2M5MtITFryzBGxHM5p4wnFxsVCbxkrBrDsk+EZ5OB4jEOT7AjDxtdF+KVEFT7w==}

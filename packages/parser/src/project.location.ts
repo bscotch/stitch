@@ -251,9 +251,46 @@ export class Reference extends Range {
   override readonly $tag = 'Ref';
   /** If this is reference marks the declaration */
   isDef = false;
+  protected _itemNamePattern: RegExp | undefined = undefined;
 
-  constructor(public item: Signifier, start: Position, end: Position) {
+  constructor(
+    public item: Signifier,
+    start: Position,
+    end: Position,
+  ) {
     super(start, end);
+  }
+
+  get itemNamePattern(): RegExp {
+    if (!this._itemNamePattern) {
+      this._itemNamePattern = new RegExp(`\\b(?<name>${this.item.name})\\b`);
+    }
+    return this._itemNamePattern;
+  }
+
+  /**
+   * The text in this ref's range, which does not necessarily match
+   * the text of the item it refers to (e.g. it could be `self` or similar)
+   */
+  get text(): string {
+    return this.start.file.content.slice(
+      this.start.offset,
+      this.end.offset + 1,
+    );
+  }
+
+  get isRenameable(): boolean {
+    const text = this.text;
+    return this.item.isRenameable && this.itemNamePattern.test(text);
+  }
+
+  /**
+   * Get full text content of this reference if what it referenced were
+   * to be renamed to the given name. This **does not** actually rename
+   * the identifier!
+   */
+  toRenamed(newName: string): string {
+    return this.text.replace(this.itemNamePattern, newName);
   }
 
   static fromRange(range: Range, item: ReferenceableType) {
