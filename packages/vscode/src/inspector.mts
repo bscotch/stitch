@@ -36,6 +36,10 @@ class ObjectParentFolder extends StitchTreeItemBase<'inspector-object-parents'> 
   onSetParent(parent: Asset<'objects'> | undefined) {
     this.provider.onUpdate(this);
   }
+
+  onSetSprite(sprite: Asset<'sprites'> | undefined) {
+    this.provider.onUpdate(this);
+  }
 }
 
 class ObjectChildren extends StitchTreeItemBase<'inspector-object-children'> {
@@ -121,8 +125,8 @@ class ObjectEventItem extends StitchTreeItemBase<'code'> {
   protected setIcon = setEventIcon;
 }
 
-class ObjectSpriteFolder extends StitchTreeItemBase<'inspector-sprites'> {
-  override readonly kind = 'inspector-sprites';
+class ObjectSpriteFolder extends StitchTreeItemBase<'inspector-object-sprites'> {
+  override readonly kind = 'inspector-object-sprites';
   parent = undefined;
   constructor() {
     super('Sprite');

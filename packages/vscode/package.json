@@ -123,6 +123,10 @@
         "title": "Set Parent..."
       },
       {
+        "command": "stitch.assets.setSprite",
+        "title": "Set Sprite..."
+      },
+      {
         "command": "stitch.assets.newEvent",
         "title": "New Event..."
       },
@@ -456,6 +460,11 @@
         {
           "command": "stitch.assets.setParent",
           "when": "(view == bscotch-stitch-resources && viewItem == asset-objects) || (view == bscotch-stitch-inspector && viewItem == inspector-object-parents)",
+          "group": "navigation@1"
+        },
+        {
+          "command": "stitch.assets.setSprite",
+          "when": "(view == bscotch-stitch-resources && viewItem == asset-objects) || (view == bscotch-stitch-inspector && viewItem == inspector-object-sprites)",
           "group": "navigation@1"
         },
         {

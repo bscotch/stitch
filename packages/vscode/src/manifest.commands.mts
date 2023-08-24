@@ -155,6 +155,14 @@ export const commands = {
       group: 'navigation@1',
     },
   },
+  'stitch.assets.setSprite': {
+    command: 'stitch.assets.setSprite',
+    title: 'Set Sprite...',
+    [$showInViewItemContextMenu]: {
+      when: `(${when.assetTreeFocused} && ${when.viewItemIsObject}) || (${when.inspectorFocused} && ${when.viewItemIsInspectorSprite})`,
+      group: 'navigation@1',
+    },
+  },
   'stitch.assets.newEvent': {
     command: 'stitch.assets.newEvent',
     title: 'New Event...',

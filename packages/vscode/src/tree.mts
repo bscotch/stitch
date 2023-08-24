@@ -249,6 +249,49 @@ export class GameMakerTreeProvider
     this.view.reveal(treeItem, { focus: true });
   }
 
+  async setSprite(objectItem: ObjectParentFolder | TreeAsset) {
+    const asset = objectItem.asset;
+    if (!isAssetOfKind(asset, 'objects')) {
+      return;
+    }
+    const spriteOptions = [...asset.project.assets.values()]
+      .filter((a) => isAssetOfKind(a, 'sprites'))
+      .map((p) => ({
+        label: p.name,
+        sprite: p as Asset<'sprites'> | undefined,
+        description: undefined as string | undefined,
+      }))
+      .sort((a, b) =>
+        a.label.toLocaleLowerCase().localeCompare(b.label.toLocaleLowerCase()),
+      );
+    if (asset.sprite) {
+      spriteOptions.unshift({
+        label: 'Sprites',
+        //@ts-expect-error
+        kind: vscode.QuickPickItemKind.Separator,
+      });
+      spriteOptions.unshift({
+        label: 'None',
+        description: 'Unassign the current sprite',
+        sprite: undefined,
+      });
+    }
+    const spriteChoice = await vscode.window.showQuickPick(spriteOptions, {
+      title: 'Select the sprite to assign to this object',
+    });
+    if (!spriteChoice || (!spriteChoice.sprite && !asset.sprite)) {
+      return;
+    }
+    logger.info('Setting sprite', spriteChoice);
+    asset.sprite = spriteChoice.sprite;
+    if (
+      'onSetSprite' in objectItem &&
+      typeof objectItem.onSetSprite === 'function'
+    ) {
+      objectItem.onSetSprite(spriteChoice.sprite);
+    }
+  }
+
   async setParent(objectItem: ObjectParentFolder | TreeAsset) {
     const asset = objectItem.asset;
     if (!isAssetOfKind(asset, 'objects')) {
@@ -665,6 +708,7 @@ export class GameMakerTreeProvider
       registerCommand('stitch.assets.newObject', this.createObject.bind(this)),
       registerCommand('stitch.assets.newEvent', this.createEvent.bind(this)),
       registerCommand('stitch.assets.setParent', this.setParent.bind(this)),
+      registerCommand('stitch.assets.setSprite', this.setSprite.bind(this)),
       registerCommand('stitch.assets.reveal', this.reveal.bind(this)),
       registerCommand(
         'stitch.assets.filters.delete',

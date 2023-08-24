@@ -1,4 +1,5 @@
 import { Pathy, pathy } from '@bscotch/pathy';
+import { sequential } from '@bscotch/utility';
 import {
   Yy,
   YyDataStrict,
@@ -116,6 +117,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return `Id.Instance.${this.name}`;
   }
 
+  @sequential
   async saveYy() {
     assert(this.yyPath, 'Cannot save YY without a path');
     await Yy.write(this.yyPath.absolute, this.yy, this.assetKind);
@@ -140,6 +142,13 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       logger.warn(`Sprite ${spriteName} has no asset`);
     }
     return sprite as Asset<'sprites'> | undefined;
+  }
+  set sprite(sprite: Asset<'sprites'> | undefined) {
+    assert(isAssetOfKind(this, 'objects'), 'Can only set sprites on objects');
+    const yy = this.yy as YyObject;
+    yy.spriteId = sprite ? sprite.resource.id : null;
+    // Fire off async to avoid blocking
+    void this.saveYy();
   }
 
   get children(): Asset<'objects'>[] {

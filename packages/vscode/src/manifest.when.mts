@@ -27,4 +27,5 @@ export const when = {
   viewItemIsCode: 'viewItem == code',
   viewItemIsInspectorEvents: 'viewItem == inspector-object-events',
   viewItemIsInspectorParents: 'viewItem == inspector-object-parents',
+  viewItemIsInspectorSprite: 'viewItem == inspector-object-sprites',
 } as const;
