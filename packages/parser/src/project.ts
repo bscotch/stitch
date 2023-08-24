@@ -191,30 +191,53 @@ export class Project {
 
     // Create a new asset with the new name, copying over the old asset's files and updating them as needed
     const newAssetDir = asset.dir.up().join(to);
-    const newYyFile = newAssetDir.join(`${to}.yy`);
+    const reset = async () =>
+      await newAssetDir.delete({ force: true, recursive: true });
     await newAssetDir.ensureDirectory();
     await newAssetDir.isEmptyDirectory({ assert: true });
     await asset.dir.copy(newAssetDir);
-    // The yy files are the only thing that should contain the old name
-    const yyFile = (await newAssetDir.listChildren()).find(
-      (f) =>
-        f.hasExtension('yy') &&
-        f.name.toLocaleLowerCase() === from.toLocaleLowerCase(),
-    );
-    if (!yyFile) {
-      await newAssetDir.delete({ recursive: true, force: true });
-      throwError(`Could not find yy file for asset ${from}`);
+
+    // The yy files contain the old 'name' field, and there may be
+    // other files named after the old asset name.
+    // Rename all copied files that have the old asset name in them
+    const oldNamePattern = new RegExp(`\\b${from}\\b`, 'gi');
+    let newYyFile: Pathy | undefined;
+    await newAssetDir.listChildrenRecursively({
+      filter: async (p) => {
+        if (await p.isDirectory()) return;
+        // Get the relative path
+        const relative = p.relativeFrom(newAssetDir);
+        const newRelative = relative.replaceAll(oldNamePattern, to);
+        if (newRelative === relative) return;
+        // Rename!
+        const newFile = newAssetDir.join(newRelative);
+        if (newRelative === `${to}.yy`) {
+          newYyFile = newFile;
+        }
+        await p.copy(newFile);
+        await p.delete();
+      },
+    });
+    if (!newYyFile) {
+      await reset();
+      throwError(`Could not find yy after copying files`);
     }
-    await yyFile.copy(newYyFile);
-    await yyFile.delete();
+    // Update the "name" field
     const yy = await Yy.read(newYyFile.absolute, asset.assetKind);
     yy.name = to;
     await Yy.write(newYyFile.absolute, yy, asset.assetKind);
+
     // Register the new asset
-    const info = await this.addAssetToYyp(newYyFile.absolute);
+    const info = await this.addAssetToYyp(newYyFile!.absolute);
     const newAsset = await Asset.from(this, info);
     assert(newAsset, `Could not create new asset ${to}`);
     this.registerAsset(newAsset);
+
+    // Remove the old asset
+    await this.removeAssetByName(from);
+
+    // Fully process the change
+    await this.initiallyParseAssetCode([newAsset]);
 
     // Update the code from all refs to have the new name
     await this.renameSignifier(asset.signifier, to);
@@ -225,9 +248,6 @@ export class Project {
         child.parent = newAsset;
       }
     }
-
-    // Remove the old asset
-    await this.removeAssetByName(from);
   }
 
   async renameSignifier(signifier: Signifier, newName: string) {

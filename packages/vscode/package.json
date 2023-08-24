@@ -330,9 +330,9 @@
         "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
       },
       {
-        "command": "stitch.assets.filters.new",
-        "key": "Ctrl+F",
-        "when": "view == bscotch-stitch-resources && stitch.projectCount > 0"
+        "command": "stitch.assets.rename",
+        "key": "f2",
+        "when": "view == bscotch-stitch-resources && viewItem =~ /^asset-/"
       }
     ],
     "languages": [
