@@ -19,12 +19,10 @@ import { config } from './extension.config.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.highlighting.mjs';
 import { ChangeTracker } from './extension.onChange.mjs';
 import { GameMakerProject } from './extension.project.mjs';
-import { locationOf, pathyFromUri, uriFromCodeFile } from './lib.mjs';
+import { pathyFromUri, uriFromCodeFile } from './lib.mjs';
 import { info, logger, warn } from './log.mjs';
 
-export class StitchWorkspace
-  implements vscode.SignatureHelpProvider, vscode.ReferenceProvider
-{
+export class StitchWorkspace implements vscode.SignatureHelpProvider {
   readonly semanticHighlightProvider = new GameMakerSemanticTokenProvider(this);
   readonly signatureHelpStatus = vscode.window.createStatusBarItem(
     config.functionSignatureStatusAlignment,
@@ -103,21 +101,6 @@ export class StitchWorkspace
   async deleteAsset(asset: Asset) {
     await asset.project.removeAssetByName(asset.name);
     stitchEvents.emit('asset-deleted', asset);
-  }
-
-  provideReferences(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-  ): vscode.ProviderResult<vscode.Location[]> {
-    const symbol = this.getSignifier(document, position);
-    if (!symbol) {
-      return;
-    }
-    return [...symbol.refs.values()]
-      .map((ref) => {
-        return locationOf(ref);
-      })
-      .filter((loc) => !!loc) as vscode.Location[];
   }
 
   provideSignatureHelp(

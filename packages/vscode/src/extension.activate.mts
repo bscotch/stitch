@@ -14,6 +14,7 @@ import { StitchDefinitionsProvider } from './extension.definitions.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { StitchHoverProvider } from './extension.hover.mjs';
 import { StitchLocationsProvider } from './extension.locations.mjs';
+import { StitchReferenceProvider } from './extension.refs.mjs';
 import { StitchRenameProvider } from './extension.rename.mjs';
 import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
@@ -95,13 +96,13 @@ export async function activateStitchExtension(
     StitchHoverProvider.register(workspace),
     StitchWorkspaceSymbolProvider.register(workspace),
     StitchCompletionProvider.register(workspace),
+    ...StitchReferenceProvider.register(workspace),
     ...StitchLocationsProvider.register(workspace),
     vscode.languages.registerSignatureHelpProvider('gml', workspace, '(', ','),
     vscode.languages.registerDocumentFormattingEditProvider(
       'yy',
       new StitchYyFormatProvider(),
     ),
-    vscode.languages.registerReferenceProvider('gml', workspace),
     registerCommand('stitch.assets.delete', (what) => {
       // Convert the incoming argument to an Asset, then emit the event
       let asset: Asset | undefined;
