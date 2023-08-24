@@ -196,7 +196,7 @@ export class GameMakerTreeProvider
     if (!treeItem) {
       return;
     }
-    this.view.reveal(treeItem);
+    this.view.reveal(treeItem, { focus: true, expand: true, select: true });
   }
 
   /**
@@ -372,6 +372,28 @@ export class GameMakerTreeProvider
       return;
     }
     await this.renameFolder(where, newFolderName);
+  }
+
+  async promptToRenameAsset(where: TreeAsset) {
+    const newName = await vscode.window.showInputBox({
+      prompt: 'Provide a new name for this asset',
+      placeHolder: where.asset.name,
+      validateInput(value) {
+        if (!value) {
+          return;
+        }
+        if (!value.match(/^[a-z_][a-z0-9_]*/i)) {
+          return 'Asset names must start with a letter or underscore, and can only contain letters, numbers, and underscores.';
+        }
+        return;
+      },
+    });
+    if (!newName) return;
+    await where.asset.project.renameAsset(where.asset.name, newName);
+    this.rebuild();
+    const newAsset = where.asset.project.getAssetByName(newName);
+    const newTreeItem = TreeAsset.lookup.get(newAsset!)!;
+    this.view.reveal(newTreeItem);
   }
 
   protected async renameFolder(where: GameMakerFolder, newFolderName: string) {
@@ -633,6 +655,10 @@ export class GameMakerTreeProvider
       registerCommand(
         'stitch.assets.deleteFolder',
         this.deleteFolder.bind(this),
+      ),
+      registerCommand(
+        'stitch.assets.rename',
+        this.promptToRenameAsset.bind(this),
       ),
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),

@@ -92,7 +92,7 @@ export async function activateStitchExtension(
     ...inspectorProvider.register(),
     definitionsProvider.register(),
     ...StitchReleasePickerProvider.register(workspace),
-    StitchRenameProvider.register(workspace),
+    ...StitchRenameProvider.register(workspace),
     StitchHoverProvider.register(workspace),
     StitchWorkspaceSymbolProvider.register(workspace),
     StitchCompletionProvider.register(workspace),

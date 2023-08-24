@@ -4,14 +4,14 @@ import type { StitchWorkspace } from './extension.workspace.mjs';
 import { rangeFrom } from './lib.mjs';
 
 export class StitchRenameProvider implements vscode.RenameProvider {
-  constructor(readonly provider: StitchWorkspace) {}
+  constructor(readonly workspace: StitchWorkspace) {}
 
   /** Get the reference at a given position, else throw */
   protected assertRenameableReference(
     document: vscode.TextDocument,
     position: vscode.Position,
   ) {
-    const ref = this.provider.getReference(document, position);
+    const ref = this.workspace.getReference(document, position);
     assertUserClaim(ref, 'Not a symbol reference');
     const range = rangeFrom(ref);
     const text = document.getText(range);
@@ -63,10 +63,13 @@ export class StitchRenameProvider implements vscode.RenameProvider {
     return edits;
   }
 
-  static register(provider: StitchWorkspace) {
-    return vscode.languages.registerRenameProvider(
-      { language: 'gml', scheme: 'file' },
-      new StitchRenameProvider(provider),
-    );
+  static register(workspace: StitchWorkspace) {
+    const provider = new StitchRenameProvider(workspace);
+    return [
+      vscode.languages.registerRenameProvider(
+        { language: 'gml', scheme: 'file' },
+        provider,
+      ),
+    ];
   }
 }

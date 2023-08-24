@@ -12,18 +12,6 @@ export namespace StitchEvents {
     name: 'code-file-deleted';
     payload: [Code];
   }
-  // export interface CodeFileCreated {
-  //   name: 'code-file-created';
-  //   payload: [Code];
-  // }
-  // export interface AssetCreated {
-  //   name: 'asset-created';
-  //   payload: [Asset];
-  // }
-  // export interface ParentSet {
-  //   name: 'parent-set';
-  //   payload: [child: Asset<'objects'>];
-  // }
 }
 
 export const stitchEvents = createEventEmitter<StitchEvents.All>();

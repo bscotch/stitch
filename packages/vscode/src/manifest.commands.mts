@@ -32,9 +32,18 @@ export const commands = {
     enablement: when.hasProjects,
     [$showInPalette]: true,
   },
+  'stitch.assets.rename': {
+    command: 'stitch.assets.rename',
+    title: 'Rename...',
+    enablement: when.hasProjects,
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsAsset,
+      group: '7_modification@1',
+    },
+  },
   'stitch.assets.reveal': {
     command: 'stitch.assets.reveal',
-    title: 'Stitch: Show Asset',
+    title: 'Stitch: Show Asset in Tree',
     enablement: `${when.hasProjects} && resourceExtname =~ /\\.(yy|gml)$/`,
     [$showInPalette]: true,
   },

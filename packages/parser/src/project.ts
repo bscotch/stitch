@@ -232,10 +232,6 @@ export class Project {
 
   async renameSignifier(signifier: Signifier, newName: string) {
     assertIsValidIdentifier(newName);
-    // Make sure that there isn't already a signifier in this scope
-    // with the new name.
-    const existing = signifier.parent.getMember(newName, true);
-    assert(!existing?.def, `Cannot rename to ${newName}: already exists`);
     // Rename the signifier
     const files = new Set<Code>();
     signifier.refs.forEach((ref) => files.add(ref.start.file));

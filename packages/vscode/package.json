@@ -59,8 +59,13 @@
         "enablement": "stitch.projectCount > 0"
       },
       {
+        "command": "stitch.assets.rename",
+        "title": "Rename...",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.assets.reveal",
-        "title": "Stitch: Show Asset",
+        "title": "Stitch: Show Asset in Tree",
         "enablement": "stitch.projectCount > 0 && resourceExtname =~ /\\.(yy|gml)$/"
       },
       {
@@ -388,6 +393,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "stitch.assets.rename",
+          "when": "viewItem =~ /^asset-/",
+          "group": "7_modification@1"
+        },
         {
           "command": "stitch.assets.filters.enable",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == tree-filter-disabled",
