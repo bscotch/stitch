@@ -199,4 +199,21 @@ describe('JSDocs', function () {
     expect(parsed.params![0].type?.content).to.equal('T');
     expect(parsed.returns?.type?.content).to.equal('InstanceType<T>');
   });
+
+  it('can identify typstring ranges', function () {
+    const jsdoc = '/// @type {X|Array<Struct.GlobalConstructor>|String}';
+    const parsed = parseJsdoc(jsdoc);
+    const ranges = parsed.typeRanges;
+    expect(ranges.length).to.equal(4);
+
+    for (const range of ranges) {
+      const startOffset = jsdoc.indexOf(range.content);
+      expect(range.start.offset).to.equal(startOffset);
+      expect(range.end.offset).to.equal(startOffset + range.content.length - 1);
+      expect(range.start.column).to.equal(startOffset + 1);
+      expect(range.end.column).to.equal(startOffset + range.content.length);
+      expect(range.start.line).to.equal(1);
+      expect(range.end.line).to.equal(1);
+    }
+  });
 });

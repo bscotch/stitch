@@ -125,15 +125,6 @@ export function assignVariable(
       if (info.docs) {
         signifier.describe(info.docs.jsdoc.description);
         signifier.setType(info.docs.type);
-        // if (
-        //   info.docs.jsdoc.kind === 'type' &&
-        //   info.docs.jsdoc.type &&
-        //   info.docs.type[0].signifier
-        // ) {
-        //   info.docs.type[0].signifier.addRef(
-        //     Range.from(visitor.PROCESSOR.file, info.docs.jsdoc.type),
-        //   );
-        // }
       } else if (inferredType) {
         signifier.setType(inferredType);
       }

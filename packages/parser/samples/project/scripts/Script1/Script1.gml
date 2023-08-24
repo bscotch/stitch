@@ -64,3 +64,6 @@ var grid_value = grid[#0,0];
 
 globalvar REACTIONS; REACTIONS = {};
 globalvar ITEMS; ITEMS = {};
+
+/// @type {X|Array<Struct.GlobalConstructor>|String}
+var a_thing;

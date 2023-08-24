@@ -352,14 +352,6 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
       getTypeOfKind(contextExpression, withableTypes) ||
       this.PROCESSOR.createStruct(blockLocation);
 
-    // const docsSelfRange = docs?.jsdoc.self
-    //   ? Range.from(this.PROCESSOR.file, docs.jsdoc.self)
-    //   : undefined;
-
-    // if (docsSelfRange && self.signifier) {
-    //   self.signifier.addRef(docsSelfRange);
-    // }
-
     this.PROCESSOR.scope.setEnd(children.expression[0].location!, true);
     this.PROCESSOR.pushSelfScope(blockLocation, self, false);
 

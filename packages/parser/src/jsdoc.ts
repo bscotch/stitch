@@ -355,26 +355,18 @@ export function parseJsdoc(
     const types = flattenFeatherTypes(component.content);
     for (const type of types) {
       // Convert the offset to a range and add it to typeRanges
+      const start = {
+        line: component.start.line,
+        column: component.start.column + type.name.offset,
+        offset: component.start.offset + type.name.offset,
+      };
+      const end = { ...start };
+      end.column += type.name.content.length - 1;
+      end.offset += type.name.content.length - 1;
       doc.typeRanges.push({
         content: type.name.content,
-        start: {
-          line: component.start.line + type.name.offset,
-          column: component.start.column + type.name.offset,
-          offset: component.start.offset + type.name.offset,
-        },
-        end: {
-          line: component.start.line,
-          column:
-            component.start.column +
-            type.name.offset +
-            type.name.content.length -
-            1,
-          offset:
-            component.start.offset +
-            type.name.offset +
-            type.name.content.length -
-            1,
-        },
+        start,
+        end,
       });
     }
   };
