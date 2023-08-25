@@ -133,3 +133,24 @@ export function isValidIdentifier(name: string) {
 export function assertIsValidIdentifier(name: string) {
   assert(isValidIdentifier(name), `Invalid identifier: ${name}`);
 }
+
+/**
+ * Depending on the origin, an asset group path could look like
+ * a regular path (`my/path`) or like the path from a config file
+ * (`folders/my/path.yy`).
+ *
+ * This function returns the POSIX-style path (`my/path`) given
+ * one of those inputs/
+ */
+export function groupPathToPosix(path: string) {
+  return (
+    path
+      // Normalize slashes
+      .replace(/[\\/]+/g, '/')
+      // Remove leading and trailing slashes
+      .replace(/^\//, '')
+      .replace(/\/$/, '')
+      // Remove `folders/` prefix and `.yy` suffix
+      .replace(/^folders\/(.*)\.yy$/, '$1')
+  );
+}

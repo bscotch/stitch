@@ -18,7 +18,7 @@ import { Code } from './project.code.js';
 import { Project } from './project.js';
 import { Signifier } from './signifiers.js';
 import { StructType, Type } from './types.js';
-import { assert, ok } from './util.js';
+import { assert, groupPathToPosix, ok } from './util.js';
 
 export function isAssetOfKind<T extends YyResourceType>(
   asset: Asset,
@@ -253,6 +253,17 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       paths.push(this.dir.join<Buffer>(`${frame.name}.png`));
     }
     return paths;
+  }
+
+  /**
+   * Check if this asset is in the given asset group ("folder").
+   * @param path E.g. `my/folder/of/stuff`
+   */
+  isInFolder(path: string) {
+    // Normalize the incoming path
+    path = groupPathToPosix(path);
+    const currentFolder = groupPathToPosix((this.yy.parent as any).path);
+    return path === currentFolder || currentFolder.startsWith(`${path}/`);
   }
 
   /** Move to a different, *existing* folder. */
