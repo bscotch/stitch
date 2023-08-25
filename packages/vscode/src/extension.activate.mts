@@ -17,6 +17,7 @@ import { StitchLocationsProvider } from './extension.locations.mjs';
 import { StitchReferenceProvider } from './extension.refs.mjs';
 import { StitchRenameProvider } from './extension.rename.mjs';
 import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
+import { StitchTypeDefinitionProvider } from './extension.typeDefs.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { GameMakerInspectorProvider } from './inspector.mjs';
 import { findProject, pathyFromUri, registerCommand } from './lib.mjs';
@@ -112,6 +113,7 @@ export async function activateStitchExtension(
     ...treeProvider.register(),
     ...inspectorProvider.register(),
     definitionsProvider.register(),
+    ...StitchTypeDefinitionProvider.register(workspace),
     ...StitchReleasePickerProvider.register(workspace),
     ...StitchRenameProvider.register(workspace),
     StitchHoverProvider.register(workspace),

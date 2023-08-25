@@ -3,13 +3,13 @@ import type { StitchWorkspace } from './extension.workspace.mjs';
 import { locationOf } from './lib.mjs';
 
 export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
-  constructor(readonly provider: StitchWorkspace) {}
+  constructor(readonly workspace: StitchWorkspace) {}
   provideDefinition(
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.Location | undefined {
     const offset = document.offsetAt(position);
-    const file = this.provider.getGmlFile(document);
+    const file = this.workspace.getGmlFile(document);
     const ref = file?.getReferenceAt(offset);
     const item = ref?.item;
 

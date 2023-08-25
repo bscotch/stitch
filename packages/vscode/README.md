@@ -6,14 +6,9 @@ Edit your [GameMaker](https://gamemaker.io/en) projects in VSCode! This extensio
 
 *Stitch and its logo are trademarks of [Butterscotch Shenanigans](https://www.bscotch.net) (a.k.a. "Bscotch"). Stitch and Bscotch are unaffiliated with GameMaker.*
 
-## 🐛 Project Status
-
-Stitch for VSCode is in active development. Expect bugs, missing features, and frequent breaking changes. To see the current list of known issues and feature requests, check out the [issues page](https://github.com/bscotch/stitch/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Akeyboard%3A+vscode%22).
-
-
 ## 🤔 Why?
 
-We've used GameMaker for the entire 10+ year history of [our studio](https://www.bscotch.net). While the GameMaker IDE has been rapidly improving, VSCode is able to improve even faster due to its enormous community, extensions API, and use of popular web technologies. We wanted to take advantage of those things to make our GameMaker development experience as good as possible.
+We've used GameMaker for the entire 12+ year history of [our studio](https://www.bscotch.net). While the GameMaker IDE has been rapidly improving, VSCode is able to improve even faster due to its enormous community, extensions API, and use of popular web technologies. We wanted to take advantage of those things to make our GameMaker development experience as good as possible.
 
 ## 💡 Features
 
@@ -23,7 +18,7 @@ Stitch provides Intellisense (auto-complete, hovertext, function signature helpe
 
 ### 📛 Renaming
 
-Since Stitch knows about all of your project's symbols, it can also rename them for you! Use the hotkey (`F2` by default) or the right-click context menu to "Rename" a symbol.
+Since Stitch knows about all of your project's symbols, it can also rename them for you! Use the hotkey (`F2` by default) or the right-click context menu to "Rename" a symbol. You can also rename assets via the tree view (while maintaing parent/child relationships). Stitch will auto-rename all references to the symbol, including in JSDoc comments.
 
 > ⚠️ Note that it's possible to write GML code where references to the same symbol are not discoverable by static analysis tools like Stitch, so you may need to do some manual cleanup after renaming.
 
@@ -31,6 +26,7 @@ Since Stitch knows about all of your project's symbols, it can also rename them 
 
 GameMaker includes a type system called "Feather", which Stitch builds upon. Stitch does take a different overall approach and provides some extensions to the Feather type system and additional features that are not currently available in GameMaker.
 
+- **Go to Type Definition:** Stitch implements the "Go To Type Definition" command, letting you quickly get from a variable to e.g. the constructor for its type.
 - **Declarations FTW:** Unlike Feather, Stitch only infers types at the time an identifier is *declared*. When a variable is declared without assignment, Stitch will infer its type using the first assignment it sees, but that might result in surprises! For best results, use the `@type` JSDoc tag to specify the type of a variable when it is declared if there is any ambiguity. (Typescript and JavaScript+JSDoc programmers will be familiar with this approach.)
 - **Union Type Support:** Feather technically supports "union" types (e.g. `String|Number`), but with limitations. Stitch tries to provide more robust support for union types, though this is a work in progress.
 - **`InstanceType<>`, `ObjectType<>`:** Stitch provides custom "Utility Types" that you can use to get one type from another. For example, `InstanceType<Asset.GMObject.my_object>` evaluates to `Id.Instance.my_object`.

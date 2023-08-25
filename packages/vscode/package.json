@@ -651,6 +651,7 @@
   "capabilities": {
     "referencesProvider": "true",
     "definitionProvider": "true",
+    "typeDefinitionProvider": "true",
     "documentFormattingProvider": "true",
     "renameProvider": "true",
     "completionProvider": {
