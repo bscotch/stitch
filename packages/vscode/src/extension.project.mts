@@ -9,6 +9,7 @@ import {
 } from '@bscotch/stitch-launcher';
 import path from 'path';
 import vscode from 'vscode';
+import { stitchEvents } from './events.mjs';
 import { StitchConfig } from './extension.config.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
 
@@ -27,6 +28,7 @@ export class GameMakerProject extends Project {
   }
 
   openInIde() {
+    stitchEvents.emit('open-project-start', this);
     return vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -70,6 +72,10 @@ export class GameMakerProject extends Project {
     compiler?: 'yyc' | 'vm';
     clean?: boolean;
   }) {
+    stitchEvents.emit(
+      options?.clean ? 'clean-project-start' : 'run-project-start',
+      this,
+    );
     const config = options?.config ?? GameMakerProject.config.runConfigDefault;
     const compiler =
       options?.compiler ?? GameMakerProject.config.runCompilerDefault;

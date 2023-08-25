@@ -39,6 +39,8 @@ export async function activateStitchExtension(
   workspace.clearProjects();
 
   info('Loading projects...');
+  const toWatch: vscode.RelativePattern[] = [];
+
   const yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
   if (!yypFiles.length) {
     warn('No .yyp files found in workspace!');
@@ -52,6 +54,16 @@ export async function activateStitchExtension(
         workspace.emitDiagnostics.bind(workspace),
       );
       pt.seconds('Loaded project in');
+      // Add watcher paths
+      const projectFolder = pathyFromUri(yypFile).up();
+      const base = vscode.Uri.file(projectFolder.absolute);
+      toWatch.push(
+        new vscode.RelativePattern(base, '*.yyp'),
+        new vscode.RelativePattern(base, '*/*/*.yy'),
+        new vscode.RelativePattern(base, '*/*/*.gml'),
+        new vscode.RelativePattern(base, '*/*/*.atlas'),
+        new vscode.RelativePattern(base, '*/*/*.png'),
+      );
     } catch (error) {
       logger.error(error);
       logger.error('Error loading project', yypFile);
@@ -60,7 +72,9 @@ export async function activateStitchExtension(
       );
     }
   }
-  const watcher = vscode.workspace.createFileSystemWatcher('**/*.{gml,yy,yyp}');
+  const watchers = toWatch.map((pattern) =>
+    vscode.workspace.createFileSystemWatcher(pattern),
+  );
 
   const treeProvider = new GameMakerTreeProvider(workspace);
   const inspectorProvider = new GameMakerInspectorProvider(workspace);
@@ -76,18 +90,25 @@ export async function activateStitchExtension(
     vscode.workspace.onDidChangeTextDocument((event) =>
       workspace.onChangeDoc(event),
     ),
-    vscode.workspace.onDidOpenTextDocument((event) => {
-      // provider.onChangeDoc(event),
-    }),
-    watcher.onDidCreate((uri) => {
-      workspace.externalChangeTracker.addChange({ uri, type: 'create' });
-    }),
-    watcher.onDidDelete((uri) => {
-      workspace.externalChangeTracker.addChange({ uri, type: 'delete' });
-    }),
-    watcher.onDidChange((uri) => {
-      workspace.externalChangeTracker.addChange({ uri, type: 'change' });
-    }),
+    // vscode.workspace.onDidOpenTextDocument((event) => {
+    //   // provider.onChangeDoc(event),
+    // }),
+    ...watchers,
+    ...watchers.map((watcher) =>
+      watcher.onDidCreate((uri) => {
+        workspace.externalChangeTracker.addChange({ uri, type: 'create' });
+      }),
+    ),
+    ...watchers.map((watcher) =>
+      watcher.onDidDelete((uri) => {
+        workspace.externalChangeTracker.addChange({ uri, type: 'delete' });
+      }),
+    ),
+    ...watchers.map((watcher) =>
+      watcher.onDidChange((uri) => {
+        workspace.externalChangeTracker.addChange({ uri, type: 'change' });
+      }),
+    ),
     ...treeProvider.register(),
     ...inspectorProvider.register(),
     definitionsProvider.register(),

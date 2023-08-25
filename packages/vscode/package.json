@@ -170,6 +170,12 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.sprites.cleanOnSpineSpriteChange": {
+          "title": "Autoclean when spine sprites change",
+          "type": "boolean",
+          "default": false,
+          "description": "Changes to spine sprites typically require a cache-clean. Setting this to `true` will automatically clean the cache when a spine sprite is changed."
+        },
         "stitch.gameMaker.releases.notes.channels": {
           "title": "GameMaker Release Channels",
           "type": "array",

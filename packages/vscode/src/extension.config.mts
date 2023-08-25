@@ -6,6 +6,15 @@ export class StitchConfig {
   get config() {
     return vscode.workspace.getConfiguration('stitch');
   }
+  // get alertOnSpriteChange() {
+  //   return this.config.get<boolean>('sprites.alertOnChange') ?? true;
+  // }
+  get cleanOnSpineSpriteChange() {
+    return (
+      this.config.get<boolean>('sprites.cleanOnSpineSpriteChange') ?? false
+    );
+  }
+
   get userId() {
     let userId = this.config.get<string>('telemetry.userId');
     if (!userId) {
