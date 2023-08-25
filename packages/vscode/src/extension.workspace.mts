@@ -43,9 +43,33 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
     this.signatureHelpStatus.hide();
   }
 
+  clearDiagnosticsInGroups(groups: string[]) {
+    if (!groups.length) return;
+    for (const project of this.projects) {
+      for (const [, asset] of project.assets) {
+        for (const group of groups) {
+          if (asset.isInFolder(group)) {
+            for (const [, code] of asset.gmlFiles) {
+              this.diagnosticCollection.delete(
+                vscode.Uri.file(code.path.absolute),
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+
   /**
    * Emit a collection of diagnostics for a particular file. */
   emitDiagnostics(payload: DiagnosticsEventPayload) {
+    const suppresedGroups = config.suppressDiagnosticsInGroups;
+    for (const group of suppresedGroups) {
+      if (payload.code.asset.isInFolder(group)) {
+        // Then skip this file!
+        return;
+      }
+    }
     this.diagnosticCollection.set(
       uriFromCodeFile(payload.code),
       normalizeDiagnosticsEvents(payload),

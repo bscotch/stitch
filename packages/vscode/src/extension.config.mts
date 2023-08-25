@@ -14,6 +14,9 @@ export class StitchConfig {
       this.config.get<boolean>('sprites.cleanOnSpineSpriteChange') ?? false
     );
   }
+  get suppressDiagnosticsInGroups() {
+    return this.config.get<string[]>('diagnostics.suppressGroups') || [];
+  }
 
   get userId() {
     let userId = this.config.get<string>('telemetry.userId');

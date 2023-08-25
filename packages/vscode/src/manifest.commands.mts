@@ -10,6 +10,14 @@ import {
 import { when } from './manifest.when.mjs';
 
 export const commands = {
+  'stitch.diagnostics.suppress': {
+    command: 'stitch.diagnostics.suppress',
+    title: 'Suppress Diagnostics',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsFolder,
+      group: '1_stitch@9',
+    },
+  },
   'stitch.openLocation.gameMaker': {
     command: 'stitch.openLocation.gameMaker',
     title: 'Stitch: Open GameMaker Location',

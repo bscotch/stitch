@@ -8,6 +8,7 @@ import {
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { stitchEvents } from './events.mjs';
+import { config } from './extension.config.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import type { ObjectParentFolder } from './inspector.mjs';
@@ -63,10 +64,10 @@ export class GameMakerTreeProvider
   > = new vscode.EventEmitter<Treeable | undefined | null | void>();
   readonly onDidCollapseElement = this._onDidCollapseElement.event;
 
-  constructor(readonly provider: StitchWorkspace) {}
+  constructor(readonly workspace: StitchWorkspace) {}
 
   get projects(): GameMakerProject[] {
-    return this.provider.projects;
+    return this.workspace.projects;
   }
 
   handleDrop(target: Treeable | undefined, dataTransfer: vscode.DataTransfer) {
@@ -183,7 +184,7 @@ export class GameMakerTreeProvider
    * with `/` separators.
    */
   reveal(item: string | Asset | Code | undefined) {
-    item ||= this.provider.getCurrentAsset();
+    item ||= this.workspace.getCurrentAsset();
     if (!item) {
       return;
     }
@@ -437,6 +438,18 @@ export class GameMakerTreeProvider
     const newAsset = where.asset.project.getAssetByName(newName);
     const newTreeItem = TreeAsset.lookup.get(newAsset!)!;
     this.view.reveal(newTreeItem);
+  }
+
+  async suppressDiagnostics(where: GameMakerFolder) {
+    const suppressed = config.suppressDiagnosticsInGroups;
+    const path = where.path;
+    if (suppressed.includes(path)) {
+      return;
+    }
+    suppressed.push(path);
+    await config.config.update('diagnostics.suppressGroups', suppressed);
+    // Clear existing diagnostics
+    this.workspace.clearDiagnosticsInGroups([path]);
   }
 
   protected async renameFolder(where: GameMakerFolder, newFolderName: string) {
@@ -698,6 +711,10 @@ export class GameMakerTreeProvider
       registerCommand(
         'stitch.assets.deleteFolder',
         this.deleteFolder.bind(this),
+      ),
+      registerCommand(
+        'stitch.diagnostics.suppress',
+        this.suppressDiagnostics.bind(this),
       ),
       registerCommand(
         'stitch.assets.rename',

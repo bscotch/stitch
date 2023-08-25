@@ -41,6 +41,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "stitch.diagnostics.suppress",
+        "title": "Suppress Diagnostics"
+      },
+      {
         "command": "stitch.openLocation.gameMaker",
         "title": "Stitch: Open GameMaker Location"
       },
@@ -170,6 +174,18 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.diagnostics.suppressGroups": {
+          "title": "Suppress diagnostics in groups",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "examples": [
+              "path/to/my/group"
+            ]
+          },
+          "default": [],
+          "description": "Add asset groups to this list to suppress diagnostics from assets in these groups. Specify groups using their full path."
+        },
         "stitch.sprites.cleanOnSpineSpriteChange": {
           "title": "Autoclean when spine sprites change",
           "type": "boolean",
@@ -403,6 +419,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "stitch.diagnostics.suppress",
+          "when": "viewItem == folder",
+          "group": "1_stitch@9"
+        },
         {
           "command": "stitch.assets.rename",
           "when": "viewItem =~ /^asset-/",
