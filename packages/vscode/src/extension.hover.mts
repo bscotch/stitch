@@ -17,6 +17,9 @@ export class StitchHoverProvider implements vscode.HoverProvider {
     const hoverContents = new vscode.MarkdownString();
     const codeBlocks = new Set<string>();
     const textBlocks = new Set<string>();
+    if (item.description) {
+      textBlocks.add(item.description);
+    }
     if (item.type.type.length === 0) {
       codeBlocks.add('Any');
     }
@@ -25,9 +28,8 @@ export class StitchHoverProvider implements vscode.HoverProvider {
       if (code) {
         codeBlocks.add(code);
       }
-      const description = item.description || type.description;
-      if (description) {
-        textBlocks.add(description);
+      if (type.description) {
+        textBlocks.add(type.description);
       }
       if (type.details) {
         textBlocks.add(type.details);
@@ -61,7 +63,7 @@ export class StitchHoverProvider implements vscode.HoverProvider {
       hoverContents.appendCodeblock(code, 'gml');
     }
     for (const text of textBlocks) {
-      hoverContents.appendMarkdown(text);
+      hoverContents.appendMarkdown(text + '\n\n');
     }
 
     // console.log('Hovering over', item);

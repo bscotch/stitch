@@ -607,10 +607,25 @@ export class Code {
   protected computeUndeclaredSymbolDiagnostics() {
     this.diagnostics.UNDECLARED_VARIABLE_REFERENCE = [];
     const undeclaredSymbols = new Set<Signifier>();
-    for (const ref of this._refs) {
+    outer: for (const ref of this._refs) {
       if (ref.item.def || ref.item.native || undeclaredSymbols.has(ref.item)) {
         continue;
       }
+      // Handle global prefixes setting
+      const prefixes =
+        this.project.options?.settings?.autoDeclareGlobalsPrefixes || [];
+      for (const prefix of prefixes) {
+        if (ref.item.name.startsWith(prefix)) {
+          // Then mark it as *global* and *declared*
+          ref.item.global = true;
+          ref.item.local = false;
+          ref.item.instance = false;
+          ref.item.def = {};
+          ref.item.describe(`Auto-declared by global prefix \`${prefix}\``);
+          continue outer;
+        }
+      }
+
       this.diagnostics.UNDECLARED_VARIABLE_REFERENCE.push(
         Diagnostic.error(`Undeclared symbol \`${ref.item.name}\``, ref, 'warn'),
       );

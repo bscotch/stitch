@@ -17,6 +17,11 @@ export class StitchConfig {
   get suppressDiagnosticsInGroups() {
     return this.config.get<string[]>('diagnostics.suppressGroups') || [];
   }
+  get autoDeclaredGlobalsPrefixes() {
+    return (
+      this.config.get<string[]>('diagnostics.autoDeclaredGlobalsPatterns') || []
+    );
+  }
 
   get userId() {
     let userId = this.config.get<string>('telemetry.userId');

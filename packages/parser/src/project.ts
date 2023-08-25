@@ -51,6 +51,13 @@ export interface ProjectOptions {
    * when progress has been made towards loading the project.
    */
   onLoadProgress?: (increment: number, message?: string) => void;
+  settings?: {
+    /**
+     * Symbols starting with these prefixes that are not declared
+     * in the coded will be treated as global symbols.
+     */
+    autoDeclareGlobalsPrefixes?: string[];
+  };
 }
 
 export class Project {
@@ -86,7 +93,10 @@ export class Project {
   /** Code that needs to be reprocessed, for one reason or another. */
   protected dirtyFiles = new Set<Code>();
 
-  protected constructor(readonly yypPath: Pathy) {}
+  protected constructor(
+    readonly yypPath: Pathy,
+    readonly options?: ProjectOptions,
+  ) {}
 
   queueDirtyFileUpdate(code: Code): void {
     this.dirtyFiles.add(code);
@@ -794,7 +804,7 @@ export class Project {
       ok(path, 'No yyp file found in project directory');
     }
     await path.exists({ assert: true });
-    const project = new Project(path);
+    const project = new Project(path, options);
     await project.initialize(options);
     return project;
   }

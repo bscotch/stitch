@@ -92,11 +92,19 @@ export function visitIdentifierAccessor(
   if (!item && scope.self === scope.global) {
     // Then this is being treated as a global variable but it has
     // not been declared anywhere
-    this.PROCESSOR.addDiagnostic(
-      'UNDECLARED_GLOBAL_REFERENCE',
-      lastAccessed.range,
-      `${lastAccessed.name} looks like a global but is not declared anywhere.`,
+    const autoDeclarePrefixes =
+      this.PROCESSOR.project.options?.settings?.autoDeclareGlobalsPrefixes ||
+      [];
+    const isAutoDeclared = autoDeclarePrefixes.some(
+      (prefix) => lastAccessed.name?.startsWith(prefix),
     );
+    if (!isAutoDeclared) {
+      this.PROCESSOR.addDiagnostic(
+        'UNDECLARED_GLOBAL_REFERENCE',
+        lastAccessed.range,
+        `${lastAccessed.name} looks like a global but is not declared anywhere.`,
+      );
+    }
     // Just set the last accessed type to ANY so that we can
     // continue processing.
     lastAccessed.types = [this.ANY];

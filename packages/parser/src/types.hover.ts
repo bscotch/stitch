@@ -12,14 +12,14 @@ function typeMemberToHoverText(member: Signifier) {
 }
 
 export function typeToHoverDetails(type: Type) {
-  let code = '';
+  const lines: string[] = [];
   if (type.isFunction) {
     if (type.self) {
-      code += `\n\n*@self* ${type.self.toFeatherString()}`;
+      lines.push(`*@self* \`${type.self.toFeatherString()}\``);
     }
     for (const param of type.listParameters()) {
       if (param?.def && param.description) {
-        code += `\n\n*@param* \`${param.name}\` - ${param.description}`;
+        lines.push(`*@param* \`${param.name}\` - ${param.description}`);
       }
     }
   } else if (type.kind === 'Struct') {
@@ -37,37 +37,38 @@ export function typeToHoverDetails(type: Type) {
           ?.toLocaleLowerCase?.()
           .localeCompare(b.name?.toLocaleLowerCase?.());
       });
-    if (!members.length) {
-      return '';
-    }
-    code = '```ts\n{\n';
-    let i = 0;
-    for (const member of members) {
-      code += `  ${member.name}: ${member.type.toFeatherString()},\n`;
-      i++;
-      if (i > 19) {
-        code += '  // ... and more!\n';
-        break;
+    if (members.length) {
+      let code = '```ts\n{\n';
+      let i = 0;
+      for (const member of members) {
+        code += `  ${member.name}: ${member.type.toFeatherString()},\n`;
+        i++;
+        if (i > 19) {
+          code += '  // ... and more!\n';
+          break;
+        }
       }
+      code += '}\n```';
+      lines.push(code);
     }
-    code += '}\n```';
   } else if (type.kind === 'Enum') {
     const members = type.listMembers().filter((x) => x.def);
-    if (!members.length) {
-      return '';
-    }
-    code = '```ts\n{\n';
-    let i = 0;
-    for (const member of members) {
-      code += `  ${member.name},\n`;
-      i++;
-      if (i > 19) {
-        code += '  // ... and more!\n';
-        break;
+    if (members.length) {
+      let code = '```ts\n{\n';
+      let i = 0;
+      for (const member of members) {
+        code += `  ${member.name},\n`;
+        i++;
+        if (i > 19) {
+          code += '  // ... and more!\n';
+          break;
+        }
       }
+      code += '}\n```';
+      lines.push(code);
     }
   }
-  return code;
+  return lines.join('\n\n');
 }
 
 export function typeToHoverText(type: Type) {

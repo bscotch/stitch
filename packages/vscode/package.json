@@ -174,6 +174,15 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.diagnostics.autoDeclaredGlobalsPatterns": {
+          "title": "Prefixes for auto-declared globals",
+          "description": "Variables with these prefixes will be automatically declared as globals if they are't declared in the user code.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
         "stitch.diagnostics.suppressGroups": {
           "title": "Suppress diagnostics in groups",
           "type": "array",

@@ -1,4 +1,9 @@
-import { OnDiagnostics, Project, setLogger } from '@bscotch/gml-parser';
+import {
+  OnDiagnostics,
+  Project,
+  ProjectOptions,
+  setLogger,
+} from '@bscotch/gml-parser';
 import { pathy } from '@bscotch/pathy';
 import {
   GameMakerIde,
@@ -10,7 +15,7 @@ import {
 import path from 'path';
 import vscode from 'vscode';
 import { stitchEvents } from './events.mjs';
-import { StitchConfig } from './extension.config.mjs';
+import { StitchConfig, config } from './extension.config.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
 
 setLogger(logger.withPrefix('PARSER'));
@@ -19,8 +24,8 @@ export class GameMakerProject extends Project {
   readonly kind = 'project';
   static config = new StitchConfig();
 
-  protected constructor(yypPath: vscode.Uri) {
-    super(pathy(yypPath.fsPath));
+  protected constructor(yypPath: vscode.Uri, options: ProjectOptions) {
+    super(pathy(yypPath.fsPath), options);
   }
 
   get name() {
@@ -148,12 +153,16 @@ export class GameMakerProject extends Project {
     onDiagnostics: OnDiagnostics,
     onProgress: (increment: number, message?: string) => void,
   ) {
-    const project = new GameMakerProject(yypPath);
-    await project.initialize({
+    const options: ProjectOptions = {
       watch: true,
       onDiagnostics,
       onLoadProgress: onProgress,
-    });
+      settings: {
+        autoDeclareGlobalsPrefixes: config.autoDeclaredGlobalsPrefixes,
+      },
+    };
+    const project = new GameMakerProject(yypPath, options);
+    await project.initialize(options);
     return project;
   }
 }
