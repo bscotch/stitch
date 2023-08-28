@@ -9,8 +9,8 @@ export class StitchSpriteEditorProvider {
 
   constructor(readonly workspace: StitchWorkspace) {}
 
-  protected async getWebviewContent(sprite: Asset<'sprites'>) {
-    return compile(sprite);
+  protected getWebviewContent(sprite: Asset<'sprites'>) {
+    return compile(sprite, this.panel!);
   }
 
   protected createPanel(): vscode.WebviewPanel {

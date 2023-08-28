@@ -293,8 +293,12 @@ export class GameMakerTreeProvider
     }
   }
 
-  editSprite(sprite: Asset<'sprites'>) {
-    stitchEvents.emit('sprite-editor-open', sprite);
+  editSprite(treeItem: TreeAsset) {
+    const asset = treeItem.asset;
+    if (!isAssetOfKind(asset, 'sprites')) {
+      return;
+    }
+    stitchEvents.emit('sprite-editor-open', asset);
   }
 
   async setParent(objectItem: ObjectParentFolder | TreeAsset) {
