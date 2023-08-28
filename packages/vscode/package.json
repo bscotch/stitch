@@ -110,6 +110,10 @@
         "icon": "$(new-folder)"
       },
       {
+        "command": "stitch.assets.editSprite",
+        "title": "Edit..."
+      },
+      {
         "command": "stitch.assets.delete",
         "title": "Delete",
         "icon": "$(close)"
@@ -494,6 +498,11 @@
           "command": "stitch.assets.newFolder",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
           "group": "inline@1"
+        },
+        {
+          "command": "stitch.assets.editSprite",
+          "when": "viewItem == asset-sprites",
+          "group": "7_modification@1"
         },
         {
           "command": "stitch.assets.delete",

@@ -6,6 +6,7 @@ export namespace StitchEvents {
   export type All = [
     AssetDeleted,
     CodeFileDeleted,
+    SpriteEditorOpen,
     RunProjectStart,
     CleanProjectStart,
     OpenProjectStart,
@@ -18,6 +19,10 @@ export namespace StitchEvents {
   export interface CodeFileDeleted {
     name: 'code-file-deleted';
     payload: [Code];
+  }
+  export interface SpriteEditorOpen {
+    name: 'sprite-editor-open';
+    payload: [Asset<'sprites'>];
   }
   export interface RunProjectStart {
     name: 'run-project-start';

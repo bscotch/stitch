@@ -293,6 +293,10 @@ export class GameMakerTreeProvider
     }
   }
 
+  editSprite(sprite: Asset<'sprites'>) {
+    stitchEvents.emit('sprite-editor-open', sprite);
+  }
+
   async setParent(objectItem: ObjectParentFolder | TreeAsset) {
     const asset = objectItem.asset;
     if (!isAssetOfKind(asset, 'objects')) {
@@ -720,6 +724,7 @@ export class GameMakerTreeProvider
         'stitch.assets.rename',
         this.promptToRenameAsset.bind(this),
       ),
+      registerCommand('stitch.assets.editSprite', this.editSprite.bind(this)),
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),
       registerCommand('stitch.assets.newObject', this.createObject.bind(this)),

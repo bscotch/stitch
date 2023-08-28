@@ -130,6 +130,14 @@ export const commands = {
       },
     ],
   },
+  'stitch.assets.editSprite': {
+    command: 'stitch.assets.editSprite',
+    title: 'Edit...',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsSprite,
+      group: '7_modification@1',
+    },
+  },
   'stitch.assets.delete': {
     command: 'stitch.assets.delete',
     title: 'Delete',

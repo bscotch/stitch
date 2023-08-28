@@ -18,6 +18,7 @@ import { StitchLocationsProvider } from './extension.locations.mjs';
 import { StitchReferenceProvider } from './extension.refs.mjs';
 import { StitchReleasePickerProvider } from './extension.releases.mjs';
 import { StitchRenameProvider } from './extension.rename.mjs';
+import { StitchSpriteEditorProvider } from './extension.spriteEditor.mjs';
 import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { StitchTypeDefinitionProvider } from './extension.typeDefs.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
@@ -125,6 +126,7 @@ export async function activateStitchExtension(
     StitchHoverProvider.register(workspace),
     StitchWorkspaceSymbolProvider.register(workspace),
     StitchCompletionProvider.register(workspace),
+    ...StitchSpriteEditorProvider.register(workspace),
     ...StitchReferenceProvider.register(workspace),
     ...StitchLocationsProvider.register(workspace),
     vscode.languages.registerSignatureHelpProvider('gml', workspace, '(', ','),
