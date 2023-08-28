@@ -16,6 +16,7 @@ import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { StitchHoverProvider } from './extension.hover.mjs';
 import { StitchLocationsProvider } from './extension.locations.mjs';
 import { StitchReferenceProvider } from './extension.refs.mjs';
+import { StitchReleasePickerProvider } from './extension.releases.mjs';
 import { StitchRenameProvider } from './extension.rename.mjs';
 import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { StitchTypeDefinitionProvider } from './extension.typeDefs.mjs';
@@ -28,7 +29,6 @@ import {
   registerCommand,
 } from './lib.mjs';
 import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
-import { StitchReleasePickerProvider } from './releasePicker.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 
 export async function activateStitchExtension(
