@@ -24,6 +24,7 @@ export function setSpriteDims(
   this: Gms2Sprite,
   width: number,
   height: number,
+  isNew: boolean,
 ): boolean {
   for (const dim of ['width', 'height'] as const) {
     const value = { width, height }[dim];
@@ -36,16 +37,6 @@ export function setSpriteDims(
   const oldOriginY = this.yyData.sequence.yorigin;
   const oldHeight = this.yyData.height;
   const oldWidth = this.yyData.width;
-  // If this is new, then the bbox right/bottom will be at zero
-  if (
-    this.yyData.bbox_bottom &&
-    this.yyData.bbox_right &&
-    width == oldWidth &&
-    height == oldHeight
-  ) {
-    // Then no change will be needed.
-    return false;
-  }
 
   const oldBbox = pick(this.yyData, [
     'bbox_bottom',
@@ -66,7 +57,6 @@ export function setSpriteDims(
     return Math.floor((oldPos / oldMax) * newMax);
   };
 
-  const isNew = oldHeight == 0 || oldWidth == 0;
   const dimsHaveChanged = !isNew && (width != oldWidth || height != oldHeight);
   if (isNew) {
     this.yyData.sequence.xorigin = Math.floor(width / 2);
@@ -211,6 +201,7 @@ export async function syncSpineSource(
 export async function syncSpriteSource(
   this: Gms2Sprite,
   spriteDirectory: string,
+  isNew: boolean,
 ) {
   assert(!this.isSpine, 'This method cannot be used for Spine sprites');
   debug(`syncing sprite with source ${spriteDirectory}`);
@@ -219,6 +210,7 @@ export async function syncSpriteSource(
   const updatedDims = setSpriteDims.bind(this)(
     sprite.width as number,
     sprite.height as number,
+    isNew,
   );
 
   // Replace all frames, but keep the existing IDs and ID

@@ -393,7 +393,7 @@ const yySpriteSchemaStrict = yyBaseSchema
     /**
      * The method used for specifying the origin
      */
-    origin: spriteOriginSchema.default(4),
+    origin: spriteOriginSchema.default(SpriteOrigin.Custom),
     preMultiplyAlpha: z.boolean().default(false),
     edgeFiltering: z.boolean().default(false),
     /**

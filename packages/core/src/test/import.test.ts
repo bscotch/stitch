@@ -1,6 +1,6 @@
 import { pathy, Pathy } from '@bscotch/pathy';
-import { AssetSourcesConfig } from '../lib/assetSource/assetSource.js';
 import { expect } from 'chai';
+import { AssetSourcesConfig } from '../lib/assetSource/assetSource.js';
 import { Gms2Room } from '../lib/components/resources/Gms2Room.js';
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound.js';
 import { Gms2Sprite } from '../lib/components/resources/Gms2Sprite.js';
@@ -168,6 +168,8 @@ describe('GameMaker Project Imports', function () {
         expectedImages.length,
         'Should have same number of layer as source images.',
       ).to.equal(layerImages.length);
+      expect(newSprite.yyData.sequence.xorigin).to.be.greaterThan(0);
+      expect(newSprite.yyData.sequence.yorigin).to.be.greaterThan(0);
     }
 
     // Add the sprites to objects so that we can see them.

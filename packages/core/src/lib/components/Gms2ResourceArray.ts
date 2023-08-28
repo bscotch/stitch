@@ -5,8 +5,8 @@ import { Spine } from '../../types/Spine.js';
 import { StitchError } from '../../utility/errors.js';
 import { debug, info, warn } from '../../utility/log.js';
 import paths from '../../utility/paths.js';
-import { dehydrateArray } from '../hydrate.js';
 import type { StitchProject, StitchProjectComms } from '../StitchProject.js';
+import { dehydrateArray } from '../hydrate.js';
 import { Gms2Animation } from './resources/Gms2Animation.js';
 import { Gms2Extension } from './resources/Gms2Extension.js';
 import { Gms2Font } from './resources/Gms2Font.js';
@@ -27,7 +27,10 @@ import { Gms2Timeline } from './resources/Gms2Timeline.js';
 export class Gms2ResourceArray {
   private items: Gms2ResourceSubclass[];
 
-  constructor(readonly project: StitchProject, data: YypResource[]) {
+  constructor(
+    readonly project: StitchProject,
+    data: YypResource[],
+  ) {
     const uniqueData = uniqBy(data, 'id.name');
     const removedItems = difference(data, uniqueData);
     if (removedItems.length) {
@@ -183,7 +186,7 @@ export class Gms2ResourceArray {
     debug(`adding sprite from ${sourceFolder} as name ${name}`);
     const sprite = this.findByName(name, Gms2Sprite);
     if (sprite) {
-      await sprite.syncWithSource(sourceFolder);
+      await sprite.syncWithSource(sourceFolder, false);
     } else {
       info(`Adding new sprite '${name}'`);
       this.push(await Gms2Sprite.create(sourceFolder, comms, name));
@@ -202,7 +205,7 @@ export class Gms2ResourceArray {
 
     const sprite = this.findByName(name, Gms2Sprite);
     if (sprite) {
-      await sprite.syncWithSource(jsonSourcePath.absolute);
+      await sprite.syncWithSource(jsonSourcePath.absolute, false);
     } else {
       info(`Adding new spine sprite ${name}`);
       this.push(await Gms2Sprite.createFromSpine(jsonSourcePath, comms, name));

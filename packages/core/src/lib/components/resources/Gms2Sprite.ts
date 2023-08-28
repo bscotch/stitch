@@ -91,11 +91,14 @@ export class Gms2Sprite extends Gms2ResourceBase<YySprite> {
    * Force the frames of this sprite to match the images
    * within a folder (non-recursive)
    */
-  async syncWithSource(spriteDirectoryOrSpineJson: string) {
+  async syncWithSource(spriteDirectoryOrSpineJson: string, isNew: boolean) {
     if (this.isSpine) {
       return await syncSpineSource.bind(this)(spriteDirectoryOrSpineJson);
     } else {
-      return await syncSpriteSource.bind(this)(spriteDirectoryOrSpineJson);
+      return await syncSpriteSource.bind(this)(
+        spriteDirectoryOrSpineJson,
+        isNew,
+      );
     }
   }
 
@@ -118,7 +121,7 @@ export class Gms2Sprite extends Gms2ResourceBase<YySprite> {
     await sprite.replaceYyFile({
       name: sprite.name,
     });
-    return await sprite.syncWithSource(subimageDirectory);
+    return await sprite.syncWithSource(subimageDirectory, true);
   }
 
   static async createFromSpine(
@@ -134,6 +137,6 @@ export class Gms2Sprite extends Gms2ResourceBase<YySprite> {
       type: SpriteType.Spine,
       name: sprite.name,
     });
-    return await sprite.syncWithSource(spineJsonFile.absolute);
+    return await sprite.syncWithSource(spineJsonFile.absolute, true);
   }
 }
