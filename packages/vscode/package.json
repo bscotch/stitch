@@ -153,6 +153,13 @@
         "enablement": "stitch.projectCount > 0"
       },
       {
+        "command": "stitch.run.noDefaults",
+        "title": "Stitch: Run Project (No Defaults)",
+        "shortTitle": "RunExt",
+        "icon": "$(run-all)",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.clean",
         "title": "Stitch: Clean Project Cache",
         "shortTitle": "Clean Cache",
@@ -362,7 +369,12 @@
       {
         "command": "stitch.run",
         "key": "f5",
-        "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(yy|yyp|gml)$/"
+        "when": "(editorTextFocus && resourceExtname =~ /\\.(yy|yyp|gml)$/) || view == bscotch-stitch-resources"
+      },
+      {
+        "command": "stitch.run.noDefaults",
+        "key": "shift+f5",
+        "when": "(editorTextFocus && resourceExtname =~ /\\.(yy|yyp|gml)$/) || view == bscotch-stitch-resources"
       },
       {
         "command": "stitch.assets.rename",
@@ -414,10 +426,15 @@
         {
           "command": "stitch.openIde",
           "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
-          "group": "navigation@2"
+          "group": "navigation@3"
         },
         {
           "command": "stitch.run",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
+          "group": "navigation@5"
+        },
+        {
+          "command": "stitch.run.noDefaults",
           "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
           "group": "navigation@4"
         },
@@ -516,10 +533,15 @@
         {
           "command": "stitch.openIde",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
-          "group": "inline@2"
+          "group": "inline@3"
         },
         {
           "command": "stitch.run",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
+          "group": "inline@5"
+        },
+        {
+          "command": "stitch.run.noDefaults",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
           "group": "inline@4"
         },
@@ -557,6 +579,9 @@
         },
         {
           "command": "stitch.run"
+        },
+        {
+          "command": "stitch.run.noDefaults"
         },
         {
           "command": "stitch.clean"

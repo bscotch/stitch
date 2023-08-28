@@ -59,14 +59,6 @@ export function findProject(
   return project;
 }
 
-export function createSorter<T extends string>(sortByField: T) {
-  return (a: { [key in T]: string }, b: { [key in T]: string }) => {
-    const aValue = a[sortByField]?.toLocaleLowerCase?.();
-    const bValue = b[sortByField]?.toLocaleLowerCase?.();
-    return aValue?.localeCompare(bValue) || 0;
-  };
-}
-
 export function registerCommand(
   command: CommandName,
   callback: (...args: any[]) => any,
@@ -149,4 +141,37 @@ export function html(
     }
   }
   return allStrings.join('');
+}
+
+export function sortAlphaInsensitive(a: string, b: string) {
+  return a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase());
+}
+
+export function createSorter<T extends string | undefined>(
+  options: {
+    sortByField?: T;
+    caseSensitive?: boolean;
+    first?: string[];
+  } = {},
+) {
+  type Entry = T extends string ? { [key in T]: string } : string;
+  const normalizer = (entry: Entry) => {
+    const value =
+      typeof entry === 'string'
+        ? entry
+        : options?.sortByField && typeof entry === 'object' && entry !== null
+        ? entry[options.sortByField as any]
+        : `${entry}`;
+    return options?.caseSensitive ? value : value.toLocaleLowerCase();
+  };
+
+  return (_a: Entry, _b: Entry) => {
+    const a = normalizer(_a);
+    const b = normalizer(_b);
+    for (const first of options.first || []) {
+      if (a === first) return -1;
+      if (b === first) return 1;
+    }
+    return a.localeCompare(b);
+  };
 }

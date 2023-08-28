@@ -1,4 +1,5 @@
 import { Asset, Code } from '@bscotch/gml-parser';
+import { literal } from '@bscotch/utility';
 import { GameMakerFolder } from 'tree.folder.mjs';
 import vscode from 'vscode';
 import { swallowThrown } from './assert.mjs';
@@ -20,7 +21,12 @@ import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { StitchTypeDefinitionProvider } from './extension.typeDefs.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { GameMakerInspectorProvider } from './inspector.mjs';
-import { findProject, pathyFromUri, registerCommand } from './lib.mjs';
+import {
+  createSorter,
+  findProject,
+  pathyFromUri,
+  registerCommand,
+} from './lib.mjs';
 import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
 import { StitchReleasePickerProvider } from './releasePicker.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
@@ -177,6 +183,38 @@ export async function activateStitchExtension(
       }
       project.run();
     }),
+    registerCommand(
+      'stitch.run.noDefaults',
+      async (uriOrFolder: string[] | GameMakerFolder) => {
+        const project = findProject(workspace, uriOrFolder);
+        if (!project) {
+          void showErrorMessage('No project found to run!');
+          return;
+        }
+        // QuickPick to select the config
+        const configs = project.configs.sort(
+          createSorter({ first: [config.runConfigDefault || '', 'Default'] }),
+        );
+        const chosenConfig = await vscode.window.showQuickPick(configs, {
+          title: 'Select a config',
+        });
+        if (!chosenConfig) return;
+
+        // QuickPick to select the compiler
+        const compilers = literal(['vm', 'yyc']).sort(
+          createSorter({ first: [config.runCompilerDefault] }),
+        );
+        const chosenCompiler = await vscode.window.showQuickPick(compilers, {
+          title: 'Select a compiler',
+        });
+        if (!chosenCompiler) return;
+
+        await project.run({
+          compiler: chosenCompiler as any,
+          config: chosenConfig,
+        });
+      },
+    ),
     registerCommand(
       'stitch.clean',
       (uriOrFolder: string[] | GameMakerFolder) => {

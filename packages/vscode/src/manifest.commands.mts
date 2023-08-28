@@ -196,11 +196,11 @@ export const commands = {
     [$showInPalette]: true,
     [$showInViewTitle]: {
       when: when.assetTreeFocusedAndHasOneProject,
-      group: 'navigation@2',
+      group: 'navigation@3',
     },
     [$showInViewItemContextMenu]: {
       when: when.isInlineProject,
-      group: 'inline@2',
+      group: 'inline@3',
     },
   },
   'stitch.run': {
@@ -208,6 +208,22 @@ export const commands = {
     title: 'Stitch: Run Project',
     shortTitle: 'Run',
     icon: '$(play)',
+    enablement: when.hasProjects,
+    [$showInPalette]: true,
+    [$showInViewTitle]: {
+      when: when.assetTreeFocusedAndHasOneProject,
+      group: 'navigation@5',
+    },
+    [$showInViewItemContextMenu]: {
+      when: when.isInlineProject,
+      group: 'inline@5',
+    },
+  },
+  'stitch.run.noDefaults': {
+    command: 'stitch.run.noDefaults',
+    title: 'Stitch: Run Project (No Defaults)',
+    shortTitle: 'RunExt',
+    icon: '$(run-all)',
     enablement: when.hasProjects,
     [$showInPalette]: true,
     [$showInViewTitle]: {

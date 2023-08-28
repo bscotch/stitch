@@ -220,9 +220,11 @@ export class GameMakerInspectorProvider
   }
 
   static getChildrenAsTreeItems(asset: Asset<'objects'>) {
-    return asset.children.sort(createSorter('name')).map((child) => {
-      return new ObjectItem(child, 'children');
-    });
+    return asset.children
+      .sort(createSorter({ sortByField: 'name' }))
+      .map((child) => {
+        return new ObjectItem(child, 'children');
+      });
   }
 
   rebuild() {
