@@ -661,7 +661,8 @@
   },
   "activationEvents": [
     "onLanguage:gml",
-    "onCommand:stitch.openIde"
+    "onCommand:stitch.openIde",
+    "workspaceContains:**/*.{yyp,yy,gml}"
   ],
   "dependencies": {
     "@bscotch/emitter": "0.2.0",
