@@ -188,12 +188,17 @@ export async function activateStitchExtension(
         project.run({ clean: true });
       },
     ),
-    registerCommand('stitch.openIde', (...args) => {
-      const uri = vscode.Uri.parse(
-        args[0] || vscode.window.activeTextEditor?.document.uri.toString(),
-      );
-      workspace.getProject(uri)?.openInIde();
-    }),
+    registerCommand(
+      'stitch.openIde',
+      async (uriOrFolder: string[] | GameMakerFolder) => {
+        const project = findProject(workspace, uriOrFolder);
+        if (!project) {
+          void showErrorMessage('No project found to open!');
+          return;
+        }
+        await project.openInIde();
+      },
+    ),
     workspace.semanticHighlightProvider.register(),
     workspace.signatureHelpStatus,
     vscode.window.onDidChangeTextEditorSelection((e) => {

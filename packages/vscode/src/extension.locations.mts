@@ -40,18 +40,23 @@ export class StitchLocationsProvider {
     const channel = await this.promptForGameMakerReleaseChannel();
     if (!channel) return;
     // /^GameMaker(Studio2?)?(-(Beta|LTS))?\.exe$/
+    const uniquePaths = new Set<string>();
     const paths = (
       await showProgress(
         () => GameMakerIde.listWellKnownPaths(),
         'Searching for paths...',
       )
-    ).filter((p) =>
-      channel === 'lts'
-        ? p.path.match(/GameMaker(Studio2?)?-LTS/)
-        : channel === 'stable'
-        ? !p.path.match(/GameMaker(Studio2?)?-Beta/)
-        : true,
-    );
+    ).filter((p) => {
+      if (uniquePaths.has(p.path)) return false;
+      uniquePaths.add(p.path);
+      if (p.path.endsWith('.exe')) return false;
+      const isLts = p.path.match(/GameMaker(Studio2?)?-LTS/);
+      const isBeta = p.path.match(/GameMaker(Studio2?)?-Beta/);
+      if (channel === 'lts' && isLts) return true;
+      if (['unstable', 'beta'].includes(channel) && isBeta) return true;
+      if (channel === 'stable' && !isLts && !isBeta) return true;
+      return false;
+    });
     // Sort by name, and add separators between different `Whatever: ` prefixes
     paths.sort((a, b) => {
       return a.name.localeCompare(b.name);

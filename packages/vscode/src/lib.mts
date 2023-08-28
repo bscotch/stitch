@@ -37,22 +37,23 @@ export function rangeFrom(location: Range) {
 }
 
 export function findProject(
-  provider: StitchWorkspace,
-  uriOrFolder: string[] | GameMakerFolder,
+  workspace: StitchWorkspace,
+  uriOrFolder: string[] | GameMakerFolder | undefined,
 ): GameMakerProject | undefined {
   // Identify the target project
   let project: GameMakerProject | undefined;
-  if (provider.projects.length === 1) {
-    project = provider.projects[0];
+  if (workspace.projects.length === 1) {
+    project = workspace.projects[0];
   } else if (uriOrFolder instanceof GameMakerFolder) {
     // Then we clicked in the tree view
-    project = provider.projects.find((p) => p.name === uriOrFolder.name);
+    project = workspace.projects.find((p) => p.name === uriOrFolder.name);
   } else {
     const uriString =
-      uriOrFolder[0] || vscode.window.activeTextEditor?.document.uri.toString();
+      uriOrFolder?.[0] ||
+      vscode.window.activeTextEditor?.document.uri.toString();
     if (uriString) {
       const uri = vscode.Uri.parse(uriString);
-      project = provider.getProject(uri);
+      project = workspace.getProject(uri);
     }
   }
   return project;
