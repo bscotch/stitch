@@ -4,9 +4,10 @@ import {
   Yy,
   Yyp,
   yyParentSchema,
-  YypFolder,
   yypFolderSchema,
-  YypResource,
+  type YypConfig,
+  type YypFolder,
+  type YypResource,
 } from '@bscotch/yy';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
@@ -122,6 +123,20 @@ export class Project {
 
   get dir(): Pathy {
     return pathy(this.yypPath).up();
+  }
+
+  get configs(): string[] {
+    const configs: string[] = [];
+    let configTree: YypConfig[] = [this.yyp.configs];
+    while (configTree.length) {
+      const nextTree: YypConfig[] = [];
+      for (const config of configTree) {
+        configs.push(config.name);
+        nextTree.push(...(config.children || []));
+      }
+      configTree = nextTree;
+    }
+    return configs;
   }
 
   /**
