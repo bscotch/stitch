@@ -109,7 +109,7 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
     return this.parent.path + '/' + this.asset.name;
   }
 
-  protected refreshTreeItem() {
+  refreshTreeItem() {
     let file: vscode.Uri;
     const asset = this.asset;
     if (isAssetOfKind(asset, 'scripts') || isAssetOfKind(asset, 'objects')) {

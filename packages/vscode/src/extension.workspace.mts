@@ -8,6 +8,7 @@ import {
   type ReferenceableType,
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
+import { ChangeTracker } from './changes.mjs';
 import {
   diagnosticCollection,
   normalizeDiagnosticsEvents,
@@ -17,7 +18,6 @@ import { activateStitchExtension } from './extension.activate.mjs';
 import { completionTriggerCharacters } from './extension.completions.mjs';
 import { config } from './extension.config.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.highlighting.mjs';
-import { ChangeTracker } from './extension.onChange.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { pathyFromUri, uriFromCodeFile } from './lib.mjs';
 import { info, logger, warn } from './log.mjs';

@@ -64,7 +64,15 @@ export class GameMakerTreeProvider
   > = new vscode.EventEmitter<Treeable | undefined | null | void>();
   readonly onDidCollapseElement = this._onDidCollapseElement.event;
 
-  constructor(readonly workspace: StitchWorkspace) {}
+  constructor(readonly workspace: StitchWorkspace) {
+    stitchEvents.on('image-changed', (sprite) => {
+      const item = TreeAsset.lookup.get(sprite);
+      if (item) {
+        item.refreshTreeItem();
+        this._onDidChangeTreeData.fire(item.parent);
+      }
+    });
+  }
 
   get projects(): GameMakerProject[] {
     return this.workspace.projects;

@@ -1,3 +1,4 @@
+import { isAssetOfKind } from '@bscotch/gml-parser';
 import { pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
 import { stitchEvents } from './events.mjs';
@@ -124,7 +125,14 @@ export class ChangeTracker {
         }
         continue;
       }
-      if (['change', 'create'].includes(type) && uri.path.endsWith('.png')) {
+      if (uri.path.endsWith('.png')) {
+        const asset = project.getAsset(pathy(uri.fsPath));
+        if (!isAssetOfKind(asset, 'sprites')) continue;
+
+        // Emit an event for the asset tree to catch, so it knows
+        // it should update the sprite.
+        stitchEvents.emit('image-changed', asset, type, uri);
+
         // TODO: show/update a popup detailing all sprites that have changed.
       }
     }
