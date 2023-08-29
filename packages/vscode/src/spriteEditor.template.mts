@@ -59,10 +59,17 @@ const css = html`
     }
     #frames img {
       min-width: 10em;
+      max-width: 20em;
       position: relative;
       border: 1px solid white;
       user-select: none;
       cursor: pointer;
+    }
+    .dims {
+      font-family: monospace;
+    }
+    .dim {
+      font-weight: bold;
     }
     .crosshair {
       width: 1em;
@@ -71,21 +78,18 @@ const css = html`
       position: absolute;
       transform: translate(-0.5em, -0.5em);
     }
-
     .crosshair::before,
     .crosshair::after {
       content: '';
       position: absolute;
       background-color: red;
     }
-
     .crosshair::before {
       width: 2px;
       height: 100%;
       left: 50%;
       transform: translateX(-50%);
     }
-
     .crosshair::after {
       width: 100%;
       height: 2px;
@@ -116,6 +120,40 @@ function createScript(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
         xorigin: ${xorigin},
         yorigin: ${yorigin},
       };
+
+      // Add origin presets
+      for (const vertical of ['Top', 'Middle', 'Bottom']) {
+        for (const horizontal of ['Left', 'Center', 'Right']) {
+          const name = vertical + horizontal;
+          const xorigin =
+            horizontal === 'Left'
+              ? 0
+              : horizontal === 'Center'
+              ? Math.floor(size.naturalWidth / 2)
+              : size.naturalWidth - 1;
+          const yorigin =
+            vertical === 'Top'
+              ? 0
+              : vertical === 'Middle'
+              ? Math.floor(size.naturalHeight / 2)
+              : size.naturalHeight - 1;
+          // Add an option to the select
+          const option = document.createElement('option');
+          option.value = JSON.stringify({ xorigin, yorigin });
+          option.innerText = name;
+          document.getElementById('origin-presets').appendChild(option);
+        }
+      }
+      document
+        .getElementById('origin-presets')
+        .addEventListener('change', (e) => {
+          const { xorigin, yorigin } = JSON.parse(e.target.value);
+          onUpdateOrigin(xorigin, yorigin);
+          // Reset the select to the initial value
+          e.target.value = '';
+        });
+
+      // Add origin input fields
       const inputs = {
         xorigin: document.querySelector('.xorigin input'),
         yorigin: document.querySelector('.yorigin input'),
@@ -128,20 +166,36 @@ function createScript(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
         input.addEventListener('change', (e) => {
           const value = Math.min(+e.target.value, max);
           size[name] = value;
-          const scalar = size.width / size.naturalWidth;
-          for (const f of frames) {
-            f.moveDot(size.xorigin * scalar, size.yorigin * scalar);
-          }
-          onUpdateOrigin();
+          onUpdateOrigin(size.xorigin, size.yorigin);
         });
       }
 
-      function onUpdateOrigin() {
+      function onUpdateOrigin(x, y, isImagePosition = false) {
+        let xorigin = x;
+        let yorigin = y;
+        const scalar = size.width / size.naturalWidth;
+        if (isImagePosition) {
+          xorigin = Math.floor((x / size.width) * size.naturalWidth);
+          yorigin = Math.floor((y / size.height) * size.naturalHeight);
+        } else {
+          x = xorigin * scalar;
+          y = yorigin * scalar;
+        }
+        size.xorigin = xorigin;
+        size.yorigin = yorigin;
+        inputs.xorigin.value = xorigin;
+        inputs.yorigin.value = yorigin;
+        // Update all of the input types
+        FrameImage.moveDot(x, y);
         vscode.postMessage({ type: 'originChange', ...size });
       }
 
       class FrameImage {
+        /** @type {FrameImage[]} */
+        static frames = [];
+
         constructor(uri) {
+          FrameImage.frames.push(this);
           this.uri = uri;
           this.image = new Image();
 
@@ -163,13 +217,17 @@ function createScript(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
           this.dot.style.left = x + 'px';
           this.dot.style.top = y + 'px';
         }
+
+        static moveDot(x, y) {
+          for (const f of FrameImage.frames) {
+            f.moveDot(x, y);
+          }
+        }
       }
       const frames = imagePaths.map((p) => new FrameImage(p));
       // Load the images and get their sizes
       frames.forEach((frame) => {
         frame.image.onload = () => {
-          size.naturalWidth = frame.image.naturalWidth;
-          size.naturalHeight = frame.image.naturalHeight;
           size.width = frame.image.width;
           size.height = frame.image.height;
           const scalar = size.width / size.naturalWidth;
@@ -180,17 +238,7 @@ function createScript(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
             const rect = e.target.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            const scalar = size.width / size.naturalWidth;
-            for (const f of frames) {
-              f.moveDot(x, y);
-            }
-            const xnorm = Math.floor((x / size.width) * size.naturalWidth);
-            const ynorm = Math.floor((y / size.height) * size.naturalHeight);
-            size.xorigin = xnorm;
-            size.yorigin = ynorm;
-            inputs.xorigin.value = xnorm;
-            inputs.yorigin.value = ynorm;
-            onUpdateOrigin();
+            onUpdateOrigin(x, y, true);
           });
         };
         frame.load();
@@ -210,8 +258,19 @@ export function compile(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
       ${css}
       <body>
         <h1>${sprite.name}</h1>
+        <p>
+          Dimensions:
+          <span class="dims">
+            <span class="dim width">${sprite.yy.width}</span>
+            x
+            <span class="dim height">${sprite.yy.height}</span>
+          </span>
+        </p>
         <section>
           <h2>Origin</h2>
+          <select id="origin-presets">
+            <option value=""><i>Set to...</i></option>
+          </select>
           <label class="xorigin"
             >xorigin <input type="number" step="1" min="0"
           /></label>
