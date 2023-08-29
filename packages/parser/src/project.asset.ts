@@ -21,10 +21,12 @@ import { StructType, Type } from './types.js';
 import { assert, groupPathToPosix, ok } from './util.js';
 
 export function isAssetOfKind<T extends YyResourceType>(
-  asset: Asset,
+  asset: any,
   kind: T,
 ): asset is Asset<T> {
-  return asset.assetKind === kind;
+  return (
+    asset !== null && typeof asset === 'object' && asset.assetKind === kind
+  );
 }
 
 export class Asset<T extends YyResourceType = YyResourceType> {
