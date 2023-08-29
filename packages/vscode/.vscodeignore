@@ -9,3 +9,4 @@ dist/manifest.*
 !syntaxes/
 !themes/
 !webviews/*.js
+!schemas/

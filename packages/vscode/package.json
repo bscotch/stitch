@@ -327,6 +327,16 @@
         }
       }
     },
+    "jsonValidation": [
+      {
+        "fileMatch": "spritely.src.json",
+        "url": "./schemas/spritely.config.json"
+      },
+      {
+        "fileMatch": "stitch.sprites.src.json",
+        "url": "./schemas/sprite.source.json"
+      }
+    ],
     "grammars": [
       {
         "language": "yy",
