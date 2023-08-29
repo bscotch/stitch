@@ -15,6 +15,18 @@ export const views = {
     icon: './images/stitch-logo-mono.svg',
     type: 'tree',
   },
+  'bscotch-stitch-sprite-sources': {
+    id: 'bscotch-stitch-sprite-sources',
+    name: 'Sprite Sources',
+    icon: './images/stitch-logo-mono.svg',
+    type: 'tree',
+  },
+  // 'bscotch-stitch-image-staging': {
+  //   id: 'bscotch-stitch-image-staging',
+  //   name: 'Image Staging',
+  //   icon: './images/stitch-logo-mono.svg',
+  //   type: 'tree',
+  // },
 } satisfies Record<string, ManifestView>;
 export const viewsArray = keysOf(views).map((key) => views[key]);
 

@@ -282,6 +282,17 @@ export const commands = {
       group: '1_stitch@3',
     },
   },
+  //#region Sprite Sources
+  'stitch.spriteSource.create': {
+    command: 'stitch.spriteSource.create',
+    title: 'Add Sprite Source...',
+    icon: '$(add)',
+    [$showInViewTitle]: {
+      when: when.spriteSourceTreeFocused,
+      group: 'navigation@1',
+    },
+  },
+  //#endregion Sprite Sources
 } satisfies Record<string, ManifestCommand>;
 export const commandNames = keysOf(commands);
 export type CommandName = keyof typeof commands;

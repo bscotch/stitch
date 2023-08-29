@@ -1,6 +1,7 @@
 // See https://code.visualstudio.com/api/references/when-clause-contexts
 
 const assetTreeFocused = 'view == bscotch-stitch-resources';
+const spriteSourceTreeFocused = 'view == bscotch-stitch-sprite-sources';
 const hasProjects = 'stitch.projectCount > 0';
 const hasOneProject = 'stitch.projectCount == 1';
 const viewItemIsProject = 'viewItem == project';
@@ -8,6 +9,7 @@ const resourceIsGml = 'resourceExtname == .gml';
 
 export const when = {
   assetTreeFocused,
+  spriteSourceTreeFocused,
   inspectorFocused: 'view == bscotch-stitch-inspector',
   editorFocused: 'editorFocus',
   hasProjects,

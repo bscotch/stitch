@@ -30,6 +30,7 @@ import {
   registerCommand,
 } from './lib.mjs';
 import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
+import { SpriteSourcesTree } from './spriteSources.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 
 export async function activateStitchExtension(
@@ -125,6 +126,7 @@ export async function activateStitchExtension(
     ...StitchTypeDefinitionProvider.register(workspace),
     ...StitchReleasePickerProvider.register(workspace),
     ...StitchRenameProvider.register(workspace),
+    ...SpriteSourcesTree.register(workspace),
     StitchHoverProvider.register(workspace),
     StitchWorkspaceSymbolProvider.register(workspace),
     StitchCompletionProvider.register(workspace),

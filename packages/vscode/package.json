@@ -180,6 +180,11 @@
       {
         "command": "stitch.types.copyAsJsdocSelf",
         "title": "Stitch: Copy @self"
+      },
+      {
+        "command": "stitch.spriteSource.create",
+        "title": "Add Sprite Source...",
+        "icon": "$(add)"
       }
     ],
     "configuration": {
@@ -329,11 +334,19 @@
     },
     "jsonValidation": [
       {
-        "fileMatch": "spritely.src.json",
+        "fileMatch": [
+          "*.spritely.json",
+          ".spritely.json",
+          "spritely.json"
+        ],
         "url": "./schemas/spritely.config.json"
       },
       {
-        "fileMatch": "stitch.sprites.src.json",
+        "fileMatch": [
+          "*.stitch.sprites.json",
+          ".stitch.sprites.json",
+          "stitch.sprites.json"
+        ],
         "url": "./schemas/sprite.source.json"
       }
     ],
@@ -430,6 +443,34 @@
         "configuration": "./jsdoc.language-configuration.json"
       }
     ],
+    "semanticTokenModifiers": [
+      {
+        "id": "global",
+        "description": "Global"
+      },
+      {
+        "id": "asset",
+        "description": "A subset of global variables representing a GameMaker asset."
+      },
+      {
+        "id": "local",
+        "description": "A local variable."
+      }
+    ],
+    "snippets": [
+      {
+        "language": "gml",
+        "path": "./snippets/gml.code-snippets"
+      }
+    ],
+    "themes": [
+      {
+        "id": "stitch-theme-bscotchseth",
+        "label": "Stitch (Seth's Theme)",
+        "path": "./themes/stitch-bscotchseth.json",
+        "uiTheme": "vs-dark"
+      }
+    ],
     "menus": {
       "view/title": [
         {
@@ -456,6 +497,11 @@
           "command": "stitch.clean",
           "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
           "group": "navigation@3"
+        },
+        {
+          "command": "stitch.spriteSource.create",
+          "when": "view == bscotch-stitch-sprite-sources",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [
@@ -624,34 +670,6 @@
         }
       ]
     },
-    "semanticTokenModifiers": [
-      {
-        "id": "global",
-        "description": "Global"
-      },
-      {
-        "id": "asset",
-        "description": "A subset of global variables representing a GameMaker asset."
-      },
-      {
-        "id": "local",
-        "description": "A local variable."
-      }
-    ],
-    "snippets": [
-      {
-        "language": "gml",
-        "path": "./snippets/gml.code-snippets"
-      }
-    ],
-    "themes": [
-      {
-        "id": "stitch-theme-bscotchseth",
-        "label": "Stitch (Seth's Theme)",
-        "path": "./themes/stitch-bscotchseth.json",
-        "uiTheme": "vs-dark"
-      }
-    ],
     "views": {
       "bscotch-stitch": [
         {
@@ -665,6 +683,12 @@
           "name": "Resources",
           "icon": "./images/stitch-logo-mono.svg",
           "type": "tree"
+        },
+        {
+          "id": "bscotch-stitch-sprite-sources",
+          "name": "Sprite Sources",
+          "icon": "./images/stitch-logo-mono.svg",
+          "type": "tree"
         }
       ]
     },
@@ -676,7 +700,13 @@
           "icon": "./images/stitch-logo-mono.svg"
         }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "bscotch-stitch-sprite-sources",
+        "contents": "A \"sprite source\" is a folder of images, or a folder of folders-of-images, representing sprites (folders) and their frames (images). Stitch can batch-import and update sprites from sprites sources.\n[Add a Sprite Source](command:stitch.spriteSource.create)"
+      }
+    ]
   },
   "activationEvents": [
     "onLanguage:gml",
