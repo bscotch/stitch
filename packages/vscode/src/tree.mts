@@ -728,7 +728,9 @@ export class GameMakerTreeProvider
         'stitch.assets.rename',
         this.promptToRenameAsset.bind(this),
       ),
-      registerCommand('stitch.assets.editSprite', this.editSprite.bind(this)),
+      registerCommand('stitch.assets.editSprite', (item: TreeAsset) =>
+        this.editSprite(item),
+      ),
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),
       registerCommand('stitch.assets.newObject', this.createObject.bind(this)),

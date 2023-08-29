@@ -119,9 +119,6 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
       );
     } else if (isAssetOfKind(asset, 'sounds')) {
       file = vscode.Uri.file(asset.dir.join(asset.yy.soundFile).absolute);
-    } else if (isAssetOfKind(asset, 'sprites')) {
-      const frame = asset.framePaths?.[0];
-      file = vscode.Uri.file(frame?.absolute || this.asset.yyPath.absolute);
     }
     file ||= vscode.Uri.file(this.asset.yyPath.absolute);
     this.command = {
@@ -129,6 +126,16 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
       title: 'Open',
       arguments: [file],
     };
+
+    // If this is a sprite, overwrite the command to
+    // open the sprite editor.
+    if (isAssetOfKind(asset, 'sprites')) {
+      this.command = {
+        command: 'stitch.assets.editSprite',
+        title: 'Edit Sprite',
+        arguments: [this],
+      };
+    }
 
     this.collapsibleState = ['objects', 'sprites', 'shaders'].includes(
       this.asset.assetKind,
