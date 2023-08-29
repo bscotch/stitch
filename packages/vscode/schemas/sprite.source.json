@@ -4,6 +4,14 @@
   "type": "object",
   "description": "A config file that lives in the root of a sprite source directory. It sets the options used by the Stitch CLI `stitch add sprites` command.",
   "properties": {
+    "name": {
+      "type": "string",
+      "description": "For cosmetic purposes, a human-friendly name for this sprite source."
+    },
+    "targetProject": {
+      "type": "string",
+      "description": "The path to the project to add the sprites to."
+    },
     "prefix": {
       "type": "string",
       "description": "A prefix to add to the source file names to get the sprite names."
