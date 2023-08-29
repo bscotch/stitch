@@ -37,7 +37,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
 
   async loadConfigs() {
     const normalizedName = (info: ConfigInfo) =>
-      (info.config?.name || info.path.name).toLocaleLowerCase();
+      (info.config?.name || info.path.up().name).toLocaleLowerCase();
     const configWaits: Promise<ConfigInfo>[] = [];
     for (const source of this.sources) {
       configWaits.push(
@@ -166,12 +166,18 @@ class SpriteSourceItem extends StitchTreeItemBase<'sprite-source'> {
   override readonly kind = 'sprite-source';
   parent = undefined;
   constructor(readonly info: ConfigInfo) {
-    super(info.config?.name || info.path.name);
+    super(info.config?.name || info.path.up().name);
     this.contextValue = this.kind;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     if (info.error) {
       this.tooltip = info.error.message;
       this.setBaseIcon('warning');
+      // Add a command to open the corresponding VSCode setting
+      this.command = {
+        command: 'workbench.action.openSettings',
+        title: 'Open Stitch Sprite Sources Settings',
+        arguments: ['stitch.sprites.sources'],
+      };
     } else {
       this.setBaseIcon('folder');
       // Add a command to open the config file
