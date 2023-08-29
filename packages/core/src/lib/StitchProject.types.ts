@@ -1,4 +1,5 @@
 import type { Gms2ResourceSubclass } from './components/Gms2ResourceArray.js';
+import type { SpriteSource } from './StitchProject.addSprites.js';
 import type { StitchProject } from './StitchProject.js';
 import type { StitchStorage } from './StitchStorage.js';
 
@@ -28,6 +29,21 @@ export interface StitchProjectPlugin {
   afterResourceCreated?: (resource: Gms2ResourceSubclass) => void;
   beforeProjectLoaded?: (project: StitchProject) => void;
   afterProjectLoaded?: (project: StitchProject) => void;
+  beforeSpritesAdded?: (
+    project: StitchProject,
+    info: { requestId: string; spriteSources: SpriteSource[] },
+  ) => void;
+  afterSpritesAdded?: (
+    project: StitchProject,
+    info: { requestId: string; spriteSources: SpriteSource[] },
+  ) => void;
+  beforeSpriteAdded?: (
+    project: StitchProject,
+    info: {
+      requestId: string;
+      spriteSource: SpriteSource & { exists: boolean };
+    },
+  ) => void;
 }
 
 /**

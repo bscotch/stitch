@@ -1,10 +1,17 @@
 import { pathy } from '@bscotch/pathy';
 import { Spritely } from '@bscotch/spritely';
+import { randomString } from '@bscotch/utility';
 import { pascalCase } from 'change-case';
 import { camelCase, snakeCase } from 'lodash-es';
 import { assert } from '../utility/errors.js';
 import paths from '../utility/paths.js';
 import type { SpriteImportOptions, StitchProject } from './StitchProject.js';
+
+export interface SpriteSource {
+  name: string;
+  path: string;
+  isSpine: boolean;
+}
 
 /**
  * Given a source folder that is either a sprite or a
@@ -21,6 +28,7 @@ export async function addSprites(
   sourceFolder: string,
   options?: SpriteImportOptions,
 ) {
+  const requestId = randomString(12, 'base64');
   const [sprites, spineJsonFiles] = await Promise.all([
     Spritely.from(sourceFolder, { excludeSpine: true }).then((ss) =>
       ss.filter((s) => {
@@ -57,8 +65,8 @@ export async function addSprites(
   );
   const casing = options?.case || 'keep';
   const pathSep = casing == 'keep' ? options?.pathSeparator || '_' : ' ';
-  const addSpriteWaits: Promise<any>[] = [];
-  for (const sprite of [...sprites, ...spineJsonFiles]) {
+
+  const addingSprites = [...sprites, ...spineJsonFiles].map((sprite) => {
     const isSpine = !(sprite instanceof Spritely);
     let name = isSpine ? paths.dirname(sprite.path) : sprite.path;
     name = options?.flatten
@@ -76,16 +84,41 @@ export async function addSprites(
     const fullName = `${options?.prefix || ''}${casedName}${
       options?.postfix || ''
     }`;
-    if (!isSpine) {
-      addSpriteWaits.push(
-        project.resources.addSprite(sprite.path, project.io, fullName),
-      );
-    } else {
-      addSpriteWaits.push(
-        project.resources.addSpineSprite(sprite.path, project.io, fullName),
-      );
-    }
-  }
+    return {
+      name: fullName,
+      path: sprite.path,
+      isSpine,
+    };
+  });
+
+  project.io.plugins.forEach((plugin) => {
+    plugin.beforeSpritesAdded?.(project, {
+      requestId: requestId,
+      spriteSources: addingSprites,
+    });
+  });
+
+  const addSpriteWaits = addingSprites.map((addingSprite) => {
+    return addingSprite.isSpine
+      ? project.resources.addSpineSprite(
+          addingSprite.path,
+          project.io,
+          addingSprite.name,
+        )
+      : project.resources.addSprite(
+          addingSprite.path,
+          project.io,
+          addingSprite.name,
+        );
+  });
   await Promise.all(addSpriteWaits);
+
+  project.io.plugins.forEach((plugin) => {
+    plugin.afterSpritesAdded?.(project, {
+      requestId: requestId,
+      spriteSources: addingSprites,
+    });
+  });
+
   return project.save();
 }

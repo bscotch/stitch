@@ -1,4 +1,5 @@
 import { pathy } from '@bscotch/pathy';
+import { randomString } from '@bscotch/utility';
 import { YypResource } from '@bscotch/yy';
 import { difference, uniqBy } from 'lodash-es';
 import { Spine } from '../../types/Spine.js';
@@ -182,9 +183,21 @@ export class Gms2ResourceArray {
     comms: StitchProjectComms,
     nameOverride?: string,
   ) {
+    const requestId = randomString(12, 'base64');
     const name = nameOverride || paths.basename(sourceFolder);
     debug(`adding sprite from ${sourceFolder} as name ${name}`);
     const sprite = this.findByName(name, Gms2Sprite);
+    comms.plugins.forEach((plugin) => {
+      plugin.beforeSpriteAdded?.(this.project, {
+        requestId,
+        spriteSource: {
+          name,
+          path: sourceFolder,
+          exists: !!sprite,
+          isSpine: false,
+        },
+      });
+    });
     if (sprite) {
       await sprite.syncWithSource(sourceFolder, false);
     } else {
@@ -199,11 +212,23 @@ export class Gms2ResourceArray {
     comms: StitchProjectComms,
     nameOverride?: string,
   ) {
+    const requestId = randomString(12, 'base64');
     const jsonSourcePath = pathy<Spine>(_jsonSourcePath);
     const name = nameOverride || jsonSourcePath.up().basename;
     debug(`adding spine sprite`, { from: jsonSourcePath, name });
 
     const sprite = this.findByName(name, Gms2Sprite);
+    comms.plugins.forEach((plugin) => {
+      plugin.beforeSpriteAdded?.(this.project, {
+        requestId,
+        spriteSource: {
+          name,
+          path: jsonSourcePath.absolute,
+          exists: !!sprite,
+          isSpine: true,
+        },
+      });
+    });
     if (sprite) {
       await sprite.syncWithSource(jsonSourcePath.absolute, false);
     } else {
