@@ -8,6 +8,17 @@ export class StitchConfig {
   get config() {
     return vscode.workspace.getConfiguration('stitch');
   }
+
+  get spriteSources() {
+    return this.config.get<string[]>('sprites.sources') || [];
+  }
+  set spriteSources(sources: string[]) {
+    // Want to store it as an *unsynced* value at the *user* level,
+    // so it doesn't get synced across devices. This means it has to
+    // be stored independent of the workspace.
+    this.config.update('sprites.sources', sources, true);
+  }
+
   // get alertOnSpriteChange() {
   //   return this.config.get<boolean>('sprites.alertOnChange') ?? true;
   // }
@@ -96,4 +107,4 @@ export class StitchConfig {
   }
 }
 
-export const config = new StitchConfig();
+export const stitchConfig = new StitchConfig();

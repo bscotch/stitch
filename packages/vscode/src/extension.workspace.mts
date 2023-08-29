@@ -9,6 +9,7 @@ import {
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { ChangeTracker } from './changes.mjs';
+import { stitchConfig } from './config.mjs';
 import {
   diagnosticCollection,
   normalizeDiagnosticsEvents,
@@ -16,7 +17,6 @@ import {
 import { stitchEvents } from './events.mjs';
 import { activateStitchExtension } from './extension.activate.mjs';
 import { completionTriggerCharacters } from './extension.completions.mjs';
-import { config } from './extension.config.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.highlighting.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import { pathyFromUri, uriFromCodeFile } from './lib.mjs';
@@ -25,8 +25,9 @@ import { info, logger, warn } from './log.mjs';
 export class StitchWorkspace implements vscode.SignatureHelpProvider {
   readonly semanticHighlightProvider = new GameMakerSemanticTokenProvider(this);
   readonly signatureHelpStatus = vscode.window.createStatusBarItem(
-    config.functionSignatureStatusAlignment,
-    config.functionSignatureStatusAlignment === vscode.StatusBarAlignment.Left
+    stitchConfig.functionSignatureStatusAlignment,
+    stitchConfig.functionSignatureStatusAlignment ===
+      vscode.StatusBarAlignment.Left
       ? -Infinity
       : Infinity,
   );
@@ -34,7 +35,7 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
   readonly externalChangeTracker = new ChangeTracker(this);
 
   projects: GameMakerProject[] = [];
-  static config = config;
+  static config = stitchConfig;
 
   readonly processingFiles = new Map<string, Promise<any>>();
   readonly debouncingOnChange = new Map<string, NodeJS.Timeout>();
@@ -63,7 +64,7 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
   /**
    * Emit a collection of diagnostics for a particular file. */
   emitDiagnostics(payload: DiagnosticsEventPayload) {
-    const suppresedGroups = config.suppressDiagnosticsInGroups;
+    const suppresedGroups = stitchConfig.suppressDiagnosticsInGroups;
     for (const group of suppresedGroups) {
       if (payload.code.asset.isInFolder(group)) {
         // Then skip this file!
@@ -332,7 +333,7 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
           doc.uri.fsPath,
           setTimeout(() => {
             this.onChangeDoc(doc);
-          }, config.reprocessOnTypeDelay),
+          }, stitchConfig.reprocessOnTypeDelay),
         );
         return;
       }

@@ -2,7 +2,7 @@ import { sortKeysByReference } from '@bscotch/utility';
 import { Yy, type YyResourceType } from '@bscotch/yy';
 import vscode from 'vscode';
 import { logThrown } from './assert.mjs';
-import { config } from './extension.config.mjs';
+import { stitchConfig } from './config.mjs';
 import { warn } from './log.mjs';
 
 export class StitchYyFormatProvider
@@ -11,7 +11,7 @@ export class StitchYyFormatProvider
   provideDocumentFormattingEdits(
     document: vscode.TextDocument,
   ): vscode.ProviderResult<vscode.TextEdit[]> {
-    if (document.languageId !== 'yy' || !config.enableYyFormatting) {
+    if (document.languageId !== 'yy' || !stitchConfig.enableYyFormatting) {
       warn("Not a yy file, shouldn't format");
       return;
     }

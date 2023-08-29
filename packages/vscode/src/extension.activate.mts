@@ -3,9 +3,9 @@ import { literal } from '@bscotch/utility';
 import { GameMakerFolder } from 'tree.folder.mjs';
 import vscode from 'vscode';
 import { swallowThrown } from './assert.mjs';
+import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
 import { StitchCompletionProvider } from './extension.completions.mjs';
-import { config } from './extension.config.mjs';
 import {
   createCopyAsJsdocSelfCallback,
   createCopyAsJsdocTypeCallback,
@@ -199,7 +199,9 @@ export async function activateStitchExtension(
         }
         // QuickPick to select the config
         const configs = project.configs.sort(
-          createSorter({ first: [config.runConfigDefault || '', 'Default'] }),
+          createSorter({
+            first: [stitchConfig.runConfigDefault || '', 'Default'],
+          }),
         );
         const chosenConfig = await vscode.window.showQuickPick(configs, {
           title: 'Select a config',
@@ -208,7 +210,7 @@ export async function activateStitchExtension(
 
         // QuickPick to select the compiler
         const compilers = literal(['vm', 'yyc']).sort(
-          createSorter({ first: [config.runCompilerDefault] }),
+          createSorter({ first: [stitchConfig.runCompilerDefault] }),
         );
         const chosenCompiler = await vscode.window.showQuickPick(compilers, {
           title: 'Select a compiler',
@@ -252,7 +254,7 @@ export async function activateStitchExtension(
       }
       workspace.signatureHelpStatus.text = '';
       workspace.signatureHelpStatus.hide();
-      if (!config.enableFunctionSignatureStatus) {
+      if (!stitchConfig.enableFunctionSignatureStatus) {
         return;
       }
       // If something is actually selected, versus

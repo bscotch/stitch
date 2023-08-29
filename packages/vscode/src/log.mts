@@ -1,7 +1,7 @@
 import { Pathy } from '@bscotch/pathy';
 import Sentry from '@sentry/node';
 import vscode from 'vscode';
-import { config } from './extension.config.mjs';
+import { stitchConfig } from './config.mjs';
 
 if (SENTRY_DSN) {
   Sentry.init({
@@ -83,13 +83,13 @@ export class Logger {
     components.push(...args);
     this.output.appendLine(components.join(' '));
     console[type](this.channel, ...components);
-    if (config.enableSendingLogs) {
+    if (stitchConfig.enableSendingLogs) {
       if (args[0] instanceof Error) {
         Sentry.captureException(args[0], {
           level: type === 'warn' ? 'warning' : type,
           extra: {
-            issue: config.associatedIssue || undefined,
-            userId: config.userId,
+            issue: stitchConfig.associatedIssue || undefined,
+            userId: stitchConfig.userId,
           },
         });
       }

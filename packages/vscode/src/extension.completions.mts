@@ -5,7 +5,7 @@ import {
   primitiveNames,
 } from '@bscotch/gml-parser';
 import vscode, { CancellationToken, CompletionContext } from 'vscode';
-import { config } from './extension.config.mjs';
+import { stitchConfig } from './config.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 
 export const completionTriggerCharacters = ['.', '{', '<', '|'] as const;
@@ -89,7 +89,7 @@ export function inScopeSymbolsToCompletions(
       continue;
     }
     const location = signifier.def;
-    const ignoredPrefix = config.autocompleteIgnoredPrefix;
+    const ignoredPrefix = stitchConfig.autocompleteIgnoredPrefix;
     const shouldHide =
       ignoredPrefix &&
       signifier.name!.startsWith(ignoredPrefix) &&

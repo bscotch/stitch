@@ -1,6 +1,6 @@
 import { GameMakerIde } from '@bscotch/stitch-launcher';
 import vscode from 'vscode';
-import { config } from './extension.config.mjs';
+import { stitchConfig } from './config.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { registerCommand, showProgress } from './lib.mjs';
@@ -39,7 +39,7 @@ export class StitchReleasePickerProvider {
 
   protected async getWebviewContent() {
     const releases = await StitchReleasePickerProvider.listReleases();
-    return compile(releases, this.projects, config.releaseNotesChannels);
+    return compile(releases, this.projects, stitchConfig.releaseNotesChannels);
   }
 
   protected createPanel(): vscode.WebviewPanel {
@@ -92,7 +92,7 @@ export class StitchReleasePickerProvider {
       `Fetching GameMaker release notes...`,
     );
     return releases.filter((release) =>
-      config.releaseNotesChannels.includes(release.channel),
+      stitchConfig.releaseNotesChannels.includes(release.channel),
     );
   }
 

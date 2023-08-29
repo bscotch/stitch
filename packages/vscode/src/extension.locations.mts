@@ -4,7 +4,7 @@ import { GameMakerIde } from '@bscotch/stitch-launcher';
 import os from 'os';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
-import { config } from './extension.config.mjs';
+import { stitchConfig } from './config.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { openPath, registerCommand, showProgress } from './lib.mjs';
 
@@ -12,7 +12,7 @@ export class StitchLocationsProvider {
   constructor(readonly workspace: StitchWorkspace) {}
 
   async promptForGameMakerReleaseChannel() {
-    const channels = config.releaseNotesChannels;
+    const channels = stitchConfig.releaseNotesChannels;
     assertLoudly(channels.length, 'No release notes channels configured!');
     const channel = (await vscode.window.showQuickPick(channels, {
       title: 'Select a GameMaker release channel',

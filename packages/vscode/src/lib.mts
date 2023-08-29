@@ -175,3 +175,10 @@ export function createSorter<T extends string | undefined>(
     return a.localeCompare(b);
   };
 }
+
+export function toKebabCase(text: string) {
+  return text
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/[\s_]+/g, '-')
+    .toLowerCase();
+}

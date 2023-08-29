@@ -5,7 +5,7 @@ import {
   type Type,
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
-import { config } from './extension.config.mjs';
+import { stitchConfig } from './config.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { locationOf } from './lib.mjs';
@@ -79,7 +79,7 @@ export class StitchWorkspaceSymbolProvider
         }
 
         // Add any variables defined in this object
-        if (!config.symbolsIncludeInstanceVars) continue;
+        if (!stitchConfig.symbolsIncludeInstanceVars) continue;
         this.variablesToSymbols(file.asset.variables!, symbols, isMatch);
       }
     } else {
@@ -118,7 +118,7 @@ export class StitchWorkspaceSymbolProvider
       }
 
       // Even if the symbol itself doesn't match, it may have members that do!
-      if (!config.symbolsIncludeInstanceVars) continue;
+      if (!stitchConfig.symbolsIncludeInstanceVars) continue;
 
       // If it's a mixin or constructor, add its members
       const functionType = item.getTypeByKind('Function');
@@ -182,7 +182,7 @@ export class StitchWorkspaceSymbolProvider
       for (const resource of project.assets.values()) {
         this.assetContentsToSymbols(resource, symbols, isMatch);
       }
-      if (config.symbolsIncludeLocalVars) {
+      if (stitchConfig.symbolsIncludeLocalVars) {
         // Add the local variables defined in the current document
         const activeFile = this.provider.getGmlFile(undefined);
         if (activeFile) {
@@ -197,7 +197,10 @@ export class StitchWorkspaceSymbolProvider
         this.resultSorter(query, pattern),
       );
       info(`Found ${filteredSymbols.length} symbols matching "${query}"`);
-      const results = filteredSymbols.slice(0, config.symbolsMaxSearchResults);
+      const results = filteredSymbols.slice(
+        0,
+        stitchConfig.symbolsMaxSearchResults,
+      );
       return results;
     } catch (error) {
       warn(error);

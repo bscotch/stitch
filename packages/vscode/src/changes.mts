@@ -1,8 +1,8 @@
 import { isAssetOfKind } from '@bscotch/gml-parser';
 import { pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
+import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
-import { config } from './extension.config.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { logger } from './log.mjs';
 
@@ -38,7 +38,10 @@ export class ChangeTracker {
     console.log('File change detected', event);
     this.queue.push(event);
     clearTimeout(this.timeout);
-    this.timeout = setTimeout(() => this.flush(), config.externalChangeDelay);
+    this.timeout = setTimeout(
+      () => this.flush(),
+      stitchConfig.externalChangeDelay,
+    );
   }
 
   protected async flush() {
@@ -112,7 +115,7 @@ export class ChangeTracker {
       // to .png files should result in a popup detailing all sprites changes.
       if (type === 'change' && uri.path.endsWith('.atlas')) {
         const shouldClean =
-          config.cleanOnSpineSpriteChange && !this.cache.igorCacheIsClean;
+          stitchConfig.cleanOnSpineSpriteChange && !this.cache.igorCacheIsClean;
         logger.info(
           `atlas file "${uri.path}" changed on disk. `,
           shouldClean ? 'Cleaning!' : 'Skipping cache-clean.',

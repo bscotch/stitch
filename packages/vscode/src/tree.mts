@@ -7,8 +7,8 @@ import {
 } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
+import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
-import { config } from './extension.config.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import type { ObjectParentFolder } from './inspector.mjs';
@@ -457,13 +457,13 @@ export class GameMakerTreeProvider
   }
 
   async suppressDiagnostics(where: GameMakerFolder) {
-    const suppressed = config.suppressDiagnosticsInGroups;
+    const suppressed = stitchConfig.suppressDiagnosticsInGroups;
     const path = where.path;
     if (suppressed.includes(path)) {
       return;
     }
     suppressed.push(path);
-    await config.config.update('diagnostics.suppressGroups', suppressed);
+    await stitchConfig.config.update('diagnostics.suppressGroups', suppressed);
     // Clear existing diagnostics
     this.workspace.clearDiagnosticsInGroups([path]);
   }
