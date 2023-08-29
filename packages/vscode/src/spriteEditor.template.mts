@@ -55,14 +55,42 @@ const css = html`
     #frames li {
       list-style: none;
       position: relative;
+      user-select: none;
     }
     #frames img {
-      max-width: 15em;
+      min-width: 10em;
       position: relative;
+      border: 1px solid white;
+      user-select: none;
+      cursor: pointer;
     }
-    .dot {
-      background-color: red;
+    .crosshair {
+      width: 1em;
+      height: 1em;
+      background-color: transparent;
       position: absolute;
+      transform: translate(-0.5em, -0.5em);
+    }
+
+    .crosshair::before,
+    .crosshair::after {
+      content: '';
+      position: absolute;
+      background-color: red;
+    }
+
+    .crosshair::before {
+      width: 2px;
+      height: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .crosshair::after {
+      width: 100%;
+      height: 2px;
+      top: 50%;
+      transform: translateY(-50%);
     }
   </style>
 `;
@@ -72,6 +100,7 @@ function createScript(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
     panel.webview.asWebviewUri(vscode.Uri.file(p.absolute)),
   );
   const { xorigin, yorigin } = sprite.yy.sequence;
+  const { width, height } = sprite.yy;
   const frameUrisArrayString = `[${frameUris
     .map((u) => `"${u.toString()}"`)
     .join(',')}]`;
@@ -80,20 +109,44 @@ function createScript(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
       const vscode = acquireVsCodeApi();
       const imagePaths = ${frameUrisArrayString};
       const size = {
-        naturalWidth: 0,
-        naturalHeight: 0,
+        naturalWidth: ${width},
+        naturalHeight: ${height},
         width: 0,
         height: 0,
         xorigin: ${xorigin},
         yorigin: ${yorigin},
       };
+      const inputs = {
+        xorigin: document.querySelector('.xorigin input'),
+        yorigin: document.querySelector('.yorigin input'),
+      };
+      for (const [name, input] of Object.entries(inputs)) {
+        input.value = size[name];
+        const max =
+          name === 'xorigin' ? size.naturalWidth - 1 : size.naturalHeight - 1;
+        input.setAttribute('max', max);
+        input.addEventListener('change', (e) => {
+          const value = Math.min(+e.target.value, max);
+          size[name] = value;
+          const scalar = size.width / size.naturalWidth;
+          for (const f of frames) {
+            f.moveDot(size.xorigin * scalar, size.yorigin * scalar);
+          }
+          onUpdateOrigin();
+        });
+      }
+
+      function onUpdateOrigin() {
+        vscode.postMessage({ type: 'originChange', ...size });
+      }
+
       class FrameImage {
         constructor(uri) {
           this.uri = uri;
           this.image = new Image();
 
           this.dot = document.createElement('div');
-          this.dot.classList.add('dot');
+          this.dot.classList.add('crosshair');
 
           this.container = document.createElement('li');
           this.container.appendChild(this.image);
@@ -106,11 +159,9 @@ function createScript(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
           this.image.src = this.uri;
         }
 
-        moveDot(x, y, scalar) {
+        moveDot(x, y) {
           this.dot.style.left = x + 'px';
           this.dot.style.top = y + 'px';
-          this.dot.style.width = scalar + 'px';
-          this.dot.style.height = scalar + 'px';
         }
       }
       const frames = imagePaths.map((p) => new FrameImage(p));
@@ -121,6 +172,8 @@ function createScript(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
           size.naturalHeight = frame.image.naturalHeight;
           size.width = frame.image.width;
           size.height = frame.image.height;
+          const scalar = size.width / size.naturalWidth;
+          frame.moveDot(size.xorigin * scalar, size.yorigin * scalar);
 
           // Add click handler that will update the origin after normalizing the click position
           frame.image.addEventListener('click', (e) => {
@@ -129,10 +182,15 @@ function createScript(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
             const y = e.clientY - rect.top;
             const scalar = size.width / size.naturalWidth;
             for (const f of frames) {
-              f.moveDot(x, y, scalar);
+              f.moveDot(x, y);
             }
             const xnorm = Math.floor((x / size.width) * size.naturalWidth);
             const ynorm = Math.floor((y / size.height) * size.naturalHeight);
+            size.xorigin = xnorm;
+            size.yorigin = ynorm;
+            inputs.xorigin.value = xnorm;
+            inputs.yorigin.value = ynorm;
+            onUpdateOrigin();
           });
         };
         frame.load();
@@ -152,6 +210,15 @@ export function compile(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
       ${css}
       <body>
         <h1>${sprite.name}</h1>
+        <section>
+          <h2>Origin</h2>
+          <label class="xorigin"
+            >xorigin <input type="number" step="1" min="0"
+          /></label>
+          <label class="yorigin"
+            >yorigin <input type="number" step="1" min="0"
+          /></label>
+        </section>
         <section><ol id="frames"></ol></section>
       </body>
       ${createScript(sprite, panel)}
