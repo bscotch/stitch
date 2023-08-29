@@ -1,7 +1,7 @@
 {
   "name": "bscotch-stitch-vscode",
   "displayName": "Stitch",
-  "version": "1.35.0",
+  "version": "1.36.0",
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
