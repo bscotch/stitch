@@ -1,7 +1,7 @@
 import type { Asset } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import spriteEditorHtml from '../webviews/sprite-editor.html';
-import { config } from './extension.config.mjs';
+import { stitchConfig } from './config.mjs';
 
 export interface SpriteInfo {
   name: string;
@@ -34,7 +34,7 @@ export function compile(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
       panel.webview
         .asWebviewUri(
           vscode.Uri.file(
-            config.context.extensionPath + '/webviews/sprite-editor.js',
+            stitchConfig.context.extensionPath + '/webviews/sprite-editor.js',
           ),
         )
         .toString(),

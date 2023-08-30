@@ -340,6 +340,11 @@
         "command": "stitch.spriteSource.create",
         "title": "Add Sprite Source...",
         "icon": "$(add)"
+      },
+      {
+        "command": "stitch.spriteSource.delete",
+        "title": "Delete",
+        "icon": "$(close)"
       }
     ],
     "jsonValidation": [
@@ -624,6 +629,11 @@
           "command": "stitch.clean",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
           "group": "inline@3"
+        },
+        {
+          "command": "stitch.spriteSource.delete",
+          "when": "viewItem == sprite-source",
+          "group": "7_modification@9"
         }
       ],
       "explorer/context": [

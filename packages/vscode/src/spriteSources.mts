@@ -56,6 +56,19 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     return configs;
   }
 
+  deleteSpriteSource(source: SpriteSourceItem) {
+    const sourcesFromSettings = stitchConfig.spriteSources;
+    const sourceIndex = sourcesFromSettings.findIndex((p) =>
+      source.info.path.equals(p),
+    );
+    assertLoudly(sourceIndex >= 0, 'Could not find sprite source in settings.');
+    sourcesFromSettings.splice(sourceIndex, 1);
+    stitchConfig.spriteSources = sourcesFromSettings;
+    this.sources = sourcesFromSettings.map((s) => pathy(s));
+    // Rebuild the tree
+    this.rebuild();
+  }
+
   async addSpriteSource() {
     // Have the user choose a folder
     const rawSource = (
@@ -157,6 +170,12 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       registerCommand('stitch.spriteSource.create', () => {
         tree.addSpriteSource();
       }),
+      registerCommand(
+        'stitch.spriteSource.delete',
+        (source: SpriteSourceItem) => {
+          tree.deleteSpriteSource(source);
+        },
+      ),
     ];
     return subscriptions;
   }

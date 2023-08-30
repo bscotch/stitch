@@ -292,6 +292,15 @@ export const commands = {
       group: 'navigation@1',
     },
   },
+  'stitch.spriteSource.delete': {
+    command: 'stitch.spriteSource.delete',
+    title: 'Delete',
+    icon: '$(close)',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsSpriteSource,
+      group: '7_modification@9',
+    },
+  },
   //#endregion Sprite Sources
 } satisfies Record<string, ManifestCommand>;
 export const commandNames = keysOf(commands);
