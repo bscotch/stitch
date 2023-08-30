@@ -1,4 +1,6 @@
 import type { Gms2ResourceSubclass } from './components/Gms2ResourceArray.js';
+import type { Gms2Sprite } from './components/resources/Gms2Sprite.js';
+import type { SpriteSyncResult } from './components/resources/Gms2Sprite.update.js';
 import type { SpriteSource } from './StitchProject.addSprites.js';
 import type { StitchProject } from './StitchProject.js';
 import type { StitchStorage } from './StitchStorage.js';
@@ -25,6 +27,14 @@ export interface GameMakerProjectCloneOptions {
   templatePath: string;
 }
 
+export interface AfterSpriteAddedInfo {
+  requestId: string;
+  sprite: Gms2Sprite;
+  created: boolean;
+  changes: SpriteSyncResult;
+  spriteSource: SpriteSource;
+}
+
 export interface StitchProjectPlugin {
   afterResourceCreated?: (resource: Gms2ResourceSubclass) => void;
   beforeProjectLoaded?: (project: StitchProject) => void;
@@ -43,6 +53,10 @@ export interface StitchProjectPlugin {
       requestId: string;
       spriteSource: SpriteSource & { exists: boolean };
     },
+  ) => void;
+  afterSpriteAdded?: (
+    project: StitchProject,
+    info: AfterSpriteAddedInfo,
   ) => void;
 }
 

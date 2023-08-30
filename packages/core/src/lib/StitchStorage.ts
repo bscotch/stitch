@@ -234,16 +234,21 @@ export class StitchStorage {
     }
   }
 
+  /**
+   * @returns true if the file was written, false if not (e.g. read-only mode or no change)
+   */
   writeYySync(
     filePath: string,
     data: any,
     type?: Gms2ResourceType | 'project',
-  ) {
+  ): boolean {
     if (!this.isReadOnly) {
       if (Yy.writeSync(filePath, data, type)) {
         debug(`Wrote file ${paths.basename(filePath)}`);
+        return true;
       }
     }
+    return false;
   }
 
   async writeYy(

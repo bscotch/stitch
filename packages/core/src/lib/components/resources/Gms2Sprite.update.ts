@@ -13,19 +13,23 @@ import paths from '../../../utility/paths.js';
 import { uuidV4 } from '../../../utility/uuid.js';
 import type { Gms2Sprite } from './Gms2Sprite.js';
 
+export interface SpriteSyncResult {
+  changed: boolean;
+  yyChanged: boolean;
+  filesChanged: Pathy[];
+}
+
 /**
  * Ensure that the dimensions of the sprite and its bounding
  * box match the dimensions of the source image. If not, assuming
  * linear scaling and adjust all dims.
- *
- * Returns `true` if an update was necessary and `false` otherwise.
  */
 export function setSpriteDims(
   this: Gms2Sprite,
   width: number,
   height: number,
   isNew: boolean,
-): boolean {
+) {
   for (const dim of ['width', 'height'] as const) {
     const value = { width, height }[dim];
     assertIsNumber(value, `${dim} is not a number: ${value}`);
@@ -94,7 +98,6 @@ export function setSpriteDims(
       }
     }
   }
-  return true;
 }
 
 export function deleteExtraneousSpriteImages(this: Gms2Sprite) {
@@ -168,6 +171,12 @@ export async function syncSpineSource(
   spineSourceJson: string,
 ) {
   assert(this.isSpine, 'This method can only be used for Spine sprites');
+  const result: SpriteSyncResult = {
+    changed: false,
+    yyChanged: false,
+    filesChanged: [],
+  };
+
   const spineUpdater = new SpineSpriteUpdater(spineSourceJson, this.name);
   await spineUpdater.assertValid();
   const frameId = this.yyData.frames[0]?.name || uuidV4();
@@ -175,7 +184,6 @@ export async function syncSpineSource(
   this.yyData.frames.splice(1);
   const srcFiles = await spineUpdater.srcFiles(['png', 'json', 'atlas']);
   const destDir = pathy(this.yyDirAbsolute);
-  const changedFiles: Pathy[] = [];
   for (const srcFile of srcFiles) {
     const destFile = srcFile.hasExtension('png')
       ? destDir.join(srcFile.basename)
@@ -188,14 +196,18 @@ export async function syncSpineSource(
       !srcFile.hasExtension('png') &&
       !Yy.areEqual(await srcFile.read(), await destFile.read());
     if (overwrite) {
-      changedFiles.push(destFile);
+      result.filesChanged.push(destFile);
       await srcFile.copy(destFile);
     }
   }
-  if (changedFiles.length) {
-    info(`spine sprite ${this.name} changed`, { updated: changedFiles });
+  const saveResult = { changed: false };
+  this.save(saveResult);
+  result.yyChanged = saveResult.changed;
+  result.changed = result.yyChanged || result.filesChanged.length > 0;
+  if (result.changed) {
+    info(`spine sprite ${this.name} changed`, result);
   }
-  return this.save();
+  return result;
 }
 
 export async function syncSpriteSource(
@@ -205,9 +217,15 @@ export async function syncSpriteSource(
 ) {
   assert(!this.isSpine, 'This method cannot be used for Spine sprites');
   debug(`syncing sprite with source ${spriteDirectory}`);
+  const result: SpriteSyncResult = {
+    changed: false,
+    yyChanged: false,
+    filesChanged: [],
+  };
+
   const sprite = new Spritely(spriteDirectory);
   // Ensure that the sizes match
-  const updatedDims = setSpriteDims.bind(this)(
+  setSpriteDims.bind(this)(
     sprite.width as number,
     sprite.height as number,
     isNew,
@@ -219,8 +237,6 @@ export async function syncSpriteSource(
   this.storage.ensureDirSync(layersRoot);
   // Remove excess frame data if needed
   this.yyData.frames.splice(sprite.paths.length);
-  // Add each frame, updating the yyData as we go.
-  const updatedFrames: Pathy[] = [];
   for (const [i, subimagePath] of sprite.paths.entries()) {
     if (!this.yyData.frames[i]) {
       this.yyData.frames[i] = { name: uuidV4() } as any;
@@ -231,15 +247,17 @@ export async function syncSpriteSource(
     );
     const updatedFrame = await this.updateFrameImage(subimagePath, frameId);
     if (updatedFrame) {
-      updatedFrames.push(pathy(updatedFrame.path));
+      result.filesChanged.push(pathy(updatedFrame.path));
     }
   }
-  if (updatedFrames.length || updatedDims) {
-    info(`sprite ${this.name} changed`, {
-      frames: updatedFrames.length ? updatedFrames : undefined,
-      dims: updatedDims ? true : undefined,
-    });
-  }
   deleteExtraneousSpriteImages.bind(this)();
-  return this.save();
+  const saveResult = { changed: false };
+  this.save(saveResult);
+  result.yyChanged = saveResult.changed;
+  result.changed = result.yyChanged || result.filesChanged.length > 0;
+  if (result.changed) {
+    info(`sprite ${this.name} changed`, result);
+  }
+
+  return result;
 }

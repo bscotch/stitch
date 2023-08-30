@@ -6,7 +6,11 @@ import { Spine } from '../../types/Spine.js';
 import { StitchError } from '../../utility/errors.js';
 import { debug, info, warn } from '../../utility/log.js';
 import paths from '../../utility/paths.js';
-import type { StitchProject, StitchProjectComms } from '../StitchProject.js';
+import type {
+  AfterSpriteAddedInfo,
+  StitchProject,
+  StitchProjectComms,
+} from '../StitchProject.js';
 import { dehydrateArray } from '../hydrate.js';
 import { Gms2Animation } from './resources/Gms2Animation.js';
 import { Gms2Extension } from './resources/Gms2Extension.js';
@@ -22,6 +26,7 @@ import { Gms2Sequence } from './resources/Gms2Sequence.js';
 import { Gms2Shader } from './resources/Gms2Shader.js';
 import { Gms2Sound } from './resources/Gms2Sound.js';
 import { Gms2Sprite } from './resources/Gms2Sprite.js';
+import type { SpriteSyncResult } from './resources/Gms2Sprite.update.js';
 import { Gms2Tileset } from './resources/Gms2Tileset.js';
 import { Gms2Timeline } from './resources/Gms2Timeline.js';
 
@@ -186,24 +191,43 @@ export class Gms2ResourceArray {
     const requestId = randomString(12, 'base64');
     const name = nameOverride || paths.basename(sourceFolder);
     debug(`adding sprite from ${sourceFolder} as name ${name}`);
-    const sprite = this.findByName(name, Gms2Sprite);
+    let sprite = this.findByName(name, Gms2Sprite);
+    const spriteSource = {
+      name,
+      path: sourceFolder,
+      exists: !!sprite,
+      isSpine: false,
+    };
     comms.plugins.forEach((plugin) => {
       plugin.beforeSpriteAdded?.(this.project, {
         requestId,
-        spriteSource: {
-          name,
-          path: sourceFolder,
-          exists: !!sprite,
-          isSpine: false,
-        },
+        spriteSource,
       });
     });
+    const afterAddedInfo: Partial<AfterSpriteAddedInfo> = {
+      requestId,
+      spriteSource,
+      created: false,
+    };
     if (sprite) {
-      await sprite.syncWithSource(sourceFolder, false);
+      const results = await sprite.syncWithSource(sourceFolder, false);
+      afterAddedInfo.created = false;
+      afterAddedInfo.changes = results;
     } else {
       info(`Adding new sprite '${name}'`);
-      this.push(await Gms2Sprite.create(sourceFolder, comms, name));
+      const results: Partial<SpriteSyncResult> = {};
+      sprite = await Gms2Sprite.create(sourceFolder, comms, name, results);
+      this.push(sprite);
+      afterAddedInfo.created = true;
+      afterAddedInfo.changes = results as SpriteSyncResult;
     }
+    afterAddedInfo.sprite = sprite;
+    comms.plugins.forEach((plugin) => {
+      plugin.afterSpriteAdded?.(
+        this.project,
+        afterAddedInfo as AfterSpriteAddedInfo,
+      );
+    });
     return this;
   }
 
@@ -217,24 +241,51 @@ export class Gms2ResourceArray {
     const name = nameOverride || jsonSourcePath.up().basename;
     debug(`adding spine sprite`, { from: jsonSourcePath, name });
 
-    const sprite = this.findByName(name, Gms2Sprite);
+    let sprite = this.findByName(name, Gms2Sprite);
+    const spriteSource = {
+      name,
+      path: jsonSourcePath.absolute,
+      exists: !!sprite,
+      isSpine: true,
+    };
     comms.plugins.forEach((plugin) => {
       plugin.beforeSpriteAdded?.(this.project, {
         requestId,
-        spriteSource: {
-          name,
-          path: jsonSourcePath.absolute,
-          exists: !!sprite,
-          isSpine: true,
-        },
+        spriteSource,
       });
     });
+    const afterAddedInfo: Partial<AfterSpriteAddedInfo> = {
+      requestId,
+      spriteSource,
+      created: false,
+    };
     if (sprite) {
-      await sprite.syncWithSource(jsonSourcePath.absolute, false);
+      const results = await sprite.syncWithSource(
+        jsonSourcePath.absolute,
+        false,
+      );
+      afterAddedInfo.created = false;
+      afterAddedInfo.changes = results;
     } else {
       info(`Adding new spine sprite ${name}`);
-      this.push(await Gms2Sprite.createFromSpine(jsonSourcePath, comms, name));
+      const results: Partial<SpriteSyncResult> = {};
+      sprite = await Gms2Sprite.createFromSpine(
+        jsonSourcePath,
+        comms,
+        name,
+        results,
+      );
+      this.push(sprite);
+      afterAddedInfo.created = true;
+      afterAddedInfo.changes = results as SpriteSyncResult;
     }
+    afterAddedInfo.sprite = sprite;
+    comms.plugins.forEach((plugin) => {
+      plugin.afterSpriteAdded?.(
+        this.project,
+        afterAddedInfo as AfterSpriteAddedInfo,
+      );
+    });
     return this;
   }
 

@@ -10,7 +10,11 @@ import {
   Gms2ResourceBase,
   Gms2ResourceBaseParameters,
 } from './Gms2ResourceBase.js';
-import { syncSpineSource, syncSpriteSource } from './Gms2Sprite.update.js';
+import {
+  SpriteSyncResult,
+  syncSpineSource,
+  syncSpriteSource,
+} from './Gms2Sprite.update.js';
 
 export class Gms2Sprite extends Gms2ResourceBase<YySprite> {
   constructor(...setup: Gms2ResourceBaseParameters) {
@@ -113,6 +117,8 @@ export class Gms2Sprite extends Gms2ResourceBase<YySprite> {
     subimageDirectory: string,
     comms: StitchProjectComms,
     spriteName?: string,
+    /** Mutated based on outcomes of the sync step. */
+    results?: Partial<SpriteSyncResult>,
   ) {
     const sprite = new Gms2Sprite(
       spriteName || paths.subfolderName(subimageDirectory),
@@ -121,13 +127,19 @@ export class Gms2Sprite extends Gms2ResourceBase<YySprite> {
     await sprite.replaceYyFile({
       name: sprite.name,
     });
-    return await sprite.syncWithSource(subimageDirectory, true);
+    Object.assign(
+      results || {},
+      await sprite.syncWithSource(subimageDirectory, true),
+    );
+    return sprite;
   }
 
   static async createFromSpine(
     spineJsonFile: Pathy<Spine>,
     comms: StitchProjectComms,
     spriteName?: string,
+    /** Mutated based on outcomes of the sync step. */
+    results?: Partial<SpriteSyncResult>,
   ) {
     const sprite = new Gms2Sprite(
       spriteName || paths.subfolderName(spineJsonFile.directory),
@@ -137,6 +149,10 @@ export class Gms2Sprite extends Gms2ResourceBase<YySprite> {
       type: SpriteType.Spine,
       name: sprite.name,
     });
-    return await sprite.syncWithSource(spineJsonFile.absolute, true);
+    Object.assign(
+      results || {},
+      await sprite.syncWithSource(spineJsonFile.absolute, true),
+    );
+    return sprite;
   }
 }

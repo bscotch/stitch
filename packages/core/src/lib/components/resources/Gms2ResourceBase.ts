@@ -166,14 +166,18 @@ export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
   /**
    * Save any changes made to this resource to disk
    * in its `.yy` file.
+   *
+   * If `result` is passed in, the `changed` field will
+   * be updated to reflect whether any changes were made.
    */
-  save() {
+  save(result?: { changed?: boolean }) {
     // Save the YY data
-    this.storage.writeYySync(
+    const changed = this.storage.writeYySync(
       this.yyPathAbsolute,
       this.yyData,
       this.resourceRoot,
     );
+    if (result) result.changed = changed;
     return this;
   }
 
