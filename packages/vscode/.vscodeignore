@@ -8,3 +8,4 @@ dist/manifest.*
 !snippets/
 !syntaxes/
 !themes/
+!webviews/*.js
