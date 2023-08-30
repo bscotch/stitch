@@ -2,6 +2,15 @@ import type { Asset } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { html } from './lib.mjs';
 
+export interface SpriteInfo {
+  name: string;
+  width: number;
+  height: number;
+  xorigin: number;
+  yorigin: number;
+  frameUrls: string[];
+}
+
 const css = html`
   <style>
     *,

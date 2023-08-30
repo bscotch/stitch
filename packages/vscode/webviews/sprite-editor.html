@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+    :root {
+      --color-lts: #ff8652;
+      --color-stable: #ae89ff;
+      --color-beta: #569cff;
+      --color-unstable: rgb(169, 169, 169);
+      --color-background: #0e0e0e;
+      --color-text: #ffffff;
+      --color-text-muted: rgb(169, 169, 169);
+      --zoom: 1;
+    }
+    body {
+      font-size: var(--vscode-editor-font-size);
+      background-color: var(--color-background);
+      color: var(--color-text);
+    }
+    a[role='button'] {
+      cursor: pointer;
+    }
+    details > summary {
+      cursor: pointer;
+      user-select: none;
+    }
+    h1 {
+      font-size: 1.4em;
+    }
+    h2 {
+      font-size: 1.25em;
+    }
+    h3 {
+      font-size: 1.15em;
+    }
+    h4 {
+      font-size: 1.08em;
+    }
+    h2,
+    h3,
+    h4 {
+      margin: 0;
+    }
+    #frames {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+    }
+    #frames li {
+      list-style: none;
+      position: relative;
+      user-select: none;
+    }
+    #frames img {
+      position: relative;
+      border: 1px solid white;
+      user-select: none;
+      cursor: pointer;
+    }
+    .dims {
+      font-family: monospace;
+    }
+    .dim {
+      font-weight: bold;
+    }
+    .crosshair {
+      --width: calc(10px * var(--zoom));
+      --offset: calc(var(--width) / -2);
+      width: var(--width);
+      height: var(--width);
+      background-color: transparent;
+      position: absolute;
+      transform: translate(var(--offset), var(--offset));
+    }
+    .crosshair::before,
+    .crosshair::after {
+      content: '';
+      position: absolute;
+      background-color: red;
+    }
+    .crosshair::before {
+      width: calc(1px * var(--zoom));
+      height: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .crosshair::after {
+      width: 100%;
+      height: calc(1px * var(--zoom));
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  </style>
+  <script>
+    //#region DATA
+    // (to be replaced with actual data in VSCode)
+    /**
+     * @type {import('../src/spriteEditor.template.mts').SpriteInfo}
+     */
+    window.sprite = {
+      name: 'sp_ui_artisan_fulfillment_checkbox',
+      width: 50,
+      height: 50,
+      xorigin: 25,
+      yorigin: 25,
+      frameUrls: [
+        './sprite-editor/049f102f-bfd8-4295-83f3-257ba757928f.png',
+        './sprite-editor/30a31512-0fe1-4b34-bae1-f900084c6fea.png',
+        './sprite-editor/6e6bcbcb-d75f-4448-829e-03aeef058ee7.png',
+      ],
+    };
+    //#endregion DATA
+  </script>
+  <body>
+    <h1 class="name">???</h1>
+    <p>
+      Dimensions:
+      <span class="dims">
+        <span class="dim width">?</span>
+        x
+        <span class="dim height">?</span>
+      </span>
+    </p>
+    <section>
+      <h2>Origin</h2>
+      <select id="origin-presets">
+        <option value=""><i>Set to...</i></option>
+      </select>
+      <label class="xorigin"
+        >xorigin <input type="number" step="1" min="0"
+      /></label>
+      <label class="yorigin"
+        >yorigin <input type="number" step="1" min="0"
+      /></label>
+      <label class="zoom"
+        >zoom <input type="number" step="0.1" min="0"
+      /></label>
+    </section>
+    <section><ol id="frames"></ol></section>
+  </body>
+  <!-- The src URL will need to be replaced with a VSCode-friendly URL -->
+  <script src="./sprite-editor.js"></script>
+</html>
