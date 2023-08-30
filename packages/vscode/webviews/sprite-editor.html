@@ -72,15 +72,18 @@
       font-weight: bold;
     }
     .crosshair {
-      --width: calc(10px * var(--zoom));
-      --offset: calc(var(--width) / -2);
+      --pixel: calc(1px * var(--zoom));
+      --width: calc(3 * var(--pixel));
+      --offset: calc(calc(var(--width) / -2) + calc(var(--pixel) / 2));
       width: var(--width);
       height: var(--width);
       background-color: transparent;
       position: absolute;
       transform: translate(var(--offset), var(--offset));
+      pointer-events: none;
+      border: var(--pixel) solid red;
     }
-    .crosshair::before,
+    /* .crosshair::before,
     .crosshair::after {
       content: '';
       position: absolute;
@@ -97,11 +100,10 @@
       height: calc(1px * var(--zoom));
       top: 50%;
       transform: translateY(-50%);
-    }
+    } */
   </style>
   <script>
-    //#region DATA
-    // (to be replaced with actual data in VSCode)
+    // To be overwritten by VSCode
     /**
      * @type {import('../src/spriteEditor.template.mts').SpriteInfo}
      */
@@ -117,7 +119,6 @@
         './sprite-editor/6e6bcbcb-d75f-4448-829e-03aeef058ee7.png',
       ],
     };
-    //#endregion DATA
   </script>
   <body>
     <h1 class="name">???</h1>
@@ -146,6 +147,8 @@
     </section>
     <section><ol id="frames"></ol></section>
   </body>
+  <!-- The global data from VSCode will need to be injected before loading the main script -->
+  <!-- VSCODE-INJECT-DATA -->
   <!-- The src URL will need to be replaced with a VSCode-friendly URL -->
   <script src="./sprite-editor.js"></script>
 </html>
