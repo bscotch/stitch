@@ -176,6 +176,13 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
           tree.deleteSpriteSource(source);
         },
       ),
+      registerCommand(
+        'stitch.spriteSource.openExplorer',
+        (source: SpriteSourceItem) => {
+          const fileUri = vscode.Uri.file(source.info.path.up().absolute);
+          vscode.env.openExternal(fileUri);
+        },
+      ),
     ];
     return subscriptions;
   }

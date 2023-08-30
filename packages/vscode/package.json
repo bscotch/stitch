@@ -345,6 +345,10 @@
         "command": "stitch.spriteSource.delete",
         "title": "Delete",
         "icon": "$(close)"
+      },
+      {
+        "command": "stitch.spriteSource.openExplorer",
+        "title": "Reveal in File Explorer"
       }
     ],
     "jsonValidation": [
@@ -634,6 +638,11 @@
           "command": "stitch.spriteSource.delete",
           "when": "viewItem == sprite-source",
           "group": "7_modification@9"
+        },
+        {
+          "command": "stitch.spriteSource.openExplorer",
+          "when": "viewItem == sprite-source",
+          "group": "navigation@9"
         }
       ],
       "explorer/context": [

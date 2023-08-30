@@ -301,6 +301,14 @@ export const commands = {
       group: '7_modification@9',
     },
   },
+  'stitch.spriteSource.openExplorer': {
+    command: 'stitch.spriteSource.openExplorer',
+    title: 'Reveal in File Explorer',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsSpriteSource,
+      group: 'navigation@9',
+    },
+  },
   //#endregion Sprite Sources
 } satisfies Record<string, ManifestCommand>;
 export const commandNames = keysOf(commands);
