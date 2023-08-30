@@ -3,6 +3,8 @@ import { randomString } from '@bscotch/utility';
 import vscode from 'vscode';
 
 export class StitchConfig {
+  public context!: vscode.ExtensionContext;
+
   get config() {
     return vscode.workspace.getConfiguration('stitch');
   }

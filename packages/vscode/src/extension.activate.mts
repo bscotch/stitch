@@ -37,6 +37,8 @@ export async function activateStitchExtension(
   ctx: vscode.ExtensionContext,
 ) {
   info('Activating extension...');
+  config.context = ctx;
+
   const t = Timer.start();
   // Ensure that things stay up to date!
 

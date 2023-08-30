@@ -32,6 +32,7 @@ const builder = esbuild.build({
   external: ['vscode'],
   loader: {
     '.xml': 'text',
+    '.html': 'text',
   },
   inject: ['./scripts/injection.js'],
   define: {

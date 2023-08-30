@@ -1,8 +1,15 @@
 import type { Asset } from '@bscotch/gml-parser';
 import vscode from 'vscode';
+import { assertInternalClaim } from './assert.mjs';
 import { stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { compile } from './spriteEditor.template.mjs';
+
+export interface SpriteEditedMessage {
+  spriteName: string;
+  xorigin: number;
+  yorigin: number;
+}
 
 export class StitchSpriteEditorProvider {
   public panel: vscode.WebviewPanel | undefined;
@@ -21,22 +28,32 @@ export class StitchSpriteEditorProvider {
       vscode.ViewColumn.Active,
       { enableScripts: true },
     );
-    panel.webview.onDidReceiveMessage(
-      async (message: {
-        type: 'originChange';
-        xorigin: number;
-        yorigin: number;
-      }) => {
-        if (message.type === 'originChange') {
-          const { xorigin, yorigin } = message;
-          if (this.editing) {
-            this.editing.yy.sequence.xorigin = xorigin;
-            this.editing.yy.sequence.yorigin = yorigin;
-            await this.editing.saveYy();
-          }
+
+    let timeoutId: NodeJS.Timeout | null = null;
+    panel.webview.onDidReceiveMessage(async (message: SpriteEditedMessage) => {
+      if (message.spriteName !== this.editing?.name) return;
+
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      timeoutId = setTimeout(async () => {
+        const { xorigin, yorigin } = message;
+        assertInternalClaim(
+          typeof xorigin === 'number',
+          'xorigin is not a number',
+        );
+        assertInternalClaim(
+          typeof yorigin === 'number',
+          'yorigin is not a number',
+        );
+        if (this.editing) {
+          this.editing.yy.sequence.xorigin = xorigin;
+          this.editing.yy.sequence.yorigin = yorigin;
+          await this.editing.saveYy();
         }
-      },
-    );
+      }, 50);
+    });
     return panel;
   }
 

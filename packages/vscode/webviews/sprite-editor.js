@@ -1,5 +1,6 @@
 /**
  * @typedef {import('../src/spriteEditor.template.mjs').SpriteInfo} SpriteInfo
+ * @typedef {import('../src/extension.spriteEditor.mjs').SpriteEditedMessage} SpriteEditedMessage
  */
 
 try {
@@ -34,7 +35,7 @@ function clamp(value, min, max) {
 }
 
 /**
- * @param {any} message
+ * @param {SpriteEditedMessage} message
  */
 function sendToVscode(message) {
   if ('vscode' in window) {
