@@ -93,7 +93,7 @@ describe('CLI', function () {
   });
 
   it('can import sounds', async function () {
-    const project = await loadCleanProject('cli-test');
+    const project = await loadCleanProject('sound-import-test');
     const invalidOptions = {
       source: soundSampleRoot,
       extensions: [''],
