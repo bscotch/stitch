@@ -1,16 +1,25 @@
+import { Asset } from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
+import { StitchProject } from '@bscotch/stitch';
 import vscode from 'vscode';
-import { assertLoudly } from './assert.mjs';
+import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
+import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
+import { ObjectSpriteItem } from './inspector.mjs';
 import { registerCommand } from './lib.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 
-type Item = SpriteSourceItem;
+type Item = SpriteSourceItem | SpriteItem;
 
 export interface SpriteSourceConfig {
   targetProject?: string;
   name?: string;
+  prefix?: string;
+  postfix?: string;
+  case?: 'keep' | 'snake' | 'camel' | 'pascal';
+  flatten?: boolean;
+  exclude?: string;
 }
 
 interface ConfigInfo {
@@ -19,9 +28,17 @@ interface ConfigInfo {
   error?: Error;
 }
 
+interface SpriteChangeInfo {
+  when: Date;
+  project: GameMakerProject;
+}
+
 export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
   view!: vscode.TreeView<Item>;
   sources: Pathy<SpriteSourceConfig>[] = [];
+  // Map of <sourcePath: spriteName: SpriteChangeInfo>
+  recentlyChangedSprites: Map<string, Map<string, SpriteChangeInfo>> =
+    new Map();
 
   private _onDidChangeTreeData: vscode.EventEmitter<
     Item | undefined | null | void
@@ -34,6 +51,89 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
   readonly onDidCollapseElement = this._onDidCollapseElement.event;
 
   constructor(readonly workspace: StitchWorkspace) {}
+
+  protected getProjectFromSource(source: SpriteSourceItem) {
+    assertInternalClaim(
+      source && source instanceof SpriteSourceItem,
+      'Expected a SpriteSourceItem',
+    );
+    // Get the target project. The project is stored as a path relative to
+    // the sprite source folder.
+    const targetProjectRelative = source.info.config?.targetProject;
+    assertLoudly(
+      targetProjectRelative,
+      'No target project specified in sprite source config.',
+    );
+    const targetProjectPath = pathy(
+      targetProjectRelative,
+      source.info.path.up(),
+    );
+    const targetProject = this.workspace.projects.find((p) =>
+      p.yypPath.equals(targetProjectPath),
+    );
+    assertLoudly(
+      targetProject,
+      `Could not find target project in the current workspace.`,
+    );
+    return targetProject;
+  }
+
+  async importSprites(source: SpriteSourceItem) {
+    const targetProject = this.getProjectFromSource(source);
+    const changedSprites = this.recentlyChangedSprites
+      .set(
+        source.info.path.absolute,
+        this.recentlyChangedSprites.get(source.info.path.absolute) || new Map(),
+      )
+      .get(source.info.path.absolute)!;
+
+    // Create a progress bar to show the import progress,
+    // in the bscotch-stitch-sprite-sources tree view.
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Importing sprites...`,
+        cancellable: false,
+      },
+      async (progress) => {
+        // Run the Stitch batch-import command, attaching plugins to add to
+        // the cumulative list of changed sprites.\
+        progress.report({ increment: 0 });
+        let totalSprites = 0;
+        const model = await StitchProject.load({
+          dangerouslyAllowDirtyWorkingDir: true,
+          projectPath: targetProject.yypPath.absolute,
+          plugins: [
+            {
+              beforeSpritesAdded(_project, info) {
+                totalSprites = info.spriteSources.length;
+              },
+              afterSpriteAdded: (project, info) => {
+                // Update the progress bar
+                progress.report({
+                  increment: 100 / totalSprites,
+                });
+                // Update the cumulative list of changed sprites
+                changedSprites.set(info.sprite.name, {
+                  when: new Date(),
+                  project: targetProject,
+                });
+              },
+            },
+          ],
+        });
+        await model.addSprites(source.info.path.absolute, {
+          case: source.info.config?.case,
+          exclude: source.info.config?.exclude,
+          flatten: source.info.config?.flatten,
+          postfix: source.info.config?.postfix,
+          prefix: source.info.config?.prefix,
+        });
+      },
+    );
+    // Rebuild the tree
+    this.rebuild();
+  }
 
   async loadConfigs() {
     const normalizedName = (info: ConfigInfo) =>
@@ -142,6 +242,8 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     if (!element) {
       const configs = await this.loadConfigs();
       return configs.map((info) => new SpriteSourceItem(info));
+    } else if (element instanceof SpriteSourceItem) {
+      //
     }
     return [];
   }
@@ -183,6 +285,12 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
           vscode.env.openExternal(fileUri);
         },
       ),
+      registerCommand(
+        'stitch.spriteSource.import',
+        (source: SpriteSourceItem) => {
+          tree.importSprites(source);
+        },
+      ),
     ];
     return subscriptions;
   }
@@ -213,5 +321,21 @@ class SpriteSourceItem extends StitchTreeItemBase<'sprite-source'> {
         arguments: [vscode.Uri.file(info.path.absolute)],
       };
     }
+  }
+}
+
+class SpriteItem extends ObjectSpriteItem {
+  constructor(
+    sprite: Asset<'sprites'>,
+    readonly info: SpriteChangeInfo,
+  ) {
+    super(sprite);
+    this.updateTimeStamp();
+  }
+
+  updateTimeStamp() {
+    // const formatter = new Intl.DateTimeFormat();
+    // formatter.
+    // this.description = Intl.DateTimeFormat(this.info.when.toLocaleString();
   }
 }

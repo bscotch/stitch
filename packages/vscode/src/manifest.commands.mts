@@ -309,6 +309,15 @@ export const commands = {
       group: 'navigation@9',
     },
   },
+  'stitch.spriteSource.import': {
+    command: 'stitch.spriteSource.import',
+    title: 'Import Changes',
+    icon: '$(play)',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsSpriteSource,
+      group: 'inline@2',
+    },
+  },
   //#endregion Sprite Sources
 } satisfies Record<string, ManifestCommand>;
 export const commandNames = keysOf(commands);

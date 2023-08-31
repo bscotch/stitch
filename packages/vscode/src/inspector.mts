@@ -135,7 +135,7 @@ class ObjectSpriteFolder extends StitchTreeItemBase<'inspector-object-sprites'> 
   }
 }
 
-class ObjectSpriteItem extends StitchTreeItemBase<'asset-sprites'> {
+export class ObjectSpriteItem extends StitchTreeItemBase<'asset-sprites'> {
   override readonly kind = 'asset-sprites';
   parent = undefined;
 
@@ -149,9 +149,9 @@ class ObjectSpriteItem extends StitchTreeItemBase<'asset-sprites'> {
       this.setGameMakerIcon('sprite');
     }
     this.command = {
-      command: 'vscode.open',
-      title: 'Open',
-      arguments: [uriFromPathy(this.sprite.framePaths[0])],
+      command: 'stitch.assets.editSprite',
+      title: 'Edit Sprite',
+      arguments: [this],
     };
   }
 }

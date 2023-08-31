@@ -349,6 +349,11 @@
       {
         "command": "stitch.spriteSource.openExplorer",
         "title": "Reveal in File Explorer"
+      },
+      {
+        "command": "stitch.spriteSource.import",
+        "title": "Import Changes",
+        "icon": "$(play)"
       }
     ],
     "jsonValidation": [
@@ -643,6 +648,11 @@
           "command": "stitch.spriteSource.openExplorer",
           "when": "viewItem == sprite-source",
           "group": "navigation@9"
+        },
+        {
+          "command": "stitch.spriteSource.import",
+          "when": "viewItem == sprite-source",
+          "group": "inline@2"
         }
       ],
       "explorer/context": [
