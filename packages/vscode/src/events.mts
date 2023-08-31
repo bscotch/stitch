@@ -11,7 +11,8 @@ export namespace StitchEvents {
     RunProjectStart,
     CleanProjectStart,
     OpenProjectStart,
-    ImageChanged,
+    AssetChanged,
+    ProjectChanged,
   ];
 
   export interface AssetDeleted {
@@ -38,13 +39,17 @@ export namespace StitchEvents {
     name: 'open-project-start';
     payload: [GameMakerProject];
   }
-  export interface ImageChanged {
-    name: 'image-changed';
+  export interface AssetChanged {
+    name: 'asset-changed';
     payload: [
-      sprite: Asset<'sprites'>,
+      sprite: Asset,
       type: 'change' | 'create' | 'delete',
       path: vscode.Uri,
     ];
+  }
+  export interface ProjectChanged {
+    name: 'project-changed';
+    payload: [project: GameMakerProject];
   }
 }
 

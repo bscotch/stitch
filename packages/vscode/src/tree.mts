@@ -65,12 +65,16 @@ export class GameMakerTreeProvider
   readonly onDidCollapseElement = this._onDidCollapseElement.event;
 
   constructor(readonly workspace: StitchWorkspace) {
-    stitchEvents.on('image-changed', (sprite) => {
-      const item = TreeAsset.lookup.get(sprite);
+    stitchEvents.on('asset-changed', (asset) => {
+      const item = TreeAsset.lookup.get(asset);
       if (item) {
         item.refreshTreeItem();
         this._onDidChangeTreeData.fire(item.parent);
+        this._onDidChangeTreeData.fire(item);
       }
+    });
+    stitchEvents.on('project-changed', (project) => {
+      this.rebuild();
     });
   }
 
@@ -568,6 +572,9 @@ export class GameMakerTreeProvider
   }
 
   rebuild() {
+    // TODO: Move the logic for this into the tree elements so that we
+    // don't have to do so much of fully-rebuilding on change.
+
     const folderPathToParts = (folderPath: string) =>
       folderPath
         .replace(/^folders[\\/]/, '')

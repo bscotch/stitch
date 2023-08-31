@@ -1,4 +1,3 @@
-import { isAssetOfKind } from '@bscotch/gml-parser';
 import { pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
 import { stitchConfig } from './config.mjs';
@@ -73,12 +72,15 @@ export class ChangeTracker {
         logger.warn(`For change event ${type} ${uri.path}, no project found.`);
         continue;
       }
+      /** The asset this changed file belongs to, if any. */
+      const asset = project.getAsset(pathy(uri.fsPath));
 
       // Change to the yyp file implies that we have deleted
       // or added an asset, so we need to respond to that.
       if (type === 'change' && uri.path.endsWith('.yyp')) {
         logger.info(`yyp file changed on disk. Reloading!`);
         await project.reloadYyp();
+        stitchEvents.emit('project-changed', project);
         continue;
       }
 
@@ -94,7 +96,6 @@ export class ChangeTracker {
         await this.provider.getGmlFile(uri)?.reload(undefined, {
           reloadDirty: true,
         });
-        continue;
       }
       // Changes to yy files can be handled immediately.
       // For now we
@@ -102,7 +103,6 @@ export class ChangeTracker {
       // their events.
       if (type === 'change' && uri.path.endsWith('.yy')) {
         logger.info(`yy file "${uri.path}" changed on disk. Reloading!`);
-        const asset = project.getAsset(pathy(uri.fsPath));
         if (!asset) {
           logger.warn(`No asset found for yy file "${uri.fsPath}".`);
         }
@@ -126,17 +126,9 @@ export class ChangeTracker {
           // through the queue.
           this.cache.igorCacheIsClean = true;
         }
-        continue;
       }
-      if (uri.path.endsWith('.png')) {
-        const asset = project.getAsset(pathy(uri.fsPath));
-        if (!isAssetOfKind(asset, 'sprites')) continue;
-
-        // Emit an event for the asset tree to catch, so it knows
-        // it should update the sprite.
-        stitchEvents.emit('image-changed', asset, type, uri);
-
-        // TODO: show/update a popup detailing all sprites that have changed.
+      if (asset) {
+        stitchEvents.emit('asset-changed', asset, type, uri);
       }
     }
   }

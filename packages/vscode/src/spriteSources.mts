@@ -1,4 +1,4 @@
-import { Asset } from '@bscotch/gml-parser';
+import { Asset, isAssetOfKind } from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
 import { StitchProject } from '@bscotch/stitch';
 import vscode from 'vscode';
@@ -7,7 +7,8 @@ import { stitchConfig } from './config.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { ObjectSpriteItem } from './inspector.mjs';
-import { registerCommand } from './lib.mjs';
+import { registerCommand, sortAlphaInsensitive } from './lib.mjs';
+import { showErrorMessage } from './log.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 
 type Item = SpriteSourceItem | SpriteItem;
@@ -37,7 +38,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
   view!: vscode.TreeView<Item>;
   sources: Pathy<SpriteSourceConfig>[] = [];
   // Map of <sourcePath: spriteName: SpriteChangeInfo>
-  recentlyChangedSprites: Map<string, Map<string, SpriteChangeInfo>> =
+  static recentlyChangedSprites: Map<string, Map<string, SpriteChangeInfo>> =
     new Map();
 
   private _onDidChangeTreeData: vscode.EventEmitter<
@@ -80,10 +81,12 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
 
   async importSprites(source: SpriteSourceItem) {
     const targetProject = this.getProjectFromSource(source);
-    const changedSprites = this.recentlyChangedSprites
+    const changedSprites = SpriteSourcesTree.recentlyChangedSprites
       .set(
         source.info.path.absolute,
-        this.recentlyChangedSprites.get(source.info.path.absolute) || new Map(),
+        SpriteSourcesTree.recentlyChangedSprites.get(
+          source.info.path.absolute,
+        ) || new Map(),
       )
       .get(source.info.path.absolute)!;
 
@@ -98,37 +101,41 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       async (progress) => {
         // Run the Stitch batch-import command, attaching plugins to add to
         // the cumulative list of changed sprites.\
-        progress.report({ increment: 0 });
-        let totalSprites = 0;
-        const model = await StitchProject.load({
-          dangerouslyAllowDirtyWorkingDir: true,
-          projectPath: targetProject.yypPath.absolute,
-          plugins: [
-            {
-              beforeSpritesAdded(_project, info) {
-                totalSprites = info.spriteSources.length;
+        try {
+          progress.report({ increment: 0 });
+          let totalSprites = 0;
+          const model = await StitchProject.load({
+            dangerouslyAllowDirtyWorkingDir: true,
+            projectPath: targetProject.yypPath.absolute,
+            plugins: [
+              {
+                beforeSpritesAdded(_project, info) {
+                  totalSprites = info.spriteSources.length;
+                },
+                afterSpriteAdded: (project, info) => {
+                  // Update the progress bar
+                  progress.report({
+                    increment: 100 / totalSprites,
+                  });
+                  // Update the cumulative list of changed sprites
+                  changedSprites.set(info.sprite.name, {
+                    when: new Date(),
+                    project: targetProject,
+                  });
+                },
               },
-              afterSpriteAdded: (project, info) => {
-                // Update the progress bar
-                progress.report({
-                  increment: 100 / totalSprites,
-                });
-                // Update the cumulative list of changed sprites
-                changedSprites.set(info.sprite.name, {
-                  when: new Date(),
-                  project: targetProject,
-                });
-              },
-            },
-          ],
-        });
-        await model.addSprites(source.info.path.absolute, {
-          case: source.info.config?.case,
-          exclude: source.info.config?.exclude,
-          flatten: source.info.config?.flatten,
-          postfix: source.info.config?.postfix,
-          prefix: source.info.config?.prefix,
-        });
+            ],
+          });
+          await model.addSprites(source.info.path.up().absolute, {
+            case: source.info.config?.case,
+            exclude: source.info.config?.exclude,
+            flatten: source.info.config?.flatten,
+            postfix: source.info.config?.postfix,
+            prefix: source.info.config?.prefix,
+          });
+        } catch (err) {
+          showErrorMessage(err as Error);
+        }
       },
     );
     // Rebuild the tree
@@ -238,12 +245,15 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     this.rebuild();
   }
 
-  async getChildren(element?: SpriteSourceItem): Promise<SpriteSourceItem[]> {
+  async getChildren(element?: Item): Promise<Item[]> {
     if (!element) {
       const configs = await this.loadConfigs();
       return configs.map((info) => new SpriteSourceItem(info));
-    } else if (element instanceof SpriteSourceItem) {
-      //
+    } else if (
+      'getChildren' in element &&
+      typeof element.getChildren === 'function'
+    ) {
+      return element.getChildren() as Item[];
     }
     return [];
   }
@@ -265,6 +275,8 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       // showCollapseAll: true,
     });
     tree.rebuild();
+    // Rebuild the tree with some frequency to update the timestamps
+    setInterval(() => tree.rebuild(), 1000 * 60 * 5);
 
     // Return subscriptions to owned events and this view
     const subscriptions = [
@@ -322,14 +334,33 @@ class SpriteSourceItem extends StitchTreeItemBase<'sprite-source'> {
       };
     }
   }
+
+  getChildren(): SpriteItem[] {
+    const changes = SpriteSourcesTree.recentlyChangedSprites.get(
+      this.info.path.absolute,
+    );
+    if (!changes) return [];
+    const changedSprites = [...changes.entries()]
+      .map(([name, info]) => {
+        const asset = info.project.getAssetByName(name);
+        if (!isAssetOfKind(asset, 'sprites')) return;
+        return new SpriteItem(asset, info);
+      })
+      .filter((s): s is SpriteItem => !!s);
+    // Sort alphabetically
+    changedSprites.sort((a, b) =>
+      sortAlphaInsensitive(a.asset.name, b.asset.name),
+    );
+    return changedSprites;
+  }
 }
 
 class SpriteItem extends ObjectSpriteItem {
   constructor(
-    sprite: Asset<'sprites'>,
+    asset: Asset<'sprites'>,
     readonly info: SpriteChangeInfo,
   ) {
-    super(sprite);
+    super(asset);
     this.updateTimeStamp();
   }
 
@@ -337,5 +368,13 @@ class SpriteItem extends ObjectSpriteItem {
     // const formatter = new Intl.DateTimeFormat();
     // formatter.
     // this.description = Intl.DateTimeFormat(this.info.when.toLocaleString();
+    const relativeTimeFormatter = new Intl.RelativeTimeFormat(undefined, {
+      style: 'narrow',
+      numeric: 'always',
+    });
+    const minutesAgo = Math.floor(
+      (new Date().getTime() - this.info.when.getTime()) / 1000 / 60,
+    );
+    this.description = relativeTimeFormatter.format(-minutesAgo, 'minutes');
   }
 }

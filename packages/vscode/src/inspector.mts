@@ -139,10 +139,10 @@ export class ObjectSpriteItem extends StitchTreeItemBase<'asset-sprites'> {
   override readonly kind = 'asset-sprites';
   parent = undefined;
 
-  constructor(readonly sprite: Asset<'sprites'>) {
-    super(sprite.name);
+  constructor(readonly asset: Asset<'sprites'>) {
+    super(asset.name);
     this.contextValue = this.kind;
-    const frame = this.sprite.framePaths?.[0];
+    const frame = this.asset.framePaths?.[0];
     if (frame) {
       this.iconPath = vscode.Uri.file(frame.absolute);
     } else {
