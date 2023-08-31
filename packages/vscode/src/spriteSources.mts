@@ -4,6 +4,7 @@ import { StitchProject } from '@bscotch/stitch';
 import vscode from 'vscode';
 import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
+import { stitchEvents } from './events.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { ObjectSpriteItem } from './inspector.mjs';
@@ -51,7 +52,10 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
   > = new vscode.EventEmitter<Item | undefined | null | void>();
   readonly onDidCollapseElement = this._onDidCollapseElement.event;
 
-  constructor(readonly workspace: StitchWorkspace) {}
+  constructor(readonly workspace: StitchWorkspace) {
+    // Whenever a project changes we may have different sprites to show
+    stitchEvents.on('project-changed', () => this.rebuild());
+  }
 
   protected getProjectFromSource(source: SpriteSourceItem) {
     assertInternalClaim(
@@ -276,7 +280,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     });
     tree.rebuild();
     // Rebuild the tree with some frequency to update the timestamps
-    setInterval(() => tree.rebuild(), 1000 * 60 * 5);
+    setInterval(() => tree.rebuild(), 1000 * 60 * 1);
 
     // Return subscriptions to owned events and this view
     const subscriptions = [
@@ -372,7 +376,7 @@ class SpriteItem extends ObjectSpriteItem {
       style: 'narrow',
       numeric: 'always',
     });
-    const minutesAgo = Math.floor(
+    const minutesAgo = Math.round(
       (new Date().getTime() - this.info.when.getTime()) / 1000 / 60,
     );
     this.description = relativeTimeFormatter.format(-minutesAgo, 'minutes');
