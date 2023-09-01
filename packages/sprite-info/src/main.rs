@@ -15,6 +15,11 @@ use std::path::PathBuf;
 use std::time::UNIX_EPOCH;
 use walkdir::WalkDir;
 
+enum OutputFormat {
+    Json,
+    Yaml,
+}
+
 struct Options {
     /// The root folder to search for sprite directories
     root_folder: String,
@@ -26,6 +31,7 @@ struct Options {
     compute_border_box: bool,
     /// If `true`, bypass the cache
     force: bool,
+    output_format: OutputFormat,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -230,8 +236,10 @@ fn get_dirs(root_folder: &str, max_depth: usize) -> Vec<walkdir::DirEntry> {
     sprite_dirs
 }
 
-fn load_summary(file_path: &PathBuf) -> SpriteSourceRootSummary {
-    match File::open(file_path) {
+fn load_summary(options: &Options) -> SpriteSourceRootSummary {
+    let file_path = get_output_filename(&options);
+    let start = std::time::Instant::now();
+    let summary = match File::open(file_path) {
         Ok(file) => {
             let reader = BufReader::new(file);
             let sprite_source_root_summary: SpriteSourceRootSummary =
@@ -248,12 +256,21 @@ fn load_summary(file_path: &PathBuf) -> SpriteSourceRootSummary {
             frame_count: 0,
             sprites: HashMap::new(),
         },
-    }
+    };
+    println!("Loaded summary in {}ms", start.elapsed().as_millis());
+    summary
+}
+
+fn get_output_filename(options: &Options) -> PathBuf {
+    let filename = match options.output_format {
+        OutputFormat::Json => format!("{}.json", options.summary_filename),
+        OutputFormat::Yaml => format!("{}.yaml", options.summary_filename),
+    };
+    Path::new(&options.root_folder).join(filename)
 }
 
 fn update_sprite_source_summary(options: &Options) -> SpriteSourceRootSummary {
-    let outpath = Path::new(&options.root_folder).join(&options.summary_filename);
-    let summary = load_summary(&outpath);
+    let summary = load_summary(&options);
     let sprites = summary.sprites;
     let max_depth: usize = 2;
     let dirs = get_dirs(&options.root_folder, max_depth);
@@ -273,18 +290,28 @@ fn update_sprite_source_summary(options: &Options) -> SpriteSourceRootSummary {
             .collect(),
     };
 
-    let yaml = serde_yaml::to_string(&root_summary).expect("Failed to serialize");
-    fs::write(outpath, yaml).expect("Unable to write file");
-    return root_summary;
+    write_summary(&root_summary, options);
+    root_summary
+}
+
+fn write_summary(root_summary: &SpriteSourceRootSummary, options: &Options) {
+    let start = std::time::Instant::now();
+    let serialized = match options.output_format {
+        OutputFormat::Json => serde_json::to_string(&root_summary).expect("Failed to serialize"),
+        OutputFormat::Yaml => serde_yaml::to_string(&root_summary).expect("Failed to serialize"),
+    };
+    fs::write(get_output_filename(options), serialized).expect("Unable to write file");
+    println!("Wrote summary in {}ms", start.elapsed().as_millis());
 }
 
 fn main() {
     let options = Options {
         root_folder: "../../../crashlands-2/Crashlands2/sprites".to_string(),
-        summary_filename: ".sprite-info.yaml".to_string(),
+        summary_filename: ".sprite-info".to_string(),
         background_alpha: 1,
         compute_border_box: true,
-        force: false,
+        force: true,
+        output_format: OutputFormat::Yaml,
     };
     update_sprite_source_summary(&options);
 }
