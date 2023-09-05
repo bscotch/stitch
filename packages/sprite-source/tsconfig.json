@@ -1,0 +1,11 @@
+{
+  "include": ["src/**/*.ts", "src/**/*.mts"],
+  "compilerOptions": {
+    "types": ["node", "mocha", "chai"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": "src",
+    "allowSyntheticDefaultImports": true
+  },
+  "extends": "../tsconfig.base.json"
+}

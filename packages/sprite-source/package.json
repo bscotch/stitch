@@ -1,0 +1,36 @@
+{
+  "name": "@bscotch/sprite-source",
+  "private": true,
+  "version": "0.1.0",
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/sprite-source#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/sprite-source"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "test": "mocha --config ../../config/.mocharc.cjs",
+    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
+    "watch": "tsc --build --watch"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "dependencies": {
+    "piscina": "4.1.0",
+    "sharp": "0.32.5",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "5.2.2"
+  }
+}
