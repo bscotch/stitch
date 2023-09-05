@@ -31,6 +31,7 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
+    "@bscotch/pathy": "^2.7.4",
     "typescript": "5.2.2"
   }
 }

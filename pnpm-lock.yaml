@@ -432,6 +432,7 @@ importers:
 
   packages/sprite-source:
     specifiers:
+      '@bscotch/pathy': ^2.7.4
       piscina: 4.1.0
       sharp: 0.32.5
       typescript: 5.2.2
@@ -441,6 +442,7 @@ importers:
       sharp: 0.32.5
       zod: 3.22.0
     devDependencies:
+      '@bscotch/pathy': 2.7.4
       typescript: 5.2.2
 
   packages/spritely:

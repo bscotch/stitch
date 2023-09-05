@@ -280,7 +280,7 @@ async function writeSummary(
 async function main() {
   const options: Options = {
     root_folder: '../../../crashlands-2/Crashlands2/sprites',
-    summary_filename: '.sprite-info',
+    summary_filename: 'stitch.sprites.json',
     background_alpha: 1,
     compute_border_box: true,
     force: false,
