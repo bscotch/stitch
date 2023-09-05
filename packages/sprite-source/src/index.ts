@@ -9,7 +9,7 @@ const piscina = new Piscina({
 });
 
 interface Options {
-  root_folder: string;
+  spriteSource: string;
   summary_filename: string;
   background_alpha: number;
   compute_border_box: boolean;
@@ -163,7 +163,7 @@ async function processSpriteDir(
   spriteSourceSummary: Record<string, SpriteSourceSummary>,
   options: Options,
 ): Promise<SpriteSourceSummary | null> {
-  const dirname = path.relative(options.root_folder, dir);
+  const dirname = path.relative(options.spriteSource, dir);
   const dirSummary = spriteSourceSummary[dirname];
 
   const pngFiles = fs
@@ -198,7 +198,7 @@ async function processSpriteDir(
 
 function getOutputFilename(options: Options): string {
   const filename = `${options.summary_filename}.json`;
-  return `${options.root_folder}/${filename}`;
+  return `${options.spriteSource}/${filename}`;
 }
 
 function loadSummary(options: Options): SpriteSourceRootSummary {
@@ -248,7 +248,7 @@ async function updateSpriteSourceSummary(
   const sprites = summary.sprites;
   const maxDepth = 1;
   const dirs = await Promise.all(
-    getDirs(options.root_folder, maxDepth).map((dir) =>
+    getDirs(options.spriteSource, maxDepth).map((dir) =>
       processSpriteDir(dir, sprites, options),
     ),
   );
@@ -276,18 +276,3 @@ async function writeSummary(
   await fs.promises.writeFile(getOutputFilename(options), serialized);
   console.log(`Wrote summary in ${Date.now() - start}ms`);
 }
-
-async function main() {
-  const options: Options = {
-    root_folder: '../../../crashlands-2/Crashlands2/sprites',
-    summary_filename: 'stitch.sprites.json',
-    background_alpha: 1,
-    compute_border_box: true,
-    force: false,
-  };
-  const start = Date.now();
-  await updateSpriteSourceSummary(options);
-  console.log(`Finished in ${Date.now() - start}ms`);
-}
-
-await main();

@@ -1,4 +1,5 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
+import { SpriteSource } from './SpriteSource.js';
 
 const samples = pathy('samples');
 const sampleProject = samples.join('project');
@@ -114,6 +115,7 @@ async function initializeSandbox() {
 describe('Sprite Sources', function () {
   it('can import from a sprite source', async function () {
     await initializeSandbox();
-    //
+    const source = new SpriteSource(sandboxStaging);
+    await source.import(sandboxProject, {});
   });
 });

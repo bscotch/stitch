@@ -36,6 +36,12 @@ const spriteSourceTransformSchema = z.object({
     ),
   bleed: z.boolean().default(false).describe('Whether to bleed the image.'),
   crop: z.boolean().default(false).describe('Whether to crop the image.'),
+  synced: z
+    .boolean()
+    .default(false)
+    .describe(
+      'Whether to sync the target folder to the staging folder, by deleting any files in the target folder that are not in the staging folder.',
+    ),
   renames: z
     .array(
       z.object({
@@ -55,6 +61,7 @@ const spriteSourceTransformSchema = z.object({
     .describe('Rules for renaming when moving to the SpriteSource directory.'),
 });
 
+export type SpriteStaging = z.infer<typeof spriteStagingSchema>;
 const spriteStagingSchema = z.object({
   dir: z
     .string()
@@ -68,22 +75,33 @@ const spriteStagingSchema = z.object({
     ),
 });
 
-export type SpriteSourceRootSummary = z.infer<
-  typeof spriteSourceRootSummarySchema
->;
-export const spriteSourceRootSummarySchema = z.object({
-  spriteCount: z.number(),
-  frameCount: z.number(),
+export type SpriteSourceConfig = z.infer<typeof spriteSourceConfigSchema>;
+export const spriteSourceConfigSchema = z.object({
   staging: z
     .array(spriteStagingSchema)
+    .nullable()
     .describe(
       'List of folders and associated configs for raw images that should be preprocessed.',
     )
     .optional(),
   ignore: z
     .array(z.string())
+    .nullable()
+    .optional()
     .describe(
       'List of ignore patterns for sprites that should be excluded from processing and caching.',
     ),
-  sprites: z.record(spriteSourceSummarySchema),
 });
+
+export type SpriteSourceRootSummary = z.infer<
+  typeof spriteSourceRootSummarySchema
+>;
+export const spriteSourceRootSummarySchema = z.object({
+  sprites: z.number().default(0),
+  frames: z.number().default(0),
+  cache: z.record(spriteSourceSummarySchema).default({}),
+});
+
+export type AnyFunction<R> = (
+  ...args: any
+) => R extends Promise<infer U> ? Promise<U> : R;
