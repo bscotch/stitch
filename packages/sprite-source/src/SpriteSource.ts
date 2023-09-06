@@ -1,17 +1,120 @@
 import { Pathy, pathy } from '@bscotch/pathy';
-import { assert } from 'chai';
+import fsp from 'fs/promises';
 import { SpriteSourcePaths, getSpriteSourcePaths } from './paths.js';
 import {
   SpriteStaging,
   spriteSourceConfigSchema,
   type SpriteSourceConfig,
 } from './types.js';
-import { AnyFunc, AsyncableChecked, check, rethrow } from './utility.js';
+import {
+  AnyFunc,
+  AsyncableChecked,
+  assert,
+  check,
+  getDirs,
+  getPngSize,
+  rethrow,
+} from './utility.js';
 
 interface Issue {
   kind: 'error' | 'warning';
   message: string;
   cause?: any;
+}
+
+export class SpriteDir {
+  protected _framePaths: Pathy[] = [];
+  protected _isSpine = false;
+  protected _spinePaths: undefined | { atlas: Pathy; json: Pathy; png: Pathy };
+  protected _width: undefined | number;
+  protected _height: undefined | number;
+
+  protected constructor(readonly path: Pathy) {}
+
+  get width() {
+    assert(!this.isSpine, 'Not a sprite');
+    assert(this._width, 'Width not set');
+    return this._width;
+  }
+
+  get height() {
+    assert(!this.isSpine, 'Not a sprite');
+    assert(this._height, 'Height not set');
+    return this._height;
+  }
+
+  get isSpine() {
+    return this._isSpine;
+  }
+
+  get framePaths() {
+    return [...this._framePaths];
+  }
+
+  get spinePaths() {
+    assert(this.isSpine, 'Not a spine sprite');
+    if (!this._spinePaths) {
+      this._spinePaths = {
+        atlas: this.path.join('skeleton.atlas'),
+        json: this.path.join('skeleton.json'),
+        png: this.path.join('skeleton.png'),
+      };
+    }
+    return this._spinePaths;
+  }
+
+  /**
+   * If there are images in this directory, get a `SpriteDir`
+   * instance. Else get `undefined`.
+   */
+  static async from(path: Pathy): Promise<SpriteDir | undefined> {
+    const files = (await fsp.readdir(path.absolute)).map((file) =>
+      pathy(file, path.absolute),
+    );
+    const pngs = files.filter((file) => file.basename.match(/\.png$/i));
+    pngs.sort();
+    if (pngs.length === 0) {
+      return;
+    }
+
+    const sprite = new SpriteDir(path);
+    const isSpine = !!files.find((f) => f.basename === 'skeleton.atlas');
+    if (isSpine) {
+      sprite._isSpine = true;
+      const existance = await Promise.all([
+        sprite.spinePaths.json.exists(),
+        sprite.spinePaths.png.exists(),
+      ]);
+      assert(
+        existance.every((x) => x),
+        'Invalid spine sprite.',
+      );
+    } else {
+      sprite._framePaths = pngs;
+      // TODO: Make sure all frames are the same size
+      const expectedSize = await getPngSize(pngs[0]);
+      for (const png of pngs.slice(1)) {
+        const size = await getPngSize(png);
+        assert(
+          size.width === expectedSize.width &&
+            size.height === expectedSize.height,
+          'Frames must all be the same size.',
+        );
+      }
+      sprite._width = expectedSize.width;
+      sprite._height = expectedSize.height;
+    }
+
+    return sprite;
+  }
+
+  toJSON() {
+    return {
+      path: this.path,
+      isSpine: this.isSpine,
+      framePaths: this.framePaths,
+    };
+  }
 }
 
 export class SpriteSource {
@@ -20,6 +123,30 @@ export class SpriteSource {
 
   constructor(readonly sourceDirPath: string | Pathy) {
     this.paths = getSpriteSourcePaths(sourceDirPath);
+  }
+
+  protected async getSpriteDirs(dirs: Pathy[]): Promise<SpriteDir[]> {
+    const waits: Promise<any>[] = [];
+    const spriteDirs: SpriteDir[] = [];
+    for (const dir of dirs) {
+      waits.push(
+        SpriteDir.from(dir)
+          .then((sprite) => {
+            if (sprite) {
+              spriteDirs.push(sprite);
+            }
+          })
+          .catch((err) => {
+            this.issues.push({
+              kind: 'error',
+              message: `Error processing "${dir.relative}"`,
+              cause: err,
+            });
+          }),
+      );
+    }
+    await Promise.all(waits);
+    return spriteDirs;
   }
 
   protected async resolveStaged(staging: SpriteStaging) {
@@ -31,12 +158,33 @@ export class SpriteSource {
       });
       return;
     }
-    // TODO: Identify all "Sprites"
-    // TODO: For each transform, filter to matching sprites, then:
-    // TODO: Handle bleed
-    // TODO: Handle crop
-    // TODO: Handle move (including renames)
-    // TODO: Delete extra files in target
+    // Identify all "SpriteDirs"
+    const spriteDirs = await this.getSpriteDirs(await getDirs(dir.absolute));
+
+    // TODO: For each transform
+    for (const transform of staging.transforms) {
+      // filter to matching sprites
+      const pattern = transform.include
+        ? new RegExp(transform.include)
+        : undefined;
+      const sprites = pattern
+        ? spriteDirs.filter((sprite) => sprite.path.relative.match(pattern))
+        : spriteDirs;
+
+      if (transform.bleed) {
+        // TODO: Handle bleed
+      }
+      if (transform.crop) {
+        // TODO: Handle crop
+      }
+
+      // TODO: Determine target location
+
+      if (transform.synced) {
+        // TODO: Delete files in target
+      }
+      // TODO: Handle move (including renames)
+    }
   }
 
   protected check<T extends AnyFunc>(
@@ -55,6 +203,33 @@ export class SpriteSource {
     return results;
   }
 
+  protected async loadConfig(
+    overrides: SpriteSourceConfig,
+  ): Promise<SpriteSourceConfig> {
+    // Validate options. Show error out if invalid.
+    try {
+      overrides = spriteSourceConfigSchema.parse(overrides);
+    } catch (err) {
+      rethrow(err, 'Invalid SpriteSource options');
+    }
+    const paths = getSpriteSourcePaths(this.sourceDirPath);
+    assert(
+      await paths.root.isDirectory(),
+      'Source must be an existing directory.',
+    );
+    // Update the config
+    await paths.stitch.ensureDirectory();
+    const config = await paths.config.read({ fallback: {} });
+    if (overrides.ignore !== undefined) {
+      config.ignore = overrides.ignore;
+    }
+    if (overrides.staging !== undefined) {
+      config.staging = overrides.staging;
+    }
+    await paths.config.write(config);
+    return config;
+  }
+
   async import(
     targetProject: string | Pathy,
     /** Optionally override config options */
@@ -66,32 +241,12 @@ export class SpriteSource {
     // Reset issues
     this.issues.length = 0;
 
-    // Validate options. Show error out if invalid.
-    try {
-      options = spriteSourceConfigSchema.parse(options);
-    } catch (err) {
-      rethrow(err, 'Invalid SpriteSource options');
-    }
-    const paths = getSpriteSourcePaths(this.sourceDirPath);
     assert(
-      await paths.root.isDirectory(),
-      'Source must be an existing directory.',
-    );
-    assert(
-      project.hasExtension('yy') && (await project.exists()),
+      project.hasExtension('yyp') && (await project.exists()),
       'Target must be an existing .yy file.',
     );
 
-    // Update the config
-    await paths.stitch.ensureDirectory();
-    const config = await paths.config.read({ fallback: {} });
-    if (options.ignore !== undefined) {
-      config.ignore = options.ignore;
-    }
-    if (options.staging !== undefined) {
-      config.staging = options.staging;
-    }
-    await paths.config.write(config);
+    const config = await this.loadConfig(options);
 
     // Process any staging folders
     for (const staging of config.staging ?? []) {

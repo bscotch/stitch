@@ -29,16 +29,16 @@ const spriteSourceSummarySchema = z.object({
 
 const spriteSourceTransformSchema = z.object({
   include: z
-    .array(z.string())
+    .string()
     .optional()
     .describe(
-      'Sources matching these globs will be included. Follows .gitignore syntax and rules. If not provided all sources will be included.',
+      'Pattern to match against the folder path (relative to the staging root, using POSIX seps) for it to be included. If omitted, all sprites are included. Converted to a regex with `new RegExp(include)`.',
     ),
-  bleed: z.boolean().default(false).describe('Whether to bleed the image.'),
-  crop: z.boolean().default(false).describe('Whether to crop the image.'),
+  bleed: z.boolean().optional().describe('Whether to bleed the image.'),
+  crop: z.boolean().optional().describe('Whether to crop the image.'),
   synced: z
     .boolean()
-    .default(false)
+    .optional()
     .describe(
       'Whether to sync the target folder to the staging folder, by deleting any files in the target folder that are not in the staging folder.',
     ),
