@@ -27,8 +27,8 @@ interface Issue {
 
 interface Log {
   action: 'deleted' | 'moved';
-  path: Pathy;
-  to?: Pathy;
+  path: string;
+  to?: string;
 }
 
 export interface BBox {
@@ -232,7 +232,8 @@ export class SpriteDir {
 
   protected constructor(
     readonly path: Pathy,
-    readonly log: Log[],
+    readonly logs: Log[],
+    readonly issues: Issue[],
   ) {}
 
   get isSpine() {
@@ -283,13 +284,13 @@ export class SpriteDir {
     await Promise.all(this.frames.map((frame) => frame.crop(bbox)));
   }
 
-  async saveTo(dir: Pathy) {
-    await dir.ensureDirectory();
+  async moveTo(newSpriteDir: Pathy) {
+    await newSpriteDir.ensureDirectory();
     if (this.isSpine) {
       const fromTo = [
-        [this.spinePaths.atlas, dir.join('skeleton.atlas')],
-        [this.spinePaths.json, dir.join('skeleton.json')],
-        [this.spinePaths.png, dir.join('skeleton.png')],
+        [this.spinePaths.atlas, newSpriteDir.join('skeleton.atlas')],
+        [this.spinePaths.json, newSpriteDir.join('skeleton.json')],
+        [this.spinePaths.png, newSpriteDir.join('skeleton.png')],
       ];
       await Promise.all(
         fromTo.map(([from, to]) =>
@@ -298,32 +299,46 @@ export class SpriteDir {
             .then(() => from.delete({ retryDelay: 100, maxRetries: 5 })),
         ),
       );
-      this.log.push(
+      this.logs.push(
         ...fromTo.map(([from, to]) => ({
           action: 'moved' as const,
-          path: from,
-          to: to,
+          path: from.absolute,
+          to: to.absolute,
         })),
       );
     } else {
       const fromTo = this.frames.map((frame) => [
         frame.path,
-        dir.join(frame.path.basename),
+        newSpriteDir.join(frame.path.basename),
       ]);
       await Promise.all(
         this.frames.map((frame) =>
           frame
-            .saveTo(dir.join(frame.path.basename))
+            .saveTo(newSpriteDir.join(frame.path.basename))
             .then(() => frame.path.delete({ retryDelay: 100, maxRetries: 5 })),
         ),
       );
-      this.log.push(
+      this.logs.push(
         ...fromTo.map(([from, to]) => ({
           action: 'moved' as const,
-          path: from,
-          to: to,
+          path: from.absolute,
+          to: to.absolute,
         })),
       );
+    }
+    // Try to delete the folder
+    try {
+      await this.path.delete({
+        recursive: true,
+        retryDelay: 10,
+        maxRetries: 5,
+      });
+    } catch (err) {
+      this.issues.push({
+        level: 'warning',
+        message: `Could not delete source folder: ${this.path.relative}`,
+        cause: err,
+      });
     }
   }
 
@@ -331,7 +346,11 @@ export class SpriteDir {
    * If there are images in this directory, get a `SpriteDir`
    * instance. Else get `undefined`.
    */
-  static async from(path: Pathy, log: Log[]): Promise<SpriteDir | undefined> {
+  static async from(
+    path: Pathy,
+    logs: Log[],
+    issues: Issue[],
+  ): Promise<SpriteDir | undefined> {
     const files = (await fsp.readdir(path.absolute)).map((file) =>
       pathy(file, path.absolute),
     );
@@ -341,7 +360,7 @@ export class SpriteDir {
       return;
     }
 
-    const sprite = new SpriteDir(path, log);
+    const sprite = new SpriteDir(path, logs, issues);
     const isSpine = !!files.find((f) => f.basename === 'skeleton.atlas');
     if (isSpine) {
       sprite._isSpine = true;
@@ -382,7 +401,7 @@ export class SpriteDir {
 export class SpriteSource {
   readonly issues: Issue[] = [];
   readonly paths: SpriteSourcePaths;
-  readonly log: Log[] = [];
+  readonly logs: Log[] = [];
 
   constructor(readonly sourceDirPath: string | Pathy) {
     this.paths = getSpriteSourcePaths(sourceDirPath);
@@ -393,7 +412,7 @@ export class SpriteSource {
     const spriteDirs: SpriteDir[] = [];
     for (const dir of dirs) {
       waits.push(
-        SpriteDir.from(dir, this.log)
+        SpriteDir.from(dir, this.logs, this.issues)
           .then((sprite) => {
             if (sprite) {
               spriteDirs.push(sprite);
@@ -421,17 +440,24 @@ export class SpriteSource {
       });
       return;
     }
-    // Identify all "SpriteDirs"
-    const spriteDirs = await this.getSpriteDirs(await getDirs(dir.absolute));
+    // Identify all "SpriteDirs". Stored as a set so we
+    // can remove the ones we process.
+    const spriteDirs = new Set(
+      await this.getSpriteDirs(await getDirs(dir.absolute)),
+    );
 
     for (const transform of staging.transforms) {
       // filter to matching sprites
       const pattern = transform.include
         ? new RegExp(transform.include)
         : undefined;
-      const sprites = pattern
-        ? spriteDirs.filter((sprite) => sprite.path.relative.match(pattern))
-        : spriteDirs;
+      const sprites: SpriteDir[] = [];
+      for (const sprite of spriteDirs) {
+        if (!pattern || sprite.path.relative.match(pattern)) {
+          sprites.push(sprite);
+          spriteDirs.delete(sprite);
+        }
+      }
 
       const waits: Promise<any>[] = [];
       for (const sprite of sprites) {
@@ -452,17 +478,17 @@ export class SpriteSource {
         const deleteWait = bleedWait.then(() =>
           transform.synced
             ? deletePngChildren(outDir).then((deleted) => {
-                this.log.push(
+                this.logs.push(
                   ...deleted.map((path) => ({
                     action: 'deleted' as const,
-                    path,
+                    path: path.absolute,
                   })),
                 );
               })
             : Promise.resolve(),
         );
         // Save to destination (including renames)
-        const moveWait = deleteWait.then(() => sprite.saveTo(outDir));
+        const moveWait = deleteWait.then(() => sprite.moveTo(outDir));
         waits.push(moveWait);
       }
       await Promise.allSettled(waits);

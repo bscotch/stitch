@@ -433,16 +433,20 @@ importers:
   packages/sprite-source:
     specifiers:
       '@bscotch/pathy': ^2.7.4
+      image-js: 0.35.4
       piscina: 4.1.0
       sharp: 0.32.5
+      tslib: ^2.6.1
       typescript: 5.2.2
       zod: ^3.22.0
     dependencies:
+      '@bscotch/pathy': 2.7.4
+      image-js: 0.35.4
       piscina: 4.1.0
       sharp: 0.32.5
+      tslib: 2.6.1
       zod: 3.22.0
     devDependencies:
-      '@bscotch/pathy': 2.7.4
       typescript: 5.2.2
 
   packages/spritely:

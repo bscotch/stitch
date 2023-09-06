@@ -1,12 +1,15 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
 import { SpriteSource } from './SpriteSource.js';
-import { getDirs } from './utility.js';
+import { assert, getDirs, getPngSize } from './utility.js';
 
 const samples = pathy('samples');
 const sampleProject = samples.join('project');
-const sampleSpine = samples.join('spine');
-const sampleSprite = samples.join('sprite');
-const sampleInvalidSprite = samples.join('invalid-sprite');
+const sampleSpine = { path: samples.join('spine') };
+const sampleSprite = {
+  path: samples.join('sprite'),
+  size: await getPngSize(samples.join('sprite/subimage-1.png')),
+};
+const sampleInvalidSprite = { path: samples.join('invalid-sprite') };
 
 const sandbox = pathy('sandbox');
 const sandboxSource = sandbox.join('source');
@@ -44,9 +47,6 @@ const sandboxStagingOrg = [
   {
     path: 'subfolder/subsubfolder/spine2',
     spine: true,
-    expect: {
-      renamed: 'renamedSpine2',
-    },
   },
   {
     path: 'subfolder/subsubfolder/sprite2',
@@ -67,7 +67,7 @@ const sandboxStagingOrg = [
     expect: {
       cropped: false,
       bled: true,
-      renamed: 'sprite4',
+      renamed: 'subfolder/suffixes/sprite4',
     },
   },
   {
@@ -75,7 +75,7 @@ const sandboxStagingOrg = [
     expect: {
       cropped: true,
       bled: false,
-      renamed: 'sprite5',
+      renamed: 'subfolder/suffixes/sprite5',
     },
   },
   {
@@ -83,7 +83,7 @@ const sandboxStagingOrg = [
     expect: {
       cropped: false,
       bled: false,
-      renamed: 'sprite6',
+      renamed: 'subfolder/suffixes/sprite6',
     },
   },
 ] satisfies StagingOrg;
@@ -111,7 +111,7 @@ async function initializeStaging() {
       ? sampleInvalidSprite
       : sampleSprite;
     const target = sandboxStaging.join(org.path);
-    await source.copy(target);
+    await source.path.copy(target);
   }
 }
 
@@ -149,11 +149,11 @@ describe('Sprite Sources', function () {
     const source = new SpriteSource(sandboxSource);
     const renames = [
       {
-        from: '(.*)(--[a-z]+)+',
+        from: '(.*?)(--[a-z]+)+',
         to: '$1',
       },
     ];
-    const results = await source.import(sandboxProjectYyp, {
+    await source.import(sandboxProjectYyp, {
       staging: [
         {
           dir: '../staging',
@@ -183,9 +183,26 @@ describe('Sprite Sources', function () {
         },
       ],
     });
-    if (source.issues.length) {
-      console.error(source.issues);
+    for (const entry of sandboxStagingOrg) {
+      // Check to make sure we got what we expected
+      if (entry.invalid) continue;
+      const target = sandboxSource.join(entry.expect?.renamed || entry.path);
+      assert(await target.exists(), `Missing ${target}`);
+      assert(await target.isDirectory(), `${target} is not a directory`);
+      // Check cropped status
+      if (!entry.spine) {
+        const size = await getPngSize(target.join('subimage-1.png'));
+        if (entry.expect.cropped) {
+          assert(size.width < sampleSprite.size.width, `${target} not cropped`);
+          assert(
+            size.height < sampleSprite.size.height,
+            `${target} not cropped`,
+          );
+        } else {
+          assert(size.width === sampleSprite.size.width, `${target} cropped`);
+          assert(size.height === sampleSprite.size.height, `${target} cropped`);
+        }
+      }
     }
-    console.dir(source.log);
   });
 });

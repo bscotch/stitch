@@ -116,7 +116,7 @@ export async function getPngSize(
     size.width = buf.readUInt32BE(0);
     size.height = buf.readUInt32BE(4);
   } finally {
-    void fd.close();
+    await fd.close();
   }
   assert(size.width > 0, `Invalid width for ${path}`);
   assert(size.height > 0, `Invalid height for ${path}`);
