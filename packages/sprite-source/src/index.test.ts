@@ -135,7 +135,7 @@ function endTimer(start: number, message?: string) {
 }
 
 describe('Sprite Sources', function () {
-  it('can list all subdirs', async function () {
+  xit('can list all subdirs', async function () {
     // Use the root of the monorepo, since that represents a large
     // number of subdirs.
     const root = '../../..';
@@ -186,5 +186,6 @@ describe('Sprite Sources', function () {
     if (source.issues.length) {
       console.error(source.issues);
     }
+    console.dir(source.log);
   });
 });

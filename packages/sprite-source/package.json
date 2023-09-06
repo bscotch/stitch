@@ -27,8 +27,10 @@
   "license": "MIT",
   "dependencies": {
     "@bscotch/pathy": "^2.7.4",
+    "image-js": "0.35.4",
     "piscina": "4.1.0",
     "sharp": "0.32.5",
+    "tslib": "^2.6.1",
     "zod": "^3.22.0"
   },
   "devDependencies": {

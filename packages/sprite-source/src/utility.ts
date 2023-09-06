@@ -80,6 +80,28 @@ export async function getDirs(
 }
 
 /**
+ * Delete the PNG images inside a folder. Returns the list of
+ * deleted images.
+ */
+export async function deletePngChildren(path: Pathy) {
+  if (!(await path.exists())) {
+    return [];
+  }
+  const files = await fsp.readdir(path.absolute);
+  const deleteWaits: Promise<void>[] = [];
+  const deleted: Pathy[] = [];
+  for (const file of files) {
+    if (file.match(/\.png$/i)) {
+      const toDelete = path.join(file);
+      deleted.push(toDelete);
+      deleteWaits.push(fsp.unlink(toDelete.absolute));
+    }
+  }
+  await Promise.all(deleteWaits);
+  return deleted;
+}
+
+/**
  * Asynchronously get the size of a PNG image, given its path,
  * with maximal speed.
  */
@@ -100,3 +122,31 @@ export async function getPngSize(
   assert(size.height > 0, `Invalid height for ${path}`);
   return size;
 }
+
+/**
+ * A decorator for async methods that ensures that calls to
+ * the method are resolved in order, and that only one call
+ * is active at a time.
+ */
+export function Sequential() {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor,
+  ) {
+    const originalMethod = descriptor.value;
+    let promise: Promise<any> = Promise.resolve();
+
+    descriptor.value = function (...args: any[]) {
+      const result = promise.then(() => {
+        promise = originalMethod.apply(this, args);
+        return promise;
+      });
+      return result;
+    };
+
+    return descriptor;
+  };
+}
+
+export const sequential = Sequential();
