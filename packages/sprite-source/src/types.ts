@@ -1,30 +1,51 @@
 import { z } from 'zod';
 
-const borderBoxSchema = z.object({
-  left: z.number(),
-  right: z.number(),
-  top: z.number(),
-  bottom: z.number(),
-});
+export interface Log {
+  action: 'deleted' | 'moved';
+  path: string;
+  to?: string;
+}
+
+export interface BBox {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
+export interface Issue {
+  level: 'error' | 'warning';
+  message: string;
+  cause?: any;
+}
 
 export type ImageSummary = z.infer<typeof imageSummarySchema>;
 const imageSummarySchema = z.object({
-  name: z.string(),
   width: z.number(),
   height: z.number(),
-  box: borderBoxSchema,
-  checksum: z.string(),
+  checksum: z.string().describe('Pixel-based checksum of the image.'),
   changed: z.number().describe('Unix timestamp of last modification date.'),
 });
 
-const spriteSourceSummarySchema = z.object({
-  path: z.string(),
-  spine: z.boolean().optional().describe('Whether the image is a spine image.'),
-  count: z.number().describe('Number of frames in the sprite.'),
-  box: borderBoxSchema.describe(
-    'Border-box that captures the border-boxes of all frames.',
-  ),
+export type SpriteSummary = z.infer<typeof spriteSummarySchema>;
+const spriteSummarySchema = z.object({
+  spine: z.literal(false),
   frames: z.record(imageSummarySchema),
+});
+
+export type SpineSummary = z.infer<typeof spineSummarySchema>;
+const spineSummarySchema = z.object({
+  spine: z.literal(true),
+  checksum: z
+    .string()
+    .describe(
+      'A checksum combining the pixel-based checksum of the atlas file with the contets of the atlas and json files.',
+    ),
+  changed: z
+    .number()
+    .describe(
+      'Unix timestamp of the most recent modified date for all associate files (atlas, json, png).',
+    ),
 });
 
 const spriteSourceTransformSchema = z.object({
@@ -89,7 +110,7 @@ export const spriteSourceConfigSchema = z.object({
     .nullable()
     .optional()
     .describe(
-      'List of ignore patterns for sprites that should be excluded from processing and caching.',
+      'List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp(ignore)` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps).',
     ),
 });
 
@@ -97,9 +118,11 @@ export type SpriteSourceRootSummary = z.infer<
   typeof spriteSourceRootSummarySchema
 >;
 export const spriteSourceRootSummarySchema = z.object({
-  sprites: z.number().default(0),
-  frames: z.number().default(0),
-  cache: z.record(spriteSourceSummarySchema).default({}),
+  info: z
+    .record(
+      z.discriminatedUnion('spine', [spriteSummarySchema, spineSummarySchema]),
+    )
+    .default({}),
 });
 
 export type AnyFunction<R> = (

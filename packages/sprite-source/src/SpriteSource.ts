@@ -1,8 +1,10 @@
 import { Pathy, pathy } from '@bscotch/pathy';
-import fsp from 'fs/promises';
-import { Image } from 'image-js';
+import { SpriteDir } from './SpriteDir.js';
 import { SpriteSourcePaths, getSpriteSourcePaths } from './paths.js';
 import {
+  Issue,
+  Log,
+  SpriteSourceRootSummary,
   SpriteStaging,
   spriteSourceConfigSchema,
   type SpriteSourceConfig,
@@ -14,389 +16,8 @@ import {
   check,
   deletePngChildren,
   getDirs,
-  getPngSize,
   rethrow,
-  sequential,
 } from './utility.js';
-
-interface Issue {
-  level: 'error' | 'warning';
-  message: string;
-  cause?: any;
-}
-
-interface Log {
-  action: 'deleted' | 'moved';
-  path: string;
-  to?: string;
-}
-
-export interface BBox {
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-}
-
-export class SpriteFrame {
-  protected _size: undefined | { width: number; height: number };
-  protected _bbox: undefined | BBox;
-  protected _image: undefined | Image;
-  protected _masks: { [minAlpha: string]: Image } = {};
-
-  constructor(readonly path: Pathy) {}
-
-  protected clearCache() {
-    this._size = undefined;
-    this._bbox = undefined;
-    this._image = undefined;
-    this._masks = {};
-  }
-
-  @sequential
-  async getImage() {
-    if (this._image) {
-      return this._image;
-    }
-    this._image = await Image.load(this.path.absolute);
-    return this._image;
-  }
-
-  @sequential
-  async getSize() {
-    if (this._size) {
-      return { ...this._size };
-    }
-    this._size = await getPngSize(this.path);
-    return this._size;
-  }
-
-  @sequential
-  async getForegroundMask(foregroundMinAlphaFraction?: number) {
-    const alphaKey = `${foregroundMinAlphaFraction}`;
-    if (this._masks[alphaKey]) {
-      return this._masks[alphaKey];
-    }
-    const image = await this.getImage();
-    const threshold =
-      foregroundMinAlphaFraction || 1 / Math.pow(2, image.bitDepth);
-    this._masks[alphaKey] = image
-      .getChannel(image.channels - 1)
-      .mask({ threshold });
-    return this._masks[alphaKey];
-  }
-
-  @sequential
-  async getBoundingBox(padding = 1): Promise<BBox> {
-    if (this._bbox) {
-      return { ...this._bbox };
-    }
-    const foreground = await this.getForegroundMask();
-    let left = Infinity;
-    let right = -Infinity;
-    let top = Infinity;
-    let bottom = -Infinity;
-    for (let x = 0; x < foreground.width; x++) {
-      for (let y = 0; y < foreground.height; y++) {
-        if (foreground.getBitXY(x, y)) {
-          left = Math.min(left, x);
-          right = Math.max(right, x);
-          top = Math.min(top, y);
-          bottom = Math.max(bottom, y);
-        }
-      }
-    }
-    padding = Math.round(padding);
-    if (padding > 0) {
-      top = Math.max(top - padding, 0);
-      left = Math.max(left - padding, 0);
-      right = Math.min(right + padding, foreground.width - 1);
-      bottom = Math.min(bottom + padding, foreground.height - 1);
-    }
-    this._bbox = {
-      left: left == Infinity ? 0 : left,
-      right: right == -Infinity ? foreground.width - 1 : right,
-      top: top == Infinity ? 0 : top,
-      bottom: bottom == -Infinity ? foreground.height - 1 : bottom,
-    };
-    return { ...this._bbox };
-  }
-
-  @sequential
-  async crop(bbox: BBox) {
-    const img = await this.getImage();
-    const cropBox = {
-      x: bbox.left,
-      y: bbox.top,
-      width: bbox.right - bbox.left + 1,
-      height: bbox.bottom - bbox.top + 1,
-    };
-    this.clearCache();
-    this._image = img.crop(cropBox);
-  }
-
-  @sequential
-  async bleed() {
-    const img = await this.getImage();
-    if (!img.alpha) {
-      return;
-    }
-    const maxPixelValue = Math.pow(2, img.bitDepth);
-    const bleedMaxAlpha = Math.ceil(0.02 * maxPixelValue);
-    const transparentBlackPixel = [...Array(img.channels)].map(() => 0);
-    // Create a mask from the background (alpha zero) and then erode it by a few pixels.
-    // Add a mask from the foreground (alpha > 0)
-    // Invert to get the background pixels that need to be adjusted
-    // Set the color of those pixels to the the color of the nearest foreground, and the alpha
-    // to something very low so that it mostly isn't visible but won't be treated as background downstream
-    const foreground = await this.getForegroundMask(
-      (bleedMaxAlpha + 1) / maxPixelValue,
-    );
-    const expandedForeground = foreground.dilate({
-      kernel: [
-        [1, 1, 1],
-        [1, 1, 1],
-        [1, 1, 1],
-      ],
-    });
-
-    const isInForeground = (x: number, y: number) => foreground.getBitXY(x, y);
-    const isInExpandedForeground = (x: number, y: number) =>
-      expandedForeground.getBitXY(x, y);
-    const isInOutline = (x: number, y: number) =>
-      isInExpandedForeground(x, y) && !isInForeground(x, y);
-
-    // There does not seem to be a way to combine masks in image-js,
-    // but we don't really need to for the desired outcome.
-    // Iterate over all pixels. Those in the expanded foreground but not in the foreground
-    // should be set in the original image based on nearby non-background pixels
-    for (let x = 0; x < img.width; x++) {
-      for (let y = 0; y < img.height; y++) {
-        if (isInOutline(x, y)) {
-          const neighbors = [];
-          for (let ax = x - 1; ax <= x + 1; ax++) {
-            for (let ay = y - 1; ay <= y + 1; ay++) {
-              if (ax == x && ay == y) {
-                continue;
-              }
-              if (isInForeground(ax, ay)) {
-                neighbors.push(img.getPixelXY(ax, ay));
-              }
-            }
-          }
-          if (neighbors.length) {
-            // average the colors
-            const colorSamples: number[][] = transparentBlackPixel.map(
-              () => [],
-            );
-            for (const neighbor of neighbors) {
-              for (let channel = 0; channel < img.channels; channel++) {
-                colorSamples[channel].push(neighbor[channel]);
-              }
-            }
-            const newColor = colorSamples.map((sample, idx) => {
-              if (idx == img.channels - 1) {
-                // Alpha should be 2% or half the min neighboring alpha
-                const minAlpha = sample.reduce(
-                  (min, value) => Math.min(min, value),
-                  Infinity,
-                );
-                return Math.ceil(Math.min(minAlpha * 0.5, bleedMaxAlpha));
-              } else {
-                // Use the average color
-                return Math.round(
-                  sample.reduce((sum, value) => sum + value, 0) / sample.length,
-                );
-              }
-            });
-            img.setPixelXY(x, y, newColor);
-          }
-        }
-      }
-    }
-    this.clearCache();
-    this._image = img;
-  }
-
-  @sequential
-  async saveTo(path: Pathy) {
-    const image = await this.getImage();
-    await image.save(path.absolute);
-  }
-}
-
-export class SpriteDir {
-  protected _frames: SpriteFrame[] = [];
-  protected _isSpine = false;
-  protected _spinePaths: undefined | { atlas: Pathy; json: Pathy; png: Pathy };
-
-  protected constructor(
-    readonly path: Pathy,
-    readonly logs: Log[],
-    readonly issues: Issue[],
-  ) {}
-
-  get isSpine() {
-    return this._isSpine;
-  }
-
-  get frames() {
-    return [...this._frames];
-  }
-
-  get spinePaths() {
-    assert(this.isSpine, 'Not a spine sprite');
-    if (!this._spinePaths) {
-      this._spinePaths = {
-        atlas: this.path.join('skeleton.atlas'),
-        json: this.path.join('skeleton.json'),
-        png: this.path.join('skeleton.png'),
-      };
-    }
-    return this._spinePaths;
-  }
-
-  async bleed() {
-    if (this.isSpine) {
-      return;
-    }
-    await Promise.all(this.frames.map((frame) => frame.bleed()));
-  }
-
-  async crop() {
-    if (this.isSpine) {
-      return;
-    }
-    // Get the boundingbox that captures the bounding boxes of
-    // all frames.
-    const bboxes = await Promise.all(
-      this.frames.map((frame) => frame.getBoundingBox()),
-    );
-    const bbox = bboxes.slice(1).reduce((bbox, frameBbox) => {
-      return {
-        left: Math.min(bbox.left, frameBbox.left),
-        right: Math.max(bbox.right, frameBbox.right),
-        top: Math.min(bbox.top, frameBbox.top),
-        bottom: Math.max(bbox.bottom, frameBbox.bottom),
-      };
-    }, bboxes[0]);
-    // Crop all frames to that bounding box
-    await Promise.all(this.frames.map((frame) => frame.crop(bbox)));
-  }
-
-  async moveTo(newSpriteDir: Pathy) {
-    await newSpriteDir.ensureDirectory();
-    if (this.isSpine) {
-      const fromTo = [
-        [this.spinePaths.atlas, newSpriteDir.join('skeleton.atlas')],
-        [this.spinePaths.json, newSpriteDir.join('skeleton.json')],
-        [this.spinePaths.png, newSpriteDir.join('skeleton.png')],
-      ];
-      await Promise.all(
-        fromTo.map(([from, to]) =>
-          from
-            .copy(to)
-            .then(() => from.delete({ retryDelay: 100, maxRetries: 5 })),
-        ),
-      );
-      this.logs.push(
-        ...fromTo.map(([from, to]) => ({
-          action: 'moved' as const,
-          path: from.absolute,
-          to: to.absolute,
-        })),
-      );
-    } else {
-      const fromTo = this.frames.map((frame) => [
-        frame.path,
-        newSpriteDir.join(frame.path.basename),
-      ]);
-      await Promise.all(
-        this.frames.map((frame) =>
-          frame
-            .saveTo(newSpriteDir.join(frame.path.basename))
-            .then(() => frame.path.delete({ retryDelay: 100, maxRetries: 5 })),
-        ),
-      );
-      this.logs.push(
-        ...fromTo.map(([from, to]) => ({
-          action: 'moved' as const,
-          path: from.absolute,
-          to: to.absolute,
-        })),
-      );
-    }
-    // Try to delete the folder
-    try {
-      await this.path.delete({
-        recursive: true,
-        retryDelay: 10,
-        maxRetries: 5,
-      });
-    } catch (err) {
-      this.issues.push({
-        level: 'warning',
-        message: `Could not delete source folder: ${this.path.relative}`,
-        cause: err,
-      });
-    }
-  }
-
-  /**
-   * If there are images in this directory, get a `SpriteDir`
-   * instance. Else get `undefined`.
-   */
-  static async from(
-    path: Pathy,
-    logs: Log[],
-    issues: Issue[],
-  ): Promise<SpriteDir | undefined> {
-    const files = (await fsp.readdir(path.absolute)).map((file) =>
-      pathy(file, path.absolute),
-    );
-    const pngs = files.filter((file) => file.basename.match(/\.png$/i));
-    pngs.sort();
-    if (pngs.length === 0) {
-      return;
-    }
-
-    const sprite = new SpriteDir(path, logs, issues);
-    const isSpine = !!files.find((f) => f.basename === 'skeleton.atlas');
-    if (isSpine) {
-      sprite._isSpine = true;
-      const existance = await Promise.all([
-        sprite.spinePaths.json.exists(),
-        sprite.spinePaths.png.exists(),
-      ]);
-      assert(
-        existance.every((x) => x),
-        'Invalid spine sprite.',
-      );
-    } else {
-      sprite._frames = pngs.map((png) => new SpriteFrame(png));
-      // TODO: Make sure all frames are the same size
-      const expectedSize = await sprite.frames[0].getSize();
-      for (const frame of sprite.frames.slice(1)) {
-        const size = await frame.getSize();
-        assert(
-          size.width === expectedSize.width &&
-            size.height === expectedSize.height,
-          'Frames must all be the same size.',
-        );
-      }
-    }
-
-    return sprite;
-  }
-
-  toJSON() {
-    return {
-      path: this.path,
-      isSpine: this.isSpine,
-      framePaths: this.frames,
-    };
-  }
-}
 
 export class SpriteSource {
   readonly issues: Issue[] = [];
@@ -538,21 +159,71 @@ export class SpriteSource {
     return config;
   }
 
-  async import(
-    targetProject: string | Pathy,
+  protected async loadCache(): Promise<SpriteSourceRootSummary> {
+    let cache: SpriteSourceRootSummary;
+    try {
+      cache = await this.paths.cache.read({
+        fallback: {},
+      });
+    } catch (err) {
+      cache = {
+        info: {},
+      };
+      this.issues.push({
+        level: 'warning',
+        message: `Could not load sprite cache. Will rebuild from scratch.`,
+        cause: err,
+      });
+    }
+    return cache;
+  }
+
+  /**
+   * Update the sprite-info cache.
+   */
+  protected async updateSpriteInfo(ignore: string[] | null | undefined) {
+    const ignorePatterns = ignore?.map((pattern) => new RegExp(pattern));
+    // Load the current cache and sprite dirs
+    const [cache, allSpriteDirs] = await Promise.all([
+      this.loadCache(),
+      getDirs(this.paths.root.absolute).then((dirs) =>
+        this.getSpriteDirs(dirs),
+      ),
+    ]);
+    // Filter out ignored spriteDirs
+    const spriteDirs = !ignore?.length
+      ? allSpriteDirs
+      : allSpriteDirs.filter(
+          (dir) =>
+            !ignorePatterns?.some((pattern) =>
+              dir.path.relative.match(pattern),
+            ),
+        );
+
+    // For each sprite, update the cache with its size, frames (checksums, changedAt, etc)
+    const waits: Promise<any>[] = [];
+    for (const sprite of spriteDirs) {
+      waits.push(sprite.updateCache(cache));
+    }
+    await Promise.all(waits);
+
+    // Save and return the updated cache
+    await this.paths.cache.write(cache);
+    return cache;
+  }
+
+  /**
+   * Transform any staged sprites and add them to the source,
+   * and compute updated sprite info.
+   */
+  async update(
     /** Optionally override config options */
     options: SpriteSourceConfig,
   ) {
     const start = Date.now();
-    const project = pathy(targetProject);
 
     // Reset issues
     this.issues.length = 0;
-
-    assert(
-      project.hasExtension('yyp') && (await project.exists()),
-      'Target must be an existing .yy file.',
-    );
 
     const config = await this.loadConfig(options);
 
@@ -561,6 +232,9 @@ export class SpriteSource {
       // Do them sequentially since later patterns could overlap earlier ones
       await this.resolveStaged(staging);
     }
+
+    // Update the sprite info cache
+    await this.updateSpriteInfo(config.ignore);
 
     console.log(`Imported from sprite source in ${Date.now() - start}ms`);
   }

@@ -12,7 +12,7 @@ export function getSpriteSourcePaths(spriteSourceDir: string | Pathy) {
   return {
     root,
     stitch,
-    cache: pathy('sprites.cache.json', stitch).withValidator(
+    cache: pathy('sprites.info.json', stitch).withValidator(
       spriteSourceRootSummarySchema,
     ),
     config: pathy('sprites.config.json', stitch).withValidator(

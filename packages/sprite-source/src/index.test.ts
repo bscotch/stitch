@@ -153,7 +153,7 @@ describe('Sprite Sources', function () {
         to: '$1',
       },
     ];
-    await source.import(sandboxProjectYyp, {
+    await source.update({
       staging: [
         {
           dir: '../staging',
