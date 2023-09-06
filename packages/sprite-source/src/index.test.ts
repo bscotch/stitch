@@ -154,6 +154,7 @@ describe('Sprite Sources', function () {
       },
     ];
     await source.update({
+      ignore: ['--impl'],
       staging: [
         {
           dir: '../staging',

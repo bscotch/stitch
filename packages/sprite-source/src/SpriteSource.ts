@@ -207,6 +207,16 @@ export class SpriteSource {
     }
     await Promise.all(waits);
 
+    // Remove any sprite info that no longer exists
+    const existingSpriteDirs = new Set(
+      spriteDirs.map((dir) => dir.path.relative),
+    );
+    for (const spriteDir of Object.keys(cache.info)) {
+      if (!existingSpriteDirs.has(spriteDir)) {
+        delete cache.info[spriteDir];
+      }
+    }
+
     // Save and return the updated cache
     await this.paths.cache.write(cache);
     return cache;

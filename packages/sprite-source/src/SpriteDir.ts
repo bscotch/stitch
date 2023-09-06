@@ -1,14 +1,9 @@
 import { Pathy, pathy } from '@bscotch/pathy';
 import fsp from 'fs/promises';
-import Piscina from 'piscina';
 import { SpriteFrame } from './SpriteFrame.js';
+import { computeFilesChecksum } from './checksum.js';
 import type { Issue, Log, SpriteSourceRootSummary } from './types.js';
 import { assert } from './utility.js';
-
-const piscina = new Piscina({
-  // The URL must be a file:// URL
-  filename: new URL('./checksum.mjs', import.meta.url).href,
-});
 
 export class SpriteDir {
   protected _frames: SpriteFrame[] = [];
@@ -84,13 +79,11 @@ export class SpriteDir {
       );
       if (lastChanged !== spriteCache.changed || !spriteCache.checksum) {
         spriteCache.changed = lastChanged;
-        spriteCache.checksum = (
-          await Promise.all([
-            piscina.run(this.spinePaths.atlas.absolute),
-            piscina.run(this.spinePaths.json.absolute),
-            piscina.run(this.spinePaths.png.absolute),
-          ])
-        ).join('-');
+        spriteCache.checksum = await computeFilesChecksum([
+          this.spinePaths.atlas.absolute,
+          this.spinePaths.json.absolute,
+          this.spinePaths.png.absolute,
+        ]);
       }
     } else {
       for (const frame of this.frames) {

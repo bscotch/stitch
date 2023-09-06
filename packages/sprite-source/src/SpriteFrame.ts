@@ -1,13 +1,8 @@
 import { Pathy } from '@bscotch/pathy';
 import { Image } from 'image-js';
-import Piscina from 'piscina';
+import { computeFileChecksum } from './checksum.js';
 import type { BBox, SpriteSummary } from './types.js';
 import { assert, getPngSize, sequential } from './utility.js';
-
-const piscina = new Piscina({
-  // The URL must be a file:// URL
-  filename: new URL('./checksum.mjs', import.meta.url).href,
-});
 
 export class SpriteFrame {
   protected _size: undefined | { width: number; height: number };
@@ -30,7 +25,7 @@ export class SpriteFrame {
     if (this._checksum) {
       return this._checksum;
     }
-    const ckecksum = await piscina.run(this.path.absolute);
+    const ckecksum = await computeFileChecksum(this.path.absolute);
     assert(
       ckecksum && typeof ckecksum === 'string',
       'Could not compute checksum',
