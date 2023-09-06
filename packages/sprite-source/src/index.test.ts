@@ -144,6 +144,14 @@ describe('Sprite Sources', function () {
     endTimer(start, `Found ${dirs.length} dirs (async)`);
   });
 
+  xit('can quickly update a sprite source', async function () {
+    const source = new SpriteSource('sprite-src');
+    const start = startTimer();
+    await source.update({ ignore: ['--impl'] });
+    endTimer(start, 'Updated sprite source');
+    // TODO: Figure out why the first run is slow (~30s) -- can we speed it up somehow?
+  });
+
   it('can import from a sprite source', async function () {
     await initializeSandbox();
     const source = new SpriteSource(sandboxSource);
