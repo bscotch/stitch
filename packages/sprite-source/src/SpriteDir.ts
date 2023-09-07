@@ -1,8 +1,9 @@
 import { Pathy, pathy } from '@bscotch/pathy';
 import fsp from 'fs/promises';
+import type { SpriteSourceRootSummary } from './SpriteCache.schemas.js';
 import { SpriteFrame } from './SpriteFrame.js';
 import { computeFilesChecksum } from './checksum.js';
-import type { Issue, Log, SpriteSourceRootSummary } from './types.js';
+import type { Issue, Log } from './types.js';
 import { assert } from './utility.js';
 
 export class SpriteDir {

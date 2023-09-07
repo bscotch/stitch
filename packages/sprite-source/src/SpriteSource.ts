@@ -1,59 +1,22 @@
-import { Pathy, pathy } from '@bscotch/pathy';
+import { pathy } from '@bscotch/pathy';
+import { SpriteCache } from './SpriteCache.js';
 import { SpriteDir } from './SpriteDir.js';
-import { SpriteSourcePaths, getSpriteSourcePaths } from './paths.js';
 import {
-  Issue,
-  Log,
-  SpriteSourceRootSummary,
-  SpriteStaging,
   spriteSourceConfigSchema,
   type SpriteSourceConfig,
-} from './types.js';
-import {
-  AnyFunc,
-  AsyncableChecked,
-  assert,
-  check,
-  deletePngChildren,
-  getDirs,
-  rethrow,
-} from './utility.js';
+  type SpriteStaging,
+} from './SpriteSource.schemas.js';
+import { assert, deletePngChildren, getDirs, rethrow } from './utility.js';
 
-export class SpriteSource {
-  readonly issues: Issue[] = [];
-  readonly paths: SpriteSourcePaths;
-  readonly logs: Log[] = [];
-
-  constructor(readonly sourceDirPath: string | Pathy) {
-    this.paths = getSpriteSourcePaths(sourceDirPath);
-  }
-
-  protected async getSpriteDirs(dirs: Pathy[]): Promise<SpriteDir[]> {
-    const waits: Promise<any>[] = [];
-    const spriteDirs: SpriteDir[] = [];
-    for (const dir of dirs) {
-      waits.push(
-        SpriteDir.from(dir, this.logs, this.issues)
-          .then((sprite) => {
-            if (sprite) {
-              spriteDirs.push(sprite);
-            }
-          })
-          .catch((err) => {
-            this.issues.push({
-              level: 'error',
-              message: `Error processing "${dir.relative}"`,
-              cause: err,
-            });
-          }),
-      );
-    }
-    await Promise.all(waits);
-    return spriteDirs;
+export class SpriteSource extends SpriteCache {
+  get configFile() {
+    return this.stitchDir
+      .join('sprites.config.json')
+      .withValidator(spriteSourceConfigSchema);
   }
 
   protected async resolveStaged(staging: SpriteStaging) {
-    const dir = this.paths.root.join(staging.dir);
+    const dir = this.spritesRoot.join(staging.dir);
     if (!(await dir.exists())) {
       this.issues.push({
         level: 'warning',
@@ -88,7 +51,7 @@ export class SpriteSource {
             outDirPath = outDirPath.replace(new RegExp(rename.from), rename.to);
           }
         }
-        const outDir = pathy(outDirPath, this.paths.root);
+        const outDir = pathy(outDirPath, this.spritesRoot);
         // Crop it!
         const cropWait = transform.crop ? sprite.crop() : Promise.resolve();
         // Bleed it!
@@ -116,24 +79,8 @@ export class SpriteSource {
     }
   }
 
-  protected check<T extends AnyFunc>(
-    func: T,
-    message: string,
-  ): AsyncableChecked<T> {
-    const results = check(func, message);
-    if (results instanceof Promise) {
-      void results.then(([error, result]) => {
-        if (error) {
-          this.issues.push({ level: 'error', message, cause: error });
-        }
-        return [error, result];
-      });
-    }
-    return results;
-  }
-
   protected async loadConfig(
-    overrides: SpriteSourceConfig,
+    overrides?: SpriteSourceConfig,
   ): Promise<SpriteSourceConfig> {
     // Validate options. Show error out if invalid.
     try {
@@ -141,85 +88,21 @@ export class SpriteSource {
     } catch (err) {
       rethrow(err, 'Invalid SpriteSource options');
     }
-    const paths = getSpriteSourcePaths(this.sourceDirPath);
     assert(
-      await paths.root.isDirectory(),
+      await this.spritesRoot.isDirectory(),
       'Source must be an existing directory.',
     );
     // Update the config
-    await paths.stitch.ensureDirectory();
-    const config = await paths.config.read({ fallback: {} });
-    if (overrides.ignore !== undefined) {
+    await this.stitchDir.ensureDirectory();
+    const config = await this.configFile.read({ fallback: {} });
+    if (overrides?.ignore !== undefined) {
       config.ignore = overrides.ignore;
     }
-    if (overrides.staging !== undefined) {
+    if (overrides?.staging !== undefined) {
       config.staging = overrides.staging;
     }
-    await paths.config.write(config);
+    await this.configFile.write(config);
     return config;
-  }
-
-  protected async loadCache(): Promise<SpriteSourceRootSummary> {
-    let cache: SpriteSourceRootSummary;
-    try {
-      cache = await this.paths.cache.read({
-        fallback: {},
-      });
-    } catch (err) {
-      cache = {
-        info: {},
-      };
-      this.issues.push({
-        level: 'warning',
-        message: `Could not load sprite cache. Will rebuild from scratch.`,
-        cause: err,
-      });
-    }
-    return cache;
-  }
-
-  /**
-   * Update the sprite-info cache.
-   */
-  protected async updateSpriteInfo(ignore: string[] | null | undefined) {
-    const ignorePatterns = ignore?.map((pattern) => new RegExp(pattern));
-    // Load the current cache and sprite dirs
-    const [cache, allSpriteDirs] = await Promise.all([
-      this.loadCache(),
-      getDirs(this.paths.root.absolute).then((dirs) =>
-        this.getSpriteDirs(dirs),
-      ),
-    ]);
-    // Filter out ignored spriteDirs
-    const spriteDirs = !ignore?.length
-      ? allSpriteDirs
-      : allSpriteDirs.filter(
-          (dir) =>
-            !ignorePatterns?.some((pattern) =>
-              dir.path.relative.match(pattern),
-            ),
-        );
-
-    // For each sprite, update the cache with its size, frames (checksums, changedAt, etc)
-    const waits: Promise<any>[] = [];
-    for (const sprite of spriteDirs) {
-      waits.push(sprite.updateCache(cache));
-    }
-    await Promise.all(waits);
-
-    // Remove any sprite info that no longer exists
-    const existingSpriteDirs = new Set(
-      spriteDirs.map((dir) => dir.path.relative),
-    );
-    for (const spriteDir of Object.keys(cache.info)) {
-      if (!existingSpriteDirs.has(spriteDir)) {
-        delete cache.info[spriteDir];
-      }
-    }
-
-    // Save and return the updated cache
-    await this.paths.cache.write(cache);
-    return cache;
   }
 
   /**
@@ -228,7 +111,7 @@ export class SpriteSource {
    */
   async update(
     /** Optionally override config options */
-    options: SpriteSourceConfig,
+    options?: SpriteSourceConfig,
   ) {
     const start = Date.now();
 

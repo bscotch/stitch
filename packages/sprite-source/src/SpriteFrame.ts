@@ -1,7 +1,8 @@
 import { Pathy } from '@bscotch/pathy';
 import { Image } from 'image-js';
+import type { SpriteSummary } from './SpriteCache.schemas.js';
 import { computeFileChecksum } from './checksum.js';
-import type { BBox, SpriteSummary } from './types.js';
+import type { BBox } from './types.js';
 import { assert, getPngSize, sequential } from './utility.js';
 
 export class SpriteFrame {
