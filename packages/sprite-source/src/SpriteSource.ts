@@ -1,4 +1,4 @@
-import { pathy } from '@bscotch/pathy';
+import { Pathy, pathy } from '@bscotch/pathy';
 import { SpriteCache } from './SpriteCache.js';
 import { SpriteDir } from './SpriteDir.js';
 import {
@@ -113,8 +113,6 @@ export class SpriteSource extends SpriteCache {
     /** Optionally override config options */
     options?: SpriteSourceConfig,
   ) {
-    const start = Date.now();
-
     // Reset issues
     this.issues.length = 0;
 
@@ -127,8 +125,24 @@ export class SpriteSource extends SpriteCache {
     }
 
     // Update the sprite info cache
-    await this.updateSpriteInfo(config.ignore);
+    const info = await this.updateSpriteInfo(config.ignore);
 
-    console.log(`Imported from sprite source in ${Date.now() - start}ms`);
+    return info;
+  }
+
+  /**
+   * @param options If specified, creates/overwrites the config file with these options.
+   */
+  static async from(spritesRoot: string | Pathy, options?: SpriteSourceConfig) {
+    // Ensure the spritesRoot exists
+    assert(
+      await pathy(spritesRoot).exists(),
+      `Sprites root does not exist: ${spritesRoot}`,
+    );
+    const source = new SpriteSource(spritesRoot);
+    if (options) {
+      await source.loadConfig(options);
+    }
+    return source;
   }
 }

@@ -1,8 +1,8 @@
 import { Pathy, pathy } from '@bscotch/pathy';
 import fsp from 'fs/promises';
-import type { SpriteSourceRootSummary } from './SpriteCache.schemas.js';
+import type { SpritesInfo } from './SpriteCache.schemas.js';
 import { SpriteFrame } from './SpriteFrame.js';
-import { computeFilesChecksum } from './checksum.js';
+import { computeFilesChecksum, computeStringChecksum } from './checksum.js';
 import type { Issue, Log } from './types.js';
 import { assert } from './utility.js';
 
@@ -37,7 +37,7 @@ export class SpriteDir {
     return this._spinePaths;
   }
 
-  async updateCache(cache: SpriteSourceRootSummary) {
+  async updateCache(cache: SpritesInfo) {
     // Do some initial cleanup of the cache
     // Remove the cache if there has been a spine-type-change
     if (
@@ -56,10 +56,11 @@ export class SpriteDir {
       : {
           spine: false,
           frames: {},
+          checksum: '',
         };
     const spriteCache = cache.info[this.path.relative];
 
-    const waits: Promise<any>[] = [];
+    const frameWaits: Promise<{ checksum: string }>[] = [];
     if (spriteCache.spine) {
       // TODO: Handle the spine case
       const lastChanged = Math.max(
@@ -88,10 +89,15 @@ export class SpriteDir {
       }
     } else {
       for (const frame of this.frames) {
-        waits.push(frame.updateCache(spriteCache));
+        frameWaits.push(frame.updateCache(spriteCache));
       }
     }
-    await Promise.all(waits);
+    const frames = await Promise.all(frameWaits);
+    if (!spriteCache.spine) {
+      spriteCache.checksum = computeStringChecksum(
+        frames.map((f) => f.checksum).join('-'),
+      );
+    }
   }
 
   async bleed() {

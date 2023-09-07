@@ -1,8 +1,5 @@
 import { Pathy, pathy } from '@bscotch/pathy';
-import {
-  SpriteSourceRootSummary,
-  spriteSourceRootSummarySchema,
-} from './SpriteCache.schemas.js';
+import { SpritesInfo, spritesInfoSchema } from './SpriteCache.schemas.js';
 import { SpriteDir } from './SpriteDir.js';
 import type { Issue, Log } from './types.js';
 import { getDirs } from './utility.js';
@@ -33,7 +30,7 @@ export class SpriteCache {
   get cacheFile() {
     return this.stitchDir
       .join('sprites.info.json')
-      .withValidator(spriteSourceRootSummarySchema);
+      .withValidator(spritesInfoSchema);
   }
 
   protected async getSpriteDirs(dirs: Pathy[]): Promise<SpriteDir[]> {
@@ -60,8 +57,8 @@ export class SpriteCache {
     return spriteDirs;
   }
 
-  protected async loadCache(): Promise<SpriteSourceRootSummary> {
-    let cache: SpriteSourceRootSummary;
+  protected async loadCache(): Promise<SpritesInfo> {
+    let cache: SpritesInfo;
     try {
       cache = await this.cacheFile.read({
         fallback: {},

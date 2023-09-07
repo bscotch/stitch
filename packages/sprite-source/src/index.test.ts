@@ -1,5 +1,7 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
+import { SpriteDest } from './SpriteDest.js';
 import { SpriteSource } from './SpriteSource.js';
+import { SpriteSourceConfig } from './SpriteSource.schemas.js';
 import { assert, getDirs, getPngSize } from './utility.js';
 
 const samples = pathy('samples');
@@ -88,6 +90,44 @@ const sandboxStagingOrg = [
   },
 ] satisfies StagingOrg;
 
+const renames = [
+  {
+    from: '(.*?)(--[a-z]+)+',
+    to: '$1',
+  },
+];
+const sandboxSourceConfig = {
+  ignore: ['--impl'],
+  staging: [
+    {
+      dir: '../staging',
+      transforms: [
+        {
+          include: '--nb--nc|--nc--nb',
+          synced: true,
+          renames,
+        },
+        {
+          include: '--nb',
+          bleed: false,
+          crop: true,
+          renames,
+        },
+        {
+          include: '--nc',
+          bleed: true,
+          crop: false,
+          renames,
+        },
+        {
+          bleed: true,
+          crop: true,
+        },
+      ],
+    },
+  ],
+} satisfies SpriteSourceConfig;
+
 async function deleteFolder(folder: Pathy) {
   return await folder.delete({
     force: true,
@@ -152,7 +192,23 @@ describe('Sprite Sources', function () {
     // TODO: Figure out why the first run is slow (~30s) -- can we speed it up somehow?
   });
 
-  it('can import from a sprite source', async function () {
+  it('can import a sprite source', async function () {
+    await initializeSandbox();
+    // Configure the source config
+    const source = await SpriteSource.from(sandboxSource, sandboxSourceConfig);
+
+    const dest = await SpriteDest.from(sandboxProjectYyp);
+    await dest.import({
+      sources: [
+        {
+          source: sandboxSource.absolute,
+          prefix: 'sp_',
+        },
+      ],
+    });
+  });
+
+  it('can update a sprite source', async function () {
     await initializeSandbox();
     const source = new SpriteSource(sandboxSource);
     const renames = [

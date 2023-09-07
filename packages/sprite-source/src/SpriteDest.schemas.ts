@@ -1,5 +1,15 @@
 import { z } from 'zod';
 
+export interface SpriteDestAction {
+  kind: 'update' | 'create' | 'update-spine' | 'create-spine';
+  /** The name of the sprite */
+  name: string;
+  /** The fullpath to the folder containing the source files */
+  source: string;
+  /** The fullpath to the {project}/sprites/{spriteName} folder where this sprite asset does (or should) live */
+  dest: string;
+}
+
 export type SpriteDestSource = z.infer<typeof spriteDestSourceSchema>;
 export const spriteDestSourceSchema = z.object({
   source: z
@@ -8,7 +18,8 @@ export const spriteDestSourceSchema = z.object({
       'Path to the SpriteSource directory. Either absolute or relative to the GameMaker project folder.',
     ),
   ignore: z
-    .string()
+    .array(z.string())
+    .nullable()
     .optional()
     .describe(
       'Pattern to match against the folder path (relative to the SpriteSource root, using POSIX seps) for it to be skipped during import. If omitted, all sprites are included. Converted to a regex with `new RegExp(ignore)`.',

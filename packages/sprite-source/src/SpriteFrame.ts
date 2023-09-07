@@ -39,7 +39,7 @@ export class SpriteFrame {
     const lastChanged = (await this.path.stat()).mtime.getTime();
     const needsUpdate =
       (cache.frames[this.path.relative]?.changed || 0) !== lastChanged;
-    if (!needsUpdate) return;
+    if (!needsUpdate) return cache.frames[this.path.relative];
     const [size, checksum] = await Promise.all([
       this.getSize(),
       this.checksum(),
@@ -50,6 +50,7 @@ export class SpriteFrame {
       height: size.height,
       width: size.width,
     };
+    return cache.frames[this.path.relative];
   }
 
   @sequential
