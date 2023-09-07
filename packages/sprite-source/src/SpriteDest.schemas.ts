@@ -12,7 +12,7 @@ export interface SpriteDestAction {
 }
 
 export type SpriteDestSource = z.infer<typeof spriteDestSourceSchema>;
-export const spriteDestSourceSchema = z.object({
+const spriteDestSourceSchema = z.object({
   source: z
     .string()
     .describe(
