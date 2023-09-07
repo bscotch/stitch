@@ -1,0 +1,86 @@
+{
+  "type": "object",
+  "properties": {
+    "info": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "spine": {
+                "type": "boolean",
+                "const": false
+              },
+              "checksum": {
+                "type": "string",
+                "description": "A checksum combining the pixel-based checksums of all of the frame checksums."
+              },
+              "frames": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "width": {
+                      "type": "number"
+                    },
+                    "height": {
+                      "type": "number"
+                    },
+                    "checksum": {
+                      "type": "string",
+                      "description": "Pixel-based checksum of the image."
+                    },
+                    "changed": {
+                      "type": "number",
+                      "description": "Unix timestamp of last modification date."
+                    }
+                  },
+                  "required": [
+                    "width",
+                    "height",
+                    "checksum",
+                    "changed"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "spine",
+              "checksum",
+              "frames"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "spine": {
+                "type": "boolean",
+                "const": true
+              },
+              "checksum": {
+                "type": "string",
+                "description": "A checksum combining the pixel-based checksum of the atlas file with the contets of the atlas and json files."
+              },
+              "changed": {
+                "type": "number",
+                "description": "Unix timestamp of the most recent modified date for all associate files (atlas, json, png)."
+              }
+            },
+            "required": [
+              "spine",
+              "checksum",
+              "changed"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "default": {}
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

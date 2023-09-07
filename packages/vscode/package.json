@@ -27,7 +27,7 @@
   "publisher": "bscotch",
   "main": "./dist/extension.js",
   "scripts": {
-    "build": "pnpm build:grammar && node scripts/build.mjs && pnpm build:manifest",
+    "build": "pnpm build:grammar && node scripts/build-schemas.mjs && node scripts/build.mjs && pnpm build:manifest",
     "build:deps": "pnpm turbo run build --filter=bscotch-stitch-vscode...",
     "build:grammar": "node scripts/yaml-to-json.mjs syntaxes/gml.tmLanguage.yaml syntaxes/gml.tmLanguage.json",
     "build:manifest": "node dist/manifest.update.js && prettier -w package.json",
@@ -385,20 +385,16 @@
     ],
     "jsonValidation": [
       {
-        "fileMatch": [
-          "*.spritely.json",
-          ".spritely.json",
-          "spritely.json"
-        ],
-        "url": "./schemas/spritely.config.json"
+        "fileMatch": ".stitch/sprites.info.json",
+        "url": "./schemas/stitch.sprite-cache.schema.json"
       },
       {
-        "fileMatch": [
-          "*.stitch.sprites.json",
-          ".stitch.sprites.json",
-          "stitch.sprites.json"
-        ],
-        "url": "./schemas/sprite.source.json"
+        "fileMatch": ".stitch/sprites.import.json",
+        "url": "./schemas/stitch.sprite-imports.schema.json"
+      },
+      {
+        "fileMatch": ".stitch/sprites.config.json",
+        "url": "./schemas/stitch.sprite-source.schema.json"
       }
     ],
     "keybindings": [
@@ -752,34 +748,34 @@
     "onCommand:stitch.openIde",
     "workspaceContains:**/*.{yyp,yy,gml}"
   ],
-  "dependencies": {
-    "@bscotch/emitter": "0.2.0",
-    "@sentry/node": "7.64.0"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@bscotch/emitter": "0.2.1",
+    "@sentry/node": "7.68.0",
     "@bscotch/gamemaker-releases": "workspace:*",
+    "@bscotch/sprite-source": "workspace:*",
     "@bscotch/gml-parser": "workspace:*",
     "@bscotch/pathy": "^2.7.4",
     "@bscotch/stitch": "workspace:*",
     "@bscotch/stitch-launcher": "workspace:*",
-    "@bscotch/trebuchet": "2.8.5",
-    "@bscotch/utility": "^6.8.3",
+    "@bscotch/trebuchet": "2.8.7",
+    "@bscotch/utility": "^7.1.0",
     "@bscotch/yy": "workspace:*",
-    "@sentry/esbuild-plugin": "2.7.0",
+    "@sentry/esbuild-plugin": "2.7.1",
     "@types/plist": "3.0.2",
     "@types/vscode": "1.81.0",
     "@types/xml2js": "0.4.11",
     "@vscode/vsce": "2.20.1",
     "dotenv": "16.3.1",
     "esbuild": "^0.19.2",
-    "glob": "10.3.3",
+    "glob": "10.3.4",
     "nodemon": "^3.0.1",
     "plist": "3.1.0",
-    "turbo": "^1.10.12",
+    "turbo": "^1.10.13",
     "typescript": "5.1.6",
     "xml2js": "0.6.2",
-    "yaml": "2.3.1",
-    "zod": "^3.22.0",
+    "yaml": "2.3.2",
+    "zod": "^3.22.2",
     "zod-to-json-schema": "3.21.4",
     "zx": "^7.2.3"
   },
