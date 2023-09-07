@@ -1,12 +1,15 @@
 import { Pathy, pathy } from '@bscotch/pathy';
-import { yypSchema, type Yyp } from '@bscotch/yy';
+import { Yy } from '@bscotch/yy';
 import { SpriteCache } from './SpriteCache.js';
 import type {
   SpineSummary,
   SpriteSummary,
   SpritesInfo,
 } from './SpriteCache.schemas.js';
-import applySpriteAction from './SpriteDest.actions.js';
+import {
+  applySpriteAction,
+  type SpriteDestActionResult,
+} from './SpriteDest.actions.js';
 import {
   SpriteDestAction,
   spriteDestConfigSchema,
@@ -19,7 +22,7 @@ import { assert, rethrow } from './utility.js';
 export class SpriteDest extends SpriteCache {
   protected constructor(
     spritesRoot: string | Pathy,
-    readonly yyp: Pathy<Yyp>,
+    readonly yypPath: Pathy,
   ) {
     super(spritesRoot, 1);
   }
@@ -142,10 +145,50 @@ export class SpriteDest extends SpriteCache {
    * @param overrides Optionally override the configuration file (if it exists)
    */
   async import(overrides?: SpriteDestConfig) {
-    const [config, destSpritesInfo] = await Promise.all([
-      this.loadConfig(overrides),
-      this.updateSpriteInfo(),
-    ]);
+    const [configResult, destSpritesInfoResult, yypResult] =
+      await Promise.allSettled([
+        this.loadConfig(overrides),
+        this.updateSpriteInfo(),
+        Yy.read(this.yypPath.absolute, 'project'),
+      ]);
+    assert(
+      yypResult.status === 'fulfilled',
+      'Project file is invalid',
+      yypResult.status === 'rejected' ? yypResult.reason : undefined,
+    );
+    assert(
+      configResult.status === 'fulfilled',
+      'Could not load config',
+      configResult.status === 'rejected' ? configResult.reason : undefined,
+    );
+    assert(
+      destSpritesInfoResult.status === 'fulfilled',
+      'Could not load sprites info',
+      destSpritesInfoResult.status === 'rejected'
+        ? destSpritesInfoResult.reason
+        : undefined,
+    );
+
+    const config = configResult.value;
+    const destSpritesInfo = destSpritesInfoResult.value;
+    const yyp = yypResult.value;
+
+    // Collect info from the yyp about existing folders, sprites,
+    // and assets. Goals are:
+    // - Faster lookups (e.g. using sets)
+    // - Ensure we won't have an asset name clash
+    const existingFolders = new Set<string>();
+    const existingSprites = new Set<string>();
+    const existingAssets = new Set<string>();
+    yyp.resources.forEach((r) => {
+      if (r.id.path.startsWith('sprites')) {
+        existingSprites.add(r.id.name);
+      }
+      existingAssets.add(r.id.name);
+    });
+    yyp.Folders.forEach((f) => {
+      existingFolders.add(f.folderPath);
+    });
 
     // Try to do it all at the same time for perf. Race conditions
     // and order-of-ops issues indicate some kind of user
@@ -172,25 +215,54 @@ export class SpriteDest extends SpriteCache {
     }
     await Promise.allSettled(getActionsWaits);
 
-    // TODO: Apply the actions (in parellel)
+    // Apply the actions (in parellel)
+    const appliedActions: SpriteDestActionResult[] = [];
     const applyActionsWaits: Promise<any>[] = [];
     for (const action of actions) {
+      if (existingAssets.has(action.name)) {
+        this.issues.push({
+          level: 'warning',
+          message: `Asset name collision: ${action.name}`,
+        });
+        continue;
+      }
       applyActionsWaits.push(
         applySpriteAction({
-          projectYypPath: this.yyp.absolute,
+          projectYypPath: this.yypPath.absolute,
           action,
-        }).catch((err) => {
-          this.issues.push({
-            level: 'error',
-            message: `Error applying action: ${JSON.stringify(action)}`,
-            cause: err,
-          });
-        }),
+        })
+          .then((result) => {
+            appliedActions.push(result);
+          })
+          .catch((err) => {
+            this.issues.push({
+              level: 'error',
+              message: `Error applying action: ${JSON.stringify(action)}`,
+              cause: err,
+            });
+          }),
       );
     }
     await Promise.allSettled(applyActionsWaits);
+    if (!appliedActions.length) {
+      return;
+    }
 
     // TODO: Ensure the .yyp is up to date
+    for (const appliedAction of appliedActions) {
+      if (!existingSprites.has(appliedAction.resource.name)) {
+        yyp.resources.push({
+          id: appliedAction.resource,
+        });
+        existingSprites.add(appliedAction.resource.name);
+      }
+      if (!existingFolders.has(appliedAction.folder.folderPath)) {
+        // @ts-expect-error The object is partial, but gets validated and completed on write
+        yyp.Folders.push(appliedAction.folder);
+        existingFolders.add(appliedAction.folder.folderPath);
+      }
+    }
+    await Yy.write(this.yypPath.absolute, yyp, 'project');
   }
 
   protected async loadConfig(
@@ -222,7 +294,7 @@ export class SpriteDest extends SpriteCache {
       projectYypPath.toString().endsWith('.yyp'),
       'The project path must be to a .yyp file',
     );
-    const projectYyp = pathy(projectYypPath).withValidator(yypSchema);
+    const projectYyp = pathy(projectYypPath);
     assert(
       await projectYyp.exists(),
       `Project file does not exist: ${projectYyp}`,

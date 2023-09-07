@@ -1,4 +1,6 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
+import { Yy } from '@bscotch/yy';
+import { expect } from 'chai';
 import { SpriteDest } from './SpriteDest.js';
 import { SpriteSource } from './SpriteSource.js';
 import { SpriteSourceConfig } from './SpriteSource.schemas.js';
@@ -23,6 +25,8 @@ type StagingOrg = {
   path: string;
   spine?: boolean;
   invalid?: boolean;
+  /** Ignore during import? */
+  ignored?: boolean;
   expect?: {
     cropped?: boolean;
     bled?: boolean;
@@ -59,6 +63,7 @@ const sandboxStagingOrg = [
   },
   {
     path: 'subfolder/suffixes/sprite3--impl',
+    ignored: true,
     expect: {
       cropped: true,
       bled: true,
@@ -195,7 +200,7 @@ describe('Sprite Sources', function () {
   it.only('can import a sprite source', async function () {
     await initializeSandbox();
     // Configure the source config
-    const source = await SpriteSource.from(sandboxSource, sandboxSourceConfig);
+    await SpriteSource.from(sandboxSource, sandboxSourceConfig);
 
     const dest = await SpriteDest.from(sandboxProjectYyp);
     await dest.import({
@@ -206,7 +211,15 @@ describe('Sprite Sources', function () {
         },
       ],
     });
-    console.dir(dest.issues, { depth: null });
+
+    // Make sure that all of the expected yyp content exists
+    const yyp = await Yy.read(dest.yypPath.absolute, 'project');
+    const spriteNames = yyp.resources.map((s) => s.id.name).sort();
+    const expectedSpriteNames = sandboxStagingOrg
+      .filter((s) => !s.invalid && !s.ignored)
+      .map((s) => `sp_${(s.expect?.renamed || s.path).split('/').pop()!}`)
+      .sort();
+    expect(spriteNames).to.deep.equal(expectedSpriteNames);
   });
 
   it('can update a sprite source', async function () {

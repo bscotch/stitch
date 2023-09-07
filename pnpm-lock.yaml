@@ -432,23 +432,25 @@ importers:
 
   packages/sprite-source:
     specifiers:
-      '@bscotch/pathy': ^2.7.4
+      '@bscotch/pathy': ^2.7.6
       '@bscotch/yy': workspace:*
+      chai: ^4.3.7
       image-js: 0.35.4
       piscina: 4.1.0
       sharp: 0.32.5
-      tslib: ^2.6.1
+      tslib: ^2.6.2
       typescript: 5.2.2
-      zod: ^3.22.0
+      zod: ^3.22.2
     dependencies:
-      '@bscotch/pathy': 2.7.4
+      '@bscotch/pathy': 2.7.6
       '@bscotch/yy': link:../yy
       image-js: 0.35.4
       piscina: 4.1.0
       sharp: 0.32.5
-      tslib: 2.6.1
-      zod: 3.22.0
+      tslib: 2.6.2
+      zod: 3.22.2
     devDependencies:
+      chai: 4.3.7
       typescript: 5.2.2
 
   packages/spritely:
@@ -640,7 +642,7 @@ packages:
       json5: 2.2.3
       semver: 7.5.4
       sort-package-json: 2.4.1
-      tslib: 2.6.1
+      tslib: 2.6.2
       type-fest: 3.12.0
     transitivePeerDependencies:
       - supports-color
@@ -685,6 +687,18 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
+  /@bscotch/pathy/2.7.6:
+    resolution: {integrity: sha512-svJZsH+iiTdOsJWeXAjDo52nnzxITxLSJ9UjBMs6NHIKSvrl1PpGJCOo+/xAQouoifeoFH1mRDjO68DYhVKf4w==}
+    dependencies:
+      '@bscotch/utility': 7.1.0
+      fs-extra: 11.1.1
+      json5: 2.2.3
+      tslib: 2.6.2
+      yaml: 2.2.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /@bscotch/project/2.3.9:
     resolution: {integrity: sha512-4OOfA6bi+TvDniT8IuJNrNE/EPymvaddhtpAwdRR5z3YzwJbkz6GOTPToxlMYBgcJbJqN5qHmK4A7qPuYINZ4Q==}
     dependencies:
@@ -700,7 +714,7 @@ packages:
       simple-git: 3.17.0
       source-map-support: 0.5.21
       ts-morph: 18.0.0
-      tslib: 2.6.1
+      tslib: 2.6.2
     transitivePeerDependencies:
       - supports-color
 
@@ -710,13 +724,13 @@ packages:
     hasBin: true
     dependencies:
       '@bscotch/debounce-watch': 1.0.18
-      '@bscotch/pathy': 2.7.4
+      '@bscotch/pathy': 2.7.6
       '@bscotch/utility': 6.8.3
       commander: 11.0.0
       fs-extra: 11.1.1
       image-js: 0.35.4
       image-size: 1.0.2
-      tslib: 2.6.1
+      tslib: 2.6.2
       yaml: 2.3.1
     transitivePeerDependencies:
       - supports-color
@@ -809,7 +823,7 @@ packages:
       json5: 2.2.3
       semver: 7.5.4
       simple-git: 3.17.0
-      tslib: 2.6.1
+      tslib: 2.6.2
       type-fest: 3.12.0
       yaml: 2.2.1
     transitivePeerDependencies:
@@ -823,6 +837,15 @@ packages:
       tslib: 2.6.1
     transitivePeerDependencies:
       - supports-color
+
+  /@bscotch/utility/7.1.0:
+    resolution: {integrity: sha512-iQyfMgNNwzLbqVBI+XDcjatYut1WA1jJyfxPLtdMWTikvAuGr55+dcfmBbaCfeqCR23q2DSJB0Dfalzg4QwaGQ==}
+    dependencies:
+      debug: 4.3.4
+      tslib: 2.6.2
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /@bscotch/validation/0.2.5:
     resolution: {integrity: sha512-UuHc6/R5mUom21mHcqlORg3T1DuO0ozNw3s/beSVl28W1Q/t9LF2IR5dmwORdv9Usq1WtMQtBcdCqAXvYfZImQ==}
@@ -1879,7 +1902,7 @@ packages:
       '@sentry/core': 7.64.0
       '@sentry/types': 7.64.0
       '@sentry/utils': 7.64.0
-      tslib: 2.6.1
+      tslib: 2.6.2
 
   /@sentry/bundler-plugin-core/2.7.0:
     resolution: {integrity: sha512-ZxJG/DsRXJ9BMaKv+butL3TaiHsuuUy1bNkl56/FCbCt1rYuzltEPT2cBuuveieg66ZWtzerSF17QX3v6svtJQ==}
@@ -1920,7 +1943,7 @@ packages:
     dependencies:
       '@sentry/types': 7.64.0
       '@sentry/utils': 7.64.0
-      tslib: 2.6.1
+      tslib: 2.6.2
 
   /@sentry/esbuild-plugin/2.7.0:
     resolution: {integrity: sha512-B6j0DqTPK9G1lm70PEPNuVBeSyOoR0N9rXBk0ScVNz9aLW3dmnVedv1u3MYqcRO9nK0unf0KZi2oB4LSp94Jzg==}
@@ -1945,7 +1968,7 @@ packages:
       cookie: 0.4.1
       https-proxy-agent: 5.0.1
       lru_map: 0.3.3
-      tslib: 2.6.1
+      tslib: 2.6.2
     transitivePeerDependencies:
       - supports-color
 
@@ -1958,7 +1981,7 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       '@sentry/types': 7.64.0
-      tslib: 2.6.1
+      tslib: 2.6.2
 
   /@sinclair/typebox/0.27.8:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
@@ -7495,7 +7518,7 @@ packages:
   /rxjs/7.8.1:
     resolution: {integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==}
     dependencies:
-      tslib: 2.6.1
+      tslib: 2.6.2
 
   /sade/1.8.1:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
@@ -8397,6 +8420,9 @@ packages:
   /tslib/2.6.1:
     resolution: {integrity: sha512-t0hLfiEKfMUoqhG+U1oid7Pva4bbDPHYfJNiB7BiIjRkj1pyC++4N3huJfqY6aRH6VTB0rvtzQwjM4K6qpfOig==}
 
+  /tslib/2.6.2:
+    resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
+
   /tunnel-agent/0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
     dependencies:
@@ -9117,6 +9143,10 @@ packages:
 
   /zod/3.22.0:
     resolution: {integrity: sha512-y5KZY/ssf5n7hCGDGGtcJO/EBJEm5Pa+QQvFBeyMOtnFYOSflalxIFFvdaYevPhePcmcKC4aTbFkCcXN7D0O8Q==}
+
+  /zod/3.22.2:
+    resolution: {integrity: sha512-wvWkphh5WQsJbVk1tbx1l1Ly4yg+XecD+Mq280uBGt9wa5BKSWf4Mhp6GmrkPixhMxmabYY7RbzlwVP32pbGCg==}
+    dev: false
 
   /zx/7.2.3:
     resolution: {integrity: sha512-QODu38nLlYXg/B/Gw7ZKiZrvPkEsjPN3LQ5JFXM7h0JvwhEdPNNl+4Ao1y4+o3CLNiDUNcwzQYZ4/Ko7kKzCMA==}

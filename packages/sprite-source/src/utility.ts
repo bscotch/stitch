@@ -35,16 +35,22 @@ export function check<T extends AnyFunc>(
 }
 
 export class SpriteSourceError extends Error {
-  constructor(message: string, asserter?: Function) {
+  constructor(message: string, cause?: any, asserter?: Function) {
     super(message);
     this.name = 'SpriteSourceError';
+    this.cause = cause;
     Error.captureStackTrace(this, asserter || this.constructor);
   }
 }
 
-export function assert(condition: any, message: string): asserts condition {
+export function assert(
+  condition: any,
+  message: string,
+  cause?: any,
+): asserts condition {
   if (!condition) {
-    throw new SpriteSourceError(message, assert);
+    const err = new SpriteSourceError(message, cause, assert);
+    throw err;
   }
 }
 
