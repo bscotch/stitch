@@ -1,6 +1,7 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
-import { yySpriteSchema, type YySprite } from '@bscotch/yy';
+import { yySpriteSchema, type YypResourceId, type YySprite } from '@bscotch/yy';
 import fsp from 'fs/promises';
+import path from 'path';
 import type { SpriteDestAction } from './SpriteDest.schemas.js';
 
 export interface ApplySpriteActionOptions {
@@ -8,11 +9,16 @@ export interface ApplySpriteActionOptions {
   action: SpriteDestAction;
 }
 
+export interface SpriteDestActionResult {
+  resource: YypResourceId;
+  folder: { name: string; folderPath: string };
+}
+
 /** @internal */
 export default async function applySpriteActionParallel({
   projectYypPath,
   action,
-}: ApplySpriteActionOptions) {
+}: ApplySpriteActionOptions): Promise<SpriteDestActionResult> {
   // Ensure the target path exists
   const targetFolder = pathy(action.dest);
   // If this is a `create` action, delete the existing sprite
@@ -74,7 +80,13 @@ export default async function applySpriteActionParallel({
     // Delete excess files
     for (const file of initialDestFiles) {
       if (!keepers.has(file.basename.toLowerCase())) {
-        ioWaits.push(file.delete());
+        ioWaits.push(
+          file.delete({
+            force: true,
+            maxRetries: 5,
+            retryDelay: 50,
+          }),
+        );
       }
     }
     await Promise.all(ioWaits);
@@ -95,7 +107,13 @@ export default async function applySpriteActionParallel({
     // Delete excess files
     for (const file of initialDestFiles) {
       if (!keepers.has(file.basename.toLowerCase())) {
-        ioWaits.push(file.delete());
+        ioWaits.push(
+          file.delete({
+            force: true,
+            maxRetries: 5,
+            retryDelay: 50,
+          }),
+        );
       }
     }
     await Promise.all(ioWaits);
@@ -104,5 +122,15 @@ export default async function applySpriteActionParallel({
   // Save the yy file
   await yyFile.write(yy);
 
-  return {};
+  // Send back info that can be used to update the project file
+  return {
+    resource: {
+      name: yy.name,
+      path: yyFile.relativeFrom(path.dirname(projectYypPath)),
+    },
+    folder: {
+      name: yy.parent.name,
+      folderPath: yy.parent.path,
+    },
+  };
 }
