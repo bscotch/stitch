@@ -137,7 +137,7 @@ export class SpriteDest extends SpriteCache {
 
     // Do them sequentially so we don't have to worry about
     // any race conditions or overlapping outcomes.
-    for (const sourceConfig of config.sources) {
+    for (const sourceConfig of config.sources || []) {
       // Report errors but do not throw. We want to continue
       // to subsequent sources even if one fails.
       await this.importSource(sourceConfig).catch((err) => {
@@ -153,7 +153,7 @@ export class SpriteDest extends SpriteCache {
   }
 
   protected async loadConfig(
-    overrides?: SpriteDestConfig,
+    overrides: SpriteDestConfig = {},
   ): Promise<SpriteDestConfig> {
     // Validate options. Show error out if invalid.
     try {

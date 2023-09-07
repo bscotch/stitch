@@ -34,5 +34,5 @@ export const spriteDestSourceSchema = z.object({
 
 export type SpriteDestConfig = z.infer<typeof spriteDestConfigSchema>;
 export const spriteDestConfigSchema = z.object({
-  sources: z.array(spriteDestSourceSchema).default([]),
+  sources: z.array(spriteDestSourceSchema).default([]).optional(),
 });

@@ -206,6 +206,7 @@ describe('Sprite Sources', function () {
         },
       ],
     });
+    console.dir(dest.issues, { depth: null });
   });
 
   it('can update a sprite source', async function () {

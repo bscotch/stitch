@@ -80,7 +80,7 @@ export class SpriteSource extends SpriteCache {
   }
 
   protected async loadConfig(
-    overrides?: SpriteSourceConfig,
+    overrides: SpriteSourceConfig = {},
   ): Promise<SpriteSourceConfig> {
     // Validate options. Show error out if invalid.
     try {
