@@ -48,6 +48,13 @@ export default async function applySpriteActionParallel({
     .map((f) => pathy(f.name, action.source));
   const sourcePngs = sourceFiles.filter((f) => f.basename.match(/\.png$/i));
 
+  // Get origin info etc
+  const size = await getPngSize(sourcePngs[0]);
+  const width = size.width;
+  const height = size.height;
+  const xorigin = Math.floor(width / 2) - 1;
+  const yorigin = Math.floor(height / 2) - 1;
+
   // Load the yy file, or populate a default one
   const yyFile: Pathy<YySprite> = (
     (initialDestFiles.find(
@@ -56,7 +63,13 @@ export default async function applySpriteActionParallel({
     pathy(`${action.name}.yy`, targetFolder)
   ).withValidator(yySpriteSchema);
   let yy = await yyFile.read({
-    fallback: { name: action.name, type: action.spine ? 2 : 0 },
+    fallback: {
+      name: action.name,
+      type: action.spine ? 2 : 0,
+      width,
+      height,
+      sequence: { xorigin, yorigin },
+    },
   });
   // Populate the frames to get UUIDs
   const frames = yy.frames || [];
@@ -93,6 +106,10 @@ export default async function applySpriteActionParallel({
   } else {
     // Ensure the source pngs are sorted by basename
     sourcePngs.sort((a, b) => a.basename.localeCompare(b.basename, 'en-US'));
+
+    // Ensure the width & height are still correct
+    yy.width = width;
+    yy.height = height;
 
     // Copy over the pngs
     const ioWaits: Promise<any>[] = [];
@@ -133,4 +150,24 @@ export default async function applySpriteActionParallel({
       folderPath: yy.parent.path,
     },
   };
+}
+
+/**
+ * Asynchronously get the size of a PNG image, given its path,
+ * with maximal speed.
+ */
+async function getPngSize(
+  path: Pathy,
+): Promise<{ width: number; height: number }> {
+  const size = { width: 0, height: 0 };
+  const fd = await fsp.open(path.absolute, 'r');
+  try {
+    const buf = Buffer.alloc(24);
+    await fd.read(buf, 0, 24, 16);
+    size.width = buf.readUInt32BE(0);
+    size.height = buf.readUInt32BE(4);
+  } finally {
+    await fd.close();
+  }
+  return size;
 }
