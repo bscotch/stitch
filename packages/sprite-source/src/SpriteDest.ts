@@ -1,7 +1,12 @@
 import { Pathy, pathy } from '@bscotch/pathy';
 import { yypSchema, type Yyp } from '@bscotch/yy';
 import { SpriteCache } from './SpriteCache.js';
-import type { SpineSummary, SpriteSummary } from './SpriteCache.schemas.js';
+import type {
+  SpineSummary,
+  SpriteSummary,
+  SpritesInfo,
+} from './SpriteCache.schemas.js';
+import applySpriteAction from './SpriteDest.actions.js';
 import {
   SpriteDestAction,
   spriteDestConfigSchema,
@@ -25,16 +30,17 @@ export class SpriteDest extends SpriteCache {
       .withValidator(spriteDestConfigSchema);
   }
 
-  protected async importSource(sourceConfig: SpriteDestSource) {
+  protected async inferChangeActions(
+    sourceConfig: SpriteDestSource,
+    destSpritesCache: SpritesInfo,
+  ) {
+    const destSpritesInfo = destSpritesCache.info;
     // Get the most up-to-date source and dest info
     const ignorePatterns = (sourceConfig.ignore || []).map(
       (x) => new RegExp(x),
     );
     const source = await SpriteSource.from(sourceConfig.source);
-    const [sourceSpritesInfo, destSpritesInfo] = await Promise.all([
-      source.update().then((x) => x.info),
-      this.updateSpriteInfo().then((x) => x.info),
-    ]);
+    const sourceSpritesInfo = await source.update().then((x) => x.info);
 
     // Normalize things for direct comparision between source and dest
     type SpriteInfo = (SpriteSummary | SpineSummary) & {
@@ -96,7 +102,8 @@ export class SpriteDest extends SpriteCache {
 
       if (!destSprite || sourceSprite.spine !== destSprite.spine) {
         actions.push({
-          kind: sourceSprite.spine ? 'create-spine' : 'create',
+          kind: 'create',
+          spine: sourceSprite.spine,
           name: sourceSprite.name,
           source: sourceDir,
           dest: destDir,
@@ -107,7 +114,8 @@ export class SpriteDest extends SpriteCache {
         sourceSprite.checksum !== destSprite.checksum
       ) {
         actions.push({
-          kind: 'update-spine',
+          kind: 'update',
+          spine: true,
           name: destSprite.name,
           source: sourceDir,
           dest: destDir,
@@ -119,6 +127,7 @@ export class SpriteDest extends SpriteCache {
       ) {
         actions.push({
           kind: 'update',
+          spine: false,
           name: destSprite.name,
           source: sourceDir,
           dest: destDir,
@@ -126,28 +135,60 @@ export class SpriteDest extends SpriteCache {
       }
     }
 
-    console.dir(actions, { depth: null });
+    return actions;
   }
 
   /**
    * @param overrides Optionally override the configuration file (if it exists)
    */
   async import(overrides?: SpriteDestConfig) {
-    const config = await this.loadConfig(overrides);
+    const [config, destSpritesInfo] = await Promise.all([
+      this.loadConfig(overrides),
+      this.updateSpriteInfo(),
+    ]);
 
-    // Do them sequentially so we don't have to worry about
-    // any race conditions or overlapping outcomes.
+    // Try to do it all at the same time for perf. Race conditions
+    // and order-of-ops issues indicate some kind of user
+    // config failure, so we'll let that be their problem.
+    const actions: SpriteDestAction[] = [];
+    const getActionsWaits: Promise<any>[] = [];
     for (const sourceConfig of config.sources || []) {
       // Report errors but do not throw. We want to continue
       // to subsequent sources even if one fails.
-      await this.importSource(sourceConfig).catch((err) => {
-        this.issues.push({
-          level: 'error',
-          message: `Error importing from "${sourceConfig.source}"`,
-          cause: err,
-        });
-      });
+      getActionsWaits.push(
+        this.inferChangeActions(sourceConfig, destSpritesInfo).then(
+          (a) => {
+            actions.push(...a);
+          },
+          (err) => {
+            this.issues.push({
+              level: 'error',
+              message: `Error importing from "${sourceConfig.source}"`,
+              cause: err,
+            });
+          },
+        ),
+      );
     }
+    await Promise.allSettled(getActionsWaits);
+
+    // TODO: Apply the actions (in parellel)
+    const applyActionsWaits: Promise<any>[] = [];
+    for (const action of actions) {
+      applyActionsWaits.push(
+        applySpriteAction({
+          projectYypPath: this.yyp.absolute,
+          action,
+        }).catch((err) => {
+          this.issues.push({
+            level: 'error',
+            message: `Error applying action: ${JSON.stringify(action)}`,
+            cause: err,
+          });
+        }),
+      );
+    }
+    await Promise.allSettled(applyActionsWaits);
 
     // TODO: Ensure the .yyp is up to date
   }

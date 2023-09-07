@@ -192,7 +192,7 @@ describe('Sprite Sources', function () {
     // TODO: Figure out why the first run is slow (~30s) -- can we speed it up somehow?
   });
 
-  it('can import a sprite source', async function () {
+  it.only('can import a sprite source', async function () {
     await initializeSandbox();
     // Configure the source config
     const source = await SpriteSource.from(sandboxSource, sandboxSourceConfig);

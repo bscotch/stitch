@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 export interface SpriteDestAction {
-  kind: 'update' | 'create' | 'update-spine' | 'create-spine';
+  kind: 'update' | 'create';
+  spine: boolean;
   /** The name of the sprite */
   name: string;
   /** The fullpath to the folder containing the source files */
