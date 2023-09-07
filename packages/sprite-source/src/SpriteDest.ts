@@ -1,6 +1,7 @@
 import { Pathy, pathy } from '@bscotch/pathy';
 import { yypSchema, type Yyp } from '@bscotch/yy';
 import { SpriteCache } from './SpriteCache.js';
+import { spriteDestConfigSchema } from './SpriteDest.schemas.js';
 import type { SpriteSource } from './SpriteSource.js';
 import { assert } from './utility.js';
 
@@ -13,7 +14,9 @@ export class SpriteDest extends SpriteCache {
   }
 
   get configFile() {
-    return this.stitchDir.join('sprites.import.json');
+    return this.stitchDir
+      .join('sprites.import.json')
+      .withValidator(spriteDestConfigSchema);
   }
 
   async import(spriteSource: SpriteSource) {

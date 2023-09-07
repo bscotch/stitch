@@ -433,6 +433,7 @@ importers:
   packages/sprite-source:
     specifiers:
       '@bscotch/pathy': ^2.7.4
+      '@bscotch/yy': workspace:*
       image-js: 0.35.4
       piscina: 4.1.0
       sharp: 0.32.5
@@ -441,6 +442,7 @@ importers:
       zod: ^3.22.0
     dependencies:
       '@bscotch/pathy': 2.7.4
+      '@bscotch/yy': link:../yy
       image-js: 0.35.4
       piscina: 4.1.0
       sharp: 0.32.5
