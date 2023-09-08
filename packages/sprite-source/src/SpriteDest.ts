@@ -17,6 +17,7 @@ import {
   type SpriteDestSource,
 } from './SpriteDest.schemas.js';
 import { SpriteSource } from './SpriteSource.js';
+import { Reporter } from './types.js';
 import { assert, rethrow } from './utility.js';
 
 export class SpriteDest extends SpriteCache {
@@ -144,7 +145,14 @@ export class SpriteDest extends SpriteCache {
   /**
    * @param overrides Optionally override the configuration file (if it exists)
    */
-  async import(overrides?: SpriteDestConfig) {
+  async import(overrides?: SpriteDestConfig, reporter?: Reporter) {
+    let percentComplete = 0;
+    const report = (byPercent: number, message?: string) => {
+      percentComplete += byPercent;
+      reporter?.report({ message, increment: byPercent });
+    };
+
+    report(0, 'Updating project cache...');
     const [configResult, destSpritesInfoResult, yypResult] =
       await Promise.allSettled([
         this.loadConfig(overrides),
@@ -193,6 +201,7 @@ export class SpriteDest extends SpriteCache {
     // Try to do it all at the same time for perf. Race conditions
     // and order-of-ops issues indicate some kind of user
     // config failure, so we'll let that be their problem.
+    report(10, 'Computing changes...');
     const actions: SpriteDestAction[] = [];
     const getActionsWaits: Promise<any>[] = [];
     for (const sourceConfig of config.sources || []) {
@@ -216,8 +225,13 @@ export class SpriteDest extends SpriteCache {
     await Promise.allSettled(getActionsWaits);
 
     // Apply the actions (in parellel)
+    report(10, `Applying changes to ${actions.length} sprites...`);
     const appliedActions: SpriteDestActionResult[] = [];
     const applyActionsWaits: Promise<any>[] = [];
+
+    let percentForYypUpdate = 5;
+    let percentPerAction =
+      (100 - percentComplete - percentForYypUpdate) / actions.length;
     for (const action of actions) {
       if (existingAssets.has(action.name)) {
         this.issues.push({
@@ -240,6 +254,9 @@ export class SpriteDest extends SpriteCache {
               message: `Error applying action: ${JSON.stringify(action)}`,
               cause: err,
             });
+          })
+          .finally(() => {
+            report(percentPerAction);
           }),
       );
     }
@@ -248,7 +265,8 @@ export class SpriteDest extends SpriteCache {
       return;
     }
 
-    // TODO: Ensure the .yyp is up to date
+    // Ensure the .yyp is up to date
+    report(0, 'Updating project file...');
     for (const appliedAction of appliedActions) {
       if (!existingSprites.has(appliedAction.resource.name)) {
         yyp.resources.push({
@@ -263,6 +281,7 @@ export class SpriteDest extends SpriteCache {
       }
     }
     await Yy.write(this.yypPath.absolute, yyp, 'project');
+    return appliedActions;
   }
 
   protected async loadConfig(

@@ -20,3 +20,11 @@ export interface Issue {
 export type AnyFunction<R> = (
   ...args: any
 ) => R extends Promise<infer U> ? Promise<U> : R;
+
+export type Reporter = {
+  report(value: {
+    message?: string | undefined;
+    /** Percentage points to add to the completion metric */
+    increment?: number | undefined;
+  }): void;
+};
