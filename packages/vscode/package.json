@@ -184,40 +184,35 @@
       {
         "command": "stitch.spriteSource.create",
         "title": "Add Sprite Source...",
+        "enablement": "stitch.projectCount > 0",
         "icon": "$(add)"
+      },
+      {
+        "command": "stitch.spriteSource.import",
+        "title": "Import Changes",
+        "enablement": "stitch.projectCount > 0",
+        "icon": "$(play)"
+      },
+      {
+        "command": "stitch.spriteSource.edit",
+        "title": "Edit Sources...",
+        "enablement": "stitch.projectCount > 0",
+        "icon": "$(edit)"
       },
       {
         "command": "stitch.spriteSource.delete",
         "title": "Delete",
+        "enablement": "stitch.projectCount > 0",
         "icon": "$(close)"
       },
       {
         "command": "stitch.spriteSource.openExplorer",
         "title": "Reveal in File Explorer"
-      },
-      {
-        "command": "stitch.spriteSource.import",
-        "title": "Import Changes",
-        "icon": "$(play)"
       }
     ],
     "configuration": {
       "title": "Stitch",
       "properties": {
-        "stitch.sprites.sources": {
-          "title": "Sprite Sources",
-          "description": "A mapping of local projects to their local Sprite Sources.",
-          "type": "object",
-          "additionalProperties": {
-            "description": "Array of paths to Sprite Source folders.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "uniqueItems": true
-          },
-          "scope": "machine-overridable"
-        },
         "stitch.diagnostics.autoDeclaredGlobalsPatterns": {
           "title": "Prefixes for auto-declared globals",
           "description": "Variables with these prefixes will be automatically declared as globals if they are't declared in the user code.",
@@ -381,7 +376,7 @@
         "url": "./schemas/stitch.sprite-imports.schema.json"
       },
       {
-        "fileMatch": ".stitch/sprites.config.json",
+        "fileMatch": ".stitch/sprites.source.json",
         "url": "./schemas/stitch.sprite-source.schema.json"
       }
     ],
@@ -480,6 +475,16 @@
         },
         {
           "command": "stitch.spriteSource.create",
+          "when": "view == bscotch-stitch-sprite-sources",
+          "group": "navigation@3"
+        },
+        {
+          "command": "stitch.spriteSource.import",
+          "when": "view == bscotch-stitch-sprite-sources",
+          "group": "navigation@2"
+        },
+        {
+          "command": "stitch.spriteSource.edit",
           "when": "view == bscotch-stitch-sprite-sources",
           "group": "navigation@1"
         }
@@ -604,11 +609,6 @@
           "command": "stitch.spriteSource.openExplorer",
           "when": "viewItem == sprite-source",
           "group": "navigation@9"
-        },
-        {
-          "command": "stitch.spriteSource.import",
-          "when": "viewItem == sprite-source",
-          "group": "inline@2"
         }
       ],
       "explorer/context": [

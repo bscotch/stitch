@@ -12,24 +12,6 @@ class StitchConfig {
     return vscode.workspace.getConfiguration('stitch');
   }
 
-  get spriteSources(): SpriteSourcesConfig {
-    const sources =
-      this.config.get<{ [projectPath: string]: string[] }>('sprites.sources') ||
-      {};
-    // Make sure it's the right type!
-    if (Array.isArray(sources)) {
-      this.config.update('sprites.sources', {});
-      return {};
-    }
-    return { ...sources };
-  }
-  set spriteSources(sources: SpriteSourcesConfig) {
-    // Want to store it as an *unsynced* value at the *user* level,
-    // so it doesn't get synced across devices. This means it has to
-    // be stored independent of the workspace.
-    this.config.update('sprites.sources', { ...sources });
-  }
-
   // get alertOnSpriteChange() {
   //   return this.config.get<boolean>('sprites.alertOnChange') ?? true;
   // }

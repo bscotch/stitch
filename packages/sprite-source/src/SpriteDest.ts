@@ -229,8 +229,8 @@ export class SpriteDest extends SpriteCache {
     const appliedActions: SpriteDestActionResult[] = [];
     const applyActionsWaits: Promise<any>[] = [];
 
-    let percentForYypUpdate = 5;
-    let percentPerAction =
+    const percentForYypUpdate = 5;
+    const percentPerAction =
       (100 - percentComplete - percentForYypUpdate) / actions.length;
     for (const action of actions) {
       if (existingAssets.has(action.name)) {
@@ -284,7 +284,11 @@ export class SpriteDest extends SpriteCache {
     return appliedActions;
   }
 
-  protected async loadConfig(
+  /**
+   * Load the config, ensuring it exists on disk. If overrides
+   * are provided the config will be updated with those values.
+   */
+  async loadConfig(
     overrides: SpriteDestConfig = {},
   ): Promise<SpriteDestConfig> {
     // Validate options. Show error out if invalid.
@@ -326,6 +330,7 @@ export class SpriteDest extends SpriteCache {
 
     // Create the cache in the sprites folder
     const cache = new SpriteDest(spritesRoot, projectYyp);
+    await cache.loadConfig(); // Ensure a config file exists
     return cache;
   }
 }

@@ -286,7 +286,28 @@ export const commands = {
   'stitch.spriteSource.create': {
     command: 'stitch.spriteSource.create',
     title: 'Add Sprite Source...',
+    enablement: when.hasProjects,
     icon: '$(add)',
+    [$showInViewTitle]: {
+      when: when.spriteSourceTreeFocused,
+      group: 'navigation@3',
+    },
+  },
+  'stitch.spriteSource.import': {
+    command: 'stitch.spriteSource.import',
+    title: 'Import Changes',
+    enablement: when.hasProjects,
+    icon: '$(play)',
+    [$showInViewTitle]: {
+      when: when.spriteSourceTreeFocused,
+      group: 'navigation@2',
+    },
+  },
+  'stitch.spriteSource.edit': {
+    command: 'stitch.spriteSource.edit',
+    title: 'Edit Sources...',
+    enablement: when.hasProjects,
+    icon: '$(edit)',
     [$showInViewTitle]: {
       when: when.spriteSourceTreeFocused,
       group: 'navigation@1',
@@ -295,6 +316,7 @@ export const commands = {
   'stitch.spriteSource.delete': {
     command: 'stitch.spriteSource.delete',
     title: 'Delete',
+    enablement: when.hasProjects,
     icon: '$(close)',
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsSpriteSource,
@@ -307,15 +329,6 @@ export const commands = {
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsSpriteSource,
       group: 'navigation@9',
-    },
-  },
-  'stitch.spriteSource.import': {
-    command: 'stitch.spriteSource.import',
-    title: 'Import Changes',
-    icon: '$(play)',
-    [$showInViewItemContextMenu]: {
-      when: when.viewItemIsSpriteSource,
-      group: 'inline@2',
     },
   },
   //#endregion Sprite Sources

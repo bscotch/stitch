@@ -11,7 +11,7 @@ import { assert, deletePngChildren, getDirs, rethrow } from './utility.js';
 export class SpriteSource extends SpriteCache {
   get configFile() {
     return this.stitchDir
-      .join('sprites.config.json')
+      .join('sprites.source.json')
       .withValidator(spriteSourceConfigSchema);
   }
 
