@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "bscotch-stitch-vscode@*"
+      - 'bscotch-stitch-vscode@*'
 
 permissions:
   contents: write
@@ -31,9 +31,6 @@ jobs:
       # BUILD DEPS
       - name: Build
         run: pnpm turbo run build --only --filter=bscotch-stitch-vscode...
-        env:
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       # PUBLISH
       - name: Publish

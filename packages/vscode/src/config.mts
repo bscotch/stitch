@@ -1,5 +1,4 @@
 import type { Channel } from '@bscotch/gamemaker-releases';
-import { randomString } from '@bscotch/utility';
 import vscode from 'vscode';
 
 interface SpriteSourcesConfig {
@@ -47,26 +46,10 @@ class StitchConfig {
       this.config.get<string[]>('diagnostics.autoDeclaredGlobalsPatterns') || []
     );
   }
-
-  get userId() {
-    let userId = this.config.get<string>('telemetry.userId');
-    if (!userId) {
-      // Create a random user ID to help associate telemetry data
-      userId = randomString(6, 'base64');
-      this.config.update('telemetry.userId', userId);
-    }
-    return this.config.get<string>('telemetry.userId');
-  }
   get releaseNotesChannels(): Channel[] {
     return (
       this.config.get<Channel[]>('gameMaker.releases.notes.channels') || []
     );
-  }
-  get enableSendingLogs() {
-    return this.config.get<boolean>('telemetry.enable') ?? false;
-  }
-  get associatedIssue() {
-    return this.config.get<number>('telemetry.associatedIssue') || undefined;
   }
   get enableFunctionSignatureStatus() {
     return this.config.get<boolean>('editing.signatureStatus.enable');

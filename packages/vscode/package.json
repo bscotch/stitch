@@ -264,22 +264,6 @@
           },
           "description": "Which GameMaker release notes channels to show in the GameMaker version picker and other locations."
         },
-        "stitch.telemetry.enable": {
-          "title": "Send log data",
-          "type": "boolean",
-          "default": false,
-          "description": "Whether to send error and log data to Bscotch. This is used to help us improve Stitch. No personal information is sent."
-        },
-        "stitch.telemetry.userId": {
-          "title": "Telemetry User ID",
-          "type": "string",
-          "description": "An ID to associate with telemetry data. Defaults to a random ID."
-        },
-        "stitch.telemetry.associatedIssue": {
-          "title": "Associate log data with an issue",
-          "type": "number",
-          "description": "If you've enabled sending log data, you can associate your log data with a Stitch GitHub issue. This helps us track down the cause of the issue."
-        },
         "stitch.editing.autocomplete.ignoredPrefix": {
           "title": "Ignore autocomplete prefix",
           "type": [
@@ -766,8 +750,6 @@
     "@bscotch/trebuchet": "2.8.7",
     "@bscotch/utility": "^7.1.0",
     "@bscotch/yy": "workspace:*",
-    "@sentry/esbuild-plugin": "2.7.1",
-    "@sentry/node": "7.68.0",
     "@types/plist": "3.0.2",
     "@types/vscode": "1.81.0",
     "@types/xml2js": "0.4.11",

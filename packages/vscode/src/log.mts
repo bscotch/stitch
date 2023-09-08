@@ -1,17 +1,5 @@
 import { Pathy } from '@bscotch/pathy';
-import Sentry from '@sentry/node';
 import vscode from 'vscode';
-import { stitchConfig } from './config.mjs';
-
-if (SENTRY_DSN) {
-  Sentry.init({
-    dsn: SENTRY_DSN,
-    // Performance Monitoring
-    tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
-    environment: STITCH_ENVIRONMENT,
-    release: `bscotch-stitch-vscode@${STITCH_VERSION}`,
-  });
-}
 
 export async function showErrorMessage<T extends string>(
   message: string | Error,
@@ -83,17 +71,6 @@ export class Logger {
     components.push(...args);
     this.output.appendLine(components.join(' '));
     console[type](this.channel, ...components);
-    if (stitchConfig.enableSendingLogs) {
-      if (args[0] instanceof Error) {
-        Sentry.captureException(args[0], {
-          level: type === 'warn' ? 'warning' : type,
-          extra: {
-            issue: stitchConfig.associatedIssue || undefined,
-            userId: stitchConfig.userId,
-          },
-        });
-      }
-    }
   }
 
   log(...args: any[]) {
