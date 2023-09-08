@@ -1,6 +1,6 @@
-import { Asset } from '@bscotch/gml-parser';
+import { Asset, isAssetOfKind } from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
-import { SpriteSource } from '@bscotch/sprite-source';
+import { SpriteDest, SpriteSource } from '@bscotch/sprite-source';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
@@ -12,8 +12,9 @@ import {
   getAbsoluteWorkspacePath,
   getRelativeWorkspacePath,
   registerCommand,
+  sortAlphaInsensitive,
 } from './lib.mjs';
-import { logger } from './log.mjs';
+import { logger, showErrorMessage } from './log.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 
 type Item = SpriteSourceItem | SpriteSourceItemInvalid | SpriteItem;
@@ -59,65 +60,48 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
   }
 
   async importSprites(source: SpriteSourceItem) {
-    // const targetProject = this.getProjectFromSource(source);
-    // const changedSprites = SpriteSourcesTree.recentlyChangedSprites
-    //   .set(
-    //     source.source.path.absolute,
-    //     SpriteSourcesTree.recentlyChangedSprites.get(
-    //       source.source.path.absolute,
-    //     ) || new Map(),
-    //   )
-    //   .get(source.source.path.absolute)!;
+    assertLoudly(source.project, 'No project found for sprite source.');
 
-    // // Create a progress bar to show the import progress,
-    // // in the bscotch-stitch-sprite-sources tree view.
-    // await vscode.window.withProgress(
-    //   {
-    //     location: vscode.ProgressLocation.Notification,
-    //     title: `Importing sprites...`,
-    //     cancellable: false,
-    //   },
-    //   async (progress) => {
-    //     // Run the Stitch batch-import command, attaching plugins to add to
-    //     // the cumulative list of changed sprites.\
-    //     try {
-    //       progress.report({ increment: 0 });
-    //       let totalSprites = 0;
-    //       const model = await StitchProject.load({
-    //         dangerouslyAllowDirtyWorkingDir: true,
-    //         projectPath: targetProject.yypPath.absolute,
-    //         plugins: [
-    //           {
-    //             beforeSpritesAdded(_project, info) {
-    //               totalSprites = info.spriteSources.length;
-    //             },
-    //             afterSpriteAdded: (project, info) => {
-    //               // Update the progress bar
-    //               progress.report({
-    //                 increment: 100 / totalSprites,
-    //               });
-    //               // Update the cumulative list of changed sprites
-    //               changedSprites.set(info.sprite.name, {
-    //                 when: new Date(),
-    //                 project: targetProject,
-    //               });
-    //             },
-    //           },
-    //         ],
-    //       });
-    //       await model.addSprites(source.source.path.up().absolute, {
-    //         case: source.source.config?.case,
-    //         exclude: source.source.config?.exclude,
-    //         flatten: source.source.config?.flatten,
-    //         postfix: source.source.config?.postfix,
-    //         prefix: source.source.config?.prefix,
-    //       });
-    //     } catch (err) {
-    //       showErrorMessage(err as Error);
-    //     }
-    //   },
-    // );
-    // Rebuild the tree
+    const dest = await SpriteDest.from(source.project.yypPath.absolute);
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Importing sprites...`,
+        cancellable: false,
+      },
+      async (progress) => {
+        const actions = await dest.import(undefined, progress);
+
+        // Summarize all isues into a single popup
+        const totalIssues = dest.issues.length;
+        if (totalIssues) {
+          const displayIssues = dest.issues.slice(0, 5);
+          const moreIssues = totalIssues - displayIssues.length;
+          showErrorMessage(
+            `There were ${totalIssues} issues importing sprites:\n\n${displayIssues
+              .map((issue) => `- ${issue.message}`)
+              .join('\n')}${moreIssues ? `\n\n...and ${moreIssues} more` : ''}`,
+          );
+        }
+
+        // Add the changes to the recently changed list
+        const changedSprites = SpriteSourcesTree.recentlyChangedSprites
+          .set(
+            source.source.spritesRoot.absolute,
+            SpriteSourcesTree.recentlyChangedSprites.get(
+              source.source.spritesRoot.absolute,
+            ) || new Map(),
+          )
+          .get(source.source.spritesRoot.absolute)!;
+        for (const action of actions || []) {
+          changedSprites.set(action.resource.name, {
+            when: new Date(),
+            project: source.project,
+          });
+        }
+      },
+    );
+
     this.rebuild();
   }
 
@@ -318,23 +302,22 @@ class SpriteSourceItem extends StitchTreeItemBase<'sprite-source'> {
   }
 
   getChildren(): SpriteItem[] {
-    // const changes = SpriteSourcesTree.recentlyChangedSprites.get(
-    //   this.source.path.absolute,
-    // );
-    // if (!changes) return [];
-    // const changedSprites = [...changes.entries()]
-    //   .map(([name, info]) => {
-    //     const asset = info.project.getAssetByName(name);
-    //     if (!isAssetOfKind(asset, 'sprites')) return;
-    //     return new SpriteItem(asset, info);
-    //   })
-    //   .filter((s): s is SpriteItem => !!s);
-    // // Sort alphabetically
-    // changedSprites.sort((a, b) =>
-    //   sortAlphaInsensitive(a.asset.name, b.asset.name),
-    // );
-    // return changedSprites;
-    return [];
+    const changes = SpriteSourcesTree.recentlyChangedSprites.get(
+      this.source.spritesRoot.absolute,
+    );
+    if (!changes) return [];
+    const changedSprites = [...changes.entries()]
+      .map(([name, info]) => {
+        const asset = info.project.getAssetByName(name);
+        if (!isAssetOfKind(asset, 'sprites')) return;
+        return new SpriteItem(asset, info);
+      })
+      .filter((s): s is SpriteItem => !!s);
+    // Sort alphabetically
+    changedSprites.sort((a, b) =>
+      sortAlphaInsensitive(a.asset.name, b.asset.name),
+    );
+    return changedSprites;
   }
 }
 
