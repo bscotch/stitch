@@ -14,7 +14,7 @@ import {
 } from '@bscotch/stitch-launcher';
 import path from 'path';
 import vscode from 'vscode';
-import { StitchConfig, stitchConfig } from './config.mjs';
+import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
 
@@ -22,7 +22,6 @@ setLogger(logger.withPrefix('PARSER'));
 
 export class GameMakerProject extends Project {
   readonly kind = 'project';
-  static config = new StitchConfig();
 
   protected constructor(yypPath: vscode.Uri, options: ProjectOptions) {
     super(pathy(yypPath.fsPath), options);
@@ -81,9 +80,8 @@ export class GameMakerProject extends Project {
       options?.clean ? 'clean-project-start' : 'run-project-start',
       this,
     );
-    const config = options?.config ?? GameMakerProject.config.runConfigDefault;
-    const compiler =
-      options?.compiler ?? GameMakerProject.config.runCompilerDefault;
+    const config = options?.config ?? stitchConfig.runConfigDefault;
+    const compiler = options?.compiler ?? stitchConfig.runCompilerDefault;
 
     const release = await GameMakerRuntime.findRelease({
       ideVersion: this.ideVersion,

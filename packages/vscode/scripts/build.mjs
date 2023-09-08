@@ -29,7 +29,7 @@ const builder = esbuild.build({
   sourcemap: true,
   platform: 'node',
   nodePaths: ['node_modules'],
-  external: ['vscode'],
+  external: ['vscode', 'sharp'],
   loader: {
     '.xml': 'text',
     '.html': 'text',

@@ -8,7 +8,11 @@ import { stitchEvents } from './events.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { ObjectSpriteItem } from './inspector.mjs';
-import { registerCommand } from './lib.mjs';
+import {
+  getAbsoluteWorkspacePath,
+  getRelativeWorkspacePath,
+  registerCommand,
+} from './lib.mjs';
 import { logger } from './log.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 
@@ -22,12 +26,6 @@ export interface SpriteSourceConfig {
   case?: 'keep' | 'snake' | 'camel' | 'pascal';
   flatten?: boolean;
   exclude?: string;
-}
-
-interface ConfigInfo {
-  path: Pathy<SpriteSourceConfig>;
-  config?: SpriteSourceConfig;
-  error?: Error;
 }
 
 interface SpriteChangeInfo {
@@ -127,9 +125,12 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     project: GameMakerProject,
   ): Promise<(SpriteSourceItem | SpriteSourceItemInvalid)[]> {
     const allSources = stitchConfig.spriteSources;
-    const sourcePaths = allSources[project.yypPath.absolute];
-    console.dir(allSources);
-    console.dir(sourcePaths);
+    const relativeProjectPath = getRelativeWorkspacePath(
+      project.yypPath.absolute,
+    );
+    const sourcePaths = allSources[relativeProjectPath].map((p) =>
+      getAbsoluteWorkspacePath(p),
+    );
     if (!sourcePaths?.length) return [];
     const results = await Promise.allSettled(
       sourcePaths.map((p) => SpriteSource.from(p)),
@@ -144,16 +145,18 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
 
   deleteSpriteSource(source: SpriteSourceItem) {
     const allSources = stitchConfig.spriteSources;
-    const sourcesFromSettings = allSources[source.project.yypPath.absolute];
+    const relativeProjectPath = getRelativeWorkspacePath(
+      source.project.yypPath.absolute,
+    );
+    const sourcesFromSettings = allSources[relativeProjectPath];
     const sourceIndex = sourcesFromSettings.findIndex((p) =>
-      source.source.spritesRoot.equals(p),
+      source.source.spritesRoot.equals(getAbsoluteWorkspacePath(p)),
     );
     assertLoudly(sourceIndex >= 0, 'Could not find sprite source in settings.');
     sourcesFromSettings.splice(sourceIndex, 1);
-    allSources[source.project.yypPath.absolute] = sourcesFromSettings;
+    allSources[relativeProjectPath] = [...sourcesFromSettings];
     stitchConfig.spriteSources = allSources;
-    // Rebuild the tree
-    this.rebuild();
+    // Note: The tree will be rebuilt when the config change is detected
   }
 
   async addSpriteSource() {
@@ -192,14 +195,14 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     )!;
 
     const sources = { ...stitchConfig.spriteSources };
-    const key = targetProject.yypPath.absolute;
+    const key = getRelativeWorkspacePath(targetProject.yypPath.absolute);
     sources[key] ||= [];
-    sources[key] = [...sources[key], source.spritesRoot.absolute];
+    sources[key] = [
+      ...sources[key],
+      getRelativeWorkspacePath(source.spritesRoot.absolute),
+    ];
     stitchConfig.spriteSources = sources;
-
-    // Rebuild the tree
-    logger.info('Updated Sources', stitchConfig.spriteSources);
-    this.rebuild();
+    // Note: The tree will be rebuilt when the config change is detected
   }
 
   async getChildren(element?: Item): Promise<Item[]> {
@@ -241,6 +244,12 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     // Return subscriptions to owned events and this view
     const subscriptions = [
       tree.view,
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        if (event.affectsConfiguration('stitch.sprites.sources')) {
+          // Rebuild the tree!
+          tree.rebuild();
+        }
+      }),
       registerCommand('stitch.spriteSource.create', () => {
         tree.addSpriteSource();
       }),

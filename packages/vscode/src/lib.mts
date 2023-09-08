@@ -7,6 +7,31 @@ import type { StitchWorkspace } from './extension.workspace.mjs';
 import type { CommandName } from './manifest.commands.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
 
+export function getWorkspaceRoot() {
+  const root =
+    vscode.workspace.workspaceFile?.fsPath ||
+    vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (!root) {
+    throw new Error('Not in a workspace!');
+  }
+  return root;
+}
+
+/**
+ * Convert a workspace-root-relative path to an absolute one.
+ */
+export function getAbsoluteWorkspacePath(relativePath: string): Pathy {
+  return pathy(relativePath, getWorkspaceRoot());
+}
+
+/** Convert a path into a workspace-root-relative path */
+export function getRelativeWorkspacePath(
+  path: Pathy | string | vscode.Uri,
+): string {
+  const normalizedPath = pathy(path instanceof vscode.Uri ? path.fsPath : path);
+  return normalizedPath.relativeFrom(getWorkspaceRoot());
+}
+
 export function pathyFromUri(uri: vscode.TextDocument | vscode.Uri): Pathy {
   return new Pathy(uri instanceof vscode.Uri ? uri.fsPath : uri.uri.fsPath);
 }

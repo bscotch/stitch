@@ -14,7 +14,6 @@ export namespace StitchEvents {
     AssetChanged,
     ProjectChanged,
   ];
-
   export interface AssetDeleted {
     name: 'asset-deleted';
     payload: [Asset];

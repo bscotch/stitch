@@ -35,7 +35,6 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
   readonly externalChangeTracker = new ChangeTracker(this);
 
   projects: GameMakerProject[] = [];
-  static config = stitchConfig;
 
   readonly processingFiles = new Map<string, Promise<any>>();
   readonly debouncingOnChange = new Map<string, NodeJS.Timeout>();

@@ -216,7 +216,7 @@
             },
             "uniqueItems": true
           },
-          "scope": "machine"
+          "scope": "machine-overridable"
         },
         "stitch.diagnostics.autoDeclaredGlobalsPatterns": {
           "title": "Prefixes for auto-declared globals",
@@ -752,20 +752,22 @@
     "onCommand:stitch.openIde",
     "workspaceContains:**/*.{yyp,yy,gml}"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "sharp": "0.32.5"
+  },
   "devDependencies": {
     "@bscotch/emitter": "0.2.1",
-    "@sentry/node": "7.68.0",
     "@bscotch/gamemaker-releases": "workspace:*",
-    "@bscotch/sprite-source": "workspace:*",
     "@bscotch/gml-parser": "workspace:*",
     "@bscotch/pathy": "^2.7.4",
+    "@bscotch/sprite-source": "workspace:*",
     "@bscotch/stitch": "workspace:*",
     "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/trebuchet": "2.8.7",
     "@bscotch/utility": "^7.1.0",
     "@bscotch/yy": "workspace:*",
     "@sentry/esbuild-plugin": "2.7.1",
+    "@sentry/node": "7.68.0",
     "@types/plist": "3.0.2",
     "@types/vscode": "1.81.0",
     "@types/xml2js": "0.4.11",
