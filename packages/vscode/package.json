@@ -206,13 +206,17 @@
       "properties": {
         "stitch.sprites.sources": {
           "title": "Sprite Sources",
-          "description": "A list of paths to config files for Stitch Sprite Sources.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "description": "A mapping of local projects to their local Sprite Sources.",
+          "type": "object",
+          "additionalProperties": {
+            "description": "Array of paths to Sprite Source folders.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
           },
-          "uniqueItems": true,
-          "scope": "machine-overridable"
+          "scope": "machine"
         },
         "stitch.diagnostics.autoDeclaredGlobalsPatterns": {
           "title": "Prefixes for auto-declared globals",

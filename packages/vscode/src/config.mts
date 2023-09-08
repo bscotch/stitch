@@ -2,6 +2,10 @@ import type { Channel } from '@bscotch/gamemaker-releases';
 import { randomString } from '@bscotch/utility';
 import vscode from 'vscode';
 
+export interface SpriteSourcesConfig {
+  [projectPath: string]: string[];
+}
+
 export class StitchConfig {
   public context!: vscode.ExtensionContext;
 
@@ -9,10 +13,18 @@ export class StitchConfig {
     return vscode.workspace.getConfiguration('stitch');
   }
 
-  get spriteSources() {
-    return this.config.get<string[]>('sprites.sources') || [];
+  get spriteSources(): SpriteSourcesConfig {
+    const sources =
+      this.config.get<{ [projectPath: string]: string[] }>('sprites.sources') ||
+      {};
+    // Make sure it's the right type!
+    if (Array.isArray(sources)) {
+      this.config.update('sprites.sources', undefined, true);
+      return {};
+    }
+    return { ...sources };
   }
-  set spriteSources(sources: string[]) {
+  set spriteSources(sources: SpriteSourcesConfig) {
     // Want to store it as an *unsynced* value at the *user* level,
     // so it doesn't get synced across devices. This means it has to
     // be stored independent of the workspace.

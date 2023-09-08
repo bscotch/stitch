@@ -140,9 +140,8 @@ export class SpriteSource extends SpriteCache {
       `Sprites root does not exist: ${spritesRoot}`,
     );
     const source = new SpriteSource(spritesRoot);
-    if (options) {
-      await source.loadConfig(options);
-    }
+    // Ensure a config file
+    await source.loadConfig(options);
     return source;
   }
 }
