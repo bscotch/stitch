@@ -1,4 +1,4 @@
-import { Asset } from '@bscotch/gml-parser';
+import { Asset, isAssetOfKind } from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
 import { SpriteDest, SpriteSource } from '@bscotch/sprite-source';
 import vscode from 'vscode';
@@ -7,11 +7,11 @@ import { stitchEvents } from './events.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { ObjectSpriteItem } from './inspector.mjs';
-import { registerCommand } from './lib.mjs';
+import { registerCommand, sortAlphaInsensitive } from './lib.mjs';
 import { logger, showErrorMessage } from './log.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 
-type Item = SpriteSourceItem | SpriteItem;
+type Item = SpriteSourceFolder | SpriteSourceItem | SpriteFolder | SpriteItem;
 
 export interface SpriteSourceConfig {
   targetProject?: string;
@@ -25,16 +25,17 @@ export interface SpriteSourceConfig {
 
 interface SpriteChangeInfo {
   when: Date;
-  project: GameMakerProject;
 }
 
 export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
   view!: vscode.TreeView<Item>;
   currentProject?: GameMakerProject;
 
-  // Map of <sourcePath: spriteName: SpriteChangeInfo>
-  static recentlyChangedSprites: Map<string, Map<string, SpriteChangeInfo>> =
-    new Map();
+  // Map of <project: spriteName: SpriteChangeInfo>
+  static recentlyChangedSprites: Map<
+    GameMakerProject,
+    Map<string, SpriteChangeInfo>
+  > = new Map();
 
   private _onDidChangeTreeData: vscode.EventEmitter<
     Item | undefined | null | void
@@ -51,10 +52,21 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     stitchEvents.on('project-changed', () => this.rebuild());
   }
 
-  async importSprites(source: SpriteSourceItem) {
-    assertLoudly(source.project, 'No project found for sprite source.');
+  async importSprites() {
+    assertLoudly(this.currentProject, 'No active project.');
 
-    const dest = await SpriteDest.from(source.project.yypPath.absolute);
+    const dest = await SpriteDest.from(this.currentProject.yypPath.absolute);
+
+    // Prep the tracker for this project
+    SpriteSourcesTree.recentlyChangedSprites.set(
+      this.currentProject,
+      SpriteSourcesTree.recentlyChangedSprites.get(this.currentProject) ||
+        new Map(),
+    );
+    const projectChanges = SpriteSourcesTree.recentlyChangedSprites.get(
+      this.currentProject,
+    )!;
+
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -69,6 +81,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
         if (totalIssues) {
           const displayIssues = dest.issues.slice(0, 5);
           const moreIssues = totalIssues - displayIssues.length;
+          logger.error(dest.issues);
           showErrorMessage(
             `There were ${totalIssues} issues importing sprites:\n\n${displayIssues
               .map((issue) => `- ${issue.message}`)
@@ -77,35 +90,17 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
         }
 
         // Add the changes to the recently changed list
-        const changedSprites = SpriteSourcesTree.recentlyChangedSprites
-          .set(
-            source.sourceDir.absolute,
-            SpriteSourcesTree.recentlyChangedSprites.get(
-              source.sourceDir.absolute,
-            ) || new Map(),
-          )
-          .get(source.sourceDir.absolute)!;
         for (const action of actions || []) {
-          changedSprites.set(action.resource.name, {
+          // Ensure the
+
+          projectChanges.set(action.resource.name, {
             when: new Date(),
-            project: source.project,
           });
         }
       },
     );
 
     this.rebuild();
-  }
-
-  async loadProjectSources(
-    project: GameMakerProject,
-  ): Promise<SpriteSourceItem[]> {
-    const dest = await SpriteDest.from(project.yypPath.absolute);
-    const config = await dest.loadConfig();
-    if (!config.sources?.length) return [];
-    return config.sources.map((source) => {
-      return new SpriteSourceItem(project, source.source);
-    });
   }
 
   async deleteSpriteSource(source: SpriteSourceItem) {
@@ -182,12 +177,12 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
         logger.info("No active project. Can't load sprite sources.");
         return [];
       }
-      return await this.loadProjectSources(project);
+      return [new SpriteSourceFolder(project), new SpriteFolder(project)];
     } else if (
       'getChildren' in element &&
       typeof element.getChildren === 'function'
     ) {
-      return element.getChildren() as Item[];
+      return (await element.getChildren()) as Item[];
     }
     return [];
   }
@@ -248,14 +243,30 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
           vscode.env.openExternal(fileUri);
         },
       ),
-      registerCommand(
-        'stitch.spriteSource.import',
-        (source: SpriteSourceItem) => {
-          tree.importSprites(source);
-        },
-      ),
+      registerCommand('stitch.spriteSource.import', () => {
+        tree.importSprites();
+      }),
     ];
     return subscriptions;
+  }
+}
+
+class SpriteSourceFolder extends StitchTreeItemBase<'sprite-sources'> {
+  override readonly kind = 'sprite-sources';
+  parent = undefined;
+  constructor(readonly project: GameMakerProject) {
+    super('Sprite Sources');
+    this.contextValue = this.kind;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+  }
+
+  async getChildren(): Promise<SpriteSourceItem[]> {
+    const dest = await SpriteDest.from(this.project.yypPath.absolute);
+    const config = await dest.loadConfig();
+    if (!config.sources?.length) return [];
+    return config.sources.map((source) => {
+      return new SpriteSourceItem(this.project, source.source);
+    });
   }
 }
 
@@ -271,9 +282,8 @@ class SpriteSourceItem extends StitchTreeItemBase<'sprite-source'> {
     super(sourceDir.name);
     this.sourceDir = sourceDir;
     this.contextValue = this.kind;
-    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.None;
 
-    this.setBaseIcon('folder');
     // Add a command to open the config file
     this.command = {
       command: 'vscode.open',
@@ -285,25 +295,32 @@ class SpriteSourceItem extends StitchTreeItemBase<'sprite-source'> {
   get configPath() {
     return this.sourceDir.join('.stitch/sprites.source.json');
   }
+}
+
+class SpriteFolder extends StitchTreeItemBase<'sprites'> {
+  override readonly kind = 'sprites';
+  parent = undefined;
+  constructor(readonly project: GameMakerProject) {
+    super('Recently Imported');
+    this.contextValue = this.kind;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+  }
 
   getChildren(): SpriteItem[] {
-    // const changes = SpriteSourcesTree.recentlyChangedSprites.get(
-    //   this.sourceDir.spritesRoot.absolute,
-    // );
-    // if (!changes) return [];
-    // const changedSprites = [...changes.entries()]
-    //   .map(([name, info]) => {
-    //     const asset = info.project.getAssetByName(name);
-    //     if (!isAssetOfKind(asset, 'sprites')) return;
-    //     return new SpriteItem(asset, info);
-    //   })
-    //   .filter((s): s is SpriteItem => !!s);
-    // // Sort alphabetically
-    // changedSprites.sort((a, b) =>
-    //   sortAlphaInsensitive(a.asset.name, b.asset.name),
-    // );
-    // return changedSprites;
-    return [];
+    const changes = SpriteSourcesTree.recentlyChangedSprites.get(this.project);
+    if (!changes?.size) return [];
+    const changedSprites = [...changes.entries()]
+      .map(([name, info]) => {
+        const asset = this.project.getAssetByName(name);
+        if (!isAssetOfKind(asset, 'sprites')) return;
+        return new SpriteItem(asset, info);
+      })
+      .filter((s): s is SpriteItem => !!s);
+    // Sort alphabetically
+    changedSprites.sort((a, b) =>
+      sortAlphaInsensitive(a.asset.name, b.asset.name),
+    );
+    return changedSprites;
   }
 }
 
