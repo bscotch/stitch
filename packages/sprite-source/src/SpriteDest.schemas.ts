@@ -9,6 +9,8 @@ export interface SpriteDestAction {
   source: string;
   /** The fullpath to the {project}/sprites/{spriteName} folder where this sprite asset does (or should) live */
   dest: string;
+  /** The fullpath to the SpriteSource folder containing this sprite */
+  sourceRoot: string;
 }
 
 export type SpriteDestSource = z.infer<typeof spriteDestSourceSchema>;

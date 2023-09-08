@@ -13,6 +13,8 @@ export interface ApplySpriteActionOptions {
 export interface SpriteDestActionResult {
   resource: YypResourceId;
   folder: { name: string; folderPath: string };
+  /** The path to the sprite source root from which this action started */
+  sourceRoot: string;
 }
 
 export async function applySpriteAction({
@@ -149,5 +151,6 @@ export async function applySpriteAction({
       name: yy.parent.name,
       folderPath: yy.parent.path,
     },
+    sourceRoot: action.sourceRoot,
   };
 }

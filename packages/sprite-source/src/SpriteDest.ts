@@ -43,7 +43,11 @@ export class SpriteDest extends SpriteCache {
     const ignorePatterns = (sourceConfig.ignore || []).map(
       (x) => new RegExp(x),
     );
-    const source = await SpriteSource.from(sourceConfig.source);
+
+    // The source pathy is either absolute or relative to the project root
+    const sourceRoot = pathy(sourceConfig.source, this.yypPath.up());
+
+    const source = await SpriteSource.from(sourceRoot);
     const sourceSpritesInfo = await source.update().then((x) => x.info);
 
     // Normalize things for direct comparision between source and dest
@@ -111,6 +115,7 @@ export class SpriteDest extends SpriteCache {
           name: sourceSprite.name,
           source: sourceDir,
           dest: destDir,
+          sourceRoot: source.spritesRoot.absolute,
         });
       } else if (
         sourceSprite.spine &&
@@ -123,6 +128,7 @@ export class SpriteDest extends SpriteCache {
           name: destSprite.name,
           source: sourceDir,
           dest: destDir,
+          sourceRoot: source.spritesRoot.absolute,
         });
       } else if (
         !sourceSprite.spine &&
@@ -135,6 +141,7 @@ export class SpriteDest extends SpriteCache {
           name: destSprite.name,
           source: sourceDir,
           dest: destDir,
+          sourceRoot: source.spritesRoot.absolute,
         });
       }
     }
