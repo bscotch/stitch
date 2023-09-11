@@ -33,7 +33,7 @@ const builder = esbuild.build({
 await $`rm -rf ./assets/templates`;
 await $`mkdir -p ./assets/templates`;
 await $`cp -r ../parser/assets/GmlSpec.xml ./assets/`;
-await $`cp ../pixel-checksum/index.node ./dist`;
+await $`cp ../pixel-checksum/pixel-checksum.node ./dist`;
 
 // Update the icon theme file
 await import('./sync-icons.mjs');
