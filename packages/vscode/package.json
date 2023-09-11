@@ -736,9 +736,6 @@
     "onCommand:stitch.openIde",
     "workspaceContains:**/*.{yyp,yy,gml}"
   ],
-  "dependencies": {
-    "sharp": "0.32.5"
-  },
   "devDependencies": {
     "@bscotch/emitter": "0.2.1",
     "@bscotch/gamemaker-releases": "workspace:*",

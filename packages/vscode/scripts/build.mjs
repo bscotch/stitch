@@ -17,7 +17,6 @@ const builder = esbuild.build({
   loader: {
     '.xml': 'text',
     '.html': 'text',
-    '.node': 'file',
   },
   inject: ['./scripts/injection.js'],
   define: {
