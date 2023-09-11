@@ -194,12 +194,13 @@ export class SpriteDest extends SpriteCache {
     // - Ensure we won't have an asset name clash
     const existingFolders = new Set<string>();
     const existingSprites = new Set<string>();
-    const existingAssets = new Set<string>();
+    const existingNonSpriteAssets = new Set<string>();
     yyp.resources.forEach((r) => {
       if (r.id.path.startsWith('sprites')) {
         existingSprites.add(r.id.name);
+      } else {
+        existingNonSpriteAssets.add(r.id.name);
       }
-      existingAssets.add(r.id.name);
     });
     yyp.Folders.forEach((f) => {
       existingFolders.add(f.folderPath);
@@ -240,7 +241,7 @@ export class SpriteDest extends SpriteCache {
     const percentPerAction =
       (100 - percentComplete - percentForYypUpdate) / actions.length;
     for (const action of actions) {
-      if (existingAssets.has(action.name)) {
+      if (existingNonSpriteAssets.has(action.name)) {
         this.issues.push({
           level: 'warning',
           message: `Asset name collision: ${action.name}`,
