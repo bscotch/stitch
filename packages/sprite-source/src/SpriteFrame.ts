@@ -1,9 +1,8 @@
 import { Pathy } from '@bscotch/pathy';
 import { Image } from 'image-js';
 import type { SpriteSummary } from './SpriteCache.schemas.js';
-import { computeFileChecksum } from './checksum.js';
 import type { BBox } from './types.js';
-import { assert, getPngSize, sequential } from './utility.js';
+import { getPngSize, sequential } from './utility.js';
 
 export class SpriteFrame {
   protected _size: undefined | { width: number; height: number };
@@ -22,31 +21,15 @@ export class SpriteFrame {
     this._masks = {};
   }
 
-  async checksum() {
-    if (this._checksum) {
-      return this._checksum;
-    }
-    const ckecksum = await computeFileChecksum(this.path.absolute);
-    assert(
-      ckecksum && typeof ckecksum === 'string',
-      'Could not compute checksum',
-    );
-    this._checksum = ckecksum;
-    return this._checksum;
-  }
-
   async updateCache(cache: SpriteSummary) {
     const lastChanged = (await this.path.stat()).mtime.getTime();
     const needsUpdate =
       (cache.frames[this.path.relative]?.changed || 0) !== lastChanged;
     if (!needsUpdate) return cache.frames[this.path.relative];
-    const [size, checksum] = await Promise.all([
-      this.getSize(),
-      this.checksum(),
-    ]);
+    const [size] = await Promise.all([this.getSize()]);
     cache.frames[this.path.relative] = {
       changed: lastChanged,
-      checksum,
+      checksum: '', // To be batch-computed later
       height: size.height,
       width: size.width,
     };

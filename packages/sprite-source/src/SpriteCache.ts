@@ -1,4 +1,5 @@
 import { Pathy, pathy } from '@bscotch/pathy';
+import { computePngChecksums } from '@bscotch/pixel-checksum';
 import { SpritesInfo, spritesInfoSchema } from './SpriteCache.schemas.js';
 import { SpriteDir } from './SpriteDir.js';
 import type { Issue, Log } from './types.js';
@@ -104,6 +105,29 @@ export class SpriteCache {
       waits.push(sprite.updateCache(cache));
     }
     await Promise.all(waits);
+
+    // Add any missing checksums
+    const checksumsToCompute: [sprite: string, frame: string, path: string][] =
+      [];
+    for (const [sprite, info] of Object.entries(cache.info)) {
+      if (info.spine) continue;
+      for (const [frame, frameInfo] of Object.entries(info.frames)) {
+        if (frameInfo.checksum) continue;
+        checksumsToCompute.push([
+          sprite,
+          frame,
+          this.spritesRoot.join(sprite, frame).absolute,
+        ]);
+      }
+    }
+    const checksums = await computePngChecksums(
+      checksumsToCompute.map(([_s, _f, framePath]) => framePath),
+    );
+    checksumsToCompute.forEach(([sprite, frame], idx) => {
+      const spriteCache = cache.info[sprite];
+      if (spriteCache.spine) return; // Shouldn't happen
+      spriteCache.frames[frame].checksum = checksums[idx];
+    });
 
     // Remove any sprite info that no longer exists
     const existingSpriteDirs = new Set(
