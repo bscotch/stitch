@@ -13,10 +13,11 @@ const builder = esbuild.build({
   sourcemap: true,
   platform: 'node',
   nodePaths: ['node_modules'],
-  external: ['vscode', 'sharp'],
+  external: ['vscode'],
   loader: {
     '.xml': 'text',
     '.html': 'text',
+    '.node': 'file',
   },
   inject: ['./scripts/injection.js'],
   define: {
