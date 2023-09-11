@@ -49,7 +49,7 @@ export class ChangeTracker {
 
     // Sort by yyp, then yy, then gml files.
     queue.sort((a, b) => {
-      for (const ext of ['.yyp', '.yy', '.gml', '.atlas', '.png']) {
+      for (const ext of ['.atlas', '.png', '.gml', '.yy', '.yyp']) {
         const aExt = a.uri.path.endsWith(ext);
         const bExt = b.uri.path.endsWith(ext);
         if (aExt && !bExt) {

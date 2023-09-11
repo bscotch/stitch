@@ -12,9 +12,12 @@ class StitchConfig {
     return vscode.workspace.getConfiguration('stitch');
   }
 
-  // get alertOnSpriteChange() {
-  //   return this.config.get<boolean>('sprites.alertOnChange') ?? true;
-  // }
+  get sortSpriteSourceChangesBy() {
+    return (
+      this.config.get<'recency' | 'name'>('sprites.sources.sortChangesBy') ??
+      'recency'
+    );
+  }
   get cleanOnSpineSpriteChange() {
     return (
       this.config.get<boolean>('sprites.cleanOnSpineSpriteChange') ?? false

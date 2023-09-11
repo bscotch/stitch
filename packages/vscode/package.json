@@ -234,6 +234,14 @@
           "default": [],
           "description": "Add asset groups to this list to suppress diagnostics from assets in these groups. Specify groups using their full path."
         },
+        "stitch.sprites.sources.sortChangesBy": {
+          "title": "Sort sprite changes",
+          "enum": [
+            "recency",
+            "name"
+          ],
+          "default": "name"
+        },
         "stitch.sprites.cleanOnSpineSpriteChange": {
           "title": "Autoclean when spine sprites change",
           "type": "boolean",

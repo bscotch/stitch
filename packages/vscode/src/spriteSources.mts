@@ -3,6 +3,7 @@ import { Pathy, pathy } from '@bscotch/pathy';
 import { SpriteDest, SpriteSource } from '@bscotch/sprite-source';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
+import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
@@ -317,9 +318,13 @@ class SpriteFolder extends StitchTreeItemBase<'sprites'> {
       })
       .filter((s): s is SpriteItem => !!s);
     // Sort alphabetically
-    changedSprites.sort((a, b) =>
-      sortAlphaInsensitive(a.asset.name, b.asset.name),
-    );
+    changedSprites.sort((a, b) => {
+      if (stitchConfig.sortSpriteSourceChangesBy === 'name') {
+        return sortAlphaInsensitive(a.asset.name, b.asset.name);
+      }
+      // Otherwise sort by most recently changed first
+      return b.info.when.getTime() - a.info.when.getTime();
+    });
     return changedSprites;
   }
 }
