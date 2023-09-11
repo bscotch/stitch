@@ -17,6 +17,7 @@ const builder = esbuild.build({
   loader: {
     '.xml': 'text',
     '.html': 'text',
+    '.node': 'file',
   },
   inject: ['./scripts/injection.js'],
   define: {
@@ -32,6 +33,7 @@ const builder = esbuild.build({
 await $`rm -rf ./assets/templates`;
 await $`mkdir -p ./assets/templates`;
 await $`cp -r ../parser/assets/GmlSpec.xml ./assets/`;
+await $`cp ../pixel-checksum/index.node ./dist`;
 
 // Update the icon theme file
 await import('./sync-icons.mjs');
