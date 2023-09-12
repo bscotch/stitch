@@ -16,7 +16,7 @@ export class SpriteSource extends SpriteCache {
   }
 
   protected async resolveStaged(staging: SpriteStaging) {
-    const dir = this.spritesRoot.join(staging.dir);
+    const dir = pathy(staging.dir, this.spritesRoot);
     if (!(await dir.exists())) {
       this.issues.push({
         level: 'warning',
@@ -76,6 +76,13 @@ export class SpriteSource extends SpriteCache {
         waits.push(moveWait);
       }
       await Promise.allSettled(waits);
+      // Delete any folders-of-empty-folders
+      const dirs = await getDirs(dir.absolute);
+      for (const dir of dirs) {
+        if (await dir.isEmptyDirectory()) {
+          await dir.delete({ recursive: true });
+        }
+      }
     }
   }
 
@@ -113,9 +120,6 @@ export class SpriteSource extends SpriteCache {
     /** Optionally override config options */
     options?: SpriteSourceConfig,
   ) {
-    // Reset issues
-    this.issues.length = 0;
-
     const config = await this.loadConfig(options);
 
     // Process any staging folders

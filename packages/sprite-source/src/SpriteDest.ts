@@ -48,7 +48,11 @@ export class SpriteDest extends SpriteCache {
     const sourceRoot = pathy(sourceConfig.source, this.yypPath.up());
 
     const source = await SpriteSource.from(sourceRoot);
-    const sourceSpritesInfo = await source.update().then((x) => x.info);
+    const sourceSpritesInfo = await source.update().then((x) => {
+      this.logs.push(...source.logs);
+      this.issues.push(...source.issues);
+      return x.info;
+    });
 
     // Normalize things for direct comparision between source and dest
     type SpriteInfo = (SpriteSummary | SpineSummary) & {
