@@ -182,6 +182,12 @@
         "title": "Stitch: Copy @self"
       },
       {
+        "command": "stitch.spriteSource.clearCache",
+        "title": "Clear Cache",
+        "enablement": "stitch.projectCount > 0",
+        "icon": "$(history)"
+      },
+      {
         "command": "stitch.spriteSource.create",
         "title": "Add Sprite Source...",
         "enablement": "stitch.projectCount > 0",
@@ -482,9 +488,14 @@
           "group": "navigation@3"
         },
         {
-          "command": "stitch.spriteSource.create",
+          "command": "stitch.spriteSource.clearCache",
           "when": "view == bscotch-stitch-sprite-sources",
           "group": "navigation@3"
+        },
+        {
+          "command": "stitch.spriteSource.create",
+          "when": "view == bscotch-stitch-sprite-sources",
+          "group": "navigation@4"
         },
         {
           "command": "stitch.spriteSource.import",
@@ -607,6 +618,11 @@
           "command": "stitch.clean",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
           "group": "inline@3"
+        },
+        {
+          "command": "stitch.spriteSource.clearCache",
+          "when": "viewItem == sprite-source",
+          "group": "7_modification@8"
         },
         {
           "command": "stitch.spriteSource.delete",

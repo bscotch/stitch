@@ -71,7 +71,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Importing sprites...`,
+        title: `Importing sprites`,
         cancellable: false,
       },
       async (progress) => {
@@ -113,6 +113,20 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     assertLoudly(sourceIndex >= 0, 'Could not find sprite source in settings.');
     config.sources!.splice(sourceIndex, 1);
     await dest.loadConfig(config); // To resave the config
+    this.rebuild();
+  }
+
+  async clearCache(source: SpriteSourceItem | undefined) {
+    if (!source) {
+      assertLoudly(this.currentProject, 'No active project.');
+      // Then clear the destination cache for the current project
+      const dest = await SpriteDest.from(this.currentProject.yypPath.absolute);
+      await dest.cacheFile.delete();
+    } else {
+      // Then clear the cache for the given source
+      const sourceDir = await SpriteSource.from(source.sourceDir.absolute);
+      await sourceDir.cacheFile.delete();
+    }
     this.rebuild();
   }
 
@@ -218,6 +232,12 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
         tree.currentProject = project;
         tree.rebuild();
       }),
+      registerCommand(
+        'stitch.spriteSource.clearCache',
+        (source: SpriteSourceItem | undefined) => {
+          tree.clearCache(source);
+        },
+      ),
       registerCommand('stitch.spriteSource.create', () => {
         tree.addSpriteSource();
       }),

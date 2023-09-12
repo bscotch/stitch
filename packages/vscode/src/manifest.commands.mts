@@ -283,6 +283,20 @@ export const commands = {
     },
   },
   //#region Sprite Sources
+  'stitch.spriteSource.clearCache': {
+    command: 'stitch.spriteSource.clearCache',
+    title: 'Clear Cache',
+    enablement: when.hasProjects,
+    icon: '$(history)',
+    [$showInViewTitle]: {
+      when: when.spriteSourceTreeFocused,
+      group: 'navigation@3',
+    },
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsSpriteSource,
+      group: '7_modification@8',
+    },
+  },
   'stitch.spriteSource.create': {
     command: 'stitch.spriteSource.create',
     title: 'Add Sprite Source...',
@@ -290,7 +304,7 @@ export const commands = {
     icon: '$(add)',
     [$showInViewTitle]: {
       when: when.spriteSourceTreeFocused,
-      group: 'navigation@3',
+      group: 'navigation@4',
     },
   },
   'stitch.spriteSource.import': {
