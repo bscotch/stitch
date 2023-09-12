@@ -4,6 +4,8 @@ import { $ } from 'zx';
 
 config();
 
+await $`mkdir -p ./dist`;
+
 const builder = esbuild.build({
   entryPoints: ['./src/extension.ts', './src/manifest.update.mts'],
   bundle: true,
