@@ -337,13 +337,16 @@ class SpriteFolder extends StitchTreeItemBase<'sprites'> {
         return new SpriteItem(asset, info);
       })
       .filter((s): s is SpriteItem => !!s);
-    // Sort alphabetically
     changedSprites.sort((a, b) => {
       if (stitchConfig.sortSpriteSourceChangesBy === 'name') {
         return sortAlphaInsensitive(a.asset.name, b.asset.name);
       }
-      // Otherwise sort by most recently changed first
-      return b.info.when.getTime() - a.info.when.getTime();
+      // Otherwise sort by most recently changed first. If the times are within a short range of each other, sort by name.
+      const timeDiff = b.info.when.getTime() - a.info.when.getTime();
+      if (Math.abs(timeDiff) < 10_000) {
+        return sortAlphaInsensitive(a.asset.name, b.asset.name);
+      }
+      return timeDiff;
     });
     return changedSprites;
   }
