@@ -1,5 +1,5 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
-import { yySpriteSchema, type YypResourceId, type YySprite } from '@bscotch/yy';
+import { Yy, yySpriteSchema, type YypResourceId } from '@bscotch/yy';
 import fsp from 'fs/promises';
 import path from 'path';
 import type { SpriteDestAction } from './SpriteDest.schemas.js';
@@ -58,21 +58,25 @@ export async function applySpriteAction({
   const yorigin = Math.floor(height / 2) - 1;
 
   // Load the yy file, or populate a default one
-  const yyFile: Pathy<YySprite> = (
-    (initialDestFiles.find(
+  const yyFile: Pathy =
+    initialDestFiles.find(
       (f) => f.basename.toLowerCase() === `${action.name}.yy`.toLowerCase(),
-    ) as Pathy<YySprite> | undefined) ||
-    pathy(`${action.name}.yy`, targetFolder)
-  ).withValidator(yySpriteSchema);
-  let yy = await yyFile.read({
-    fallback: {
-      name: action.name,
-      type: action.spine ? 2 : 0,
-      width,
-      height,
-      sequence: { xorigin, yorigin },
-    },
-  });
+    ) || pathy(`${action.name}.yy`, targetFolder);
+  if (!(await yyFile.exists())) {
+    await Yy.write(
+      yyFile.absolute,
+      {
+        name: action.name,
+        type: action.spine ? 2 : 0,
+        width,
+        height,
+        sequence: { xorigin, yorigin },
+      },
+      'sprites',
+    );
+  }
+  let yy = await Yy.read(yyFile.absolute, 'sprites');
+
   // Populate the frames to get UUIDs
   const frames = yy.frames || [];
   frames.length = action.spine ? 1 : sourcePngs.length;
@@ -139,7 +143,7 @@ export async function applySpriteAction({
   }
 
   // Save the yy file
-  await yyFile.write(yy);
+  await Yy.write(yyFile.absolute, yy, 'sprites');
 
   // Send back info that can be used to update the project file
   return {

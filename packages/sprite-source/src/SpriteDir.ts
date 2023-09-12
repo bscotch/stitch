@@ -1,4 +1,5 @@
 import { Pathy, pathy } from '@bscotch/pathy';
+import { Yy } from '@bscotch/yy';
 import fsp from 'fs/promises';
 import type { SpritesInfo } from './SpriteCache.schemas.js';
 import { SpriteFrame } from './SpriteFrame.js';
@@ -27,14 +28,7 @@ export class SpriteDir {
 
   get spinePaths() {
     assert(this.isSpine, 'Not a spine sprite');
-    if (!this._spinePaths) {
-      this._spinePaths = {
-        atlas: this.path.join('skeleton.atlas'),
-        json: this.path.join('skeleton.json'),
-        png: this.path.join('skeleton.png'),
-      };
-    }
-    return this._spinePaths;
+    return { ...this._spinePaths! };
   }
 
   async updateCache(cache: SpritesInfo) {
@@ -94,9 +88,11 @@ export class SpriteDir {
     }
     const frames = await Promise.all(frameWaits);
     if (!spriteCache.spine) {
-      spriteCache.checksum = computeStringChecksum(
-        frames.map((f) => f.checksum).join('-'),
-      );
+      // Sort the checksums by checksum since filenames will change between
+      // source and dest. Creates a problem if frame *order* changes, so we
+      // may need to deal with that later.
+      const frameChecksums = frames.map((f) => f.checksum).sort();
+      spriteCache.checksum = computeStringChecksum(frameChecksums.join('-'));
     }
   }
 
@@ -205,12 +201,53 @@ export class SpriteDir {
     }
 
     const sprite = new SpriteDir(path, logs, issues);
-    const isSpine = !!files.find((f) => f.basename === 'skeleton.atlas');
+    const isSpine = !!files.find((f) => f.hasExtension('atlas'));
     if (isSpine) {
       sprite._isSpine = true;
+      // Then it's either a spine export or a spine sprite folder in GameMaker
+      // If it's a spine export, all files will be named "skeleton.*"
+      // If it's a GameMaker spine sprite, there will be a "skeleton.png",
+      // but the other files will be named "{GUID}.*". If there are multiple
+      // identifiers (due to incomplete cleanup of a previous import), we'll
+      // have to open the yy file to determine the correct GUID.
+      /** The 'skeleton.png' file is present in both the Spine export and the sprite asset */
+      const skeletonPng = pngs.find((png) => png.name === 'skeleton');
+      let skeletonAtlas = files.find(
+        (f) => f.name === 'skeleton' && f.hasExtension('atlas'),
+      );
+      let skeletonJson = files.find(
+        (f) => f.name === 'skeleton' && f.hasExtension('json'),
+      );
+      const yyFile = files.find((f) => f.hasExtension('yy'));
+      if (yyFile) {
+        // Then it's a GameMaker spine sprite. If there's a unique GUID in the atlas file(s) we can just use that. Else we have to get it from the yy file.
+        const possibleFrameIds = files
+          .filter((f) => f.hasExtension('atlas'))
+          .map((f) => f.name);
+        assert(possibleFrameIds.length, 'No atlas files found.'); // Sanity check
+        let frameId = possibleFrameIds[0];
+        if (possibleFrameIds.length > 1) {
+          // Open the YY file to determine the correct GUID (the frameId)
+          const yy = await Yy.read(yyFile.absolute, 'sprites');
+          frameId = yy.frames[0].name;
+        }
+        skeletonAtlas = files.find(
+          (f) => f.name === frameId && f.hasExtension('atlas'),
+        );
+        skeletonJson = files.find(
+          (f) => f.name === frameId && f.hasExtension('json'),
+        );
+      }
+      sprite._spinePaths = {
+        atlas: skeletonAtlas!,
+        json: skeletonJson!,
+        png: skeletonPng!,
+      };
+
       const existance = await Promise.all([
-        sprite.spinePaths.json.exists(),
-        sprite.spinePaths.png.exists(),
+        sprite._spinePaths.atlas.exists(),
+        sprite._spinePaths.json.exists(),
+        sprite._spinePaths.png.exists(),
       ]);
       assert(
         existance.every((x) => x),
@@ -218,7 +255,7 @@ export class SpriteDir {
       );
     } else {
       sprite._frames = pngs.map((png) => new SpriteFrame(png));
-      // TODO: Make sure all frames are the same size
+      // Make sure all frames are the same size
       const expectedSize = await sprite.frames[0].getSize();
       for (const frame of sprite.frames.slice(1)) {
         const size = await frame.getSize();

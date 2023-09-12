@@ -107,7 +107,6 @@ export class SpriteDest extends SpriteCache {
       const destDir = this.spritesRoot.join(
         destSprite?.path || sourceSprite.name,
       ).absolute;
-
       if (!destSprite || sourceSprite.spine !== destSprite.spine) {
         actions.push({
           kind: 'create',
@@ -289,6 +288,9 @@ export class SpriteDest extends SpriteCache {
       }
     }
     await Yy.write(this.yypPath.absolute, yyp, 'project');
+    // Refresh the cache
+    report(percentForYypUpdate, 'Updating project cache...');
+    await this.updateSpriteInfo();
     return appliedActions;
   }
 
