@@ -1,15 +1,17 @@
 {
   "name": "@bscotch/pixel-checksum",
-  "version": "0.1.0",
-  "description": "",
+  "version": "0.1.1",
   "private": true,
-  "types": "pixel-checksum.node.d.ts",
-  "main": "pixel-checksum.node",
+  "description": "",
+  "license": "MIT",
+  "author": "",
   "exports": {
     "import": "./index.mjs",
     "require": "./pixel-checksum.node",
     "types": "./pixel-checksum.node.d.ts"
   },
+  "main": "pixel-checksum.node",
+  "types": "pixel-checksum.node.d.ts",
   "scripts": {
     "build": "cargo-cp-artifact -nc pixel-checksum.node -- cargo build --message-format=json-render-diagnostics",
     "build-debug": "npm run build --",
@@ -17,8 +19,6 @@
     "install": "npm run build-release",
     "test": "node index.test.js"
   },
-  "author": "",
-  "license": "MIT",
   "devDependencies": {
     "cargo-cp-artifact": "^0.1"
   }

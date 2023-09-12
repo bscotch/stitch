@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/sprite-source",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "keywords": [],
   "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/sprite-source#readme",
@@ -27,8 +27,8 @@
   },
   "dependencies": {
     "@bscotch/pathy": "2.7.4",
-    "@bscotch/yy": "workspace:*",
     "@bscotch/pixel-checksum": "workspace:*",
+    "@bscotch/yy": "workspace:*",
     "image-js": "0.35.4",
     "tslib": "^2.6.2",
     "zod": "^3.22.2"
