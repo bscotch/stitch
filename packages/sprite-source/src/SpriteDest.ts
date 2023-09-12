@@ -208,7 +208,7 @@ export class SpriteDest extends SpriteCache {
     // Try to do it all at the same time for perf. Race conditions
     // and order-of-ops issues indicate some kind of user
     // config failure, so we'll let that be their problem.
-    report(10, 'Computing changes...');
+    report(10, 'Applying staging actions and computing changes...');
     const actions: SpriteDestAction[] = [];
     const getActionsWaits: Promise<any>[] = [];
     for (const sourceConfig of config.sources || []) {
