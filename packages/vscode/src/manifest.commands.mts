@@ -303,7 +303,16 @@ export const commands = {
     },
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsSpriteSource,
-      group: '7_modification@8',
+      group: 'navigation@8',
+    },
+  },
+  'stitch.spriteSource.addStage': {
+    command: 'stitch.spriteSource.addStage',
+    title: 'Add Stage...',
+    enablement: when.hasProjects,
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsSpriteSource,
+      group: 'navigation@1',
     },
   },
   'stitch.spriteSource.create': {

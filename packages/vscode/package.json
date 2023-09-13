@@ -193,6 +193,11 @@
         "icon": "$(discard)"
       },
       {
+        "command": "stitch.spriteSource.addStage",
+        "title": "Add Stage...",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.spriteSource.create",
         "title": "Add Sprite Source...",
         "enablement": "stitch.projectCount > 0",
@@ -495,22 +500,22 @@
         {
           "command": "stitch.spriteSource.clearCache",
           "when": "view == bscotch-stitch-sprite-sources",
-          "group": "navigation@3"
+          "group": "navigation@1"
         },
         {
           "command": "stitch.spriteSource.create",
           "when": "view == bscotch-stitch-sprite-sources",
-          "group": "navigation@4"
+          "group": "navigation@2"
         },
         {
           "command": "stitch.spriteSource.import",
           "when": "view == bscotch-stitch-sprite-sources",
-          "group": "navigation@2"
+          "group": "navigation@4"
         },
         {
           "command": "stitch.spriteSource.edit",
           "when": "view == bscotch-stitch-sprite-sources",
-          "group": "navigation@1"
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
@@ -632,7 +637,12 @@
         {
           "command": "stitch.spriteSource.clearCache",
           "when": "viewItem == sprite-source",
-          "group": "7_modification@8"
+          "group": "navigation@8"
+        },
+        {
+          "command": "stitch.spriteSource.addStage",
+          "when": "viewItem == sprite-source",
+          "group": "navigation@1"
         },
         {
           "command": "stitch.spriteSource.delete",

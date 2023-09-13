@@ -204,6 +204,33 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     this.rebuild();
   }
 
+  async addSpriteSourceStage(sourceFolder: SpriteSourceFolder) {
+    // Have the user choose a folder
+    const stageDir = (
+      await vscode.window.showOpenDialog({
+        canSelectFiles: false,
+        canSelectFolders: true,
+        canSelectMany: false,
+        openLabel: 'Add Stage',
+        title: 'Choose a Sprite Source Staging folder',
+      })
+    )?.[0];
+    if (!stageDir) {
+      logger.info('No source folder selected.');
+      return;
+    }
+    const source = await SpriteSource.from(sourceFolder.sourceDir);
+    const config = await source.loadConfig();
+    config.staging ||= [];
+    config.staging.push({
+      dir: source.spritesRoot.relativeTo(stageDir.fsPath),
+      transforms: [],
+    });
+    await source.loadConfig(config);
+
+    this._onDidChangeTreeData.fire(sourceFolder);
+  }
+
   async getChildren(element?: Item): Promise<Item[]> {
     if (!element) {
       const project = this.workspace.getActiveProject();
@@ -254,6 +281,12 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
         tree.currentProject = project;
         tree.rebuild();
       }),
+      registerCommand(
+        'stitch.spriteSource.addStage',
+        (source: SpriteSourceFolder) => {
+          tree.addSpriteSourceStage(source);
+        },
+      ),
       registerCommand(
         'stitch.spriteSource.clearRecentImports',
         (folder: RecentlyChangedFolder) => {
