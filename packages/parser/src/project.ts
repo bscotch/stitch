@@ -696,18 +696,21 @@ export class Project {
    */
   async reloadYyp() {
     // Update the YYP and identify new/deleted assets
-    const oldYyp = this.yyp;
+    // const oldYyp = this.yyp;
     assert(this.yypPath, 'Cannot reload YYP without a path');
     this.yyp = await Yy.read(this.yypPath.absolute, 'project');
-    const assetIds = new Map(this.yyp.resources.map((r) => [r.id.path, r.id]));
 
-    // Remove old assets
-    const removedAssets = oldYyp.resources.filter(
-      (r) => !assetIds.has(r.id.path),
-    );
-    for (const removedAsset of removedAssets) {
-      await this.removeAssetByName(removedAsset.id.name);
-    }
+    // // NOTE: This is disabled because it's doesn't behave well
+    // // Remove old assets
+    // const assetIds = new Map(
+    //   this.yyp.resources.map((r) => [r.id.path, r.id]),
+    // );
+    // const removedAssets = oldYyp.resources.filter(
+    //   (r) => !assetIds.has(r.id.path),
+    // );
+    // for (const removedAsset of removedAssets) {
+    //   await this.removeAssetByName(removedAsset.id.name);
+    // }
 
     // Add new assets
     const newAssets = await this.loadAssets();
