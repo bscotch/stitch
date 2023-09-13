@@ -2,6 +2,7 @@ import { Pathy, pathy } from '@bscotch/pathy';
 import { computePngChecksums } from '@bscotch/pixel-checksum';
 import { SpritesInfo, spritesInfoSchema } from './SpriteCache.schemas.js';
 import { SpriteDir } from './SpriteDir.js';
+import { computeStringChecksum } from './checksum.js';
 import type { Log } from './types.js';
 import { SpriteSourceError, getDirs } from './utility.js';
 
@@ -119,14 +120,23 @@ export class SpriteCache {
         ]);
       }
     }
-    const checksums = await computePngChecksums(
+    const checksums = computePngChecksums(
       checksumsToCompute.map(([_s, _f, framePath]) => framePath),
     );
     checksumsToCompute.forEach(([sprite, frame], idx) => {
       const spriteCache = cache.info[sprite];
       if (spriteCache.spine) return; // Shouldn't happen
       spriteCache.frames[frame].checksum = checksums[idx];
+      spriteCache.checksum = ''; // Will be recomputed below
     });
+    // Ensure cumulative checksums for all non-spine sprites
+    for (const [, spriteCache] of Object.entries(cache.info)) {
+      if (spriteCache.spine || spriteCache.checksum) continue;
+      const frameChecksums = Object.values(spriteCache.frames)
+        .map((f) => f.checksum)
+        .sort();
+      spriteCache.checksum = computeStringChecksum(frameChecksums.join('-'));
+    }
 
     // Remove any sprite info that no longer exists
     const existingSpriteDirs = new Set(
