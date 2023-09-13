@@ -18,7 +18,7 @@ import {
 } from './SpriteDest.schemas.js';
 import { SpriteSource } from './SpriteSource.js';
 import { Reporter } from './types.js';
-import { assert, rethrow } from './utility.js';
+import { SpriteSourceError, assert, rethrow } from './utility.js';
 
 export class SpriteDest extends SpriteCache {
   protected constructor(
@@ -78,10 +78,9 @@ export class SpriteDest extends SpriteCache {
 
       // Check for name collisions. If found, they should be reported as issues.
       if (sourceSprites.get(name.toLowerCase())) {
-        this.issues.push({
-          level: 'warning',
-          message: `Source sprite name collision: ${name}`,
-        });
+        this.issues.push(
+          new SpriteSourceError(`Source sprite name collision: ${name}`),
+        );
       }
 
       sourceSprites.set(name.toLowerCase(), {
@@ -224,11 +223,12 @@ export class SpriteDest extends SpriteCache {
             actions.push(...a);
           },
           (err) => {
-            this.issues.push({
-              level: 'error',
-              message: `Error importing from "${sourceConfig.source}"`,
-              cause: err,
-            });
+            this.issues.push(
+              new SpriteSourceError(
+                `Failed to import from "${sourceConfig.source}"`,
+                err,
+              ),
+            );
           },
         ),
       );
@@ -245,10 +245,9 @@ export class SpriteDest extends SpriteCache {
       (100 - percentComplete - percentForYypUpdate) / actions.length;
     for (const action of actions) {
       if (existingNonSpriteAssets.has(action.name)) {
-        this.issues.push({
-          level: 'warning',
-          message: `Asset name collision: ${action.name}`,
-        });
+        this.issues.push(
+          new SpriteSourceError(`Asset name collision: ${action.name}`),
+        );
         continue;
       }
       applyActionsWaits.push(
@@ -260,11 +259,12 @@ export class SpriteDest extends SpriteCache {
             appliedActions.push(result);
           })
           .catch((err) => {
-            this.issues.push({
-              level: 'error',
-              message: `Error applying action: ${JSON.stringify(action)}`,
-              cause: err,
-            });
+            this.issues.push(
+              new SpriteSourceError(
+                `Error applying action: ${JSON.stringify(action)}`,
+                err,
+              ),
+            );
           })
           .finally(() => {
             report(percentPerAction);

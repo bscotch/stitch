@@ -85,8 +85,15 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
           logger.error(dest.issues);
           showErrorMessage(
             `There were ${totalIssues} issues importing sprites:\n\n${displayIssues
-              .map((issue) => `- ${issue.message}`)
-              .join('\n')}${moreIssues ? `\n\n...and ${moreIssues} more` : ''}`,
+              .map(
+                (issue) =>
+                  `${issue.message}${
+                    issue.cause?.message ? ` (${issue.cause.message})` : ''
+                  }`,
+              )
+              .join('\n\n')}${
+              moreIssues ? `\n\n...and ${moreIssues} more` : ''
+            }`,
           );
         }
 

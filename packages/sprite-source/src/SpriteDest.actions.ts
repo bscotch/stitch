@@ -88,9 +88,9 @@ export async function applySpriteAction({
     const ioWaits: Promise<any>[] = [];
     const keepers = new Set([yyFile.basename.toLowerCase()]);
     for (const fileType of ['json', 'atlas', 'png']) {
-      const sourceFile = pathy(`skeleton.${fileType}`, action.source);
+      const sourceFile = sourceFiles.find((f) => f.hasExtension(fileType))!;
       const destFile = pathy(
-        `${fileType === 'png' ? 'skeleton' : uuid}.${fileType}`,
+        `${fileType === 'png' ? sourceFile.name : uuid}.${fileType}`,
         targetFolder,
       );
       ioWaits.push(sourceFile.copy(destFile));

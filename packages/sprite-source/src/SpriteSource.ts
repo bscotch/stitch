@@ -6,7 +6,13 @@ import {
   type SpriteSourceConfig,
   type SpriteStaging,
 } from './SpriteSource.schemas.js';
-import { assert, deletePngChildren, getDirs, rethrow } from './utility.js';
+import {
+  SpriteSourceError,
+  assert,
+  deletePngChildren,
+  getDirs,
+  rethrow,
+} from './utility.js';
 
 export class SpriteSource extends SpriteCache {
   get configFile() {
@@ -18,10 +24,9 @@ export class SpriteSource extends SpriteCache {
   protected async resolveStaged(staging: SpriteStaging) {
     const dir = pathy(staging.dir, this.spritesRoot);
     if (!(await dir.exists())) {
-      this.issues.push({
-        level: 'warning',
-        message: `Staging directory does not exist: ${dir}`,
-      });
+      this.issues.push(
+        new SpriteSourceError(`Staging directory does not exist: ${dir}`),
+      );
       return;
     }
     // Identify all "SpriteDirs". Stored as a set so we
@@ -79,7 +84,7 @@ export class SpriteSource extends SpriteCache {
       // Delete any folders-of-empty-folders
       const dirs = await getDirs(dir.absolute);
       for (const dir of dirs) {
-        if (await dir.isEmptyDirectory()) {
+        if ((await dir.exists()) && (await dir.isEmptyDirectory())) {
           await dir.delete({ recursive: true });
         }
       }

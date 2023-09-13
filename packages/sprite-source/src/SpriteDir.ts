@@ -4,18 +4,20 @@ import fsp from 'fs/promises';
 import type { SpritesInfo } from './SpriteCache.schemas.js';
 import { SpriteFrame } from './SpriteFrame.js';
 import { computeFilesChecksum, computeStringChecksum } from './checksum.js';
-import type { Issue, Log } from './types.js';
-import { assert } from './utility.js';
+import type { Log } from './types.js';
+import { SpriteSourceError, assert } from './utility.js';
 
 export class SpriteDir {
   protected _frames: SpriteFrame[] = [];
   protected _isSpine = false;
-  protected _spinePaths: undefined | { atlas: Pathy; json: Pathy; png: Pathy };
+  protected _spinePaths:
+    | undefined
+    | { atlas: Pathy; json: Pathy; pngs: Pathy[] };
 
   protected constructor(
     readonly path: Pathy,
     readonly logs: Log[],
-    readonly issues: Issue[],
+    readonly issues: Error[],
   ) {}
 
   get isSpine() {
@@ -57,6 +59,8 @@ export class SpriteDir {
     const frameWaits: Promise<{ checksum: string }>[] = [];
     if (spriteCache.spine) {
       // TODO: Handle the spine case
+      const pngs = [...this.spinePaths.pngs];
+      pngs.sort((a, b) => a.basename.localeCompare(b.basename, 'en-US'));
       const lastChanged = Math.max(
         ...(await Promise.all([
           this.spinePaths.atlas.stat().then(
@@ -67,9 +71,11 @@ export class SpriteDir {
             (s) => s.mtime.getTime(),
             () => 0,
           ),
-          this.spinePaths.png.stat().then(
-            (s) => s.mtime.getTime(),
-            () => 0,
+          ...pngs.map((png) =>
+            png.stat().then(
+              (s) => s.mtime.getTime(),
+              () => 0,
+            ),
           ),
         ])),
       );
@@ -78,7 +84,7 @@ export class SpriteDir {
         spriteCache.checksum = await computeFilesChecksum([
           this.spinePaths.atlas.absolute,
           this.spinePaths.json.absolute,
-          this.spinePaths.png.absolute,
+          ...pngs.map((p) => p.absolute),
         ]);
       }
     } else {
@@ -128,9 +134,18 @@ export class SpriteDir {
     await newSpriteDir.ensureDirectory();
     if (this.isSpine) {
       const fromTo = [
-        [this.spinePaths.atlas, newSpriteDir.join('skeleton.atlas')],
-        [this.spinePaths.json, newSpriteDir.join('skeleton.json')],
-        [this.spinePaths.png, newSpriteDir.join('skeleton.png')],
+        [
+          this.spinePaths.atlas,
+          newSpriteDir.join(this.spinePaths.atlas.basename),
+        ],
+        [
+          this.spinePaths.json,
+          newSpriteDir.join(this.spinePaths.json.basename),
+        ],
+        ...this.spinePaths.pngs.map((png) => [
+          png,
+          newSpriteDir.join(png.basename),
+        ]),
       ];
       await Promise.all(
         fromTo.map(([from, to]) =>
@@ -174,11 +189,12 @@ export class SpriteDir {
         maxRetries: 5,
       });
     } catch (err) {
-      this.issues.push({
-        level: 'warning',
-        message: `Could not delete source folder: ${this.path.relative}`,
-        cause: err,
-      });
+      this.issues.push(
+        new SpriteSourceError(
+          `Could not delete source folder: ${this.path.relative}`,
+          err,
+        ),
+      );
     }
   }
 
@@ -189,7 +205,7 @@ export class SpriteDir {
   static async from(
     path: Pathy,
     logs: Log[],
-    issues: Issue[],
+    issues: Error[],
   ): Promise<SpriteDir | undefined> {
     const files = (await fsp.readdir(path.absolute)).map((file) =>
       pathy(file, path.absolute),
@@ -201,58 +217,56 @@ export class SpriteDir {
     }
 
     const sprite = new SpriteDir(path, logs, issues);
-    const isSpine = !!files.find((f) => f.hasExtension('atlas'));
-    if (isSpine) {
+    const hasAtlas = !!files.find((f) => f.hasExtension('atlas'));
+    if (hasAtlas) {
       sprite._isSpine = true;
       // Then it's either a spine export or a spine sprite folder in GameMaker
-      // If it's a spine export, all files will be named "skeleton.*"
-      // If it's a GameMaker spine sprite, there will be a "skeleton.png",
+      // If it's a spine export, all files will be named "{exportName}.*"
+      // If it's a GameMaker spine sprite, there will be a "{exportName}.png",
       // but the other files will be named "{GUID}.*". If there are multiple
       // identifiers (due to incomplete cleanup of a previous import), we'll
       // have to open the yy file to determine the correct GUID.
-      /** The 'skeleton.png' file is present in both the Spine export and the sprite asset */
-      const skeletonPng = pngs.find((png) => png.name === 'skeleton');
-      let skeletonAtlas = files.find(
-        (f) => f.name === 'skeleton' && f.hasExtension('atlas'),
-      );
-      let skeletonJson = files.find(
-        (f) => f.name === 'skeleton' && f.hasExtension('json'),
-      );
-      const yyFile = files.find((f) => f.hasExtension('yy'));
-      if (yyFile) {
-        // Then it's a GameMaker spine sprite. If there's a unique GUID in the atlas file(s) we can just use that. Else we have to get it from the yy file.
-        const possibleFrameIds = files
-          .filter((f) => f.hasExtension('atlas'))
-          .map((f) => f.name);
-        assert(possibleFrameIds.length, 'No atlas files found.'); // Sanity check
-        let frameId = possibleFrameIds[0];
-        if (possibleFrameIds.length > 1) {
-          // Open the YY file to determine the correct GUID (the frameId)
-          const yy = await Yy.read(yyFile.absolute, 'sprites');
-          frameId = yy.frames[0].name;
-        }
-        skeletonAtlas = files.find(
-          (f) => f.name === frameId && f.hasExtension('atlas'),
+
+      // 1. See if we have multiple {name}.atlas files. If so, use the yy file (if there is one) to determine the correct GUID.
+      const atlasFiles = files.filter((f) => f.hasExtension('atlas'));
+      let frameId = atlasFiles[0].name;
+      if (atlasFiles.length > 1) {
+        const yyFiles = files.filter((f) => f.hasExtension('yy'));
+        assert(
+          yyFiles.length === 1,
+          'Multiple .atlas files found in a single folder. There must be exactly one .yy file in this folder to determine the correct GUID.',
         );
-        skeletonJson = files.find(
-          (f) => f.name === frameId && f.hasExtension('json'),
+        const yyFile = yyFiles[0];
+        const yy = await Yy.read(yyFile.absolute, 'sprites');
+        frameId = yy.frames[0]?.name;
+        assert(
+          frameId,
+          `No GUID found in yy file. Cannot determine which .atlas file to use for ${path.relative}`,
         );
       }
-      sprite._spinePaths = {
-        atlas: skeletonAtlas!,
-        json: skeletonJson!,
-        png: skeletonPng!,
-      };
 
-      const existance = await Promise.all([
-        sprite._spinePaths.atlas.exists(),
-        sprite._spinePaths.json.exists(),
-        sprite._spinePaths.png.exists(),
-      ]);
-      assert(
-        existance.every((x) => x),
-        'Invalid spine sprite.',
+      // 2. Get the {name}.atlas and {name}.json files
+      const skeletonJson = files.find(
+        (f) => f.name === frameId && f.hasExtension('json'),
       );
+      const skeletonAtlas = files.find(
+        (f) => f.name === frameId && f.hasExtension('atlas'),
+      );
+      assert(
+        skeletonJson,
+        `No .json file found for ${path.relative}/${frameId}`,
+      );
+      assert(
+        skeletonAtlas,
+        `No .atlas file found for ${path.relative}/${frameId}`,
+      );
+
+      // 3. Set the spine paths (note that there can be multiple pngs, so grab them all)
+      sprite._spinePaths = {
+        atlas: skeletonAtlas,
+        json: skeletonJson,
+        pngs: pngs,
+      };
     } else {
       sprite._frames = pngs.map((png) => new SpriteFrame(png));
       // Make sure all frames are the same size

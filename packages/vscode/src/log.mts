@@ -49,13 +49,16 @@ export class Logger {
       }
       if (isObject && 'fsPath' in arg) {
         // change arg to a pathy object
-        arg = new Pathy(arg.fsPath);
+        arg = arg.fsPath;
       }
       if (isObject && arg instanceof Pathy) {
         // Log the path relative to the workspace root
         return arg.relativeFrom(
           vscode.workspace.workspaceFolders![0].uri.fsPath,
         );
+      }
+      if (isObject && arg instanceof Error) {
+        return stringifyError(arg, true);
       }
       if (isObject && arg.toString() === '[object Object]') {
         try {
@@ -125,4 +128,20 @@ export class Timer {
     const timer = new Timer();
     return timer;
   }
+}
+
+function stringifyError(error: Error, includeStack = false, indent = 0) {
+  const indentation = '  '.repeat(indent);
+  const lines = [
+    `${indentation}${indent === 0 ? 'ERROR' : 'CAUSE'}: ${error.message}`,
+  ];
+  if (includeStack && error.stack) {
+    lines.push(
+      ...error.stack.split(/[\r\n]/).map((line) => `${indentation}${line}`),
+    );
+  }
+  if (error.cause && error.cause instanceof Error) {
+    lines.push(stringifyError(error.cause, includeStack, indent + 1));
+  }
+  return lines.join('\n');
 }

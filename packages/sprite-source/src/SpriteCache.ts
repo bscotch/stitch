@@ -2,11 +2,11 @@ import { Pathy, pathy } from '@bscotch/pathy';
 import { computePngChecksums } from '@bscotch/pixel-checksum';
 import { SpritesInfo, spritesInfoSchema } from './SpriteCache.schemas.js';
 import { SpriteDir } from './SpriteDir.js';
-import type { Issue, Log } from './types.js';
-import { getDirs } from './utility.js';
+import type { Log } from './types.js';
+import { SpriteSourceError, getDirs } from './utility.js';
 
 export class SpriteCache {
-  readonly issues: Issue[] = [];
+  readonly issues: Error[] = [];
   readonly logs: Log[] = [];
   readonly spritesRoot: Pathy;
 
@@ -46,11 +46,9 @@ export class SpriteCache {
             }
           })
           .catch((err) => {
-            this.issues.push({
-              level: 'error',
-              message: `Error processing "${dir.relative}"`,
-              cause: err,
-            });
+            this.issues.push(
+              new SpriteSourceError(`Error processing "${dir.relative}"`, err),
+            );
           }),
       );
     }
@@ -68,11 +66,12 @@ export class SpriteCache {
       cache = {
         info: {},
       };
-      this.issues.push({
-        level: 'warning',
-        message: `Could not load sprite cache. Will rebuild from scratch.`,
-        cause: err,
-      });
+      this.issues.push(
+        new SpriteSourceError(
+          `Could not load sprite cache. Will rebuild.`,
+          err,
+        ),
+      );
     }
     return cache;
   }
