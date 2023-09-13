@@ -34,7 +34,7 @@ const spriteSourceTransformSchema = z.object({
     .describe('Rules for renaming when moving to the SpriteSource directory.'),
 });
 
-export type SpriteStaging = z.infer<typeof spriteStagingSchema>;
+export type SpriteSourceStage = z.infer<typeof spriteStagingSchema>;
 const spriteStagingSchema = z.object({
   dir: z
     .string()

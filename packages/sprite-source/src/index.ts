@@ -9,5 +9,6 @@ export { SpriteSource } from './SpriteSource.js';
 export {
   spriteSourceConfigSchema,
   type SpriteSourceConfig,
+  type SpriteSourceStage,
 } from './SpriteSource.schemas.js';
 export type { Issue, Log } from './types.js';

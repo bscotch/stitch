@@ -4,7 +4,7 @@ import { SpriteDir } from './SpriteDir.js';
 import {
   spriteSourceConfigSchema,
   type SpriteSourceConfig,
-  type SpriteStaging,
+  type SpriteSourceStage,
 } from './SpriteSource.schemas.js';
 import {
   SpriteSourceError,
@@ -21,7 +21,7 @@ export class SpriteSource extends SpriteCache {
       .withValidator(spriteSourceConfigSchema);
   }
 
-  protected async resolveStaged(staging: SpriteStaging) {
+  protected async resolveStaged(staging: SpriteSourceStage) {
     const dir = pathy(staging.dir, this.spritesRoot);
     if (!(await dir.exists())) {
       this.issues.push(
@@ -91,7 +91,7 @@ export class SpriteSource extends SpriteCache {
     }
   }
 
-  protected async loadConfig(
+  async loadConfig(
     overrides: SpriteSourceConfig = {},
   ): Promise<SpriteSourceConfig> {
     // Validate options. Show error out if invalid.

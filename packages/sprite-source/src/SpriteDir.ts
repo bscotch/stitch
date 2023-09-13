@@ -58,7 +58,7 @@ export class SpriteDir {
 
     const frameWaits: Promise<{ checksum: string }>[] = [];
     if (spriteCache.spine) {
-      // TODO: Handle the spine case
+      // Handle the spine case
       const pngs = [...this.spinePaths.pngs];
       pngs.sort((a, b) => a.basename.localeCompare(b.basename, 'en-US'));
       const lastChanged = Math.max(
