@@ -79,7 +79,7 @@ export class ChangeTracker {
       // or added an asset, so we need to respond to that.
       if (type === 'change' && uri.path.endsWith('.yyp')) {
         logger.info(`yyp file changed on disk. Reloading!`);
-        // await project.reloadYyp();
+        await project.reloadYyp();
         stitchEvents.emit('project-changed', project);
         continue;
       }
