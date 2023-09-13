@@ -88,7 +88,9 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
               .map(
                 (issue) =>
                   `${issue.message}${
-                    issue.cause?.message ? ` (${issue.cause.message})` : ''
+                    issue.cause && issue.cause instanceof Error
+                      ? ` (${issue.cause.message})`
+                      : ''
                   }`,
               )
               .join('\n\n')}${
@@ -350,7 +352,7 @@ class SpriteFolder extends StitchTreeItemBase<'sprites'> {
       }
       // Otherwise sort by most recently changed first. If the times are within a short range of each other, sort by name.
       const timeDiff = b.info.when.getTime() - a.info.when.getTime();
-      if (Math.abs(timeDiff) < 10_000) {
+      if (Math.abs(timeDiff) < 60_000) {
         return sortAlphaInsensitive(a.asset.name, b.asset.name);
       }
       return timeDiff;
