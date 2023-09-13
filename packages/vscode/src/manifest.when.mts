@@ -32,5 +32,6 @@ export const when = {
   viewItemIsInspectorParents: 'viewItem == inspector-object-parents',
   viewItemIsInspectorSprite: 'viewItem == inspector-object-sprites',
   viewItemIsSpriteSource: 'viewItem == sprite-source',
+  viewItemIsSpriteSourceStage: 'viewItem == sprite-source-stage',
   viewItemIsSpriteSourceRecentImports: `viewItem == sprites && ${spriteSourceTreeFocused}`,
 } as const;

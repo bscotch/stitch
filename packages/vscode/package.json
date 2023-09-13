@@ -167,7 +167,7 @@
         "command": "stitch.clean",
         "title": "Stitch: Clean Project Cache",
         "shortTitle": "Clean Cache",
-        "icon": "$(history)"
+        "icon": "$(discard)"
       },
       {
         "command": "stitch.types.copy",
@@ -190,7 +190,7 @@
         "command": "stitch.spriteSource.clearCache",
         "title": "Clear Sprite Info Cache",
         "enablement": "stitch.projectCount > 0",
-        "icon": "$(history)"
+        "icon": "$(discard)"
       },
       {
         "command": "stitch.spriteSource.create",
@@ -202,7 +202,7 @@
         "command": "stitch.spriteSource.import",
         "title": "Import Changes",
         "enablement": "stitch.projectCount > 0",
-        "icon": "$(play)"
+        "icon": "$(arrow-circle-up)"
       },
       {
         "command": "stitch.spriteSource.edit",
@@ -641,7 +641,7 @@
         },
         {
           "command": "stitch.spriteSource.openExplorer",
-          "when": "viewItem == sprite-source",
+          "when": "viewItem == sprite-source || viewItem == sprite-source-stage",
           "group": "navigation@9"
         }
       ],
@@ -761,7 +761,7 @@
     "viewsWelcome": [
       {
         "view": "bscotch-stitch-sprite-sources",
-        "contents": "A \"sprite source\" is a folder of images, or a folder of folders-of-images, representing sprites (folders) and their frames (images). Stitch can batch-import and update sprites from sprites sources.\n[Add a Sprite Source](command:stitch.spriteSource.create)"
+        "contents": "A \"sprite source\" is a folder of images, or a folder of folders-of-images, representing sprites (folders) and their frames (images). Stitch can batch-import and update sprites from sprites sources."
       }
     ]
   },

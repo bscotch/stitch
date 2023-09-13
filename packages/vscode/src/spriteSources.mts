@@ -1,6 +1,11 @@
 import { Asset, isAssetOfKind } from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
-import { SpriteDest, SpriteSource } from '@bscotch/sprite-source';
+import {
+  SpriteDest,
+  SpriteSource,
+  SpriteSourceStage,
+} from '@bscotch/sprite-source';
+import path from 'path';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
@@ -12,7 +17,12 @@ import { registerCommand, sortAlphaInsensitive } from './lib.mjs';
 import { logger, showErrorMessage } from './log.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 
-type Item = SpriteSourceFolder | SpriteSourceItem | SpriteFolder | SpriteItem;
+type Item =
+  | SpriteSourcesFolder
+  | SpriteSourceFolder
+  | SpriteSourceStageItem
+  | RecentlyChangedFolder
+  | SpriteItem;
 
 export interface SpriteSourceConfig {
   targetProject?: string;
@@ -113,7 +123,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     this.rebuild();
   }
 
-  async deleteSpriteSource(source: SpriteSourceItem) {
+  async deleteSpriteSource(source: SpriteSourceFolder) {
     const dest = await SpriteDest.from(source.project.yypPath.absolute);
     const config = await dest.loadConfig();
     const sourceIndex =
@@ -125,7 +135,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     this.rebuild();
   }
 
-  async clearCache(source: SpriteSourceItem | undefined) {
+  async clearCache(source: SpriteSourceFolder | undefined) {
     if (!source) {
       assertLoudly(this.currentProject, 'No active project.');
       // Then clear the destination cache for the current project
@@ -201,7 +211,10 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
         logger.info("No active project. Can't load sprite sources.");
         return [];
       }
-      return [new SpriteSourceFolder(project), new SpriteFolder(project)];
+      return [
+        new SpriteSourcesFolder(project),
+        new RecentlyChangedFolder(project),
+      ];
     } else if (
       'getChildren' in element &&
       typeof element.getChildren === 'function'
@@ -211,7 +224,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     return [];
   }
 
-  getTreeItem(element: SpriteSourceItem): SpriteSourceItem {
+  getTreeItem(element: SpriteSourceFolder): SpriteSourceFolder {
     return element;
   }
 
@@ -243,14 +256,14 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       }),
       registerCommand(
         'stitch.spriteSource.clearRecentImports',
-        (folder: SpriteFolder) => {
+        (folder: RecentlyChangedFolder) => {
           SpriteSourcesTree.recentlyChangedSprites.delete(folder.project);
           tree.rebuild();
         },
       ),
       registerCommand(
         'stitch.spriteSource.clearCache',
-        (source: SpriteSourceItem | undefined) => {
+        (source: SpriteSourceFolder | undefined) => {
           tree.clearCache(source);
         },
       ),
@@ -259,7 +272,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       }),
       registerCommand(
         'stitch.spriteSource.delete',
-        (source: SpriteSourceItem) => {
+        (source: SpriteSourceFolder) => {
           tree.deleteSpriteSource(source);
         },
       ),
@@ -275,7 +288,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       }),
       registerCommand(
         'stitch.spriteSource.openExplorer',
-        (source: SpriteSourceItem) => {
+        (source: SpriteSourceFolder | SpriteSourceStageItem) => {
           const fileUri = vscode.Uri.file(source.sourceDir.absolute);
           vscode.env.openExternal(fileUri);
         },
@@ -288,7 +301,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
   }
 }
 
-class SpriteSourceFolder extends StitchTreeItemBase<'sprite-sources'> {
+class SpriteSourcesFolder extends StitchTreeItemBase<'sprite-sources'> {
   override readonly kind = 'sprite-sources';
   parent = undefined;
   constructor(readonly project: GameMakerProject) {
@@ -297,17 +310,17 @@ class SpriteSourceFolder extends StitchTreeItemBase<'sprite-sources'> {
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
   }
 
-  async getChildren(): Promise<SpriteSourceItem[]> {
+  async getChildren(): Promise<SpriteSourceFolder[]> {
     const dest = await SpriteDest.from(this.project.yypPath.absolute);
     const config = await dest.loadConfig();
     if (!config.sources?.length) return [];
     return config.sources.map((source) => {
-      return new SpriteSourceItem(this.project, source.source);
+      return new SpriteSourceFolder(this.project, source.source);
     });
   }
 }
 
-class SpriteSourceItem extends StitchTreeItemBase<'sprite-source'> {
+class SpriteSourceFolder extends StitchTreeItemBase<'sprite-source'> {
   override readonly kind = 'sprite-source';
   parent = undefined;
   readonly sourceDir: Pathy;
@@ -319,7 +332,7 @@ class SpriteSourceItem extends StitchTreeItemBase<'sprite-source'> {
     super(sourceDir.name);
     this.sourceDir = sourceDir;
     this.contextValue = this.kind;
-    this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
     // Add a command to open the config file
     this.command = {
@@ -327,6 +340,19 @@ class SpriteSourceItem extends StitchTreeItemBase<'sprite-source'> {
       title: 'Open Sprite Source Config',
       arguments: [vscode.Uri.file(this.configPath.absolute)],
     };
+    this.tooltip = `A folder containing folders-of-images (sprites sources) that can be imported into the game as sprites.`;
+
+    this.setBaseIcon('library');
+  }
+
+  async getChildren(): Promise<SpriteSourceStageItem[]> {
+    const src = await SpriteSource.from(this.sourceDir.absolute);
+    const config = await src.loadConfig();
+    const children: SpriteSourceStageItem[] = [];
+    for (const stage of config.staging || []) {
+      children.push(new SpriteSourceStageItem(this, stage));
+    }
+    return children;
   }
 
   get configPath() {
@@ -334,13 +360,33 @@ class SpriteSourceItem extends StitchTreeItemBase<'sprite-source'> {
   }
 }
 
-class SpriteFolder extends StitchTreeItemBase<'sprites'> {
+class SpriteSourceStageItem extends StitchTreeItemBase<'sprite-source-stage'> {
+  override readonly kind = 'sprite-source-stage';
+  parent = undefined;
+  constructor(
+    readonly source: SpriteSourceFolder,
+    readonly stage: SpriteSourceStage,
+  ) {
+    super(path.basename(stage.dir));
+    this.contextValue = this.kind;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+    this.tooltip = `A folder of images that will be transformed and moved into the parent SpriteSource folder prior to an import operation.`;
+    this.setBaseIcon('inbox');
+  }
+
+  get sourceDir() {
+    return pathy(this.stage.dir, this.source.sourceDir);
+  }
+}
+
+class RecentlyChangedFolder extends StitchTreeItemBase<'sprites'> {
   override readonly kind = 'sprites';
   parent = undefined;
   constructor(readonly project: GameMakerProject) {
     super('Recently Imported');
     this.contextValue = this.kind;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+    this.setBaseIcon('history');
   }
 
   getChildren(): SpriteItem[] {

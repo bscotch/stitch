@@ -247,7 +247,7 @@ export const commands = {
     command: 'stitch.clean',
     title: 'Stitch: Clean Project Cache',
     shortTitle: 'Clean Cache',
-    icon: '$(history)',
+    icon: '$(discard)',
     [$showInPalette]: true,
     [$showInViewTitle]: {
       when: when.assetTreeFocusedAndHasOneProject,
@@ -296,10 +296,10 @@ export const commands = {
     command: 'stitch.spriteSource.clearCache',
     title: 'Clear Sprite Info Cache',
     enablement: when.hasProjects,
-    icon: '$(history)',
+    icon: '$(discard)',
     [$showInViewTitle]: {
       when: when.spriteSourceTreeFocused,
-      group: 'navigation@3',
+      group: 'navigation@1',
     },
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsSpriteSource,
@@ -313,17 +313,17 @@ export const commands = {
     icon: '$(add)',
     [$showInViewTitle]: {
       when: when.spriteSourceTreeFocused,
-      group: 'navigation@4',
+      group: 'navigation@2',
     },
   },
   'stitch.spriteSource.import': {
     command: 'stitch.spriteSource.import',
     title: 'Import Changes',
     enablement: when.hasProjects,
-    icon: '$(play)',
+    icon: '$(arrow-circle-up)',
     [$showInViewTitle]: {
       when: when.spriteSourceTreeFocused,
-      group: 'navigation@2',
+      group: 'navigation@4',
     },
   },
   'stitch.spriteSource.edit': {
@@ -333,7 +333,7 @@ export const commands = {
     icon: '$(edit)',
     [$showInViewTitle]: {
       when: when.spriteSourceTreeFocused,
-      group: 'navigation@1',
+      group: 'navigation@3',
     },
   },
   'stitch.spriteSource.delete': {
@@ -350,7 +350,7 @@ export const commands = {
     command: 'stitch.spriteSource.openExplorer',
     title: 'Reveal in File Explorer',
     [$showInViewItemContextMenu]: {
-      when: when.viewItemIsSpriteSource,
+      when: `${when.viewItemIsSpriteSource} || ${when.viewItemIsSpriteSourceStage}`,
       group: 'navigation@9',
     },
   },
