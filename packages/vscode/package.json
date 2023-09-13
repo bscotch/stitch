@@ -198,6 +198,18 @@
         "enablement": "stitch.projectCount > 0"
       },
       {
+        "command": "stitch.spriteSource.watch",
+        "title": "Start watching",
+        "icon": "$(eye-closed)",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
+        "command": "stitch.spriteSource.unwatch",
+        "title": "Stop watching",
+        "icon": "$(eye)",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.spriteSource.create",
         "title": "Add Sprite Source...",
         "enablement": "stitch.projectCount > 0",
@@ -645,13 +657,23 @@
           "group": "navigation@1"
         },
         {
+          "command": "stitch.spriteSource.watch",
+          "when": "viewItem == sprite-source-stage-unwatched",
+          "group": "inline@1"
+        },
+        {
+          "command": "stitch.spriteSource.unwatch",
+          "when": "viewItem == sprite-source-stage-watched",
+          "group": "inline@1"
+        },
+        {
           "command": "stitch.spriteSource.delete",
           "when": "viewItem == sprite-source",
           "group": "7_modification@9"
         },
         {
           "command": "stitch.spriteSource.openExplorer",
-          "when": "viewItem == sprite-source || viewItem == sprite-source-stage",
+          "when": "viewItem == sprite-source || viewItem =~ /^sprite-source-stage-/",
           "group": "navigation@9"
         }
       ],

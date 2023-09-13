@@ -315,6 +315,26 @@ export const commands = {
       group: 'navigation@1',
     },
   },
+  'stitch.spriteSource.watch': {
+    command: 'stitch.spriteSource.watch',
+    title: 'Start watching',
+    icon: '$(eye-closed)',
+    enablement: when.hasProjects,
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsSpriteSourceStageUnwatched,
+      group: 'inline@1',
+    },
+  },
+  'stitch.spriteSource.unwatch': {
+    command: 'stitch.spriteSource.unwatch',
+    title: 'Stop watching',
+    icon: '$(eye)',
+    enablement: when.hasProjects,
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsSpriteSourceStageWatched,
+      group: 'inline@1',
+    },
+  },
   'stitch.spriteSource.create': {
     command: 'stitch.spriteSource.create',
     title: 'Add Sprite Source...',
