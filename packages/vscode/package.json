@@ -182,8 +182,13 @@
         "title": "Stitch: Copy @self"
       },
       {
+        "command": "stitch.spriteSource.clearRecentImports",
+        "title": "Clear Recent Imports",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.spriteSource.clearCache",
-        "title": "Clear Cache",
+        "title": "Clear Sprite Info Cache",
         "enablement": "stitch.projectCount > 0",
         "icon": "$(history)"
       },
@@ -618,6 +623,11 @@
           "command": "stitch.clean",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
           "group": "inline@3"
+        },
+        {
+          "command": "stitch.spriteSource.clearRecentImports",
+          "when": "viewItem == sprites && view == bscotch-stitch-sprite-sources",
+          "group": "7_modification@8"
         },
         {
           "command": "stitch.spriteSource.clearCache",

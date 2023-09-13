@@ -242,6 +242,13 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
         tree.rebuild();
       }),
       registerCommand(
+        'stitch.spriteSource.clearRecentImports',
+        (folder: SpriteFolder) => {
+          SpriteSourcesTree.recentlyChangedSprites.delete(folder.project);
+          tree.rebuild();
+        },
+      ),
+      registerCommand(
         'stitch.spriteSource.clearCache',
         (source: SpriteSourceItem | undefined) => {
           tree.clearCache(source);

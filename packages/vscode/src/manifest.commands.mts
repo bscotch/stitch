@@ -283,9 +283,18 @@ export const commands = {
     },
   },
   //#region Sprite Sources
+  'stitch.spriteSource.clearRecentImports': {
+    command: 'stitch.spriteSource.clearRecentImports',
+    title: 'Clear Recent Imports',
+    enablement: when.hasProjects,
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsSpriteSourceRecentImports,
+      group: '7_modification@8',
+    },
+  },
   'stitch.spriteSource.clearCache': {
     command: 'stitch.spriteSource.clearCache',
-    title: 'Clear Cache',
+    title: 'Clear Sprite Info Cache',
     enablement: when.hasProjects,
     icon: '$(history)',
     [$showInViewTitle]: {
