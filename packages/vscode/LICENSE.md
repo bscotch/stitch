@@ -10,9 +10,15 @@ Stitch™ and its logo are trademarks of Bscotch. Bscotch reserves all rights to
 
 Stitch Logo ©2022 by Bscotch. All rights reserved.
 
+## Sample content
+
+This repository includes sample images, Spine sprites, and audio files for use in development in testing.
+
+Bscotch retains all rights to such content, and it may not be used in any way except for testing and development of this extension without express written permission from Bscotch.
+
 ## Extension code and content
 
-Everything found in this extension, except for the Stitch name and logo as described above, falls under the MIT license (https://opensource.org/license/mit/):
+Everything found in this extension, except for the Stitch name/logo and sample content as described above, falls under the MIT license (https://opensource.org/license/mit/):
 
 Copyright 2023 Butterscotch Shenanigans
 

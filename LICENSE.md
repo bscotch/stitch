@@ -1,6 +1,12 @@
 # License for the Stitch Monorepo
 
-License information for the content of this git repository. This various packages in this repo are developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
+License information for the content of this git repository. The various packages in this repo are developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
+
+## License files
+
+Whenever a `LICENSE` file is found in a folder, or a license is specified by a `package.json` or similar manifest file, that license takes precedence for all files in that folder and its subfolders.
+
+This is the root-most `LICENSE` file, and therefore dictates the default licensing in this repository.
 
 ## Stitch name and logo
 
