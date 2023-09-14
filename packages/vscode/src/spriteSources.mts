@@ -299,9 +299,11 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       }),
       registerCommand(
         'stitch.spriteSource.watch',
-        (stage: SpriteSourceStageItem) => {
-          stage.watch();
+        async (stage: SpriteSourceStageItem) => {
+          const wait = stage.watch();
+          // Make sure the icon gets reset!
           tree._onDidChangeTreeData.fire(stage);
+          await wait;
         },
       ),
       registerCommand(
@@ -356,8 +358,8 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
           vscode.env.openExternal(fileUri);
         },
       ),
-      registerCommand('stitch.spriteSource.import', () => {
-        tree.importSprites();
+      registerCommand('stitch.spriteSource.import', async () => {
+        await tree.importSprites();
       }),
     ];
     return subscriptions;
@@ -435,11 +437,23 @@ class SpriteSourceStageItem extends StitchTreeItemBase<'sprite-source-stage'> {
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     this.tooltip = `A folder of images that will be transformed and moved into the parent SpriteSource folder prior to an import operation.`;
     this.setBaseIcon('inbox');
-    this.unwatch();
+    // NOTE: Calling 'unwatch' here will cause the watcher to
+    // turn itself off, since these instances are recreated every
+    // time the tree is refreshed.
+    // We need to set the contextValue based on what's currently being watch
+    const isWatching = SpriteSourcesTree.sourceWatchers.has(
+      this.sourceDir.absolute,
+    );
+
+    this.contextValue = `${this.kind}-${isWatching ? '' : 'un'}watched`;
   }
 
-  watch() {
+  async watch() {
     this.contextValue = `${this.kind}-watched`;
+
+    // Do an initial import
+    await vscode.commands.executeCommand('stitch.spriteSource.import');
+
     // Whenever a png file is added, removed, or changed, we
     // need to run the import
     const watcher = vscode.workspace.createFileSystemWatcher(
@@ -447,11 +461,7 @@ class SpriteSourceStageItem extends StitchTreeItemBase<'sprite-source-stage'> {
     );
 
     let timeoutId: NodeJS.Timeout | null = null;
-    for (const listener of [
-      'onDidCreate',
-      'onDidDelete',
-      'onDidChange',
-    ] as const) {
+    for (const listener of ['onDidCreate', 'onDidChange'] as const) {
       watcher[listener](() => {
         if (timeoutId) {
           clearTimeout(timeoutId);
