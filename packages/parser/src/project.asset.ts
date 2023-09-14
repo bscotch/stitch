@@ -133,6 +133,14 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return this.assetKind === 'objects';
   }
 
+  get isSpineSprite() {
+    if (this.assetKind !== 'sprites') {
+      return false;
+    }
+    const yy = this.yy as YySprite;
+    return yy.type === 2;
+  }
+
   get sprite(): Asset<'sprites'> | undefined {
     assert(isAssetOfKind(this, 'objects'), 'Can only get sprites from objects');
     const yy = this.yy as YyObject;
@@ -255,6 +263,21 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       paths.push(this.dir.join<Buffer>(`${frame.name}.png`));
     }
     return paths;
+  }
+
+  get spinePaths() {
+    if (!this.isSpineSprite) {
+      return undefined;
+    }
+    const yy = this.yy as YySprite;
+    const frameId = yy.frames?.[0].name;
+    if (!frameId) {
+      return undefined;
+    }
+    return {
+      json: this.dir.join(`${frameId}.json`),
+      atlas: this.dir.join(`${frameId}.atlas`),
+    };
   }
 
   /**
