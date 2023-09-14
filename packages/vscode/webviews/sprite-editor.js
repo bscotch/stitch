@@ -12,29 +12,6 @@ try {
 }
 
 /**
- * @param {any} condition
- * @param {string} message
- * @returns {asserts condition}
- */
-function assert(condition, message) {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
-
-/**
- * Clamps a value between a minimum and maximum value.
- *
- * @param {number} value - The input value to be clamped.
- * @param {number} min - The lower boundary to clamp the value to.
- * @param {number} max - The upper boundary to clamp the value to.
- * @returns {number} - The clamped value.
- */
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
-
-/**
  * @param {SpriteEditedMessage} message
  */
 function sendToVscode(message) {
@@ -49,7 +26,7 @@ function sendToVscode(message) {
 
 /**
  * Defined upstream
- * @type {SpriteInfo} */
+ * @type {import('../src/spriteEditor.template.mjs').SpriteInfo} */
 // @ts-ignore
 const sprite = window.sprite;
 
@@ -161,7 +138,7 @@ class FrameImage {
    * @param {MouseEvent} e
    * @private */
   handleCrosshairEvent(e) {
-    const rect = e.target.getBoundingClientRect();
+    const rect = defined(e.target).getBoundingClientRect();
     assert(rect && typeof rect.left === 'number', 'Bounding rect not found');
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -236,7 +213,7 @@ elements.originPresets.addEventListener('change', (e) => {
   FrameImage.dims.xorigin = +xorigin;
   FrameImage.dims.yorigin = +yorigin;
   // Reset the select to the initial value
-  e.target.value = '';
+  defined(e.target).value = '';
 });
 
 // Origin Inputs
@@ -250,10 +227,42 @@ for (const origin of originNames) {
       : FrameImage.dims.height - 1;
   elements[origin].setAttribute('max', `${max}`);
   elements[origin].addEventListener('change', (e) => {
-    const value = Math.min(+e.target.value, max);
+    const value = Math.min(+defined(e.target).value, max);
     FrameImage.dims[origin] = value;
   });
 }
 
 // Finally, create the frames
 sprite.frameUrls.map((p) => new FrameImage(p));
+
+/**
+ * @param {any} condition
+ * @param {string} message
+ * @returns {asserts condition}
+ */
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+/**
+ * @template T
+ * @param {T} value
+ * @returns {Exclude<T, undefined|null>}
+ */
+function defined(value) {
+  return /** @type {Exclude<T, undefined|null>}*/ (value);
+}
+
+/**
+ * Clamps a value between a minimum and maximum value.
+ *
+ * @param {number} value - The input value to be clamped.
+ * @param {number} min - The lower boundary to clamp the value to.
+ * @param {number} max - The upper boundary to clamp the value to.
+ * @returns {number} - The clamped value.
+ */
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}

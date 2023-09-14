@@ -17,8 +17,8 @@ export class StitchSpriteEditorProvider {
 
   constructor(readonly workspace: StitchWorkspace) {}
 
-  protected getWebviewContent() {
-    return compile(this.editing!, this.panel!);
+  protected async getWebviewContent() {
+    return await compile(this.editing!, this.panel!);
   }
 
   protected createPanel(): vscode.WebviewPanel {
@@ -57,26 +57,26 @@ export class StitchSpriteEditorProvider {
     return panel;
   }
 
-  revealPanel(sprite: Asset<'sprites'>) {
+  async revealPanel(sprite: Asset<'sprites'>) {
     this.editing = sprite;
     this.panel ||= this.createPanel();
     this.panel.onDidDispose(() => (this.panel = undefined));
     // Rebuild the webview
-    this.panel.webview.html = this.getWebviewContent();
+    this.panel.webview.html = await this.getWebviewContent();
     this.panel.reveal();
   }
 
   static register(workspace: StitchWorkspace) {
     const spriteEditorProvider = new StitchSpriteEditorProvider(workspace);
-    stitchEvents.on('sprite-editor-open', (asset) => {
-      spriteEditorProvider.revealPanel(asset);
+    stitchEvents.on('sprite-editor-open', async (asset) => {
+      await spriteEditorProvider.revealPanel(asset);
     });
-    stitchEvents.on('asset-changed', (asset) => {
+    stitchEvents.on('asset-changed', async (asset) => {
       if (
         spriteEditorProvider.panel &&
         spriteEditorProvider.editing?.name === asset.name
       ) {
-        spriteEditorProvider.revealPanel(spriteEditorProvider.editing);
+        await spriteEditorProvider.revealPanel(spriteEditorProvider.editing);
       }
     });
     return [];

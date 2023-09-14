@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+    :root {
+      --color-lts: #ff8652;
+      --color-stable: #ae89ff;
+      --color-beta: #569cff;
+      --color-unstable: rgb(169, 169, 169);
+      --color-background: #0e0e0e;
+      --color-text: #ffffff;
+      --color-text-muted: rgb(169, 169, 169);
+      --zoom: 1;
+    }
+    body {
+      font-size: var(--vscode-editor-font-size);
+      background-color: var(--color-background);
+      color: var(--color-text);
+    }
+    a[role='button'] {
+      cursor: pointer;
+    }
+    details > summary {
+      cursor: pointer;
+      user-select: none;
+    }
+    h1 {
+      font-size: 1.4em;
+    }
+    h2 {
+      font-size: 1.25em;
+    }
+    h3 {
+      font-size: 1.15em;
+    }
+    h4 {
+      font-size: 1.08em;
+    }
+    h2,
+    h3,
+    h4 {
+      margin: 0;
+    }
+    #frames {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+    }
+    #frames li {
+      list-style: none;
+      position: relative;
+      user-select: none;
+    }
+    #frames img {
+      position: relative;
+      border: 1px solid white;
+      user-select: none;
+      cursor: pointer;
+    }
+    .dims,
+    .origins {
+      font-family: monospace;
+    }
+    .dim,
+    .origin {
+      font-weight: bold;
+    }
+    #player-container {
+      width: 720px;
+      aspect-ratio: 16/9;
+      max-width: 100%;
+    }
+  </style>
+  <script>
+    // To be overwritten by VSCode
+    /**
+     * @type {import('../src/spriteEditor.template.mts').SpineSpriteInfo}
+     */
+    window.sprite = {
+      name: 'sp_sluggabun',
+      width: 142,
+      height: 92,
+      xorigin: 70,
+      yorigin: 79,
+      spine: {
+        atlas: './spine-editor/skeleton.atlas',
+        json: './spine-editor/skeleton.json',
+      },
+    };
+  </script>
+  <script src="https://unpkg.com/@esotericsoftware/spine-player@4.0.*/dist/iife/spine-player.js"></script>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/@esotericsoftware/spine-player@4.0.*/dist/spine-player.css"
+  />
+  <body>
+    <h1 class="name">???</h1>
+    <p>
+      Dimensions:
+      <span class="dims">
+        <span class="dim width">?</span>
+        x
+        <span class="dim height">?</span>
+      </span>
+    </p>
+    <p>
+      Origin:
+      <span class="origins">
+        (<span class="origin x">?</span>
+        ,
+        <span class="origin y">?</span>)
+      </span>
+    </p>
+    <div id="player-container"></div>
+    <section><ol id="frames"></ol></section>
+  </body>
+  <!-- The global data from VSCode will need to be injected before loading the main script -->
+  <!-- VSCODE-INJECT-DATA -->
+  <!-- The src URL will need to be replaced with a VSCode-friendly URL -->
+  <script src="./spine-editor.js"></script>
+</html>

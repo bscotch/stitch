@@ -819,6 +819,7 @@
     "@bscotch/trebuchet": "2.8.7",
     "@bscotch/utility": "^7.1.0",
     "@bscotch/yy": "workspace:*",
+    "@esotericsoftware/spine-player": "4.2.22",
     "@types/plist": "3.0.2",
     "@types/vscode": "1.81.0",
     "@types/xml2js": "0.4.11",
