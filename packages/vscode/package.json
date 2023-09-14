@@ -1,7 +1,7 @@
 {
   "name": "bscotch-stitch-vscode",
   "displayName": "Stitch",
-  "version": "1.45.0",
+  "version": "1.46.0",
   "private": true,
   "description": "GameMaker Language (GML) support and related tools for Visual Studio Code",
   "categories": [
@@ -39,149 +39,6 @@
     "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
-    "configuration": {
-      "title": "Stitch",
-      "properties": {
-        "stitch.diagnostics.autoDeclaredGlobalsPatterns": {
-          "title": "Prefixes for auto-declared globals",
-          "description": "Variables with these prefixes will be automatically declared as globals if they are't declared in the user code.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": []
-        },
-        "stitch.diagnostics.suppressGroups": {
-          "title": "Suppress diagnostics in groups",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "examples": [
-              "path/to/my/group"
-            ]
-          },
-          "default": [],
-          "description": "Add asset groups to this list to suppress diagnostics from assets in these groups. Specify groups using their full path."
-        },
-        "stitch.sprites.editor.minInitialWidth": {
-          "title": "Minimum initial sprite preview width",
-          "description": "When opening a sprite in the Stitch editor, the image zoom will be set to ensure that the sprite is at least this many pixels wide.",
-          "type": "number",
-          "default": 128
-        },
-        "stitch.sprites.sources.sortChangesBy": {
-          "title": "Sort sprite changes",
-          "enum": [
-            "recency",
-            "name"
-          ],
-          "default": "name"
-        },
-        "stitch.sprites.cleanOnSpineSpriteChange": {
-          "title": "Autoclean when spine sprites change",
-          "type": "boolean",
-          "default": false,
-          "description": "Changes to spine sprites typically require a cache-clean. Setting this to `true` will automatically clean the cache when a spine sprite is changed."
-        },
-        "stitch.gameMaker.releases.notes.channels": {
-          "title": "GameMaker Release Channels",
-          "type": "array",
-          "default": [
-            "lts",
-            "stable",
-            "beta"
-          ],
-          "items": {
-            "type": "string",
-            "enum": [
-              "lts",
-              "stable",
-              "beta",
-              "unstable"
-            ]
-          },
-          "description": "Which GameMaker release notes channels to show in the GameMaker version picker and other locations."
-        },
-        "stitch.editing.autocomplete.ignoredPrefix": {
-          "title": "Ignore autocomplete prefix",
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Variables with this prefix will be skipped in autocomplete suggestions, unless those variables are within the same scope or file as the active editor."
-        },
-        "stitch.editing.workspaceSymbols.includeInstanceVariables": {
-          "title": "Include instance variables in workspace symbols",
-          "type": "boolean",
-          "default": true,
-          "description": "Whether to include object/instance, constructor, and mixin variables in the workspace symbols list."
-        },
-        "stitch.editing.workspaceSymbols.includeLocalVariables": {
-          "title": "Include local variables in workspace symbols",
-          "type": "boolean",
-          "default": true,
-          "description": "Whether to include local variables in the workspace symbols list. Only symbols from the active editor are included."
-        },
-        "stitch.editing.workspaceSymbols.maxResults": {
-          "title": "Maximum workspace symbols results",
-          "type": "number",
-          "default": 30,
-          "description": "When searching workspace symbols, the maximum number that Stitch will contribute. Decrease this value if you have performance issue with the workspace symbols list."
-        },
-        "stitch.editing.signatureStatus.enable": {
-          "title": "Enable signature status",
-          "type": "boolean",
-          "default": true,
-          "description": "Stitch adds a statusbar item showing a function signature helper, replicating the functionality of the GameMaker IDE. This can be disabled."
-        },
-        "stitch.editing.signatureStatus.alignment": {
-          "title": "Signature status alignment",
-          "type": "string",
-          "enum": [
-            "left",
-            "right"
-          ],
-          "default": "right",
-          "description": "Whether the statusbar will show the function signature helper on the left or right side."
-        },
-        "stitch.run.defaultCompiler": {
-          "title": "Default GameMaker compiler",
-          "enum": [
-            "vm",
-            "yyc"
-          ],
-          "default": "vm"
-        },
-        "stitch.editing.reprocessOnTypeDelay": {
-          "title": "Reprocess on type delay",
-          "type": "number",
-          "default": 50,
-          "description": "The delay in milliseconds to wait after a keypress before reprocessing the document. This is used to avoid reprocessing the document while the user is typing. Increase this value if the editor is feeling sluggish. Decrease this value if you want syntax highlighting to update faster."
-        },
-        "stitch.editing.externalChangeDelay": {
-          "title": "Reprocess on external change delay",
-          "type": "number",
-          "default": 100,
-          "description": "The delay in milliseconds to wait after a file is changed on disk before processing it. Increase this number if you are getting weird results when files change externally to VSCode and Stitch."
-        },
-        "stitch.run.defaultConfig": {
-          "title": "Default GameMaker config",
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "The default project config to use for the GameMaker runtime. If not set, the first child config will be used. If no configs are found, the Default will be used. This can also be set via the `config` property on a task."
-        },
-        "stitch.yy.format.enable": {
-          "title": "Enable yy/yyp formatting",
-          "type": "boolean",
-          "default": true,
-          "description": "Enable/disable formatting of GameMaker `.yy` and `.yyp` files."
-        }
-      }
-    },
     "commands": [
       {
         "command": "stitch.diagnostics.suppress",
@@ -381,6 +238,149 @@
         "title": "Reveal in File Explorer"
       }
     ],
+    "configuration": {
+      "title": "Stitch",
+      "properties": {
+        "stitch.diagnostics.autoDeclaredGlobalsPatterns": {
+          "title": "Prefixes for auto-declared globals",
+          "description": "Variables with these prefixes will be automatically declared as globals if they are't declared in the user code.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "stitch.diagnostics.suppressGroups": {
+          "title": "Suppress diagnostics in groups",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "examples": [
+              "path/to/my/group"
+            ]
+          },
+          "default": [],
+          "description": "Add asset groups to this list to suppress diagnostics from assets in these groups. Specify groups using their full path."
+        },
+        "stitch.sprites.editor.minInitialWidth": {
+          "title": "Minimum initial sprite preview width",
+          "description": "When opening a sprite in the Stitch editor, the image zoom will be set to ensure that the sprite is at least this many pixels wide.",
+          "type": "number",
+          "default": 128
+        },
+        "stitch.sprites.sources.sortChangesBy": {
+          "title": "Sort sprite changes",
+          "enum": [
+            "recency",
+            "name"
+          ],
+          "default": "name"
+        },
+        "stitch.sprites.cleanOnSpineSpriteChange": {
+          "title": "Autoclean when spine sprites change",
+          "type": "boolean",
+          "default": false,
+          "description": "Changes to spine sprites typically require a cache-clean. Setting this to `true` will automatically clean the cache when a spine sprite is changed."
+        },
+        "stitch.gameMaker.releases.notes.channels": {
+          "title": "GameMaker Release Channels",
+          "type": "array",
+          "default": [
+            "lts",
+            "stable",
+            "beta"
+          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "lts",
+              "stable",
+              "beta",
+              "unstable"
+            ]
+          },
+          "description": "Which GameMaker release notes channels to show in the GameMaker version picker and other locations."
+        },
+        "stitch.editing.autocomplete.ignoredPrefix": {
+          "title": "Ignore autocomplete prefix",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Variables with this prefix will be skipped in autocomplete suggestions, unless those variables are within the same scope or file as the active editor."
+        },
+        "stitch.editing.workspaceSymbols.includeInstanceVariables": {
+          "title": "Include instance variables in workspace symbols",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include object/instance, constructor, and mixin variables in the workspace symbols list."
+        },
+        "stitch.editing.workspaceSymbols.includeLocalVariables": {
+          "title": "Include local variables in workspace symbols",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include local variables in the workspace symbols list. Only symbols from the active editor are included."
+        },
+        "stitch.editing.workspaceSymbols.maxResults": {
+          "title": "Maximum workspace symbols results",
+          "type": "number",
+          "default": 30,
+          "description": "When searching workspace symbols, the maximum number that Stitch will contribute. Decrease this value if you have performance issue with the workspace symbols list."
+        },
+        "stitch.editing.signatureStatus.enable": {
+          "title": "Enable signature status",
+          "type": "boolean",
+          "default": true,
+          "description": "Stitch adds a statusbar item showing a function signature helper, replicating the functionality of the GameMaker IDE. This can be disabled."
+        },
+        "stitch.editing.signatureStatus.alignment": {
+          "title": "Signature status alignment",
+          "type": "string",
+          "enum": [
+            "left",
+            "right"
+          ],
+          "default": "right",
+          "description": "Whether the statusbar will show the function signature helper on the left or right side."
+        },
+        "stitch.run.defaultCompiler": {
+          "title": "Default GameMaker compiler",
+          "enum": [
+            "vm",
+            "yyc"
+          ],
+          "default": "vm"
+        },
+        "stitch.editing.reprocessOnTypeDelay": {
+          "title": "Reprocess on type delay",
+          "type": "number",
+          "default": 50,
+          "description": "The delay in milliseconds to wait after a keypress before reprocessing the document. This is used to avoid reprocessing the document while the user is typing. Increase this value if the editor is feeling sluggish. Decrease this value if you want syntax highlighting to update faster."
+        },
+        "stitch.editing.externalChangeDelay": {
+          "title": "Reprocess on external change delay",
+          "type": "number",
+          "default": 100,
+          "description": "The delay in milliseconds to wait after a file is changed on disk before processing it. Increase this number if you are getting weird results when files change externally to VSCode and Stitch."
+        },
+        "stitch.run.defaultConfig": {
+          "title": "Default GameMaker config",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "The default project config to use for the GameMaker runtime. If not set, the first child config will be used. If no configs are found, the Default will be used. This can also be set via the `config` property on a task."
+        },
+        "stitch.yy.format.enable": {
+          "title": "Enable yy/yyp formatting",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable formatting of GameMaker `.yy` and `.yyp` files."
+        }
+      }
+    },
     "grammars": [
       {
         "language": "yy",
