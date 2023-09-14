@@ -85,6 +85,9 @@ class StitchConfig {
   get externalChangeDelay(): number {
     return this.config.get<number>('editing.externalChangeDelay') || 100;
   }
+  get initialMinSpriteEditorWidth(): number {
+    return this.config.get<number>('sprites.editor.minInitialWidth') || 128;
+  }
 }
 
 export const stitchConfig = new StitchConfig();

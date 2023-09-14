@@ -83,24 +83,6 @@
       pointer-events: none;
       border: var(--pixel) solid red;
     }
-    /* .crosshair::before,
-    .crosshair::after {
-      content: '';
-      position: absolute;
-      background-color: red;
-    }
-    .crosshair::before {
-      width: calc(1px * var(--zoom));
-      height: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-    .crosshair::after {
-      width: 100%;
-      height: calc(1px * var(--zoom));
-      top: 50%;
-      transform: translateY(-50%);
-    } */
   </style>
   <script>
     // To be overwritten by VSCode
@@ -118,6 +100,7 @@
         './sprite-editor/30a31512-0fe1-4b34-bae1-f900084c6fea.png',
         './sprite-editor/6e6bcbcb-d75f-4448-829e-03aeef058ee7.png',
       ],
+      initialMinWidth: 256,
     };
   </script>
   <body>

@@ -10,6 +10,7 @@ export interface SpriteInfo {
   xorigin: number;
   yorigin: number;
   frameUrls: string[];
+  initialMinWidth: number;
 }
 
 export function compile(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
@@ -22,6 +23,7 @@ export function compile(sprite: Asset<'sprites'>, panel: vscode.WebviewPanel) {
     frameUrls: sprite.framePaths.map((p) =>
       panel.webview.asWebviewUri(vscode.Uri.file(p.absolute)).toString(),
     ),
+    initialMinWidth: stitchConfig.initialMinSpriteEditorWidth,
   };
   // Inject into the HTML
   const html = spriteEditorHtml

@@ -57,12 +57,12 @@ export class StitchSpriteEditorProvider {
     return panel;
   }
 
-  async revealPanel(sprite: Asset<'sprites'>) {
+  revealPanel(sprite: Asset<'sprites'>) {
     this.editing = sprite;
     this.panel ||= this.createPanel();
     this.panel.onDidDispose(() => (this.panel = undefined));
     // Rebuild the webview
-    this.panel.webview.html = await this.getWebviewContent();
+    this.panel.webview.html = this.getWebviewContent();
     this.panel.reveal();
   }
 

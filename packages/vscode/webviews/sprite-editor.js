@@ -75,7 +75,7 @@ elements.name.innerHTML = sprite.name;
 elements.width.innerHTML = `${sprite.width}`;
 elements.height.innerHTML = `${sprite.height}`;
 const initialZoom = Math.max(
-  64 / sprite.width,
+  sprite.initialMinWidth / sprite.width,
   Math.min(512 / sprite.width, 1),
 );
 
