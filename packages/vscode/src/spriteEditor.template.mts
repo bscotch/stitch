@@ -1,9 +1,10 @@
-import { type Asset } from '@bscotch/gml-parser';
+import { Spine, type Asset, type SpineSummary } from '@bscotch/gml-parser';
 import fsp from 'node:fs/promises';
 import vscode from 'vscode';
 import spineEditorHtml from '../webviews/spine-editor.html';
 import spriteEditorHtml from '../webviews/sprite-editor.html';
 import { stitchConfig } from './config.mjs';
+import { logger } from './log.mjs';
 
 export interface SpriteInfo {
   name: string;
@@ -29,6 +30,7 @@ export interface SpineSpriteInfo {
   spineDataUris: {
     [key: string]: string;
   };
+  summary: SpineSummary;
 }
 
 function compileRegularSprite(
@@ -70,6 +72,13 @@ async function compileSpineSprite(
   panel: vscode.WebviewPanel,
 ): Promise<string> {
   const { atlas, json } = sprite.spinePaths!;
+
+  // Add the atlas and json data URIs
+  const [atlasContent, jsonContent, summary] = await Promise.all([
+    fsp.readFile(atlas.absolute),
+    fsp.readFile(json.absolute),
+    new Spine(json).summarize(),
+  ]);
   const data: SpineSpriteInfo = {
     name: sprite.name,
     width: sprite.yy.width,
@@ -82,11 +91,9 @@ async function compileSpineSprite(
       json: json.basename,
     },
     spineDataUris: {},
+    summary,
   };
-
-  // Add the atlas and json data URIs
-  const atlasContent = await fsp.readFile(atlas.absolute);
-  const jsonContent = await fsp.readFile(json.absolute);
+  console.log(JSON.stringify(data.summary, null, 2));
 
   data.spineDataUris[
     atlas.basename
@@ -103,7 +110,12 @@ async function compileSpineSprite(
       .filter((line) => line.match(/^.*\.png$/))
       .map((name) => atlas.up().join(name))
       .map(async (path) => {
-        if (!(await path.exists())) return;
+        if (!(await path.exists())) {
+          logger.warn(`Atlas references non-existent file ${path.absolute}`);
+          return;
+        } else {
+          logger.info(`Atlas references existing file ${path.absolute}`);
+        }
         const imageContent = await fsp.readFile(path.absolute);
         data.spineDataUris[
           path.basename
@@ -118,7 +130,9 @@ async function compileSpineSprite(
   const html = spineEditorHtml
     .replace(
       '<!-- VSCODE-INJECT-DATA -->',
-      `<script>window.sprite = ${JSON.stringify(data)};</script>`,
+      `<script>window.sprite = JSON.parse(\`${JSON.stringify(
+        data,
+      )}\`);</script>`,
     )
     .replace(
       './spine-editor.js',

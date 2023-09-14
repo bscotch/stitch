@@ -38,6 +38,9 @@ const elements = {
   player: /** @type {HTMLElement} */ (
     document.querySelector('#player-container')
   ),
+  animationsList: /** @type {HTMLUListElement} */ (
+    document.querySelector('ul.animations')
+  ),
 };
 
 // Initial & static data
@@ -54,7 +57,25 @@ const player = createSpinePlayer(elements.player, {
   preserveDrawingBuffer: true,
   premultipliedAlpha: false,
   rawDataURIs: sprite.spineDataUris,
+  alpha: true, // Enable player translucency
+  backgroundColor: '#00000000', // Background is fully transparent
 });
+
+// Add the animation summary
+for (const animation of sprite.summary.animations) {
+  let content = `<span class="name">${animation.name}</span> <span class="duration">${animation.duration}s duration</span><ul class="events">`;
+  for (const event of animation.events) {
+    content += `<li class="event"><span class="name">${event.name}</span> <span class="timing">${event.time}s</li>`;
+  }
+  content += '</ul>';
+
+  const li = document.createElement('li');
+  li.classList.add('animation');
+  li.innerHTML = content;
+  elements.animationsList.appendChild(li);
+
+  // Add an inner list of events and their timings
+}
 
 /**
  * @param {any} condition

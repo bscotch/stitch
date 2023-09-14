@@ -49,22 +49,6 @@
     h4 {
       margin: 0;
     }
-    #frames {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1em;
-    }
-    #frames li {
-      list-style: none;
-      position: relative;
-      user-select: none;
-    }
-    #frames img {
-      position: relative;
-      border: 1px solid white;
-      user-select: none;
-      cursor: pointer;
-    }
     .dims,
     .origins {
       font-family: monospace;
@@ -77,6 +61,29 @@
       width: 720px;
       aspect-ratio: 16/9;
       max-width: 100%;
+      margin-block: 1em;
+    }
+    ul {
+      /* decrease default indent */
+      padding-inline-start: 1.5em;
+    }
+    li.animation > .name {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    li.animation > .duration {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      font-family: monospace;
+      margin-left: 0.5em;
+    }
+    li.event > .name {
+      font-weight: bold;
+    }
+    li.event > .timing {
+      font-family: monospace;
+      color: var(--color-text-muted);
+      margin-left: 0.5em;
     }
   </style>
   <script>
@@ -93,6 +100,183 @@
       spine: {
         atlas: './spine-editor/skeleton.atlas',
         json: './spine-editor/skeleton.json',
+      },
+      summary: {
+        skinNames: ['basic', 'sluggababy', 'sluggabull'],
+        eventNames: [
+          'anticipation',
+          'attackbegin',
+          'flash_255_206_93_1',
+          'hit',
+          'hold',
+          'sfx_jump_small',
+          'sfx_sluggabun_bite_mouth',
+          'sfx_sluggabun_bite_teeth',
+          'sfx_sluggabun_jump',
+          'sfx_sluggabun_look_headup',
+          'sfx_sluggabun_look_popdown',
+          'sfx_sluggabun_look_sniff',
+          'sfx_sluggabun_mortar_mouth',
+        ],
+        animations: [
+          {
+            name: 'attack_bite',
+            duration: 1.15,
+            events: [
+              {
+                time: 0.5,
+                name: 'anticipation',
+              },
+              {
+                time: 0.5167,
+                name: 'sfx_sluggabun_bite_mouth',
+              },
+              {
+                time: 0.7333,
+                name: 'attackbegin',
+              },
+              {
+                time: 0.85,
+                name: 'sfx_sluggabun_bite_teeth',
+              },
+              {
+                time: 0.8833,
+                name: 'flash_255_206_93_1',
+              },
+              {
+                time: 0.9,
+                name: 'hit',
+              },
+            ],
+          },
+          {
+            name: 'attack_mortar',
+            duration: 0.7,
+            events: [
+              {
+                time: 0.15,
+                name: 'anticipation',
+              },
+              {
+                time: 0.15,
+                name: 'sfx_sluggabun_mortar_mouth',
+              },
+              {
+                time: 0.4,
+                name: 'attackbegin',
+              },
+              {
+                time: 0.5,
+                name: 'hit',
+              },
+            ],
+          },
+          {
+            name: 'emb_pose_1',
+            duration: 0.1667,
+            events: [],
+          },
+          {
+            name: 'emb_pose_2',
+            duration: 0.1667,
+            events: [],
+          },
+          {
+            name: 'emb_pose_3',
+            duration: 0.1667,
+            events: [],
+          },
+          {
+            name: 'emb_pose_4',
+            duration: 0.1667,
+            events: [],
+          },
+          {
+            name: 'emb_pose_5',
+            duration: 0.1667,
+            events: [],
+          },
+          {
+            name: 'emb_pose_6',
+            duration: 0.1667,
+            events: [],
+          },
+          {
+            name: 'hop',
+            duration: 0.7833,
+            events: [
+              {
+                time: 0.15,
+                name: 'hold',
+              },
+              {
+                time: 0.1667,
+                name: 'sfx_jump_small',
+              },
+              {
+                time: 0.1667,
+                name: 'sfx_sluggabun_jump',
+              },
+              {
+                time: 0.5833,
+                name: 'hold',
+              },
+            ],
+          },
+          {
+            name: 'hoptoidle',
+            duration: 0.1,
+            events: [],
+          },
+          {
+            name: 'idle',
+            duration: 1,
+            events: [],
+          },
+          {
+            name: 'idle_combat',
+            duration: 0.5,
+            events: [],
+          },
+          {
+            name: 'sniff',
+            duration: 3.3333,
+            events: [
+              {
+                time: 0.0167,
+                name: 'anticipation',
+              },
+              {
+                time: 0.1,
+                name: 'sfx_sluggabun_look_headup',
+              },
+              {
+                time: 0.6667,
+                name: 'sfx_sluggabun_look_sniff',
+              },
+              {
+                time: 1.8167,
+                name: 'sfx_sluggabun_look_sniff',
+              },
+              {
+                time: 2.4333,
+                name: 'sfx_sluggabun_look_sniff',
+              },
+              {
+                time: 2.8167,
+                name: 'attackbegin',
+              },
+              {
+                time: 3,
+                name: 'hit',
+              },
+              {
+                time: 3.0167,
+                name: 'sfx_sluggabun_look_popdown',
+              },
+            ],
+          },
+        ],
       },
     };
   </script>
@@ -120,7 +304,10 @@
       </span>
     </p>
     <div id="player-container"></div>
-    <section><ol id="frames"></ol></section>
+    <secton>
+      <h2>Animations Events</h2>
+      <ul class="animations"></ul>
+    </secton>
   </body>
   <!-- The global data from VSCode will need to be injected before loading the main script -->
   <!-- VSCODE-INJECT-DATA -->
