@@ -67,9 +67,17 @@ export class StitchSpriteEditorProvider {
   }
 
   static register(workspace: StitchWorkspace) {
-    const releasesProvider = new StitchSpriteEditorProvider(workspace);
+    const spriteEditorProvider = new StitchSpriteEditorProvider(workspace);
     stitchEvents.on('sprite-editor-open', (asset) => {
-      releasesProvider.revealPanel(asset);
+      spriteEditorProvider.revealPanel(asset);
+    });
+    stitchEvents.on('asset-changed', (asset) => {
+      if (
+        spriteEditorProvider.panel &&
+        spriteEditorProvider.editing?.name === asset.name
+      ) {
+        spriteEditorProvider.revealPanel(spriteEditorProvider.editing);
+      }
     });
     return [];
   }
