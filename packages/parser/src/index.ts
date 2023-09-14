@@ -14,6 +14,8 @@ export {
 } from './project.location.js';
 export * from './signifiers.flags.js';
 export { Signifier } from './signifiers.js';
+export { Spine, type SpineSummary } from './spine.js';
+export type * from './spine.types.js';
 export { isTypeInstance, isTypeOfKind } from './types.checks.js';
 export type * from './types.js';
 export { primitiveNames, type PrimitiveName } from './types.primitives.js';
