@@ -51,10 +51,6 @@ const elements = {
 elements.name.innerHTML = sprite.name;
 elements.width.innerHTML = `${sprite.width}`;
 elements.height.innerHTML = `${sprite.height}`;
-const initialZoom = Math.max(
-  sprite.initialMinWidth / sprite.width,
-  Math.min(512 / sprite.width, 1),
-);
 
 class FrameImage {
   /** @type {FrameImage[]} */
@@ -88,7 +84,7 @@ class FrameImage {
     },
 
     /** @private */
-    _zoom: initialZoom,
+    _zoom: sprite.zoom,
     /** @param {number} zoom */
     set zoom(zoom) {
       this._zoom = zoom;
@@ -100,8 +96,8 @@ class FrameImage {
       return this._zoom;
     },
 
-    displayWidth: sprite.width * initialZoom,
-    displayHieght: sprite.height * initialZoom,
+    displayWidth: sprite.width * sprite.zoom,
+    displayHieght: sprite.height * sprite.zoom,
   };
 
   /** @param {string} uri  */
@@ -174,12 +170,13 @@ class FrameImage {
       spriteName: sprite.name,
       xorigin: FrameImage.dims.xorigin,
       yorigin: FrameImage.dims.yorigin,
+      zoom: FrameImage.dims.zoom,
     });
   }
 }
 
 // Zoom
-elements.zoom.value = initialZoom.toFixed(1);
+elements.zoom.value = sprite.zoom.toFixed(1);
 elements.zoom.addEventListener('change', (e) => {
   if (!e.target) return;
   FrameImage.dims.zoom = Math.max(+e.target.value, 0.1);

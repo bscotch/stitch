@@ -13,7 +13,7 @@ export interface SpriteInfo {
   xorigin: number;
   yorigin: number;
   frameUrls: string[];
-  initialMinWidth: number;
+  zoom: number;
 }
 
 export interface SpineSpriteInfo {
@@ -33,9 +33,17 @@ export interface SpineSpriteInfo {
   summary: SpineSummary;
 }
 
+export function computeInitialZoom(sprite: Asset<'sprites'>) {
+  return Math.max(
+    stitchConfig.initialMinSpriteEditorWidth / sprite.yy.width,
+    Math.min(512 / sprite.yy.width, 1),
+  );
+}
+
 function compileRegularSprite(
   sprite: Asset<'sprites'>,
   panel: vscode.WebviewPanel,
+  defaultZoom?: number,
 ) {
   const data: SpriteInfo = {
     name: sprite.name,
@@ -46,7 +54,7 @@ function compileRegularSprite(
     frameUrls: sprite.framePaths.map((p) =>
       panel.webview.asWebviewUri(vscode.Uri.file(p.absolute)).toString(),
     ),
-    initialMinWidth: stitchConfig.initialMinSpriteEditorWidth,
+    zoom: defaultZoom || computeInitialZoom(sprite),
   };
   // Inject into the HTML
   const html = spriteEditorHtml
@@ -150,9 +158,10 @@ async function compileSpineSprite(
 export async function compile(
   sprite: Asset<'sprites'>,
   panel: vscode.WebviewPanel,
+  defaultZoom?: number,
 ) {
   if (sprite.isSpineSprite) {
     return await compileSpineSprite(sprite, panel);
   }
-  return compileRegularSprite(sprite, panel);
+  return compileRegularSprite(sprite, panel, defaultZoom);
 }

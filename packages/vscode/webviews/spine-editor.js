@@ -1,6 +1,5 @@
 /**
- * @typedef {import('../src/spriteEditor.template.mjs').SpineSpriteInfo} SpriteInfo
- * @typedef {import('../src/extension.spriteEditor.mjs').SpriteEditedMessage} SpriteEditedMessage
+ * @typedef {import('../src/spriteEditor.template.mjs').SpineSpriteInfo} SpineSpriteInfo
  * @typedef {import('@esotericsoftware/spine-player').SpinePlayer} SpinePlayer
  * @typedef {import('@esotericsoftware/spine-player').SpinePlayerConfig} SpinePlayerConfig
  */
@@ -25,7 +24,7 @@ function createSpinePlayer(where, config) {
 
 /**
  * Defined upstream
- * @type {SpriteInfo} */
+ * @type {SpineSpriteInfo} */
 // @ts-ignore
 const sprite = window.sprite;
 
