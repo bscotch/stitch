@@ -6,6 +6,7 @@ importers:
     specifiers:
       '@bscotch/pathy': ^2.7.4
       '@bscotch/trebuchet': 2.8.5
+      '@bscotch/workspaces': 0.2.3
       '@types/chai': ^4.3.5
       '@types/mocha': ^10.0.1
       '@types/node': ^20.5.0
@@ -39,6 +40,7 @@ importers:
       turbo: 1.10.13
       zx: 7.2.3
     devDependencies:
+      '@bscotch/workspaces': 0.2.3
       typescript: 5.1.6
 
   packages/core:
@@ -932,6 +934,17 @@ packages:
       change-case: 4.1.2
       source-map-support: 0.5.21
       tslib: 2.6.2
+
+  /@bscotch/workspaces/0.2.3:
+    resolution: {integrity: sha512-1c07Uv9AgdqRomQaGpbxurO19duiw/mXcC90L1zvdicZlwyykpncYi8vBe2Yi1ZkhXESO6Z4nBwUZuKRZZZ9Lg==}
+    dependencies:
+      dependency-graph: 0.11.0
+      globby: 13.2.2
+      semver: 7.5.4
+      simple-git: 3.19.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
 
   /@bscotch/yy/0.12.1:
     resolution: {integrity: sha512-ZvYlEwAmNaVE5YNSBD0cZvfbBPiP6/uEInT6f4bPCVj/5wpYhAV0DFVeeGXb5dYc/iCK7M4lZXlh/yezVH9oSQ==}

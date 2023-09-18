@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "bump": "treb version && node scripts/changelogs.mjs && git add . && git commit -m \"chore: updated changelogs\" && treb publish",
     "build:all": "turbo run build",
     "test:all": "turbo run test",
     "clean:artifacts": "node ./scripts/nuke-builds.mjs",
@@ -51,6 +52,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@bscotch/workspaces": "0.2.3",
     "typescript": "5.1.6"
   }
 }

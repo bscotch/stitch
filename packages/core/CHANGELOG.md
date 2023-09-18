@@ -1,8 +1,70 @@
-# Stitch Changelog
+# @bscotch/stitch Changelog
 
-Major changes to functionality are documented here.
+## 10.8.0 (2023-08-30)
 
-## v10.0.0
+### Features
 
-- The `Gms2Project` class has been renamed to `StitchProject`. Aliases are still exported to maintain backwards compatibility, but are flagged as deprecated. For most use cases the aliases will be sufficient to keep your code working.
-- 💥 _Many_ methods have been converted from synchronous to asynchronous, now returning a promise. Most importantly, you can no longer create a `StitchProject` (a.k.a. `Gms2Project`) instance directly, you'll need to use the async static method `StitchProject.load()`. **This is a breaking change,** and there is no way to make it backwards compatible. This change was made to prevent Stitch from blocking the main thread while it performs its tasks, so that overall performance of applications using Stitch can be improved.
+- Added plugin hooks for before/after individual sprite additions
+- Added plugin functions for before/after batch-add of sprites, and for before individual sprite-add
+
+## 10.7.0 (2023-08-28)
+
+### Features
+
+- Resolved issue where new sprites do not have a centered origin, and defaulted the origin type to "Custom"
+
+## 10.6.15 (2023-08-15)
+
+### Fixes
+
+- Updated all deps
+
+## 10.6.11 (2023-07-11)
+
+### Fixes
+
+- Resolved type issue causing build failure
+
+## 10.6.7 (2023-06-16)
+
+### Fixes
+
+- Resolved types issue and updated some deps
+
+## 10.6.2 (2023-04-12)
+
+### Fixes
+
+- Updated all deps, including a version of Pathy that was not properly using validators
+
+## 10.6.0 (2023-04-11)
+
+### Features
+
+- Added basic support for the new 'particle' resource type
+
+## 10.5.3 (2023-03-13)
+
+### Docs
+
+- Updated Stitch Core readme to add more 'await's and to remove the legacy linter stuff
+- Updated Stitch Core docs to use the new 'StitchProject' name instead of 'Gms2Project', and to show loading using the new async API.
+
+## 10.4.8 (2023-03-06)
+
+### Fixes
+
+- Resolved local dependency issues
+
+## 10.4.7 (2023-03-06)
+
+### Fixes
+
+- Added fallback for um.json files, since they are not guaranteed to exist
+
+## 10.4.6 (2023-03-06)
+
+### Fixes
+
+- Updated the homepage field in all manifests
+- Removed warning from docs regarding repo not being public, now that it is
