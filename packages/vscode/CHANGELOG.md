@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.47.2 (2023-09-18)
+
+### Docs
+
+- Added a link to the new changelogs
+
 ## 1.47.1 (2023-09-15)
 
 ### Fixes
