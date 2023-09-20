@@ -18,7 +18,7 @@ import {
 } from './SpriteDest.schemas.js';
 import { SpriteSource } from './SpriteSource.js';
 import { Reporter } from './types.js';
-import { SpriteSourceError, assert, rethrow } from './utility.js';
+import { SpriteSourceError, assert, rethrow, sequential } from './utility.js';
 
 export class SpriteDest extends SpriteCache {
   protected constructor(
@@ -34,6 +34,7 @@ export class SpriteDest extends SpriteCache {
       .withValidator(spriteDestConfigSchema);
   }
 
+  @sequential
   protected async inferChangeActions(
     sourceConfig: SpriteDestSource,
     destSpritesCache: SpritesInfo,
@@ -154,6 +155,7 @@ export class SpriteDest extends SpriteCache {
   /**
    * @param overrides Optionally override the configuration file (if it exists)
    */
+  @sequential
   async import(overrides?: SpriteDestConfig, reporter?: Reporter) {
     let percentComplete = 0;
     const report = (byPercent: number, message?: string) => {
