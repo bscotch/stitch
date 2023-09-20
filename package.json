@@ -49,7 +49,9 @@
   },
   "packageManager": "pnpm@8.7.6",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "!packages/desktop",
+    "!packages/desktop*"
   ],
   "devDependencies": {
     "@bscotch/workspaces": "0.3.0",
