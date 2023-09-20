@@ -504,6 +504,10 @@ importers:
         version: 5.2.2
 
   packages/vscode:
+    dependencies:
+      tslib:
+        specifier: ^2.6.2
+        version: 2.6.2
     devDependencies:
       '@bscotch/emitter':
         specifier: 0.2.1

@@ -867,5 +867,8 @@
       ]
     },
     "hoverProvider": "true"
+  },
+  "dependencies": {
+    "tslib": "^2.6.2"
   }
 }

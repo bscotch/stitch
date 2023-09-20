@@ -5,6 +5,7 @@ import {
   SpriteSource,
   SpriteSourceStage,
 } from '@bscotch/sprite-source';
+import { sequential } from '@bscotch/utility';
 import path from 'path';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
@@ -71,6 +72,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     SpriteSourcesTree.sourceWatchers = new Map();
   }
 
+  @sequential
   async importSprites() {
     assertLoudly(this.currentProject, 'No active project.');
 
@@ -131,6 +133,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     this.rebuild();
   }
 
+  @sequential
   async deleteSpriteSource(source: SpriteSourceFolder) {
     const dest = await SpriteDest.from(source.project.yypPath.absolute);
     const config = await dest.loadConfig();
@@ -143,6 +146,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     this.rebuild();
   }
 
+  @sequential
   async clearCache(source: SpriteSourceFolder | undefined) {
     if (!source) {
       assertLoudly(this.currentProject, 'No active project.');
