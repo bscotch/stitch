@@ -29,6 +29,7 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
+    "@bscotch/emitter": "0.2.1",
     "@bscotch/gamemaker-releases": "0.5.0",
     "@bscotch/pathy": "^2.9.0",
     "@bscotch/stitch": "10.8.0",

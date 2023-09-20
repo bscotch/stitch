@@ -5,7 +5,8 @@ import {
   isPlainObject,
   StringifierNode,
 } from '@bscotch/stringify';
-import { dateDifferenceHours, Logger } from '@bscotch/utility';
+import { Logger } from '@bscotch/logger';
+import { dateDifferenceHours } from '@bscotch/utility';
 
 import color from 'picocolors';
 import { pathToFileURL } from 'url';

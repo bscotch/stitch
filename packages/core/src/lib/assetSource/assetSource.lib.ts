@@ -1,7 +1,7 @@
 import { Pathy } from '@bscotch/pathy';
 import crypto from 'crypto';
 import fs from 'fs';
-import { Logger } from '@bscotch/utility';
+import { Logger } from '@bscotch/logger';
 
 export const logger = new Logger();
 

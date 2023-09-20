@@ -1,3 +1,3 @@
-import { createEventEmitter } from '@bscotch/utility';
+import { createEventEmitter } from '@bscotch/emitter';
 
 export const projectsEmitter = createEventEmitter<['projectsChanged']>();
