@@ -1,5 +1,11 @@
 # @bscotch/stitch-launcher Changelog
 
+## 1.5.0 (2023-09-20)
+
+### Features
+
+- Bumped all deps
+
 ## 1.4.2 (2023-08-23)
 
 ### Fixes

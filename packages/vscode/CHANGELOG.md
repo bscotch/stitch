@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.48.0 (2023-09-20)
+
+### Features
+
+- Bumped all deps
+
 ## 1.47.2 (2023-09-18)
 
 ### Docs

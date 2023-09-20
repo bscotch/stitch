@@ -1,5 +1,15 @@
 # @bscotch/stitch Changelog
 
+## 10.9.0 (2023-09-20)
+
+### Features
+
+- Bumped all deps
+
+### Fixes
+
+- Resolved issues caused by dependency updates
+
 ## 10.8.0 (2023-08-30)
 
 ### Features

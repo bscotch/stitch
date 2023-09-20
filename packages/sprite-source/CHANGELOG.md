@@ -1,5 +1,15 @@
 # @bscotch/sprite-source Changelog
 
+## 0.4.0 (2023-09-20)
+
+### Features
+
+- Bumped all deps
+
+### Fixes
+
+- Resolved issues caused by dependency updates
+
 ## 0.3.0 (2023-09-13)
 
 ### Features

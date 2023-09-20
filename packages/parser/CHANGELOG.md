@@ -1,5 +1,15 @@
 # @bscotch/gml-parser Changelog
 
+## 0.57.0 (2023-09-20)
+
+### Features
+
+- Bumped all deps
+
+### Fixes
+
+- Resolved issues caused by dependency updates
+
 ## 0.56.0 (2023-09-14)
 
 ### Features

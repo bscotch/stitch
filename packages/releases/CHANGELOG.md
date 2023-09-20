@@ -1,5 +1,11 @@
 # @bscotch/gamemaker-releases Changelog
 
+## 0.6.0 (2023-09-20)
+
+### Features
+
+- Bumped all deps
+
 ## 0.5.0 (2023-08-15)
 
 ### Features

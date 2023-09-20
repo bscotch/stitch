@@ -1,5 +1,11 @@
 # @bscotch/spritely Changelog
 
+## 3.4.0 (2023-09-20)
+
+### Features
+
+- Bumped all deps
+
 ## 3.3.7 (2023-08-29)
 
 ### Fixes

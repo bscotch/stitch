@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 0.14.0 (2023-09-20)
+
+### Features
+
+- Bumped all deps
+
 ## 0.13.0 (2023-08-28)
 
 ### Features
