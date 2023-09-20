@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.49.1 (2023-09-20)
+
+### Fixes
+
+- Now enforcing calls to various SpriteSource methods to be sequental to prevent race conditions
+
 ## 1.49.0 (2023-09-20)
 
 ### Features

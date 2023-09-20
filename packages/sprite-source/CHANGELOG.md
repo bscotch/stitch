@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 0.4.1 (2023-09-20)
+
+### Fixes
+
+- Now ensuring that SpriteDest import calls are sequential to prevent race conditions
+
 ## 0.4.0 (2023-09-20)
 
 ### Features
