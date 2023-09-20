@@ -24,16 +24,6 @@ type Item =
   | RecentlyChangedFolder
   | SpriteItem;
 
-export interface SpriteSourceConfig {
-  targetProject?: string;
-  name?: string;
-  prefix?: string;
-  postfix?: string;
-  case?: 'keep' | 'snake' | 'camel' | 'pascal';
-  flatten?: boolean;
-  exclude?: string;
-}
-
 interface SpriteChangeInfo {
   when: Date;
 }
