@@ -1,5 +1,15 @@
 # Stitch Changelog
 
+## 1.49.0 (2023-09-20)
+
+### Features
+
+- Stitch now prompts to install the project's GameMaker version if it is missing when the user "runs" the project
+
+### Fixes
+
+- Missing Sprite Sources now indicate that in the tree instead of a noisy popup
+
 ## 1.48.2 (2023-09-20)
 
 ### Fixes
