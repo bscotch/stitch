@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.48.1 (2023-09-20)
+
+### Fixes
+
+- Windows-specific SpriteSource code should now be skipped on other platforms
+
 ## 1.48.0 (2023-09-20)
 
 ### Features
