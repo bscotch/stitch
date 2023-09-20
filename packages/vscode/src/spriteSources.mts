@@ -151,8 +151,15 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       await dest.cacheFile.delete();
     } else {
       // Then clear the cache for the given source
-      const sourceDir = await SpriteSource.from(source.sourceDir.absolute);
-      await sourceDir.cacheFile.delete();
+      try {
+        const sourceDir = await SpriteSource.from(source.sourceDir.absolute);
+        await sourceDir.cacheFile.delete();
+      } catch (err) {
+        logger.error(
+          `Error clearing cache for ${source.sourceDir.absolute}`,
+          err,
+        );
+      }
     }
     this.rebuild();
   }
@@ -369,9 +376,17 @@ class SpriteSourcesFolder extends StitchTreeItemBase<'sprite-sources'> {
     const dest = await SpriteDest.from(this.project.yypPath.absolute);
     const config = await dest.loadConfig();
     if (!config.sources?.length) return [];
-    return config.sources.map((source) => {
-      return new SpriteSourceFolder(this.project, source.source);
-    });
+    const children: SpriteSourceFolder[] = [];
+    for (const source of config.sources) {
+      try {
+        children.push(
+          await SpriteSourceFolder.from(this.project, source.source),
+        );
+      } catch (err) {
+        logger.error(`Error loading sprite source: ${source.source}`, err);
+      }
+    }
+    return children;
   }
 }
 
@@ -379,7 +394,27 @@ class SpriteSourceFolder extends StitchTreeItemBase<'sprite-source'> {
   override readonly kind = 'sprite-source';
   parent = undefined;
   readonly sourceDir: Pathy;
-  constructor(
+  invalid = false;
+
+  static async from(project: GameMakerProject, relativeSourceDir: string) {
+    const item = new SpriteSourceFolder(project, relativeSourceDir);
+    // The source folder may not exist, and if not we want to be able to
+    // show a warning icon. So figure that out before rendering in the tree.
+    try {
+      await SpriteSource.from(item.sourceDir.absolute);
+    } catch {
+      // Override the behavior
+      item.invalid = true;
+      item.command = undefined;
+      item.description = `Not Found`;
+      item.tooltip = `The folder "${item.sourceDir.absolute}" does not exist on this device.`;
+      item.setBaseIcon('warning');
+      item.collapsibleState = vscode.TreeItemCollapsibleState.None;
+    }
+    return item;
+  }
+
+  protected constructor(
     readonly project: GameMakerProject,
     readonly relativeSourceDir: string,
   ) {
@@ -401,11 +436,17 @@ class SpriteSourceFolder extends StitchTreeItemBase<'sprite-source'> {
   }
 
   async getChildren(): Promise<SpriteSourceStageItem[]> {
+    if (this.invalid) return [];
+
+    const children: SpriteSourceStageItem[] = [];
     const src = await SpriteSource.from(this.sourceDir.absolute);
     const config = await src.loadConfig();
-    const children: SpriteSourceStageItem[] = [];
     for (const stage of config.staging || []) {
-      children.push(new SpriteSourceStageItem(this, stage));
+      try {
+        children.push(new SpriteSourceStageItem(this, stage));
+      } catch (err) {
+        logger.error(`Error loading sprite source stage: ${stage.dir}`, err);
+      }
     }
     return children;
   }
