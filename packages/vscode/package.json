@@ -27,6 +27,7 @@
   "publisher": "bscotch",
   "main": "./dist/extension.js",
   "scripts": {
+    "bump": "cd ../.. && pnpm bump",
     "build": "pnpm build:grammar && node scripts/build-schemas.mjs && node scripts/build.mjs && pnpm build:manifest",
     "build:deps": "pnpm turbo run build --filter=bscotch-stitch-vscode...",
     "build:grammar": "node scripts/yaml-to-json.mjs syntaxes/gml.tmLanguage.yaml syntaxes/gml.tmLanguage.json",
