@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.48.2 (2023-09-20)
+
+### Fixes
+
+- Bumped the manifest engines version to 1.82.0 to match the updated deps
+
 ## 1.48.1 (2023-09-20)
 
 ### Fixes
