@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/spritely",
-  "version": "3.3.7",
+  "version": "3.4.0",
   "description": "Spritely: Image correction and cleanup for 2D video game sprites",
   "keywords": [
     "sprite",
