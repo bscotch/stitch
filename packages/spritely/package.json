@@ -39,24 +39,24 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/debounce-watch": "^1.0.18",
-    "@bscotch/pathy": "^2.7.4",
-    "@bscotch/utility": "^6.8.3",
+    "@bscotch/debounce-watch": "^1.1.0",
+    "@bscotch/pathy": "^2.9.0",
+    "@bscotch/utility": "^7.2.0",
     "commander": "11.0.0",
     "fs-extra": "11.1.1",
     "image-js": "0.35.4",
     "image-size": "1.0.2",
-    "tslib": "^2.6.1",
-    "yaml": "2.3.1"
+    "tslib": "^2.6.2",
+    "yaml": "2.3.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.5",
-    "@types/fs-extra": "^11.0.1",
+    "@types/chai": "^4.3.6",
+    "@types/fs-extra": "^11.0.2",
     "@types/mocha": "^10.0.1",
-    "chai": "^4.3.7",
+    "chai": "^4.3.8",
     "mocha": "^10.2.0",
     "rimraf": "^5.0.1",
-    "typescript": "5.1.6"
+    "typescript": "5.2.2"
   },
   "engines": {
     "node": ">=14.0.0"

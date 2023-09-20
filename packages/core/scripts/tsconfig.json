@@ -4,7 +4,7 @@
   "include": ["**/*.mjs", "**/*.cjs", "**/*.js", "**/*.ts"],
   "compilerOptions": {
     "lib": ["es2021"],
-    "module": "ESNext",
+    "module": "NodeNext",
     "target": "es2021",
     "allowJs": true,
     "checkJs": true,

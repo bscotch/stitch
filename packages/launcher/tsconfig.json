@@ -3,6 +3,7 @@
   "compilerOptions": {
     "types": ["node", "mocha", "chai"],
     "moduleResolution": "NodeNext",
+    "module": "NodeNext",
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": "src"

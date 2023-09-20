@@ -15,26 +15,26 @@
     "setup:pnpm": "corepack prepare $npm_package_packageManager --activate"
   },
   "dependencies": {
-    "@bscotch/pathy": "^2.7.4",
-    "@bscotch/trebuchet": "2.8.5",
-    "@types/chai": "^4.3.5",
+    "@bscotch/pathy": "^2.9.0",
+    "@bscotch/trebuchet": "2.9.0",
+    "@types/chai": "^4.3.6",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^20.5.0",
-    "@typescript-eslint/eslint-plugin": "~6.4.0",
-    "@typescript-eslint/parser": "~6.4.0",
-    "@typescript-eslint/utils": "^6.4.0",
-    "del": "7.0.0",
-    "eslint": "^8.47.0",
+    "@types/node": "^20.6.3",
+    "@typescript-eslint/eslint-plugin": "~6.7.2",
+    "@typescript-eslint/parser": "~6.7.2",
+    "@typescript-eslint/utils": "^6.7.2",
+    "del": "7.1.0",
+    "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
     "mocha": "^10.2.0",
-    "prettier": "^3.0.1",
+    "prettier": "^3.0.3",
     "syncpack": "^11.2.1",
-    "turbo": "^1.10.12",
+    "turbo": "^1.10.14",
     "zx": "^7.2.3"
   },
   "engines": {
     "node": ">=18",
-    "pnpm": ">=7"
+    "pnpm": ">=8"
   },
   "syncpack": {
     "workspace": false,
@@ -47,12 +47,12 @@
     "npmScope": "@bscotch",
     "vscodeWorkspaceConfigPath": false
   },
-  "packageManager": "pnpm@7.28.0",
+  "packageManager": "pnpm@8.7.6",
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
-    "@bscotch/workspaces": "0.2.3",
-    "typescript": "5.1.6"
+    "@bscotch/workspaces": "0.3.0",
+    "typescript": "5.2.2"
   }
 }
