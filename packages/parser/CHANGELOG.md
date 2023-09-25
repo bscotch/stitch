@@ -1,5 +1,16 @@
 # @bscotch/gml-parser Changelog
 
+## 0.58.0 (2023-09-25)
+
+### Features
+
+- Added support for struct literal shorthand assignments
+
+### Fixes
+
+- Resolved issue where JSDocs were being skipped in function arguments
+- Resolved conflicts when switching from shorthand to full struct literal syntax
+
 ## 0.57.0 (2023-09-20)
 
 ### Features

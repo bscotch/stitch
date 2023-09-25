@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.50.1 (2023-09-25)
+
+### Fixes
+
+- Resolved issue where symbol renames wouldn't trigger if the cursor position was right after the symbol
+
 ## 1.50.0 (2023-09-25)
 
 ### Features
