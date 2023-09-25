@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 0.15.0 (2023-09-25)
+
+### Features
+
+- Added support for GMFolderLayer sprite layers
+
 ## 0.14.0 (2023-09-20)
 
 ### Features
