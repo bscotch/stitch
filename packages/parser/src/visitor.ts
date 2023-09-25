@@ -615,12 +615,29 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           parts.stringLiteral![0].children.StringEnd[0],
         );
       }
-      assignVariable(
-        this,
-        { name, range, container: struct },
-        parts.assignmentRightHandSide,
-        { docs, ctx, instance: true },
-      );
+      if (parts.assignmentRightHandSide) {
+        assignVariable(
+          this,
+          { name, range, container: struct },
+          parts.assignmentRightHandSide,
+          { docs, ctx, instance: true },
+        );
+      } else {
+        // Then we're in short-hand mode, where the RHS has the same
+        // name but refers to a local variable.
+        const matchingVariable = this.FIND_ITEM_BY_NAME(name);
+        if (!matchingVariable) {
+          // Add an error message
+          this.PROCESSOR.addDiagnostic(
+            'INVALID_OPERATION',
+            parts.Identifier![0],
+            `Struct literal shorthand requires an existing variable named "${name}"`,
+          );
+        } else {
+          struct.addMember(matchingVariable);
+          matchingVariable.addRef(range);
+        }
+      }
     }
     return struct;
   }
