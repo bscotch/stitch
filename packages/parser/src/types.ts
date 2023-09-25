@@ -411,7 +411,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
     const existingOnThis = this.getMember(name, true);
 
     let member: Signifier | undefined;
-    if (signifierArg?.override) {
+    if (signifierArg?.override || (signifierArg && options?.override)) {
       // Then we want to override the existing member
       member = signifierArg;
     } else {
@@ -556,5 +556,9 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
 
   static get Struct() {
     return new Type('Struct');
+  }
+
+  static get Function() {
+    return new Type('Function');
   }
 }

@@ -3,9 +3,11 @@ import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
+import { parseJsdoc } from './jsdoc.js';
 import { logger } from './logger.js';
 import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
 import { Signifier } from './signifiers.js';
+import { typeFromParsedJsdocs } from './types.feather.js';
 import { Type, type StructType } from './types.js';
 import { addSpriteInfoStruct } from './types.sprites.js';
 import { StitchParserError, assert } from './util.js';
@@ -39,6 +41,29 @@ export class Native {
     this.types.set('Function.throw', throwsType);
     throws.def = {};
     throws.native = 'Base';
+
+    // The `static_get` function just returns a blank Struct type instead
+    // of inferring the static struct from the argument. This function
+    // replaces that signature to make it more useful.
+    const staticGetType = typeFromParsedJsdocs(
+      parseJsdoc(`
+      /// @template {Function|Struct} T
+      /// @param {T} target
+      /// @returns {StaticType<T>}
+    `),
+      this.types,
+      false,
+    )[0] as Type<'Function'>;
+    staticGetType.named('static_get');
+    const staticGet = new Signifier(
+      this.globalSelf,
+      'static_get',
+      staticGetType,
+    );
+    this.globalSelf.addMember(staticGet);
+    this.types.set('Function.static_get', staticGetType);
+    staticGet.def = {};
+    staticGet.native = 'Base';
 
     // The `display_get_frequency` function is not in the spec, so add it manually.
 
@@ -96,8 +121,12 @@ export class Native {
 
   protected loadFunctions(spec: GmlSpec) {
     for (const func of spec.functions) {
-      if (this.globalSelf.getMember(func.name)) {
+      const existing = this.globalSelf.getMember(func.name);
+      if (existing) {
         logger.warn(`Native function ${func.name} already exists, skipping.`);
+        if (!existing.description && func.description) {
+          existing.describe(func.description);
+        }
         continue;
       }
 

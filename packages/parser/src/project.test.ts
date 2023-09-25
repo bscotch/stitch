@@ -369,11 +369,11 @@ function validateGenerics(project: Project) {
   const returnedSampleType = returnedSample.type.type[0];
   ok(sampleType.kind === returnedSampleType.kind);
 
-  // TODO InstanceType<>
+  // InstanceType<>
   const returnedInstance = scriptFile.getReferenceAt(24, 7)!.item.type.type[0];
   ok(returnedInstance.kind === o_object.instanceType!.kind);
 
-  // TODO ObjectType<>
+  // ObjectType<>
   const returnedObject = scriptFile.getReferenceAt(25, 7)!.item.type.type[0];
   ok(returnedObject.kind === o_object.assetType.kind);
 }

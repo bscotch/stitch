@@ -5,7 +5,11 @@ export const withableTypes = [
   'Id.Instance',
 ] as const;
 
-export const utilityTypes = ['InstanceType', 'ObjectType'] as const;
+export const utilityTypes = [
+  'InstanceType',
+  'ObjectType',
+  'StaticType',
+] as const;
 
 export const withableTypesLower = withableTypes.map((t) =>
   t.toLowerCase(),

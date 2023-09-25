@@ -634,7 +634,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
             `Struct literal shorthand requires an existing variable named "${name}"`,
           );
         } else {
-          struct.addMember(matchingVariable);
+          struct.addMember(matchingVariable, { override: true })!;
           matchingVariable.addRef(range);
         }
       }

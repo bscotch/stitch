@@ -187,22 +187,38 @@ export function normalizeType(
       normalized.addType(type.signifier?.parent || type);
       continue;
     } else {
-      for (const [utilityKind, kind] of [
+      for (const [utilityKind, defaultItemKind] of [
         ['InstanceType', 'Id.Instance'],
         ['ObjectType', 'Asset.GMObject'],
+        ['StaticType', 'Struct'],
       ] as const) {
         if (type.kind !== utilityKind) continue;
         if (!type.items?.type.length) {
-          normalized.addType(knownTypes.get(kind) || new Type(kind));
+          normalized.addType(
+            knownTypes.get(defaultItemKind) || new Type(defaultItemKind),
+          );
         }
         for (const itemType of getTypes(type.items || [])) {
           // Try to convert the type.
-          const name = itemType.name ? `${kind}.${itemType.name}` : kind;
+          const name = itemType.name
+            ? `${defaultItemKind}.${itemType.name}`
+            : defaultItemKind;
           let type =
-            knownTypes.get(name) || knownTypes.get(kind) || new Type(kind);
+            knownTypes.get(name) ||
+            knownTypes.get(defaultItemKind) ||
+            new Type(defaultItemKind);
           if (itemType.isGeneric) {
             // Then extend the type to allow having a generic without mutating the original
             type = type.derive().genericize().named(itemType.name);
+          }
+          if (utilityKind === 'StaticType') {
+            // TODO: Create a new type consisting of the type's static members
+            type = Type.Struct;
+            for (const member of itemType.listMembers()) {
+              if (member.static) {
+                type.addMember(member);
+              }
+            }
           }
           normalized.addType(type);
         }
