@@ -11,7 +11,11 @@ export class StitchRenameProvider implements vscode.RenameProvider {
     document: vscode.TextDocument,
     position: vscode.Position,
   ) {
-    const ref = this.workspace.getReference(document, position);
+    let ref = this.workspace.getReference(document, position);
+    if (!ref && position.character > 0) {
+      // Might be that the cursor is *after* the symbol. Try one position prior.
+      ref = this.workspace.getReference(document, position.translate(0, -1));
+    }
     assertUserClaim(ref, 'Not a symbol reference');
     const range = rangeFrom(ref);
     const text = document.getText(range);
