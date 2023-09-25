@@ -58,6 +58,13 @@ export const objectEvents = [
     group: 'cleanup',
   },
   {
+    label: 'Room Start',
+    name: 'Other_4',
+    eventNum: 4,
+    eventType: 7,
+    group: 'cleanup'
+  },
+  {
     label: 'Room End',
     name: 'Other_5',
     eventNum: 5,
