@@ -322,6 +322,9 @@ function processFunctionArguments(
         functionCtx.self = methodSelf;
       }
       const expectedType = functionType?.getParameter(argIdx);
+      if (token.children.jsdoc) {
+        visitor.jsdoc(token.children.jsdoc[0].children, functionCtx);
+      }
       const inferredType = normalizeType(
         visitor.assignmentRightHandSide(
           token.children.assignmentRightHandSide[0].children,
