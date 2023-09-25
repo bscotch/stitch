@@ -1,8 +1,8 @@
 import { pointable } from '@bscotch/utility';
 import { PartialDeep } from 'type-fest';
 import { v4 as uuidV4 } from 'uuid';
-import { getYyResourceId } from './utility.js';
 import { YySprite } from './YySprite.js';
+import { getYyResourceId } from './utility.js';
 
 export function ensureTrackKeyFrames(
   sprite: PartialDeep<YySprite, { recurseIntoArrays: true }>,
@@ -16,7 +16,7 @@ export function ensureTrackKeyFrames(
       .set([], {
         createMissing: true,
         noClobber: true,
-      });
+      }) as any[];
     for (let i = 0; i < frames.length; i++) {
       const frame = pointable(frames).at([i]).set({}, { noClobber: true })!;
       frame.name ||= uuidV4();

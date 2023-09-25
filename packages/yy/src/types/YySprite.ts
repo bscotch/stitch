@@ -142,8 +142,8 @@ const spriteFrameSchema = unstable({
 
 const spriteLayerBlendModeSchema = z.nativeEnum(SpriteLayerBlendMode);
 
-export type SpriteLayer = z.input<typeof spriteLayerSchema>;
-const spriteLayerSchema = unstable({
+export type SpriteImageLayer = z.input<typeof spriteImageLayerSchema>;
+const spriteImageLayerSchema = unstable({
   visible: z.boolean().default(true),
   isLocked: z.boolean().default(false),
   blendMode: spriteLayerBlendModeSchema.default(0),
@@ -158,6 +158,33 @@ const spriteLayerSchema = unstable({
   tags: z.array(z.string()).optional(),
   resourceType: z.literal('GMImageLayer').default('GMImageLayer'),
 });
+
+export type SpriteFolderLayer = z.input<typeof spriteFolderLayerSchema>;
+const spriteFolderLayerSchema = unstable({
+  resourceType: z.literal('GMImageFolderLayer').default('GMImageFolderLayer'),
+  resourceVersion: z.string().default('1.0'),
+  name: z.string().default(uuidV4),
+  blendMode: spriteLayerBlendModeSchema.default(0),
+  displayName: z.string().default('Layer Group'),
+  isLocked: z.boolean().default(false),
+  opacity: fixedNumber(z.number().min(0).max(100)).default(100),
+  visible: z.boolean().default(true),
+  layers: z.array(spriteImageLayerSchema).default([]),
+});
+
+const spriteLayerSchema = z.preprocess(
+  (arg) => {
+    if (typeof arg === 'object' && arg !== null && !('resourceType' in arg)) {
+      // Default to an image layer
+      return { ...arg, resourceType: 'GMImageLayer' };
+    }
+    return arg;
+  },
+  z.discriminatedUnion('resourceType', [
+    spriteImageLayerSchema,
+    spriteFolderLayerSchema,
+  ]),
+);
 
 const spriteSequenceTrackKeyframeBaseSchema = z.object({
   /**

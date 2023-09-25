@@ -13,7 +13,10 @@ export function randomString(length = 32) {
 }
 
 export class FixedNumber extends Number {
-  constructor(value: number | FixedNumber, readonly digits = 1) {
+  constructor(
+    value: number | FixedNumber,
+    readonly digits = 1,
+  ) {
     super(value.valueOf());
   }
 
@@ -74,7 +77,9 @@ export function ensureObject<T extends z.ZodTypeAny>(obj: T) {
  * at least one element, allowing for defaults to be
  * populated in each element.
  */
-export function ensureObjects<T extends z.AnyZodObject>(obj: T, minItems = 1) {
+export function ensureObjects<
+  T extends z.AnyZodObject | z.ZodEffects<any, any>,
+>(obj: T, minItems = 1) {
   return z.preprocess((arg) => {
     arg = typeof arg === 'undefined' ? [] : arg;
     if (Array.isArray(arg) && arg.length < minItems) {
