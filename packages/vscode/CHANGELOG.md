@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.50.0 (2023-09-25)
+
+### Features
+
+- Added setting to adjust the autoimport delay for sprit sources
+
 ## 1.49.1 (2023-09-20)
 
 ### Fixes
