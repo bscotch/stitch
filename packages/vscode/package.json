@@ -268,6 +268,12 @@
           "type": "number",
           "default": 128
         },
+        "stitch.sprites.sources.watcherDebounceInterval": {
+          "title": "Sprite source watcher debounce interval",
+          "description": "The interval in milliseconds to wait after a file change before processing the changes. Increase this if auto-imports are triggering before exports complete.",
+          "type": "number",
+          "default": 1000
+        },
         "stitch.sprites.sources.sortChangesBy": {
           "title": "Sort sprite changes",
           "enum": [

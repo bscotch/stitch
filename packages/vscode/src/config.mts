@@ -88,6 +88,11 @@ class StitchConfig {
   get initialMinSpriteEditorWidth(): number {
     return this.config.get<number>('sprites.editor.minInitialWidth') || 128;
   }
+  get spriteAutoImportDelay(): number {
+    return (
+      this.config.get<number>('sprites.sources.watcherDebounceInterval') || 1000
+    );
+  }
 }
 
 export const stitchConfig = new StitchConfig();
