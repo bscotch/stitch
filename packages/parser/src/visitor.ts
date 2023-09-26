@@ -554,7 +554,7 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
     const structFromDocs =
       ctx.docs?.type[0]?.kind === 'Struct'
         ? (ctx.docs?.type[0] as StructType)
-        : undefined;
+        : getTypeOfKind(ctx.type, 'Struct')?.derive();
     const struct =
       ctx.signifier?.getTypeByKind('Struct') ||
       structFromDocs ||
@@ -620,7 +620,11 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
           this,
           { name, range, container: struct },
           parts.assignmentRightHandSide,
-          { docs, ctx, instance: true },
+          {
+            docs,
+            ctx: { ...ctx, type: struct.getMember(name)?.type },
+            instance: true,
+          },
         );
       } else {
         // Then we're in short-hand mode, where the RHS has the same

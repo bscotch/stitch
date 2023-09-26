@@ -75,6 +75,7 @@ export function visitFunctionExpression(
   signifier?.describe(docs?.jsdoc.description);
   const functionType =
     signifier?.getTypeByKind('Function') ||
+    getTypeOfKind(ctx.type, 'Function')?.derive() ||
     new Type('Function').named(functionName);
   signifier?.setType(functionType);
   if (signifier && docs?.jsdoc.deprecated) {
