@@ -1,10 +1,6 @@
 import type { Channel } from '@bscotch/gamemaker-releases';
 import vscode from 'vscode';
 
-interface SpriteSourcesConfig {
-  [projectPath: string]: string[];
-}
-
 class StitchConfig {
   public context!: vscode.ExtensionContext;
 
