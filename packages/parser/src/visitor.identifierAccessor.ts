@@ -322,6 +322,9 @@ function processFunctionArguments(
         functionCtx.self = methodSelf;
       }
       const expectedType = functionType?.getParameter(argIdx);
+      if (expectedType) {
+        functionCtx.type = expectedType.type;
+      }
       if (token.children.jsdoc) {
         visitor.jsdoc(token.children.jsdoc[0].children, functionCtx);
       }

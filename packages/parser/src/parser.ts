@@ -3,10 +3,10 @@ import type { GmlVisitor } from '../gml-cst.js';
 import type { JsdocSummary } from './jsdoc.js';
 import { GmlLexer } from './lexer.js';
 import type { GmlParseError } from './project.diagnostics.js';
-import { Reference, ReferenceableType } from './project.location.js';
-import { Signifier } from './signifiers.js';
+import type { Reference, ReferenceableType } from './project.location.js';
+import type { Signifier } from './signifiers.js';
 import { c, categories, t, tokens } from './tokens.js';
-import { Type, TypeStore } from './types.js';
+import type { Type, TypeStore } from './types.js';
 
 export interface GmlParsed {
   lexed: ILexingResult;
@@ -708,6 +708,8 @@ export interface VisitorContext {
   isStatic?: boolean;
   /** While processing a function expression or struct literal, the signifier may come from an assignment operation. */
   signifier?: Signifier;
+  /** While processing a function expression, we may have expected type information for the value */
+  type?: TypeStore;
   /** While processing `method()` calls, we may find the self-context
    * of the function in the second argument.
    */
