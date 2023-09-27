@@ -1,7 +1,7 @@
 import { type YyResourceType } from '@bscotch/yy';
 
 export interface ImportAction {
-  type: 'create' | 'replace' | 'skip' | 'move';
+  action: 'create' | 'replace';
   /** Name of the asset */
   asset: string;
   /** The folder in the target where this asset would live */
@@ -9,7 +9,7 @@ export interface ImportAction {
 }
 
 interface RequirementBase {
-  requiredByAsset: {
+  requiredBy: {
     name: string;
     kind: YyResourceType;
   };
@@ -37,17 +37,20 @@ export type Dependency = AssetDependency | CodeDependency;
 
 export interface ImportModuleOptions {
   /**
+   * The folder in the source project to import from. Either
+   * this or sourceAsset can be specified.
+   */
+  sourceFolder?: string;
+  /**
+   * The asset in the source project to import from. Either
+   * this or sourceFolder can be specified.
+   */
+  sourceAsset?: string;
+
+  /**
    * Folder to import into. Defaults to `sourceFolder`.
    */
   targetFolder?: string;
-  /**
-   * If `true`, anything in `targetFolder` that doesn't have a match
-   * in `sourceFolder` will be moved to an `IMPORT_CONFLICTS` folder.
-   *
-   * This is useful if you want to keep source and target folders in sync,
-   * so that there is an exact 1:1 match in assets between the two.
-   */
-  sync?: boolean;
   /**
    * By default all resources are imported, but
    * you can specify a subset here.
@@ -61,12 +64,12 @@ export interface ImportModuleOptions {
    *
    * If set to 'error', the import will abort if there are any missing deps.
    *
-   * If set to 'ignore', the import will proceed without the missing dependencies.
+   * If set to 'skip', the import will proceed without the missing dependencies.
    *
    * If set to 'include', the missing deps will be included in the import and also
    * placed in the `targetProject`'s `targetFolder`.
    *
    * @default 'error'
    */
-  onMissingDependency?: 'error' | 'ignore' | 'include';
+  onMissingDependency?: 'error' | 'skip' | 'include';
 }

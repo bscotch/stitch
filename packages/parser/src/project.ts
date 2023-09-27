@@ -551,7 +551,10 @@ export class Project {
    * Add a folder to the yyp file. The string can include separators,
    * in which case nested folders will be created. If an array is provided,
    * it is interpreted as a pre-split path. */
-  async createFolder(path: string | string[]): Promise<YypFolder | undefined> {
+  async createFolder(
+    path: string | string[],
+    options?: { skipSave?: boolean },
+  ): Promise<YypFolder | undefined> {
     const parts = Array.isArray(path) ? path : path.split(/[/\\]+/);
     const folders = this.yyp.Folders;
     let current = 'folders/';
@@ -572,12 +575,14 @@ export class Project {
       }
       current += part + '/';
     }
-    await this.saveYyp();
+    if (!options?.skipSave) {
+      await this.saveYyp();
+    }
     return folder;
   }
 
   @sequential
-  protected async saveYyp() {
+  async saveYyp() {
     await Yy.write(this.yypPath.absolute, this.yyp, 'project');
   }
 

@@ -1,27 +1,179 @@
-import type {
-  Dependency,
-  ImportAction,
-  ImportModuleOptions,
-} from './modules.types.js';
+import type { Dependency, ImportModuleOptions } from './modules.types.js';
+import { StitchImportError, assertStitchImportClaim } from './modules.util.js';
 import { isAssetOfKind, type Asset } from './project.asset.js';
 import type { Project } from './project.js';
 import type { Signifier } from './signifiers.js';
+import { groupPathToPosix, neither, xor } from './util.js';
 
 /**
  * @param sourceFolder Full folder path to import from (e.g. `Scripts/MainMenu`)
  */
-export async function importModule(
+export async function importAssets(
   sourceProject: Project,
   targetProject: Project,
-  sourceFolder: string,
   options: ImportModuleOptions = {},
 ) {
-  const targetFolder = options.targetFolder || sourceFolder;
+  const logFile = targetProject.dir.join('stitch-import.log.yaml');
+  assertStitchImportClaim(
+    neither(options.sourceFolder, options.sourceAsset) ||
+      xor(options.sourceAsset, options.sourceFolder),
+    'Can specify either sourceFolder or sourceAsset, or neither, but not both.',
+  );
 
+  // Identify all assets we want to import
+  const toImport = new Map<string, Asset>();
+  if (options.sourceAsset) {
+    const asset = sourceProject.getAssetByName(options.sourceAsset, {
+      assertExists: true,
+    });
+    toImport.set(asset.name, asset);
+  } else {
+    for (const [name, asset] of sourceProject.assets) {
+      if (!options.sourceFolder || asset.isInFolder(options.sourceFolder)) {
+        toImport.set(name, asset);
+      }
+    }
+  }
+
+  // Remove any assets that are not of the specified types
+  if (options.types?.length) {
+    for (const [name, asset] of toImport) {
+      if (!options.types.includes(asset.assetKind)) {
+        toImport.delete(name);
+      }
+    }
+  }
+
+  // Identify all dependencies of those assets that would be
+  // missing in the target project *after import*
   const sourceDeps = computeAssetDeps(sourceProject);
-  const targetDeps = computeAssetDeps(targetProject);
+  const missingDeps: Dependency[] = [];
+  const conflictingDeps: Dependency[] = [];
+  for (const depList of sourceDeps.values()) {
+    for (const dep of depList) {
+      if (!toImport.has(dep.requiredBy.name)) {
+        // Then it doesn't matter what is being required, since
+        // we're not trying to import this.
+        continue;
+      }
+      if (toImport.has(dep.requirement.name)) {
+        // Then we're already intending to import this, so it's not missing. BUT. It may create conflicts if it replaces something!
 
-  const tasks: ImportAction[] = [];
+        // Is there a globalvar with the same name?
+        const targetVar = targetProject.self.getMember(dep.requirement.name);
+        if (targetVar && !targetVar.asset) {
+          // Then this is a variable that is being replaced by an asset. This is not allowed.
+          conflictingDeps.push(dep);
+          continue;
+        }
+
+        // Is there an asset with the same name but different type?
+        const targetAsset = targetProject.getAssetByName(dep.requirement.name);
+        if (targetAsset && targetAsset.assetKind !== dep.requirement.kind) {
+          conflictingDeps.push(dep);
+          continue;
+        }
+
+        // If we replace the target asset, will we lose anything
+        // that is required by something else in the target?
+        if (targetAsset?.gmlFiles.size) {
+          // Then we're replacing an asset that has code, so we need to check if any of the things it defines are required by other *target* assets and *not* included in the import.
+          const varsDefinedByTarget = listGlobalvarsDefinedByAsset(targetAsset);
+
+          for (const targetVar of varsDefinedByTarget) {
+            // Do any intended imports include this?
+            const inSource = sourceProject.self.getMember(targetVar.name);
+            const fromSourceAsset = inSource && inSource.def?.file?.asset;
+            if (!fromSourceAsset || !toImport.has(fromSourceAsset.name)) {
+              // Then we're losing a variable that is required by something else in the target project.
+              conflictingDeps.push(dep);
+            }
+          }
+        }
+
+        continue;
+      }
+
+      // If this is a parent/child/ref relationship, we just
+      // need to ensure that the target has an asset of the same
+      // type with that name.
+      if (['parent', 'child', 'ref'].includes(dep.relationship)) {
+        const targetAsset = targetProject.getAssetByName(dep.requirement.name);
+        if (!targetAsset) {
+          missingDeps.push(dep);
+        } else if (targetAsset.assetKind !== dep.requirement.kind) {
+          conflictingDeps.push(dep);
+        }
+      } else if (dep.relationship === 'code') {
+        // For simplicity, just see if any global entity with the
+        // same name exists (could check types in the future).
+        const existsInTarget =
+          targetProject.self.getMember(dep.signifier) ||
+          targetProject.getAssetByName(dep.signifier);
+        if (!existsInTarget) {
+          missingDeps.push(dep);
+        }
+      }
+    }
+  }
+
+  // Conflicting deps should not be allowed at all.
+  if (conflictingDeps.length > 0) {
+    await logFile.write({
+      conflicts: conflictingDeps,
+    });
+    throw new StitchImportError(
+      `Cannot import because of conflicting dependencies. See the logs for details: "${logFile}"`,
+    );
+  }
+
+  // By default, missing deps should cause an error
+  const { onMissingDependency } = options;
+  if (
+    missingDeps.length &&
+    (!onMissingDependency || onMissingDependency === 'error')
+  ) {
+    await logFile.write({
+      missing: missingDeps,
+    });
+    throw new StitchImportError(
+      `Cannot import because of conflicting dependencies. See the logs for details: "${logFile}"`,
+    );
+  }
+
+  // Add the missing deps to the toImport list, if requested
+  if (onMissingDependency === 'include') {
+    for (const dep of missingDeps) {
+      const asset = sourceProject.getAssetByName(dep.requirement.name, {
+        assertExists: true,
+      });
+      toImport.set(asset.name, asset);
+    }
+  }
+
+  const sourceFolder = groupPathToPosix(options.sourceFolder || '');
+  const targetFolder = groupPathToPosix(options.targetFolder || sourceFolder);
+
+  const waits: Promise<any>[] = [];
+  for (const asset of toImport.values()) {
+    // Ensure we have the target folder
+    let folder = groupPathToPosix(asset.virtualFolder);
+    if (sourceFolder && targetFolder) {
+      folder =
+        folder === sourceFolder
+          ? targetFolder
+          : folder.replace(sourceFolder + '/', targetFolder + '/');
+    }
+    waits.push(targetProject.createFolder(folder, { skipSave: true }));
+
+    // Copy over the asset files
+    const targetDir = targetProject.dir.join(
+      asset.dir.relativeFrom(sourceProject.dir),
+    );
+    console.log(`Copying ${asset.name} to ${targetDir}`);
+  }
+  await Promise.all(waits);
+  // await targetProject.saveYyp();
 }
 
 /**
@@ -39,14 +191,14 @@ export function computeAssetDeps(project: Project): Map<Asset, Dependency[]> {
       if (asset.parent) {
         deps.push({
           relationship: 'parent',
-          requiredByAsset: { name: asset.name, kind: 'objects' },
+          requiredBy: { name: asset.name, kind: 'objects' },
           requirement: { name: asset.parent.name, kind: 'objects' },
         });
       }
       if (asset.sprite) {
         deps.push({
           relationship: 'child',
-          requiredByAsset: { name: asset.name, kind: 'objects' },
+          requiredBy: { name: asset.name, kind: 'objects' },
           requirement: { name: asset.sprite.name, kind: 'sprites' },
         });
       }
@@ -67,8 +219,8 @@ export function computeAssetDeps(project: Project): Map<Asset, Dependency[]> {
           seenItems.add(item);
         }
 
-        // Skip native and janky signifiers
-        if (item.native || !item.def?.file) continue;
+        // Skip native, local, and janky signifiers
+        if (item.native || item.local || !item.def?.file) continue;
 
         const itemAsset = item.def.file.asset;
 
@@ -79,7 +231,7 @@ export function computeAssetDeps(project: Project): Map<Asset, Dependency[]> {
           // Then this is a reference to an asset, not a code signifier
           deps.push({
             relationship: 'ref',
-            requiredByAsset: { name: asset.name, kind: asset.assetKind },
+            requiredBy: { name: asset.name, kind: asset.assetKind },
             requirement: {
               name: itemAsset.name,
               kind: itemAsset.assetKind,
@@ -89,16 +241,16 @@ export function computeAssetDeps(project: Project): Map<Asset, Dependency[]> {
           // It's a code signifier
           deps.push({
             relationship: 'code',
-            requiredByAsset: { name: asset.name, kind: asset.assetKind },
+            requiredBy: { name: asset.name, kind: asset.assetKind },
             requirement: { name: itemAsset.name, kind: itemAsset.assetKind },
             signifier: item.name,
             def: {
-              file: item.def.file.path.absolute,
+              file: item.def.file.path.relative,
               line: item.def.start.line,
               column: item.def.start.column,
             },
             ref: {
-              file: ref.file.path.absolute,
+              file: ref.file.path.relative,
               line: ref.start.line,
               column: ref.start.column,
             },
@@ -108,4 +260,24 @@ export function computeAssetDeps(project: Project): Map<Asset, Dependency[]> {
     }
   }
   return dependencies;
+}
+
+function listGlobalvarsDefinedByAsset(asset: Asset): Set<Signifier> {
+  const vars = new Set<Signifier>();
+  for (const gmlFile of asset.gmlFiles.values()) {
+    for (const ref of gmlFile.refs) {
+      const { item } = ref;
+      if (
+        item.local ||
+        item.native ||
+        !item.global ||
+        !item.def?.file ||
+        item.def.file.asset !== asset
+      ) {
+        continue;
+      }
+      vars.add(item);
+    }
+  }
+  return vars;
 }

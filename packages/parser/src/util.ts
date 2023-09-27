@@ -154,3 +154,11 @@ export function groupPathToPosix(path: string) {
       .replace(/^folders\/(.*)\.yy$/, '$1')
   );
 }
+
+export function xor(a: any, b: any) {
+  return (a || b) && !(a && b);
+}
+
+export function neither(a: any, b: any) {
+  return !a && !b;
+}
