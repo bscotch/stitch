@@ -1,4 +1,26 @@
 import { isBeforeRange, isInRange, ok } from './util.js';
+
+export function assertThrows(fn: () => void, message?: string) {
+  try {
+    fn();
+  } catch (e) {
+    return;
+  }
+  throw new Error(message || 'Expected function to throw');
+}
+
+export async function assertThrowsAsync(
+  fn: () => Promise<void>,
+  message?: string,
+) {
+  try {
+    await fn();
+  } catch (e) {
+    return;
+  }
+  throw new Error(message || 'Expected function to throw');
+}
+
 describe('Util', function () {
   it('can determine if a position is within a range', function () {
     const range = {

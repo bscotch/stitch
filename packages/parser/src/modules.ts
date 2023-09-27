@@ -170,10 +170,19 @@ export async function importAssets(
     const targetDir = targetProject.dir.join(
       asset.dir.relativeFrom(sourceProject.dir),
     );
-    console.log(`Copying ${asset.name} to ${targetDir}`);
+    waits.push(
+      targetDir
+        .ensureDir()
+        .then(() => targetDir.rm({ recursive: true, maxRetries: 5 }))
+        .then(() => asset.dir.copy(targetDir)),
+    );
+
+    // TODO: Ensure the asset exists in the yyp file
+    // TODO: If the asset already exists, flag it as changed
   }
   await Promise.all(waits);
   // await targetProject.saveYyp();
+  // TODO: Update the folders of the imported assets
 }
 
 /**

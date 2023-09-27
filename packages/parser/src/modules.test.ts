@@ -1,20 +1,22 @@
 import { pathy } from '@bscotch/pathy';
+import { expect } from 'chai';
 import { computeAssetDeps, importAssets } from './modules.js';
 import { Project } from './project.js';
 import { assert } from './util.js';
+import { assertThrowsAsync } from './util.test.js';
 
-async function prepareSandbox() {
-  for (const dir of ['project', 'target']) {
+async function resetSandbox() {
+  for (const dir of ['target']) {
     const srcDir = pathy('samples').join(dir);
     const destDir = pathy('sandbox').join(dir);
     await destDir.rm({ recursive: true, maxRetries: 5 });
     await destDir.ensureDir();
     await srcDir.copy(destDir);
   }
-  return {
-    projectPath: pathy('sandbox').join('project'),
-    targetPath: pathy('sandbox').join('target'),
-  };
+
+  const targetProject = await Project.initialize('sandbox/target');
+  assert(targetProject);
+  return targetProject;
 }
 
 describe.only('Modules', function () {
@@ -38,15 +40,35 @@ describe.only('Modules', function () {
     );
   });
 
-  it('can import a module', async function () {
-    const { projectPath, targetPath } = await prepareSandbox();
-    const project = await Project.initialize(projectPath.absolute);
+  it('can perform a simple import', async function () {
+    let targetProject = await resetSandbox();
+    const project = await Project.initialize('samples/project');
     assert(project);
-    const targetProject = await Project.initialize(targetPath.absolute);
-    assert(targetProject);
+
+    await assertThrowsAsync(async () => {
+      await importAssets(project, targetProject, {
+        sourceAsset: 'o_child1_child',
+      });
+    }, 'Missing dependency not caught');
 
     await importAssets(project, targetProject, {
       sourceAsset: 'o_child1_child',
+      onMissingDependency: 'skip',
     });
+    expect(targetProject.getAssetByName('o_child1_child')).to.exist;
+
+    targetProject = await resetSandbox();
+
+    await importAssets(project, targetProject, {
+      sourceAsset: 'o_child1_child',
+      onMissingDependency: 'include',
+    });
+    expect(targetProject.getAssetByName('o_child1_child')).to.exist;
+    expect(targetProject.getAssetByName('o_child1')).to.exist;
+    expect(targetProject.getAssetByName('o_parent')).to.exist;
+  });
+
+  xit('can identify import conflicts', async function () {
+    // TODO: Add a "conflicted-target" project that has the various sorts of conflicts we can test against.
   });
 });
