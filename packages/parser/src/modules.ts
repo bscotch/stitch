@@ -1,9 +1,9 @@
 import type { Dependency, ImportModuleOptions } from './modules.types.js';
 import { StitchImportError, assertStitchImportClaim } from './modules.util.js';
-import { isAssetOfKind, type Asset } from './project.asset.js';
+import { Asset, isAssetOfKind } from './project.asset.js';
 import type { Project } from './project.js';
 import type { Signifier } from './signifiers.js';
-import { groupPathToPosix, neither, xor } from './util.js';
+import { findYyFile, groupPathToPosix, neither, xor } from './util.js';
 
 /**
  * @param sourceFolder Full folder path to import from (e.g. `Scripts/MainMenu`)
@@ -155,6 +155,12 @@ export async function importAssets(
   const targetFolder = groupPathToPosix(options.targetFolder || sourceFolder);
 
   const waits: Promise<any>[] = [];
+  const summary = {
+    created: [] as string[],
+    updated: [] as string[],
+    errors: [] as string[],
+  };
+
   for (const asset of toImport.values()) {
     // Ensure we have the target folder
     let folder = groupPathToPosix(asset.virtualFolder);
@@ -170,19 +176,46 @@ export async function importAssets(
     const targetDir = targetProject.dir.join(
       asset.dir.relativeFrom(sourceProject.dir),
     );
+
     waits.push(
       targetDir
         .ensureDir()
         .then(() => targetDir.rm({ recursive: true, maxRetries: 5 }))
-        .then(() => asset.dir.copy(targetDir)),
-    );
+        .then(() => asset.dir.copy(targetDir))
+        .then(async () => {
+          let existingAsset = targetProject.getAssetByName(asset.name);
+          if (!existingAsset) {
+            const yyFile = await findYyFile(targetDir);
+            const info = await targetProject.addAssetToYyp(yyFile.absolute, {
+              skipSave: true,
+            });
 
-    // TODO: Ensure the asset exists in the yyp file
-    // TODO: If the asset already exists, flag it as changed
+            // Create and add the asset
+            existingAsset = await Asset.from(targetProject, info);
+            if (existingAsset) {
+              targetProject.registerAsset(existingAsset);
+              summary.created.push(existingAsset.name);
+            } else {
+              summary.errors.push(`Failed to create asset for ${asset.name}`);
+            }
+          } else {
+            await existingAsset.reload();
+          }
+          // Ensure the correct folder
+          await existingAsset?.moveToFolder(folder);
+          return existingAsset;
+        })
+        .catch((err) => {
+          summary.errors.push(
+            `Failed to import asset ${asset.name}: ${err.message}`,
+          );
+        }),
+    );
   }
   await Promise.all(waits);
-  // await targetProject.saveYyp();
-  // TODO: Update the folders of the imported assets
+  await targetProject.saveYyp();
+  await logFile.write(summary);
+  return summary;
 }
 
 /**

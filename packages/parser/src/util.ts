@@ -1,3 +1,4 @@
+import { Pathy } from '@bscotch/pathy';
 import { logger } from './logger.js';
 import type { IRange, LinePosition } from './project.location.js';
 
@@ -161,4 +162,21 @@ export function xor(a: any, b: any) {
 
 export function neither(a: any, b: any) {
   return !a && !b;
+}
+
+export async function findYyFile(dir: Pathy): Promise<Pathy> {
+  const dirName = dir.name;
+  const yyFiles = (await dir.listChildren()).filter((p) =>
+    p.hasExtension('yy'),
+  );
+  assert(yyFiles.length, `No .yy files found in ${dir}`);
+  if (yyFiles.length === 1) {
+    return yyFiles[0];
+  }
+  // Else we have multiple for some reason. Try to find one that matches the dir name. Start with an exact match, then fall back to case-insensitive.
+  const match =
+    yyFiles.find((p) => p.name === dirName) ||
+    yyFiles.find((p) => p.name.toLowerCase() === dirName.toLowerCase());
+  assert(match, `Multiple .yy files found in ${dir}`);
+  return match;
 }

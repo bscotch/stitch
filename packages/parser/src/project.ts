@@ -201,7 +201,7 @@ export class Project {
     return resource.getGmlFile(path);
   }
 
-  protected registerAsset(resource: Asset): void {
+  registerAsset(resource: Asset): void {
     const name = this.assetNameFromPath(resource.dir);
     ok(!this.assets.has(name), `Resource ${name} already exists`);
     this.assets.set(name, resource);
@@ -399,7 +399,10 @@ export class Project {
   /**
    * Given the path to a yy file for an asset, ensure
    * it has an entry in the yyp file. */
-  protected async addAssetToYyp(yyPath: string): Promise<YypResource> {
+  async addAssetToYyp(
+    yyPath: string,
+    options?: { skipSave?: boolean },
+  ): Promise<YypResource> {
     assert(yyPath.endsWith('.yy'), `Expected yy file, got ${yyPath}`);
     const parts = yyPath.split(/[/\\]+/).slice(-3);
     assert(
@@ -414,7 +417,9 @@ export class Project {
       },
     };
     this.yyp.resources.push(resourceEntry);
-    await this.saveYyp();
+    if (!options?.skipSave) {
+      await this.saveYyp();
+    }
     return resourceEntry;
   }
 
