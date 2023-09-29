@@ -130,6 +130,7 @@ export async function importAssets(
     skipped: [] as string[],
   };
 
+  const newAssets: Asset[] = [];
   for (const [name, asset] of derivedImports) {
     const skip =
       onMissingDependency !== 'include' && !intendedImports.has(asset.name);
@@ -168,6 +169,7 @@ export async function importAssets(
             // Create and add the asset
             existingAsset = await Asset.from(targetProject, info);
             if (existingAsset) {
+              newAssets.push(existingAsset);
               targetProject.registerAsset(existingAsset);
               summary.created.push(existingAsset.name);
             } else {
@@ -189,6 +191,7 @@ export async function importAssets(
   }
   await Promise.all(waits);
   await targetProject.saveYyp();
+  targetProject.initiallyParseAssetCode(newAssets);
   await logFile.write(summary);
   return summary;
 }

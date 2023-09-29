@@ -754,7 +754,7 @@ export class Project {
   }
 
   /** Initialize a collection of new assets by parsing their GML */
-  protected async initiallyParseAssetCode(assets: Asset[]) {
+  initiallyParseAssetCode(assets: Asset[]) {
     // Do scripts before objects
     assets = [...assets.values()].sort((a, b) => {
       if (a.assetKind === b.assetKind) {
