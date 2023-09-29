@@ -229,11 +229,11 @@ export class GameMakerTreeProvider
       'Choose the target project',
     );
     if (!targetProject) return;
-    const targetFolder = await vscode.window.showQuickPick(
-      targetProject.folders,
-      { title: 'Choose a target folder for imports' },
-    );
-    if (!targetFolder) return;
+    // const targetFolder = await vscode.window.showQuickPick(
+    //   targetProject.folders,
+    //   { title: 'Choose a target folder for imports' },
+    // );
+    // if (!targetFolder) return;
 
     // Get the source project from the file system
     const sourceProjectPath = (
@@ -298,7 +298,7 @@ export class GameMakerTreeProvider
     if (!onMissingDependency) return;
 
     const options: ImportModuleOptions = {
-      targetFolder,
+      // targetFolder,
       sourceAsset: choice.description === 'folder' ? undefined : choice.label,
       sourceFolder: choice.description === 'folder' ? choice.label : undefined,
       onMissingDependency,
@@ -306,7 +306,7 @@ export class GameMakerTreeProvider
 
     // Set the options for the merge
     const results = await showProgress(async function () {
-      return await targetProject.import(sourceProjectPath.fsPath, {});
+      return await targetProject.import(sourceProjectPath.fsPath, options);
     }, 'Importing...');
     assertLoudly(
       !results.errors.length,
