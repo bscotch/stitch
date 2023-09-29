@@ -95,6 +95,12 @@ export const commands = {
       group: 'inline@2',
     },
   },
+  'stitch.assets.import': {
+    command: 'stitch.assets.import',
+    title: 'Stitch: Import Assets',
+    enablement: when.hasProjects,
+    [$showInPalette]: true,
+  },
   'stitch.assets.renameFolder': {
     command: 'stitch.assets.renameFolder',
     title: 'Rename...',

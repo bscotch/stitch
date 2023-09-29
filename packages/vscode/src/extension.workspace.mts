@@ -187,6 +187,22 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
     return this.projects.find((p) => p.includesFile(document));
   }
 
+  /** If there is only one project in the workspace, return it. Otherwise prompt the user. */
+  async chooseProject(
+    title = 'Choose a project',
+  ): Promise<GameMakerProject | undefined> {
+    if (this.projects.length === 1) {
+      return this.projects[0];
+    }
+    // Create a quickpick
+    const projectName = await vscode.window.showQuickPick(
+      this.projects.map((p) => p.name),
+      { title },
+    );
+    if (!projectName) return;
+    return this.projects.find((p) => p.name === projectName);
+  }
+
   getFunctionArg(
     document: vscode.TextDocument,
     position: vscode.Position,

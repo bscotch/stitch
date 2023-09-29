@@ -178,32 +178,32 @@
     "zip": {
       "iconPath": "./files/zip.svg"
     },
-    "gm-animation-curve": {
-      "iconPath": "./gm/animation-curve.svg"
+    "gm-animcurves": {
+      "iconPath": "./gm/animcurves.svg"
     },
-    "gm-audio": {
-      "iconPath": "./gm/audio.svg"
+    "gm-extensions": {
+      "iconPath": "./gm/extensions.svg"
     },
-    "gm-extension": {
-      "iconPath": "./gm/extension.svg"
+    "gm-fonts": {
+      "iconPath": "./gm/fonts.svg"
     },
-    "gm-font": {
-      "iconPath": "./gm/font.svg"
+    "gm-objects": {
+      "iconPath": "./gm/objects.svg"
     },
-    "gm-object": {
-      "iconPath": "./gm/object.svg"
+    "gm-rooms": {
+      "iconPath": "./gm/rooms.svg"
     },
-    "gm-room": {
-      "iconPath": "./gm/room.svg"
+    "gm-scripts": {
+      "iconPath": "./gm/scripts.svg"
     },
-    "gm-script": {
-      "iconPath": "./gm/script.svg"
+    "gm-shaders": {
+      "iconPath": "./gm/shaders.svg"
     },
-    "gm-shader": {
-      "iconPath": "./gm/shader.svg"
+    "gm-sounds": {
+      "iconPath": "./gm/sounds.svg"
     },
-    "gm-sprite": {
-      "iconPath": "./gm/sprite.svg"
+    "gm-sprites": {
+      "iconPath": "./gm/sprites.svg"
     },
     "gm-obj-alarm": {
       "iconPath": "./gm/obj/alarm.svg"

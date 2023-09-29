@@ -6,6 +6,7 @@ import {
 } from '@bscotch/gml-parser';
 import { Pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
+import { getAssetIcon } from './icons.mjs';
 import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
 
@@ -143,55 +144,7 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
 
-    this.setBaseIcon('question');
-
-    switch (this.asset.assetKind) {
-      case 'objects':
-        this.setBaseIcon('symbol-misc');
-        break;
-      case 'rooms':
-        this.setGameMakerIcon('room');
-        break;
-      case 'scripts':
-        this.setGameMakerIcon('script');
-        break;
-      case 'sprites':
-        // this.setGameMakerIcon('sprite');
-        const frame = this.asset.framePaths?.[0];
-        if (frame) {
-          this.iconPath = vscode.Uri.file(frame.absolute);
-        } else {
-          this.setGameMakerIcon('sprite');
-        }
-        break;
-      case 'sounds':
-        this.setGameMakerIcon('audio');
-        break;
-      case 'paths':
-        this.setBaseIcon('debug-disconnect');
-        break;
-      case 'shaders':
-        this.setGameMakerIcon('shader');
-        break;
-      case 'timelines':
-        this.setBaseIcon('clock');
-        break;
-      case 'fonts':
-        this.setGameMakerIcon('font');
-        break;
-      case 'tilesets':
-        this.setBaseIcon('layers');
-        break;
-      case 'particles':
-        this.setBaseIcon('flame');
-        break;
-      case 'animcurves':
-        this.setBaseIcon('graph-line');
-        break;
-      case 'extensions':
-        this.setBaseIcon('plug');
-        break;
-    }
+    this.iconPath = getAssetIcon(this.asset.assetKind, this.asset);
   }
 }
 

@@ -1,7 +1,6 @@
 import { GameMakerIde } from '@bscotch/stitch-launcher';
 import vscode from 'vscode';
 import { stitchConfig } from './config.mjs';
-import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { registerCommand, showProgress } from './lib.mjs';
 import { compile } from './releasePicker.template.mjs';
@@ -21,20 +20,6 @@ export class StitchReleasePickerProvider {
       return a.name.localeCompare(b.name);
     });
     return projects;
-  }
-
-  /** If there is only one project in the workspace, return it. Otherwise prompt the user. */
-  protected async chooseProject(): Promise<GameMakerProject | undefined> {
-    if (this.projects.length === 1) {
-      return this.projects[0];
-    }
-    // Create a quickpick
-    const projectName = await vscode.window.showQuickPick(
-      this.projects.map((p) => p.name),
-      { title: 'Choose a project' },
-    );
-    if (!projectName) return;
-    return this.projects.find((p) => p.name === projectName);
   }
 
   protected async getWebviewContent() {
@@ -67,7 +52,7 @@ export class StitchReleasePickerProvider {
           this.panel?.dispose();
           return;
         } else if (message.type === 'setVersion') {
-          const project = await this.chooseProject();
+          const project = await this.workspace.chooseProject();
           if (!project) return;
           await project.setIdeVersion(message.version);
           // Dispose of the panel so it will be rebuilt

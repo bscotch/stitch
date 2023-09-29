@@ -283,7 +283,6 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     const tree = new SpriteSourcesTree(workspace);
     tree.view = vscode.window.createTreeView('bscotch-stitch-sprite-sources', {
       treeDataProvider: tree,
-      // showCollapseAll: true,
     });
     tree.currentProject = workspace.getActiveProject();
 

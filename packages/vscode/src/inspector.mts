@@ -242,7 +242,6 @@ export class GameMakerInspectorProvider
   register(): vscode.Disposable[] {
     this.view = vscode.window.createTreeView('bscotch-stitch-inspector', {
       treeDataProvider: this,
-      showCollapseAll: true,
     });
     const activeEditorMonitor = vscode.window.onDidChangeActiveTextEditor(() =>
       this.rebuild(),

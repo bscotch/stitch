@@ -19,7 +19,7 @@ async function resetSandbox() {
   return targetProject;
 }
 
-describe.only('Modules', function () {
+describe('Modules', function () {
   it('can compute intra-project dependencies', async function () {
     const projectDir = 'samples/project';
     const project = await Project.initialize(projectDir);
@@ -58,7 +58,7 @@ describe.only('Modules', function () {
     expect(targetProject.getAssetByName('o_child1_child')).to.exist;
   });
 
-  it.only('can perform a deep import', async function () {
+  it('can perform a deep import', async function () {
     const targetProject = await resetSandbox();
     const project = await Project.initialize('samples/project');
     assert(project);

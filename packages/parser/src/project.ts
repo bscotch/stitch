@@ -12,13 +12,21 @@ import {
 import { EventEmitter } from 'events';
 import { z } from 'zod';
 import { logger } from './logger.js';
+import { importAssets } from './modules.js';
+import { ImportModuleOptions } from './modules.types.js';
 import { Asset, isAssetOfKind } from './project.asset.js';
 import { Code } from './project.code.js';
 import { Diagnostic } from './project.diagnostics.js';
 import { Native } from './project.native.js';
 import { Signifier } from './signifiers.js';
 import { StructType, Type } from './types.js';
-import { assert, assertIsValidIdentifier, ok, throwError } from './util.js';
+import {
+  assert,
+  assertIsValidIdentifier,
+  groupPathToPosix,
+  ok,
+  throwError,
+} from './util.js';
 export { setLogger, type Logger } from './logger.js';
 
 type AssetName = string;
@@ -137,6 +145,10 @@ export class Project {
       configTree = nextTree;
     }
     return configs;
+  }
+
+  get folders() {
+    return this.yyp.Folders.map((f) => groupPathToPosix(f.folderPath));
   }
 
   /**
@@ -285,6 +297,17 @@ export class Project {
       waits.push(file.renameSignifier(signifier, newName));
     }
     await Promise.all(waits);
+  }
+
+  @sequential
+  async import(
+    fromProject: Project | string,
+    options: ImportModuleOptions = {},
+  ) {
+    if (typeof fromProject === 'string') {
+      fromProject = await Project.initialize(fromProject);
+    }
+    return await importAssets(fromProject, this, options);
   }
 
   /**

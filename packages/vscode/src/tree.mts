@@ -1,7 +1,9 @@
 import {
   Asset,
   Code,
+  ImportModuleOptions,
   ObjectEvent,
+  Project,
   isAssetOfKind,
   objectEvents,
 } from '@bscotch/gml-parser';
@@ -11,8 +13,9 @@ import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
+import { getAssetIcon, getBaseIcon } from './icons.mjs';
 import type { ObjectParentFolder } from './inspector.mjs';
-import { registerCommand, uriFromCodeFile } from './lib.mjs';
+import { registerCommand, showProgress, uriFromCodeFile } from './lib.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
 import {
   GameMakerFolder,
@@ -210,6 +213,107 @@ export class GameMakerTreeProvider
       return;
     }
     this.view.reveal(treeItem, { focus: true, expand: true, select: true });
+  }
+
+  /** Import assets from another project */
+  protected async importAssets() {
+    const acceptsRisk = await vscode.window.showWarningMessage(
+      'This is an experimental feature. It may not work as expected, and may cause data loss. Do you want to continue?',
+      { modal: true },
+      'Yes',
+    );
+    if (acceptsRisk !== 'Yes') return;
+
+    // Get the target from the current projects
+    const targetProject = await this.workspace.chooseProject(
+      'Choose the target project',
+    );
+    if (!targetProject) return;
+    const targetFolder = await vscode.window.showQuickPick(
+      targetProject.folders,
+      { title: 'Choose a target folder for imports' },
+    );
+    if (!targetFolder) return;
+
+    // Get the source project from the file system
+    const sourceProjectPath = (
+      await vscode.window.showOpenDialog({
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: false,
+        filters: { 'GameMaker Project': ['yyp'] },
+        openLabel: 'Use as Source',
+        title: 'Choose a source project to import from',
+      })
+    )?.[0];
+    if (!sourceProjectPath) return;
+    const sourceProject = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Loading source project...',
+        cancellable: false,
+      },
+      async (progress) => {
+        return await Project.initialize(sourceProjectPath.fsPath, {
+          onLoadProgress: (percent, message) => {
+            progress.report({
+              increment: percent,
+              message,
+            });
+          },
+        });
+      },
+    );
+
+    // Get the desired assets to import
+    const choices: vscode.QuickPickItem[] = [];
+    for (const folder of sourceProject.folders) {
+      choices.push({
+        label: folder,
+        description: 'folder',
+        iconPath: getBaseIcon('folder'),
+      });
+    }
+    for (const [, asset] of sourceProject.assets) {
+      choices.push({
+        label: asset.name,
+        description: asset.assetKind,
+        iconPath: getAssetIcon(asset.assetKind, asset),
+      });
+    }
+
+    const choice = await vscode.window.showQuickPick(choices, {
+      title: 'Choose an asset or folder to import',
+    });
+
+    if (!choice) return;
+
+    const missingDepOpts = ['error', 'skip', 'include'] as const;
+    const onMissingDependency = (
+      await vscode.window.showQuickPick(
+        missingDepOpts.map((o) => ({ label: o })),
+        { title: 'What to do if a dependency is missing?' },
+      )
+    )?.label;
+    if (!onMissingDependency) return;
+
+    const options: ImportModuleOptions = {
+      targetFolder,
+      sourceAsset: choice.description === 'folder' ? undefined : choice.label,
+      sourceFolder: choice.description === 'folder' ? choice.label : undefined,
+      onMissingDependency,
+    };
+
+    // Set the options for the merge
+    const results = await showProgress(async function () {
+      return await targetProject.import(sourceProjectPath.fsPath, {});
+    }, 'Importing...');
+    assertLoudly(
+      !results.errors.length,
+      'There were errors importing the project. See the logs for details.',
+    );
+
+    this.rebuild();
   }
 
   /**
@@ -700,7 +804,6 @@ export class GameMakerTreeProvider
   register() {
     this.view = vscode.window.createTreeView('bscotch-stitch-resources', {
       treeDataProvider: this.rebuild(),
-      showCollapseAll: true,
       canSelectMany: true,
       dragAndDropController: this,
     });
@@ -727,6 +830,7 @@ export class GameMakerTreeProvider
     // Return subscriptions to owned commands and this view
     const subscriptions = [
       this.view,
+      registerCommand('stitch.assets.import', this.importAssets.bind(this)),
       registerCommand(
         'stitch.assets.renameFolder',
         this.promptToRenameFolder.bind(this),

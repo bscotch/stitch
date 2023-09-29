@@ -11,7 +11,7 @@ export const views = {
   },
   'bscotch-stitch-resources': {
     id: 'bscotch-stitch-resources',
-    name: 'Resources',
+    name: 'Project',
     icon: './images/stitch-logo-mono.svg',
     type: 'tree',
   },

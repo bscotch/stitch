@@ -35,7 +35,7 @@
     "package": "vsce package --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
     "vscode:publish": "vsce publish --no-dependencies --githubBranch develop",
-    "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --watch ../parser/dist --exec \"npm run build\"",
+    "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --watch ../parser/dist --ignore src/icons.types.mts --exec \"npm run build\"",
     "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
@@ -95,6 +95,11 @@
         "command": "stitch.assets.filters.delete",
         "icon": "$(close)",
         "title": "Delete Filter"
+      },
+      {
+        "command": "stitch.assets.import",
+        "title": "Stitch: Import Assets",
+        "enablement": "stitch.projectCount > 0"
       },
       {
         "command": "stitch.assets.renameFolder",
@@ -713,6 +718,9 @@
           "command": "stitch.assets.reveal"
         },
         {
+          "command": "stitch.assets.import"
+        },
+        {
           "command": "stitch.openIde"
         },
         {
@@ -781,7 +789,7 @@
         },
         {
           "id": "bscotch-stitch-resources",
-          "name": "Resources",
+          "name": "Project",
           "icon": "./images/stitch-logo-mono.svg",
           "type": "tree"
         },

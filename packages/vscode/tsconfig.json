@@ -10,6 +10,7 @@
     "checkJs": true,
     "resolveJsonModule": true,
     "moduleResolution": "nodenext",
+    "module": "NodeNext",
     "isolatedModules": true
   }
 }

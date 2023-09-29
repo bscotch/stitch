@@ -4,6 +4,7 @@ import { Asset, isAssetOfKind } from './project.asset.js';
 import type { Project } from './project.js';
 import type { Signifier } from './signifiers.js';
 import { findYyFile, groupPathToPosix, neither, xor } from './util.js';
+export type * from './modules.types.js';
 
 /**
  * @param sourceFolder Full folder path to import from (e.g. `Scripts/MainMenu`)

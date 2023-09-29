@@ -1,6 +1,11 @@
 import { Code } from '@bscotch/gml-parser';
-import path from 'path';
 import vscode from 'vscode';
+import {
+  getBaseIcon,
+  getFileIcon,
+  getGameMakerIcon,
+  getObjectEventIcon,
+} from './icons.mjs';
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
@@ -25,31 +30,18 @@ export abstract class StitchTreeItemBase<
   }
 
   setBaseIcon(icon: string) {
-    this.iconPath = new vscode.ThemeIcon(icon);
+    this.iconPath = getBaseIcon(icon);
   }
 
   setFileIcon(icon: string) {
-    this.iconPath = path.join(
-      __dirname,
-      '..',
-      'images',
-      'files',
-      icon + '.svg',
-    );
+    this.iconPath = getFileIcon(icon as any);
   }
 
   setGameMakerIcon(icon: string) {
-    this.iconPath = path.join(__dirname, '..', 'images', 'gm', icon + '.svg');
+    this.iconPath = getGameMakerIcon(icon as any);
   }
   setObjectEventIcon(icon: string) {
-    this.iconPath = path.join(
-      __dirname,
-      '..',
-      'images',
-      'gm',
-      'obj',
-      icon + '.svg',
-    );
+    this.iconPath = getObjectEventIcon(icon);
   }
 
   toJSON() {
@@ -62,27 +54,5 @@ export abstract class StitchTreeItemBase<
 }
 
 export function setEventIcon(this: StitchTreeItemBase & { code: Code }) {
-  // Set the default
-  if (this.code.name.startsWith('Other_')) {
-    this.setObjectEventIcon('other');
-  } else {
-    this.setGameMakerIcon('script');
-  }
-
-  // Override for object events
-  if (this.code.name.match(/^Draw_\d+$/i)) {
-    this.setObjectEventIcon('draw');
-  } else if (this.code.name.match(/^Alarm_\d+$/i)) {
-    this.setObjectEventIcon('alarm');
-  } else if (this.code.name.match(/^Step_\d+$/i)) {
-    this.setObjectEventIcon('step');
-  } else if (this.code.name === 'Create_0') {
-    this.setObjectEventIcon('create');
-  } else if (this.code.name === 'Destroy_0') {
-    this.setObjectEventIcon('destroy');
-  } else if (this.code.name === 'CleanUp_0') {
-    this.setObjectEventIcon('cleanup');
-  } else if (this.code.name.match(/^Other_(7[250]|6[239])$/i)) {
-    this.setObjectEventIcon('asynchronous');
-  }
+  this.iconPath = getObjectEventIcon(this.code.name);
 }
