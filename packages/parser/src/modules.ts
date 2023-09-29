@@ -21,25 +21,25 @@ export async function importAssets(
   );
 
   // Identify all assets we want to import
-  const toImport = new Map<string, Asset>();
+  const intendedImports = new Map<string, Asset>();
   if (options.sourceAsset) {
     const asset = sourceProject.getAssetByName(options.sourceAsset, {
       assertExists: true,
     });
-    toImport.set(asset.name, asset);
+    intendedImports.set(asset.name, asset);
   } else {
     for (const [name, asset] of sourceProject.assets) {
       if (!options.sourceFolder || asset.isInFolder(options.sourceFolder)) {
-        toImport.set(name, asset);
+        intendedImports.set(name, asset);
       }
     }
   }
 
   // Remove any assets that are not of the specified types
   if (options.types?.length) {
-    for (const [name, asset] of toImport) {
+    for (const [name, asset] of intendedImports) {
       if (!options.types.includes(asset.assetKind)) {
-        toImport.delete(name);
+        intendedImports.delete(name);
       }
     }
   }
@@ -47,78 +47,55 @@ export async function importAssets(
   // Identify all dependencies of those assets that would be
   // missing in the target project *after import*
   const sourceDeps = computeAssetDeps(sourceProject);
-  const missingDeps: Dependency[] = [];
-  const conflictingDeps: Dependency[] = [];
+  const missingDeps = new Set<Dependency>();
+  const conflictingDeps = new Set<Dependency>();
+  let newMissingAssets: Asset[] = [];
   for (const depList of sourceDeps.values()) {
-    for (const dep of depList) {
-      if (!toImport.has(dep.requiredBy.name)) {
-        // Then it doesn't matter what is being required, since
-        // we're not trying to import this.
-        continue;
-      }
-      if (toImport.has(dep.requirement.name)) {
-        // Then we're already intending to import this, so it's not missing. BUT. It may create conflicts if it replaces something!
+    newMissingAssets.push(
+      ...updateMissingDeps(
+        depList,
+        intendedImports,
+        missingDeps,
+        conflictingDeps,
+        targetProject,
+        sourceProject,
+      ),
+    );
+  }
+  // We now have our first-layer deep of missing deps. To recursively
+  // populate *all* missing deps we need to repeat this process on the
+  // missing deps we find until we have no more missing deps. Preventing
+  // infinite loops here is essential!
+  // To do this, create a new list of "intended imports" representing
+  // if we were to import *everything* connected to the originally-desired
+  // imports.
+  const derivedImports = new Map<string, Asset>();
+  // Start with the original intended imports
+  for (const [name, asset] of intendedImports) {
+    derivedImports.set(name, asset);
+  }
 
-        // Is there a globalvar with the same name?
-        const targetVar = targetProject.self.getMember(dep.requirement.name);
-        if (targetVar && !targetVar.asset) {
-          // Then this is a variable that is being replaced by an asset. This is not allowed.
-          conflictingDeps.push(dep);
-          continue;
-        }
-
-        // Is there an asset with the same name but different type?
-        const targetAsset = targetProject.getAssetByName(dep.requirement.name);
-        if (targetAsset && targetAsset.assetKind !== dep.requirement.kind) {
-          conflictingDeps.push(dep);
-          continue;
-        }
-
-        // If we replace the target asset, will we lose anything
-        // that is required by something else in the target?
-        if (targetAsset?.gmlFiles.size) {
-          // Then we're replacing an asset that has code, so we need to check if any of the things it defines are required by other *target* assets and *not* included in the import.
-          const varsDefinedByTarget = listGlobalvarsDefinedByAsset(targetAsset);
-
-          for (const targetVar of varsDefinedByTarget) {
-            // Do any intended imports include this?
-            const inSource = sourceProject.self.getMember(targetVar.name);
-            const fromSourceAsset = inSource && inSource.def?.file?.asset;
-            if (!fromSourceAsset || !toImport.has(fromSourceAsset.name)) {
-              // Then we're losing a variable that is required by something else in the target project.
-              conflictingDeps.push(dep);
-            }
-          }
-        }
-
-        continue;
-      }
-
-      // If this is a parent/child/ref relationship, we just
-      // need to ensure that the target has an asset of the same
-      // type with that name.
-      if (['parent', 'child', 'ref'].includes(dep.relationship)) {
-        const targetAsset = targetProject.getAssetByName(dep.requirement.name);
-        if (!targetAsset) {
-          missingDeps.push(dep);
-        } else if (targetAsset.assetKind !== dep.requirement.kind) {
-          conflictingDeps.push(dep);
-        }
-      } else if (dep.relationship === 'code') {
-        // For simplicity, just see if any global entity with the
-        // same name exists (could check types in the future).
-        const existsInTarget =
-          targetProject.self.getMember(dep.signifier) ||
-          targetProject.getAssetByName(dep.signifier);
-        if (!existsInTarget) {
-          missingDeps.push(dep);
-        }
-      }
+  while (newMissingAssets.length) {
+    for (const asset of newMissingAssets) {
+      derivedImports.set(asset.name, asset);
     }
+    const newMissingDeps = newMissingAssets
+      .map((a) => sourceDeps.get(a)!)
+      .flat() as Dependency[];
+
+    // Find the *newly* missing deps from this new list
+    newMissingAssets = updateMissingDeps(
+      newMissingDeps,
+      derivedImports,
+      missingDeps,
+      conflictingDeps,
+      targetProject,
+      sourceProject,
+    );
   }
 
   // Conflicting deps should not be allowed at all.
-  if (conflictingDeps.length > 0) {
+  if (conflictingDeps.size > 0) {
     await logFile.write({
       conflicts: conflictingDeps,
     });
@@ -130,7 +107,7 @@ export async function importAssets(
   // By default, missing deps should cause an error
   const { onMissingDependency } = options;
   if (
-    missingDeps.length &&
+    missingDeps.size &&
     (!onMissingDependency || onMissingDependency === 'error')
   ) {
     await logFile.write({
@@ -141,16 +118,6 @@ export async function importAssets(
     );
   }
 
-  // Add the missing deps to the toImport list, if requested
-  if (onMissingDependency === 'include') {
-    for (const dep of missingDeps) {
-      const asset = sourceProject.getAssetByName(dep.requirement.name, {
-        assertExists: true,
-      });
-      toImport.set(asset.name, asset);
-    }
-  }
-
   const sourceFolder = groupPathToPosix(options.sourceFolder || '');
   const targetFolder = groupPathToPosix(options.targetFolder || sourceFolder);
 
@@ -159,9 +126,17 @@ export async function importAssets(
     created: [] as string[],
     updated: [] as string[],
     errors: [] as string[],
+    skipped: [] as string[],
   };
 
-  for (const asset of toImport.values()) {
+  for (const [name, asset] of derivedImports) {
+    const skip =
+      onMissingDependency !== 'include' && !intendedImports.has(asset.name);
+    if (skip) {
+      summary.skipped.push(asset.name);
+      continue;
+    }
+
     // Ensure we have the target folder
     let folder = groupPathToPosix(asset.virtualFolder);
     if (sourceFolder && targetFolder) {
@@ -216,6 +191,93 @@ export async function importAssets(
   await targetProject.saveYyp();
   await logFile.write(summary);
   return summary;
+}
+
+function updateMissingDeps(
+  depList: Dependency[],
+  intendedImports: Map<string, Asset>,
+  missingDeps: Set<Dependency>,
+  conflictingDeps: Set<Dependency>,
+  targetProject: Project,
+  sourceProject: Project,
+): Asset[] {
+  const newMissingDeps: Asset[] = [];
+  const addMissingDep = (dep: Dependency) => {
+    if (!missingDeps.has(dep)) {
+      newMissingDeps.push(
+        sourceProject.getAssetByName(dep.requirement.name, {
+          assertExists: true,
+        }),
+      );
+      missingDeps.add(dep);
+    }
+  };
+
+  for (const dep of depList) {
+    // Wrap this in a function so it can recurse on missing deps
+    if (!intendedImports.has(dep.requiredBy.name)) {
+      // Then it doesn't matter what is being required, since
+      // we're not trying to import this.
+      continue;
+    }
+    if (intendedImports.has(dep.requirement.name)) {
+      // Then we're already intending to import this, so it's not missing. BUT. It may create conflicts if it replaces something!
+
+      // Is there a globalvar with the same name?
+      const targetVar = targetProject.self.getMember(dep.requirement.name);
+      if (targetVar && !targetVar.asset) {
+        // Then this is a variable that is being replaced by an asset. This is not allowed.
+        conflictingDeps.add(dep);
+        continue;
+      }
+
+      // Is there an asset with the same name but different type?
+      const targetAsset = targetProject.getAssetByName(dep.requirement.name);
+      if (targetAsset && targetAsset.assetKind !== dep.requirement.kind) {
+        conflictingDeps.add(dep);
+        continue;
+      }
+
+      // If we replace the target asset, will we lose anything
+      // that is required by something else in the target?
+      if (targetAsset?.gmlFiles.size) {
+        // Then we're replacing an asset that has code, so we need to check if any of the things it defines are required by other *target* assets and *not* included in the import.
+        const varsDefinedByTarget = listGlobalvarsDefinedByAsset(targetAsset);
+
+        for (const targetVar of varsDefinedByTarget) {
+          // Do any intended imports include this?
+          const inSource = sourceProject.self.getMember(targetVar.name);
+          const fromSourceAsset = inSource && inSource.def?.file?.asset;
+          if (!fromSourceAsset || !intendedImports.has(fromSourceAsset.name)) {
+            // Then we're losing a variable that is required by something else in the target project.
+            conflictingDeps.add(dep);
+          }
+        }
+      }
+    }
+
+    // If this is a parent/child/ref relationship, we just
+    // need to ensure that the target has an asset of the same
+    // type with that name.
+    if (['parent', 'child', 'ref'].includes(dep.relationship)) {
+      const targetAsset = targetProject.getAssetByName(dep.requirement.name);
+      if (!targetAsset) {
+        addMissingDep(dep);
+      } else if (targetAsset.assetKind !== dep.requirement.kind) {
+        conflictingDeps.add(dep);
+      }
+    } else if (dep.relationship === 'code') {
+      // For simplicity, just see if any global entity with the
+      // same name exists (could check types in the future).
+      const existsInTarget =
+        targetProject.self.getMember(dep.signifier) ||
+        targetProject.getAssetByName(dep.signifier);
+      if (!existsInTarget) {
+        addMissingDep(dep);
+      }
+    }
+  }
+  return newMissingDeps;
 }
 
 /**

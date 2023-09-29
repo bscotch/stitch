@@ -41,7 +41,7 @@ describe.only('Modules', function () {
   });
 
   it('can perform a simple import', async function () {
-    let targetProject = await resetSandbox();
+    const targetProject = await resetSandbox();
     const project = await Project.initialize('samples/project');
     assert(project);
 
@@ -56,13 +56,21 @@ describe.only('Modules', function () {
       onMissingDependency: 'skip',
     });
     expect(targetProject.getAssetByName('o_child1_child')).to.exist;
+  });
 
-    targetProject = await resetSandbox();
+  it.only('can perform a deep import', async function () {
+    const targetProject = await resetSandbox();
+    const project = await Project.initialize('samples/project');
+    assert(project);
 
-    await importAssets(project, targetProject, {
+    const results = await importAssets(project, targetProject, {
       sourceAsset: 'o_child1_child',
       onMissingDependency: 'include',
     });
+    expect(results.errors).to.be.empty;
+    expect(results.skipped).to.be.empty;
+    expect(results.updated).to.be.empty;
+    expect(results.created).to.have.lengthOf(3);
     expect(targetProject.getAssetByName('o_child1_child')).to.exist;
     expect(targetProject.getAssetByName('o_child1')).to.exist;
     expect(targetProject.getAssetByName('o_parent')).to.exist;
