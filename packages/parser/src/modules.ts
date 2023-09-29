@@ -138,15 +138,13 @@ export async function importAssets(
     }
 
     // Ensure we have the target folder
-    let folder = groupPathToPosix(asset.virtualFolder);
+    let folder = groupPathToPosix(asset.folder);
     if (sourceFolder && targetFolder) {
       folder =
         folder === sourceFolder
           ? targetFolder
           : folder.replace(sourceFolder + '/', targetFolder + '/');
     }
-    waits.push(targetProject.createFolder(folder, { skipSave: true }));
-
     // Copy over the asset files
     const targetDir = targetProject.dir.join(
       asset.dir.relativeFrom(sourceProject.dir),
@@ -157,6 +155,7 @@ export async function importAssets(
         .ensureDir()
         .then(() => targetDir.rm({ recursive: true, maxRetries: 5 }))
         .then(() => asset.dir.copy(targetDir))
+        .then(() => targetProject.createFolder(folder, { skipSave: true }))
         .then(async () => {
           let existingAsset = targetProject.getAssetByName(asset.name);
           if (!existingAsset) {

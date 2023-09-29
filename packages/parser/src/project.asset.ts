@@ -280,6 +280,10 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     };
   }
 
+  get folder() {
+    return groupPathToPosix((this.yy.parent as any).path);
+  }
+
   /**
    * Check if this asset is in the given asset group ("folder").
    * @param path E.g. `my/folder/of/stuff`
@@ -287,7 +291,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   isInFolder(path: string) {
     // Normalize the incoming path
     path = groupPathToPosix(path);
-    const currentFolder = groupPathToPosix((this.yy.parent as any).path);
+    const currentFolder = this.folder;
     return path === currentFolder || currentFolder.startsWith(`${path}/`);
   }
 
@@ -354,11 +358,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     ok(asPath, `Could not find a .yy file for ${this.name}`);
     this.yy = await Yy.read(asPath.absolute, this.assetKind);
     return this.yy;
-  }
-
-  /** The folder path this asset lives in within the GameMaker IDE virtual asset tree. */
-  get virtualFolder() {
-    return this.resource.id.path.replace(/^folders[/\\]+(.+)\.yy$/, '$1');
   }
 
   get dir() {
