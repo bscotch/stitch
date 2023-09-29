@@ -1,5 +1,15 @@
 # Stitch Changelog
 
+## 1.51.0 (2023-09-29)
+
+### Features
+
+- Drafted asset importer workflow
+
+### Fixes
+
+- Removed option to set target folder for now since it does not work
+
 ## 1.50.1 (2023-09-25)
 
 ### Fixes

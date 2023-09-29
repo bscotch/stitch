@@ -1,5 +1,19 @@
 # @bscotch/gml-parser Changelog
 
+## 0.59.0 (2023-09-29)
+
+### Features
+
+- Drafted asset importer workflow
+- Finished draft implementation of asset importing
+- Improved support for struct literal autocompletes within function calls
+
+### Fixes
+
+- Resolved issue where imported assets were not fully parsed
+- Resolved issue where imports failed to be moved to the correct destination groups
+- Resolved issue where import dependencies were not recursively calculated
+
 ## 0.58.0 (2023-09-25)
 
 ### Features
