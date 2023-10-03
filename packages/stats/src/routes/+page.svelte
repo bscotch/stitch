@@ -4,58 +4,72 @@
 	// Keep a query parameter "steamid" in sync with the steamId variable
 	import { page } from '$app/stores';
 	import DateInput from '../lib/DateInput.svelte';
-	import { daysAgo } from '../lib/dates.js';
+	import { daysAgo, nextComparisonPeriod, priorComparisonPeriod } from '../lib/dates.js';
+	import {
+		getQueryParam,
+		getQueryParamDate,
+		getQueryParamNumber,
+		updateQueryParam
+	} from '../lib/query.js';
 	import {
 		steamPlayersLink,
 		steamTrafficLink,
 		steamUtmLink,
 		steamWishlistsLink
 	} from '../lib/steamLinks.js';
+	import { debounce } from '../lib/util.js';
 
-	let steamId = getQuerySteamId() || 1401730;
+	type PeriodDirection = 'before' | 'after';
 
-	let toDate = getQueryToDate() || new Date();
-	let fromDate = getQueryFromDate() || daysAgo(14, toDate);
+	let steamId = getQueryParamNumber('steamId', $page.url.searchParams) || 1401730;
 
-	function updateSteamId() {
-		if (!steamId || getQuerySteamId() === steamId) return;
+	let toDate = getQueryParamDate('toDate', $page.url.searchParams) || new Date();
+	let fromDate = getQueryParamDate('fromDate', $page.url.searchParams) || daysAgo(14, toDate);
+	let periods = getQueryParamNumber('periods', $page.url.searchParams) || 1;
+	let periodDirection: PeriodDirection =
+		getQueryParam('periodDirection', $page.url.searchParams, (val) =>
+			val && ['before', 'after'].includes(val) ? (val as PeriodDirection) : undefined
+		) || 'before';
+	let comparisonUrl: string;
 
-		$page.url.searchParams.set('steamid', `${steamId}`);
-
-		browser && goto($page.url.toString());
+	function updateComparisonUrl(
+		steamId: number,
+		fromDate: Date,
+		toDate: Date,
+		periods: number,
+		periodDirection: 'before' | 'after'
+	) {
+		let url = new URL($page.url.toString());
+		updateQueryParam('steamId', steamId, url.searchParams);
+		updateQueryParam('periods', periods, url.searchParams);
+		updateQueryParam('periodDirection', periodDirection, url.searchParams);
+		const nextPeriod =
+			periodDirection === 'before'
+				? priorComparisonPeriod(fromDate, toDate, periods)
+				: nextComparisonPeriod(fromDate, toDate, periods);
+		if (nextPeriod) {
+			updateQueryParam('fromDate', nextPeriod[0], url.searchParams);
+			updateQueryParam('toDate', nextPeriod[1], url.searchParams);
+		}
+		comparisonUrl = url.toString();
 	}
 
-	function updateToDate(date: Date) {
-		$page.url.searchParams.set('toDate', date.toISOString());
-		browser && goto($page.url.toString());
-	}
+	// A debounced function to goto the current URL
+	let gotoCurrentUrl = debounce(() => browser && goto($page.url.toString()), 1000);
 
-	function updateFromDate(date: Date) {
-		$page.url.searchParams.set('fromDate', date.toISOString());
-		browser && goto($page.url.toString());
+	async function setQueryParam(name: string, value: any) {
+		updateQueryParam(name, value, $page.url.searchParams);
+		// Update the URL
+		gotoCurrentUrl();
 	}
-
-	function getQuerySteamId() {
-		return Number($page.url.searchParams.get('steamid'));
-	}
-
-	function getQueryToDate() {
-		return $page.url.searchParams.get('toDate')
-			? new Date($page.url.searchParams.get('toDate')!)
-			: undefined;
-	}
-
-	function getQueryFromDate() {
-		return $page.url.searchParams.get('fromDate')
-			? new Date($page.url.searchParams.get('fromDate')!)
-			: undefined;
-	}
-
-	updateSteamId();
 
 	$: {
-		updateToDate(toDate);
-		updateFromDate(fromDate);
+		setQueryParam('steamId', steamId);
+		setQueryParam('toDate', toDate);
+		setQueryParam('fromDate', fromDate);
+		setQueryParam('periods', periods);
+		setQueryParam('periodDirection', periodDirection);
+		updateComparisonUrl(steamId, fromDate, toDate, periods, periodDirection);
 	}
 </script>
 
@@ -68,19 +82,13 @@
 </h1>
 
 <p>
-	Get links to useful stats pages for a given Steam game and date range. Request additional URLs or
-	submit bug reports via <a href="https://github.com/bscotch/stitch/issues">GitHub Issues</a>.
+	Get links to useful stats pages for a given Steam game and date range. In general these links will
+	only work if you are logged into Steam and have appropriate access.
 </p>
 
 <form id="config">
 	<label for="steamid"> Steam ID </label>
-	<input
-		name="steamid"
-		type="number"
-		bind:value={steamId}
-		on:change={updateSteamId}
-		on:keyup={(e) => e.key === 'Enter' && updateSteamId()}
-	/>
+	<input name="steamid" type="number" bind:value={steamId} />
 
 	<label for="fromDate"> From </label>
 	<DateInput name="fromDate" bind:date={fromDate} />
@@ -107,6 +115,19 @@
 		<a href={steamPlayersLink(steamId, fromDate, toDate)}>Steam Players</a>
 	</li>
 </ul>
+
+<a href={comparisonUrl} target="_blank">Open comparison</a> period<input
+	id="periods"
+	type="number"
+	bind:value={periods}
+	min="1"
+/>
+periods
+<select bind:value={periodDirection}>
+	<option>before</option>
+	<option>after</option>
+</select>
+the given date range.
 
 <h2>Other Links</h2>
 <ul>
@@ -140,7 +161,12 @@
 
 <footer>
 	<p>
-		Created by <a href="https://www.bscotch.net/">Butterscotch Shenanigans</a>
+		💖 Created by <a href="https://www.bscotch.net/">Butterscotch Shenanigans</a>
+	</p>
+	<p>
+		💡 Request additional URLs or submit bug reports via <a
+			href="https://github.com/bscotch/stitch/issues">GitHub Issues</a
+		>.
 	</p>
 </footer>
 
@@ -153,5 +179,13 @@
 	}
 	#config label {
 		text-align: right;
+	}
+	footer {
+		text-align: center;
+	}
+	#periods {
+		max-width: 3rem;
+		margin: 0 0.25rem;
+		padding: 0;
 	}
 </style>
