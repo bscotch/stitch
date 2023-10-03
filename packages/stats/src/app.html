@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+		<meta name="viewport" content="width=device-width" />
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+			@layer base;
+			@layer base {
+				*,
+				*::before,
+				*::after {
+					box-sizing: border-box;
+				}
+				* {
+					margin: 0;
+				}
+				body {
+					line-height: 1.5;
+					-webkit-font-smoothing: antialiased;
+				}
+				img,
+				picture,
+				video,
+				canvas,
+				svg {
+					display: block;
+					max-width: 100%;
+				}
+				input,
+				button,
+				textarea,
+				select {
+					font: inherit;
+				}
+				p,
+				h1,
+				h2,
+				h3,
+				h4,
+				h5,
+				h6 {
+					overflow-wrap: break-word;
+				}
+				#root,
+				#__next {
+					isolation: isolate;
+				}
+				summary :where(h1, h2, h3, h4, h5, h6) {
+					display: inline-block;
+				}
+				details > summary {
+					cursor: pointer;
+					user-select: none;
+				}
+			}
+
+			body {
+				width: 100%;
+				max-width: 960px;
+				margin: auto;
+				background-color: rgb(18, 18, 18);
+				color: rgb(235, 240, 255);
+				font-family: 'Ubuntu', sans-serif;
+				padding: 0.5rem 1rem;
+			}
+
+			a {
+				color: rgb(140, 172, 241);
+			}
+			a:visited {
+				color: rgb(165, 140, 241);
+			}
+
+			h2,
+			h3,
+			h4,
+			h5,
+			h6,
+			form {
+				margin-top: 1.5rem;
+			}
+
+			footer {
+				margin-top: 2rem;
+				font-size: 0.8rem;
+			}
+		</style>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
