@@ -21,26 +21,6 @@
 	];
 	let totals: { [key: string]: number } | undefined;
 
-	// DELETE ME
-	totals = {
-		Impressions: 40949,
-		'Impressions (Comparison)': 23556,
-		Visits: 6758,
-		'Visits (Comparison)': 2663,
-		'Owner Impressions': 4,
-		'Owner Impressions (Comparison)': 0,
-		'Owner Visits': 10,
-		'Owner Visits (Comparison)': 0,
-		'Impressions (Difference)': 17393,
-		'Impressions (Fold Change)': 1.7383681439972831,
-		'Visits (Difference)': 4095,
-		'Visits (Fold Change)': 2.5377393916635373,
-		'Owner Impressions (Difference)': 4,
-		'Owner Impressions (Fold Change)': NaN,
-		'Owner Visits (Difference)': 10,
-		'Owner Visits (Fold Change)': NaN
-	};
-
 	function compareFiles() {
 		const current = parsed[0];
 		const compareTo = parsed[1];
@@ -266,5 +246,7 @@
 	}
 	dt {
 		font-weight: bold;
+		padding-right: 0.5em;
+		text-align: right;
 	}
 </style>
