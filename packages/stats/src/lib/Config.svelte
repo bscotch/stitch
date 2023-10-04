@@ -6,13 +6,10 @@
 	config.init();
 </script>
 
-<p>
-	The value provided below are used to configure the links on this page. Their values are also
-	stored in the URL, so you can bookmark or share the URL for a specific configuration.
-</p>
+<h2>Configuration</h2>
 
 <form id="config">
-	<label for="steamid"> Steam ID </label>
+	<label for="steamid"> Steam App ID </label>
 	<input
 		name="steamid"
 		type="number"

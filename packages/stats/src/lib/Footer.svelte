@@ -1,10 +1,11 @@
 <footer>
-	<p>🔒 Private by design: no data is sent to any remote servers.</p>
+	<p>🔥 We guarantee nothing about the availability or accuracy of this site!</p>
 	<p>
-		💡 Request additional URLs or submit bug reports via <a
-			href="https://github.com/bscotch/stitch/issues">GitHub Issues</a
+		💡 Request features or submit bug reports via <a href="https://github.com/bscotch/stitch/issues"
+			>GitHub Issues</a
 		>
 	</p>
+	<p>🔒 Private by design: no data is sent to any remote servers.</p>
 	<p>
 		💖 Created by <a href="https://www.bscotch.net/">Butterscotch Shenanigans</a>
 	</p>

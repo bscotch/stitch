@@ -1,6 +1,7 @@
 <script lang="ts">
 	// Keep a query parameter "steamid" in sync with the steamId variable
 	import { links } from '$lib/stores.js';
+	import SteamTrafficComparison from './SteamTrafficComparison.svelte';
 </script>
 
 <section>
@@ -31,4 +32,6 @@
 			&nbsp; (<a href={$links.comparisonSteamPlayersLink} target="_blank">comparison</a>)
 		</li>
 	</ul>
+
+	<SteamTrafficComparison />
 </section>

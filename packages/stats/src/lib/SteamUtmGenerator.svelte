@@ -22,7 +22,7 @@
 
 	<form>
 		{#each utmFields as field}
-			<label for={field}>{field}</label>
+			<label for={field}>{field.replace(/^utm/, '')}</label>
 			<input
 				name={field}
 				value={$config[field] || ''}

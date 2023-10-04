@@ -3,6 +3,7 @@ import { daysAgo, isInvalidDate, nextComparisonPeriod, priorComparisonPeriod } f
 import {
 	steamPageUtmLink,
 	steamPlayersLink,
+	steamTrafficDownloadLink,
 	steamTrafficLink,
 	steamUtmLink,
 	steamWishlistsLink
@@ -38,6 +39,7 @@ export interface UrlStore {
 	steamPlayersLink?: string;
 	comparisonSteamPlayersLink?: string;
 	steamTrafficDownloadLink?: string;
+	comparisonSteamTrafficDownloadLink?: string;
 	utmLink?: string;
 }
 
@@ -109,6 +111,16 @@ export const links = derived(
 				source.utmCampaign,
 				source.utmTerm,
 				source.utmContent
+			),
+			steamTrafficDownloadLink: steamTrafficDownloadLink(
+				source.steamId,
+				source.fromDate,
+				source.toDate
+			),
+			comparisonSteamTrafficDownloadLink: steamTrafficDownloadLink(
+				source.steamId,
+				nextPeriod[0],
+				nextPeriod[1]
 			)
 		};
 		return store;

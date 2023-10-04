@@ -11,15 +11,26 @@
 
 <svelte:head>
 	<title>Steam Stats Portal</title>
+	<meta
+		name="description"
+		content="Get useful tools and links to stats pages for your Steam game."
+	/>
 </svelte:head>
 
 <h1>
 	{$config.steamId} | Steam Tools Portal
 </h1>
 
+<p id="support-banner">
+	💖 Support this project by <a
+		href="https://store.steampowered.com/app/1401730?utm_source=stitch-steam-stats&utm_term=tools&utm_content=support-cta"
+		>wishlisting Crashlands 2</a
+	>! 💖
+</p>
+
 <p>
-	Get links to useful stats pages for a given Steam game and date range. In general these links will
-	only work if you are logged into Steam and have appropriate access.
+	This page provides a collection of useful tools and links for your Steam game. The URL stays up to
+	date with the values you put into form fields, making your configuration shareable and saveable!
 </p>
 
 <Config />
@@ -35,3 +46,15 @@
 <OtherLinks />
 
 <Footer />
+
+<style>
+	h1 {
+		text-align: center;
+	}
+	#support-banner {
+		border: 0.1em solid var(--color-text);
+		text-align: center;
+		padding: 0.5em 1em;
+		font-size: 1.2em;
+	}
+</style>
