@@ -30,3 +30,9 @@ export function steamPlayersLink(steamId: number, from: Date, to: Date) {
 		from
 	)}&dateEnd=${dateToDateInputString(to)}`;
 }
+
+export function steamTrafficDownloadLink(steamId: number, from: Date, to: Date) {
+	return `https://partner.steamgames.com/apps/navtrafficstats/${steamId}?attribution_filter=all&preset_date_range=custom&start_date=${steamDate(
+		from
+	)}&end_date=${steamDate(to)}&format=csv`;
+}

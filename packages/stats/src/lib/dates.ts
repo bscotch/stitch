@@ -14,18 +14,30 @@ export function dateToDateInputString(date: Date | undefined) {
 		.padStart(2, '0')}`;
 }
 
-export function nextComparisonPeriod(initialFrom: Date, initialTo: Date, periods = 1) {
+export function nextComparisonPeriod(
+	initialFrom: Date,
+	initialTo: Date,
+	periods = 1
+): [Date, Date] {
 	assert(periods > 0 && periods < 100, 'Invalid number of periods');
 	for (const [from, to] of nextComparisonPeriods(initialFrom, initialTo)) {
-		if (--periods === 0) return [from, to] as const;
+		if (--periods === 0) return [from, to];
 	}
+	// Should never happen
+	throw new Error('Invalid number of periods');
 }
 
-export function priorComparisonPeriod(initialFrom: Date, initialTo: Date, periods = 1) {
+export function priorComparisonPeriod(
+	initialFrom: Date,
+	initialTo: Date,
+	periods = 1
+): [Date, Date] {
 	assert(periods > 0 && periods < 100, 'Invalid number of periods');
 	for (const [from, to] of priorComparisonPeriods(initialFrom, initialTo)) {
-		if (--periods === 0) return [from, to] as const;
+		if (--periods === 0) return [from, to];
 	}
+	// Should never happen
+	throw new Error('Invalid number of periods');
 }
 
 /**

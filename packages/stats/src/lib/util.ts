@@ -7,3 +7,5 @@ export function debounce(fn: Function, delay: number) {
 		timer = setTimeout(fn, delay);
 	};
 }
+
+export type PeriodDirection = 'before' | 'after';
