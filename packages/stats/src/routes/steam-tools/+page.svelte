@@ -1,12 +1,12 @@
 <script lang="ts">
 	// Keep a query parameter "steamid" in sync with the steamId variable
-	import { config } from '$lib/stores.js';
-	import Bookmarklets from '../lib/Bookmarklets.svelte';
-	import Comparisons from '../lib/Comparisons.svelte';
-	import Config from '../lib/Config.svelte';
-	import Footer from '../lib/Footer.svelte';
-	import OtherLinks from '../lib/OtherLinks.svelte';
-	import SteamUtmGenerator from '../lib/SteamUtmGenerator.svelte';
+	import Bookmarklets from './components/Bookmarklets.svelte';
+	import Comparisons from './components/Comparisons.svelte';
+	import Config from './components/Config.svelte';
+	import Footer from './components/Footer.svelte';
+	import OtherLinks from './components/OtherLinks.svelte';
+	import SteamUtmGenerator from './components/SteamUtmGenerator.svelte';
+	import { config } from './lib/stores.js';
 </script>
 
 <svelte:head>

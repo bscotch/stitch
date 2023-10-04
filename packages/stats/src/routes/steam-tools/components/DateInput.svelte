@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { dateToDateInputString } from './dates.js';
+	import { dateToDateInputString } from '../lib/dates.js';
 
 	export let name: string;
 	export let date: Date | undefined;

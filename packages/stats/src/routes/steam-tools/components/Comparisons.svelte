@@ -1,6 +1,6 @@
 <script lang="ts">
 	// Keep a query parameter "steamid" in sync with the steamId variable
-	import { links } from '$lib/stores.js';
+	import { links } from '../lib/stores.js';
 	import SteamTrafficComparison from './SteamTrafficComparison.svelte';
 </script>
 

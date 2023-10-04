@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { steamLikesBookmarklet } from './steamLikesBookmarklet.js';
+	import { steamLikesBookmarklet } from '../lib/steamLikesBookmarklet.js';
 </script>
 
 <section>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { config } from '$lib/stores.js';
+	import { config } from '../lib/stores.js';
 </script>
 
 <h2>Other Links</h2>

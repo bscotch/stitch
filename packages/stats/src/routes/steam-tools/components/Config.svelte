@@ -1,7 +1,7 @@
 <script lang="ts">
 	// Keep a query parameter "steamid" in sync with the steamId variable
-	import { config } from '$lib/stores.js';
-	import DateInput from '../lib/DateInput.svelte';
+	import { config } from '../lib/stores.js';
+	import DateInput from './DateInput.svelte';
 
 	config.init();
 </script>

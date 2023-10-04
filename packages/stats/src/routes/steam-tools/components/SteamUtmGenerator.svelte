@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { config, links } from '$lib/stores.js';
+	import { config, links } from '../lib/stores.js';
 
 	const utmFields = ['utmSource', 'utmMedium', 'utmCampaign', 'utmTerm', 'utmContent'] as const;
 </script>

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { config, links } from '$lib/stores.js';
-	import { assert } from './errors.js';
+	import { assert } from '../lib/errors.js';
+	import { config, links } from '../lib/stores.js';
 
 	let currentFile: FileList | undefined;
 	let comparisonFile: FileList | undefined;
