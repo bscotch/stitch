@@ -36,3 +36,32 @@ export function steamTrafficDownloadLink(steamId: number, from: Date, to: Date) 
 		from
 	)}&end_date=${steamDate(to)}&format=csv`;
 }
+
+export function steamPageUtmLink(
+	steamId: number,
+	source: string,
+	medium: string,
+	campaign: string,
+	term: string,
+	content: string
+): string {
+	let url = `https://store.steampowered.com/app/${steamId}`;
+
+	url += '?';
+	if (source) {
+		url += `utm_source=${encodeURIComponent(source)}`;
+	}
+	if (medium) {
+		url += `&utm_medium=${encodeURIComponent(medium)}`;
+	}
+	if (campaign) {
+		url += `&utm_campaign=${encodeURIComponent(campaign)}`;
+	}
+	if (term) {
+		url += `&utm_term=${encodeURIComponent(term)}`;
+	}
+	if (content) {
+		url += `&utm_content=${encodeURIComponent(content)}`;
+	}
+	return url;
+}

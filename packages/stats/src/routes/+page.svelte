@@ -1,89 +1,19 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
 	// Keep a query parameter "steamid" in sync with the steamId variable
-	import { page } from '$app/stores';
+	import { config, links } from '$lib/stores.js';
 	import DateInput from '../lib/DateInput.svelte';
-	import SteamTrafficComparison from '../lib/SteamTrafficComparison.svelte';
-	import { daysAgo, nextComparisonPeriod, priorComparisonPeriod } from '../lib/dates.js';
-	import {
-		getQueryParam,
-		getQueryParamDate,
-		getQueryParamNumber,
-		updateQueryParam
-	} from '../lib/query.js';
+	import SteamUtmGenerator from '../lib/SteamUtmGenerator.svelte';
 	import { steamLikesBookmarklet } from '../lib/steamLikesBookmarklet.js';
-	import {
-		steamPlayersLink,
-		steamTrafficLink,
-		steamUtmLink,
-		steamWishlistsLink
-	} from '../lib/steamLinks.js';
-	import { debounce, type PeriodDirection } from '../lib/util.js';
 
-	let steamId = getQueryParamNumber('steamId', $page.url.searchParams) || 1401730;
-
-	let toDate = getQueryParamDate('toDate', $page.url.searchParams) || new Date();
-	let fromDate = getQueryParamDate('fromDate', $page.url.searchParams) || daysAgo(14, toDate);
-	let periods = getQueryParamNumber('periods', $page.url.searchParams) || 1;
-	let periodDirection: PeriodDirection =
-		getQueryParam('periodDirection', $page.url.searchParams, (val) =>
-			val && ['before', 'after'].includes(val) ? (val as PeriodDirection) : undefined
-		) || 'before';
-	let comparisonUrl: string;
-	let nextPeriod: [Date, Date] | undefined;
-	let nextFromDate: Date;
-	let nextToDate: Date;
-
-	function updateComparisonUrls(
-		steamId: number,
-		fromDate: Date,
-		toDate: Date,
-		periods: number,
-		periodDirection: 'before' | 'after'
-	) {
-		let url = new URL($page.url.toString());
-		updateQueryParam('steamId', steamId, url.searchParams);
-		updateQueryParam('periods', periods, url.searchParams);
-		updateQueryParam('periodDirection', periodDirection, url.searchParams);
-		if (nextPeriod) {
-			updateQueryParam('fromDate', nextPeriod[0], url.searchParams);
-			updateQueryParam('toDate', nextPeriod[1], url.searchParams);
-		}
-		comparisonUrl = url.toString();
-	}
-
-	// A debounced function to goto the current URL
-	let gotoCurrentUrl = debounce(() => browser && goto($page.url.toString()), 1000);
-
-	async function setQueryParam(name: string, value: any) {
-		updateQueryParam(name, value, $page.url.searchParams);
-		// Update the URL
-		gotoCurrentUrl();
-	}
-
-	$: {
-		setQueryParam('steamId', steamId);
-		setQueryParam('toDate', toDate);
-		setQueryParam('fromDate', fromDate);
-		setQueryParam('periods', periods);
-		setQueryParam('periodDirection', periodDirection);
-		updateComparisonUrls(steamId, fromDate, toDate, periods, periodDirection);
-		nextPeriod =
-			periodDirection === 'before'
-				? priorComparisonPeriod(fromDate, toDate, periods)
-				: nextComparisonPeriod(fromDate, toDate, periods);
-		nextFromDate = nextPeriod?.[0] || fromDate;
-		nextToDate = nextPeriod?.[1] || toDate;
-	}
+	config.init();
 </script>
 
 <svelte:head>
-	<title>Game Stats Portal</title>
+	<title>Steam Stats Portal</title>
 </svelte:head>
 
 <h1>
-	{steamId} | Game Stats Portal
+	{$config.steamId} | Steam Tools Portal
 </h1>
 
 <p>
@@ -98,25 +28,48 @@
 
 <form id="config">
 	<label for="steamid"> Steam ID </label>
-	<input name="steamid" type="number" bind:value={steamId} />
+	<input
+		name="steamid"
+		type="number"
+		value={$config.steamId}
+		on:change={(e) => config.setField('steamId', +e.currentTarget.value)}
+	/>
 
 	<label for="fromDate"> From </label>
-	<DateInput name="fromDate" bind:date={fromDate} />
+	<DateInput
+		name="fromDate"
+		date={$config.fromDate}
+		on:change={(e) => config.setField('fromDate', e.detail)}
+	/>
 
 	<label for="toDate"> To </label>
-	<DateInput name="toDate" bind:date={toDate} />
+	<DateInput
+		name="toDate"
+		date={$config.toDate}
+		on:change={(e) => config.setField('toDate', e.detail)}
+	/>
 
-	<h3><a href={comparisonUrl} target="_blank"> Comparison Period </a></h3>
+	<h3>Comparison Period</h3>
 	<p>
-		<input id="periods" type="number" bind:value={periods} min="1" />
+		<input
+			id="periods"
+			type="number"
+			min="1"
+			value={$config.periods}
+			on:change={(e) => config.setField('periods', +e.currentTarget.value)}
+		/>
 		periods
-		<select bind:value={periodDirection}>
+		<select
+			value={$config.periodDirection}
+			on:change={(e) => config.setField('periodDirection', e.currentTarget.value)}
+		>
 			<option>before</option>
 			<option>after</option>
 		</select>
 		the given date range.
 	</p>
 </form>
+
 <section>
 	<h2>Ranged Data</h2>
 
@@ -124,37 +77,29 @@
 
 	<ul>
 		<li>
-			<a href={steamTrafficLink(steamId, fromDate, toDate)} target="_blank"> Steam Traffic </a>
-			&nbsp; (<a href={steamTrafficLink(steamId, nextFromDate, nextToDate)} target="_blank"
-				>comparison</a
-			>)
+			<a href={$links.steamTrafficLink} target="_blank"> Steam Traffic </a>
+			&nbsp; (<a href={$links.comparisonSteamTrafficLink} target="_blank">comparison</a>)
 		</li>
 		<li>
-			<a href={steamUtmLink(steamId, fromDate, toDate)} target="_blank"> Steam UTM </a> &nbsp; (<a
-				href={steamUtmLink(steamId, nextFromDate, nextToDate)}
+			<a href={$links.steamUtmLink} target="_blank"> Steam UTM </a> &nbsp; (<a
+				href={$links.comparisonSteamUtmLink}
 				target="_blank">comparison</a
 			>)
 		</li>
 		<li>
-			<a href={steamWishlistsLink(steamId, fromDate, toDate)} target="_blank"> Steam Wishlists </a>
-			&nbsp; (<a href={steamWishlistsLink(steamId, nextFromDate, nextToDate)} target="_blank"
-				>comparison</a
-			>)
+			<a href={$links.steamWishlistsLink} target="_blank"> Steam Wishlists </a>
+			&nbsp; (<a href={$links.comparisonSteamWishlistsLink} target="_blank">comparison</a>)
 		</li>
 		<li>
-			<a href={steamPlayersLink(steamId, fromDate, toDate)} target="_blank"> Steam Players </a>
-			&nbsp; (<a href={steamPlayersLink(steamId, nextFromDate, nextToDate)} target="_blank"
-				>comparison</a
-			>)
+			<a href={$links.steamPlayersLink} target="_blank"> Steam Players </a>
+			&nbsp; (<a href={$links.comparisonSteamPlayersLink} target="_blank">comparison</a>)
 		</li>
 	</ul>
 </section>
 
 <h2>Tools</h2>
 
-{#if nextPeriod}
-	<SteamTrafficComparison {steamId} {fromDate} {toDate} {nextPeriod} />
-{/if}
+<SteamUtmGenerator />
 
 <section>
 	<h3>Bookmarklets</h3>
@@ -175,13 +120,19 @@
 <h2>Other Links</h2>
 <ul>
 	<li>
-		<a href={`https://partner.steamgames.com/apps/marketing/${steamId}`}>Steam Marketing Portal</a>
+		<a href={`https://partner.steamgames.com/apps/marketing/${$config.steamId}`}
+			>Steam Marketing Portal</a
+		>
 		<ul>
 			<li>
-				<a href={`https://partner.steamgames.com/apps/navtrafficstats/${steamId}`}>All Traffic</a>
+				<a href={`https://partner.steamgames.com/apps/navtrafficstats/${$config.steamId}`}
+					>All Traffic</a
+				>
 			</li>
 			<li>
-				<a href={`https://partner.steamgames.com/apps/utmtrafficstats/${steamId}`}>All UTM</a>
+				<a href={`https://partner.steamgames.com/apps/utmtrafficstats/${$config.steamId}`}
+					>All UTM</a
+				>
 			</li>
 			<li>
 				<a href="https://partner.steampowered.com/wishlist/daily/">All Games' Wishlists</a>
@@ -192,10 +143,10 @@
 		</ul>
 	</li>
 	<li>
-		<a href={`https://steamlikes.co/app/${steamId}#statistics`}>Steam Likes</a>
+		<a href={`https://steamlikes.co/app/${$config.steamId}#statistics`}>Steam Likes</a>
 	</li>
 	<li>
-		<a href={`https://steamdb.info/app/${steamId}/charts/`}>SteamDB</a>
+		<a href={`https://steamdb.info/app/${$config.steamId}/charts/`}>SteamDB</a>
 	</li>
 	<li>
 		<a href="https://app.sparkpost.com/signals/analytics">SparkPost</a>

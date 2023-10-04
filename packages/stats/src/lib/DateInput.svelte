@@ -1,8 +1,11 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
 	import { dateToDateInputString } from './dates.js';
 
 	export let name: string;
 	export let date: Date | undefined;
+
+	const dispatch = createEventDispatcher<{ change: Date | undefined }>();
 
 	let internalDate: string | undefined = dateToDateInputString(date);
 
@@ -21,4 +24,9 @@
 	$: date = internalDate ? inputDateToDate(internalDate) : undefined;
 </script>
 
-<input {name} type="date" bind:value={internalDate} />
+<input
+	{name}
+	type="date"
+	bind:value={internalDate}
+	on:change={(e) => dispatch('change', inputDateToDate(e.currentTarget.value))}
+/>

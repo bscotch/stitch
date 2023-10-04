@@ -9,11 +9,13 @@
 	let comparisonSteamTrafficDownloadUrl: string;
 	let currentFile: FileList | undefined;
 	let comparisonFile: FileList | undefined;
+	const files: [File | undefined, File | undefined] = [undefined, undefined];
 
-	function processFile(files: FileList | undefined) {
+	function processFile(files: FileList | undefined, idx: number) {
 		if (!files || !files.length) return;
 		let file = files[0];
 		let reader = new FileReader();
+		// Get the date range from the filename if possible
 	}
 
 	$: {
@@ -22,8 +24,8 @@
 			nextPeriod[0],
 			nextPeriod[1]
 		);
-		processFile(currentFile);
-		processFile(comparisonFile);
+		processFile(currentFile, 0);
+		processFile(comparisonFile, 1);
 	}
 </script>
 

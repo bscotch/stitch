@@ -1,5 +1,9 @@
 import { assert } from './errors.js';
 
+export function isInvalidDate(date: any) {
+	return !(date instanceof Date) || isNaN(date.getTime());
+}
+
 export function daysAgo(days: number, date = new Date()) {
 	const result = new Date(date.getTime());
 	result.setDate(result.getDate() - days);
@@ -47,7 +51,6 @@ export function priorComparisonPeriod(
  */
 export function* nextComparisonPeriods(initialFrom: Date, initialTo: Date) {
 	const startWeekDay = initialFrom.getDay();
-	const endWeekDay = initialTo.getDay();
 	const daysBetween = (initialTo.getTime() - initialFrom.getTime()) / (1000 * 60 * 60 * 24);
 	let currentTo = initialTo;
 	while (true) {
@@ -60,17 +63,12 @@ export function* nextComparisonPeriods(initialFrom: Date, initialTo: Date) {
 		// Get the next end date, which will be daysBetween days after the next start date
 		const nextTo = new Date(nextFrom.getTime());
 		nextTo.setDate(nextTo.getDate() + daysBetween);
-		assert(
-			nextTo.getDay() === endWeekDay,
-			'Somehow ended up with the wrong weekday for the end date'
-		);
 		yield [nextFrom, nextTo] as const;
 		currentTo = nextTo;
 	}
 }
 
 export function* priorComparisonPeriods(initialFrom: Date, initialTo: Date) {
-	const startWeekDay = initialFrom.getDay();
 	const endWeekDay = initialTo.getDay();
 	const daysBetween = (initialTo.getTime() - initialFrom.getTime()) / (1000 * 60 * 60 * 24);
 	let currentFrom = initialFrom;
@@ -84,10 +82,6 @@ export function* priorComparisonPeriods(initialFrom: Date, initialTo: Date) {
 		// Get the next start date, which will be daysBetween days before the next end date
 		const nextFrom = new Date(nextTo.getTime());
 		nextFrom.setDate(nextFrom.getDate() - daysBetween);
-		assert(
-			nextFrom.getDay() === startWeekDay,
-			'Somehow ended up with the wrong weekday for the start date'
-		);
 		yield [nextFrom, nextTo] as const;
 		currentFrom = nextFrom;
 	}
