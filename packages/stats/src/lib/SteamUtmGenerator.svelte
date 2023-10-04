@@ -5,7 +5,7 @@
 </script>
 
 <section>
-	<h3>UTM Generator</h3>
+	<h3>UTM Link Generator</h3>
 
 	<p>
 		See the <a href="https://partner.steamgames.com/doc/marketing/utm_analytics">Steam UTM docs</a>
