@@ -1,5 +1,21 @@
 # @bscotch/stitch-site Changelog
 
+## 0.3.0 (2023-10-05)
+
+### Features
+
+- Added CTA to header
+- Added a support banner
+- Integrated the new steam tools into the GitHub site
+
+### Fixes
+
+- Added warning colors
+- Fixed sorting issue in Steam Traffic comparison summary results
+- Resolved dumb footer styling on wide views
+- Updated CTA UTM link now that it is on every Stitch site page
+- Resolved a bunch of mobile styling issues
+
 ## 0.2.0 (2023-09-20)
 
 ### Features

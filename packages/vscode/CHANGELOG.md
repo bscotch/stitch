@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.51.1 (2023-10-05)
+
+### Docs
+
+- Added info about the new asset import feature to the docs
+
 ## 1.51.0 (2023-09-29)
 
 ### Features
