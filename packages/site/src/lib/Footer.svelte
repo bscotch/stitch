@@ -18,6 +18,8 @@
 		padding-block: 1.5em;
 		border-top: 1px solid var(--color-text-subtle);
 		width: 100%;
+		max-width: var(--header-max-width);
+		margin: 3em auto 0 auto;
 	}
 	footer p {
 		font-size: 0.8em;

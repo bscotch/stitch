@@ -40,7 +40,7 @@
 	nav {
 		display: flex;
 		width: 100%;
-		max-width: 50rem;
+		max-width: var(--header-max-width);
 		justify-content: space-between;
 	}
 	nav menu a {
