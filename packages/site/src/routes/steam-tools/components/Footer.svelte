@@ -18,6 +18,10 @@
 
 <style>
 	footer {
+		margin-top: 2em;
 		text-align: center;
+	}
+	footer p {
+		font-size: 0.8em;
 	}
 </style>

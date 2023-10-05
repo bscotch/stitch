@@ -56,6 +56,15 @@
 				</li>
 			</ul>
 		</section>
+
+		<section>
+			<h3>Other Stuff</h3>
+			<ul>
+				<li>
+					<a data-sveltekit-reload href={`${base}/steam-tools`}>Steam Tools</a>
+				</li>
+			</ul>
+		</section>
 	</article>
 </main>
 
