@@ -37,6 +37,12 @@ export function steamTrafficDownloadLink(steamId: number, from: Date, to: Date) 
 	)}&end_date=${steamDate(to)}&format=csv`;
 }
 
+export function steamRegionsLink(steamId: number, from: Date, to: Date) {
+	return `https://partner.steampowered.com/region/?dateStart=${dateToDateInputString(
+		from
+	)}&dateEnd=${dateToDateInputString(to)}&appID=${steamId}`;
+}
+
 export function steamPageUtmLink(
 	steamId: number,
 	source: string,

@@ -15,21 +15,25 @@
 	<ul>
 		<li>
 			<a href={$links.steamTrafficLink} target="_blank"> Steam Traffic </a>
-			&nbsp; (<a href={$links.comparisonSteamTrafficLink} target="_blank">comparison</a>)
+			&nbsp; (<a href={$links.steamTrafficComparisonLink} target="_blank">comparison</a>)
 		</li>
 		<li>
 			<a href={$links.steamUtmLink} target="_blank"> Steam UTM </a> &nbsp; (<a
-				href={$links.comparisonSteamUtmLink}
+				href={$links.steamUtmComparisonLink}
 				target="_blank">comparison</a
 			>)
 		</li>
 		<li>
 			<a href={$links.steamWishlistsLink} target="_blank"> Steam Wishlists </a>
-			&nbsp; (<a href={$links.comparisonSteamWishlistsLink} target="_blank">comparison</a>)
+			&nbsp; (<a href={$links.steamWishlistsComparisonLink} target="_blank">comparison</a>)
 		</li>
 		<li>
 			<a href={$links.steamPlayersLink} target="_blank"> Steam Players </a>
-			&nbsp; (<a href={$links.comparisonSteamPlayersLink} target="_blank">comparison</a>)
+			&nbsp; (<a href={$links.steamPlayersComparisonLink} target="_blank">comparison</a>)
+		</li>
+		<li>
+			<a href={$links.steamRegionsLink} target="_blank"> Steam Regions &amp; Countries </a>
+			&nbsp; (<a href={$links.steamRegionsComparisonLink} target="_blank">comparison</a>)
 		</li>
 	</ul>
 

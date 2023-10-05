@@ -11,13 +11,18 @@
 		<ul>
 			<li>
 				<a href={`https://partner.steamgames.com/apps/navtrafficstats/${$config.steamId}`}
-					>All Traffic</a
+					>Traffic</a
 				>
 			</li>
 			<li>
 				<a href={`https://partner.steamgames.com/apps/utmtrafficstats/${$config.steamId}`}
-					>All UTM</a
+					>UTM Stats</a
 				>
+			</li>
+			<li>
+				<a href={`https://partner.steampowered.com/region/?appID=${$config.steamId}`}>
+					Regions & Countries
+				</a>
 			</li>
 			<li>
 				<a href="https://partner.steampowered.com/wishlist/daily/">All Games' Wishlists</a>

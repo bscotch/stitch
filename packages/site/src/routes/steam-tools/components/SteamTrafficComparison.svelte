@@ -191,7 +191,7 @@
 
 	<p id="steam-traffic-downloads">
 		⬇️ Download Traffic Data: <a href={$links.steamTrafficDownloadLink}>Current</a> |
-		<a href={$links.comparisonSteamTrafficDownloadLink}>Comparison Period</a>
+		<a href={$links.steamTrafficDownloadComparisonLink}>Comparison Period</a>
 	</p>
 	<form id="steam-traffic-uploads">
 		⬆️ Compare Traffic Data:

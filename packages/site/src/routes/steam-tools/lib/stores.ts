@@ -3,6 +3,7 @@ import { daysAgo, isInvalidDate, nextComparisonPeriod, priorComparisonPeriod } f
 import {
 	steamPageUtmLink,
 	steamPlayersLink,
+	steamRegionsLink,
 	steamTrafficDownloadLink,
 	steamTrafficLink,
 	steamUtmLink,
@@ -31,15 +32,18 @@ export interface ConfigStore {
 export interface UrlStore {
 	nextPeriod?: [Date, Date];
 	steamTrafficLink?: string;
-	comparisonSteamTrafficLink?: string;
+	steamTrafficComparisonLink?: string;
 	steamUtmLink?: string;
-	comparisonSteamUtmLink?: string;
+	steamUtmComparisonLink?: string;
 	steamWishlistsLink?: string;
-	comparisonSteamWishlistsLink?: string;
+	steamWishlistsComparisonLink?: string;
 	steamPlayersLink?: string;
-	comparisonSteamPlayersLink?: string;
+	steamPlayersComparisonLink?: string;
 	steamTrafficDownloadLink?: string;
-	comparisonSteamTrafficDownloadLink?: string;
+	steamTrafficDownloadComparisonLink?: string;
+	steamRegionsLink?: string;
+	steamRegionsComparisonLink?: string;
+	
 	utmLink?: string;
 }
 
@@ -93,17 +97,17 @@ export const links = derived(
 		const store: UrlStore = {
 			nextPeriod,
 			steamTrafficLink: steamTrafficLink(source.steamId, source.fromDate, source.toDate),
-			comparisonSteamTrafficLink: steamTrafficLink(source.steamId, nextPeriod[0], nextPeriod[1]),
+			steamTrafficComparisonLink: steamTrafficLink(source.steamId, nextPeriod[0], nextPeriod[1]),
 			steamUtmLink: steamUtmLink(source.steamId, source.fromDate, source.toDate),
-			comparisonSteamUtmLink: steamUtmLink(source.steamId, nextPeriod[0], nextPeriod[1]),
+			steamUtmComparisonLink: steamUtmLink(source.steamId, nextPeriod[0], nextPeriod[1]),
 			steamWishlistsLink: steamWishlistsLink(source.steamId, source.fromDate, source.toDate),
-			comparisonSteamWishlistsLink: steamWishlistsLink(
+			steamWishlistsComparisonLink: steamWishlistsLink(
 				source.steamId,
 				nextPeriod[0],
 				nextPeriod[1]
 			),
 			steamPlayersLink: steamPlayersLink(source.steamId, source.fromDate, source.toDate),
-			comparisonSteamPlayersLink: steamPlayersLink(source.steamId, nextPeriod[0], nextPeriod[1]),
+			steamPlayersComparisonLink: steamPlayersLink(source.steamId, nextPeriod[0], nextPeriod[1]),
 			utmLink: steamPageUtmLink(
 				source.steamId,
 				source.utmSource,
@@ -117,7 +121,13 @@ export const links = derived(
 				source.fromDate,
 				source.toDate
 			),
-			comparisonSteamTrafficDownloadLink: steamTrafficDownloadLink(
+			steamTrafficDownloadComparisonLink: steamTrafficDownloadLink(
+				source.steamId,
+				nextPeriod[0],
+				nextPeriod[1]
+			),
+			steamRegionsLink: steamRegionsLink(source.steamId, source.fromDate, source.toDate),
+			steamRegionsComparisonLink: steamRegionsLink(
 				source.steamId,
 				nextPeriod[0],
 				nextPeriod[1]
@@ -137,7 +147,7 @@ function updateUrl(store: ConfigStore) {
 
 function cleanStore(values: ConfigStore): Required<ConfigStore> {
 	for (const key of Object.keys(values)) {
-		if ([undefined, null].includes(values[key as keyof ConfigStore] as any)) {
+		if ([undefined, null, ''].includes(values[key as keyof ConfigStore] as any)) {
 			delete values[key as keyof ConfigStore];
 		}
 	}
