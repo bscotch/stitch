@@ -4,12 +4,12 @@
 	</p>
 	<p>
 		💖 Support this project by <a
-			href="https://store.steampowered.com/app/1401730?utm_source=stitch-steam-stats&utm_term=tools&utm_content=support-cta"
+			href="https://store.steampowered.com/app/1401730?utm_source=stitch-site&utm_term=tools&utm_content=support-cta"
 			>wishlisting Crashlands 2</a
 		>
 	</p>
 	<p>🔒 Private by design: no data is sent to any remote servers.</p>
-	<p>🔥 We guarantee nothing about the availability or accuracy of content on this site</p>
+	<p>💀 We guarantee nothing about the availability or accuracy of content on this site.</p>
 </footer>
 
 <style>
