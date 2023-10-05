@@ -12,6 +12,15 @@ Edit your [GameMaker](https://gamemaker.io/en) projects in VSCode! This extensio
 
 We've used GameMaker for the entire 12+ year history of [our studio](https://www.bscotch.net). While the GameMaker IDE has been rapidly improving, VSCode is able to improve even faster due to its enormous community, extensions API, and use of popular web technologies. We wanted to take advantage of those things to make our GameMaker development experience as good as possible.
 
+## 💖 Show your support!
+
+There are a lot of ways you can support this project:
+
+- Help keep our studio running by [wishlisting our latest game](https://store.steampowered.com/app/1401730?utm_source=stitch-vscode-readme&utm_term=tools&utm_content=support-cta), Crashlands 2, on Steam.
+- Help keep our studio running by [buying any of our games](https://www.bscotch.net/games).
+- Submit [bug reports and feature requests](https://github.com/bscotch/stitch/issues)
+- [Contribute directly to this project](https://github.com/bscotch/stitch/blob/develop/CONTRIBUTING.md)
+
 ## 💡 Features
 
 ### 🤖 Intellisense
@@ -83,6 +92,14 @@ GameMaker includes a type system called "Feather", which Stitch builds upon. Sti
     ```
 - **JSDoc Autocompletes:** Stitch provides autocompletes and syntax highlighting for Feather types within JSDoc comments.
 - **JSDoc helpers:** Stitch provides snippets for JSDoc tags, and context menus to copy the Feather type of a symbol to your clipboard.
+
+### 📦 Import assets from other projects
+
+> ⚠️ This feature is experimental!
+
+Stitch provides the "Stitch: Import Assets" command via the palette, which lets you import an asset or a folder of assets from another GameMaker project.
+
+Since Stitch knows about all of your assets and code, it can identify possible conflicts during an import and let you choose how to resolve them.
 
 ### 🔍 Navigating your project
 
