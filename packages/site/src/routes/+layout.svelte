@@ -6,6 +6,17 @@
 	import Footer from '../lib/Footer.svelte';
 </script>
 
+<aside>
+	<span class="heart outer">💖</span> Support this project by
+	<span style="display:inline-block;">
+		<span class="heart inner">💖</span>
+		<a
+			href="https://store.steampowered.com/app/1401730?utm_source=stitch-site&utm_term=tools&utm_content=support-cta"
+			>wishlisting Crashlands 2</a
+		> <span class="heart">💖</span></span
+	>
+</aside>
+
 <nav>
 	<a href={base || '/'} title="Go home">
 		<img src={Logo} alt="Stitch Logo" />
@@ -55,5 +66,28 @@
 		width: 2rem;
 		height: auto;
 		display: inline-block;
+	}
+	aside a {
+		/* Prevent it from breaking */
+		text-decoration: none;
+		color: yellow;
+		border-bottom: 1px dotted yellow;
+		padding-bottom: 0.1em;
+	}
+	aside {
+		text-align: center;
+		padding-block: 1em;
+	}
+	.heart.inner {
+		display: none;
+	}
+	/* Below 500px show inner but not outer heart */
+	@media (max-width: 500px) {
+		.heart.outer {
+			display: none;
+		}
+		.heart.inner {
+			display: inline;
+		}
 	}
 </style>
