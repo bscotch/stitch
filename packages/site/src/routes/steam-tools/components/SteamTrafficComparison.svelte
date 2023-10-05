@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { assert } from '../lib/errors.js';
 	import { config, links } from '../lib/stores.js';
+	import { sortedObject } from '../lib/util.js';
 
 	let currentFile: FileList | undefined;
 	let comparisonFile: FileList | undefined;
@@ -114,6 +115,7 @@
 			totals![diffField] = totals![field] - totals![`${field} (Comparison)`];
 			totals![foldChangeField] = totals![field] / totals![`${field} (Comparison)`];
 		}
+		totals = sortedObject(totals);
 	}
 
 	function processFile(files: FileList | undefined, idx: number) {
@@ -152,9 +154,9 @@
 						'Page / Feature': line[1]
 					};
 					for (let i = 2; i < headers.length; i++) {
-						if (headers[i].startsWith('Owner')) {
-							continue; // This isn't useful data for us so it adds NOISE
-						}
+						// if (headers[i].startsWith('Owner')) {
+						// 	continue; // This isn't useful data for us so it adds NOISE
+						// }
 						entry[headers[i]] = +line[i];
 					}
 					entries.push(entry);
