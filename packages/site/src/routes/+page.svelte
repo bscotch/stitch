@@ -109,7 +109,7 @@
 		position: absolute;
 		width: 100%;
 		aspect-ratio: 1/1;
-		animation: breathing 3s ease-in-out infinite normal;
+		/* animation: breathing 3s ease-in-out infinite normal; */
 		background-image: linear-gradient(
 			45deg,
 			var(--color-logo-yellow) 50%,
@@ -131,7 +131,7 @@
 		text-shadow: 0.2em 0.2em 0.2em black;
 	}
 
-	@keyframes breathing {
+	/* @keyframes breathing {
 		0% {
 			transform: scale(1.1);
 		}
@@ -141,5 +141,5 @@
 		100% {
 			transform: scale(1.1);
 		}
-	}
+	} */
 </style>

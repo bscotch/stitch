@@ -3,14 +3,8 @@
 	import Logo from '$lib/assets/stitch-logo-small.webp';
 	import { faGithub } from '@fortawesome/free-brands-svg-icons';
 	import Fa from 'svelte-fa';
+	import Footer from '../lib/Footer.svelte';
 </script>
-
-<aside id="support-banner">
-	💖 Support this project by <a
-		href="https://store.steampowered.com/app/1401730?utm_source=stitch-steam-stats&utm_term=tools&utm_content=support-cta"
-		>wishlisting Crashlands 2</a
-	>! 💖
-</aside>
 
 <nav>
 	<a href={base || '/'} title="Go home">
@@ -28,6 +22,8 @@
 </nav>
 
 <slot />
+
+<Footer />
 
 <style>
 	nav {

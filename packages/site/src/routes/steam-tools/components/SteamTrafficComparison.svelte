@@ -238,6 +238,16 @@
 	}
 	label {
 		text-align: right;
+		font-weight: bold;
+	}
+	/* Below 600px width we need to stack labels over inputs */
+	@media (max-width: 600px) {
+		#steam-traffic-uploads div {
+			grid-template-columns: 1fr;
+		}
+		label {
+			text-align: left;
+		}
 	}
 	dl {
 		margin-left: 1em;

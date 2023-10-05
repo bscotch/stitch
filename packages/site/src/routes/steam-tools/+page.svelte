@@ -3,7 +3,6 @@
 	import Bookmarklets from './components/Bookmarklets.svelte';
 	import Comparisons from './components/Comparisons.svelte';
 	import Config from './components/Config.svelte';
-	import Footer from './components/Footer.svelte';
 	import OtherLinks from './components/OtherLinks.svelte';
 	import SteamUtmGenerator from './components/SteamUtmGenerator.svelte';
 	import { config } from './lib/stores.js';
@@ -39,8 +38,6 @@
 	<Bookmarklets />
 
 	<OtherLinks />
-
-	<Footer />
 </main>
 
 <style>

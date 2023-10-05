@@ -72,4 +72,13 @@
 		margin: 0 0.25rem;
 		padding: 0;
 	}
+	/* Below 600px width we need to stack labels over inputs */
+	@media (max-width: 600px) {
+		#config {
+			grid-template-columns: 1fr;
+		}
+		#config label {
+			text-align: left;
+		}
+	}
 </style>

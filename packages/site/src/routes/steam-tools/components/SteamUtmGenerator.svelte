@@ -44,6 +44,15 @@
 		text-align: right;
 		font-weight: bold;
 	}
+	/* Below 600px width we need to stack labels over inputs */
+	@media (max-width: 600px) {
+		form {
+			grid-template-columns: 1fr;
+		}
+		form label {
+			text-align: left;
+		}
+	}
 	#generated-utm-link {
 		font-size: 1.2em;
 		margin-left: 0.25em;
