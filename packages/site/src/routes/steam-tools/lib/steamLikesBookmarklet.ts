@@ -41,7 +41,7 @@ const steamLikesIife = /* js */ `(async function(){
   // Add a sibling after the tabs that adds liks to "Copy as: csv | json"
   const copyEl = document.createElement('div');
   copyEl.id="stitch-copy-container";
-  copyEl.innerHTML = 'Stitch: <button onclick="'+copyAsCsv+'">Copy CSV</button> <button onclick="'+copyAsTsv+'">Copy TSV</button>  <button onclick="'+copyAsJson+'">Copy JSON</button>';
+  copyEl.innerHTML = '<a href="https://bscotch.github.io/stitch/steam-tools">Stitch</a>: <button onclick="'+copyAsCsv+'">Copy CSV</button> <button onclick="'+copyAsTsv+'">Copy TSV</button>  <button onclick="'+copyAsJson+'">Copy JSON</button>';
   copyEl.style="margin: 1em 0.5em; font-size: 1.2rem; font-weight:bold;"
 
   const existing = document.querySelector('#stitch-copy-container');

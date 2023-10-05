@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { steamLikesBookmarklet } from '../lib/steamLikesBookmarklet.js';
+	import { steamRegionsBookmarklet } from '../lib/steamRegionsBookmarklet.js';
 </script>
 
 <section>
@@ -12,8 +13,12 @@
 
 	<ul>
 		<li>
-			<a href={steamLikesBookmarklet}>Stitch:SteamLikes</a>: Adds download buttons to the Steam
-			Likes plot.
+			<a href={steamLikesBookmarklet}>Stitch:SteamLikes</a>: Adds copy buttons to the Steam Likes
+			plot.
+		</li>
+		<li>
+			<a href={steamRegionsBookmarklet}>Stitch:SteamRegions</a>: Adds copy buttons to the Steam
+			Regions page.
 		</li>
 	</ul>
 </section>
