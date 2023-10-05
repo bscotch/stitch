@@ -5,11 +5,19 @@
 	import Fa from 'svelte-fa';
 </script>
 
+<aside id="support-banner">
+	💖 Support this project by <a
+		href="https://store.steampowered.com/app/1401730?utm_source=stitch-steam-stats&utm_term=tools&utm_content=support-cta"
+		>wishlisting Crashlands 2</a
+	>! 💖
+</aside>
+
 <nav>
 	<a href={base || '/'} title="Go home">
 		<img src={Logo} alt="Stitch Logo" />
 		<span class="name">Stitch</span>
 	</a>
+
 	<menu class="reset">
 		<li>
 			<a href="https://github.com/bscotch/stitch" title="See the Stitch source code">
