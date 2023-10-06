@@ -12,8 +12,8 @@
       "run_at": "document_idle"
     }
   ],
-  "description": "Adds download buttons and other extended functionality to various game stats sites, in particular for Steam games.",
+  "description": "Adds download buttons and other extended functionality to various game stats sites, in particular for publishers of Steam games.",
   "manifest_version": 3,
-  "name": "Stitch: Game Stats Helpers",
+  "name": "Stitch: Game Stats",
   "version": "0.1.0"
 }
