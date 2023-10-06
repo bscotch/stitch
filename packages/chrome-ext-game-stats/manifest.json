@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/chrome-manifest.json",
+  "content_scripts": [
+    {
+      "js": ["steam-likes.js"],
+      "matches": ["https://steamlikes.co/app/*"],
+      "run_at": "document_idle"
+    },
+    {
+      "js": ["steam-partner-regions.js"],
+      "matches": ["https://partner.steampowered.com/region/*"],
+      "run_at": "document_idle"
+    }
+  ],
+  "description": "Adds download buttons and other extended functionality to various game stats sites, in particular for Steam games.",
+  "manifest_version": 3,
+  "name": "Stitch: Game Stats Helpers",
+  "version": "0.1.0"
+}
