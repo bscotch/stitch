@@ -2,6 +2,7 @@
 
 import fs from 'fs/promises';
 import fetch from 'node-fetch';
+import { steamLanguages } from './steam-languages.mjs';
 
 let download = false;
 
@@ -84,11 +85,15 @@ else {
   countries = JSON.parse(await fs.readFile('./tmp/world-handbook.json', 'utf8'));
 }
 
+/** @type {Set<string>} */
+const unknownLanguages = new Set();
+
 /** @type {{[name:string]:{name:string,percent:number}[]}} */
 const languagesByCountry = {};
 for (const country of countries) {
   // Clean up and convert the languages description into a list of languages and percentages
   if (country.placeName === 'World') continue;
+  const countryName = country.placeName.replace(/\s+\(.*$/, '');
   let languagesString = "";
   // Remove parentheticals
   let lefts = 0;
@@ -127,23 +132,53 @@ for (const country of countries) {
     const percent = parts?.groups?.percent ? parseFloat(parts.groups.percent) : 100;
 
     let name = parts?.groups?.name ?? languageString;
-    name = name.replace(/ (or|and|only).*$/, '');
-    if (name.match(/\b(pidgin|indigenous|not|other|\d+|\/)\b/i)) {
+    name = name.replace(/ (or|and|only).*$/, '').replace(/^only /, '');
+    if (name.match(/\b(pidgin|creole|indigenous|not|other|\d+|\/)\b/i)) {
       // Then this is either details or something we definitely can't cover
       continue;
     }
     if (percent < 10) { break; }
 
+    if (!steamLanguages.includes(name)) {
+      switch (name) {
+        case 'Spanish':
+          name = "Spanish-Latin America";
+          break;
+        case 'Castilian Spanish':
+          name = "Spanish-Spain";
+          break;
+        case 'Cantonese':
+          name = "Chinese (Traditional)"
+          break;
+        case 'Standard Chinese':
+        case 'Mandarin':
+          name = "Chinese (Simplified)"
+          break;
+        case "Slovene":
+          name = "Slovenian";
+          break;
+        default:{
+          const partialMatch = steamLanguages.find(lang => lang.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(lang.toLowerCase()));
+          if (partialMatch) {
+            name = partialMatch;
+          }
+          else {
+            unknownLanguages.add(name);
+          }
+          break;
+        }
+      }
+    }
+    if (unknownLanguages.has(name)) {
+      continue;
+    }
     languages.push({ name, percent });
 
     if (percent === 100 ) {
       break;
     }
   }
-  if (languages.length) {
-    const countryName = country.placeName.replace(/\s+\(.*$/, '');
-    languagesByCountry[countryName] = languages;
-  }
+  languagesByCountry[countryName] = languages;
 }
 
 for (const country of steamCountries) {
@@ -163,6 +198,10 @@ for (const country of steamCountries) {
   country.languages = languages;
 }
 
-await fs.writeFile('./tmp/steam-countries.json', JSON.stringify(steamCountries, null, 2));
+await fs.writeFile('./tmp/steam-countries.json', JSON.stringify(steamCountries.reduce((acc,country) => {
+  acc[country.name] = country.languages;
+  return acc;
+},{})));
 
-// TODO: NORMALIZE THE LANGUAGE NAMES
+console.error('Non-Steam Languages:')
+console.log([...unknownLanguages].sort());
