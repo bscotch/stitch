@@ -200,6 +200,12 @@ importers:
         specifier: 5.2.2
         version: 5.2.2
 
+  packages/gcdata:
+    dependencies:
+      '@bscotch/pathy':
+        specifier: 2.9.0
+        version: 2.9.0
+
   packages/launcher:
     dependencies:
       '@bscotch/gamemaker-releases':
