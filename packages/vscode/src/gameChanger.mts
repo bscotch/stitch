@@ -1,18 +1,23 @@
-import { Bschema, Crashlands2, Mote, Packed } from '@bscotch/gcdata';
 import {
+  Bschema,
+  Crashlands2,
+  Mote,
+  Packed,
   isQuestMote,
-  moteToPath,
-  parseGameChangerUri,
-  questToBuffer,
-} from 'gameChanger.util.mjs';
+} from '@bscotch/gcdata';
 import vscode, { type TreeItem } from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
+import {
+  moteToPath,
+  parseGameChangerUri,
+  questToBuffer,
+} from './gameChanger.util.mjs';
 import { createSorter } from './lib.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 
-export class GameChangerFs implements vscode.FileSystemProvider {
+class GameChangerFs implements vscode.FileSystemProvider {
   protected getMote(uri: vscode.Uri): Mote {
     console.log('Getting mote from path', uri.path);
     const { moteId } = parseGameChangerUri(uri);
@@ -92,6 +97,15 @@ export class GameChangerFs implements vscode.FileSystemProvider {
   }
 }
 
+class GameChangerFoldProvider implements vscode.FoldingRangeProvider {
+  provideFoldingRanges(
+    document: vscode.TextDocument,
+    context: vscode.FoldingContext,
+  ): vscode.ProviderResult<vscode.FoldingRange[]> {
+    return [];
+  }
+}
+
 export type GameChangerTreeItem = TreeItem;
 
 export class GameChangerTreeProvider
@@ -136,7 +150,7 @@ export class GameChangerTreeProvider
     ) {
       // Then get all of the Quest motes that are in this storyline
       const questMotes = this.packed
-        ?.listMotesBySchema<Crashlands2.Schemas['quest']>('cl2_quest')
+        ?.listMotesBySchema<Crashlands2.Schemas['cl2_quest']>('cl2_quest')
         .filter((m) => m.data.storyline === element.mote.id)
         .map((m) => new MoteItem(this.packed!, m, element));
       questMotes?.sort(createSorter({ sortByField: 'name' }));
@@ -179,6 +193,12 @@ export class GameChangerTreeProvider
         isCaseSensitive: true,
         isReadonly: false,
       }),
+      vscode.languages.registerFoldingRangeProvider(
+        {
+          pattern: '**/*.cl2_quest',
+        },
+        new GameChangerFoldProvider(),
+      ),
     ];
 
     provider.rebuild();

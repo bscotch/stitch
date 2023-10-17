@@ -5,54 +5,50 @@
   "fileTypes": ["cl2_quest"],
   "patterns": [
     {
-      "include": "#comments"
-    },
-    {
       "include": "#general"
     }
   ],
   "repository": {
-    "comments": {
-      "patterns": [
-        {
-          "name": "comment.line.bscotch-cl2-quest",
-          "match": "(//) (?<text>.*?)(?<id>\\[\\w+\\])?$",
-          "captures": {
-            "1": {
-              "name": "punctuation.definition.comment.bscotch-cl2-quest"
-            },
-            "2": {
-              "name": "comment.line.text.bscotch-cl2-quest"
-            },
-            "3": {
-              "name": "meta.id.array-entry.bscotch-cl2-quest"
-            }
-          }
-        }
-      ]
-    },
     "general": {
       "patterns": [
         {
-          "name": "storage.line.bscotch-cl2-quest",
-          "match": "^(?<type>[A-Z+])\\s*(?<id>\\[\\])\\s*:",
+          "name": "dialog.speaker.bscotch-cl2-quest",
+          "match": "^\\t(?<name>.*?)\\s+(?<moteId>@[a-z_0-9]+)",
           "captures": {
             "1": {
-              "name": "storage.type.general.bscotch-cl2-quest"
+              "name": "dialog.speaker.name.bscotch-cl2-quest"
             },
             "2": {
-              "name": "meta.id.array.bscotch-cl2-quest"
+              "name": "id.mote.bscotch-cl2-quest"
             }
           }
         },
         {
-          "name": "meta.id.bscotch-cl2-quest",
-          "match": "(?<id>\\[\\w+\\])$",
+          "name": "key-value.bscotch-cl2-quest",
+          "match": "^(?<type>[a-zA-Z0-9 ]+):\\s*(?<value>.*?(?<moteId>@[a-z_0-9]+)?)?$",
           "captures": {
             "1": {
-              "name": "meta.id.general.bscotch-cl2-quest"
+              "name": "key.bscotch-cl2-quest"
+            },
+            "2": {
+              "name": "value.bscotch-cl2-quest"
+            },
+            "3": {
+              "name": "id.mote.bscotch-cl2-quest"
             }
           }
+        },
+        {
+          "name": "id.mote.bscotch-cl2-quest",
+          "match": "(?<moteId>@[a-z_0-9]+)"
+        },
+        {
+          "name": "id.array.bscotch-cl2-quest",
+          "match": "(?<arrayId>#[a-z_0-9]+)"
+        },
+        {
+          "name": "name.emoji.bscotch-cl2-quest",
+          "match": "(?<emojiName>\\([a-zA-Z_0-9 ]+\\))"
         }
       ]
     }

@@ -1,57 +1,10 @@
-import { Crashlands2, Mote, Packed, bsArrayToArray } from '@bscotch/gcdata';
+import { Crashlands2, Mote, Packed, questMoteToText } from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 
 export function questToBuffer(mote: Mote<Crashlands2.Quest>, packed: Packed) {
-  const storyline = packed.getMote(mote.data.storyline);
-
-  const blocks: string[] = [
-    `NAME: ${packed.getMoteName(mote)}`,
-    `STORYLINE: ${packed.getMoteName(storyline)} [${storyline.id}]`,
-  ];
-
-  if (mote.data.wip?.draft) {
-    blocks.push(`DRAFT: true`);
-  }
-
-  if (mote.data.wip?.comments) {
-    for (const comment of bsArrayToArray(mote.data.wip.comments)) {
-      blocks.push(`// ${comment.element} [${comment.id}]`);
-    }
-  }
-
-  if (mote.data.clues) {
-    for (const clue of bsArrayToArray(mote.data.clues)) {
-      if (!clue.element?.phrases || !clue.element.speaker) continue;
-      const speaker = packed.getMote(clue.element.speaker);
-      let clueString = `CLUE [${clue.id}]: ${packed.getMoteName(speaker)} [${
-        clue.element.speaker
-      }]`;
-      for (const phraseContainer of bsArrayToArray(clue.element!.phrases)) {
-        let line = '\n';
-        const emoji = phraseContainer.element?.phrase.emoji;
-        if (emoji) {
-          line += `(${emoji}) `;
-        }
-        line += phraseContainer.element?.phrase.text.text || '';
-        line += ` [${phraseContainer.id}]`;
-        clueString += line;
-      }
-      blocks.push(clueString);
-    }
-  }
-
-  return new Uint8Array(Buffer.from(blocks.join('\n\n') + '\n', 'utf-8'));
-}
-
-export function isQuestMote(mote: any): mote is Mote<Crashlands2.Quest> {
-  return mote.schema_id === 'cl2_quest';
-}
-
-export function isStorylineMote(
-  mote: any,
-): mote is Mote<Crashlands2.Storyline> {
-  return mote.schema_id === 'cl2_storyline';
+  const asText = questMoteToText(mote, packed);
+  return new Uint8Array(Buffer.from(asText, 'utf-8'));
 }
 
 export function moteToPath(mote: Mote, packed: Packed) {

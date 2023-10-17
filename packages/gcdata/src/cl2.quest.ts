@@ -74,7 +74,7 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
         clueGroup.element!.phrases,
       )) {
         const clue = phraseContainer.element;
-        let line = '\n>${arrayTag(phraseContainer)} ';
+        let line = `\n>${arrayTag(phraseContainer)} `;
         const emoji = clue?.phrase.emoji;
         if (emoji) {
           line += `(${emoji}) `;
