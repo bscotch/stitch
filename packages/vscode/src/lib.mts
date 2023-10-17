@@ -1,7 +1,12 @@
 import type { Code, Range } from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
-import { assertInternalClaim, assertLoudly, logThrown } from './assert.mjs';
+import {
+  StitchVscodeInternalError,
+  assertInternalClaim,
+  assertLoudly,
+  logThrown,
+} from './assert.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import type { CommandName } from './manifest.commands.mjs';
@@ -206,4 +211,16 @@ export function toKebabCase(text: string) {
     .replace(/([a-z])([A-Z])/g, '$1-$2')
     .replace(/[\s_]+/g, '-')
     .toLowerCase();
+}
+
+export function assertThrows(
+  fn: () => any,
+  msg = 'Expected an error to be thrown',
+) {
+  try {
+    fn();
+  } catch (e) {
+    return;
+  }
+  throw new StitchVscodeInternalError(msg, assertThrows);
 }

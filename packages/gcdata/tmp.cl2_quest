@@ -1,0 +1,78 @@
+NAME: Meeting Atlaa
+
+STORYLINE: Smells Like BS @bigbureaustoryline
+
+RECEIVER: Atlaa @npc_tendraam_caarta
+
+CLUE #f0mq: Haarli @s6t011
+> Atlaa's usually hovering near the Bulbfire in the southeast part of town. When she's around that is. #g3s8
+
+START MOMENTS:
+
+END MOMENTS:
+
+	Flux @item_flux
+> Hey... you look familiar. Do I know you? #hckx
+
+	Atlaa @npc_tendraam_caarta
+> By Maarla's rhizomes, a Walking Flower! You don't know me, but if you're Flux Dabes, you knew one of my germpaas. You helped him finish his maps. His name was Caarta. #pv44
+
+	Flux @item_flux
+> (Happy) Oh wow! I remember Caarta! So you're one of his sprouts, huh? #ncfw
+
+	Atlaa @npc_tendraam_caarta
+> Yep. Carrying on his legacy of making maps too. I'm Atlaa. #g1cf
+
+	Atlaa @npc_tendraam_caarta
+> What're you doing here on Woanope? Last I heard, you'd left for more lucrative pastures. Doin' some kind of press tour or something. #fv56
+
+	Flux @item_flux
+> (Embarrassed) Something like that. #bsx4
+
+	Juicebox @item_juicebox
+> (Shiny Eyes) The Hero of Woanope was in HIGH demand! She even had an exclusive interview with Scam Likely for the New Gorkian Times. NO ONE gets Scam Likely. #c031
+
+	Atlaa @npc_tendraam_caarta
+> That the one where you were quoted as saying you single-handedly saved the planet? #jqc2
+
+	Flux @item_flux
+> (Wince) Those weren't my exact words... #j92f
+
+	Flux @item_flux
+> I actually have a couple things I wanted to ask you about. Do you have time for a few questions? #xs8s
+
+	Atlaa @npc_tendraam_caarta
+> (Dubious) Depends. Are you askin' as the Bureau sponsored Hero of Woanope? Or are you askin' as Flux Dabes? #wt0p
+
+	Flux @item_flux
+> (Sweatdrop) I don't work for the Bureau of Shipping anymore. #xkk4
+
+	Atlaa @npc_tendraam_caarta
+> Interesting. That's not what I heard. #m2jd
+
+:) #s395
+! (Eyes) Juicebox @item_juicebox #cnbd
+! (Surprise) Flux @item_flux #k9cs
+
+	Atlaa @npc_tendraam_caarta
+> Caarta was known to be a good judge o' character, but I like to form my own opinions. An' so far, I don't know enough about you to have one. #f74w
+
+	Atlaa @npc_tendraam_caarta
+> But tell ya what, I been talkin' to Haarli 'bout charting the recent instability in the Mantle. The brain trust thinks the pipes have something to do with it. #bm4j
+
+	Atlaa @npc_tendraam_caarta
+> You help me complete the maps I'm workin' on, an' I'll answer some of your questions. #qd20
+
+	Flux @item_flux
+> ...okay. Sounds fair enough. Where should I go first? #pl8g
+
+	Atlaa @npc_tendraam_caarta
+> Maarlo's mentioned that the bulls out in Sluggabull Grotto have been more protective of their warrens recently. Something's got 'em spooked. #rlxd
+
+	Atlaa @npc_tendraam_caarta
+> Keep yer eyes open, and report back anything suspicious you find. #gn0d
+? Quest #c8t3
+
+	Flux @item_flux
+> Oh! I've actually already been out there! It's... not great. #ds56
+? Quest #c8t3

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Crashlands2 Quest",
+  "scopeName": "source.bscotch-cl2-quest",
+  "fileTypes": ["cl2_quest"],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#general"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.bscotch-cl2-quest",
+          "match": "(//) (?<text>.*?)(?<id>\\[\\w+\\])?$",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.comment.bscotch-cl2-quest"
+            },
+            "2": {
+              "name": "comment.line.text.bscotch-cl2-quest"
+            },
+            "3": {
+              "name": "meta.id.array-entry.bscotch-cl2-quest"
+            }
+          }
+        }
+      ]
+    },
+    "general": {
+      "patterns": [
+        {
+          "name": "storage.line.bscotch-cl2-quest",
+          "match": "^(?<type>[A-Z+])\\s*(?<id>\\[\\])\\s*:",
+          "captures": {
+            "1": {
+              "name": "storage.type.general.bscotch-cl2-quest"
+            },
+            "2": {
+              "name": "meta.id.array.bscotch-cl2-quest"
+            }
+          }
+        },
+        {
+          "name": "meta.id.bscotch-cl2-quest",
+          "match": "(?<id>\\[\\w+\\])$",
+          "captures": {
+            "1": {
+              "name": "meta.id.general.bscotch-cl2-quest"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

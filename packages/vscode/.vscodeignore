@@ -10,3 +10,4 @@ dist/manifest.*
 !themes/
 !webviews/*.js
 !schemas/
+!languages/

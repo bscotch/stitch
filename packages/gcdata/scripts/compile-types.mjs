@@ -11,30 +11,30 @@ const packed = await Packed.from(sampleYypPath);
 ok(packed);
 
 /** @type {string} */
-const dataString = await packed.packedPath.read({ parse: false });
-
+let dataString = await packed.packedPath.read({ parse: false });
 // Replace all refs with proper JSON Pointers
+dataString = dataString
+  .replace(/"\$ref":\s*"([^"]+)"/g, '"$ref": "#/$defs/$1"')
+  .replace(
+    /"additionalProperties":\s*0(\.0)?/g,
+    '"additionalProperties": false',
+  )
+  .replace(/"additionalProperties":\s*1(\.0)?/g, '"additionalProperties": true')
+  .replace(/"bConst"/g, '"const"');
+
 /** @type {Packed['schemas']} */
-const schemas = JSON.parse(
-  dataString
-    .replace(/"\$ref":\s*"([^"]+)"/g, '"$ref": "#/$defs/$1"')
-    .replace(/"additionalProperties": 0\.0/g, '"additionalProperties": false')
-    .replace(/"bConst"/g, '"const"'),
-).schemas;
+const schemas = JSON.parse(dataString).schemas;
 
 // await pathy('tmp.json').write(schemas);
-
-// Construct a proper root schema with defs
+const schemaNames = Object.keys(schemas);
 const rootSchema = {
   $defs: schemas,
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
-  required: ['storyline', 'quest'],
-  properties: {
-    // We want types for Storylines and Quests
-    storyline: { $ref: '#/$defs/cl2_storyline' },
-    quest: { $ref: '#/$defs/cl2_quest' },
-  },
+  required: schemaNames,
+  properties: Object.fromEntries(
+    schemaNames.map((name) => [name, { $ref: `#/$defs/${name}` }]),
+  ),
 };
 
 // // We want types for Storylines and Quests

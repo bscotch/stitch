@@ -1,4 +1,10 @@
 import { Bschema, Crashlands2, Mote, Packed } from '@bscotch/gcdata';
+import {
+  isQuestMote,
+  moteToPath,
+  parseGameChangerUri,
+  questToBuffer,
+} from 'gameChanger.util.mjs';
 import vscode, { type TreeItem } from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
@@ -6,17 +12,10 @@ import type { StitchWorkspace } from './extension.workspace.mjs';
 import { createSorter } from './lib.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 
-function questToBuffer(mote: Mote, packed: Packed) {
-  const asString = `# ${packed.getMoteName(mote)}\n\n`;
-
-  return new Uint8Array(Buffer.from(asString, 'utf-8'));
-}
-
 export class GameChangerFs implements vscode.FileSystemProvider {
   protected getMote(uri: vscode.Uri): Mote {
     console.log('Getting mote from path', uri.path);
-    const { moteId } =
-      uri.path.match(/\/motes\/(?<moteId>[^/]+)/)?.groups ?? {};
+    const { moteId } = parseGameChangerUri(uri);
     assertInternalClaim(moteId, 'Expected a mote id');
     const mote = this.tree.packed?.getMote(moteId);
     assertInternalClaim(mote, `No mote found with id ${moteId}`);
@@ -25,14 +24,13 @@ export class GameChangerFs implements vscode.FileSystemProvider {
 
   readFile(uri: vscode.Uri): Uint8Array {
     const mote = this.getMote(uri);
-    assertInternalClaim(
-      mote.schema_id === 'cl2_quest',
-      'Only quests are supported.',
-    );
+    assertInternalClaim(isQuestMote(mote), 'Only quests are supported.');
     return questToBuffer(mote, this.tree.packed!);
   }
 
   stat(uri: vscode.Uri): vscode.FileStat | Thenable<vscode.FileStat> {
+    // TODO: Cache what's been statted, so we can tell if the version has
+    // been changed.
     return {
       type: vscode.FileType.File,
       ctime: 0,
@@ -209,11 +207,7 @@ class MoteItem<Data = unknown> extends StitchTreeItemBase<'mote'> {
     this.setBaseIcon(this.isStoryline ? 'book' : 'note');
     if (this.isQuest) {
       // Make it openable in the editor
-      this.resourceUri = vscode.Uri.parse(
-        `bschema:///schemas/${mote.schema_id}/motes/${mote.id}/${packed
-          .getMoteName(mote)
-          .replace(/ /g, '%20')}.${mote.schema_id}`,
-      );
+      this.resourceUri = vscode.Uri.parse(moteToPath(mote, packed));
       this.command = {
         command: 'vscode.open',
         title: 'Open',
