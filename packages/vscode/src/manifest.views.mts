@@ -15,6 +15,12 @@ export const views = {
     icon: './images/stitch-logo-mono.svg',
     type: 'tree',
   },
+  'bscotch-stitch-gamechanger': {
+    id: 'bscotch-stitch-gamechanger',
+    name: 'GameChanger',
+    icon: './images/stitch-logo-mono.svg',
+    type: 'tree',
+  },
   'bscotch-stitch-sprite-sources': {
     id: 'bscotch-stitch-sprite-sources',
     name: 'Sprite Sources',

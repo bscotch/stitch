@@ -1,10 +1,15 @@
-import { Pathy } from '@bscotch/pathy';
-import type { PackedData } from './types.js';
+import { Pathy, pathy } from '@bscotch/pathy';
+import type { Mote, MoteId, PackedData, SchemaId } from './types.js';
+import { resolvePointer } from './util.js';
 
 export class Packed {
   protected data!: PackedData;
 
   protected constructor(readonly yypPath: Pathy) {}
+
+  get packedPath() {
+    return pathy<PackedData>('datafiles/gcdata/packed.json', this.yypPath.up());
+  }
 
   get motes(): PackedData['motes'] {
     return {
@@ -18,8 +23,26 @@ export class Packed {
     };
   }
 
-  get packedPath() {
-    return this.yypPath.up().join('datafiles/gcdata/packed.json');
+  getMoteName(mote: Mote): string {
+    const schema = this.getSchema(mote.schema_id);
+    if (!schema || !schema.name) {
+      return mote.id;
+    }
+    return resolvePointer(schema.name, mote.data) || mote.id;
+  }
+
+  getMote(moteId: string | MoteId) {
+    return this.data.motes[moteId as MoteId];
+  }
+
+  getSchema(schemaId: string | SchemaId) {
+    return this.data.schemas[schemaId as SchemaId];
+  }
+
+  listMotesBySchema<D = unknown>(schemaId: string | SchemaId): Mote<D>[] {
+    return Object.values(this.data.motes).filter(
+      (mote) => mote.schema_id === schemaId,
+    ) as Mote<D>[];
   }
 
   async load() {

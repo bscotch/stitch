@@ -24,12 +24,12 @@ export interface UidPool {
   type: 'u16';
 }
 
-export interface Mote<T = unknown> {
+export interface Mote<T = unknown, S extends SchemaId = SchemaId> {
   id: MoteId;
   uid: UidPool;
   /** The actual data, as described by the schema */
   data: T;
-  schema_id: SchemaId;
+  schema_id: S;
   /** MoteId of the parent mote */
   parent?: MoteId;
   /** Path to the field holding a sprite name */
@@ -75,6 +75,9 @@ interface BschemaBase {
    */
   overrides?: string;
 
+  /**
+   * Internal pointer to the field that holds the mote's name
+   */
   name?: string;
   title?: string;
   description?: string;

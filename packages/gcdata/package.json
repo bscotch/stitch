@@ -13,5 +13,9 @@
   "license": "MIT",
   "dependencies": {
     "@bscotch/pathy": "2.9.0"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "13.1.1",
+    "typescript": "5.2.2"
   }
 }
