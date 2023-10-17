@@ -17,3 +17,7 @@ export function resolvePointer(pointer: string, data: any) {
   }
   return current;
 }
+
+export function capitalize(str: string) {
+  return str[0].toUpperCase() + str.slice(1);
+}

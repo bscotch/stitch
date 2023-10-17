@@ -23,7 +23,8 @@ export class Packed {
     };
   }
 
-  getMoteName(mote: Mote): string {
+  getMoteName(mote: Mote | string): string {
+    mote = typeof mote === 'string' ? this.getMote(mote) : mote;
     const schema = this.getSchema(mote.schema_id);
     if (!schema || !schema.name) {
       return mote.id;

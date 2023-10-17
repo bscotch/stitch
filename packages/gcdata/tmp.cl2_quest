@@ -1,78 +1,102 @@
-NAME: Meeting Atlaa
+Name: Buildmode
+Storyline: Graal's Cabin @graalfirststoryline
+Giver: Graal @graal
+Receiver: Graal @graal
 
-STORYLINE: Smells Like BS @bigbureaustoryline
+Log: Use Wrenchy, the most perfect Space Wrench, to place Popbark Flatplank floors.
 
-RECEIVER: Atlaa @npc_tendraam_caarta
+Objectives:
 
-CLUE #f0mq: Haarli @s6t011
-> Atlaa's usually hovering near the Bulbfire in the southeast part of town. When she's around that is. #g3s8
+-#xgm0 Place Item
 
-START MOMENTS:
+Start Requirements:
 
-END MOMENTS:
+?#j99m Quest: Floors Log @fq1501_dv
 
-	Flux @item_flux
-> Hey... you look familiar. Do I know you? #hckx
+Start Moments:
 
-	Atlaa @npc_tendraam_caarta
-> By Maarla's rhizomes, a Walking Flower! You don't know me, but if you're Flux Dabes, you knew one of my germpaas. You helped him finish his maps. His name was Caarta. #pv44
+	GRAAL @graal
+>#qwgq Those Popbark Flatplank floors are mighty fine. Getting 'em slotted in will take some work though.
 
-	Flux @item_flux
-> (Happy) Oh wow! I remember Caarta! So you're one of his sprouts, huh? #ncfw
+	FLUX @item_flux
+>#tgk6 (Shiny Eyes) It'll be a piece of cake with my handy dandy SPACE WRENCH! TA DA!
+?#xvgw Quest: Bridge How @q_bridgehow
 
-	Atlaa @npc_tendraam_caarta
-> Yep. Carrying on his legacy of making maps too. I'm Atlaa. #g1cf
+	FLUX @item_flux
+>#vcg4 (Sad) It'd be a piece of cake if I had my Space Wrench with me.
+?#xvgw Quest: Bridge How @q_bridgehow
 
-	Atlaa @npc_tendraam_caarta
-> What're you doing here on Woanope? Last I heard, you'd left for more lucrative pastures. Doin' some kind of press tour or something. #fv56
+	GRAAL @graal
+>#wdwb (Dubious) ...yer hwhat?
 
-	Flux @item_flux
-> (Embarrassed) Something like that. #bsx4
+	FLUX @item_flux
+>#rkk3 (Cry) My SPACE WRENCH! It must have been flung out of the pod during the crash. My poor baby, it must be so scared out there all alone. What if I never see it again?
 
-	Juicebox @item_juicebox
-> (Shiny Eyes) The Hero of Woanope was in HIGH demand! She even had an exclusive interview with Scam Likely for the New Gorkian Times. NO ONE gets Scam Likely. #c031
+	JUICEBOX @item_juicebox
+>#m17d (Happy) Oh, that old thing? I have it!
+?#xvgw Quest: Bridge How @q_bridgehow
 
-	Atlaa @npc_tendraam_caarta
-> That the one where you were quoted as saying you single-handedly saved the planet? #jqc2
+	JUICEBOX @item_juicebox
+>#tjd6 (Eyeroll) Geez. Fine. I have it.
+?#xvgw Quest: Bridge How @q_bridgehow
 
-	Flux @item_flux
-> (Wince) Those weren't my exact words... #j92f
+	FLUX @item_flux
+>#tbk4 WHAT. You had Wrenchy this WHOLE TIME and you DIDN'T SAY ANYTHING???
 
-	Flux @item_flux
-> I actually have a couple things I wanted to ask you about. Do you have time for a few questions? #xs8s
+	JUICEBOX @item_juicebox
+>#czqp I was waiting for the most opportune moment to reveal it.
 
-	Atlaa @npc_tendraam_caarta
-> (Dubious) Depends. Are you askin' as the Bureau sponsored Hero of Woanope? Or are you askin' as Flux Dabes? #wt0p
+	JUICEBOX @item_juicebox
+>#jgmq (Happy) Any minute now...
 
-	Flux @item_flux
-> (Sweatdrop) I don't work for the Bureau of Shipping anymore. #xkk4
+	FLUX @item_flux
+>#wmf2 (Angry) GIVE ME MY SPACE WRENCH, YOU FIEND.
 
-	Atlaa @npc_tendraam_caarta
-> Interesting. That's not what I heard. #m2jd
+	JUICEBOX @item_juicebox
+>#q63b (Happy) Ta da!
 
-:) #s395
-! (Eyes) Juicebox @item_juicebox #cnbd
-! (Surprise) Flux @item_flux #k9cs
+Drop Item#h3k7: Juicebox @item_juicebox
++1 Space Wrench @item_wrench
 
-	Atlaa @npc_tendraam_caarta
-> Caarta was known to be a good judge o' character, but I like to form my own opinions. An' so far, I don't know enough about you to have one. #f74w
+	FLUX @item_flux
+>#l781 My sweet, sweet Space Wrench! How I've missed you. Time to show Graal what you can do!
 
-	Atlaa @npc_tendraam_caarta
-> But tell ya what, I been talkin' to Haarli 'bout charting the recent instability in the Mantle. The brain trust thinks the pipes have something to do with it. #bm4j
+End Requirements:
 
-	Atlaa @npc_tendraam_caarta
-> You help me complete the maps I'm workin' on, an' I'll answer some of your questions. #qd20
+End Moments:
 
-	Flux @item_flux
-> ...okay. Sounds fair enough. Where should I go first? #pl8g
+	GRAAL @graal
+>#vtx9 I admit yer pal Wrenchy seems pretty useful. More useful than some o' yer other companions anyhow...
 
-	Atlaa @npc_tendraam_caarta
-> Maarlo's mentioned that the bulls out in Sluggabull Grotto have been more protective of their warrens recently. Something's got 'em spooked. #rlxd
+	JUICEBOX @item_juicebox
+>#lcr8 Hey! I supervised!
 
-	Atlaa @npc_tendraam_caarta
-> Keep yer eyes open, and report back anything suspicious you find. #gn0d
-? Quest #c8t3
+	GRAAL @graal
+>#p6wx ...yep.
 
-	Flux @item_flux
-> Oh! I've actually already been out there! It's... not great. #ds56
-? Quest #c8t3
+	GRAAL @graal
+>#x4tj I salvaged a few o' the cabin walls. Figured out how they're put together too. Was tryin' to work out how to get 'em placed, but I guess I can leave that to you now.
+
+Gain Item#w1dl:
++6 Popwall @wall_popwood
+
+Drop Item#l0tx: Graal @graal
++1 Popwall @sch_popwall
+
+	GRAAL @graal
+>#l220 The rest o’ these house parts are more complicated though, and I ain't a carpenter by any means.
+
+	FLUX @item_flux
+>#nw07 How'd you build your cabin the first time?
+
+	GRAAL @graal
+>#gc56 The folks up at Haarlipol helped me out. But Rosaa prob'ly ain't got the time to help us rebuild my house on account o' all the newcomers. She don't need any more on 'er plate.
+
+	JUICEBOX @item_juicebox
+>#f0xt (Happy) Flux can go to Haarlipol and ask Rosaa for you!
+
+	GRAAL @graal
+>#h9xx (Nervous) That’s not-
+
+	FLUX @item_flux
+>#g19k Happy to help!
