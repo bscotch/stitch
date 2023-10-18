@@ -1,0 +1,40 @@
+name: Crashlands for VSCode
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'crashlands-editor@*'
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      # SETUP
+      - uses: actions/checkout@v3
+        with:
+          lfs: true
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.18.0
+      - run: corepack enable
+      - run: pnpm install --filter=crashlands-editor... --filter=stitch-monorepo
+      - run: pwd
+
+      # BUILD DEPS
+      - name: Build
+        run: pnpm turbo run build --only --filter=crashlands-editor...
+
+      # PUBLISH
+      - name: Publish
+        working-directory: packages/vscode
+        run: pnpm vscode:publish
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
