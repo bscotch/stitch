@@ -1,28 +1,28 @@
 import { logger, showErrorMessage, warn } from './log.mjs';
 
-export class StitchVscodeError extends Error {
+export class CrashlandsError extends Error {
   constructor(message: string, asserter?: Function) {
     super(message);
-    this.name = 'StitchVscodeError';
+    this.name = 'CrashlandsError';
     Error.captureStackTrace(this, asserter || this.constructor);
   }
 }
 
-export function isStitchError(err: any): err is StitchVscodeError {
-  return err instanceof StitchVscodeError;
+export function isCrashlandsError(err: any): err is CrashlandsError {
+  return err instanceof CrashlandsError;
 }
 
-export class StitchVscodeUserError extends StitchVscodeError {
+export class CrashlandsUserError extends CrashlandsError {
   constructor(message: string, asserter?: Function) {
     super(message, asserter);
-    this.name = 'StitchVscodeUserError';
+    this.name = 'CrashlandsUserError';
   }
 }
 
-export class StitchVscodeInternalError extends StitchVscodeError {
+export class CrashlandsInternalError extends CrashlandsError {
   constructor(message: string, asserter?: Function) {
     super(message, asserter);
-    this.name = 'StitchVscodeInternalError';
+    this.name = 'CrashlandsInternalError';
   }
 }
 
@@ -61,7 +61,7 @@ export function assertInternalClaim(
   message: string,
 ): asserts condition {
   if (!condition) {
-    const err = new StitchVscodeUserError(message, assertInternalClaim);
+    const err = new CrashlandsUserError(message, assertInternalClaim);
     // VSCode swallows error messages, so we need to log them
     logger.error(err);
     throw err;
@@ -73,7 +73,7 @@ export function assertUserClaim(
   message: string,
 ): asserts condition {
   if (!condition) {
-    const err = new StitchVscodeUserError(message, assertUserClaim);
+    const err = new CrashlandsUserError(message, assertUserClaim);
     // VSCode swallows error messages, so we need to log them
     warn(err);
     throw err;

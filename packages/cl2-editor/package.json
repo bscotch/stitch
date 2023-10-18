@@ -1,5 +1,5 @@
 {
-  "name": "bscotch-cl2-vscode",
+  "name": "crashlands-editor",
   "displayName": "Crashlands 2 Editor",
   "version": "0.1.0",
   "private": true,
@@ -21,11 +21,10 @@
   "license": "SEE LICENSE IN LICENSE.md",
   "qna": false,
   "publisher": "bscotch",
-  "main": "./dist/extension.js",
+  "main": "./dist/activate.js",
   "scripts": {
-    "build": "node scripts/build.mjs && pnpm build:manifest",
+    "build": "node scripts/build.mjs",
     "build:deps": "pnpm turbo run build --filter=bscotch-cl2-editor...",
-    "build:manifest": "node dist/manifest.update.js && prettier -w package.json",
     "bump": "cd ../.. && pnpm bump",
     "package": "vsce package --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
@@ -35,7 +34,7 @@
   "contributes": {
     "commands": [],
     "configuration": {
-      "title": "Crashlands 2",
+      "title": "Crashlands",
       "properties": {}
     },
     "grammars": [
@@ -56,16 +55,10 @@
     ],
     "menus": {},
     "views": {
-      "bscotch-stitch": [
+      "cl2": [
         {
           "id": "cl2-stories",
           "name": "Stories",
-          "icon": "./images/cl2-editor-logo.svg",
-          "type": "tree"
-        },
-        {
-          "id": "bscotch-stitch-sprite-sources",
-          "name": "Sprite Sources",
           "icon": "./images/cl2-editor-logo.svg",
           "type": "tree"
         }
