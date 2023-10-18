@@ -13,7 +13,7 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
 
   const metadata: string[] = [
     `Name: ${packed.getMoteName(mote)}`,
-    `Storyline: ${packed.getMoteName(storyline)} ${moteTag(storyline)}`,
+    `Storyline: ${packed.getMoteName(storyline)}${moteTag(storyline)}`,
   ];
 
   if (mote.data.wip?.draft) {
@@ -32,13 +32,13 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
   // Giver
   if (mote.data.quest_giver) {
     const giver = packed.getMote(mote.data.quest_giver.item);
-    metadata.push(`Giver: ${packed.getMoteName(giver)} ${moteTag(giver)}`);
+    metadata.push(`Giver: ${packed.getMoteName(giver)}${moteTag(giver)}`);
   }
   // Receiver
   if (mote.data.quest_receiver) {
     const receiver = packed.getMote(mote.data.quest_receiver.item);
     metadata.push(
-      `Receiver: ${packed.getMoteName(receiver)} ${moteTag(receiver)}`,
+      `Receiver: ${packed.getMoteName(receiver)}${moteTag(receiver)}`,
     );
   }
 
@@ -67,7 +67,7 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
       const speaker = packed.getMote(clueGroup.element.speaker);
       let clueString = `Clue${arrayTag(clueGroup)}: ${packed.getMoteName(
         speaker,
-      )} ${moteTag(clueGroup.element.speaker)}`;
+      )}${moteTag(clueGroup.element.speaker)}`;
       for (const phraseContainer of bsArrayToArray(
         clueGroup.element!.phrases,
       )) {
@@ -94,7 +94,7 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
         const req = reqContainer.element;
         let line = `?${arrayTag(reqContainer)} ${req?.style || 'Unknown'}`;
         if (req?.style === 'Quest') {
-          line += `: ${packed.getMoteName(req.quest)} ${moteTag(req.quest)}`;
+          line += `: ${packed.getMoteName(req.quest)}${moteTag(req.quest)}`;
         }
         blocks.push(line);
       }
@@ -105,6 +105,12 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
     const fieldName = `quest_${momentType}_moments` as const;
     const data = mote.data[fieldName];
     if (data) {
+      /**
+       * Track the last speaker so we can collapse sequential dialog
+       * from the same speaker
+       */
+      let lastSpeaker: string | undefined;
+
       for (const momentContainer of bsArrayToArray(data)) {
         const moment = momentContainer.element!;
         let line = '';
@@ -114,18 +120,24 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
             const req = reqContainer.element;
             reqs += `\n?${arrayTag(reqContainer)} ${req?.style || 'Unknown'}`;
             if (req?.style === 'Quest') {
-              reqs += `: ${packed.getMoteName(req.quest)} ${moteTag(
-                req.quest,
-              )}`;
+              reqs += `: ${packed.getMoteName(req.quest)}${moteTag(req.quest)}`;
             }
           }
         }
 
+        if (moment.style !== 'Dialogue') {
+          lastSpeaker = undefined;
+        }
+
         if (moment.style === 'Dialogue') {
           // Speaker and dialog line
-          line += `\t${characterString(moment.speech.speaker)}\n>${arrayTag(
-            momentContainer,
-          )} ${emojiString(moment.speech.emotion)}${moment.speech.text.text}`;
+          if (moment.speech.speaker !== lastSpeaker) {
+            line += `\t${characterString(moment.speech.speaker)}\n`;
+          }
+          line += `>${arrayTag(momentContainer)} ${emojiString(
+            moment.speech.emotion,
+          )}${moment.speech.text.text}`;
+          lastSpeaker = moment.speech.speaker;
         } else if (moment.style === 'Emote') {
           const emojiLines: string[] = [`:)${arrayTag(momentContainer)}`];
           for (const emote of bsArrayToArray(moment.emotes)) {
@@ -144,7 +156,7 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
             const itemName = packed.getMoteName(item.element?.key!);
             // Note: Can probably skip the array tag since we can use the item moteId as the unique identifier for diffs
             itemLines.push(
-              `+${item.element?.value || 1} ${itemName} ${moteTag(
+              `+${item.element?.value || 1} ${itemName}${moteTag(
                 item.element?.key!,
               )}`,
             );
@@ -158,13 +170,13 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
             const dropperName = packed.getMoteName(dropper);
             let dropText = `Drop Item${arrayTag(
               momentContainer,
-            )}: ${dropperName} ${moteTag(dropper)}`;
+            )}: ${dropperName}${moteTag(dropper)}`;
             for (const item of bsArrayToArray(dropGroup.element?.items!)) {
               const itemName = packed.getMoteName(item.element?.item_id!);
               // Note: Can probably skip the array tag since we can use the item moteId as the unique identifier for diffs
               dropText += `\n+${
                 item.element?.quantity || 1
-              } ${itemName} ${moteTag(item.element?.item_id!)}`;
+              } ${itemName}${moteTag(item.element?.item_id!)}`;
             }
             dropGroups.push(dropText);
           }

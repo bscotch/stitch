@@ -1,54 +1,192 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Crashlands2 Quest",
-  "scopeName": "source.bscotch-cl2-quest",
+  "scopeName": "source.cl2-quest",
   "fileTypes": ["cl2_quest"],
   "patterns": [
     {
       "include": "#general"
+    },
+    {
+      "include": "#invalid"
     }
   ],
   "repository": {
     "general": {
       "patterns": [
         {
-          "name": "dialog.speaker.bscotch-cl2-quest",
-          "match": "^\\t(?<name>.*?)\\s+(?<moteId>@[a-z_0-9]+)",
+          "name": "moment.dialog.speaker.cl2-quest",
+          "match": "^\\t(?<name>.*?)\\s*(?<moteId>@[a-z_0-9]+)",
           "captures": {
             "1": {
-              "name": "dialog.speaker.name.bscotch-cl2-quest"
+              "name": "name.mote.cl2-quest"
             },
             "2": {
-              "name": "id.mote.bscotch-cl2-quest"
+              "name": "id.mote.cl2-quest"
             }
           }
         },
         {
-          "name": "key-value.bscotch-cl2-quest",
-          "match": "^(?<type>[a-zA-Z0-9 ]+):\\s*(?<value>.*?(?<moteId>@[a-z_0-9]+)?)?$",
+          "name": "moment.dialog.speech.cl2-quest",
+          "match": "^(>)(?<arrayId>#[a-z_0-9]+)?\\s+(?<text>.*)",
           "captures": {
             "1": {
-              "name": "key.bscotch-cl2-quest"
+              "name": "indicator.cl2-quest"
             },
             "2": {
-              "name": "value.bscotch-cl2-quest"
+              "name": "id.array.cl2-quest"
             },
             "3": {
-              "name": "id.mote.bscotch-cl2-quest"
+              "name": "text.cl2-quest"
             }
           }
         },
         {
-          "name": "id.mote.bscotch-cl2-quest",
-          "match": "(?<moteId>@[a-z_0-9]+)"
+          "name": "moment.emoji-declaration.cl2-quest",
+          "match": "^(?<emojiIndicator>:\\))\\s*(?<arrayId>#[a-z_0-9]+)?",
+          "captures": {
+            "1": {
+              "name": "indicator.cl2-quest"
+            },
+            "2": {
+              "name": "id.array.cl2-quest"
+            }
+          }
         },
         {
-          "name": "id.array.bscotch-cl2-quest",
+          "name": "moment.emoji-entry.cl2-quest",
+          "match": "^(?<emojiEntryIndicator>!)\\s*(?<arrayId>#[a-z_0-9]+)?\\s+(?<name>.*?)\\s*(?<moteId>@[a-z_0-9]+)\\s+(?<emojiName>\\([a-zA-Z_0-9, ]+\\))",
+          "captures": {
+            "1": {
+              "name": "indicator.cl2-quest"
+            },
+            "2": {
+              "name": "id.array.cl2-quest"
+            },
+            "3": {
+              "name": "name.mote.cl2-quest"
+            },
+            "4": {
+              "name": "id.mote.cl2-quest"
+            },
+            "5": {
+              "name": "name.emoji.cl2-quest"
+            }
+          }
+        },
+        {
+          "name": "objective.cl2-quest",
+          "match": "^(-)(?<arrayId>#[a-z_0-9]+)?\\s+(?<style>[^:]+:?)?",
+          "captures": {
+            "1": {
+              "name": "indicator.cl2-quest"
+            },
+            "2": {
+              "name": "id.array.cl2-quest"
+            },
+            "3": {
+              "name": "style.cl2-quest"
+            }
+          }
+        },
+        {
+          "name": "requirement.cl2-quest",
+          "match": "^(\\?)(?<arrayId>#[a-z_0-9]+)?\\s+(?<style>[^:]+:?)?",
+          "captures": {
+            "1": {
+              "name": "indicator.cl2-quest"
+            },
+            "2": {
+              "name": "id.array.cl2-quest"
+            },
+            "3": {
+              "name": "style.cl2-quest"
+            }
+          }
+        },
+        {
+          "name": "moment.plus-item.cl2-quest",
+          "match": "^(\\+)(?<count>\\d+)\\s+(?<name>.*?)\\s*(?<moteId>@[a-z_0-9]+)",
+          "captures": {
+            "1": {
+              "name": "indicator.cl2-quest"
+            },
+            "2": {
+              "name": "count.cl2-quest"
+            },
+            "3": {
+              "name": "name.mote.cl2-quest"
+            },
+            "4": {
+              "name": "id.mote.cl2-quest"
+            }
+          }
+        },
+        {
+          "name": "key-value.indexed.cl2-quest",
+          "match": "^(?<type>[a-zA-Z0-9 ]+)\\s*(?<arrayId>#[a-z_0-9]+):\\s*(?<value>.*?(?:(?<name>[A-Za-z0-9 _',!.-]+)\\s*(?<moteId>@[a-z_0-9]+))?)?$",
+          "captures": {
+            "1": {
+              "name": "key.indexed.cl2-quest"
+            },
+            "2": {
+              "name": "id.array.cl2-quest"
+            },
+            "3": {
+              "name": "value.indexed.cl2-quest"
+            },
+            "4": {
+              "name": "name.mote.cl2-quest"
+            },
+            "5": {
+              "name": "id.mote.cl2-quest"
+            }
+          }
+        },
+        {
+          "name": "key-value.cl2-quest",
+          "match": "^(?<type>[a-zA-Z0-9 ]+):\\s*(?<value>.*?(?:(?<name>[A-Za-z0-9 _',!.-]+)\\s*(?<moteId>@[a-z_0-9]+))?)?$",
+          "captures": {
+            "1": {
+              "name": "key.cl2-quest"
+            },
+            "2": {
+              "name": "value.cl2-quest"
+            },
+            "3": {
+              "name": "name.mote.cl2-quest"
+            },
+            "4": {
+              "name": "id.mote.cl2-quest"
+            }
+          }
+        },
+        {
+          "name": "id.array.cl2-quest",
           "match": "(?<arrayId>#[a-z_0-9]+)"
         },
         {
-          "name": "name.emoji.bscotch-cl2-quest",
-          "match": "(?<emojiName>\\([a-zA-Z_0-9 ]+\\))"
+          "name": "name.emoji.cl2-quest",
+          "match": "(?<emojiName>\\([a-zA-Z_0-9, ]+\\))"
+        },
+        {
+          "match": "(?<name>[A-Za-z0-9 _',!.-]+)?(?<moteId>@[a-z_0-9]+)",
+          "captures": {
+            "1": {
+              "name": "name.mote.cl2-quest"
+            },
+            "2": {
+              "name": "id.mote.cl2-quest"
+            }
+          }
+        }
+      ]
+    },
+    "invalid": {
+      "patterns": [
+        {
+          "name": "invalid.cl2-quest",
+          "match": "^.*"
         }
       ]
     }

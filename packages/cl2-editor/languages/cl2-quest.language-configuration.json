@@ -15,5 +15,82 @@
     ["{", "}"]
   ],
   "comments": {},
-  "folding": {}
+  "folding": {},
+  "onEnterRules": [
+    {
+      "$comment": "Add a dialog line after a Speaker heading.",
+      "beforeText": "^\\t(?<name>.*?)\\s*(?<moteId>@[a-z_0-9]+)",
+      "action": {
+        "appendText": "> ",
+        "indent": "none",
+        "removeText": 1
+      }
+    },
+    {
+      "$comment": "Add a speaker heading after start/end moments",
+      "beforeText": "^(Start|End) Moments:",
+      "action": {
+        "appendText": "\n\t",
+        "indent": "none"
+      }
+    },
+    {
+      "$comment": "Add a requirement prefix after start/end requirements",
+      "beforeText": "^(Start|End) Requirements:",
+      "action": {
+        "appendText": "\n? ",
+        "indent": "none"
+      }
+    },
+    {
+      "$comment": "Add an objective prefix after objectives",
+      "beforeText": "^Objectives:",
+      "action": {
+        "appendText": "\n- ",
+        "indent": "none"
+      }
+    },
+    {
+      "beforeText": "^>.*",
+      "action": {
+        "indent": "none",
+        "appendText": "\n\t"
+      }
+    },
+    {
+      "beforeText": "^:\\).*",
+      "action": {
+        "indent": "none",
+        "appendText": "! "
+      }
+    },
+    {
+      "beforeText": "^!.*",
+      "action": {
+        "indent": "none",
+        "appendText": "! "
+      }
+    },
+    {
+      "beforeText": "^-.*",
+      "action": {
+        "indent": "none",
+        "appendText": "- "
+      }
+    },
+    {
+      "beforeText": "^\\?.*",
+      "action": {
+        "indent": "none",
+        "appendText": "? "
+      }
+    },
+    {
+      "beforeText": "^\\+\\d+.*",
+      "action": {
+        "indent": "none",
+        "appendText": "+"
+      }
+    }
+  ]
 }
