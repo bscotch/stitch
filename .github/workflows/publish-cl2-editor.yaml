@@ -34,7 +34,7 @@ jobs:
 
       # PUBLISH
       - name: Publish
-        working-directory: packages/vscode
+        working-directory: packages/cl2-editor
         run: pnpm vscode:publish
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
