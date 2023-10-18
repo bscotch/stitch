@@ -1,16 +1,16 @@
 {
   "name": "@bscotch/gcdata",
+  "version": "0.1.1",
   "private": true,
-  "version": "0.1.0",
-  "main": "dist/index.js",
+  "license": "MIT",
   "type": "module",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc --build",
     "test": "mocha --config ../../config/.mocharc.cjs",
     "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
     "watch": "tsc --build --watch"
   },
-  "license": "MIT",
   "dependencies": {
     "@bscotch/pathy": "2.9.0"
   },
