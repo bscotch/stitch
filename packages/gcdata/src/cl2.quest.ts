@@ -6,8 +6,6 @@ import type { Mote } from './types.js';
 import { capitalize } from './util.js';
 
 export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
-  const emojis =
-    packed.listMotesBySchema<Crashlands2.Schemas['cl2_emoji']>('cl2_emoji');
   const storyline = packed.getMote(mote.data.storyline);
 
   // METADATA
@@ -132,9 +130,9 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
           const emojiLines: string[] = [`:)${arrayTag(momentContainer)}`];
           for (const emote of bsArrayToArray(moment.emotes)) {
             emojiLines.push(
-              `!${arrayTag(emote)} ${emojiString(
-                emote.element?.value,
-              )}${characterString(emote.element?.key!)}`,
+              `!${arrayTag(emote)} ${characterString(
+                emote.element?.key!,
+              )} ${emojiString(emote.element?.value)}`,
             );
           }
           line += emojiLines.join('\n');
@@ -189,7 +187,7 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
   function characterString(characterId: string) {
     const character = packed.getMote(characterId);
     const name = packed.getMoteName(character) || character.id;
-    return name ? `${name.toUpperCase()} ${moteTag(characterId)}` : '';
+    return name ? `${name.toUpperCase()}${moteTag(characterId)}` : '';
   }
 
   return blocks.join('\n\n') + '\n';
