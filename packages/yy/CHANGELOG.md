@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 0.15.1 (2023-10-18)
+
+### Fixes
+
+- Allow Room Layer pathId fields to be null
+
 ## 0.15.0 (2023-09-25)
 
 ### Features

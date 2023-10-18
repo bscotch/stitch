@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.51.2 (2023-10-18)
+
+### Fixes
+
+- Bumped the vscode engine version
+
 ## 1.51.1 (2023-10-05)
 
 ### Docs
