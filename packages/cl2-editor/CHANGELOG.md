@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.2.3 (2023-10-18)
+
+### Fixes
+
+- Completed initial syntax highlighting and on-enter behavior
+
 ## 0.2.2 (2023-10-18)
 
 ### Fixes
