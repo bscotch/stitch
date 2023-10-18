@@ -4,7 +4,7 @@ import { moteToPath } from './quests.util.mjs';
 import { TreeItemBase } from './tree.base.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
 
-export type QuestTreeItem = vscode.TreeItem;
+export type QuestTreeItem = MoteItem;
 
 export class QuestTreeProvider
   implements vscode.TreeDataProvider<QuestTreeItem>
