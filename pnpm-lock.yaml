@@ -64,6 +64,48 @@ importers:
         specifier: 5.2.2
         version: 5.2.2
 
+  packages/cl2-editor:
+    devDependencies:
+      '@bscotch/emitter':
+        specifier: 0.2.1
+        version: 0.2.1
+      '@bscotch/gcdata':
+        specifier: workspace:*
+        version: link:../gcdata
+      '@bscotch/pathy':
+        specifier: ^2.9.0
+        version: 2.9.0
+      '@bscotch/trebuchet':
+        specifier: 2.9.0
+        version: 2.9.0
+      '@bscotch/utility':
+        specifier: ^7.2.0
+        version: 7.2.0
+      '@types/vscode':
+        specifier: 1.83.0
+        version: 1.83.0
+      '@vscode/vsce':
+        specifier: 2.21.1
+        version: 2.21.1
+      esbuild:
+        specifier: ^0.19.4
+        version: 0.19.4
+      glob:
+        specifier: 10.3.10
+        version: 10.3.10
+      nodemon:
+        specifier: ^3.0.1
+        version: 3.0.1
+      turbo:
+        specifier: ^1.10.15
+        version: 1.10.15
+      typescript:
+        specifier: 5.2.2
+        version: 5.2.2
+      zx:
+        specifier: ^7.2.3
+        version: 7.2.3
+
   packages/core:
     dependencies:
       '@bscotch/debounce-watch':
@@ -528,9 +570,6 @@ importers:
       '@bscotch/gamemaker-releases':
         specifier: workspace:*
         version: link:../releases
-      '@bscotch/gcdata':
-        specifier: workspace:*
-        version: link:../gcdata
       '@bscotch/gml-parser':
         specifier: workspace:*
         version: link:../parser
@@ -3503,18 +3542,6 @@ packages:
       path-scurry: 1.10.1
     dev: true
 
-  /glob@10.3.4:
-    resolution: {integrity: sha512-6LFElP3A+i/Q8XQKEvZjkEWEOTgAIALR9AO2rwT8bgPhDd1anmqDJDZ6lLddI4ehxxxR1S5RIqKe1uapMQfYaQ==}
-    engines: {node: '>=16 || 14 >=14.17'}
-    hasBin: true
-    dependencies:
-      foreground-child: 3.1.1
-      jackspeak: 2.3.3
-      minimatch: 9.0.3
-      minipass: 7.0.3
-      path-scurry: 1.10.1
-    dev: true
-
   /glob@7.2.0:
     resolution: {integrity: sha512-lmLf6gtyrPq8tTjSmrO94wBeQbFR3HbLHbuyD69wuyQkImp2hWqMGB47OX65FBkPffO641IP9jWa1z4ivqG26Q==}
     dependencies:
@@ -3921,15 +3948,6 @@ packages:
 
   /isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
-
-  /jackspeak@2.3.3:
-    resolution: {integrity: sha512-R2bUw+kVZFS/h1AZqBKrSgDmdmjApzgY0AlCPumopFiAlbUxE2gf+SCuBzQ0cP5hHmUmFYF5yw55T97Th5Kstg==}
-    engines: {node: '>=14'}
-    dependencies:
-      '@isaacs/cliui': 8.0.2
-    optionalDependencies:
-      '@pkgjs/parseargs': 0.11.0
-    dev: true
 
   /jackspeak@2.3.6:
     resolution: {integrity: sha512-N3yCS/NegsOBokc8GAdM8UcmfsKiSS8cipheD/nivzr700H+nsMOxJjQnvwOcRYVuFkdH0wGUvW2WbXGmrZGbQ==}
@@ -5239,7 +5257,7 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
-      glob: 10.3.4
+      glob: 10.3.10
     dev: true
 
   /robust-orientation@1.2.1:

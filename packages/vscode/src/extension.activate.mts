@@ -23,7 +23,6 @@ import { StitchSpriteEditorProvider } from './extension.spriteEditor.mjs';
 import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { StitchTypeDefinitionProvider } from './extension.typeDefs.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
-import { GameChangerTreeProvider } from './gameChanger.mjs';
 import { GameMakerInspectorProvider } from './inspector.mjs';
 import {
   createSorter,
@@ -132,8 +131,6 @@ export async function activateStitchExtension(
     ...treeProvider.register(),
     ...inspectorProvider.register(),
     definitionsProvider.register(),
-    // ...GameChangerFs.register(workspace),
-    ...GameChangerTreeProvider.register(workspace),
     ...StitchTypeDefinitionProvider.register(workspace),
     ...StitchReleasePickerProvider.register(workspace),
     ...StitchRenameProvider.register(workspace),

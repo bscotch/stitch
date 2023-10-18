@@ -1,0 +1,123 @@
+{
+  "name": "bscotch-cl2-vscode",
+  "displayName": "Crashlands 2 Editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tools for Crashlands 2 development.",
+  "categories": [
+    "Programming Languages",
+    "Formatters"
+  ],
+  "keywords": [],
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/cl2-editor#readme",
+  "bugs": {
+    "url": "https://github.com/bscotch/stitch/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/cl2-editor"
+  },
+  "license": "SEE LICENSE IN LICENSE.md",
+  "qna": false,
+  "publisher": "bscotch",
+  "main": "./dist/extension.js",
+  "scripts": {
+    "build": "node scripts/build.mjs && pnpm build:manifest",
+    "build:deps": "pnpm turbo run build --filter=bscotch-cl2-editor...",
+    "build:manifest": "node dist/manifest.update.js && prettier -w package.json",
+    "bump": "cd ../.. && pnpm bump",
+    "package": "vsce package --no-dependencies --githubBranch develop",
+    "vscode:prepublish": "pnpm build",
+    "vscode:publish": "vsce publish --no-dependencies --githubBranch develop",
+    "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --watch languages --watch ../gcdata/dist --exec \"npm run build\""
+  },
+  "contributes": {
+    "commands": [],
+    "configuration": {
+      "title": "Crashlands 2",
+      "properties": {}
+    },
+    "grammars": [
+      {
+        "language": "bscotch-cl2-quest",
+        "scopeName": "source.bscotch-cl2-quest",
+        "path": "./syntaxes/cl2-quest.tmLanguage.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "bscotch-cl2-quest",
+        "configuration": "./languages/cl2-quest.language-configuration.json",
+        "extensions": [
+          ".cl2_quest"
+        ]
+      }
+    ],
+    "menus": {},
+    "views": {
+      "bscotch-stitch": [
+        {
+          "id": "cl2-stories",
+          "name": "Stories",
+          "icon": "./images/cl2-editor-logo.svg",
+          "type": "tree"
+        },
+        {
+          "id": "bscotch-stitch-sprite-sources",
+          "name": "Sprite Sources",
+          "icon": "./images/cl2-editor-logo.svg",
+          "type": "tree"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "cl2",
+          "title": "Crashlands 2",
+          "icon": "./images/cl2-editor-logo.svg"
+        }
+      ]
+    }
+  },
+  "activationEvents": [
+    "onLanguage:bscotch-cl2-quest",
+    "workspaceContains:**/*.{yyp}"
+  ],
+  "devDependencies": {
+    "@bscotch/emitter": "0.2.1",
+    "@bscotch/gcdata": "workspace:*",
+    "@bscotch/pathy": "^2.9.0",
+    "@bscotch/trebuchet": "2.9.0",
+    "@bscotch/utility": "^7.2.0",
+    "@types/vscode": "1.83.0",
+    "@vscode/vsce": "2.21.1",
+    "esbuild": "^0.19.4",
+    "glob": "10.3.10",
+    "nodemon": "^3.0.1",
+    "turbo": "^1.10.15",
+    "typescript": "5.2.2",
+    "zx": "^7.2.3"
+  },
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "icon": "./images/cl2-editor-logo.png",
+  "galleryBanner": {
+    "color": "#37183c",
+    "theme": "dark"
+  },
+  "preview": false,
+  "capabilities": {
+    "referencesProvider": "true",
+    "definitionProvider": "true",
+    "typeDefinitionProvider": "true",
+    "documentFormattingProvider": "true",
+    "renameProvider": "true",
+    "completionProvider": {
+      "resolveProvider": "true"
+    },
+    "hoverProvider": "true"
+  }
+}

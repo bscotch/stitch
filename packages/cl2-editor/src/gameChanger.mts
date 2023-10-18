@@ -7,15 +7,11 @@ import {
 } from '@bscotch/gcdata';
 import vscode, { type TreeItem } from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
-import type { GameMakerProject } from './extension.project.mjs';
-import type { StitchWorkspace } from './extension.workspace.mjs';
 import {
   moteToPath,
   parseGameChangerUri,
   questToBuffer,
 } from './gameChanger.util.mjs';
-import { createSorter } from './lib.mjs';
-import { StitchTreeItemBase } from './tree.base.mjs';
 
 class GameChangerFs implements vscode.FileSystemProvider {
   protected getMote(uri: vscode.Uri): Mote {
@@ -153,7 +149,7 @@ export class GameChangerTreeProvider
         ?.listMotesBySchema<Crashlands2.Schemas['cl2_quest']>('cl2_quest')
         .filter((m) => m.data.storyline === element.mote.id)
         .map((m) => new MoteItem(this.packed!, m, element));
-      questMotes?.sort(createSorter({ sortByField: 'name' }));
+      questMotes?.sort((a, b) => a.mote.data.order - b.mote.data.order);
       return questMotes;
     }
     return [];
@@ -227,7 +223,7 @@ class MoteItem<Data = unknown> extends StitchTreeItemBase<'mote'> {
     this.setBaseIcon(this.isStoryline ? 'book' : 'note');
     if (this.isQuest) {
       // Make it openable in the editor
-      this.resourceUri = vscode.Uri.parse(moteToPath(mote, packed));
+      this.resourceUri = vscode.Uri.parse(moteToPath(mote));
       this.command = {
         command: 'vscode.open',
         title: 'Open',
@@ -250,5 +246,40 @@ class MoteItem<Data = unknown> extends StitchTreeItemBase<'mote'> {
 
   get schemaId(): string {
     return this.mote.schema_id;
+  }
+}
+
+export abstract class StitchTreeItemBase<
+  Kind extends string = string,
+> extends vscode.TreeItem {
+  /** The kind of Node this item is. Also used as the default `contextValue` value */
+  readonly kind!: Kind;
+  abstract readonly parent: StitchTreeItemBase | undefined;
+
+  constructor(label: string) {
+    super(label);
+  }
+
+  setBaseIcon(icon: string) {
+    this.iconPath = getBaseIcon(icon);
+  }
+
+  setFileIcon(icon: string) {
+    this.iconPath = getFileIcon(icon as any);
+  }
+
+  setGameMakerIcon(icon: string) {
+    this.iconPath = getGameMakerIcon(icon as any);
+  }
+  setObjectEventIcon(icon: string) {
+    this.iconPath = getObjectEventIcon(icon);
+  }
+
+  toJSON() {
+    // Without ensuring json-serializability, drag-n-drop fails for some reason.
+    return {
+      label: this.label,
+      kind: this.kind,
+    };
   }
 }

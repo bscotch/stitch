@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": ["./src/**/*"],
+  "compilerOptions": {
+    "types": ["node"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "emitDeclarationOnly": true,
+    "allowJs": true,
+    "checkJs": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "nodenext",
+    "module": "NodeNext",
+    "isolatedModules": true
+  }
+}
