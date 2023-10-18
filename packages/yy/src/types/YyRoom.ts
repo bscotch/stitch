@@ -98,10 +98,13 @@ const yyRoomPathLayerSchema = z
     inheritSubLayers: z.boolean().default(true),
     inheritVisibility: z.boolean().default(true),
     layers: z.array(z.unknown()).nullable().default([]),
-    pathId: z.object({
-      name: z.string(),
-      path: z.string(),
-    }),
+    pathId: z
+      .object({
+        name: z.string(),
+        path: z.string(),
+      })
+      .nullable()
+      .default(null),
     userdefinedDepth: z.boolean().default(false),
     visible: z.boolean().default(true),
   })
