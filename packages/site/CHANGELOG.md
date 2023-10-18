@@ -1,5 +1,11 @@
 # @bscotch/stitch-site Changelog
 
+## 0.4.0 (2023-10-05)
+
+### Features
+
+- Added links for Steam Regions & Countries pages
+
 ## 0.3.0 (2023-10-05)
 
 ### Features
