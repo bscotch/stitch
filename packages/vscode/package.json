@@ -861,7 +861,7 @@
     "zx": "^7.2.3"
   },
   "engines": {
-    "vscode": "^1.82.0"
+    "vscode": "^1.83.0"
   },
   "icon": "./images/stitch-logo.png",
   "galleryBanner": {
