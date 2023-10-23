@@ -51,23 +51,21 @@ export type BschemaTypeName =
 export type Bschema =
   | BschemaObject
   | BschemaString
+  | BschemaMoteId
   | BschemaNull
   | BschemaRef
   | BschemaConst
   | BschemaEnum
   | BschemaBoolean
   | BschemaNumber
-  | BschemaInteger;
+  | BschemaInteger
+  | BschemaBsArray;
 
 interface BschemaBase {
   $id?: SchemaId;
   type?: BschemaTypeName;
   defaultValue?: string;
 
-  /**
-   * A string name indicating how the value has been or should be formatted
-   */
-  format?: string;
   hydratorId?: string;
 
   /**
@@ -139,8 +137,10 @@ export interface BschemaString extends BschemaBase {
    * A substring that the string must contain
    */
   stringContains?: string;
-  format?: 'moteId' | 'snake-case';
+}
 
+export interface BschemaMoteId extends BschemaString {
+  format?: 'moteId';
   formatProperties?: {
     blockSchemas?: SchemaId[];
     allowSchemas?: SchemaId[];
@@ -173,4 +173,14 @@ export interface BschemaNumber extends BschemaNumberBase {
 }
 export interface BschemaInteger extends BschemaNumberBase {
   type: 'integer';
+}
+
+export interface BschemaBsArray extends BschemaObject {
+  format: 'bsArray';
+  uniqueValue: ['element'];
+  additionalProperties: {
+    format: 'bsArrayElement';
+    type: 'object';
+    properties: { order: BschemaNumber; element: Bschema };
+  };
 }

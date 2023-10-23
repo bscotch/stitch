@@ -2,9 +2,12 @@ import { Packed } from '@bscotch/gcdata';
 import { pathy } from '@bscotch/pathy';
 import vscode from 'vscode';
 import { assertInternalClaim, assertLoudly } from './assert.mjs';
+import { crashlandsEvents } from './events.mjs';
 import { GameChangerFs } from './gc.fs.mjs';
 import { StoryFoldingRangeProvider } from './quests.folding.mjs';
+import { QuestHoverProvider } from './quests.hover.mjs';
 import { QuestTreeProvider } from './quests.mjs';
+import { isQuestUri } from './quests.util.mjs';
 
 export class CrashlandsWorkspace {
   static workspace = undefined as CrashlandsWorkspace | undefined;
@@ -33,6 +36,13 @@ export class CrashlandsWorkspace {
       ...GameChangerFs.register(this.workspace),
       ...StoryFoldingRangeProvider.register(this.workspace),
       ...QuestTreeProvider.register(this.workspace),
+      ...QuestHoverProvider.register(this.workspace),
+      vscode.workspace.onDidChangeTextDocument((event) => {
+        if (!isQuestUri(event.document.uri)) {
+          return;
+        }
+        crashlandsEvents.emit('quest-updated', event.document.uri);
+      }),
     );
 
     return this.workspace;

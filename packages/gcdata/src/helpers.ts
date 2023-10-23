@@ -1,5 +1,5 @@
 import type { Crashlands2 } from './types.cl2.js';
-import type { Mote } from './types.js';
+import type { BschemaBsArray, BschemaObject, Mote } from './types.js';
 
 export interface BsArrayItem {
   /** The element's content */
@@ -36,6 +36,20 @@ export function isStorylineMote(
   mote: any,
 ): mote is Mote<Crashlands2.Storyline> {
   return mote.schema_id === 'cl2_storyline';
+}
+
+export function isObjectSchema(schema: any): schema is BschemaObject {
+  return !!(
+    schema.type === 'object' ||
+    schema.properties ||
+    schema.additionalProperties
+  );
+}
+
+export function isBsArraySchema(schema: any): schema is BschemaBsArray {
+  return (
+    isObjectSchema(schema) && 'format' in schema && schema.format === 'bsArray'
+  );
 }
 
 /**

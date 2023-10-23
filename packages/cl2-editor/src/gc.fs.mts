@@ -1,24 +1,19 @@
-import { Mote, isQuestMote, questTextToMote } from '@bscotch/gcdata';
+import { isQuestMote, questTextToMote } from '@bscotch/gcdata';
 import { TextDecoder } from 'node:util';
 import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
-import { parseGameChangerUri, questToBuffer } from './quests.util.mjs';
+import { crashlandsEvents } from './events.mjs';
+import { QuestDocument } from './quests.doc.mjs';
 import { CrashlandsWorkspace } from './workspace.mjs';
 
 export class GameChangerFs implements vscode.FileSystemProvider {
-  protected getMote(uri: vscode.Uri): Mote {
-    console.log('Getting mote from path', uri.path);
-    const { moteId } = parseGameChangerUri(uri);
-    assertInternalClaim(moteId, 'Expected a mote id');
-    const mote = this.workspace.packed.getMote(moteId);
-    assertInternalClaim(mote, `No mote found with id ${moteId}`);
-    return mote;
+  protected getMote(uri: vscode.Uri): QuestDocument {
+    return QuestDocument.from(uri, this.workspace);
   }
 
   readFile(uri: vscode.Uri): Uint8Array {
-    const mote = this.getMote(uri);
-    assertInternalClaim(isQuestMote(mote), 'Only quests are supported.');
-    return questToBuffer(mote, this.workspace.packed);
+    const doc = this.getMote(uri);
+    return new Uint8Array(Buffer.from(doc.toString(), 'utf-8'));
   }
 
   stat(uri: vscode.Uri): vscode.FileStat | Thenable<vscode.FileStat> {
@@ -77,6 +72,16 @@ export class GameChangerFs implements vscode.FileSystemProvider {
 
   static register(workspace: CrashlandsWorkspace) {
     const provider = new GameChangerFs(workspace);
+    crashlandsEvents.on('quest-updated', (uri) => {
+      const doc = vscode.workspace.textDocuments.find(
+        (d) => d.uri.toString() === uri.toString(),
+      );
+      const moteDoc = provider.getMote(uri);
+      if (!moteDoc) return;
+      if (doc) {
+        moteDoc.parse(doc.getText());
+      }
+    });
     return [
       vscode.workspace.registerFileSystemProvider('bschema', provider, {
         isCaseSensitive: true,

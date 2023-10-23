@@ -1,10 +1,10 @@
 import type { Packed } from './Packed.js';
 import { assert } from './assert.js';
-import { bsArrayToArray } from './helpers.js';
+import { bsArrayToArray, isObjectSchema } from './helpers.js';
 import type { Crashlands2 } from './types.cl2.js';
 import { Range } from './types.editor.js';
-import type { Mote } from './types.js';
-import { capitalize, match, re } from './util.js';
+import type { Bschema, Mote } from './types.js';
+import { capitalize, match, re, resolvePointerInSchema } from './util.js';
 
 // PATTERNS
 // Note: These patterns are defined so that they'll work on partial lines
@@ -24,6 +24,7 @@ const requirementPattern = `^\\?\\s*?${arrayTagPattern}?((\\s+(?<style>[\\w -]+)
 
 export interface QuestUpdateResult {
   diagnostics: (Range & { message: string })[];
+  hovers: (Range & { title?: string; description?: string })[];
 }
 
 export function questTextToMote(
@@ -33,12 +34,14 @@ export function questTextToMote(
 ): QuestUpdateResult {
   const result: QuestUpdateResult = {
     diagnostics: [],
+    hovers: [],
   };
 
   const lines = text.split(/(\r?\n)/g);
   let index = 0;
   let lineNumber = 0;
-  const section: 'metadata' | 'objectives' | 'clue' = 'metadata';
+  const schemaStack: Bschema[] = [packed.getSchema(mote.schema_id)];
+
   for (const line of lines) {
     // Is this just a newline?
     if (line.match(/\r?\n/)) {
@@ -57,6 +60,14 @@ export function questTextToMote(
     // Is it a "Label:" line?
     if (re(labeledLinePattern).test(line)) {
       let { label, arrayTag, rest } = match(line, labeledLinePattern).groups;
+      const labelRange: Range = {
+        start: { index, line: lineNumber, character: 0 },
+        end: {
+          index: index + label!.length,
+          line: lineNumber,
+          character: label!.length,
+        },
+      };
       let dataPointer:
         | [keyof Crashlands2.Quest, ...(string | undefined)[]]
         | undefined;
@@ -101,7 +112,28 @@ export function questTextToMote(
           dataPointer = ['quest_end_moments'];
           break;
       }
-      // TODO: If no match, then we have a match *within* the current section
+      // TODO: If no match, then the label should be an enum option from a "style" field of the data structure we're inside of
+      if (dataPointer) {
+        const subschema = resolvePointerInSchema(
+          dataPointer as string[],
+          mote,
+          packed,
+        );
+        // Update the schemastack if this is an object schema
+        if (isObjectSchema(subschema)) {
+          schemaStack.push(subschema);
+        }
+        // Add hovertext for the label
+        if (subschema.description || subschema.title) {
+          result.hovers.push({
+            ...labelRange,
+            title: subschema.title,
+            description: subschema.description,
+          });
+        }
+      } else {
+        console.error(`Unknown label: ${label}`, schemaStack.at(-1));
+      }
     } else if (re(dialogSpeakerPattern).test(line)) {
       const { moteName, moteTag } = match(line, dialogSpeakerPattern).groups;
     } else if (re(dialogTextPattern).test(line)) {
@@ -178,22 +210,6 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
   }
 
   blocks.push(metadata.join('\n'));
-
-  // Start Log
-  if (mote.data.quest_start_log) {
-    blocks.push(`Log: ${mote.data.quest_start_log.text}`);
-  }
-
-  // Objectives
-  blocks.push('Objectives:');
-  if (mote.data.objectives) {
-    // For now just get them in there with their ID and style
-    for (const objective of bsArrayToArray(mote.data.objectives)) {
-      blocks.push(
-        `-${arrayTag(objective)} ${objective.element?.style || 'Unknown'}`,
-      );
-    }
-  }
 
   // Clues
   if (mote.data.clues) {
@@ -320,6 +336,24 @@ export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
           line += `${moment.style}${arrayTag(momentContainer)}: Not Editable`;
         }
         blocks.push(line + reqs);
+      }
+    }
+
+    if (momentType === 'start') {
+      // Start Log
+      if (mote.data.quest_start_log) {
+        blocks.push(`Log: ${mote.data.quest_start_log.text}`);
+      }
+
+      // Objectives
+      blocks.push('Objectives:');
+      if (mote.data.objectives) {
+        // For now just get them in there with their ID and style
+        for (const objective of bsArrayToArray(mote.data.objectives)) {
+          blocks.push(
+            `-${arrayTag(objective)} ${objective.element?.style || 'Unknown'}`,
+          );
+        }
       }
     }
   }
