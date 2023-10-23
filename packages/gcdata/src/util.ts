@@ -21,3 +21,20 @@ export function resolvePointer(pointer: string, data: any) {
 export function capitalize(str: string) {
   return str[0].toUpperCase() + str.slice(1);
 }
+
+export function re(string: string, flags?: string) {
+  return new RegExp(string, flags);
+}
+
+export function match(
+  string: string,
+  pattern: string | RegExp,
+  flags?: string,
+) {
+  pattern = typeof pattern === 'string' ? re(pattern, flags) : pattern;
+  const match = string.match(pattern);
+  return {
+    match,
+    groups: (match?.groups || {}) as { [key: string]: string | undefined },
+  };
+}

@@ -1,4 +1,5 @@
-import { Mote, isQuestMote } from '@bscotch/gcdata';
+import { Mote, isQuestMote, questTextToMote } from '@bscotch/gcdata';
+import { TextDecoder } from 'node:util';
 import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 import { parseGameChangerUri, questToBuffer } from './quests.util.mjs';
@@ -44,6 +45,14 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     content: Uint8Array,
     options: { readonly create: boolean; readonly overwrite: boolean },
   ): void | Thenable<void> {
+    const mote = this.getMote(uri);
+    assertInternalClaim(isQuestMote(mote), 'Only quests are supported.');
+    TextDecoder;
+    const parseResults = questTextToMote(
+      new TextDecoder('utf-8').decode(content),
+      mote,
+      this.workspace.packed,
+    );
     throw new Error('WriteFile not implemented.');
   }
   delete(

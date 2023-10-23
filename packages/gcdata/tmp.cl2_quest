@@ -1,7 +1,7 @@
-Name: Buildmode
-Storyline: Graal's Cabin @graalfirststoryline
-Giver: Graal @graal
-Receiver: Graal @graal
+Name: Buildmode: Place Floors
+Storyline: Graal's Cabin@graalfirststoryline
+Giver: Graal@graal
+Receiver: Graal@graal
 
 Log: Use Wrenchy, the most perfect Space Wrench, to place Popbark Flatplank floors.
 
@@ -11,92 +11,88 @@ Objectives:
 
 Start Requirements:
 
-?#j99m Quest: Floors Log @fq1501_dv
+?#j99m Quest: Craft 6 Popbark Floors@fq1501_dv
 
 Start Moments:
 
-	GRAAL @graal
+	GRAAL@graal
 >#qwgq Those Popbark Flatplank floors are mighty fine. Getting 'em slotted in will take some work though.
 
-	FLUX @item_flux
+	FLUX@item_flux
 >#tgk6 (Shiny Eyes) It'll be a piece of cake with my handy dandy SPACE WRENCH! TA DA!
-?#xvgw Quest: Bridge How @q_bridgehow
+?#xvgw Quest: Bridge How@q_bridgehow
 
-	FLUX @item_flux
 >#vcg4 (Sad) It'd be a piece of cake if I had my Space Wrench with me.
-?#xvgw Quest: Bridge How @q_bridgehow
+?#xvgw Quest: Bridge How@q_bridgehow
 
-	GRAAL @graal
+	GRAAL@graal
 >#wdwb (Dubious) ...yer hwhat?
 
-	FLUX @item_flux
+	FLUX@item_flux
 >#rkk3 (Cry) My SPACE WRENCH! It must have been flung out of the pod during the crash. My poor baby, it must be so scared out there all alone. What if I never see it again?
 
-	JUICEBOX @item_juicebox
+	JUICEBOX@item_juicebox
 >#m17d (Happy) Oh, that old thing? I have it!
-?#xvgw Quest: Bridge How @q_bridgehow
+?#xvgw Quest: Bridge How@q_bridgehow
 
-	JUICEBOX @item_juicebox
 >#tjd6 (Eyeroll) Geez. Fine. I have it.
-?#xvgw Quest: Bridge How @q_bridgehow
+?#xvgw Quest: Bridge How@q_bridgehow
 
-	FLUX @item_flux
+	FLUX@item_flux
 >#tbk4 WHAT. You had Wrenchy this WHOLE TIME and you DIDN'T SAY ANYTHING???
 
-	JUICEBOX @item_juicebox
+	JUICEBOX@item_juicebox
 >#czqp I was waiting for the most opportune moment to reveal it.
 
-	JUICEBOX @item_juicebox
 >#jgmq (Happy) Any minute now...
 
-	FLUX @item_flux
+	FLUX@item_flux
 >#wmf2 (Angry) GIVE ME MY SPACE WRENCH, YOU FIEND.
 
-	JUICEBOX @item_juicebox
+	JUICEBOX@item_juicebox
 >#q63b (Happy) Ta da!
 
-Drop Item#h3k7: Juicebox @item_juicebox
-+1 Space Wrench @item_wrench
+Drop Item#h3k7: Juicebox@item_juicebox
++1 Space Wrench@item_wrench
 
-	FLUX @item_flux
+	FLUX@item_flux
 >#l781 My sweet, sweet Space Wrench! How I've missed you. Time to show Graal what you can do!
 
 End Requirements:
 
 End Moments:
 
-	GRAAL @graal
+	GRAAL@graal
 >#vtx9 I admit yer pal Wrenchy seems pretty useful. More useful than some o' yer other companions anyhow...
 
-	JUICEBOX @item_juicebox
+	JUICEBOX@item_juicebox
 >#lcr8 Hey! I supervised!
 
-	GRAAL @graal
+	GRAAL@graal
 >#p6wx ...yep.
 
-	GRAAL @graal
 >#x4tj I salvaged a few o' the cabin walls. Figured out how they're put together too. Was tryin' to work out how to get 'em placed, but I guess I can leave that to you now.
 
 Gain Item#w1dl:
-+6 Popwall @wall_popwood
++6 Popwall@wall_popwood
 
-Drop Item#l0tx: Graal @graal
-+1 Popwall @sch_popwall
+Drop Item#l0tx: Graal@graal
++1 Popwall@sch_popwall
 
-	GRAAL @graal
+	GRAAL@graal
 >#l220 The rest o’ these house parts are more complicated though, and I ain't a carpenter by any means.
 
-	FLUX @item_flux
+	FLUX@item_flux
 >#nw07 How'd you build your cabin the first time?
 
-	GRAAL @graal
+	GRAAL@graal
 >#gc56 The folks up at Haarlipol helped me out. But Rosaa prob'ly ain't got the time to help us rebuild my house on account o' all the newcomers. She don't need any more on 'er plate.
 
-	JUICEBOX @item_juicebox
+	JUICEBOX@item_juicebox
 >#f0xt (Happy) Flux can go to Haarlipol and ask Rosaa for you!
 
-	GRAAL @graal
+	GRAAL@graal
 >#h9xx (Nervous) That’s not-
 
-	FLUX @item_flux
+	FLUX@item_flux
 >#g19k Happy to help!

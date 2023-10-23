@@ -1,7 +1,7 @@
 import { pathy } from '@bscotch/pathy';
 import { Packed } from './Packed.js';
 import { assert } from './assert.js';
-import { questMoteToText } from './cl2.quest.js';
+import { questMoteToText, questTextToMote } from './cl2.quest.js';
 import { bsArrayToArray, isQuestMote } from './helpers.js';
 import { Crashlands2 } from './types.cl2.js';
 
@@ -41,5 +41,20 @@ describe('Cl2 Quests', function () {
     assert(isQuestMote(quest), 'Mote should be a quest');
 
     await pathy('tmp.cl2_quest').write(questMoteToText(quest, packed));
+  });
+
+  it('can convert quests to text and back without error', async function () {
+    const packed = await Packed.from(sampleYypPath);
+    assert(packed, 'Packed data should be loaded');
+    const quests =
+      packed.listMotesBySchema<Crashlands2.Schemas['cl2_quest']>('cl2_quest');
+    for (const quest of quests) {
+      const asText = questMoteToText(quest, packed);
+      const results = questTextToMote(asText, quest, packed);
+      if (results.diagnostics.length > 0) {
+        console.error(results.diagnostics.map((d) => d.message).join('\n'));
+      }
+      assert(results.diagnostics.length === 0, 'Should have no errors');
+    }
   });
 });

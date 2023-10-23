@@ -18,6 +18,7 @@ module.exports = {
     'prettier',
   ],
   rules: {
+    'prefer-const': 'off',
     'no-useless-catch': 'off',
     '@typescript-eslint/no-extra-semi': 'off',
     '@typescript-eslint/no-namespace': 'off',
