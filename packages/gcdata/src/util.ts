@@ -34,11 +34,13 @@ function resolveOneOf(schema: Bschema, data: any): Bschema {
     return schema;
   }
   const dataDescriminator = data[schema.discriminator!.propertyName];
-  const matching = schema.oneOf!.find(subschema => {
+  const matching = schema.oneOf!.find((subschema) => {
     if (!('properties' in subschema)) {
       return false;
     }
-    const subschemaDescriminator = (subschema.properties![schema.discriminator!.propertyName] as BschemaConst).bConst;
+    const subschemaDescriminator = (
+      subschema.properties![schema.discriminator!.propertyName] as BschemaConst
+    ).bConst;
     if (subschemaDescriminator === dataDescriminator) {
       return true;
     }
@@ -60,11 +62,13 @@ export function resolvePointerInSchema(
   pointer = normalizePointer(pointer);
   let current = packed.getSchema(mote.schema_id);
   for (let i = 0; i < pointer.length; i++) {
-    const data = resolvePointer(pointer.slice(0,i+1), mote.data);
     if ('$ref' in current) {
       current = packed.getSchema(current.$ref);
     }
-    current = resolveOneOf(current, data);
+    current = resolveOneOf(
+      current,
+      resolvePointer(pointer.slice(0, i), mote.data),
+    );
     if ('properties' in current) {
       if (current.properties![pointer[i]]) {
         current = current.properties![pointer[i]];

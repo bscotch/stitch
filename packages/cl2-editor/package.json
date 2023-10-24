@@ -43,12 +43,12 @@
       {
         "command": "crashlands.quests.enter",
         "key": "enter",
-        "when": "editorLangId == 'cl2-quest'"
+        "when": "editorLangId == 'cl2-quest' && editorTextFocus && !suggestWidgetVisible"
       },
       {
         "command": "crashlands.quests.enter",
         "key": "shift+enter",
-        "when": "editorLangId == 'cl2-quest'",
+        "when": "editorLangId == 'cl2-quest' && editorTextFocus && !suggestWidgetVisible",
         "args": {
           "shift": true
         }
@@ -130,7 +130,10 @@
     "documentFormattingProvider": "true",
     "renameProvider": "true",
     "completionProvider": {
-      "resolveProvider": "true"
+      "resolveProvider": "true",
+      "triggerCharacters": [
+        "\t"
+      ]
     },
     "hoverProvider": "true"
   }

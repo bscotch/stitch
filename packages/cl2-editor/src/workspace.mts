@@ -4,6 +4,7 @@ import vscode from 'vscode';
 import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { crashlandsEvents } from './events.mjs';
 import { GameChangerFs } from './gc.fs.mjs';
+import { QuestCompletionProvider } from './quests.autocompletes.mjs';
 import { StoryFoldingRangeProvider } from './quests.folding.mjs';
 import { QuestHoverProvider } from './quests.hover.mjs';
 import { QuestTreeProvider } from './quests.mjs';
@@ -37,6 +38,7 @@ export class CrashlandsWorkspace {
       ...StoryFoldingRangeProvider.register(this.workspace),
       ...QuestTreeProvider.register(this.workspace),
       ...QuestHoverProvider.register(this.workspace),
+      ...QuestCompletionProvider.register(this.workspace),
       vscode.workspace.onDidChangeTextDocument((event) => {
         if (!isQuestUri(event.document.uri)) {
           return;

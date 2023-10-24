@@ -35,6 +35,27 @@ export class QuestDocument {
     );
   }
 
+  getAutoCompleteItems(position: vscode.Position): vscode.CompletionItem[] {
+    const matchingAutocompletes = filterRanges(
+      this.parseResults?.completions ?? [],
+      {
+        includesPosition: position,
+      },
+    );
+    return matchingAutocompletes
+      .map((c) =>
+        c.options.map((o) => {
+          const name = this.packed.getMoteName(o);
+          const item = new vscode.CompletionItem(name);
+          item.detail = this.packed.getSchema(o.schema_id)?.title;
+          item.insertText = `${name}@${o.id}`;
+          item.kind = vscode.CompletionItemKind.Class;
+          return item;
+        }),
+      )
+      .flat();
+  }
+
   getHover(position: vscode.Position): vscode.Hover | undefined {
     const matchingHovers = filterRanges(this.parseResults?.hovers ?? [], {
       includesPosition: position,

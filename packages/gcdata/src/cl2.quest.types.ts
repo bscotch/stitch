@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import { createBsArrayKey } from './helpers.js';
+import { Crashlands2 } from './types.cl2.js';
 import { Position } from './types.editor.js';
 
 export type ParsedLine = {
-  [K in keyof LineParts]?: {
+  [K in keyof LineParts | '_']?: {
     start: Position;
     end: Position;
-    value: LineParts[K];
+    value: K extends keyof LineParts ? LineParts[K] : string;
   };
 };
 
@@ -31,6 +32,7 @@ const linePartsSchema = z.object({
     .regex(/^[\w_-]+$/)
     .optional()
     .describe("MoteId (without the '@' prefix)"),
+  moteName: z.string().optional().describe('Mote Name'),
   emojiGroup: z
     .string()
     .optional()
@@ -68,9 +70,9 @@ const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]+?)\\)\\s*)';
 export const linePatterns = [
   /** Labeled Line */
   `^(?<label>[\\w -]+)${arrayTagPattern}?\\s*:\\s*(?<rest>.*)?$`,
-  /** Dialog Speaker */
+  /** Dialogue Speaker */
   `^(?<indicator>\\t)(${moteNamePattern}${moteTagPattern}?)?`,
-  /** Dialog Text */
+  /** Dialogue Text */
   `^(?<indicator>>)\\s*?${arrayTagPattern}?(\\s+${emojiGroupPattern}?(?<text>.*))?$`,
   /** Objective */
   `^(?<indicator>-)\\s*?${arrayTagPattern}?(\\s+(?<style>[\\w -]+))?$`,
@@ -94,7 +96,15 @@ export function parseIfMatch(
 
   const parsedLine = linePartsSchema.parse(rawMatch.groups!);
 
-  const result: ParsedLine = {};
+  const result: ParsedLine = {
+    _: {
+      start: startPosition,
+      end: { ...startPosition },
+      value: line,
+    },
+  };
+  result._!.end.character += line.length;
+  result._!.end.index += line.length;
   for (const [key, value] of Object.entries(parsedLine)) {
     if (typeof value !== 'undefined') {
       // Figure out where this is in the matches so we
@@ -111,7 +121,7 @@ export function parseIfMatch(
         start,
         end,
         value: value as any,
-      };
+      } as any;
     }
   }
   return result;
@@ -158,6 +168,11 @@ const pointers = {
   'end moments'() {
     return ['quest_end_moments'];
   },
+  '\t'(when: string) {
+    return [`quest_${when as 'start' | 'end'}_moments`, 'anykey'];
+  },
+} satisfies {
+  [prefix: string]: (extra: string) => [keyof Crashlands2.Quest, ...string[]];
 };
 
 export function lineIsArrayItem(line: string): boolean {
@@ -177,7 +192,7 @@ export function getPointerForLabel(
 ): string[] | null {
   label = label.toLowerCase();
   if (label in pointers) {
-    return pointers[label as keyof typeof pointers](arrayTag);
+    return pointers[label as keyof typeof pointers](arrayTag!);
   }
   return null;
 }

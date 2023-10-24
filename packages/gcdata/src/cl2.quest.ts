@@ -8,6 +8,7 @@ import {
   linePatterns,
   parseIfMatch,
 } from './cl2.quest.types.js';
+import { getAllowedSpeakers } from './cl2.quest.utils.js';
 import { bsArrayToArray, createBsArrayKey } from './helpers.js';
 import type { Crashlands2 } from './types.cl2.js';
 import { Range } from './types.editor.js';
@@ -18,6 +19,7 @@ export interface QuestUpdateResult {
   diagnostics: (Range & { message: string })[];
   hovers: (Range & { title?: string; description?: string })[];
   edits: (Range & { newText: string })[];
+  completions: (Range & { options: Mote[] })[];
 }
 
 export function questTextToMote(
@@ -25,10 +27,17 @@ export function questTextToMote(
   mote: Mote<Crashlands2.Quest>,
   packed: Packed,
 ): QuestUpdateResult {
+  const allowedSpeakerIds = getAllowedSpeakers(packed);
+  assert(
+    allowedSpeakerIds.length > 0,
+    'Should have at least one allowed speaker mote',
+  );
+
   const result: QuestUpdateResult = {
     diagnostics: [],
     hovers: [],
     edits: [],
+    completions: [],
   };
 
   const lines = text.split(/(\r?\n)/g);
@@ -90,7 +99,6 @@ export function questTextToMote(
 
     // Ensure the array tag. It goes right after the label or indicator.
     if (!parsedLine.arrayTag?.value && lineIsArrayItem(line)) {
-      console.log('ADDING TAG TO', line);
       const arrayTag = createBsArrayKey();
       const start = parsedLine.indicator?.end || parsedLine.label?.end!;
       result.edits.push({
@@ -107,7 +115,17 @@ export function questTextToMote(
 
     // Figure out what data/subschema is represented by this line
     const labelLower = parsedLine.label?.value?.toLowerCase();
-    if (labelLower) {
+    if (parsedLine.indicator?.value === '\t') {
+      // Then this is a dialog speaker line
+      // If there's no speaker, add an autocomplete
+      if (!parsedLine.moteName) {
+        result.completions.push({
+          start: parsedLine.indicator.end,
+          end: parsedLine.indicator.end,
+          options: allowedSpeakerIds,
+        });
+      }
+    } else if (labelLower) {
       const pointer = getPointerForLabel(
         labelLower,
         parsedLine.arrayTag?.value,
@@ -134,6 +152,7 @@ export function questTextToMote(
       assert(subschema, `No subschema found for pointer ${pointer}`);
       addHover(parsedLine.label!, subschema);
     } else {
+      // Then this is an "indicator" line. Indicators are prefixes that identify the kind of thing we're dealing with. Some of them are unambiguous, others require knowing what section we're in.
     }
 
     index += line.length;
