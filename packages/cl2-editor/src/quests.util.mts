@@ -54,3 +54,12 @@ export function filterRanges<R extends Range>(
     return true;
   });
 }
+
+export function getCursorPosition() {
+  const activeEditor = vscode.window.activeTextEditor;
+  if (!activeEditor) {
+    return;
+  }
+  const position = activeEditor.selection.active;
+  return position;
+}

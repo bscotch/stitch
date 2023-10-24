@@ -163,7 +163,7 @@ const pointers = {
 export function lineIsArrayItem(line: string): boolean {
   if (
     line.match(
-      /^(\t|!|name|draft|storyline|(start|end) (requirements|moments)|objectives|log|giver|receiver)/i,
+      /^(\t|!|\+|name|draft|storyline|(start|end) (requirements|moments)|objectives|log|giver|receiver)/i,
     )
   ) {
     return false;

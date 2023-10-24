@@ -10,7 +10,12 @@ import {
 import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
-import { filterRanges, parseGameChangerUri, range } from './quests.util.mjs';
+import {
+  filterRanges,
+  getCursorPosition,
+  parseGameChangerUri,
+  range,
+} from './quests.util.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
 
 /** Representation of an active Quest Document */
@@ -48,6 +53,49 @@ export class QuestDocument {
     return new vscode.Hover(md);
   }
 
+  onEnter(shifted?: boolean) {
+    const cursor = getCursorPosition();
+    if (!cursor) return;
+
+    const newEdit = new vscode.WorkspaceEdit();
+
+    // Get the line at this position
+    const line = this.document!.lineAt(cursor.line);
+    if (line.text.match(/^.(#\w+)?\s*$/)) {
+      // Then we want to replace that line with a blank one
+      newEdit.delete(this.uri, line.range);
+    } else if (line.text.match(/^\t(?<name>.*?)\s*(?<moteId>@[a-z_0-9]+)/)) {
+      // Then we're at the end of a dialog speaker line,
+      // and probably want to add some dialog
+      newEdit.insert(this.uri, cursor, '\n>');
+    } else if (line.text.match(/^(Start|End) Moments:/)) {
+      // Then we probably want to start a dialog
+      newEdit.insert(this.uri, cursor, '\n\t');
+    } else if (line.text.match(/^(Start|End) Requirements:/)) {
+      // Then we probably want to add a requirement
+      newEdit.insert(this.uri, cursor, '\n?');
+    } else if (line.text.match(/^Objectives:/)) {
+      // Then we probably want to add an objective
+      newEdit.insert(this.uri, cursor, '\n-');
+    } else if (line.text.match(/^-/)) {
+      // Then we probably want to add another objective
+      newEdit.insert(this.uri, cursor, '\n-');
+    } else if (line.text.match(/^(>|!|\+)/)) {
+      // If shifted, we want to add another dialog line
+      // Otherwise we want to create a new dialog speaker
+      if (shifted) {
+        newEdit.insert(this.uri, cursor, `\n${line.text[0]}`);
+      } else {
+        newEdit.insert(this.uri, cursor, '\n\n\t');
+      }
+    } else {
+      // Then we just want to add a newline
+      newEdit.insert(this.uri, cursor, '\n');
+    }
+    vscode.workspace.applyEdit(newEdit);
+    this.parse(this.document?.getText());
+  }
+
   parse(content?: string) {
     if (!content) {
       content = this.toString();
@@ -58,6 +106,7 @@ export class QuestDocument {
     for (const edit of this.parseResults.edits) {
       const newEdit = new vscode.WorkspaceEdit();
       newEdit.replace(this.uri, range(edit), edit.newText);
+      console.log('Applying edit', edit);
       vscode.workspace.applyEdit(newEdit);
     }
 

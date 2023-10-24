@@ -32,7 +32,28 @@
     "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --watch languages --watch ../gcdata/dist --exec \"npm run build\""
   },
   "contributes": {
-    "commands": [],
+    "commands": [
+      {
+        "command": "crashlands.quests.enter",
+        "enablement": "editorLangId == 'cl2-quest'",
+        "title": "On Enter"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "crashlands.quests.enter",
+        "key": "enter",
+        "when": "editorLangId == 'cl2-quest'"
+      },
+      {
+        "command": "crashlands.quests.enter",
+        "key": "shift+enter",
+        "when": "editorLangId == 'cl2-quest'",
+        "args": {
+          "shift": true
+        }
+      }
+    ],
     "configuration": {
       "title": "Crashlands",
       "properties": {}

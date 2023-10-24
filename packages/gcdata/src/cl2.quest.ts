@@ -90,6 +90,7 @@ export function questTextToMote(
 
     // Ensure the array tag. It goes right after the label or indicator.
     if (!parsedLine.arrayTag?.value && lineIsArrayItem(line)) {
+      console.log('ADDING TAG TO', line);
       const arrayTag = createBsArrayKey();
       const start = parsedLine.indicator?.end || parsedLine.label?.end!;
       result.edits.push({

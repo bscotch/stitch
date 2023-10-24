@@ -10,6 +10,15 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     return QuestDocument.from(uri, this.workspace);
   }
 
+  protected getActiveMoteDoc(): QuestDocument | undefined {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+      return;
+    }
+    const uri = activeEditor.document.uri;
+    return this.getMoteDoc(uri);
+  }
+
   readFile(uri: vscode.Uri): Uint8Array {
     const doc = this.getMoteDoc(uri);
     return new Uint8Array(Buffer.from(doc.toString(), 'utf-8'));
@@ -80,6 +89,13 @@ export class GameChangerFs implements vscode.FileSystemProvider {
         isCaseSensitive: true,
         isReadonly: false,
       }),
+      vscode.commands.registerCommand(
+        'crashlands.quests.enter',
+        (mods?: { shift?: boolean }) => {
+          const doc = provider.getActiveMoteDoc();
+          doc?.onEnter(mods?.shift);
+        },
+      ),
     ];
   }
 
