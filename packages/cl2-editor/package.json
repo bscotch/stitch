@@ -1,7 +1,7 @@
 {
   "name": "crashlands-editor",
   "displayName": "Crashlands 2 Editor",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "private": true,
   "description": "Tools for Crashlands 2 development.",
   "categories": [
@@ -39,6 +39,17 @@
         "title": "On Enter"
       }
     ],
+    "configuration": {
+      "title": "Crashlands",
+      "properties": {}
+    },
+    "grammars": [
+      {
+        "language": "cl2-quest",
+        "scopeName": "source.cl2-quest",
+        "path": "./syntaxes/cl2-quest.tmLanguage.json"
+      }
+    ],
     "keybindings": [
       {
         "command": "crashlands.quests.enter",
@@ -52,17 +63,6 @@
         "args": {
           "shift": true
         }
-      }
-    ],
-    "configuration": {
-      "title": "Crashlands",
-      "properties": {}
-    },
-    "grammars": [
-      {
-        "language": "cl2-quest",
-        "scopeName": "source.cl2-quest",
-        "path": "./syntaxes/cl2-quest.tmLanguage.json"
       }
     ],
     "languages": [
