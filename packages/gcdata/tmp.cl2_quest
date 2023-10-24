@@ -3,12 +3,6 @@ Storyline: Graal's Cabin@graalfirststoryline
 Giver: Graal@graal
 Receiver: Graal@graal
 
-Log: Use Wrenchy, the most perfect Space Wrench, to place Popbark Flatplank floors.
-
-Objectives:
-
--#xgm0 Place Item
-
 Start Requirements:
 
 ?#j99m Quest: Craft 6 Popbark Floors@fq1501_dv
@@ -57,6 +51,12 @@ Drop Item#h3k7: Juicebox@item_juicebox
 
 	FLUX@item_flux
 >#l781 My sweet, sweet Space Wrench! How I've missed you. Time to show Graal what you can do!
+
+Log: Use Wrenchy, the most perfect Space Wrench, to place Popbark Flatplank floors.
+
+Objectives:
+
+-#xgm0 Place Item
 
 End Requirements:
 

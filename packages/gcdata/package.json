@@ -12,7 +12,8 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/pathy": "2.9.0"
+    "@bscotch/pathy": "2.9.0",
+    "zod": "3.22.4"
   },
   "devDependencies": {
     "json-schema-to-typescript": "13.1.1",

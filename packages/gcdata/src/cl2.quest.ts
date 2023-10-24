@@ -1,30 +1,23 @@
 import type { Packed } from './Packed.js';
 import { assert } from './assert.js';
-import { bsArrayToArray, isObjectSchema } from './helpers.js';
+import {
+  ParsedLine,
+  Section,
+  getPointerForLabel,
+  lineIsArrayItem,
+  linePatterns,
+  parseIfMatch,
+} from './cl2.quest.types.js';
+import { bsArrayToArray, createBsArrayKey } from './helpers.js';
 import type { Crashlands2 } from './types.cl2.js';
 import { Range } from './types.editor.js';
 import type { Bschema, Mote } from './types.js';
-import { capitalize, match, re, resolvePointerInSchema } from './util.js';
-
-// PATTERNS
-// Note: These patterns are defined so that they'll work on partial lines
-// as much as possible, so their group names should always be checked for existence.
-const arrayTagPattern = '(?:#(?<arrayTag>[a-z0-9]+))';
-const moteTagPattern = '(?:@(?<moteTag>[a-z0-9_]+))';
-const moteNamePattern = "(?<moteName>[A-Za-z0-9 '-]+)";
-const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]+?)\\)\\s*)';
-const labeledLinePattern = `^(?<label>[\\w -]+)${arrayTagPattern}?\\s*:\\s*(?<rest>.*)?$`;
-const dialogSpeakerPattern = `^\\t(${moteNamePattern}${moteTagPattern}?)?`;
-const dialogTextPattern = `^>\\s*?${arrayTagPattern}?(\\s+${emojiGroupPattern}?(?<text>.*))?$`;
-const objectivePattern = `^-\\s*?${arrayTagPattern}?(\\s+(?<style>[\\w -]+))?$`;
-const emoteDeclarationPattern = `^:\\)\\s*${arrayTagPattern}?`;
-const emotePattern = `^!\\s*?${arrayTagPattern}?(\\s+${moteNamePattern}${moteTagPattern}\\s+${emojiGroupPattern})?`;
-const addItemPattern = `^\\+((?<count>\\d+)\\s+${moteNamePattern}${moteTagPattern})?`;
-const requirementPattern = `^\\?\\s*?${arrayTagPattern}?((\\s+(?<style>[\\w -]+))(:\\s*(?<rest>.*))?)?$`;
+import { capitalize, resolvePointerInSchema } from './util.js';
 
 export interface QuestUpdateResult {
   diagnostics: (Range & { message: string })[];
   hovers: (Range & { title?: string; description?: string })[];
+  edits: (Range & { newText: string })[];
 }
 
 export function questTextToMote(
@@ -35,12 +28,25 @@ export function questTextToMote(
   const result: QuestUpdateResult = {
     diagnostics: [],
     hovers: [],
+    edits: [],
   };
 
   const lines = text.split(/(\r?\n)/g);
   let index = 0;
   let lineNumber = 0;
-  const schemaStack: Bschema[] = [packed.getSchema(mote.schema_id)];
+
+  const addHover = (range: Range, subschema: Bschema | undefined) => {
+    if (subschema?.title || subschema?.description) {
+      result.hovers.push({
+        ...range,
+        title: subschema.title,
+        description: subschema.description,
+      });
+    }
+  };
+
+  /** The lowercased name of the section we're in. If `undefined` we're in the root. */
+  let section: Section | undefined;
 
   for (const line of lines) {
     // Is this just a newline?
@@ -57,104 +63,18 @@ export function questTextToMote(
       continue;
     }
 
-    // Is it a "Label:" line?
-    if (re(labeledLinePattern).test(line)) {
-      let { label, arrayTag, rest } = match(line, labeledLinePattern).groups;
-      const labelRange: Range = {
-        start: { index, line: lineNumber, character: 0 },
-        end: {
-          index: index + label!.length,
-          line: lineNumber,
-          character: label!.length,
-        },
-      };
-      let dataPointer:
-        | [keyof Crashlands2.Quest, ...(string | undefined)[]]
-        | undefined;
-      switch (label?.toLowerCase()) {
-        case 'name':
-          dataPointer = ['name'];
-          break;
-        case 'storyline':
-          dataPointer = ['storyline'];
-          break;
-        case 'draft':
-          dataPointer = ['wip', 'draft'];
-          break;
-        case 'note':
-          dataPointer = ['wip', 'comments', arrayTag];
-          break;
-        case 'giver':
-          dataPointer = ['quest_giver', 'item'];
-          break;
-        case 'receiver':
-          dataPointer = ['quest_receiver', 'item'];
-          break;
-        case 'log':
-          dataPointer = ['quest_start_log', 'text'];
-          break;
-        case 'objectives':
-          dataPointer = ['objectives'];
-          break;
-        case 'clue':
-          dataPointer = ['clues', arrayTag];
-          break;
-        case 'start requirements':
-          dataPointer = ['quest_start_requirements'];
-          break;
-        case 'start moments':
-          dataPointer = ['quest_start_moments'];
-          break;
-        case 'end requirements':
-          dataPointer = ['quest_end_requirements'];
-          break;
-        case 'end moments':
-          dataPointer = ['quest_end_moments'];
-          break;
-      }
-      // TODO: If no match, then the label should be an enum option from a "style" field of the data structure we're inside of
-      if (dataPointer) {
-        const subschema = resolvePointerInSchema(
-          dataPointer as string[],
-          mote,
-          packed,
-        );
-        // Update the schemastack if this is an object schema
-        if (isObjectSchema(subschema)) {
-          schemaStack.push(subschema);
-        }
-        // Add hovertext for the label
-        if (subschema.description || subschema.title) {
-          result.hovers.push({
-            ...labelRange,
-            title: subschema.title,
-            description: subschema.description,
-          });
-        }
-      } else {
-        console.error(`Unknown label: ${label}`, schemaStack.at(-1));
-      }
-    } else if (re(dialogSpeakerPattern).test(line)) {
-      const { moteName, moteTag } = match(line, dialogSpeakerPattern).groups;
-    } else if (re(dialogTextPattern).test(line)) {
-      const { arrayTag, emojiName, text } = match(
-        line,
-        dialogTextPattern,
-      ).groups;
-    } else if (re(objectivePattern).test(line)) {
-      const { arrayTag, style } = match(line, objectivePattern).groups;
-    } else if (re(emoteDeclarationPattern).test(line)) {
-      const { arrayTag } = match(line, emoteDeclarationPattern).groups;
-    } else if (re(emotePattern).test(line)) {
-      const { arrayTag, moteName, moteTag, emojiName } = match(
-        line,
-        emotePattern,
-      ).groups;
-    } else if (re(addItemPattern).test(line)) {
-      const { count, moteName, moteTag } = match(line, addItemPattern).groups;
-    } else if (re(requirementPattern).test(line)) {
-      const { arrayTag, style, rest } = match(line, requirementPattern).groups;
-    } else {
+    // Find the first matching pattern and pull the values
+    // from it.
+    let parsedLine: null | ParsedLine = null;
+    for (const pattern of linePatterns) {
+      parsedLine = parseIfMatch(pattern, line, {
+        index,
+        line: lineNumber,
+        character: 0,
+      });
+      if (parsedLine) break;
+    }
+    if (!parsedLine) {
       result.diagnostics.push({
         message: `Unfamiliar syntax: ${line}`,
         start: { index, line: lineNumber, character: 0 },
@@ -164,6 +84,55 @@ export function questTextToMote(
           character: line.length,
         },
       });
+      index += line.length;
+      continue;
+    }
+
+    // Ensure the array tag. It goes right after the label or indicator.
+    if (!parsedLine.arrayTag?.value && lineIsArrayItem(line)) {
+      const arrayTag = createBsArrayKey();
+      const start = parsedLine.indicator?.end || parsedLine.label?.end!;
+      result.edits.push({
+        start,
+        end: start,
+        newText: `#${arrayTag}`,
+      });
+      parsedLine.arrayTag = {
+        start,
+        end: start,
+        value: arrayTag,
+      };
+    }
+
+    // Figure out what data/subschema is represented by this line
+    const labelLower = parsedLine.label?.value?.toLowerCase();
+    if (labelLower) {
+      const pointer = getPointerForLabel(
+        labelLower,
+        parsedLine.arrayTag?.value,
+      );
+      let subschema: Bschema | undefined;
+      if (pointer) {
+        // Then we're in a new "section"
+        section = labelLower as Section;
+        subschema = resolvePointerInSchema(pointer, mote, packed);
+        assert(subschema, `No subschema found for pointer ${pointer}`);
+        addHover(parsedLine.label!, subschema);
+      } else {
+        // Then based on the section we're in we'll have different needs
+        subschema = resolvePointerInSchema(
+          [
+            ...getPointerForLabel(section!, undefined)!,
+            parsedLine.arrayTag?.value || createBsArrayKey(),
+            'element',
+          ],
+          mote,
+          packed,
+        );
+      }
+      assert(subschema, `No subschema found for pointer ${pointer}`);
+      addHover(parsedLine.label!, subschema);
+    } else {
     }
 
     index += line.length;

@@ -247,6 +247,9 @@ importers:
       '@bscotch/pathy':
         specifier: 2.9.0
         version: 2.9.0
+      zod:
+        specifier: 3.22.4
+        version: 3.22.4
     devDependencies:
       json-schema-to-typescript:
         specifier: 13.1.1
@@ -6864,7 +6867,6 @@ packages:
 
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
-    dev: true
 
   /zx@7.2.3:
     resolution: {integrity: sha512-QODu38nLlYXg/B/Gw7ZKiZrvPkEsjPN3LQ5JFXM7h0JvwhEdPNNl+4Ao1y4+o3CLNiDUNcwzQYZ4/Ko7kKzCMA==}

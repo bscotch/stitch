@@ -1,5 +1,4 @@
-import { isQuestMote, questTextToMote } from '@bscotch/gcdata';
-import { TextDecoder } from 'node:util';
+import { isQuestMote } from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 import { crashlandsEvents } from './events.mjs';
@@ -7,12 +6,12 @@ import { QuestDocument } from './quests.doc.mjs';
 import { CrashlandsWorkspace } from './workspace.mjs';
 
 export class GameChangerFs implements vscode.FileSystemProvider {
-  protected getMote(uri: vscode.Uri): QuestDocument {
+  protected getMoteDoc(uri: vscode.Uri): QuestDocument {
     return QuestDocument.from(uri, this.workspace);
   }
 
   readFile(uri: vscode.Uri): Uint8Array {
-    const doc = this.getMote(uri);
+    const doc = this.getMoteDoc(uri);
     return new Uint8Array(Buffer.from(doc.toString(), 'utf-8'));
   }
 
@@ -40,14 +39,8 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     content: Uint8Array,
     options: { readonly create: boolean; readonly overwrite: boolean },
   ): void | Thenable<void> {
-    const mote = this.getMote(uri);
-    assertInternalClaim(isQuestMote(mote), 'Only quests are supported.');
-    TextDecoder;
-    const parseResults = questTextToMote(
-      new TextDecoder('utf-8').decode(content),
-      mote,
-      this.workspace.packed,
-    );
+    const doc = this.getMoteDoc(uri);
+    assertInternalClaim(isQuestMote(doc.mote), 'Only quests are supported.');
     throw new Error('WriteFile not implemented.');
   }
   delete(
@@ -76,7 +69,7 @@ export class GameChangerFs implements vscode.FileSystemProvider {
       const doc = vscode.workspace.textDocuments.find(
         (d) => d.uri.toString() === uri.toString(),
       );
-      const moteDoc = provider.getMote(uri);
+      const moteDoc = provider.getMoteDoc(uri);
       if (!moteDoc) return;
       if (doc) {
         moteDoc.parse(doc.getText());

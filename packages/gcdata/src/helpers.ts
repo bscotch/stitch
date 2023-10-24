@@ -39,10 +39,13 @@ export function isStorylineMote(
 }
 
 export function isObjectSchema(schema: any): schema is BschemaObject {
-  return !!(
-    schema.type === 'object' ||
-    schema.properties ||
-    schema.additionalProperties
+  return (
+    !!schema &&
+    !!(
+      schema.type === 'object' ||
+      schema.properties ||
+      schema.additionalProperties
+    )
   );
 }
 

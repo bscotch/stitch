@@ -24,6 +24,12 @@ export class QuestDocument {
   ) {}
   protected parseResults: QuestUpdateResult | undefined;
 
+  get document(): vscode.TextDocument | undefined {
+    return vscode.workspace.textDocuments.find(
+      (doc) => doc.uri.toString() === this.uri.toString(),
+    );
+  }
+
   getHover(position: vscode.Position): vscode.Hover | undefined {
     const matchingHovers = filterRanges(this.parseResults?.hovers ?? [], {
       includesPosition: position,
@@ -47,6 +53,15 @@ export class QuestDocument {
       content = this.toString();
     }
     this.parseResults = questTextToMote(content, this.mote, this.packed);
+
+    // Apply any edits
+    for (const edit of this.parseResults.edits) {
+      const newEdit = new vscode.WorkspaceEdit();
+      newEdit.replace(this.uri, range(edit), edit.newText);
+      vscode.workspace.applyEdit(newEdit);
+    }
+
+    // Update diagnostics
     diagnostics.set(
       this.uri,
       this.parseResults.diagnostics.map(
