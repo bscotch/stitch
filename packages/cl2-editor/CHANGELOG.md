@@ -1,5 +1,13 @@
 # Crashlands 2 Editor Changelog
 
+## 0.3.0 (2023-10-24)
+
+### Features
+
+- Now supporting autocomplete for speaker names
+- Added improved onEnter behavior in the Quest editor
+- Now auto-adding new array tags
+
 ## 0.2.3 (2023-10-18)
 
 ### Fixes
