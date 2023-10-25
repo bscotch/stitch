@@ -31,6 +31,7 @@ export class QuestCompletionProvider implements vscode.CompletionItemProvider {
         { scheme: 'bschema', language: 'cl2-quest' },
         provider,
         '\t',
+        '@',
       ),
     ];
   }

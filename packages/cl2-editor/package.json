@@ -132,7 +132,8 @@
     "completionProvider": {
       "resolveProvider": "true",
       "triggerCharacters": [
-        "\t"
+        "\t",
+        "@"
       ]
     },
     "hoverProvider": "true"

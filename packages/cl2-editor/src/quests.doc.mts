@@ -42,7 +42,14 @@ export class QuestDocument {
         includesPosition: position,
       },
     );
-    return matchingAutocompletes
+    // Get the character before the position. If it's an '@' then
+    // we want to display ALL motes as options if we didn't get a list
+    // of mote autocompletes. That way the user can still get completion
+    // support for things that aren't fully implemented.
+    const line = this.document!.lineAt(position.line);
+    const isAtTrigger = line.text[position.character - 1] === '@';
+
+    const completes = matchingAutocompletes
       .map((c) => {
         if (c.type === 'motes') {
           return c.options.map((o) => {
@@ -66,6 +73,31 @@ export class QuestDocument {
         return [];
       })
       .flat();
+    if (
+      isAtTrigger &&
+      !completes.find((c) => c.kind === vscode.CompletionItemKind.Class)
+    ) {
+      completes.push(
+        ...this.packed.listMotes().map((mote) => {
+          const name = this.packed.getMoteName(mote);
+          const item = new vscode.CompletionItem(name);
+          item.detail = this.packed.getSchema(mote.schema_id)?.title;
+          item.insertText = `${name}@${mote.id}`;
+          item.kind = vscode.CompletionItemKind.Class;
+          // These need to delete the '@' character that triggered the autocomplete
+          item.additionalTextEdits = [
+            vscode.TextEdit.delete(
+              new vscode.Range(
+                position.translate(0, -1),
+                position.translate(0, 0),
+              ),
+            ),
+          ];
+          return item;
+        }),
+      );
+    }
+    return completes;
   }
 
   getHover(position: vscode.Position): vscode.Hover | undefined {

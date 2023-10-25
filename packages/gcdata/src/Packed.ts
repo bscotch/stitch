@@ -40,6 +40,10 @@ export class Packed {
     return this.data.schemas[schemaId as SchemaId];
   }
 
+  listMotes(): Mote[] {
+    return Object.values(this.data.motes);
+  }
+
   listMotesBySchema<D = unknown>(
     ...schemaId: (string | SchemaId)[]
   ): Mote<D>[] {
