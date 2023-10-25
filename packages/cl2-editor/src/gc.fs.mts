@@ -79,9 +79,12 @@ export class GameChangerFs implements vscode.FileSystemProvider {
         (d) => d.uri.toString() === uri.toString(),
       );
       const moteDoc = provider.getMoteDoc(uri);
-      if (!moteDoc) return;
-      if (doc) {
+      if (!moteDoc) {
+        console.warn("Couldn't find mote doc for", uri.toString());
+      } else if (doc) {
         moteDoc.parse(doc.getText());
+      } else {
+        console.warn("Couldn't find doc for", uri.toString());
       }
     });
     return [

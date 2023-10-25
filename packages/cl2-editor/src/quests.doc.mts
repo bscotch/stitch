@@ -1,12 +1,12 @@
 import {
   QuestUpdateResult,
   isQuestMote,
-  questMoteToText,
-  questTextToMote,
+  parseStringifiedMote,
   type Crashlands2,
   type Mote,
   type Packed,
 } from '@bscotch/gcdata';
+import { stringifyMote } from '@bscotch/gcdata/dist/cl2.quest.stringify.js';
 import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
@@ -165,35 +165,42 @@ export class QuestDocument {
   }
 
   parse(content?: string) {
-    if (!content) {
-      content = this.toString();
-    }
-    this.parseResults = questTextToMote(content, this.mote, this.packed);
+    try {
+      if (!content) {
+        content = this.toString();
+      }
+      this.parseResults = parseStringifiedMote(
+        content!,
+        this.mote,
+        this.packed,
+      );
 
-    // Apply any edits
-    for (const edit of this.parseResults.edits) {
-      const newEdit = new vscode.WorkspaceEdit();
-      newEdit.replace(this.uri, range(edit), edit.newText);
-      console.log('Applying edit', edit);
-      vscode.workspace.applyEdit(newEdit);
-    }
+      // Apply any edits
+      for (const edit of this.parseResults.edits) {
+        const newEdit = new vscode.WorkspaceEdit();
+        newEdit.replace(this.uri, range(edit), edit.newText);
+        vscode.workspace.applyEdit(newEdit);
+      }
 
-    // Update diagnostics
-    diagnostics.set(
-      this.uri,
-      this.parseResults.diagnostics.map(
-        (d) =>
-          new vscode.Diagnostic(
-            range(d),
-            d.message,
-            vscode.DiagnosticSeverity.Error,
-          ),
-      ),
-    );
+      // Update diagnostics
+      diagnostics.set(
+        this.uri,
+        this.parseResults.diagnostics.map(
+          (d) =>
+            new vscode.Diagnostic(
+              range(d),
+              d.message,
+              vscode.DiagnosticSeverity.Error,
+            ),
+        ),
+      );
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   toString() {
-    return questMoteToText(this.mote as Mote<Crashlands2.Quest>, this.packed);
+    return stringifyMote(this.mote as Mote<Crashlands2.Quest>, this.packed);
   }
 
   static from(uri: vscode.Uri, workspace: CrashlandsWorkspace) {

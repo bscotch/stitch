@@ -58,7 +58,7 @@ export function resolvePointerInSchema(
   pointer: string | string[],
   mote: Mote,
   packed: Packed,
-): Bschema {
+): Bschema | undefined {
   pointer = normalizePointer(pointer);
   let current = packed.getSchema(mote.schema_id);
   for (let i = 0; i < pointer.length; i++) {
@@ -88,6 +88,7 @@ export function resolvePointerInSchema(
       'in schema',
       mote.schema_id,
     );
+    return undefined;
   }
   return resolveOneOf(current, resolvePointer(pointer, mote.data));
 }

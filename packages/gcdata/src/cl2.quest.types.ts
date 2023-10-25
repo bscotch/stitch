@@ -33,6 +33,15 @@ export interface QuestUpdateResult {
   completions: (Range & CompletionsData)[];
 }
 
+export type Section = (typeof sections)[number];
+export const sections = [
+  'start moments',
+  'end moments',
+  'start requirements',
+  'end requirements',
+  'objectives',
+] as const;
+
 // PATTERNS
 // Note: These patterns are defined so that they'll work on partial lines
 // as much as possible, so their group names should always be checked for existence.
@@ -87,7 +96,7 @@ const linePartsSchema = z.object({
 
 const arrayTagPattern = '(?:#(?<arrayTag>[a-z0-9]+))';
 const moteTagPattern = '(?:@(?<moteTag>[a-z0-9_]+))';
-const moteNamePattern = "(?<moteName>[A-Za-z0-9 '-]+)";
+const moteNamePattern = "(?<moteName>[A-Za-z0-9:&?! '-]+)";
 const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]+?)\\)\\s*)';
 
 export const linePatterns = [
@@ -193,8 +202,27 @@ const labels = {
   'end moments'() {
     return ['quest_end_moments'];
   },
+  'drop item'(tag: string, section: Section) {
+    return [
+      section === 'start moments' ? 'quest_start_moments' : 'quest_end_moments',
+      tag || createBsArrayKey(),
+      'element',
+      'drops',
+    ];
+  },
+  'gain item'(tag: string, section: Section) {
+    return [
+      section === 'start moments' ? 'quest_start_moments' : 'quest_end_moments',
+      tag || createBsArrayKey(),
+      'element',
+      'items',
+    ];
+  },
 } satisfies {
-  [prefix: string]: (extra: string) => [keyof Crashlands2.Quest, ...string[]];
+  [prefix: string]: (
+    extra: string,
+    section: Section,
+  ) => [keyof Crashlands2.Quest, ...string[]];
 };
 
 export function lineIsArrayItem(line: string): boolean {
@@ -211,10 +239,11 @@ export function lineIsArrayItem(line: string): boolean {
 export function getPointerForLabel(
   label: string,
   arrayTag: string | undefined,
+  section: Section | undefined,
 ): string[] | null {
   label = label.toLowerCase();
   if (label in labels) {
-    return labels[label as keyof typeof labels](arrayTag!);
+    return labels[label as keyof typeof labels](arrayTag!, section!);
   }
   return null;
 }

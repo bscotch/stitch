@@ -5,7 +5,7 @@ import type { Crashlands2 } from './types.cl2.js';
 import type { Mote } from './types.js';
 import { capitalize } from './util.js';
 
-export function questMoteToText(mote: Mote<Crashlands2.Quest>, packed: Packed) {
+export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
   const storyline = packed.getMote(mote.data.storyline);
 
   // METADATA
