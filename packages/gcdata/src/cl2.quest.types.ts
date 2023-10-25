@@ -20,6 +20,10 @@ type CompletionsData =
   | {
       type: 'labels';
       options: Set<string>;
+    }
+  | {
+      type: 'booleans';
+      options: ['true', 'false'];
     };
 
 export interface QuestUpdateResult {
@@ -56,6 +60,7 @@ const linePartsSchema = z.object({
     .optional()
     .describe('The emoji name, including the outer `()`'),
   emojiName: z.string().optional().describe("The emoji's mote name"),
+  labelGroup: z.string().optional().describe('The label, including the `:`'),
   label: z.string().optional().describe('For `Label:Value` elements'),
   text: z
     .string()
@@ -86,8 +91,10 @@ const moteNamePattern = "(?<moteName>[A-Za-z0-9 '-]+)";
 const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]+?)\\)\\s*)';
 
 export const linePatterns = [
+  /** {Label: Mote} line */
+  `^(?<labelGroup>(?<label>[\\w -]+)${arrayTagPattern}?\\s*:)\\s*(${moteNamePattern}${moteTagPattern}?)?$`,
   /** Labeled Line */
-  `^(?<label>[\\w -]+)${arrayTagPattern}?\\s*:\\s*(?<rest>.*)?$`,
+  `^(?<labelGroup>(?<label>[\\w -]+)${arrayTagPattern}?\\s*:)\\s*(?<rest>.*)?$`,
   /** Dialogue Speaker */
   `^(?<indicator>\\t)(${moteNamePattern}${moteTagPattern}?)?`,
   /** Dialogue Text */
@@ -145,8 +152,8 @@ export function parseIfMatch(
   return result;
 }
 
-export type Section = keyof typeof pointers;
-const pointers = {
+export type Label = keyof typeof labels;
+const labels = {
   name() {
     return ['name'];
   },
@@ -186,9 +193,6 @@ const pointers = {
   'end moments'() {
     return ['quest_end_moments'];
   },
-  '\t'(when: string) {
-    return [`quest_${when as 'start' | 'end'}_moments`, 'anykey'];
-  },
 } satisfies {
   [prefix: string]: (extra: string) => [keyof Crashlands2.Quest, ...string[]];
 };
@@ -209,8 +213,8 @@ export function getPointerForLabel(
   arrayTag: string | undefined,
 ): string[] | null {
   label = label.toLowerCase();
-  if (label in pointers) {
-    return pointers[label as keyof typeof pointers](arrayTag!);
+  if (label in labels) {
+    return labels[label as keyof typeof labels](arrayTag!);
   }
   return null;
 }

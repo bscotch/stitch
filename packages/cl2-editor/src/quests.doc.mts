@@ -65,7 +65,7 @@ export class QuestDocument {
             const item = new vscode.CompletionItem(o);
             item.kind = vscode.CompletionItemKind.Property;
             item.detail = 'Label';
-            item.insertText = `${o}:`;
+            item.insertText = `${o}: `;
             item.keepWhitespace = true;
             return item;
           });
@@ -142,6 +142,9 @@ export class QuestDocument {
     } else if (line.text.match(/^Objectives:/)) {
       // Then we probably want to add an objective
       newEdit.insert(this.uri, cursor, '\n-');
+    } else if (line.text.match(/^Clue/)) {
+      // Then we are probably adding dialog
+      newEdit.insert(this.uri, cursor, '\n>');
     } else if (line.text.match(/^-/)) {
       // Then we probably want to add another objective
       newEdit.insert(this.uri, cursor, '\n-');

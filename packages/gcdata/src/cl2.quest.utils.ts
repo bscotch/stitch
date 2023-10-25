@@ -26,3 +26,23 @@ export function getAllowedSpeakers(packed: Packed) {
     ...speakerSubchema.formatProperties!.allowSchemas!,
   );
 }
+
+export function getAllowedGivers(packed: Packed) {
+  const giverSubchema = resolvePointerInSchema(
+    ['quest_giver', 'item'],
+    {
+      schema_id: 'cl2_quest',
+      data: {
+        quest_giver: {
+          item: {
+            item: 'any',
+          },
+        },
+      },
+    } as any,
+    packed,
+  ) as BschemaMoteId;
+  return packed.listMotesBySchema(
+    ...giverSubchema.formatProperties!.allowSchemas!,
+  );
+}
