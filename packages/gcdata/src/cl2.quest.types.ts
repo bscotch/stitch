@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { createBsArrayKey } from './helpers.js';
 import { Crashlands2 } from './types.cl2.js';
-import { Position } from './types.editor.js';
+import { Position, Range } from './types.editor.js';
+import { Mote } from './types.js';
 
 export type ParsedLine = {
   [K in keyof LineParts | '_']?: {
@@ -10,6 +11,23 @@ export type ParsedLine = {
     value: K extends keyof LineParts ? LineParts[K] : string;
   };
 };
+
+type CompletionsData =
+  | {
+      type: 'motes';
+      options: Mote[];
+    }
+  | {
+      type: 'labels';
+      options: Set<string>;
+    };
+
+export interface QuestUpdateResult {
+  diagnostics: (Range & { message: string })[];
+  hovers: (Range & { title?: string; description?: string })[];
+  edits: (Range & { newText: string })[];
+  completions: (Range & CompletionsData)[];
+}
 
 // PATTERNS
 // Note: These patterns are defined so that they'll work on partial lines

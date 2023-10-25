@@ -43,16 +43,28 @@ export class QuestDocument {
       },
     );
     return matchingAutocompletes
-      .map((c) =>
-        c.options.map((o) => {
-          const name = this.packed.getMoteName(o);
-          const item = new vscode.CompletionItem(name);
-          item.detail = this.packed.getSchema(o.schema_id)?.title;
-          item.insertText = `${name}@${o.id}`;
-          item.kind = vscode.CompletionItemKind.Class;
-          return item;
-        }),
-      )
+      .map((c) => {
+        if (c.type === 'motes') {
+          return c.options.map((o) => {
+            const name = this.packed.getMoteName(o);
+            const item = new vscode.CompletionItem(name);
+            item.detail = this.packed.getSchema(o.schema_id)?.title;
+            item.insertText = `${name}@${o.id}`;
+            item.kind = vscode.CompletionItemKind.Class;
+            return item;
+          });
+        } else if (c.type === 'labels') {
+          return [...c.options].map((o) => {
+            const item = new vscode.CompletionItem(o);
+            item.kind = vscode.CompletionItemKind.Property;
+            item.detail = 'Label';
+            item.insertText = `${o}:`;
+            item.keepWhitespace = true;
+            return item;
+          });
+        }
+        return [];
+      })
       .flat();
   }
 

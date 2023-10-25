@@ -2,6 +2,7 @@ import type { Packed } from './Packed.js';
 import { assert } from './assert.js';
 import {
   ParsedLine,
+  QuestUpdateResult,
   Section,
   getPointerForLabel,
   lineIsArrayItem,
@@ -14,13 +15,7 @@ import type { Crashlands2 } from './types.cl2.js';
 import { Range } from './types.editor.js';
 import type { Bschema, Mote } from './types.js';
 import { capitalize, resolvePointerInSchema } from './util.js';
-
-export interface QuestUpdateResult {
-  diagnostics: (Range & { message: string })[];
-  hovers: (Range & { title?: string; description?: string })[];
-  edits: (Range & { newText: string })[];
-  completions: (Range & { options: Mote[] })[];
-}
+export type { QuestUpdateResult } from './cl2.quest.types.js';
 
 export function questTextToMote(
   text: string,
@@ -32,6 +27,27 @@ export function questTextToMote(
     allowedSpeakerIds.length > 0,
     'Should have at least one allowed speaker mote',
   );
+
+  /**
+   * Shared list of keywords that can be used at the start of any line,
+   * with required-unique entries removed when found.
+   */
+  const nonUniqueGlobalLabels = new Set<string>(['Clue', 'Note']);
+  const availableGlobalLabels = new Set<string>([
+    'Draft',
+    'Name',
+    'Storyline',
+    'Giver',
+    'Receiver',
+    'Note',
+    'Clue',
+    'Start Requirements',
+    'Start Moments',
+    'End Requirements',
+    'End Moments',
+    'Log',
+    'Objectives',
+  ]);
 
   const result: QuestUpdateResult = {
     diagnostics: [],
@@ -68,7 +84,13 @@ export function questTextToMote(
 
     // Is this just a blank line?
     if (!line) {
-      // TODO: Add available autocompletes
+      // Add global autocompletes
+      result.completions.push({
+        type: 'labels',
+        start: { index, line: lineNumber, character: 0 },
+        end: { index, line: lineNumber, character: 0 },
+        options: availableGlobalLabels,
+      });
       continue;
     }
 
@@ -113,6 +135,15 @@ export function questTextToMote(
       };
     }
 
+    // If this has a label, remove it from the list of available labels
+    if (
+      parsedLine.label?.value &&
+      availableGlobalLabels.has(parsedLine.label.value) &&
+      !nonUniqueGlobalLabels.has(parsedLine.label.value)
+    ) {
+      availableGlobalLabels.delete(parsedLine.label.value);
+    }
+
     // Figure out what data/subschema is represented by this line
     const labelLower = parsedLine.label?.value?.toLowerCase();
     if (parsedLine.indicator?.value === '\t') {
@@ -120,6 +151,7 @@ export function questTextToMote(
       // If there's no speaker, add an autocomplete
       if (!parsedLine.moteName) {
         result.completions.push({
+          type: 'motes',
           start: parsedLine.indicator.end,
           end: parsedLine.indicator.end,
           options: allowedSpeakerIds,
