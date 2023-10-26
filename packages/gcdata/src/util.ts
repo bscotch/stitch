@@ -65,10 +65,8 @@ export function resolvePointerInSchema(
     if ('$ref' in current) {
       current = packed.getSchema(current.$ref);
     }
-    current = resolveOneOf(
-      current,
-      resolvePointer(pointer.slice(0, i), mote.data),
-    );
+    const data = resolvePointer(pointer.slice(0, i), mote.data);
+    current = resolveOneOf(current, data);
     if ('properties' in current) {
       if (current.properties![pointer[i]]) {
         current = current.properties![pointer[i]];

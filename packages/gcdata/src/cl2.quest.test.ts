@@ -44,6 +44,19 @@ describe('Cl2 Quests', function () {
     await pathy('tmp.cl2_quest').write(stringifyMote(quest, packed));
   });
 
+  it('can get parse missing Drop Item without error', async function () {
+    // Note: This is for a specific issue that appeared during dev
+    const sample: string = await pathy('samples/broken.cl2_quest').read();
+    const packed = await Packed.from(sampleYypPath);
+    assert(packed, 'Packed data should be loaded');
+    const results = parseStringifiedMote(
+      sample,
+      packed.getMote('q_spice1') as any,
+      packed,
+    );
+    assert(results.diagnostics.length > 0, 'Should have errors');
+  });
+
   it('can convert quests to text and back without error', async function () {
     const packed = await Packed.from(sampleYypPath);
     assert(packed, 'Packed data should be loaded');
