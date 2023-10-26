@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.51.4 (2023-10-26)
+
+### Docs
+
+- Replaced youtube embed with a link
+
 ## 1.51.3 (2023-10-26)
 
 ### Docs
