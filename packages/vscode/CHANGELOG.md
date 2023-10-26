@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.51.3 (2023-10-26)
+
+### Docs
+
+- Embedded an overview video about using Stitch
+
 ## 1.51.2 (2023-10-18)
 
 ### Fixes
