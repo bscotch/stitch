@@ -2,6 +2,8 @@
 
 Edit your [GameMaker](https://gamemaker.io/en) projects in VSCode! This extension provides Intellisense and other features for GameMaker projects.
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/N0wnHauUQjA?si=e0CJkXaoZFm12AMh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
 *Read about recent changes in the [changelog](https://github.com/bscotch/stitch/blob/develop/packages/vscode/CHANGELOG.md).*
 
 **Careful!** Stitch is able to make large-scale, irreversible changes to GameMaker projects. Make sure you're using source control!
