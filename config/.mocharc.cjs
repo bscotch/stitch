@@ -1,4 +1,9 @@
-const matcherReporterPath = __dirname + '/mochaMatcherReporter.cjs';
+const reporter =
+  process.env.MOCHA_REPORTER === 'vscode-problem-matcher'
+    ? __dirname + '/mochaMatcherReporter.cjs'
+    : process.env.MOCHA_REPORTER === 'detailed'
+    ? __dirname + '/detailedReporter.cjs'
+    : 'spec';
 
 /** @type {import('mocha').MochaOptions} */
 module.exports = {
@@ -19,9 +24,6 @@ module.exports = {
   diff: true,
   inlineDiffs: true,
   parallel: true,
-  reporter:
-    process.env.MOCHA_REPORTER === 'vscode-problem-matcher'
-      ? matcherReporterPath
-      : 'spec',
+  reporter,
   require: 'source-map-support/register',
 };

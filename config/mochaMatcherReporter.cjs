@@ -28,6 +28,9 @@ class MatcherReporter {
       console.error(`> ${[filePath, line, col, err.message].join('::')}`);
       // Add the title on the subsequent line, in case we want to pull that too
       console.error(`~ ${test.fullTitle()}`);
+      if (err.cause) {
+        console.error('CAUSE', err.cause);
+      }
     });
   }
 }
