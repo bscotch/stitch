@@ -55,9 +55,9 @@ End Moments:
 	EMBLAA@npc_tendraam_baab
 >#kh43 Somethin' like that. I got a few extra Stinkbait. You can have those to start with. An' it's a cinch to make if you've got a Simple Net. I jotted down the recipe right here.
 
-?Gain Item#nksg
+?#nksg Gain Item
 
-?Drop Item#dvrb
+?#dvrb Drop Item
 
 	EMBLAA@npc_tendraam_baab
 >#f9vx Not sure where my notes 'bout Overpowerin' Stinkbait went, but you'll figure it out, like as not.

@@ -20,7 +20,9 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
     const comments = bsArrayToArray(mote.data.wip.comments);
     if (comments.length) {
       blocks.push(
-        ...bsArrayToArray(mote.data.wip.comments).map((c) => `// ${c.element}`),
+        ...bsArrayToArray(mote.data.wip.comments).map(
+          (c) => `//${arrayTag(c.id)} ${c.element}`,
+        ),
         '',
       );
     }
@@ -111,7 +113,7 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
           }
           line += emojiLines.join('\n');
         } else {
-          line += `?${moment.style}${arrayTag(momentContainer)}`;
+          line += `?${arrayTag(momentContainer)} ${moment.style}`;
         }
         blocks.push(line + '\n');
       }

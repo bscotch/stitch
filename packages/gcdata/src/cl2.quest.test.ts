@@ -1,7 +1,7 @@
 import { pathy } from '@bscotch/pathy';
 import { Packed } from './Packed.js';
 import { assert } from './assert.js';
-import { parseStringifiedMote } from './cl2.quest.js';
+import { parseStringifiedMote } from './cl2.quest.parse.js';
 import { stringifyMote } from './cl2.quest.stringify.js';
 import { bsArrayToArray, isQuestMote } from './helpers.js';
 import { Crashlands2 } from './types.cl2.js';

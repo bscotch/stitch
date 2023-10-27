@@ -34,13 +34,7 @@ export interface QuestUpdateResult {
 }
 
 export type Section = (typeof sections)[number];
-export const sections = [
-  'start moments',
-  'end moments',
-  'start requirements',
-  'end requirements',
-  'objectives',
-] as const;
+export const sections = ['start moments', 'end moments'] as const;
 
 // PATTERNS
 // Note: These patterns are defined so that they'll work on partial lines
@@ -94,30 +88,28 @@ const linePartsSchema = z.object({
     ),
 });
 
-const arrayTagPattern = '(?:#(?<arrayTag>[a-z0-9]+))';
+export const arrayTagPattern = '(?:#(?<arrayTag>[a-z0-9]+))';
 const moteTagPattern = '(?:@(?<moteTag>[a-z0-9_]+))';
 const moteNamePattern = "(?<moteName>[A-Za-z0-9:&?! '-]+)";
 const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]+?)\\)\\s*)';
 
 export const linePatterns = [
-  /** {Label: Mote} line */
+  /** Labeled Mote */
   `^(?<labelGroup>(?<label>[\\w -]+)${arrayTagPattern}?\\s*:)\\s*(${moteNamePattern}${moteTagPattern}?)?$`,
-  /** Labeled Line */
-  `^(?<labelGroup>(?<label>[\\w -]+)${arrayTagPattern}?\\s*:)\\s*(?<rest>.*)?$`,
   /** Dialogue Speaker */
   `^(?<indicator>\\t)(${moteNamePattern}${moteTagPattern}?)?`,
   /** Dialogue Text */
   `^(?<indicator>>)\\s*?${arrayTagPattern}?(\\s+${emojiGroupPattern}?(?<text>.*))?$`,
-  /** Objective */
-  `^(?<indicator>-)\\s*?${arrayTagPattern}?(\\s+(?<style>[\\w -]+))?$`,
+  /** Comment Line */
+  `^(?<indicator>//)\\s*?${arrayTagPattern}?\\s*(?<text>.*)$`,
   /** Emote Declaration */
   `^(?<indicator>:\\))\\s*${arrayTagPattern}?`,
   /** Emote */
   `^(?<indicator>!)\\s*?${arrayTagPattern}?(\\s+${moteNamePattern}${moteTagPattern}\\s+${emojiGroupPattern})?`,
-  /** Add Item */
-  `^(?<indicator>\\+)((?<count>\\d+)\\s+${moteNamePattern}${moteTagPattern})?`,
-  /** Requirement */
-  `^(?<indicator>\\?)\\s*?${arrayTagPattern}?((\\s+(?<style>[\\w -]+))(:\\s*(?<rest>.*))?)?$`,
+  /** Non-Dialog Moment */
+  `^(?<indicator>\\?)\\s*?${arrayTagPattern}?(\\s+(?<style>.*))?`,
+  /** Labeled Text */
+  `^(?<labelGroup>(?<label>[\\w -]+)\\s*:)\\s*(?<text>.*)?$`,
 ];
 
 export function parseIfMatch(
@@ -172,7 +164,7 @@ const labels = {
   draft() {
     return ['wip', 'draft'];
   },
-  note(tag?: string) {
+  '//'(tag?: string) {
     return ['wip', 'comments', tag || createBsArrayKey()];
   },
   giver() {
@@ -187,36 +179,11 @@ const labels = {
   clue(tag?: string) {
     return ['clues', tag || createBsArrayKey()];
   },
-  objectives() {
-    return ['objectives'];
-  },
-  'start requirements'() {
-    return ['quest_start_requirements'];
-  },
   'start moments'() {
     return ['quest_start_moments'];
   },
-  'end requirements'() {
-    return ['quest_end_requirements'];
-  },
   'end moments'() {
     return ['quest_end_moments'];
-  },
-  'drop item'(tag: string, section: Section) {
-    return [
-      section === 'start moments' ? 'quest_start_moments' : 'quest_end_moments',
-      tag || createBsArrayKey(),
-      'element',
-      'drops',
-    ];
-  },
-  'gain item'(tag: string, section: Section) {
-    return [
-      section === 'start moments' ? 'quest_start_moments' : 'quest_end_moments',
-      tag || createBsArrayKey(),
-      'element',
-      'items',
-    ];
   },
 } satisfies {
   [prefix: string]: (
@@ -243,7 +210,7 @@ export function getPointerForLabel(
 ): string[] | null {
   label = label.toLowerCase();
   if (label in labels) {
-    return labels[label as keyof typeof labels](arrayTag!, section!);
+    return labels[label as keyof typeof labels](arrayTag!);
   }
   return null;
 }

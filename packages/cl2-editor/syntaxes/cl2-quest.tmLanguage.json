@@ -15,6 +15,21 @@
     "general": {
       "patterns": [
         {
+          "name": "comment.line.double-slash.cl2-quest",
+          "match": "^(//)\\s*(?<arrayId>#[a-z_0-9]+)?\\s+(?<text>.*)",
+          "captures": {
+            "1": {
+              "name": "indicator.cl2-quest"
+            },
+            "2": {
+              "name": "id.array.cl2-quest"
+            },
+            "3": {
+              "name": "text.cl2-quest"
+            }
+          }
+        },
+        {
           "name": "moment.dialog.speaker.cl2-quest",
           "match": "^\\t(?<name>.*?)\\s*(?<moteId>@[a-z_0-9]+)",
           "captures": {
@@ -74,54 +89,6 @@
             },
             "5": {
               "name": "name.emoji.cl2-quest"
-            }
-          }
-        },
-        {
-          "name": "objective.cl2-quest",
-          "match": "^(-)(?<arrayId>#[a-z_0-9]+)?\\s+(?<style>[^:]+:?)?",
-          "captures": {
-            "1": {
-              "name": "indicator.cl2-quest"
-            },
-            "2": {
-              "name": "id.array.cl2-quest"
-            },
-            "3": {
-              "name": "style.cl2-quest"
-            }
-          }
-        },
-        {
-          "name": "requirement.cl2-quest",
-          "match": "^(\\?)(?<arrayId>#[a-z_0-9]+)?\\s+(?<style>[^:]+:?)?",
-          "captures": {
-            "1": {
-              "name": "indicator.cl2-quest"
-            },
-            "2": {
-              "name": "id.array.cl2-quest"
-            },
-            "3": {
-              "name": "style.cl2-quest"
-            }
-          }
-        },
-        {
-          "name": "moment.plus-item.cl2-quest",
-          "match": "^(\\+)(?<count>\\d+)\\s+(?<name>.*?)\\s*(?<moteId>@[a-z_0-9]+)",
-          "captures": {
-            "1": {
-              "name": "indicator.cl2-quest"
-            },
-            "2": {
-              "name": "count.cl2-quest"
-            },
-            "3": {
-              "name": "name.mote.cl2-quest"
-            },
-            "4": {
-              "name": "id.mote.cl2-quest"
             }
           }
         },
