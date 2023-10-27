@@ -1,4 +1,5 @@
 import type { Crashlands2 } from './types.cl2.js';
+import { Position } from './types.editor.js';
 import type { BschemaBsArray, BschemaObject, Mote } from './types.js';
 
 export interface BsArrayItem {
@@ -65,4 +66,19 @@ export function createBsArrayKey(length = 4) {
     key += characters[Math.floor(Math.random() * characters.length)];
   }
   return key;
+}
+
+export function changedPosition(
+  start: Position,
+  change: { characters: number },
+) {
+  const position = { ...start };
+  if (change.characters < 0 && position.character < -change.characters) {
+    position.index -= position.character;
+    position.character = 0;
+  } else {
+    position.character += change.characters;
+    position.index += change.characters;
+  }
+  return position;
 }

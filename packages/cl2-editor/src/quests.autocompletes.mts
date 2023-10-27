@@ -32,6 +32,7 @@ export class QuestCompletionProvider implements vscode.CompletionItemProvider {
         provider,
         '\t',
         '@',
+        '(',
       ),
     ];
   }

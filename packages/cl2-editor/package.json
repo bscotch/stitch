@@ -133,7 +133,8 @@
       "resolveProvider": "true",
       "triggerCharacters": [
         "\t",
-        "@"
+        "@",
+        "("
       ]
     },
     "hoverProvider": "true"

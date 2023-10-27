@@ -30,6 +30,10 @@ export function getMoteLists(packed: Packed) {
   const gainableItems = getGainableItems(packed);
   assert(gainableItems.length > 0, 'Should have at least one gainable mote');
 
+  const emojis =
+    packed.listMotesBySchema<Crashlands2.Schemas['cl2_emoji']>('cl2_emoji');
+  assert(emojis.length > 0, 'Should have at least one emoji mote');
+
   return {
     allowedSpeakers,
     allowedGivers,
@@ -37,6 +41,7 @@ export function getMoteLists(packed: Packed) {
     droppers,
     droppableItems,
     gainableItems,
+    emojis,
   };
 }
 

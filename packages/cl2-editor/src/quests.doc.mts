@@ -56,8 +56,22 @@ export class QuestDocument {
             const name = this.packed.getMoteName(o);
             const item = new vscode.CompletionItem(name);
             item.detail = this.packed.getSchema(o.schema_id)?.title;
-            item.insertText = `${name}@${o.id}`;
-            item.kind = vscode.CompletionItemKind.Class;
+            item.insertText =
+              o.schema_id === 'cl2_emoji' ? name : `${name}@${o.id}`;
+            item.kind =
+              o.schema_id === 'cl2_emoji'
+                ? vscode.CompletionItemKind.User
+                : vscode.CompletionItemKind.Class;
+            // If this was an emoji autocomplete, we'll want to +1 the cursor
+            // position to the right so that the cursor ends up after the ')'
+            // character.
+            if (o.schema_id === 'cl2_emoji') {
+              item.command = {
+                title: 'Move the cursor',
+                command: 'cursorMove',
+                arguments: [{ to: 'right' }],
+              };
+            }
             return item;
           });
         } else if (c.type === 'labels') {
@@ -126,33 +140,27 @@ export class QuestDocument {
 
     // Get the line at this position
     const line = this.document!.lineAt(cursor.line);
-    if (line.text.match(/^.(#\w+)?\s*$/)) {
+    if (line.text.match(/^\/\//)) {
+      // Then default to adding another comment line
+      newEdit.insert(this.uri, cursor, '\n// ');
+    } else if (line.text.match(/^.(#\w+)?\s*$/)) {
       // Then we want to replace that line with a blank one
       newEdit.delete(this.uri, line.range);
     } else if (line.text.match(/^\t(?<name>.*?)\s*(?<moteId>@[a-z_0-9]+)/)) {
       // Then we're at the end of a dialog speaker line,
       // and probably want to add some dialog
-      newEdit.insert(this.uri, cursor, '\n>');
+      newEdit.insert(this.uri, cursor, '\n> ');
     } else if (line.text.match(/^(Start|End) Moments:/)) {
       // Then we probably want to start a dialog
       newEdit.insert(this.uri, cursor, '\n\t');
-    } else if (line.text.match(/^(Start|End) Requirements:/)) {
-      // Then we probably want to add a requirement
-      newEdit.insert(this.uri, cursor, '\n?');
-    } else if (line.text.match(/^Objectives:/)) {
-      // Then we probably want to add an objective
-      newEdit.insert(this.uri, cursor, '\n-');
     } else if (line.text.match(/^Clue/)) {
       // Then we are probably adding dialog
-      newEdit.insert(this.uri, cursor, '\n>');
-    } else if (line.text.match(/^-/)) {
-      // Then we probably want to add another objective
-      newEdit.insert(this.uri, cursor, '\n-');
-    } else if (line.text.match(/^(>|!|\+)/)) {
+      newEdit.insert(this.uri, cursor, '\n> ');
+    } else if (line.text.match(/^(>|!|\?)/)) {
       // If shifted, we want to add another dialog line
       // Otherwise we want to create a new dialog speaker
       if (shifted) {
-        newEdit.insert(this.uri, cursor, `\n${line.text[0]}`);
+        newEdit.insert(this.uri, cursor, `\n${line.text[0]} `);
       } else {
         newEdit.insert(this.uri, cursor, '\n\n\t');
       }

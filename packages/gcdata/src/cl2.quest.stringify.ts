@@ -12,7 +12,7 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
   const blocks: string[] = [
     `Name: ${packed.getMoteName(mote)}`,
     `Storyline: ${packed.getMoteName(storyline)}${moteTag(storyline)}`,
-    `Draft: ${mote.data.wip?.draft || 'false'}\n`,
+    `Draft: ${mote.data.wip?.draft ? 'true' : 'false'}\n`,
   ];
 
   // NOTES
@@ -98,9 +98,10 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
           if (moment.speech.speaker !== lastSpeaker) {
             line += `\t${characterString(moment.speech.speaker)}\n`;
           }
-          line += `>${arrayTag(momentContainer)} ${emojiString(
-            moment.speech.emotion,
-          )}${moment.speech.text.text}`;
+          const emojiStr = emojiString(moment.speech.emotion);
+          line += `>${arrayTag(momentContainer)} ${
+            emojiStr ? emojiStr + ' ' : ''
+          }${moment.speech.text.text}`;
           lastSpeaker = moment.speech.speaker;
         } else if (moment.style === 'Emote') {
           const emojiLines: string[] = [`:)${arrayTag(momentContainer)}`];
@@ -133,7 +134,7 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
     if (!emojiId) return '';
     const emoji = packed.getMote(emojiId);
     const name = packed.getMoteName(emoji) || emoji.id;
-    return name ? `(${name}) ` : '';
+    return name ? `(${name})` : '';
   }
 
   function characterString(characterId: string) {

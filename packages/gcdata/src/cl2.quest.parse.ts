@@ -1,22 +1,20 @@
 import { Packed } from './Packed.js';
-import { assert } from './assert.js';
 import {
+  ParsedClue,
+  ParsedDialog,
+  ParsedEmojiGroup,
   ParsedLine,
   QuestUpdateResult,
-  Section,
   arrayTagPattern,
-  getPointerForLabel,
   lineIsArrayItem,
   linePatterns,
   parseIfMatch,
-  sections,
 } from './cl2.quest.types.js';
-import { getMomentStyleSchema, getMoteLists } from './cl2.quest.utils.js';
-import { createBsArrayKey } from './helpers.js';
+import { getMoteLists } from './cl2.quest.utils.js';
+import { changedPosition, createBsArrayKey } from './helpers.js';
 import { Crashlands2 } from './types.cl2.js';
-import { Position, Range } from './types.editor.js';
-import { Bschema, Mote } from './types.js';
-import { resolvePointerInSchema } from './util.js';
+import { Position } from './types.editor.js';
+import { Mote } from './types.js';
 
 export function parseStringifiedMote(
   text: string,
@@ -47,6 +45,12 @@ export function parseStringifiedMote(
     hovers: [],
     edits: [],
     completions: [],
+    parsed: {
+      clues: [],
+      quest_end_moments: [],
+      quest_start_moments: [],
+      comments: [],
+    },
   };
 
   const lines = text.split(/(\r?\n)/g);
@@ -54,23 +58,23 @@ export function parseStringifiedMote(
   let index = 0;
   let lineNumber = 0;
 
-  const addHover = (range: Range, subschema: Bschema | undefined) => {
-    if (subschema?.title || subschema?.description) {
-      result.hovers.push({
-        ...range,
-        title: subschema.title,
-        description: subschema.description,
-      });
+  const emojiIdFromName = (name: string | undefined): string | undefined => {
+    if (!name) {
+      return undefined;
     }
+    const emoji = motes.emojis.find(
+      (e) =>
+        packed.getMoteName(e).toLowerCase() === name?.trim().toLowerCase() ||
+        e.id === name?.trim(),
+    );
+    return emoji?.id;
   };
 
-  /**
-   * The lowercased name of the last section we transitioned to.
-   * (A "section" is created by certain top-level labels, like "Start Moments",
-   * that can contain multiple entries)
-   */
-  const sectionLabels = new Set(sections);
-  let section: Section | undefined;
+  /** The MoteId for the last speaker we saw. Used to figure out who to assign stuff to */
+  let lastSpeaker: undefined | string;
+  let lastClue: undefined | ParsedClue;
+  let lastMomentGroup: 'quest_start_moments' | 'quest_end_moments' | undefined;
+  let lastEmojiGroup: undefined | ParsedEmojiGroup;
 
   for (const line of lines) {
     const trace: any[] = [];
@@ -109,8 +113,7 @@ export function parseStringifiedMote(
         continue;
       }
 
-      // Find the first matching pattern and pull the values
-      // from it.
+      // Find the first matching pattern and pull the values from it.
       let parsedLine: null | ParsedLine = null;
       for (const pattern of linePatterns) {
         parsedLine = parseIfMatch(pattern, line, lineRange.start);
@@ -170,70 +173,129 @@ export function parseStringifiedMote(
       // Track common problems so that we don't need to repeat logic
       /** The character where a mote should exist. */
       let requiresMote: undefined | { at: Position; options: Mote[] };
-      let requiresEmoji: undefined | { at: Position; options: string[] };
+      let requiresEmoji: undefined | { at: Position; options: Mote[] };
 
-      // Figure out what data/subschema is represented by this line
+      // Work through each line type to add diagnostics and completions
       const labelLower = parsedLine.label?.value?.toLowerCase();
-      if (parsedLine.indicator?.value === '\t') {
-        requiresMote = {
-          at: parsedLine.indicator.end,
-          options: motes.allowedSpeakers,
-        };
-      } else if (labelLower) {
-        // Are we starting a new section?
-        if (sectionLabels.has(labelLower as Section)) {
-          section = labelLower as Section;
-        }
-        const pointer = getPointerForLabel(
-          labelLower,
-          parsedLine.arrayTag?.value,
-          section,
-        );
-        let subschema: Bschema | undefined;
-        trace.push({ pointer, parsedLine, section, moteId: mote.id });
-        if (pointer) {
-          subschema = resolvePointerInSchema(pointer, mote, packed);
-          assert(subschema, `No subschema found for pointer ${pointer}`);
-          addHover(parsedLine.label!, subschema);
-        } else if (section?.endsWith('moments')) {
-          // Then this is a moment style that is not yet implemented.
-          // It'll be in the form Label#arrayTag: Not Editable
-          subschema = getMomentStyleSchema(parsedLine.label!.value!, packed);
-        } else {
-          throw new Error(`No pointer found for label ${labelLower}`);
-        }
-        assert(subschema, `No subschema found for pointer ${pointer}`);
-        addHover(parsedLine.label!, subschema);
-        if (['giver', 'receiver'].includes(labelLower)) {
-          requiresMote = {
-            at: parsedLine.labelGroup!.end,
-            options: motes.allowedGivers,
-          };
-        } else if (labelLower === 'storyline') {
-          requiresMote = {
-            at: parsedLine.labelGroup!.end,
-            options: motes.storylines,
-          };
-        } else if (labelLower === 'clue') {
-          requiresMote = {
-            at: parsedLine.labelGroup!.end,
-            options: motes.allowedSpeakers,
-          };
-        }
-      } else {
-        // Then this is an "indicator" line. Indicators are prefixes that identify the kind of thing we're dealing with. Some of them are unambiguous, others require knowing what section we're in.
-        const indicator = parsedLine.indicator?.value!;
-        if (indicator === ':)') {
-          // Then this is a declaration line for an Emote moment
-        } else if (indicator === '!') {
-          // Then this is an emote within a Emote moment
-        } else if (indicator === '>') {
-          // Then this is a dialog line, either within a Clue or a Dialog Moment
-        } else if (indicator === '?') {
-          // Then this is a non-dialog quest moment
-        }
+      const indicator = parsedLine.indicator?.value;
+
+      // Resets
+      if (indicator !== '>') {
+        // Then we need to reset the speaker
+        lastSpeaker = undefined;
+        lastClue = undefined;
+      }
+      if (indicator !== '!') {
+        lastEmojiGroup = undefined;
       }
 
+      // Parsing
+      if (labelLower === 'start moments') {
+        lastMomentGroup = 'quest_start_moments';
+      } else if (labelLower === 'end moments') {
+        lastMomentGroup = 'quest_end_moments';
+      }
+      if (indicator === '\t') {
+        // No data gets stored here, this is just a convenience marker
+        // to set the speaker for the next set of dialog lines.
+        requiresMote = {
+          at: parsedLine.indicator!.end,
+          options: motes.allowedSpeakers,
+        };
+        lastSpeaker = parsedLine.moteTag?.value;
+      } else if (labelLower === 'clue') {
+        requiresMote = {
+          at: parsedLine.labelGroup!.end,
+          options: motes.allowedSpeakers,
+        };
+        lastClue = {
+          id: parsedLine.arrayTag?.value?.trim(),
+          speaker: parsedLine.moteTag?.value?.trim(),
+          phrases: [],
+        };
+        result.parsed.clues ||= [];
+        result.parsed.clues.push(lastClue);
+      } else if (indicator === '>') {
+        // Then this is a dialog line, either within a Clue or a Dialog Moment
+        const emoji = emojiIdFromName(parsedLine.emojiName?.value);
+        if (parsedLine.emojiGroup) {
+          // Emojis are optional. If we see a "group" (parentheses) then
+          // that changes to a requirement.
+          requiresEmoji = {
+            at: changedPosition(parsedLine.emojiGroup.start, { characters: 1 }),
+            options: motes.emojis,
+          };
+        }
+        const moment: ParsedDialog = {
+          id: parsedLine.arrayTag?.value?.trim(),
+          speaker: lastSpeaker,
+          emoji,
+          text: parsedLine.text?.value?.trim() || '',
+        };
+        if (lastClue) {
+          lastClue.phrases.push(moment);
+        } else if (lastMomentGroup) {
+          result.parsed[lastMomentGroup].push(moment);
+        } else {
+          // Then this is an error!
+          result.diagnostics.push({
+            message: `Dialog line without a Clue or Moment!`,
+            ...lineRange,
+          });
+        }
+      } else if (labelLower === 'name') {
+        result.parsed.name = parsedLine.moteName?.value?.trim();
+      } else if (labelLower === 'draft') {
+        result.parsed.draft = parsedLine.moteName?.value?.trim() === 'true';
+      } else if (labelLower === 'log') {
+        result.parsed.quest_start_log = parsedLine.moteTag?.value?.trim();
+      } else if (labelLower === 'storyline') {
+        // TODO: Storyline stuff
+        requiresMote = {
+          at: parsedLine.labelGroup!.end,
+          options: motes.storylines,
+        };
+      } else if (labelLower === 'giver') {
+        // TODO: Giver stuff
+        requiresMote = {
+          at: parsedLine.labelGroup!.end,
+          options: motes.allowedGivers,
+        };
+      } else if (labelLower === 'receiver') {
+        // TODO: Receiver stuff
+        requiresMote = {
+          at: parsedLine.labelGroup!.end,
+          options: motes.allowedGivers,
+        };
+      } else if (indicator === ':)') {
+        // TODO: Then this is a declaration line for an Emote moment
+        // TODO: If it has a new ID, add it to the mote!
+      } else if (indicator === '!') {
+        // TODO: Then this is an emote within a Emote moment
+      } else if (indicator === '?') {
+        // TODO: Then this is a non-dialog quest moment
+      } else if (indicator === '//') {
+        // TODO: Handle notes
+      }
+
+      if (requiresEmoji) {
+        const where = {
+          start: requiresEmoji.at,
+          end: parsedLine.emojiGroup!.end,
+        };
+        if (!parsedLine.emojiName?.value) {
+          result.completions.push({
+            type: 'motes',
+            options: requiresEmoji.options,
+            ...where,
+          });
+        } else if (!emojiIdFromName(parsedLine.emojiName?.value)) {
+          result.diagnostics.push({
+            message: `Emoji "${parsedLine.emojiName?.value}" not found!`,
+            ...where,
+          });
+        }
+      }
       if (requiresMote) {
         if (!parsedLine.moteName || !parsedLine.moteTag) {
           const where = {

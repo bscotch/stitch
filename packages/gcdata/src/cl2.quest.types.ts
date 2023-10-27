@@ -26,11 +26,64 @@ type CompletionsData =
       options: ['true', 'false'];
     };
 
+export interface ParsedClue {
+  /** arrayId */
+  id: string | undefined;
+  /** Speaker MoteId */
+  speaker: string | undefined;
+  phrases: {
+    /** arrayId */
+    id: string | undefined;
+    /** MoteId for the Emoji */
+    emoji?: string;
+    text: string;
+  }[];
+}
+
+export interface ParsedEmojiGroup {
+  /** arrayId */
+  id: string | undefined;
+  /** MoteId for the Emoji */
+  emoji: string | undefined;
+}
+
+export interface ParsedDialog {
+  /** arrayId */
+  id: string | undefined;
+  speaker: string | undefined;
+  /** MoteId for the Emoji */
+  emoji?: string;
+  text: string;
+}
+
+export interface ParsedComment {
+  /** arrayId */
+  id: string | undefined;
+  text: string;
+}
+
+type ParsedMoment = ParsedEmojiGroup | ParsedDialog;
+
 export interface QuestUpdateResult {
   diagnostics: (Range & { message: string })[];
   hovers: (Range & { title?: string; description?: string })[];
   edits: (Range & { newText: string })[];
   completions: (Range & CompletionsData)[];
+  parsed: {
+    name?: string;
+    /** The moteId for the storyline */
+    storyline?: string;
+    /** The moteId for the quest giver */
+    quest_giver?: string;
+    /** The moteId for the quest receiver */
+    quest_receiver?: string;
+    clues: ParsedClue[];
+    quest_start_log?: string;
+    quest_start_moments: ParsedMoment[];
+    quest_end_moments: ParsedMoment[];
+    draft?: boolean;
+    comments: ParsedComment[];
+  };
 }
 
 export type Section = (typeof sections)[number];
@@ -75,41 +128,30 @@ const linePartsSchema = z.object({
     .describe(
       'For array elements whose values come in distinct flavors, the identifier indicating which flavor it is',
     ),
-  count: z
-    .string()
-    .optional()
-    .describe('Numeric value indicating a count')
-    .transform((x) => (typeof x === 'string' ? parseInt(x, 10) : undefined)),
-  rest: z
-    .string()
-    .optional()
-    .describe(
-      'For complex elements that need to be further parsed later, the rest of the line',
-    ),
 });
 
 export const arrayTagPattern = '(?:#(?<arrayTag>[a-z0-9]+))';
 const moteTagPattern = '(?:@(?<moteTag>[a-z0-9_]+))';
 const moteNamePattern = "(?<moteName>[A-Za-z0-9:&?! '-]+)";
-const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]+?)\\)\\s*)';
+const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]*?)\\s*\\))';
 
 export const linePatterns = [
   /** Labeled Mote */
-  `^(?<labelGroup>(?<label>[\\w -]+)${arrayTagPattern}?\\s*:)\\s*(${moteNamePattern}${moteTagPattern}?)?$`,
+  `^(?<labelGroup>(?<label>[\\w ]+)${arrayTagPattern}?\\s*:)\\s*(${moteNamePattern}${moteTagPattern}?)?\\s*$`,
   /** Dialogue Speaker */
-  `^(?<indicator>\\t)(${moteNamePattern}${moteTagPattern}?)?`,
+  `^(?<indicator>\\t)(${moteNamePattern}${moteTagPattern}?)?\\s*$`,
   /** Dialogue Text */
-  `^(?<indicator>>)\\s*?${arrayTagPattern}?(\\s+${emojiGroupPattern}?(?<text>.*))?$`,
+  `^(?<indicator>>)\\s*?${arrayTagPattern}?(\\s+${emojiGroupPattern}?(\\s*(?<text>.*)))?\\s*$`,
   /** Comment Line */
-  `^(?<indicator>//)\\s*?${arrayTagPattern}?\\s*(?<text>.*)$`,
+  `^(?<indicator>//)\\s*?${arrayTagPattern}?\\s*(?<text>.*?)\\s*$`,
   /** Emote Declaration */
-  `^(?<indicator>:\\))\\s*${arrayTagPattern}?`,
+  `^(?<indicator>:\\))\\s*${arrayTagPattern}?\\s*$`,
   /** Emote */
-  `^(?<indicator>!)\\s*?${arrayTagPattern}?(\\s+${moteNamePattern}${moteTagPattern}\\s+${emojiGroupPattern})?`,
+  `^(?<indicator>!)\\s*?${arrayTagPattern}?(\\s+${moteNamePattern}${moteTagPattern}\\s+${emojiGroupPattern})?\\s*$`,
   /** Non-Dialog Moment */
-  `^(?<indicator>\\?)\\s*?${arrayTagPattern}?(\\s+(?<style>.*))?`,
+  `^(?<indicator>\\?)\\s*?${arrayTagPattern}?(\\s+(?<style>.*?))?\\s*$`,
   /** Labeled Text */
-  `^(?<labelGroup>(?<label>[\\w -]+)\\s*:)\\s*(?<text>.*)?$`,
+  `^(?<labelGroup>(?<label>[\\w ]+)\\s*:)\\s*(?<text>.*?)?\\s*$`,
 ];
 
 export function parseIfMatch(
