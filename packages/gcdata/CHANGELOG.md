@@ -1,5 +1,16 @@
 # @bscotch/gcdata Changelog
 
+## 0.4.0 (2023-10-27)
+
+### Features
+
+- Added emoji autocompletes
+- Implemented 'comments' as notes
+
+### Fixes
+
+- Updated CL2 types
+
 ## 0.3.0 (2023-10-25)
 
 ### Features

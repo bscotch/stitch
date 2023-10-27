@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.5.0 (2023-10-27)
+
+### Features
+
+- Added emoji autocompletes
+
 ## 0.4.0 (2023-10-25)
 
 ### Features
