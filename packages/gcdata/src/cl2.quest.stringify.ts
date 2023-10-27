@@ -9,43 +9,44 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
   const storyline = packed.getMote(mote.data.storyline);
 
   // METADATA
-  const blocks: string[] = [];
-
-  const metadata: string[] = [
+  const blocks: string[] = [
     `Name: ${packed.getMoteName(mote)}`,
     `Storyline: ${packed.getMoteName(storyline)}${moteTag(storyline)}`,
+    `Draft: ${mote.data.wip?.draft || 'false'}\n`,
   ];
-
-  if (mote.data.wip?.draft) {
-    metadata.push(`Draft: true`);
-  }
 
   // NOTES
   if (mote.data.wip?.comments) {
-    for (const comment of bsArrayToArray(mote.data.wip.comments)) {
-      metadata.push(`Note${arrayTag(comment)}: ${comment.element}`);
+    const comments = bsArrayToArray(mote.data.wip.comments);
+    if (comments.length) {
+      blocks.push(
+        ...bsArrayToArray(mote.data.wip.comments).map((c) => `// ${c.element}`),
+        '',
+      );
     }
   }
 
-  // INITIALIZATION
-  // Giver
+  // GIVER
   if (mote.data.quest_giver) {
     const giver = packed.getMote(mote.data.quest_giver.item);
-    metadata.push(`Giver: ${packed.getMoteName(giver)}${moteTag(giver)}`);
+    blocks.push(`Giver: ${packed.getMoteName(giver)}${moteTag(giver)}`);
   }
-  // Receiver
+  // RECEIVER
   if (mote.data.quest_receiver) {
     const receiver = packed.getMote(mote.data.quest_receiver.item);
-    metadata.push(
+    blocks.push(
       `Receiver: ${packed.getMoteName(receiver)}${moteTag(receiver)}`,
     );
   }
 
-  blocks.push(metadata.join('\n'));
+  if (mote.data.quest_giver || mote.data.quest_receiver) {
+    blocks.push('');
+  }
 
   // Clues
   if (mote.data.clues) {
-    for (const clueGroup of bsArrayToArray(mote.data.clues)) {
+    const clueGroups = bsArrayToArray(mote.data.clues);
+    for (const clueGroup of clueGroups) {
       if (!clueGroup.element?.phrases || !clueGroup.element.speaker) continue;
       const speaker = packed.getMote(clueGroup.element.speaker);
       let clueString = `Clue${arrayTag(clueGroup)}: ${packed.getMoteName(
@@ -65,24 +66,12 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
       }
       blocks.push(clueString);
     }
+    if (clueGroups.length) {
+      blocks.push('');
+    }
   }
 
   for (const momentType of ['start', 'end'] as const) {
-    // REQUIREMENTS
-    blocks.push(`${capitalize(momentType)} Requirements:`);
-    const reqFieldName = `quest_${momentType}_requirements` as const;
-    const reqData = mote.data[reqFieldName];
-    if (reqData) {
-      for (const reqContainer of bsArrayToArray(reqData)) {
-        const req = reqContainer.element;
-        let line = `?${arrayTag(reqContainer)} ${req?.style || 'Unknown'}`;
-        if (req?.style === 'Quest') {
-          line += `: ${packed.getMoteName(req.quest)}${moteTag(req.quest)}`;
-        }
-        blocks.push(line);
-      }
-    }
-
     // MOMENTS
     blocks.push(`${capitalize(momentType)} Moments:`);
     const fieldName = `quest_${momentType}_moments` as const;
@@ -97,16 +86,6 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
       for (const momentContainer of bsArrayToArray(data)) {
         const moment = momentContainer.element!;
         let line = '';
-        let reqs = '';
-        if ('requirements' in moment) {
-          for (const reqContainer of bsArrayToArray(moment?.requirements!)) {
-            const req = reqContainer.element;
-            reqs += `\n?${arrayTag(reqContainer)} ${req?.style || 'Unknown'}`;
-            if (req?.style === 'Quest') {
-              reqs += `: ${packed.getMoteName(req.quest)}${moteTag(req.quest)}`;
-            }
-          }
-        }
 
         if (moment.style !== 'Dialogue') {
           lastSpeaker = undefined;
@@ -131,61 +110,19 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
             );
           }
           line += emojiLines.join('\n');
-        } else if (moment.style === 'Gain Item') {
-          line += `Gain Item${arrayTag(momentContainer)}:\n`;
-          const itemLines: string[] = [];
-          for (const item of bsArrayToArray(moment.items)) {
-            // key is the moteId for the item, value is the quantity
-            const itemName = packed.getMoteName(item.element?.key!);
-            // Note: Can probably skip the array tag since we can use the item moteId as the unique identifier for diffs
-            itemLines.push(
-              `+${item.element?.value || 1} ${itemName}${moteTag(
-                item.element?.key!,
-              )}`,
-            );
-          }
-          line += itemLines.join('\n');
-        } else if (moment.style === 'Drop Item') {
-          // The "dropper" is a moteId. Technically we can have multiple droppers, but that'll be pretty rare so we can just duplicate the first line each time if necessary.
-          const dropGroups: string[] = [];
-          for (const dropGroup of bsArrayToArray(moment.drops)) {
-            const dropper = packed.getMote(dropGroup.element?.dropper!);
-            const dropperName = packed.getMoteName(dropper);
-            let dropText = `Drop Item${arrayTag(
-              momentContainer,
-            )}: ${dropperName}${moteTag(dropper)}`;
-            for (const item of bsArrayToArray(dropGroup.element?.items!)) {
-              const itemName = packed.getMoteName(item.element?.item_id!);
-              // Note: Can probably skip the array tag since we can use the item moteId as the unique identifier for diffs
-              dropText += `\n+${
-                item.element?.quantity || 1
-              } ${itemName}${moteTag(item.element?.item_id!)}`;
-            }
-            dropGroups.push(dropText);
-          }
-          line += dropGroups.join('\n\n');
         } else {
-          line += `${moment.style}${arrayTag(momentContainer)}: Not Editable`;
+          line += `?${moment.style}${arrayTag(momentContainer)}`;
         }
-        blocks.push(line + reqs);
+        blocks.push(line + '\n');
       }
+    } else {
+      blocks.push('');
     }
 
     if (momentType === 'start') {
       // Start Log
       if (mote.data.quest_start_log) {
-        blocks.push(`Log: ${mote.data.quest_start_log.text}`);
-      }
-
-      // Objectives
-      blocks.push('Objectives:');
-      if (mote.data.objectives) {
-        // For now just get them in there with their ID and style
-        for (const objective of bsArrayToArray(mote.data.objectives)) {
-          blocks.push(
-            `-${arrayTag(objective)} ${objective.element?.style || 'Unknown'}`,
-          );
-        }
+        blocks.push(`Log: ${mote.data.quest_start_log.text}`, '');
       }
     }
   }
@@ -203,7 +140,7 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
     return name ? `${name.toUpperCase()}${moteTag(characterId)}` : '';
   }
 
-  return blocks.join('\n\n') + '\n';
+  return blocks.join('\n') + '\n';
 }
 function moteTag(item: string | { id: string }): string {
   assert(

@@ -1,98 +1,66 @@
-Name: Buildmode: Place Floors
-Storyline: Graal's Cabin@graalfirststoryline
-Giver: Graal@graal
-Receiver: Graal@graal
+Name: Bait & Tackle 
+Storyline: Catch of the Day@storyline_fishin_catch
+Draft: false
 
-Start Requirements:
+Receiver: Emblaa@npc_tendraam_baab
 
-?#j99m Quest: Craft 6 Popbark Floors@fq1501_dv
+Clue#jgv9: Emblaa@npc_tendraam_baab
+>#wwgr (emoji_eyes) If'n you're lookin' for some tips on catchin' those fisheridoos, talk to Oowee. She knows more about fish than just 'bout anyone else. Heard she might even be one.
 
 Start Moments:
 
-	GRAAL@graal
->#qwgq Those Popbark Flatplank floors are mighty fine. Getting 'em slotted in will take some work though.
-
-	FLUX@item_flux
->#tgk6 (Shiny Eyes) It'll be a piece of cake with my handy dandy SPACE WRENCH! TA DA!
-?#xvgw Quest: Bridge How@q_bridgehow
-
->#vcg4 (Sad) It'd be a piece of cake if I had my Space Wrench with me.
-?#xvgw Quest: Bridge How@q_bridgehow
-
-	GRAAL@graal
->#wdwb (Dubious) ...yer hwhat?
-
-	FLUX@item_flux
->#rkk3 (Cry) My SPACE WRENCH! It must have been flung out of the pod during the crash. My poor baby, it must be so scared out there all alone. What if I never see it again?
-
-	JUICEBOX@item_juicebox
->#m17d (Happy) Oh, that old thing? I have it!
-?#xvgw Quest: Bridge How@q_bridgehow
-
->#tjd6 (Eyeroll) Geez. Fine. I have it.
-?#xvgw Quest: Bridge How@q_bridgehow
-
-	FLUX@item_flux
->#tbk4 WHAT. You had Wrenchy this WHOLE TIME and you DIDN'T SAY ANYTHING???
-
-	JUICEBOX@item_juicebox
->#czqp I was waiting for the most opportune moment to reveal it.
-
->#jgmq (Happy) Any minute now...
-
-	FLUX@item_flux
->#wmf2 (Angry) GIVE ME MY SPACE WRENCH, YOU FIEND.
-
-	JUICEBOX@item_juicebox
->#q63b (Happy) Ta da!
-
-Drop Item#h3k7: Juicebox@item_juicebox
-+1 Space Wrench@item_wrench
-
-	FLUX@item_flux
->#l781 My sweet, sweet Space Wrench! How I've missed you. Time to show Graal what you can do!
-
-Log: Use Wrenchy, the most perfect Space Wrench, to place Popbark Flatplank floors.
-
-Objectives:
-
--#xgm0 Place Item
-
-End Requirements:
+Log: Hook a Largemouth Sass, a Phoray, a Bloatslug, and a Riverpod, then return to Emblaa to show her my haul. Someone who's spent a lot of time around water probably has some Insights into the best way to do this.
 
 End Moments:
-
-	GRAAL@graal
->#vtx9 I admit yer pal Wrenchy seems pretty useful. More useful than some o' yer other companions anyhow...
-
-	JUICEBOX@item_juicebox
->#lcr8 Hey! I supervised!
-
-	GRAAL@graal
->#p6wx ...yep.
-
->#x4tj I salvaged a few o' the cabin walls. Figured out how they're put together too. Was tryin' to work out how to get 'em placed, but I guess I can leave that to you now.
-
-Gain Item#w1dl:
-+6 Popwall@wall_popwood
-
-Drop Item#l0tx: Graal@graal
-+1 Popwall@sch_popwall
-
-	GRAAL@graal
->#l220 The rest o’ these house parts are more complicated though, and I ain't a carpenter by any means.
-
-	FLUX@item_flux
->#nw07 How'd you build your cabin the first time?
-
-	GRAAL@graal
->#gc56 The folks up at Haarlipol helped me out. But Rosaa prob'ly ain't got the time to help us rebuild my house on account o' all the newcomers. She don't need any more on 'er plate.
+	EMBLAA@npc_tendraam_baab
+>#m0fb (Heart Eyes) Ho HO, Flux! Yer back!
 
 	JUICEBOX@item_juicebox
->#f0xt (Happy) Flux can go to Haarlipol and ask Rosaa for you!
-
-	GRAAL@graal
->#h9xx (Nervous) That’s not-
+>#x89q She's been fishin' up a STORM!
 
 	FLUX@item_flux
->#g19k Happy to help!
+>#x6sz (Shiny Eyes) I even managed to hook a Shankfish!
+
+	EMBLAA@npc_tendraam_baab
+>#b5tq (Surprise) You caught a Shankfish?! On MY old fishin' pole?! WOOOOOOOOOOOOOOW.
+
+>#pzw6 You must know 'bout bait then. I mean, how else could ya catch yerself such a whibblyjibble?
+
+>#qssb (Surprise) You caught a STORM?! On MY old fishin' pole?! WOOOOOOOOOOOOOOW.
+
+:)#twd3
+!#x01r FLUX@item_flux (Blank Stare) 
+!#hmcp JUICEBOX@item_juicebox (Blank Stare) 
+
+	EMBLAA@npc_tendraam_baab
+>#h0n0 You must know 'bout bait then. I mean, how else could ya catch yerself a whole typhoon?
+
+	JUICEBOX@item_juicebox
+>#mpkr (Annoyed) That's not what- You know what? Nevermind.
+
+	FLUX@item_flux
+>#jnn6 What kind of bait are you talking about? We've just been throwing the bare hook in the water this whole time.
+
+	EMBLAA@npc_tendraam_baab
+>#b0cr (Smirk) Hooboy, ya still got a thing or two to learn, don'tcha?
+
+>#p0dx See, when ya put some Stinkbait on yer line, you'll snag more fishes at a time. An' if ya want more of those Whoppers, ya just gotta make some Overpowerin' Stinkbait.
+
+	JUICEBOX@item_juicebox
+>#nzls I'll never say no to efficiency gains! Flux, WE GOTTA MAKE BAIT!
+
+	FLUX@item_flux
+>#kv1h Alright, alright. So, what's it take? Worms or something like that?
+
+	EMBLAA@npc_tendraam_baab
+>#kh43 Somethin' like that. I got a few extra Stinkbait. You can have those to start with. An' it's a cinch to make if you've got a Simple Net. I jotted down the recipe right here.
+
+?Gain Item#nksg
+
+?Drop Item#dvrb
+
+	EMBLAA@npc_tendraam_baab
+>#f9vx Not sure where my notes 'bout Overpowerin' Stinkbait went, but you'll figure it out, like as not.
+
+>#g1bp An' if you do, I wouldn't say no to some o' that myself. I'll even trade ya a couple o' fish tales for 'em.
+
