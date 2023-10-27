@@ -25,6 +25,12 @@ dataString = dataString
 /** @type {Packed['schemas']} */
 const schemas = JSON.parse(dataString).schemas;
 
+// We use "required: true" to indicate that ALL properties are required,
+// so we need to iterate through all schemas to set that to JSON Schema spec
+for (const schema of Object.values(schemas)) {
+  recursivelyPortBschemaToJsonSchema(schema);
+}
+
 // await pathy('tmp.json').write(schemas);
 const schemaNames = Object.keys(schemas);
 const rootSchema = {
@@ -52,3 +58,27 @@ await pathy('src/types.cl2.ts').write(
     '\n\t',
   )}\n}\n`,
 );
+
+/**
+ * @param {import('../dist/types.js').Bschema} schema
+ */
+function recursivelyPortBschemaToJsonSchema(schema) {
+  const isObject =
+    schema &&
+    (schema.type === 'object' ||
+      'properties' in schema ||
+      'additionalProperties' in schema);
+  if (!isObject) return schema;
+
+  const propNames = Object.keys(schema.properties || {});
+  if (schema.required && !Array.isArray(schema.required)) {
+    // Then ALL fields are required
+    schema.required = propNames;
+  }
+  // Continue on the property fields
+  for (const propName of propNames) {
+    recursivelyPortBschemaToJsonSchema(schema.properties[propName]);
+  }
+  recursivelyPortBschemaToJsonSchema(schema.additionalProperties);
+  return schema;
+}
