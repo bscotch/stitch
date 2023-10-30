@@ -1,7 +1,7 @@
 {
   "name": "crashlands-editor",
   "displayName": "Crashlands 2 Editor",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "private": true,
   "description": "Tools for Crashlands 2 development.",
   "categories": [
@@ -44,14 +44,6 @@
         "title": "Crashlands: Restore Backup"
       }
     ],
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "crashlands.editor.backup.restore",
-          "when": "editorLangId == 'cl2-quest'"
-        }
-      ]
-    },
     "configuration": {
       "title": "Crashlands",
       "properties": {
@@ -93,6 +85,14 @@
         ]
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "crashlands.editor.backup.restore",
+          "when": "editorLangId == 'cl2-quest'"
+        }
+      ]
+    },
     "views": {
       "cl2": [
         {
