@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.6.0 (2023-10-30)
+
+### Features
+
+- Completed initial autcompletes, diagnostics, and parsing
+
 ## 0.5.0 (2023-10-27)
 
 ### Features
