@@ -27,7 +27,7 @@ export class QuestDocument {
     readonly mote: Mote<Crashlands2.Quest>,
     readonly packed: Packed,
   ) {}
-  protected parseResults: QuestUpdateResult | undefined;
+  parseResults: QuestUpdateResult | undefined;
 
   get document(): vscode.TextDocument | undefined {
     return vscode.workspace.textDocuments.find(

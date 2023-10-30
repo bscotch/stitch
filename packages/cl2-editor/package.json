@@ -37,11 +37,30 @@
         "command": "crashlands.quests.enter",
         "enablement": "editorLangId == 'cl2-quest'",
         "title": "On Enter"
+      },
+      {
+        "command": "crashlands.editor.backup.restore",
+        "enablement": "editorLangId == 'cl2-quest'",
+        "title": "Crashlands: Restore Backup"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "crashlands.editor.backup.restore",
+          "when": "editorLangId == 'cl2-quest'"
+        }
+      ]
+    },
     "configuration": {
       "title": "Crashlands",
-      "properties": {}
+      "properties": {
+        "crashlands.editor.backup.delay": {
+          "type": "number",
+          "default": 1000,
+          "description": "Backups are created automatically upon file change. This setting controls how long to wait until changes have stopped before making a backup."
+        }
+      }
     },
     "grammars": [
       {
@@ -74,7 +93,6 @@
         ]
       }
     ],
-    "menus": {},
     "views": {
       "cl2": [
         {
