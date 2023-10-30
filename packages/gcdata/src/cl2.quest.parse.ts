@@ -257,7 +257,7 @@ export function parseStringifiedMote(
           });
         }
       } else if (labelLower === 'name') {
-        result.parsed.name = parsedLine.moteName?.value?.trim();
+        result.parsed.name = parsedLine.text?.value?.trim();
         if (!result.parsed.name) {
           result.diagnostics.push({
             message: `Quest name required!`,
@@ -265,9 +265,9 @@ export function parseStringifiedMote(
           });
         }
       } else if (labelLower === 'draft') {
-        result.parsed.draft = parsedLine.moteName?.value?.trim() === 'true';
+        result.parsed.draft = parsedLine.text?.value?.trim() === 'true';
       } else if (labelLower === 'log') {
-        result.parsed.quest_start_log = parsedLine.moteTag?.value?.trim();
+        result.parsed.quest_start_log = parsedLine.text?.value?.trim();
       } else if (labelLower === 'storyline') {
         requiresMote = {
           at: parsedLine.labelGroup!.end,

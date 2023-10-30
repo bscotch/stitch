@@ -157,6 +157,8 @@ const moteNamePattern = "(?<moteName>[A-Za-z0-9:&?! '-]+)";
 const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]*?)\\s*\\))';
 
 export const linePatterns = [
+  /** Label:Text */
+  `^(?<labelGroup>(?<label>Name|Log|Draft)\\s*:)\\s*(?<text>.*?)\\s*$`,
   /** Labeled Mote */
   `^(?<labelGroup>(?<label>[\\w ]+)${arrayTagPattern}?\\s*:)\\s*(${moteNamePattern}${moteTagPattern}?)?\\s*$`,
   /** Dialogue Speaker */
@@ -171,8 +173,6 @@ export const linePatterns = [
   `^(?<indicator>!)\\s*?${arrayTagPattern}?(?<sep>\\s+)(${moteNamePattern}${moteTagPattern}\\s+${emojiGroupPattern})?\\s*$`,
   /** Non-Dialog Moment */
   `^(?<indicator>\\?)\\s*?${arrayTagPattern}?(?<sep>\\s+)(?<style>.*?)?\\s*$`,
-  /** Labeled Text */
-  `^(?<labelGroup>(?<label>[\\w ]+)\\s*:)\\s*(?<text>.*?)?\\s*$`,
 ];
 
 export function parseIfMatch(

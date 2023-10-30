@@ -165,7 +165,6 @@ export class QuestDocument {
 
     // Get the line at this position
     const line = this.document!.lineAt(cursor.line);
-    console.log({ text: line.text });
     if (line.text.match(/^\/\//)) {
       // Then default to adding another comment line
       newEdit.insert(this.uri, cursor, '\n// ');
