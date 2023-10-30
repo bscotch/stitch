@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 0.15.2 (2023-10-30)
+
+### Fixes
+
+- Resolved issue where object 'listItems' was not allowed to be null
+
 ## 0.15.1 (2023-10-18)
 
 ### Fixes
