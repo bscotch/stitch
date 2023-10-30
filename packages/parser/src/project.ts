@@ -81,6 +81,7 @@ export class Project {
    * symbols. The native symbols and types are loaded from the spec,
    * so they can vary between projects. */
   native!: Native;
+  helpLinks!: { [method: string]: string };
   /**
    * When resolved, the GML spec has been loaded and the
    * `native` property has been populated.
@@ -687,6 +688,27 @@ export class Project {
     return addedAssets.filter((x) => x) as Asset[];
   }
 
+  protected async loadHelpLinks(): Promise<void> {
+    // Need the path to the IDE folder. Can probably get by with the default
+    // installation location...
+    await this.nativeWaiter;
+    const file = await Native.findHelpLinksFile(this.ideVersion);
+    const content = await file?.read({ fallback: {} });
+    this.helpLinks = new Proxy(content || ({} as { [key: string]: string }), {
+      get: (target, key) => {
+        const baseUrl = `https://beta-manual.yoyogames.com/#t=`;
+        if (typeof key === 'string' && key in target) {
+          return `${baseUrl}${encodeURIComponent(target[key])}.htm`;
+        } else if (typeof key === 'string') {
+          return `${baseUrl}Content.htm&rhsearch=${encodeURIComponent(
+            key,
+          )}&ux=${encodeURIComponent(key)}`;
+        }
+        return `${baseUrl}Content.htm`;
+      },
+    });
+  }
+
   /**
    * Load the GML spec for the project's runtime version, falling
    * back on the included spec if necessary.
@@ -823,7 +845,11 @@ export class Project {
       options?.onLoadProgress?.(5, 'Loaded GML spec');
     });
     logger.info('Loading asset files...');
-    await Promise.all([this.nativeWaiter, this.yypWaiter]);
+    await Promise.all([
+      this.nativeWaiter,
+      this.yypWaiter,
+      this.loadHelpLinks(),
+    ]);
 
     const assets = await this.loadAssets(options);
     logger.log(

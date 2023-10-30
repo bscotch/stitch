@@ -36,7 +36,10 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
       : item?.getTypeByKind('Id.Instance')?.name ||
         item?.getTypeByKind('Asset.GMObject')?.name;
 
-    if (item && !item.native && item.def?.file) {
+    if (item && item.native) {
+      const helpLink = file?.project.helpLinks[item.name];
+      helpLink && vscode.env.openExternal(vscode.Uri.parse(helpLink));
+    } else if (item && !item.native && item.def?.file) {
       return locationOf(item.def);
     } else if (ref && item?.name === 'event_inherited') {
       // Then this should take us to the parent event.

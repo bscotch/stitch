@@ -358,6 +358,14 @@ export class Native {
     '../../assets/GmlSpec.xml',
   );
 
+  static async findHelpLinksFile(
+    ideVersion: string,
+  ): Promise<Pathy<{ [method: string]: string }> | undefined> {
+    const ides = await GameMakerIde.listInstalled();
+    const ide = ides.find((ide) => ide.version === ideVersion) || ides[0];
+    return ide?.directory.join('RoboHelp/helpdocs_keywords.json');
+  }
+
   static async listSpecFiles(options: {
     runtimeVersion?: string;
     ideVersion?: string;
