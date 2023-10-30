@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.7.0 (2023-10-30)
+
+### Features
+
+- Added backups and a restore command for edited quests
+
 ## 0.6.1 (2023-10-30)
 
 ### Fixes
