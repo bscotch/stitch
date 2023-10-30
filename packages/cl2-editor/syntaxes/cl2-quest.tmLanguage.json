@@ -30,6 +30,21 @@
           }
         },
         {
+          "name": "moment.other.cl2-quest",
+          "match": "^(?<momentIndicator>\\?)\\s*(?<arrayId>#[a-z_0-9]+)?\\s+(?<style>.*?)\\s*$",
+          "captures": {
+            "1": {
+              "name": "indicator.cl2-quest"
+            },
+            "2": {
+              "name": "id.array.cl2-quest"
+            },
+            "3": {
+              "name": "style.cl2-quest"
+            }
+          }
+        },
+        {
           "name": "moment.dialog.speaker.cl2-quest",
           "match": "^\\t(?<name>.*?)\\s*(?<moteId>@[a-z_0-9]+)",
           "captures": {

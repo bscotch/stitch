@@ -132,7 +132,6 @@
     "completionProvider": {
       "resolveProvider": "true",
       "triggerCharacters": [
-        "\t",
         "@",
         "("
       ]

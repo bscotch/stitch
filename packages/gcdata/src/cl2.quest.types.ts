@@ -24,6 +24,10 @@ type CompletionsData =
   | {
       type: 'booleans';
       options: ['true', 'false'];
+    }
+  | {
+      type: 'momentStyles';
+      options: string[];
     };
 
 export interface ParsedClue {
@@ -40,11 +44,24 @@ export interface ParsedClue {
   }[];
 }
 
-export interface ParsedEmojiGroup {
+export interface ParsedEmote {
   /** arrayId */
   id: string | undefined;
   /** MoteId for the Emoji */
   emoji: string | undefined;
+  /** MoteId for the speaker */
+  speaker: string | undefined;
+}
+
+export interface ParsedEmoteGroup {
+  /** arrayId */
+  id: string | undefined;
+  emotes: ParsedEmote[];
+}
+
+export interface ParsedOtherMoment {
+  id: string | undefined;
+  style: string | undefined;
 }
 
 export interface ParsedDialog {
@@ -59,10 +76,10 @@ export interface ParsedDialog {
 export interface ParsedComment {
   /** arrayId */
   id: string | undefined;
-  text: string;
+  text: string | undefined;
 }
 
-type ParsedMoment = ParsedEmojiGroup | ParsedDialog;
+type ParsedMoment = ParsedEmoteGroup | ParsedDialog | ParsedOtherMoment;
 
 export interface QuestUpdateResult {
   diagnostics: (Range & { message: string })[];
@@ -118,6 +135,10 @@ const linePartsSchema = z.object({
   emojiName: z.string().optional().describe("The emoji's mote name"),
   labelGroup: z.string().optional().describe('The label, including the `:`'),
   label: z.string().optional().describe('For `Label:Value` elements'),
+  sep: z
+    .string()
+    .optional()
+    .describe('Separator between the line prefix and content.'),
   text: z
     .string()
     .optional()
@@ -147,9 +168,9 @@ export const linePatterns = [
   /** Emote Declaration */
   `^(?<indicator>:\\))\\s*${arrayTagPattern}?\\s*$`,
   /** Emote */
-  `^(?<indicator>!)\\s*?${arrayTagPattern}?(\\s+${moteNamePattern}${moteTagPattern}\\s+${emojiGroupPattern})?\\s*$`,
+  `^(?<indicator>!)\\s*?${arrayTagPattern}?(?<sep>\\s+)(${moteNamePattern}${moteTagPattern}\\s+${emojiGroupPattern})?\\s*$`,
   /** Non-Dialog Moment */
-  `^(?<indicator>\\?)\\s*?${arrayTagPattern}?(\\s+(?<style>.*?))?\\s*$`,
+  `^(?<indicator>\\?)\\s*?${arrayTagPattern}?(?<sep>\\s+)(?<style>.*?)?\\s*$`,
   /** Labeled Text */
   `^(?<labelGroup>(?<label>[\\w ]+)\\s*:)\\s*(?<text>.*?)?\\s*$`,
 ];
@@ -237,7 +258,7 @@ const labels = {
 export function lineIsArrayItem(line: string): boolean {
   if (
     line.match(
-      /^(\t|!|\+|name|draft|storyline|(start|end) (requirements|moments)|objectives|log|giver|receiver)/i,
+      /^(\t|name|draft|storyline|(start|end) moments|log|giver|receiver)/i,
     )
   ) {
     return false;

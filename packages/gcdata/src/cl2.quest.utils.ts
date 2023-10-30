@@ -1,7 +1,11 @@
 import type { Packed } from './Packed.js';
 import { assert } from './assert.js';
 import { Crashlands2 } from './types.cl2.js';
-import type { BschemaMoteId } from './types.js';
+import type {
+  BschemaBsArrayElement,
+  BschemaMoteId,
+  BschemaObject,
+} from './types.js';
 import { resolvePointerInSchema } from './util.js';
 
 export function getMoteLists(packed: Packed) {
@@ -100,24 +104,26 @@ function getAllowedDroppers(packed: Packed) {
   );
 }
 
-export function getMomentStyleSchema(style: string, packed: Packed) {
+export function getMomentStyleNames(packed: Packed): string[] {
   const subschema = resolvePointerInSchema(
-    ['quest_start_moments', 'anykey', 'element'],
+    ['quest_start_moments', 'anykey'],
     {
       schema_id: 'cl2_quest',
       data: {
         quest_start_moments: {
           anykey: {
-            element: {
-              style,
-            },
+            element: {},
           },
         },
       },
     } as any,
     packed,
-  );
-  return subschema;
+  ) as BschemaBsArrayElement;
+  const element = subschema.properties.element as { oneOf: BschemaObject[] };
+  const styles = element.oneOf.map((s) => (s.properties!.style as any).bConst);
+
+  assert(styles.length, 'Should have moment styles');
+  return styles as string[];
 }
 
 function getGainableItems(packed: Packed) {

@@ -175,12 +175,14 @@ export interface BschemaInteger extends BschemaNumberBase {
   type: 'integer';
 }
 
+export interface BschemaBsArrayElement extends BschemaObject {
+  format: 'bsArrayElement';
+  type: 'object';
+  properties: { order: BschemaNumber; element: Bschema };
+}
+
 export interface BschemaBsArray extends BschemaObject {
   format: 'bsArray';
   uniqueValue: ['element'];
-  additionalProperties: {
-    format: 'bsArrayElement';
-    type: 'object';
-    properties: { order: BschemaNumber; element: Bschema };
-  };
+  additionalProperties: BschemaBsArrayElement;
 }

@@ -2,7 +2,7 @@ import { Packed } from './Packed.js';
 import {
   ParsedClue,
   ParsedDialog,
-  ParsedEmojiGroup,
+  ParsedEmoteGroup,
   ParsedLine,
   QuestUpdateResult,
   arrayTagPattern,
@@ -10,7 +10,7 @@ import {
   linePatterns,
   parseIfMatch,
 } from './cl2.quest.types.js';
-import { getMoteLists } from './cl2.quest.utils.js';
+import { getMomentStyleNames, getMoteLists } from './cl2.quest.utils.js';
 import { changedPosition, createBsArrayKey } from './helpers.js';
 import { Crashlands2 } from './types.cl2.js';
 import { Position } from './types.editor.js';
@@ -22,6 +22,11 @@ export function parseStringifiedMote(
   packed: Packed,
 ): QuestUpdateResult {
   const motes = getMoteLists(packed);
+  const momentStyles = getMomentStyleNames(packed);
+  // Remove 'Dialogue' and 'Emote' from the list of moment styles
+  for (const style of ['Dialogue', 'Emote']) {
+    momentStyles.splice(momentStyles.indexOf(style), 1);
+  }
 
   /**
    * Shared list of keywords that can be used at the start of any line,
@@ -74,7 +79,7 @@ export function parseStringifiedMote(
   let lastSpeaker: undefined | string;
   let lastClue: undefined | ParsedClue;
   let lastMomentGroup: 'quest_start_moments' | 'quest_end_moments' | undefined;
-  let lastEmojiGroup: undefined | ParsedEmojiGroup;
+  let lastEmojiGroup: undefined | ParsedEmoteGroup;
 
   for (const line of lines) {
     const trace: any[] = [];
@@ -110,6 +115,14 @@ export function parseStringifiedMote(
           end: lineRange.end,
           options: availableGlobalLabels,
         });
+        if (lastMomentGroup) {
+          result.completions.push({
+            type: 'momentStyles',
+            options: momentStyles,
+            start: lineRange.start,
+            end: lineRange.end,
+          });
+        }
         continue;
       }
 
@@ -245,37 +258,132 @@ export function parseStringifiedMote(
         }
       } else if (labelLower === 'name') {
         result.parsed.name = parsedLine.moteName?.value?.trim();
+        if (!result.parsed.name) {
+          result.diagnostics.push({
+            message: `Quest name required!`,
+            ...lineRange,
+          });
+        }
       } else if (labelLower === 'draft') {
         result.parsed.draft = parsedLine.moteName?.value?.trim() === 'true';
       } else if (labelLower === 'log') {
         result.parsed.quest_start_log = parsedLine.moteTag?.value?.trim();
       } else if (labelLower === 'storyline') {
-        // TODO: Storyline stuff
         requiresMote = {
           at: parsedLine.labelGroup!.end,
           options: motes.storylines,
         };
+        result.parsed.storyline = parsedLine.moteTag?.value?.trim();
       } else if (labelLower === 'giver') {
-        // TODO: Giver stuff
         requiresMote = {
           at: parsedLine.labelGroup!.end,
           options: motes.allowedGivers,
         };
+        result.parsed.quest_giver = parsedLine.moteTag?.value?.trim();
       } else if (labelLower === 'receiver') {
-        // TODO: Receiver stuff
         requiresMote = {
           at: parsedLine.labelGroup!.end,
           options: motes.allowedGivers,
         };
+        result.parsed.quest_receiver = parsedLine.moteTag?.value?.trim();
       } else if (indicator === ':)') {
-        // TODO: Then this is a declaration line for an Emote moment
-        // TODO: If it has a new ID, add it to the mote!
+        if (lastMomentGroup) {
+          // Then this is a declaration line for an Emote moment
+          // Create the new emoji group
+          lastEmojiGroup = {
+            id: parsedLine.arrayTag?.value?.trim(),
+            emotes: [],
+          };
+          result.parsed[lastMomentGroup].push(lastEmojiGroup);
+        } else {
+          result.diagnostics.push({
+            message: `Must be defined in a Start/End Moments section!`,
+            ...lineRange,
+          });
+        }
       } else if (indicator === '!') {
-        // TODO: Then this is an emote within a Emote moment
+        // Then this is an emote within a Emote moment
+
+        if (lastEmojiGroup) {
+          // Add speaker autocompletes
+          if (parsedLine.sep) {
+            requiresMote = {
+              at: parsedLine.sep!.end,
+              options: motes.allowedSpeakers,
+            };
+          } else {
+            result.diagnostics.push({
+              message: `Invalid syntax. Space required after the prefix.`,
+              ...lineRange,
+            });
+          }
+          // Add emoji autocompletes
+          if (parsedLine.emojiGroup) {
+            requiresEmoji = {
+              at: changedPosition(parsedLine.emojiGroup.start, {
+                characters: 1,
+              }),
+              options: motes.emojis,
+            };
+          } else {
+            result.diagnostics.push({
+              message: `Invalid syntax. Emoji required after the speaker.`,
+              ...lineRange,
+            });
+          }
+          lastEmojiGroup.emotes.push({
+            id: parsedLine.arrayTag?.value?.trim(),
+            speaker: parsedLine.moteTag?.value?.trim(),
+            emoji: emojiIdFromName(parsedLine.emojiName?.value),
+          });
+        } else {
+          result.diagnostics.push({
+            message: `Missing an Emote declaration line!`,
+            ...lineRange,
+          });
+        }
       } else if (indicator === '?') {
-        // TODO: Then this is a non-dialog quest moment
+        // Then this is a non-dialog quest moment. These are not implemented, but should be available as placeholders.
+        if (lastMomentGroup) {
+          // Put an autocomplete after the "?#meh " prefix
+          if (parsedLine.sep) {
+            result.completions.push({
+              type: 'momentStyles',
+              options: momentStyles,
+              start: parsedLine.sep!.end,
+              end: parsedLine.sep!.end,
+            });
+          } else {
+            result.diagnostics.push({
+              message: `Invalid syntax. Space required after the prefix.`,
+              ...lineRange,
+            });
+          }
+
+          // Add to data if this momentStyle actually exists
+          if (momentStyles.includes(parsedLine.style?.value as any)) {
+            result.parsed[lastMomentGroup].push({
+              id: parsedLine.arrayTag?.value?.trim(),
+              style: parsedLine.style?.value as any,
+            });
+          } else {
+            result.diagnostics.push({
+              message: `Unknown moment style "${parsedLine.style?.value}"`,
+              ...lineRange,
+            });
+          }
+        } else {
+          result.diagnostics.push({
+            message: `Must be defined in a Start/End Moments section!`,
+            ...lineRange,
+          });
+        }
       } else if (indicator === '//') {
-        // TODO: Handle notes
+        // Then this is a comment/note
+        result.parsed.comments.push({
+          id: parsedLine.arrayTag?.value?.trim(),
+          text: parsedLine.text?.value?.trim(),
+        });
       }
 
       if (requiresEmoji) {

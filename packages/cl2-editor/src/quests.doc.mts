@@ -47,7 +47,15 @@ export class QuestDocument {
     // of mote autocompletes. That way the user can still get completion
     // support for things that aren't fully implemented.
     const line = this.document!.lineAt(position.line);
-    const isAtTrigger = line.text[position.character - 1] === '@';
+    const text = line.text;
+    const isAtTrigger = text[position.character - 1] === '@';
+    const lineType = text.startsWith('>')
+      ? 'dialog'
+      : text.startsWith('?')
+      ? 'momentStyle'
+      : text.startsWith('!')
+      ? 'emote'
+      : 'unknown';
 
     const completes = matchingAutocompletes
       .map((c) => {
@@ -71,6 +79,15 @@ export class QuestDocument {
                 command: 'cursorMove',
                 arguments: [{ to: 'right' }],
               };
+            } else if (lineType === 'emote') {
+              // Then the next item is an emote, so we want to add ` ()` after
+              // and get the cursor between the parens
+              item.insertText = `${item.insertText} ()`;
+              item.command = {
+                title: 'Move the cursor',
+                command: 'cursorMove',
+                arguments: [{ to: 'left' }],
+              };
             }
             return item;
           });
@@ -81,6 +98,14 @@ export class QuestDocument {
             item.detail = 'Label';
             item.insertText = `${o}: `;
             item.keepWhitespace = true;
+            return item;
+          });
+        } else if (c.type === 'momentStyles') {
+          return [...c.options].map((o) => {
+            const item = new vscode.CompletionItem(o);
+            item.kind = vscode.CompletionItemKind.Property;
+            item.detail = 'Moment Style';
+            item.insertText = `? ${o}`;
             return item;
           });
         }
@@ -140,6 +165,7 @@ export class QuestDocument {
 
     // Get the line at this position
     const line = this.document!.lineAt(cursor.line);
+    console.log({ text: line.text });
     if (line.text.match(/^\/\//)) {
       // Then default to adding another comment line
       newEdit.insert(this.uri, cursor, '\n// ');
