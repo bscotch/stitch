@@ -1,5 +1,13 @@
 # Stitch Changelog
 
+## 1.52.0 (2023-10-30)
+
+### Features
+
+- Go-to-definition on native functions now opens the online GameMaker help for that function
+- Go-to-definition for sprite and sound references now open them in the editor
+- Dragging assets onto another asset in the tree now moves them into the parent folder of the drop target
+
 ## 1.51.4 (2023-10-26)
 
 ### Docs

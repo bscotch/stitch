@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 0.60.0 (2023-10-30)
+
+### Features
+
+- Go-to-definition on native functions now opens the online GameMaker help for that function
+
 ## 0.59.0 (2023-09-29)
 
 ### Features
