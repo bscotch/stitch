@@ -70,7 +70,7 @@ export const yyObjectPropertySchema = unstable({
   /**
    * Always exists, but only meaningful for Lists
    */
-  listItems: z.array(z.string()).default([]),
+  listItems: z.array(z.string()).nullable().default([]),
   /**
    * Always exists, but only meaningful for Lists
    */
