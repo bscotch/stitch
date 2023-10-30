@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.6.1 (2023-10-30)
+
+### Fixes
+
+- Resolved some parsing issues
+
 ## 0.6.0 (2023-10-30)
 
 ### Features

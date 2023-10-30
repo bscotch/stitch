@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.5.1 (2023-10-30)
+
+### Fixes
+
+- Resolved some parsing issues
+
 ## 0.5.0 (2023-10-30)
 
 ### Features
