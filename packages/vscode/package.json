@@ -794,12 +794,6 @@
           "type": "tree"
         },
         {
-          "id": "bscotch-stitch-gamechanger",
-          "name": "GameChanger",
-          "icon": "./images/stitch-logo-mono.svg",
-          "type": "tree"
-        },
-        {
           "id": "bscotch-stitch-sprite-sources",
           "name": "Sprite Sources",
           "icon": "./images/stitch-logo-mono.svg",

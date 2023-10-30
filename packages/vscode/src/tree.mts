@@ -87,7 +87,17 @@ export class GameMakerTreeProvider
 
   handleDrop(target: Treeable | undefined, dataTransfer: vscode.DataTransfer) {
     if (!target) return;
-    if (!(target instanceof GameMakerFolder)) return;
+    if (!(target instanceof GameMakerFolder)) {
+      // Then change the target to the parent folder
+      target = target.parent;
+    }
+    if (
+      !target ||
+      !(target instanceof GameMakerFolder) ||
+      target.isProjectFolder
+    ) {
+      return;
+    }
 
     // Filter down the list to only root items.
     // Basically, we want root - most folders only,
@@ -154,6 +164,9 @@ export class GameMakerTreeProvider
         cancellable: false,
       },
       async (progress) => {
+        if (!(target instanceof GameMakerFolder)) {
+          return;
+        }
         for (const folder of folders) {
           const newPath = `${target.path}/${folder.name}`;
           ensureFolders(newPath, target.heirarchy[0]);
@@ -179,7 +192,7 @@ export class GameMakerTreeProvider
           );
         }
         await Promise.all(waits);
-        // TODO: Move all of the assets!
+        // Move all of the assets!
         this.rebuild();
       },
     );
