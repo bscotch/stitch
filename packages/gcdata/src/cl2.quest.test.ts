@@ -6,14 +6,11 @@ import { stringifyMote } from './cl2.quest.stringify.js';
 import { bsArrayToArray, isQuestMote } from './helpers.js';
 import { Crashlands2 } from './types.cl2.js';
 
-const sampleYypPath = pathy(
-  '../../../crashlands-2/Crashlands2/Crashlands2.yyp',
-);
 const sampleQuestMoteId = 'k04f0p';
 
 describe('Cl2 Quests', function () {
   it('can convert a quest mote to a text format', async function () {
-    const packed = await Packed.from(sampleYypPath);
+    const packed = await Packed.from('Crashlands2');
     assert(packed, 'Packed data should be loaded');
 
     // Find a quest that gives items
@@ -46,7 +43,7 @@ describe('Cl2 Quests', function () {
   });
 
   it('can convert quests to text and back without error', async function () {
-    const packed = await Packed.from(sampleYypPath);
+    const packed = await Packed.from('Crashlands2');
     assert(packed, 'Packed data should be loaded');
     const quests =
       packed.listMotesBySchema<Crashlands2.Schemas['cl2_quest']>('cl2_quest');

@@ -1,8 +1,8 @@
-export type MoteId<Id extends string = string> = Id & { __moteId__: never };
-export type SchemaId<Id extends string = string> = Id & { __schemaId__: never };
-export type UidPoolId<Id extends string = string> = Id & {
-  __uidPoolId__: never;
-};
+import { z } from 'zod';
+
+export type MoteId<Id extends string = string> = Id;
+export type SchemaId<Id extends string = string> = Id;
+export type UidPoolId<Id extends string = string> = Id;
 
 export interface PackedData {
   commitId: string;
@@ -186,3 +186,76 @@ export interface BschemaBsArray extends BschemaObject {
   uniqueValue: ['element'];
   additionalProperties: BschemaBsArrayElement;
 }
+
+export type ChangeType = z.infer<typeof changeTypeSchema>;
+const changeTypeSchema = z
+  .union([z.literal('added'), z.literal('deleted'), z.literal('changed')])
+  .describe(
+    `The type of change that occurred. 'added' and 'deleted' refer to the mote itself, while everything else is a 'change'.`,
+  );
+
+export type Change = z.infer<typeof changeSchema>;
+export const changeSchema = z
+  .object({
+    mote_id: z
+      .string()
+      .optional()
+      .describe('If this was a mote change, the ID of that mote.'),
+    schema_id: z
+      .string()
+      .describe(
+        `If this was a mote change, the mote's schema. Otherwise, the schema that changed.`,
+      ),
+    type: changeTypeSchema,
+    schema_title: z
+      .string()
+      .optional()
+      .describe('Stored for posterity in case the name changes.'),
+    mote_name: z
+      .string()
+      .optional()
+      .describe(
+        `If this was a mote change, the mote's name. Stored for posterity in case the name changes.`,
+      ),
+    allowed: z
+      .union([z.boolean(), z.number()])
+      .describe(
+        'Whether or not the current user is allowed to make this change.',
+      ),
+    staged: z
+      .union([z.boolean(), z.number()])
+      .default(false)
+      .describe('Whether or not the change is staged.'),
+    diffs: z
+      .record(z.tuple([z.any(), z.any()]))
+      .optional()
+      .describe(
+        'Changes, keyed by the JSON Pointer-ish (e.g. "data/quest_end_moments/g803/order") path to the field. Values are [before,after], where "null" is used to represent added/deleted values.',
+      ),
+  })
+  .passthrough();
+
+export type Changes = z.infer<typeof changesSchema>;
+export const changesSchema = z
+  .object({
+    commitId: z
+      .string()
+      .regex(/^c\d+$/)
+      .describe('The base GameChanger commit these changes are relative to'),
+    changes: z.object({
+      message: z
+        .string()
+        .describe('The commit message for the changes. Can be a null string.'),
+      motes: z.record(changeSchema).default({}),
+      /** Schema changes. */
+      schemas: z.record(changeSchema).default({}),
+      /** Cache of known conflicts */
+      conflicts: z
+        .object({
+          motes: z.record(z.any()).default({}),
+          schemas: z.record(z.any()).default({}),
+        })
+        .passthrough(),
+    }),
+  })
+  .passthrough();

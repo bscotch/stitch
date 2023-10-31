@@ -6,12 +6,14 @@ import type { Mote } from './types.js';
 import { capitalize } from './util.js';
 
 export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
-  const storyline = packed.getMote(mote.data.storyline);
-
   // METADATA
+  const storyline = packed.getMote(mote.data.storyline);
   const blocks: string[] = [
     `Name: ${packed.getMoteName(mote)}`,
-    `Storyline: ${packed.getMoteName(storyline)}${moteTag(storyline)}`,
+    `Storyline: ` +
+      (storyline
+        ? `${packed.getMoteName(storyline)}${moteTag(storyline)}`
+        : ''),
     `Draft: ${mote.data.wip?.draft ? 'true' : 'false'}\n`,
   ];
 
@@ -133,21 +135,21 @@ export function stringifyMote(mote: Mote<Crashlands2.Quest>, packed: Packed) {
   function emojiString(emojiId: string | undefined) {
     if (!emojiId) return '';
     const emoji = packed.getMote(emojiId);
-    const name = packed.getMoteName(emoji) || emoji.id;
+    const name = packed.getMoteName(emoji) || emoji?.id || 'UNKNOWN';
     return name ? `(${name})` : '';
   }
 
   function characterString(characterId: string) {
     const character = packed.getMote(characterId);
-    const name = packed.getMoteName(character) || character.id;
+    const name = packed.getMoteName(character) || character?.id || 'UNKNOWN';
     return name ? `${name.toUpperCase()}${moteTag(characterId)}` : '';
   }
 
   return blocks.join('\n') + '\n';
 }
-function moteTag(item: string | { id: string }): string {
+function moteTag(item: string | { id: string } | undefined): string {
   assert(
-    typeof item === 'string' || 'id' in item,
+    item && (typeof item === 'string' || 'id' in item),
     'ID must be a string or Mote',
   );
   const idStr = typeof item === 'string' ? item : item.id;

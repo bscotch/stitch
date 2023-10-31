@@ -60,10 +60,10 @@ export function resolvePointerInSchema(
   packed: Packed,
 ): Bschema | undefined {
   pointer = normalizePointer(pointer);
-  let current = packed.getSchema(mote.schema_id);
+  let current = packed.getSchema(mote.schema_id)!;
   for (let i = 0; i < pointer.length; i++) {
     if ('$ref' in current) {
-      current = packed.getSchema(current.$ref);
+      current = packed.getSchema(current.$ref)!;
     }
     const data = resolvePointer(pointer.slice(0, i), mote.data);
     current = resolveOneOf(current, data);

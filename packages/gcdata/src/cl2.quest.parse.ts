@@ -69,7 +69,7 @@ export function parseStringifiedMote(
     }
     const emoji = motes.emojis.find(
       (e) =>
-        packed.getMoteName(e).toLowerCase() === name?.trim().toLowerCase() ||
+        packed.getMoteName(e)?.toLowerCase() === name?.trim().toLowerCase() ||
         e.id === name?.trim(),
     );
     return emoji?.id;
