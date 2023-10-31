@@ -16,7 +16,7 @@ import { Crashlands2 } from './types.cl2.js';
 import { Position } from './types.editor.js';
 import { Mote } from './types.js';
 
-export function parseStringifiedMote(
+export function parseStringifiedQuest(
   text: string,
   mote: Mote<Crashlands2.Quest>,
   packed: Packed,
@@ -439,4 +439,26 @@ export function parseStringifiedMote(
   }
 
   return result;
+}
+
+function computeMoteChangesFromParsedQuest(
+  parsed: QuestUpdateResult['parsed'],
+  questMote: Mote<Crashlands2.Quest>,
+  packed: Packed,
+) {
+  if (parsed.name && parsed.name !== packed.getMoteName(questMote)) {
+    // TODO: Then we need to change the name
+  }
+  if (parsed.quest_giver !== questMote.data.quest_giver?.item) {
+    // TODO: Then we need to change the giver
+  }
+  if (parsed.quest_receiver !== questMote.data.quest_receiver?.item) {
+    // TODO: Then we need to change the receiver
+  }
+  if (parsed.quest_start_log !== questMote.data.quest_start_log?.text) {
+    // TODO: Then we need to change the log
+  }
+  if (parsed.draft != questMote.data.wip?.draft) {
+    // TODO
+  }
 }

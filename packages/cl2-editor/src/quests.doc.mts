@@ -6,7 +6,7 @@ import {
   type Mote,
   type Packed,
 } from '@bscotch/gcdata';
-import { stringifyMote } from '@bscotch/gcdata/dist/cl2.quest.stringify.js';
+import { stringifyQuest } from '@bscotch/gcdata/dist/cl2.quest.stringify.js';
 import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
@@ -61,7 +61,7 @@ export class QuestDocument {
       .map((c) => {
         if (c.type === 'motes') {
           return c.options.map((o) => {
-            const name = this.packed.getMoteName(o);
+            const name = this.packed.getMoteName(o)!;
             const item = new vscode.CompletionItem(name);
             item.detail = this.packed.getSchema(o.schema_id)?.title;
             item.insertText =
@@ -118,7 +118,7 @@ export class QuestDocument {
     ) {
       completes.push(
         ...this.packed.listMotes().map((mote) => {
-          const name = this.packed.getMoteName(mote);
+          const name = this.packed.getMoteName(mote)!;
           const item = new vscode.CompletionItem(name);
           item.detail = this.packed.getSchema(mote.schema_id)?.title;
           item.insertText = `${name}@${mote.id}`;
@@ -233,7 +233,7 @@ export class QuestDocument {
   }
 
   toString() {
-    return stringifyMote(this.mote as Mote<Crashlands2.Quest>, this.packed);
+    return stringifyQuest(this.mote as Mote<Crashlands2.Quest>, this.packed);
   }
 
   static from(uri: vscode.Uri, workspace: CrashlandsWorkspace) {
