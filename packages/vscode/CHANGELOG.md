@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.52.1 (2023-10-31)
+
+### Fixes
+
+- Replaced go-to-def for native symbols to using a separate command to resolve the problem where pressing Ctrl while hovering over a native symbol opens the docs
+
 ## 1.52.0 (2023-10-30)
 
 ### Features

@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.6.0 (2023-10-31)
+
+### Features
+
+- Now loading GameChanger data from draft files
+
 ## 0.5.1 (2023-10-30)
 
 ### Fixes

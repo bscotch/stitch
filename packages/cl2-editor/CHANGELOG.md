@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.8.0 (2023-10-31)
+
+### Features
+
+- Now loading GameChanger data from draft files
+
 ## 0.7.0 (2023-10-30)
 
 ### Features
