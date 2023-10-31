@@ -130,7 +130,7 @@ export async function activateStitchExtension(
     ),
     ...treeProvider.register(),
     ...inspectorProvider.register(),
-    definitionsProvider.register(),
+    ...definitionsProvider.register(),
     ...StitchTypeDefinitionProvider.register(workspace),
     ...StitchReleasePickerProvider.register(workspace),
     ...StitchRenameProvider.register(workspace),
@@ -256,6 +256,32 @@ export async function activateStitchExtension(
     workspace.semanticHighlightProvider.register(),
     workspace.signatureHelpStatus,
     vscode.window.onDidChangeTextEditorSelection((e) => {
+      // Update the 'when' clause for the 'stitch.selectionIsNative' context
+
+      // This includes events from the output window, so skip those
+      if (e.textEditor.document.uri.scheme !== 'file') {
+        return;
+      }
+      // If our cursor is in a native symbol, update the 'when' clause
+      // for that to be true.
+      const wordRange = e.textEditor.document.getWordRangeAtPosition(
+        e.selections[0].start,
+      );
+      if (!wordRange) {
+        return;
+      }
+      const word = e.textEditor.document.getText(wordRange);
+      const item = workspace.getActiveProject()?.self.getMember(word);
+
+      void vscode.commands.executeCommand(
+        'setContext',
+        'stitch.selectionIsNative',
+        item?.native || false,
+      );
+    }),
+    vscode.window.onDidChangeTextEditorSelection((e) => {
+      // Update the function signature
+
       // This includes events from the output window, so skip those
       if (e.textEditor.document.uri.scheme !== 'file') {
         return;

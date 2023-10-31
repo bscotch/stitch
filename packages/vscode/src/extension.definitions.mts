@@ -2,14 +2,16 @@ import { isAssetOfKind } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import { stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
-import { locationOf } from './lib.mjs';
+import { locationOf, registerCommand } from './lib.mjs';
 
 export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
   constructor(readonly workspace: StitchWorkspace) {}
+
   provideDefinition(
     document: vscode.TextDocument,
     position: vscode.Position,
-  ): vscode.Location | undefined {
+    token: vscode.CancellationToken,
+  ): vscode.Definition | undefined {
     const offset = document.offsetAt(position);
     const file = this.workspace.getGmlFile(document);
     const ref = file?.getReferenceAt(offset);
@@ -17,28 +19,14 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
 
     if (!item) return;
 
-    // // If we don't have a reference, see if we're on a typename in
-    // // a JSDoc comment.
-    // if (!ref) {
-    //   // Make sure we're in a JSDoc comment.
-    //   if (!file.getJsdocAt(offset)) return;
-
-    //   const wordRange = document.getWordRangeAtPosition(position, /[\w.]+/);
-    //   if (!wordRange) return;
-    //   const typeName = document.getText(wordRange);
-    //   console.log('WORD RANGE', typeName);
-    //   item = file.project.types.get(typeName)?.signifier;
-    //   if (!item) return;
-    // }
-
     const assetName = item?.asset
       ? item.name
       : item?.getTypeByKind('Id.Instance')?.name ||
         item?.getTypeByKind('Asset.GMObject')?.name;
 
     if (item && item.native) {
-      const helpLink = file?.project.helpLinks[item.name];
-      helpLink && vscode.env.openExternal(vscode.Uri.parse(helpLink));
+      // const helpLink = file?.project.helpLinks[item.name];
+      // helpLink && vscode.env.openExternal(vscode.Uri.parse(helpLink));
     } else if (item && !item.native && item.def?.file) {
       return locationOf(item.def);
     } else if (ref && item?.name === 'event_inherited') {
@@ -91,6 +79,34 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
   }
 
   register() {
-    return vscode.languages.registerDefinitionProvider('gml', this);
+    return [
+      vscode.languages.registerDefinitionProvider('gml', this),
+      registerCommand('stitch.openDocs', (info?: { from?: 'keybind' }) => {
+        // Get the currently select word, if any.
+        let word = '';
+        const editor = vscode.window.activeTextEditor;
+        const project = this.workspace.getActiveProject();
+        if (!project) return;
+        if (editor) {
+          const cursorPosition = editor.selection.active;
+          const wordRange =
+            editor.document.getWordRangeAtPosition(cursorPosition);
+          if (wordRange) {
+            word = editor.document.getText(wordRange);
+          }
+        }
+        const openDocs = () =>
+          vscode.env.openExternal(vscode.Uri.parse(project.helpLinks[word]));
+        if (info?.from === 'keybind') {
+          // Then we only want to open if the word is a native value of some sort.
+          const item = project.self.getMember(word);
+          if (item?.native) {
+            openDocs();
+          }
+        } else {
+          openDocs();
+        }
+      }),
+    ];
   }
 }

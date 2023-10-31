@@ -10,6 +10,11 @@ import {
 import { when } from './manifest.when.mjs';
 
 export const commands = {
+  'stitch.openDocs': {
+    command: 'stitch.openDocs',
+    title: 'Stitch: Open GameMaker Docs',
+    [$showInPalette]: true,
+  },
   'stitch.diagnostics.suppress': {
     command: 'stitch.diagnostics.suppress',
     title: 'Suppress Diagnostics',

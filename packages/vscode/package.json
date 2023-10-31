@@ -41,6 +41,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "stitch.openDocs",
+        "title": "Stitch: Open GameMaker Docs"
+      },
+      {
         "command": "stitch.diagnostics.suppress",
         "title": "Suppress Diagnostics"
       },
@@ -463,6 +467,14 @@
         "command": "stitch.assets.rename",
         "key": "f2",
         "when": "view == bscotch-stitch-resources && viewItem =~ /^asset-/"
+      },
+      {
+        "command": "stitch.openDocs",
+        "key": "f12",
+        "when": "editorTextFocus && resourceExtname =~ /\\.gml$/ && stitch.selectionIsNative",
+        "args": {
+          "from": "keybind"
+        }
       }
     ],
     "languages": [
@@ -702,6 +714,9 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "stitch.openDocs"
+        },
         {
           "command": "stitch.openLocation.gameMaker"
         },
