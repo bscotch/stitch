@@ -709,6 +709,20 @@ export class Project {
     });
   }
 
+  @sequential
+  async getWindowsName(): Promise<string | undefined> {
+    const windowOptionsFile = this.dir.join(
+      'options/windows/options_windows.yy',
+    );
+    if (!(await windowOptionsFile.exists())) {
+      return;
+    }
+    const content = (await Yy.read(windowOptionsFile.absolute)) as {
+      option_windows_display_name?: string;
+    };
+    return content.option_windows_display_name;
+  }
+
   /**
    * Load the GML spec for the project's runtime version, falling
    * back on the included spec if necessary.
