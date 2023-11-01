@@ -440,7 +440,9 @@ export async function parseStringifiedQuest(
     index += line.length;
   }
 
-  await updateChangesFromParsedQuest(result.parsed, moteId, packed);
+  if (result.diagnostics.length === 0) {
+    await updateChangesFromParsedQuest(result.parsed, moteId, packed);
+  }
 
   return result;
 }
@@ -473,6 +475,10 @@ async function updateChangesFromParsedQuest(
     questMoteWorking!,
     packed.working,
   );
+
+  for (const comment of parsed.comments) {
+    const pointer: QuestMotePointer = `wip/comments/${comment.id}/text`;
+  }
 
   parsed.comments;
   parsed.clues;

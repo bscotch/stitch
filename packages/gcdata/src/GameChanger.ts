@@ -121,17 +121,24 @@ export class GameChanger {
       );
     }
 
+    const fullPath = `data/${dataPath}`;
+
     // Update the working data
-    setValueAtPointer(this.workingData.motes[moteId], dataPath, value);
+    setValueAtPointer(this.workingData.motes[moteId], fullPath, value);
 
     // See if we have a change relative to the base
     const currentValue =
       resolvePointer(dataPath, this.base.getMote(moteId)) ?? null;
     value = value ?? null;
-    if (currentValue === value) return;
+    if (currentValue === value) {
+      // Then we haven't changed from the base data, but
+      // we might be *undoing* a working data change.
+      delete this.changes.changes.motes?.[moteId]?.diffs?.[fullPath];
+      return;
+    }
     this.createChange('motes', moteId, {
       type: 'changed',
-      pointer: `data/${dataPath}`,
+      pointer: fullPath,
       newValue: value,
     });
   }
