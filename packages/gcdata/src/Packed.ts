@@ -10,29 +10,31 @@ import {
   Changes,
   changeSchema,
   changesSchema,
+  isBschemaBoolean,
+  isBschemaObject,
+  isBschemaString,
   type Mote,
   type MoteId,
   type PackedData,
   type SchemaId,
 } from './types.js';
-import { resolvePointer } from './util.js';
+import {
+  resolvePointer,
+  resolvePointerInSchema,
+  setValueAtPointer,
+} from './util.js';
 
-export class Packed {
-  protected baseData!: PackedData;
-  protected workingData!: PackedData;
-  protected changes!: Changes;
-
-  protected constructor(readonly projectName: string) {}
-
+export class Gcdata {
+  constructor(public data: PackedData) {}
   get motes(): PackedData['motes'] {
     return {
-      ...this.workingData.motes,
+      ...this.data.motes,
     };
   }
 
   get schemas(): PackedData['schemas'] {
     return {
-      ...this.workingData.schemas,
+      ...this.data.schemas,
     };
   }
 
@@ -49,53 +51,115 @@ export class Packed {
 
   getMote(moteId: string | MoteId | undefined): Mote | undefined {
     if (!moteId) return;
-    return this.workingData.motes[moteId as MoteId];
+    return this.data.motes[moteId as MoteId];
   }
 
   getSchema(schemaId: string | SchemaId | undefined): Bschema | undefined {
     if (!schemaId) return;
-    return this.workingData.schemas[schemaId as SchemaId];
+    return this.data.schemas[schemaId as SchemaId];
   }
 
   listMotes(): Mote[] {
-    return Object.values(this.workingData.motes);
+    return Object.values(this.data.motes);
   }
 
   listMotesBySchema<D = unknown>(
     ...schemaId: (string | SchemaId)[]
   ): Mote<D>[] {
-    return Object.values(this.workingData.motes).filter((mote) =>
+    return Object.values(this.data.motes).filter((mote) =>
       schemaId.includes(mote.schema_id),
     ) as Mote<D>[];
   }
+}
 
-  async createChange(
+export class GameChanger {
+  base!: Gcdata;
+  working!: Gcdata;
+  protected changes!: Changes;
+
+  protected constructor(readonly projectName: string) {}
+
+  protected get workingData(): PackedData {
+    return this.working.data;
+  }
+
+  protected get baseData(): PackedData {
+    return this.base.data;
+  }
+
+  updateMote(moteId: string, path: string, value: any) {
+    // Make sure this is a valid request
+    const workingMote = this.working.getMote(moteId);
+    assert(workingMote, `Cannot update non-existent mote ${moteId}`);
+    const schema = this.working.getSchema(workingMote.schema_id);
+    assert(schema, `Mote schema ${workingMote.schema_id} does not exist`);
+    const subschema = resolvePointerInSchema(path, workingMote, this.working);
+    assert(
+      subschema,
+      `Could not resolve ${path} in schema ${workingMote.schema_id}}`,
+    );
+
+    // Do some basic schema validation to avoid really dumb errors
+    if (typeof value === 'string') {
+      assert(
+        isBschemaString(subschema),
+        'Invalid value. Bschema is not for a string.',
+      );
+    } else if (typeof value === 'object') {
+      assert(
+        isBschemaObject(subschema),
+        'Invalid value. Bschema is not for an object.',
+      );
+    } else if (typeof value === 'boolean') {
+      assert(
+        isBschemaBoolean(subschema),
+        'Invalid value. Bschema is not boolean',
+      );
+    }
+
+    // Update the working data
+    setValueAtPointer(this.workingData.motes[moteId], path, value);
+
+    // See if we have a change relative to the base
+    const currentValue =
+      resolvePointer(path, this.base.getMote(moteId)) ?? null;
+    value = value ?? null;
+    if (currentValue === value) return;
+    this.createChange('motes', moteId, {
+      type: 'changed',
+      pointer: path,
+      newValue: value,
+    });
+  }
+
+  protected createChange(
     category: 'schemas' | 'motes',
-    type: ChangeType,
     id: string,
-    pointer?: string,
-    newValue?: any,
+    change: { type: ChangeType; pointer?: string; newValue?: any },
   ) {
     const moteId = category === 'motes' ? id : undefined;
     assert(
       moteId || category === 'schemas',
       'Must specify mote ID for mote changes',
     );
-    const mote = moteId ? this.getMote(moteId) || newValue : undefined;
+    const mote = moteId
+      ? this.working.getMote(moteId) || change.newValue
+      : undefined;
     const schemaId = category === 'schemas' ? id : mote?.schema_id;
     assert(schemaId, 'Could not determine schema ID for change');
     assert(
-      !moteId || this.getMote(moteId) || type === 'added',
+      !moteId || this.working.getMote(moteId) || change.type === 'added',
       `Mote ${id} does not exist`,
     );
-    if (category === 'motes' && type === 'added') {
-      assert(!this.getMote(id), `Mote ${id} already exists`);
+    if (category === 'motes' && change.type === 'added') {
+      assert(!this.working.getMote(id), `Mote ${id} already exists`);
     }
-    if (category === 'schemas' && type === 'added') {
-      assert(!this.getSchema(id), `Schema ${id} already exists`);
+    if (category === 'schemas' && change.type === 'added') {
+      assert(!this.working.getSchema(id), `Schema ${id} already exists`);
     }
     assert(
-      (category === 'schemas' && type === 'added') || this.getSchema(id),
+      (category === 'schemas' && change.type === 'added') ||
+        this.working.getSchema(id),
       `Schema ${id} does not exist`,
     );
 
@@ -104,26 +168,32 @@ export class Packed {
       this.changes.changes[category]?.[id] || {
         mote_id: moteId,
         schema_id: schemaId,
-        type,
+        type: change.type,
       },
     );
-    item.mote_name ||= this.getMoteName(moteId);
+    item.mote_name ||= this.working.getMoteName(moteId);
     this.changes.changes[category][id] = item;
-    if (type === 'deleted') {
+    if (change.type === 'deleted') {
       item.type = 'deleted';
       delete item.diffs;
-    } else if (pointer) {
-      let originalValue = resolvePointer(pointer, this.baseData[category][id]);
+    } else if (change.pointer) {
+      let originalValue = resolvePointer(
+        change.pointer,
+        this.baseData[category][id],
+      );
       originalValue = originalValue === undefined ? null : originalValue;
-      newValue = newValue === undefined ? null : newValue;
-      if (originalValue !== newValue) {
+      change.newValue = change.newValue === undefined ? null : change.newValue;
+      if (originalValue !== change.newValue) {
         item.diffs ||= {};
-        item.diffs[pointer] = [originalValue, newValue];
+        item.diffs[change.pointer] = [originalValue, change.newValue];
       }
     }
 
     this.applyChanges();
-    await Packed.projectGameChangerChangesFile(this.projectName).write(
+  }
+
+  async writeChanges() {
+    await GameChanger.projectGameChangerChangesFile(this.projectName).write(
       this.changes,
     );
   }
@@ -167,7 +237,9 @@ export class Packed {
   }
 
   protected async loadChanges() {
-    const changesFile = Packed.projectGameChangerChangesFile(this.projectName);
+    const changesFile = GameChanger.projectGameChangerChangesFile(
+      this.projectName,
+    );
     assert(
       await changesFile.exists(),
       'Could not find game-changer changes file. Open the GameChanger to ensure that it gets created.',
@@ -176,7 +248,7 @@ export class Packed {
   }
 
   protected async readCommitsMetadata(): Promise<GameChangerRumpusMetadata> {
-    const metadataFile = Packed.projectRumpusGameChangerMetadataFile(
+    const metadataFile = GameChanger.projectRumpusGameChangerMetadataFile(
       this.projectName,
     );
     assert(
@@ -212,23 +284,27 @@ export class Packed {
       commitItemId,
       `Could not find commit item with name "${this.changes.commitId}"`,
     );
-    const commitItemFile = Packed.projectRumpusGameChangerDir(
+    const commitItemFile = GameChanger.projectRumpusGameChangerDir(
       this.projectName,
     ).join(commitItemId);
     assert(
       await commitItemFile.exists(),
       `Could not find commit item file "${commitItemFile}"`,
     );
-    this.baseData = JSON.parse(await commitItemFile.read({ parse: false }));
-    this.workingData = structuredClone(this.baseData);
+    const baseData = JSON.parse(await commitItemFile.read({ parse: false }));
+    this.base ||= new Gcdata(baseData);
+    this.base.data = baseData;
+    const workingData = structuredClone(baseData);
+    this.working ||= new Gcdata(workingData);
+    this.working.data = workingData;
     this.applyChanges();
   }
 
   /**
    * @param path Either the path to a .yyp file (to get the included packed file) or the direct path to a GameChanger snapshot (e.g. a packed file or a base file).
    */
-  static async from(projectName: string): Promise<Packed | undefined> {
-    const gcdata = new Packed(projectName);
+  static async from(projectName: string): Promise<GameChanger | undefined> {
+    const gcdata = new GameChanger(projectName);
     try {
       await gcdata.load();
       return gcdata;

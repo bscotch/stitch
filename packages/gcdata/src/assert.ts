@@ -11,3 +11,12 @@ export function assert(claim: any, message: string): asserts claim {
     throw new GcdataError(message, assert);
   }
 }
+
+export function assertThrows(fn: Function, message: string): void {
+  try {
+    fn();
+  } catch (e) {
+    return;
+  }
+  throw new GcdataError(message, assertThrows);
+}

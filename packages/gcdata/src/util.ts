@@ -1,6 +1,11 @@
-import type { Packed } from './Packed.js';
+import type { Gcdata } from './Packed.js';
 import { assert } from './assert.js';
-import type { Bschema, BschemaConst, Mote } from './types.js';
+import {
+  isBschemaObject,
+  type Bschema,
+  type BschemaConst,
+  type Mote,
+} from './types.js';
 
 export function objectToMap<T>(obj: T): Map<keyof T, T[keyof T]> {
   const map = new Map<keyof T, T[keyof T]>();
@@ -51,19 +56,53 @@ function resolveOneOf(schema: Bschema, data: any): Bschema {
 }
 
 /**
+ * Set the value at a pointer in a nested object. If a value along
+ * the path is missing, it'll be created as an object.
+ *
+ * Only works with Bschema-style pointers.
+ */
+export function setValueAtPointer(
+  data: any,
+  pointer: string | string[],
+  value: any,
+) {
+  // Ensure that the path to the value exists
+  pointer = normalizePointer(pointer);
+  let current = data;
+  for (let i = 0; i < pointer.length; i++) {
+    if (i === pointer.length - 1) {
+      current[pointer[i]] = value;
+    } else if (current[pointer[i]] === undefined) {
+      current[pointer[i]] = {};
+    } else {
+      throw new Error(
+        `Cannot set intermediate pointer at ${pointer
+          .slice(0, i + 1)
+          .join(
+            '/',
+          )}: a non-object value already exists there (${JSON.stringify(
+          current[pointer[i]],
+        )})`,
+      );
+    }
+    current = current[pointer[i]];
+  }
+}
+
+/**
  * Given a Bschema pointer for mote data, resolve the schema definition
  * for that value.
  */
 export function resolvePointerInSchema(
   pointer: string | string[],
   mote: Mote,
-  packed: Packed,
+  gcData: Gcdata,
 ): Bschema | undefined {
   pointer = normalizePointer(pointer);
-  let current = packed.getSchema(mote.schema_id)!;
+  let current = gcData.getSchema(mote.schema_id)!;
   for (let i = 0; i < pointer.length; i++) {
     if ('$ref' in current) {
-      current = packed.getSchema(current.$ref)!;
+      current = gcData.getSchema(current.$ref)!;
     }
     const data = resolvePointer(pointer.slice(0, i), mote.data);
     current = resolveOneOf(current, data);
@@ -95,19 +134,68 @@ export function capitalize(str: string) {
   return str[0].toUpperCase() + str.slice(1);
 }
 
-export function re(string: string, flags?: string) {
-  return new RegExp(string, flags);
-}
-
-export function match(
-  string: string,
-  pattern: string | RegExp,
-  flags?: string,
-) {
-  pattern = typeof pattern === 'string' ? re(pattern, flags) : pattern;
-  const match = string.match(pattern);
-  return {
-    match,
-    groups: (match?.groups || {}) as { [key: string]: string | undefined },
+/**
+ * Get all Bschema-style data pointers defined by a schema.
+ */
+export function computeMotePointersFromSchema(
+  gcData: Gcdata,
+  schema: Bschema,
+  collection = new Set<string>(),
+  withDataPrefix = false,
+  __basePointer: string[] = [],
+): Set<string> {
+  const addToCollection = (final?: string) => {
+    __basePointer = __basePointer.filter((p) => !p.startsWith('$$'));
+    if (final) {
+      __basePointer.push(final);
+    }
+    collection.add(__basePointer.join('/'));
+    return collection;
   };
+
+  __basePointer = withDataPrefix
+    ? ['data', ...__basePointer]
+    : [...__basePointer];
+
+  if ('$ref' in schema) {
+    const subschema = gcData.getSchema(schema.$ref)!;
+    const refKey = `$$${schema.$ref}`;
+    if (__basePointer.includes(refKey)) {
+      __basePointer = [...__basePointer, '*'];
+      return addToCollection(`recursion(${schema.$ref})`);
+    }
+    schema = subschema;
+    __basePointer = [...__basePointer, refKey];
+  }
+  if (isBschemaObject(schema)) {
+    for (const key in schema.oneOf || []) {
+      computeMotePointersFromSchema(
+        gcData,
+        schema.oneOf![key],
+        collection,
+        false,
+        __basePointer,
+      );
+    }
+    for (const key in schema.properties) {
+      const subSchema = schema.properties[key];
+      computeMotePointersFromSchema(gcData, subSchema, collection, false, [
+        ...__basePointer,
+        key,
+      ]);
+    }
+    if (schema.additionalProperties) {
+      computeMotePointersFromSchema(
+        gcData,
+        schema.additionalProperties,
+        collection,
+        false,
+        [...__basePointer, '*'],
+      );
+    }
+  } else {
+    // Then we're at a leaf node and can store it
+    addToCollection();
+  }
+  return collection;
 }

@@ -1,18 +1,21 @@
-import type { Packed } from './Packed.js';
+import type { GameChanger } from './Packed.js';
 import { assert } from './assert.js';
 import { bsArrayToArray } from './helpers.js';
 import type { Crashlands2 } from './types.cl2.js';
 import type { Mote } from './types.js';
 import { capitalize } from './util.js';
 
-export function stringifyQuest(mote: Mote<Crashlands2.Quest>, packed: Packed) {
+export function stringifyQuest(
+  mote: Mote<Crashlands2.Quest>,
+  packed: GameChanger,
+) {
   // METADATA
-  const storyline = packed.getMote(mote.data.storyline);
+  const storyline = packed.working.getMote(mote.data.storyline);
   const blocks: string[] = [
-    `Name: ${packed.getMoteName(mote)}`,
+    `Name: ${packed.working.getMoteName(mote)}`,
     `Storyline: ` +
       (storyline
-        ? `${packed.getMoteName(storyline)}${moteTag(storyline)}`
+        ? `${packed.working.getMoteName(storyline)}${moteTag(storyline)}`
         : ''),
     `Draft: ${mote.data.wip?.draft ? 'true' : 'false'}\n`,
   ];
@@ -32,14 +35,14 @@ export function stringifyQuest(mote: Mote<Crashlands2.Quest>, packed: Packed) {
 
   // GIVER
   if (mote.data.quest_giver) {
-    const giver = packed.getMote(mote.data.quest_giver.item);
-    blocks.push(`Giver: ${packed.getMoteName(giver)}${moteTag(giver)}`);
+    const giver = packed.working.getMote(mote.data.quest_giver.item);
+    blocks.push(`Giver: ${packed.working.getMoteName(giver)}${moteTag(giver)}`);
   }
   // RECEIVER
   if (mote.data.quest_receiver) {
-    const receiver = packed.getMote(mote.data.quest_receiver.item);
+    const receiver = packed.working.getMote(mote.data.quest_receiver.item);
     blocks.push(
-      `Receiver: ${packed.getMoteName(receiver)}${moteTag(receiver)}`,
+      `Receiver: ${packed.working.getMoteName(receiver)}${moteTag(receiver)}`,
     );
   }
 
@@ -52,10 +55,12 @@ export function stringifyQuest(mote: Mote<Crashlands2.Quest>, packed: Packed) {
     const clueGroups = bsArrayToArray(mote.data.clues);
     for (const clueGroup of clueGroups) {
       if (!clueGroup.element?.phrases || !clueGroup.element.speaker) continue;
-      const speaker = packed.getMote(clueGroup.element.speaker);
-      let clueString = `Clue${arrayTag(clueGroup)}: ${packed.getMoteName(
-        speaker,
-      )}${moteTag(clueGroup.element.speaker)}`;
+      const speaker = packed.working.getMote(clueGroup.element.speaker);
+      let clueString = `Clue${arrayTag(
+        clueGroup,
+      )}: ${packed.working.getMoteName(speaker)}${moteTag(
+        clueGroup.element.speaker,
+      )}`;
       for (const phraseContainer of bsArrayToArray(
         clueGroup.element!.phrases,
       )) {
@@ -134,14 +139,15 @@ export function stringifyQuest(mote: Mote<Crashlands2.Quest>, packed: Packed) {
 
   function emojiString(emojiId: string | undefined) {
     if (!emojiId) return '';
-    const emoji = packed.getMote(emojiId);
-    const name = packed.getMoteName(emoji) || emoji?.id || 'UNKNOWN';
+    const emoji = packed.working.getMote(emojiId);
+    const name = packed.working.getMoteName(emoji) || emoji?.id || 'UNKNOWN';
     return name ? `(${name})` : '';
   }
 
   function characterString(characterId: string) {
-    const character = packed.getMote(characterId);
-    const name = packed.getMoteName(character) || character?.id || 'UNKNOWN';
+    const character = packed.working.getMote(characterId);
+    const name =
+      packed.working.getMoteName(character) || character?.id || 'UNKNOWN';
     return name ? `${name.toUpperCase()}${moteTag(characterId)}` : '';
   }
 

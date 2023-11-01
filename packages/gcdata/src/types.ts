@@ -61,6 +61,23 @@ export type Bschema =
   | BschemaInteger
   | BschemaBsArray;
 
+export function isBschemaObject(schema: any): schema is BschemaObject {
+  return (
+    typeof schema === 'object' &&
+    (schema['type'] === 'object' ||
+      schema['properties'] ||
+      schema['additionalProperties'])
+  );
+}
+
+export function isBschemaString(schema: any): schema is BschemaString {
+  return typeof schema === 'object' && schema['type'] === 'string';
+}
+
+export function isBschemaBoolean(schema: any): schema is BschemaBoolean {
+  return typeof schema === 'object' && schema['type'] === 'boolean';
+}
+
 interface BschemaBase {
   $id?: SchemaId;
   type?: BschemaTypeName;

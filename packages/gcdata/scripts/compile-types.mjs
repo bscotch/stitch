@@ -1,17 +1,14 @@
 import { pathy } from '@bscotch/pathy';
 import { ok } from 'assert';
 import { compile } from 'json-schema-to-typescript';
-import { Packed } from '../dist/Packed.js';
+import { GameChanger, Gcdata } from '../dist/Packed.js';
+import { computeMotePointersFromSchema } from '../dist/util.js';
 
-const sampleYypPath = pathy(
-  '../../../crashlands-2/Crashlands2/Crashlands2.yyp',
-);
-
-const packed = await Packed.from(sampleYypPath);
+const packed = await GameChanger.from('Crashlands2');
 ok(packed);
 
 /** @type {string} */
-let dataString = await packed.packedPath.read({ parse: false });
+let dataString = JSON.stringify(packed.base.data);
 // Replace all refs with proper JSON Pointers
 dataString = dataString
   .replace(/"\$ref":\s*"([^"]+)"/g, '"$ref": "#/$defs/$1"')
@@ -22,7 +19,7 @@ dataString = dataString
   .replace(/"additionalProperties":\s*1(\.0)?/g, '"additionalProperties": true')
   .replace(/"bConst"/g, '"const"');
 
-/** @type {Packed['schemas']} */
+/** @type {Gcdata['schemas']} */
 const schemas = JSON.parse(dataString).schemas;
 
 // We use "required: true" to indicate that ALL properties are required,
@@ -57,6 +54,20 @@ await pathy('src/types.cl2.ts').write(
     /\n/g,
     '\n\t',
   )}\n}\n`,
+);
+
+// Create types for Quest Mote paths
+const questMoteSchema = packed.base.getSchema('cl2_quest');
+ok(questMoteSchema);
+const pointers = [
+  ...computeMotePointersFromSchema(packed.base, questMoteSchema),
+]
+  .map((p) => `\`${p.replace(/\*/g, '${string}')}\``)
+  .sort();
+await pathy('src/cl2.quest.pointers.ts').write(
+  `export type QuestMoteDataPointer = \`data/\${QuestMotePointer}\`;\nexport type QuestMotePointer = ${pointers.join(
+    '\n  | ',
+  )};\n`,
 );
 
 /**

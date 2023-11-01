@@ -1,4 +1,6 @@
-import { Packed } from './Packed.js';
+import { GameChanger } from './Packed.js';
+import { assert } from './assert.js';
+import { QuestMoteDataPointer } from './cl2.quest.pointers.js';
 import {
   ParsedClue,
   ParsedDialog,
@@ -12,17 +14,16 @@ import {
 } from './cl2.quest.types.js';
 import { getMomentStyleNames, getMoteLists } from './cl2.quest.utils.js';
 import { changedPosition, createBsArrayKey } from './helpers.js';
-import { Crashlands2 } from './types.cl2.js';
 import { Position } from './types.editor.js';
 import { Mote } from './types.js';
 
 export function parseStringifiedQuest(
   text: string,
-  mote: Mote<Crashlands2.Quest>,
-  packed: Packed,
+  moteId: string,
+  packed: GameChanger,
 ): QuestUpdateResult {
-  const motes = getMoteLists(packed);
-  const momentStyles = getMomentStyleNames(packed);
+  const motes = getMoteLists(packed.working);
+  const momentStyles = getMomentStyleNames(packed.working);
   // Remove 'Dialogue' and 'Emote' from the list of moment styles
   for (const style of ['Dialogue', 'Emote']) {
     momentStyles.splice(momentStyles.indexOf(style), 1);
@@ -69,8 +70,8 @@ export function parseStringifiedQuest(
     }
     const emoji = motes.emojis.find(
       (e) =>
-        packed.getMoteName(e)?.toLowerCase() === name?.trim().toLowerCase() ||
-        e.id === name?.trim(),
+        packed.working.getMoteName(e)?.toLowerCase() ===
+          name?.trim().toLowerCase() || e.id === name?.trim(),
     );
     return emoji?.id;
   };
@@ -420,7 +421,7 @@ export function parseStringifiedQuest(
               message: `Mote required!`,
               ...where,
             });
-          } else if (!packed.getMote(parsedLine.moteTag.value!)) {
+          } else if (!packed.working.getMote(parsedLine.moteTag.value!)) {
             result.diagnostics.push({
               message: `Mote not found!`,
               ...where,
@@ -441,24 +442,33 @@ export function parseStringifiedQuest(
   return result;
 }
 
-function computeMoteChangesFromParsedQuest(
+async function computeMoteChangesFromParsedQuest(
   parsed: QuestUpdateResult['parsed'],
-  questMote: Mote<Crashlands2.Quest>,
-  packed: Packed,
+  moteId: string,
+  packed: GameChanger,
 ) {
-  if (parsed.name && parsed.name !== packed.getMoteName(questMote)) {
-    // TODO: Then we need to change the name
-  }
-  if (parsed.quest_giver !== questMote.data.quest_giver?.item) {
-    // TODO: Then we need to change the giver
-  }
-  if (parsed.quest_receiver !== questMote.data.quest_receiver?.item) {
-    // TODO: Then we need to change the receiver
-  }
-  if (parsed.quest_start_log !== questMote.data.quest_start_log?.text) {
-    // TODO: Then we need to change the log
-  }
-  if (parsed.draft != questMote.data.wip?.draft) {
-    // TODO
-  }
+  const questMoteBase = packed.base.getMote(moteId);
+  const questMoteWorking = packed.working.getMote(moteId);
+  const schema = packed.working.getSchema('cl2_quest')!;
+  assert(schema.name, 'Quest mote must have a name pointer');
+  assert(schema, 'cl2_quest schema not found in working copy');
+  const updateMote = (path: QuestMoteDataPointer, value: any) => {
+    packed.updateMote(moteId, path, value);
+  };
+
+  updateMote('data/name', parsed.name);
+  updateMote('data/quest_giver/item', parsed.quest_giver);
+  updateMote('data/quest_receiver/item', parsed.quest_receiver);
+  updateMote('data/quest_start_log/text', parsed.quest_start_log);
+  updateMote('data/wip/draft', parsed.draft);
+  updateMote('data/storyline', parsed.storyline);
+
+  // TODO
+
+  parsed.comments;
+  parsed.clues;
+  parsed.quest_end_moments;
+  parsed.quest_start_moments;
+
+  await packed.writeChanges();
 }

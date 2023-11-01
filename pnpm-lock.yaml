@@ -251,6 +251,9 @@ importers:
         specifier: 3.22.4
         version: 3.22.4
     devDependencies:
+      chai:
+        specifier: ^4.3.8
+        version: 4.3.8
       json-schema-to-typescript:
         specifier: 13.1.1
         version: 13.1.1
