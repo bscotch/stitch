@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 0.61.0 (2023-11-01)
+
+### Features
+
+- Added method for getting the Windows display name for a project
+
 ## 0.60.0 (2023-10-30)
 
 ### Features

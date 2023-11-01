@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.53.0 (2023-11-01)
+
+### Features
+
+- Added option to kill other running project instances on run, enabled by default
+
 ## 1.52.1 (2023-10-31)
 
 ### Fixes
