@@ -16,6 +16,7 @@ import path from 'path';
 import vscode from 'vscode';
 import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
+import { killProjectRunner } from './lib.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
 
 setLogger(logger.withPrefix('PARSER'));
@@ -76,6 +77,13 @@ export class GameMakerProject extends Project {
     compiler?: 'yyc' | 'vm';
     clean?: boolean;
   }) {
+    if (stitchConfig.killOthersOnRun) {
+      const windowTitle = await this.getWindowsName();
+      if (windowTitle) {
+        await killProjectRunner(windowTitle);
+      }
+    }
+
     stitchEvents.emit(
       options?.clean ? 'clean-project-start' : 'run-project-start',
       this,

@@ -8,6 +8,10 @@ class StitchConfig {
     return vscode.workspace.getConfiguration('stitch');
   }
 
+  get killOthersOnRun() {
+    return this.config.get<boolean>('run.killOthers') ?? false;
+  }
+
   get sortSpriteSourceChangesBy() {
     return (
       this.config.get<'recency' | 'name'>('sprites.sources.sortChangesBy') ??

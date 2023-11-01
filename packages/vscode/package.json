@@ -359,6 +359,12 @@
           "default": "right",
           "description": "Whether the statusbar will show the function signature helper on the left or right side."
         },
+        "stitch.run.killOthers": {
+          "title": "Kill other runner instances",
+          "description": "If true, when you run a project in Stitch it will first kill any other running instances of the same project.",
+          "type": "boolean",
+          "default": true
+        },
         "stitch.run.defaultCompiler": {
           "title": "Default GameMaker compiler",
           "enum": [

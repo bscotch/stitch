@@ -1,5 +1,6 @@
 import type { Code, Range } from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
+import { exec } from 'node:child_process';
 import vscode from 'vscode';
 import {
   StitchVscodeInternalError,
@@ -223,4 +224,18 @@ export function assertThrows(
     return;
   }
   throw new StitchVscodeInternalError(msg, assertThrows);
+}
+export function killProjectRunner(title: string) {
+  assertInternalClaim(title, 'Title must be provided');
+  return new Promise<void>((resolve, reject) => {
+    exec(
+      `taskkill /FI "WINDOWTITLE eq ${title}" /FI "IMAGENAME eq Runner.exe"`,
+      (err) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      },
+    );
+  });
 }
