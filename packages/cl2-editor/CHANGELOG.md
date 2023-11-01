@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.8.1 (2023-11-01)
+
+### Fixes
+
+- Resolved Quest editor issues caused by changes to the parser
+
 ## 0.8.0 (2023-10-31)
 
 ### Features

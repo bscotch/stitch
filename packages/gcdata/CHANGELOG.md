@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.6.1 (2023-11-01)
+
+### Fixes
+
+- Resolved misc. errors
+
 ## 0.6.0 (2023-10-31)
 
 ### Features

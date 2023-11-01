@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 0.4.5 (2023-11-01)
+
+### Fixes
+
+- Added traces and extra safety mechanisms to sprite-actions
+
 ## 0.4.1 (2023-09-20)
 
 ### Fixes
