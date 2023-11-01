@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.53.1 (2023-11-01)
+
+### Fixes
+
+- Disabled the killOthers option on non-Windows platforms, since it'll error out
+
 ## 1.53.0 (2023-11-01)
 
 ### Features
