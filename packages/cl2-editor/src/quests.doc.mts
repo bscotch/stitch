@@ -1,10 +1,10 @@
 import {
   QuestUpdateResult,
   isQuestMote,
-  parseStringifiedMote,
+  parseStringifiedQuest,
   type Crashlands2,
+  type GameChanger,
   type Mote,
-  type Packed,
 } from '@bscotch/gcdata';
 import { stringifyQuest } from '@bscotch/gcdata/dist/cl2.quest.stringify.js';
 import vscode from 'vscode';
@@ -25,7 +25,7 @@ export class QuestDocument {
   protected constructor(
     readonly uri: vscode.Uri,
     readonly mote: Mote<Crashlands2.Quest>,
-    readonly packed: Packed,
+    readonly packed: GameChanger,
   ) {}
   parseResults: QuestUpdateResult | undefined;
 
@@ -61,9 +61,9 @@ export class QuestDocument {
       .map((c) => {
         if (c.type === 'motes') {
           return c.options.map((o) => {
-            const name = this.packed.getMoteName(o)!;
+            const name = this.packed.working.getMoteName(o)!;
             const item = new vscode.CompletionItem(name);
-            item.detail = this.packed.getSchema(o.schema_id)?.title;
+            item.detail = this.packed.working.getSchema(o.schema_id)?.title;
             item.insertText =
               o.schema_id === 'cl2_emoji' ? name : `${name}@${o.id}`;
             item.kind =
@@ -117,10 +117,10 @@ export class QuestDocument {
       !completes.find((c) => c.kind === vscode.CompletionItemKind.Class)
     ) {
       completes.push(
-        ...this.packed.listMotes().map((mote) => {
-          const name = this.packed.getMoteName(mote)!;
+        ...this.packed.working.listMotes().map((mote) => {
+          const name = this.packed.working.getMoteName(mote)!;
           const item = new vscode.CompletionItem(name);
-          item.detail = this.packed.getSchema(mote.schema_id)?.title;
+          item.detail = this.packed.working.getSchema(mote.schema_id)?.title;
           item.insertText = `${name}@${mote.id}`;
           item.kind = vscode.CompletionItemKind.Class;
           // These need to delete the '@' character that triggered the autocomplete
@@ -197,14 +197,14 @@ export class QuestDocument {
     this.parse(this.document?.getText());
   }
 
-  parse(content?: string) {
+  async parse(content?: string) {
     try {
       if (!content) {
         content = this.toString();
       }
-      this.parseResults = parseStringifiedMote(
+      this.parseResults = await parseStringifiedQuest(
         content!,
-        this.mote,
+        this.mote.id,
         this.packed,
       );
 
@@ -242,7 +242,7 @@ export class QuestDocument {
     }
     const { moteId } = parseGameChangerUri(uri);
     assertInternalClaim(moteId, 'Expected a mote id');
-    const mote = workspace.packed.getMote(moteId);
+    const mote = workspace.packed.working.getMote(moteId);
     assertInternalClaim(mote, `No mote found with id ${moteId}`);
     assertInternalClaim(isQuestMote(mote), 'Only quests are supported.');
     const doc = new QuestDocument(uri, mote, workspace.packed);

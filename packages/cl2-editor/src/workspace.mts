@@ -1,4 +1,4 @@
-import { Packed } from '@bscotch/gcdata';
+import { GameChanger } from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { crashlandsEvents } from './events.mjs';
@@ -13,11 +13,11 @@ export class CrashlandsWorkspace {
   static workspace = undefined as CrashlandsWorkspace | undefined;
   protected constructor(
     readonly ctx: vscode.ExtensionContext,
-    readonly packed: Packed,
+    readonly packed: GameChanger,
   ) {}
   static async activate(ctx: vscode.ExtensionContext) {
     // Load the Packed data
-    const packed = await Packed.from('Crashlands2');
+    const packed = await GameChanger.from('Crashlands2');
     assertLoudly(packed, 'Could not load packed file');
 
     this.workspace = new CrashlandsWorkspace(ctx, packed);

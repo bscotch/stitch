@@ -1,4 +1,4 @@
-import { Bschema, Crashlands2, Mote, Packed } from '@bscotch/gcdata';
+import { Bschema, Crashlands2, GameChanger, Mote } from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { moteToPath } from './quests.util.mjs';
 import { TreeItemBase } from './tree.base.mjs';
@@ -31,7 +31,7 @@ export class QuestTreeProvider
   }
   getChildren(element?: QuestTreeItem): vscode.ProviderResult<QuestTreeItem[]> {
     if (!element) {
-      const items = this.packed
+      const items = this.packed.working
         .listMotesBySchema('cl2_storyline')
         .map((m) => new MoteItem(this.packed, m));
       items?.sort((a, b) =>
@@ -43,7 +43,7 @@ export class QuestTreeProvider
       element.schemaId === 'cl2_storyline'
     ) {
       // Then get all of the Quest motes that are in this storyline
-      const questMotes = this.packed
+      const questMotes = this.packed.working
         .listMotesBySchema<Crashlands2.Schemas['cl2_quest']>('cl2_quest')
         .filter((m) => m.data.storyline === element.mote.id)
         .map((m) => new MoteItem(this.packed, m, element));
@@ -76,12 +76,12 @@ class MoteItem<Data = unknown> extends TreeItemBase<'mote'> {
   document: vscode.TextDocument | undefined;
 
   constructor(
-    readonly packed: Packed,
+    readonly packed: GameChanger,
     readonly mote: Mote<Data>,
     parent?: MoteItem,
   ) {
-    super(packed.getMoteName(mote));
-    this.schema = packed.getSchema(mote.schema_id);
+    super(packed.working.getMoteName(mote)!);
+    this.schema = packed.working.getSchema(mote.schema_id)!;
     this.parent = parent;
     this.collapsibleState = this.isStoryline
       ? vscode.TreeItemCollapsibleState.Collapsed
@@ -100,7 +100,7 @@ class MoteItem<Data = unknown> extends TreeItemBase<'mote'> {
   }
 
   get name(): string {
-    return this.packed.getMoteName(this.mote);
+    return this.packed.working.getMoteName(this.mote)!;
   }
 
   get isStoryline(): boolean {
