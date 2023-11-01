@@ -1,4 +1,4 @@
-import type { GameChanger } from './Packed.js';
+import type { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
 import { bsArrayToArray } from './helpers.js';
 import type { Crashlands2 } from './types.cl2.js';

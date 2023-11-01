@@ -62,6 +62,7 @@ ok(questMoteSchema);
 const pointers = [
   ...computeMotePointersFromSchema(packed.base, questMoteSchema),
 ]
+  .filter((p) => !p.startsWith('objectives'))
   .map((p) => `\`${p.replace(/\*/g, '${string}')}\``)
   .sort();
 await pathy('src/cl2.quest.pointers.ts').write(

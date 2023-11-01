@@ -1,6 +1,6 @@
-import { GameChanger } from './Packed.js';
+import { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
-import { QuestMoteDataPointer } from './cl2.quest.pointers.js';
+import { QuestMotePointer } from './cl2.quest.pointers.js';
 import {
   ParsedClue,
   ParsedDialog,
@@ -16,12 +16,13 @@ import { getMomentStyleNames, getMoteLists } from './cl2.quest.utils.js';
 import { changedPosition, createBsArrayKey } from './helpers.js';
 import { Position } from './types.editor.js';
 import { Mote } from './types.js';
+import { resolvePointerInSchema } from './util.js';
 
-export function parseStringifiedQuest(
+export async function parseStringifiedQuest(
   text: string,
   moteId: string,
   packed: GameChanger,
-): QuestUpdateResult {
+): Promise<QuestUpdateResult> {
   const motes = getMoteLists(packed.working);
   const momentStyles = getMomentStyleNames(packed.working);
   // Remove 'Dialogue' and 'Emote' from the list of moment styles
@@ -439,10 +440,12 @@ export function parseStringifiedQuest(
     index += line.length;
   }
 
+  await updateChangesFromParsedQuest(result.parsed, moteId, packed);
+
   return result;
 }
 
-async function computeMoteChangesFromParsedQuest(
+async function updateChangesFromParsedQuest(
   parsed: QuestUpdateResult['parsed'],
   moteId: string,
   packed: GameChanger,
@@ -452,23 +455,29 @@ async function computeMoteChangesFromParsedQuest(
   const schema = packed.working.getSchema('cl2_quest')!;
   assert(schema.name, 'Quest mote must have a name pointer');
   assert(schema, 'cl2_quest schema not found in working copy');
-  const updateMote = (path: QuestMoteDataPointer, value: any) => {
-    packed.updateMote(moteId, path, value);
+  const updateMote = (path: QuestMotePointer, value: any) => {
+    packed.updateMoteData(moteId, path, value);
   };
 
-  updateMote('data/name', parsed.name);
-  updateMote('data/quest_giver/item', parsed.quest_giver);
-  updateMote('data/quest_receiver/item', parsed.quest_receiver);
-  updateMote('data/quest_start_log/text', parsed.quest_start_log);
-  updateMote('data/wip/draft', parsed.draft);
-  updateMote('data/storyline', parsed.storyline);
+  updateMote('name', parsed.name);
+  updateMote('quest_giver/item', parsed.quest_giver);
+  updateMote('quest_receiver/item', parsed.quest_receiver);
+  updateMote('quest_start_log/text', parsed.quest_start_log);
+  updateMote('wip/draft', parsed.draft);
+  updateMote('storyline', parsed.storyline);
 
-  // TODO
+  // TODO: For BsArray entries, need to be able to identify changed items, added items, and removed items, and also be able to manage *order* of items. From the stringified version, order is determined by order of appearance -- in the GC data it's determined by the "order" field.
+  const commentsPointer: QuestMotePointer = 'wip/comments';
+  const commentsSchema = resolvePointerInSchema(
+    commentsPointer,
+    questMoteWorking!,
+    packed.working,
+  );
 
   parsed.comments;
   parsed.clues;
   parsed.quest_end_moments;
   parsed.quest_start_moments;
 
-  await packed.writeChanges();
+  // await packed.writeChanges();
 }

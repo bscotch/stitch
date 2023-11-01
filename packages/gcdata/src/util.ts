@@ -1,4 +1,4 @@
-import type { Gcdata } from './Packed.js';
+import type { Gcdata } from './GameChanger.js';
 import { assert } from './assert.js';
 import {
   isBschemaObject,
@@ -145,17 +145,19 @@ export function computeMotePointersFromSchema(
   __basePointer: string[] = [],
 ): Set<string> {
   const addToCollection = (final?: string) => {
-    __basePointer = __basePointer.filter((p) => !p.startsWith('$$'));
+    const pointer = __basePointer.filter((p) => !p.startsWith('$$'));
     if (final) {
-      __basePointer.push(final);
+      pointer.push(final);
     }
-    collection.add(__basePointer.join('/'));
+    collection.add(pointer.join('/'));
     return collection;
   };
 
   __basePointer = withDataPrefix
     ? ['data', ...__basePointer]
     : [...__basePointer];
+
+  addToCollection();
 
   if ('$ref' in schema) {
     const subschema = gcData.getSchema(schema.$ref)!;
@@ -195,7 +197,7 @@ export function computeMotePointersFromSchema(
     }
   } else {
     // Then we're at a leaf node and can store it
-    addToCollection();
+    // addToCollection();
   }
   return collection;
 }

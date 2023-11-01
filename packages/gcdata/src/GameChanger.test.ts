@@ -1,4 +1,4 @@
-import { GameChanger } from './Packed.js';
+import { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
 import { objectToMap } from './util.js';
 

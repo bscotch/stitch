@@ -87,16 +87,20 @@ export class GameChanger {
     return this.base.data;
   }
 
-  updateMote(moteId: string, path: string, value: any) {
+  updateMoteData(moteId: string, dataPath: string, value: any) {
     // Make sure this is a valid request
     const workingMote = this.working.getMote(moteId);
     assert(workingMote, `Cannot update non-existent mote ${moteId}`);
     const schema = this.working.getSchema(workingMote.schema_id);
     assert(schema, `Mote schema ${workingMote.schema_id} does not exist`);
-    const subschema = resolvePointerInSchema(path, workingMote, this.working);
+    const subschema = resolvePointerInSchema(
+      dataPath,
+      workingMote,
+      this.working,
+    );
     assert(
       subschema,
-      `Could not resolve ${path} in schema ${workingMote.schema_id}}`,
+      `Could not resolve ${dataPath} in schema ${workingMote.schema_id}}`,
     );
 
     // Do some basic schema validation to avoid really dumb errors
@@ -118,16 +122,16 @@ export class GameChanger {
     }
 
     // Update the working data
-    setValueAtPointer(this.workingData.motes[moteId], path, value);
+    setValueAtPointer(this.workingData.motes[moteId], dataPath, value);
 
     // See if we have a change relative to the base
     const currentValue =
-      resolvePointer(path, this.base.getMote(moteId)) ?? null;
+      resolvePointer(dataPath, this.base.getMote(moteId)) ?? null;
     value = value ?? null;
     if (currentValue === value) return;
     this.createChange('motes', moteId, {
       type: 'changed',
-      pointer: path,
+      pointer: `data/${dataPath}`,
       newValue: value,
     });
   }
@@ -152,15 +156,18 @@ export class GameChanger {
       `Mote ${id} does not exist`,
     );
     if (category === 'motes' && change.type === 'added') {
-      assert(!this.working.getMote(id), `Mote ${id} already exists`);
+      assert(!this.working.getMote(moteId), `Mote ${moteId} already exists`);
     }
     if (category === 'schemas' && change.type === 'added') {
-      assert(!this.working.getSchema(id), `Schema ${id} already exists`);
+      assert(
+        !this.working.getSchema(schemaId),
+        `Schema ${schemaId} already exists`,
+      );
     }
     assert(
       (category === 'schemas' && change.type === 'added') ||
-        this.working.getSchema(id),
-      `Schema ${id} does not exist`,
+        this.working.getSchema(schemaId),
+      `Schema ${schemaId} does not exist`,
     );
 
     this.changes.changes[category] ||= {};

@@ -1,4 +1,4 @@
-export * from './Packed.js';
+export * from './GameChanger.js';
 export * from './cl2.quest.js';
 export * from './helpers.js';
 export * from './types.cl2.js';

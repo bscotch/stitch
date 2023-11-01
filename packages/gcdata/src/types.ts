@@ -236,6 +236,7 @@ export const changeSchema = z
       ),
     allowed: z
       .union([z.boolean(), z.number()])
+      .default(true)
       .describe(
         'Whether or not the current user is allowed to make this change.',
       ),

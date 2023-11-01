@@ -1,7 +1,9 @@
 export type QuestMoteDataPointer = `data/${QuestMotePointer}`;
-export type QuestMotePointer =
+export type QuestMotePointer = ``
   | `clues/${string}/element/phrases/${string}/element/phrase/emoji`
   | `clues/${string}/element/phrases/${string}/element/phrase/text/text`
+  | `clues/${string}/element/phrases/${string}/element/phrase/text`
+  | `clues/${string}/element/phrases/${string}/element/phrase`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/area`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/artisan`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/boss`
@@ -10,9 +12,13 @@ export type QuestMotePointer =
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/comparisons/${string}/element/comparison`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/comparisons/${string}/element/value0`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/comparisons/${string}/element/value1`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/comparisons/${string}/element`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/comparisons/${string}/order`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/comparisons/${string}`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/comparisons`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/following`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_requirement)`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/group_requirements`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/insight_status`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/insight`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/invert`
@@ -20,198 +26,72 @@ export type QuestMotePointer =
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/item`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/items_owned/${string}/element/key`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/items_owned/${string}/element/value`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/items_owned/${string}/element`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/items_owned/${string}/order`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/items_owned/${string}`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/items_owned`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/pet`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/quest_status`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/quest`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/require_all`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/stage/comparison`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/stage/stage`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/stage`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/style`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/teleporter_active`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/teleporter_area`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/time`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/order`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}`
+  | `clues/${string}/element/phrases/${string}/element/requirements`
+  | `clues/${string}/element/phrases/${string}/element`
   | `clues/${string}/element/phrases/${string}/order`
+  | `clues/${string}/element/phrases/${string}`
+  | `clues/${string}/element/phrases`
   | `clues/${string}/element/speaker`
+  | `clues/${string}/element`
   | `clues/${string}/order`
+  | `clues/${string}`
+  | `clues`
   | `ignore_in_progression_map`
   | `item_highlights/${string}/element`
   | `item_highlights/${string}/order`
+  | `item_highlights/${string}`
+  | `item_highlights`
   | `map_markers/${string}/element/marker`
   | `map_markers/${string}/element/radius`
   | `map_markers/${string}/element/text/text`
+  | `map_markers/${string}/element/text`
+  | `map_markers/${string}/element`
   | `map_markers/${string}/order`
+  | `map_markers/${string}`
+  | `map_markers`
   | `marker_world_text/${string}/element/color/b`
   | `marker_world_text/${string}/element/color/g`
   | `marker_world_text/${string}/element/color/r`
+  | `marker_world_text/${string}/element/color`
   | `marker_world_text/${string}/element/marker`
   | `marker_world_text/${string}/element/proximity`
   | `marker_world_text/${string}/element/sprite`
   | `marker_world_text/${string}/element/text/description`
   | `marker_world_text/${string}/element/text/text`
+  | `marker_world_text/${string}/element/text`
+  | `marker_world_text/${string}/element`
   | `marker_world_text/${string}/order`
+  | `marker_world_text/${string}`
+  | `marker_world_text`
   | `name`
-  | `objectives/${string}/element/ability_quantity`
-  | `objectives/${string}/element/ability_requirements/${string}/element/area`
-  | `objectives/${string}/element/ability_requirements/${string}/element/artisan`
-  | `objectives/${string}/element/ability_requirements/${string}/element/following`
-  | `objectives/${string}/element/ability_requirements/${string}/element/item_id`
-  | `objectives/${string}/element/ability_requirements/${string}/element/item`
-  | `objectives/${string}/element/ability_requirements/${string}/element/items_owned/${string}/element/key`
-  | `objectives/${string}/element/ability_requirements/${string}/element/items_owned/${string}/element/value`
-  | `objectives/${string}/element/ability_requirements/${string}/element/items_owned/${string}/order`
-  | `objectives/${string}/element/ability_requirements/${string}/element/pet`
-  | `objectives/${string}/element/ability_requirements/${string}/element/stage/comparison`
-  | `objectives/${string}/element/ability_requirements/${string}/element/stage/stage`
-  | `objectives/${string}/element/ability_requirements/${string}/element/style`
-  | `objectives/${string}/element/ability_requirements/${string}/element/time`
-  | `objectives/${string}/element/ability_requirements/${string}/order`
-  | `objectives/${string}/element/ability_targets/${string}/element/buffs/buffs/${string}/element`
-  | `objectives/${string}/element/ability_targets/${string}/element/buffs/buffs/${string}/order`
-  | `objectives/${string}/element/ability_targets/${string}/element/buffs/require_all`
-  | `objectives/${string}/element/ability_targets/${string}/element/buffs/stacks/comparison`
-  | `objectives/${string}/element/ability_targets/${string}/element/buffs/stacks/value1`
-  | `objectives/${string}/element/ability_targets/${string}/element/combatants_only`
-  | `objectives/${string}/element/ability_targets/${string}/element/datafield_evaluations/${string}/element/comparison`
-  | `objectives/${string}/element/ability_targets/${string}/element/datafield_evaluations/${string}/element/value0`
-  | `objectives/${string}/element/ability_targets/${string}/element/datafield_evaluations/${string}/element/value1`
-  | `objectives/${string}/element/ability_targets/${string}/element/datafield_evaluations/${string}/order`
-  | `objectives/${string}/element/ability_targets/${string}/element/exclude`
-  | `objectives/${string}/element/ability_targets/${string}/element/items/${string}/element`
-  | `objectives/${string}/element/ability_targets/${string}/element/items/${string}/order`
-  | `objectives/${string}/element/ability_targets/${string}/element/require_all_tags`
-  | `objectives/${string}/element/ability_targets/${string}/order`
-  | `objectives/${string}/element/ability`
-  | `objectives/${string}/element/consume_items/${string}/element`
-  | `objectives/${string}/element/consume_items/${string}/order`
-  | `objectives/${string}/element/consume_quantity`
-  | `objectives/${string}/element/craft_quantity`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/areas/${string}/element`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/areas/${string}/order`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/drop_chance`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/item_ids_used/${string}/element`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/item_ids_used/${string}/order`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/item_tags_used/${string}/element`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/item_tags_used/${string}/order`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/num_drops/value0`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/num_drops/value1`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/time_requirement`
-  | `objectives/${string}/element/custom_loot/${string}/element/loot/trigger`
-  | `objectives/${string}/element/custom_loot/${string}/element/sources/${string}/element`
-  | `objectives/${string}/element/custom_loot/${string}/element/sources/${string}/order`
-  | `objectives/${string}/element/custom_loot/${string}/order`
-  | `objectives/${string}/element/destroy_quantity`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/ability`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/area`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/artisan`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/following`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/item_id`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/item`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/items_owned/${string}/element/key`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/items_owned/${string}/element/value`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/items_owned/${string}/order`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/pet`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/stage/comparison`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/stage/stage`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/style`
-  | `objectives/${string}/element/destroy_requirements/${string}/element/time`
-  | `objectives/${string}/element/destroy_requirements/${string}/order`
-  | `objectives/${string}/element/destroy_targets/${string}/element/buffs/buffs/${string}/element`
-  | `objectives/${string}/element/destroy_targets/${string}/element/buffs/buffs/${string}/order`
-  | `objectives/${string}/element/destroy_targets/${string}/element/buffs/require_all`
-  | `objectives/${string}/element/destroy_targets/${string}/element/buffs/stacks/comparison`
-  | `objectives/${string}/element/destroy_targets/${string}/element/buffs/stacks/value1`
-  | `objectives/${string}/element/destroy_targets/${string}/element/combatants_only`
-  | `objectives/${string}/element/destroy_targets/${string}/element/datafield_evaluations/${string}/element/comparison`
-  | `objectives/${string}/element/destroy_targets/${string}/element/datafield_evaluations/${string}/element/value0`
-  | `objectives/${string}/element/destroy_targets/${string}/element/datafield_evaluations/${string}/element/value1`
-  | `objectives/${string}/element/destroy_targets/${string}/element/datafield_evaluations/${string}/order`
-  | `objectives/${string}/element/destroy_targets/${string}/element/exclude`
-  | `objectives/${string}/element/destroy_targets/${string}/element/items/${string}/element`
-  | `objectives/${string}/element/destroy_targets/${string}/element/items/${string}/order`
-  | `objectives/${string}/element/destroy_targets/${string}/element/require_all_tags`
-  | `objectives/${string}/element/destroy_targets/${string}/order`
-  | `objectives/${string}/element/interact_color/b`
-  | `objectives/${string}/element/interact_color/g`
-  | `objectives/${string}/element/interact_color/r`
-  | `objectives/${string}/element/interact_duration`
-  | `objectives/${string}/element/interact_outcomes/${string}/element/datafield`
-  | `objectives/${string}/element/interact_outcomes/${string}/element/type`
-  | `objectives/${string}/element/interact_outcomes/${string}/element/value`
-  | `objectives/${string}/element/interact_outcomes/${string}/order`
-  | `objectives/${string}/element/interact_quantity`
-  | `objectives/${string}/element/interact_requirements/${string}/element/area`
-  | `objectives/${string}/element/interact_requirements/${string}/element/artisan`
-  | `objectives/${string}/element/interact_requirements/${string}/element/boss`
-  | `objectives/${string}/element/interact_requirements/${string}/element/comfort_status`
-  | `objectives/${string}/element/interact_requirements/${string}/element/comfort`
-  | `objectives/${string}/element/interact_requirements/${string}/element/comparisons/${string}/element/comparison`
-  | `objectives/${string}/element/interact_requirements/${string}/element/comparisons/${string}/element/value0`
-  | `objectives/${string}/element/interact_requirements/${string}/element/comparisons/${string}/element/value1`
-  | `objectives/${string}/element/interact_requirements/${string}/element/comparisons/${string}/order`
-  | `objectives/${string}/element/interact_requirements/${string}/element/following`
-  | `objectives/${string}/element/interact_requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_requirement)`
-  | `objectives/${string}/element/interact_requirements/${string}/element/insight_status`
-  | `objectives/${string}/element/interact_requirements/${string}/element/insight`
-  | `objectives/${string}/element/interact_requirements/${string}/element/invert`
-  | `objectives/${string}/element/interact_requirements/${string}/element/item_id`
-  | `objectives/${string}/element/interact_requirements/${string}/element/item`
-  | `objectives/${string}/element/interact_requirements/${string}/element/items_owned/${string}/element/key`
-  | `objectives/${string}/element/interact_requirements/${string}/element/items_owned/${string}/element/value`
-  | `objectives/${string}/element/interact_requirements/${string}/element/items_owned/${string}/order`
-  | `objectives/${string}/element/interact_requirements/${string}/element/pet`
-  | `objectives/${string}/element/interact_requirements/${string}/element/quest_status`
-  | `objectives/${string}/element/interact_requirements/${string}/element/quest`
-  | `objectives/${string}/element/interact_requirements/${string}/element/require_all`
-  | `objectives/${string}/element/interact_requirements/${string}/element/stage/comparison`
-  | `objectives/${string}/element/interact_requirements/${string}/element/stage/stage`
-  | `objectives/${string}/element/interact_requirements/${string}/element/style`
-  | `objectives/${string}/element/interact_requirements/${string}/element/teleporter_active`
-  | `objectives/${string}/element/interact_requirements/${string}/element/teleporter_area`
-  | `objectives/${string}/element/interact_requirements/${string}/element/time`
-  | `objectives/${string}/element/interact_requirements/${string}/order`
-  | `objectives/${string}/element/interact_sound`
-  | `objectives/${string}/element/interact_target_home`
-  | `objectives/${string}/element/interact_targets/${string}/element/buffs/buffs/${string}/element`
-  | `objectives/${string}/element/interact_targets/${string}/element/buffs/buffs/${string}/order`
-  | `objectives/${string}/element/interact_targets/${string}/element/buffs/require_all`
-  | `objectives/${string}/element/interact_targets/${string}/element/buffs/stacks/comparison`
-  | `objectives/${string}/element/interact_targets/${string}/element/buffs/stacks/value1`
-  | `objectives/${string}/element/interact_targets/${string}/element/combatants_only`
-  | `objectives/${string}/element/interact_targets/${string}/element/datafield_evaluations/${string}/element/comparison`
-  | `objectives/${string}/element/interact_targets/${string}/element/datafield_evaluations/${string}/element/value0`
-  | `objectives/${string}/element/interact_targets/${string}/element/datafield_evaluations/${string}/element/value1`
-  | `objectives/${string}/element/interact_targets/${string}/element/datafield_evaluations/${string}/order`
-  | `objectives/${string}/element/interact_targets/${string}/element/exclude`
-  | `objectives/${string}/element/interact_targets/${string}/element/items/${string}/element`
-  | `objectives/${string}/element/interact_targets/${string}/element/items/${string}/order`
-  | `objectives/${string}/element/interact_targets/${string}/element/require_all_tags`
-  | `objectives/${string}/element/interact_targets/${string}/order`
-  | `objectives/${string}/element/interact_text/text`
-  | `objectives/${string}/element/interface`
-  | `objectives/${string}/element/item_to_craft`
-  | `objectives/${string}/element/item`
-  | `objectives/${string}/element/items/${string}/element/key`
-  | `objectives/${string}/element/items/${string}/element/value`
-  | `objectives/${string}/element/items/${string}/order`
-  | `objectives/${string}/element/marker_proximity/proximity`
-  | `objectives/${string}/element/marker_proximity/quest_marker`
-  | `objectives/${string}/element/objective_id`
-  | `objectives/${string}/element/placement_area`
-  | `objectives/${string}/element/placement_item`
-  | `objectives/${string}/element/placement_quantity`
-  | `objectives/${string}/element/quantity`
-  | `objectives/${string}/element/require_player`
-  | `objectives/${string}/element/style`
-  | `objectives/${string}/element/target_home`
-  | `objectives/${string}/order`
   | `order`
   | `pet_quest/name/text`
+  | `pet_quest/name`
   | `pet_quest/pet_stage`
   | `pet_quest/pet`
+  | `pet_quest`
   | `priors/${string}/element`
   | `priors/${string}/order`
+  | `priors/${string}`
+  | `priors`
   | `quest_end_moments/${string}/element/area`
   | `quest_end_moments/${string}/element/artisan`
   | `quest_end_moments/${string}/element/bonus`
@@ -219,14 +99,26 @@ export type QuestMotePointer =
   | `quest_end_moments/${string}/element/drops/${string}/element/dropper`
   | `quest_end_moments/${string}/element/drops/${string}/element/items/${string}/element/item_id`
   | `quest_end_moments/${string}/element/drops/${string}/element/items/${string}/element/quantity`
+  | `quest_end_moments/${string}/element/drops/${string}/element/items/${string}/element`
   | `quest_end_moments/${string}/element/drops/${string}/element/items/${string}/order`
+  | `quest_end_moments/${string}/element/drops/${string}/element/items/${string}`
+  | `quest_end_moments/${string}/element/drops/${string}/element/items`
+  | `quest_end_moments/${string}/element/drops/${string}/element`
   | `quest_end_moments/${string}/element/drops/${string}/order`
+  | `quest_end_moments/${string}/element/drops/${string}`
+  | `quest_end_moments/${string}/element/drops`
   | `quest_end_moments/${string}/element/emotes/${string}/element/key`
   | `quest_end_moments/${string}/element/emotes/${string}/element/value`
+  | `quest_end_moments/${string}/element/emotes/${string}/element`
   | `quest_end_moments/${string}/element/emotes/${string}/order`
+  | `quest_end_moments/${string}/element/emotes/${string}`
+  | `quest_end_moments/${string}/element/emotes`
   | `quest_end_moments/${string}/element/items/${string}/element/key`
   | `quest_end_moments/${string}/element/items/${string}/element/value`
+  | `quest_end_moments/${string}/element/items/${string}/element`
   | `quest_end_moments/${string}/element/items/${string}/order`
+  | `quest_end_moments/${string}/element/items/${string}`
+  | `quest_end_moments/${string}/element/items`
   | `quest_end_moments/${string}/element/pause_duration`
   | `quest_end_moments/${string}/element/pin`
   | `quest_end_moments/${string}/element/quest_to_close`
@@ -238,21 +130,30 @@ export type QuestMotePointer =
   | `quest_end_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element/comparison`
   | `quest_end_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element/value0`
   | `quest_end_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element/value1`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element`
   | `quest_end_moments/${string}/element/requirements/${string}/element/comparisons/${string}/order`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/comparisons/${string}`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/comparisons`
   | `quest_end_moments/${string}/element/requirements/${string}/element/distance`
   | `quest_end_moments/${string}/element/requirements/${string}/element/exclusive`
   | `quest_end_moments/${string}/element/requirements/${string}/element/following`
   | `quest_end_moments/${string}/element/requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_moment_requirement)`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/group_requirements`
   | `quest_end_moments/${string}/element/requirements/${string}/element/insight_status`
   | `quest_end_moments/${string}/element/requirements/${string}/element/insight`
   | `quest_end_moments/${string}/element/requirements/${string}/element/invert`
   | `quest_end_moments/${string}/element/requirements/${string}/element/item_id`
   | `quest_end_moments/${string}/element/requirements/${string}/element/item_ids/${string}/element`
   | `quest_end_moments/${string}/element/requirements/${string}/element/item_ids/${string}/order`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/item_ids/${string}`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/item_ids`
   | `quest_end_moments/${string}/element/requirements/${string}/element/item`
   | `quest_end_moments/${string}/element/requirements/${string}/element/items_owned/${string}/element/key`
   | `quest_end_moments/${string}/element/requirements/${string}/element/items_owned/${string}/element/value`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/items_owned/${string}/element`
   | `quest_end_moments/${string}/element/requirements/${string}/element/items_owned/${string}/order`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/items_owned/${string}`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/items_owned`
   | `quest_end_moments/${string}/element/requirements/${string}/element/pet`
   | `quest_end_moments/${string}/element/requirements/${string}/element/quest_status`
   | `quest_end_moments/${string}/element/requirements/${string}/element/quest`
@@ -260,17 +161,26 @@ export type QuestMotePointer =
   | `quest_end_moments/${string}/element/requirements/${string}/element/same_room`
   | `quest_end_moments/${string}/element/requirements/${string}/element/stage/comparison`
   | `quest_end_moments/${string}/element/requirements/${string}/element/stage/stage`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/stage`
   | `quest_end_moments/${string}/element/requirements/${string}/element/style`
   | `quest_end_moments/${string}/element/requirements/${string}/element/teleporter_active`
   | `quest_end_moments/${string}/element/requirements/${string}/element/teleporter_area`
   | `quest_end_moments/${string}/element/requirements/${string}/element/time`
+  | `quest_end_moments/${string}/element/requirements/${string}/element`
   | `quest_end_moments/${string}/element/requirements/${string}/order`
+  | `quest_end_moments/${string}/element/requirements/${string}`
+  | `quest_end_moments/${string}/element/requirements`
   | `quest_end_moments/${string}/element/speech/emotion`
   | `quest_end_moments/${string}/element/speech/speaker`
   | `quest_end_moments/${string}/element/speech/text/text`
+  | `quest_end_moments/${string}/element/speech/text`
+  | `quest_end_moments/${string}/element/speech`
   | `quest_end_moments/${string}/element/style`
   | `quest_end_moments/${string}/element/zoom_amount`
+  | `quest_end_moments/${string}/element`
   | `quest_end_moments/${string}/order`
+  | `quest_end_moments/${string}`
+  | `quest_end_moments`
   | `quest_end_requirements/${string}/element/area`
   | `quest_end_requirements/${string}/element/artisan`
   | `quest_end_requirements/${string}/element/boss`
@@ -279,9 +189,13 @@ export type QuestMotePointer =
   | `quest_end_requirements/${string}/element/comparisons/${string}/element/comparison`
   | `quest_end_requirements/${string}/element/comparisons/${string}/element/value0`
   | `quest_end_requirements/${string}/element/comparisons/${string}/element/value1`
+  | `quest_end_requirements/${string}/element/comparisons/${string}/element`
   | `quest_end_requirements/${string}/element/comparisons/${string}/order`
+  | `quest_end_requirements/${string}/element/comparisons/${string}`
+  | `quest_end_requirements/${string}/element/comparisons`
   | `quest_end_requirements/${string}/element/following`
   | `quest_end_requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_requirement)`
+  | `quest_end_requirements/${string}/element/group_requirements`
   | `quest_end_requirements/${string}/element/insight_status`
   | `quest_end_requirements/${string}/element/insight`
   | `quest_end_requirements/${string}/element/invert`
@@ -289,29 +203,39 @@ export type QuestMotePointer =
   | `quest_end_requirements/${string}/element/item`
   | `quest_end_requirements/${string}/element/items_owned/${string}/element/key`
   | `quest_end_requirements/${string}/element/items_owned/${string}/element/value`
+  | `quest_end_requirements/${string}/element/items_owned/${string}/element`
   | `quest_end_requirements/${string}/element/items_owned/${string}/order`
+  | `quest_end_requirements/${string}/element/items_owned/${string}`
+  | `quest_end_requirements/${string}/element/items_owned`
   | `quest_end_requirements/${string}/element/pet`
   | `quest_end_requirements/${string}/element/quest_status`
   | `quest_end_requirements/${string}/element/quest`
   | `quest_end_requirements/${string}/element/require_all`
   | `quest_end_requirements/${string}/element/stage/comparison`
   | `quest_end_requirements/${string}/element/stage/stage`
+  | `quest_end_requirements/${string}/element/stage`
   | `quest_end_requirements/${string}/element/style`
   | `quest_end_requirements/${string}/element/teleporter_active`
   | `quest_end_requirements/${string}/element/teleporter_area`
   | `quest_end_requirements/${string}/element/time`
+  | `quest_end_requirements/${string}/element`
   | `quest_end_requirements/${string}/order`
+  | `quest_end_requirements/${string}`
+  | `quest_end_requirements`
   | `quest_giver/interaction_target`
   | `quest_giver/item`
   | `quest_giver/proximity`
   | `quest_giver/same_room`
   | `quest_giver/show_on_map`
+  | `quest_giver`
   | `quest_receiver/interaction_target`
   | `quest_receiver/item`
   | `quest_receiver/proximity`
   | `quest_receiver/same_room`
   | `quest_receiver/show_on_map`
+  | `quest_receiver`
   | `quest_start_log/text`
+  | `quest_start_log`
   | `quest_start_moments/${string}/element/area`
   | `quest_start_moments/${string}/element/artisan`
   | `quest_start_moments/${string}/element/bonus`
@@ -319,14 +243,26 @@ export type QuestMotePointer =
   | `quest_start_moments/${string}/element/drops/${string}/element/dropper`
   | `quest_start_moments/${string}/element/drops/${string}/element/items/${string}/element/item_id`
   | `quest_start_moments/${string}/element/drops/${string}/element/items/${string}/element/quantity`
+  | `quest_start_moments/${string}/element/drops/${string}/element/items/${string}/element`
   | `quest_start_moments/${string}/element/drops/${string}/element/items/${string}/order`
+  | `quest_start_moments/${string}/element/drops/${string}/element/items/${string}`
+  | `quest_start_moments/${string}/element/drops/${string}/element/items`
+  | `quest_start_moments/${string}/element/drops/${string}/element`
   | `quest_start_moments/${string}/element/drops/${string}/order`
+  | `quest_start_moments/${string}/element/drops/${string}`
+  | `quest_start_moments/${string}/element/drops`
   | `quest_start_moments/${string}/element/emotes/${string}/element/key`
   | `quest_start_moments/${string}/element/emotes/${string}/element/value`
+  | `quest_start_moments/${string}/element/emotes/${string}/element`
   | `quest_start_moments/${string}/element/emotes/${string}/order`
+  | `quest_start_moments/${string}/element/emotes/${string}`
+  | `quest_start_moments/${string}/element/emotes`
   | `quest_start_moments/${string}/element/items/${string}/element/key`
   | `quest_start_moments/${string}/element/items/${string}/element/value`
+  | `quest_start_moments/${string}/element/items/${string}/element`
   | `quest_start_moments/${string}/element/items/${string}/order`
+  | `quest_start_moments/${string}/element/items/${string}`
+  | `quest_start_moments/${string}/element/items`
   | `quest_start_moments/${string}/element/pause_duration`
   | `quest_start_moments/${string}/element/pin`
   | `quest_start_moments/${string}/element/quest_to_close`
@@ -338,21 +274,30 @@ export type QuestMotePointer =
   | `quest_start_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element/comparison`
   | `quest_start_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element/value0`
   | `quest_start_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element/value1`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element`
   | `quest_start_moments/${string}/element/requirements/${string}/element/comparisons/${string}/order`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/comparisons/${string}`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/comparisons`
   | `quest_start_moments/${string}/element/requirements/${string}/element/distance`
   | `quest_start_moments/${string}/element/requirements/${string}/element/exclusive`
   | `quest_start_moments/${string}/element/requirements/${string}/element/following`
   | `quest_start_moments/${string}/element/requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_moment_requirement)`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/group_requirements`
   | `quest_start_moments/${string}/element/requirements/${string}/element/insight_status`
   | `quest_start_moments/${string}/element/requirements/${string}/element/insight`
   | `quest_start_moments/${string}/element/requirements/${string}/element/invert`
   | `quest_start_moments/${string}/element/requirements/${string}/element/item_id`
   | `quest_start_moments/${string}/element/requirements/${string}/element/item_ids/${string}/element`
   | `quest_start_moments/${string}/element/requirements/${string}/element/item_ids/${string}/order`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/item_ids/${string}`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/item_ids`
   | `quest_start_moments/${string}/element/requirements/${string}/element/item`
   | `quest_start_moments/${string}/element/requirements/${string}/element/items_owned/${string}/element/key`
   | `quest_start_moments/${string}/element/requirements/${string}/element/items_owned/${string}/element/value`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/items_owned/${string}/element`
   | `quest_start_moments/${string}/element/requirements/${string}/element/items_owned/${string}/order`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/items_owned/${string}`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/items_owned`
   | `quest_start_moments/${string}/element/requirements/${string}/element/pet`
   | `quest_start_moments/${string}/element/requirements/${string}/element/quest_status`
   | `quest_start_moments/${string}/element/requirements/${string}/element/quest`
@@ -360,17 +305,26 @@ export type QuestMotePointer =
   | `quest_start_moments/${string}/element/requirements/${string}/element/same_room`
   | `quest_start_moments/${string}/element/requirements/${string}/element/stage/comparison`
   | `quest_start_moments/${string}/element/requirements/${string}/element/stage/stage`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/stage`
   | `quest_start_moments/${string}/element/requirements/${string}/element/style`
   | `quest_start_moments/${string}/element/requirements/${string}/element/teleporter_active`
   | `quest_start_moments/${string}/element/requirements/${string}/element/teleporter_area`
   | `quest_start_moments/${string}/element/requirements/${string}/element/time`
+  | `quest_start_moments/${string}/element/requirements/${string}/element`
   | `quest_start_moments/${string}/element/requirements/${string}/order`
+  | `quest_start_moments/${string}/element/requirements/${string}`
+  | `quest_start_moments/${string}/element/requirements`
   | `quest_start_moments/${string}/element/speech/emotion`
   | `quest_start_moments/${string}/element/speech/speaker`
   | `quest_start_moments/${string}/element/speech/text/text`
+  | `quest_start_moments/${string}/element/speech/text`
+  | `quest_start_moments/${string}/element/speech`
   | `quest_start_moments/${string}/element/style`
   | `quest_start_moments/${string}/element/zoom_amount`
+  | `quest_start_moments/${string}/element`
   | `quest_start_moments/${string}/order`
+  | `quest_start_moments/${string}`
+  | `quest_start_moments`
   | `quest_start_requirements/${string}/element/area`
   | `quest_start_requirements/${string}/element/artisan`
   | `quest_start_requirements/${string}/element/boss`
@@ -379,9 +333,13 @@ export type QuestMotePointer =
   | `quest_start_requirements/${string}/element/comparisons/${string}/element/comparison`
   | `quest_start_requirements/${string}/element/comparisons/${string}/element/value0`
   | `quest_start_requirements/${string}/element/comparisons/${string}/element/value1`
+  | `quest_start_requirements/${string}/element/comparisons/${string}/element`
   | `quest_start_requirements/${string}/element/comparisons/${string}/order`
+  | `quest_start_requirements/${string}/element/comparisons/${string}`
+  | `quest_start_requirements/${string}/element/comparisons`
   | `quest_start_requirements/${string}/element/following`
   | `quest_start_requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_requirement)`
+  | `quest_start_requirements/${string}/element/group_requirements`
   | `quest_start_requirements/${string}/element/insight_status`
   | `quest_start_requirements/${string}/element/insight`
   | `quest_start_requirements/${string}/element/invert`
@@ -389,25 +347,35 @@ export type QuestMotePointer =
   | `quest_start_requirements/${string}/element/item`
   | `quest_start_requirements/${string}/element/items_owned/${string}/element/key`
   | `quest_start_requirements/${string}/element/items_owned/${string}/element/value`
+  | `quest_start_requirements/${string}/element/items_owned/${string}/element`
   | `quest_start_requirements/${string}/element/items_owned/${string}/order`
+  | `quest_start_requirements/${string}/element/items_owned/${string}`
+  | `quest_start_requirements/${string}/element/items_owned`
   | `quest_start_requirements/${string}/element/pet`
   | `quest_start_requirements/${string}/element/quest_status`
   | `quest_start_requirements/${string}/element/quest`
   | `quest_start_requirements/${string}/element/require_all`
   | `quest_start_requirements/${string}/element/stage/comparison`
   | `quest_start_requirements/${string}/element/stage/stage`
+  | `quest_start_requirements/${string}/element/stage`
   | `quest_start_requirements/${string}/element/style`
   | `quest_start_requirements/${string}/element/teleporter_active`
   | `quest_start_requirements/${string}/element/teleporter_area`
   | `quest_start_requirements/${string}/element/time`
+  | `quest_start_requirements/${string}/element`
   | `quest_start_requirements/${string}/order`
+  | `quest_start_requirements/${string}`
+  | `quest_start_requirements`
   | `storyline`
   | `wip/audio`
   | `wip/balance`
   | `wip/comments/${string}/element`
   | `wip/comments/${string}/order`
+  | `wip/comments/${string}`
+  | `wip/comments`
   | `wip/draft`
   | `wip/integration`
   | `wip/mechanics`
   | `wip/text`
-  | `wip/visuals`;
+  | `wip/visuals`
+  | `wip`;
