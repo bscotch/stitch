@@ -1,6 +1,7 @@
 import type { Code, Range } from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
 import { exec } from 'node:child_process';
+import os from 'node:os';
 import vscode from 'vscode';
 import {
   StitchVscodeInternalError,
@@ -226,6 +227,10 @@ export function assertThrows(
   throw new StitchVscodeInternalError(msg, assertThrows);
 }
 export function killProjectRunner(title: string) {
+  if (os.platform() !== 'win32') {
+    console.warn('killProjectRunner is only supported on Windows');
+    return;
+  }
   assertInternalClaim(title, 'Title must be provided');
   return new Promise<void>((resolve, reject) => {
     exec(
