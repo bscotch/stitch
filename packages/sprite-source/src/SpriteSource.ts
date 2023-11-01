@@ -12,6 +12,7 @@ import {
   deletePngChildren,
   getDirs,
   rethrow,
+  sequential,
 } from './utility.js';
 
 export class SpriteSource extends SpriteCache {
@@ -91,6 +92,7 @@ export class SpriteSource extends SpriteCache {
     }
   }
 
+  @sequential
   async loadConfig(
     overrides: SpriteSourceConfig = {},
   ): Promise<SpriteSourceConfig> {
@@ -121,6 +123,7 @@ export class SpriteSource extends SpriteCache {
    * Transform any staged sprites and add them to the source,
    * and compute updated sprite info.
    */
+  @sequential
   async update(
     /** Optionally override config options */
     options?: SpriteSourceConfig,
