@@ -332,7 +332,7 @@ export const commands = {
     icon: '$(eye-closed)',
     enablement: when.hasProjects,
     [$showInViewItemContextMenu]: {
-      when: when.viewItemIsSpriteSourceStageUnwatched,
+      when: when.viewItemIsSpriteSourceUnwatched,
       group: 'inline@1',
     },
   },
@@ -342,7 +342,7 @@ export const commands = {
     icon: '$(eye)',
     enablement: when.hasProjects,
     [$showInViewItemContextMenu]: {
-      when: when.viewItemIsSpriteSourceStageWatched,
+      when: when.viewItemIsSpriteSourceWatched,
       group: 'inline@1',
     },
   },

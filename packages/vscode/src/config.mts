@@ -80,18 +80,21 @@ class StitchConfig {
     return this.config.get<string>('run.defaultConfig') || null;
   }
   get reprocessOnTypeDelay(): number {
-    return this.config.get<number>('editing.reprocessOnTypeDelay') || 50;
+    return this.config.get<number>('editing.reprocessOnTypeDelay') ?? 50;
   }
   get externalChangeDelay(): number {
-    return this.config.get<number>('editing.externalChangeDelay') || 100;
+    return this.config.get<number>('editing.externalChangeDelay') ?? 100;
   }
   get initialMinSpriteEditorWidth(): number {
     return this.config.get<number>('sprites.editor.minInitialWidth') || 128;
   }
   get spriteAutoImportDelay(): number {
     return (
-      this.config.get<number>('sprites.sources.watcherDebounceInterval') || 1000
+      this.config.get<number>('sprites.sources.watcherDebounceInterval') ?? 1000
     );
+  }
+  get spriteAutoImportOnStartup() {
+    return this.config.get<boolean>('sprites.sources.watchOnStartup') ?? false;
   }
 }
 

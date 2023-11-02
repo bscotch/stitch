@@ -277,6 +277,12 @@
           "type": "number",
           "default": 128
         },
+        "stitch.sprites.sources.watchOnStartup": {
+          "title": "Watch sprite sources on startup",
+          "description": "Whether to start watching sprite sources when Stitch starts up.",
+          "type": "boolean",
+          "default": false
+        },
         "stitch.sprites.sources.watcherDebounceInterval": {
           "title": "Sprite source watcher debounce interval",
           "description": "The interval in milliseconds to wait after a file change before processing the changes. Increase this if auto-imports are triggering before exports complete.",
@@ -693,12 +699,12 @@
         },
         {
           "command": "stitch.spriteSource.watch",
-          "when": "viewItem == sprite-source-stage-unwatched",
+          "when": "viewItem == sprite-source-unwatched",
           "group": "inline@1"
         },
         {
           "command": "stitch.spriteSource.unwatch",
-          "when": "viewItem == sprite-source-stage-watched",
+          "when": "viewItem == sprite-source-watched",
           "group": "inline@1"
         },
         {

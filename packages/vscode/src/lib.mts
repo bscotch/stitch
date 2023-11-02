@@ -226,6 +226,7 @@ export function assertThrows(
   }
   throw new StitchVscodeInternalError(msg, assertThrows);
 }
+
 export function killProjectRunner(title: string) {
   if (os.platform() !== 'win32') {
     console.warn('killProjectRunner is only supported on Windows');

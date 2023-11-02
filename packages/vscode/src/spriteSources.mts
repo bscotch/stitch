@@ -33,7 +33,8 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
   view!: vscode.TreeView<Item>;
   protected _currentProject?: GameMakerProject;
   /** Map of {fullPath: watcher} */
-  static sourceWatchers: Map<string, vscode.FileSystemWatcher> = new Map();
+  static sourceWatchers: Map<string, vscode.FileSystemWatcher[]> = new Map();
+  importing = false;
 
   // Map of <project: spriteName: SpriteChangeInfo>
   static recentlyChangedSprites: Map<
@@ -68,7 +69,9 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
   }
 
   static clearWatchers() {
-    SpriteSourcesTree.sourceWatchers.forEach((watcher) => watcher.dispose());
+    SpriteSourcesTree.sourceWatchers.forEach((watchers) =>
+      watchers.forEach((watcher) => watcher.dispose()),
+    );
     SpriteSourcesTree.sourceWatchers = new Map();
   }
 
@@ -299,7 +302,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       }),
       registerCommand(
         'stitch.spriteSource.watch',
-        async (stage: SpriteSourceStageItem) => {
+        async (stage: SpriteSourceFolder) => {
           const wait = stage.watch();
           // Make sure the icon gets reset!
           tree._onDidChangeTreeData.fire(stage);
@@ -308,7 +311,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       ),
       registerCommand(
         'stitch.spriteSource.unwatch',
-        (stage: SpriteSourceStageItem) => {
+        (stage: SpriteSourceFolder) => {
           stage.unwatch();
           tree._onDidChangeTreeData.fire(stage);
         },
@@ -359,7 +362,11 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
         },
       ),
       registerCommand('stitch.spriteSource.import', async () => {
-        await tree.importSprites();
+        if (tree.importing) return;
+        tree.importing = true;
+        await tree.importSprites().finally(() => {
+          tree.importing = false;
+        });
       }),
     ];
     return subscriptions;
@@ -394,6 +401,7 @@ class SpriteSourcesFolder extends StitchTreeItemBase<'sprite-sources'> {
 }
 
 class SpriteSourceFolder extends StitchTreeItemBase<'sprite-source'> {
+  static sources = new Set<string>();
   override readonly kind = 'sprite-source';
   parent = undefined;
   readonly sourceDir: Pathy;
@@ -413,6 +421,7 @@ class SpriteSourceFolder extends StitchTreeItemBase<'sprite-source'> {
       item.tooltip = `The folder "${item.sourceDir.absolute}" does not exist on this device.`;
       item.setBaseIcon('warning');
       item.collapsibleState = vscode.TreeItemCollapsibleState.None;
+      item.contextValue = item.kind;
     }
     return item;
   }
@@ -424,7 +433,6 @@ class SpriteSourceFolder extends StitchTreeItemBase<'sprite-source'> {
     const sourceDir = pathy(relativeSourceDir, project.dir);
     super(sourceDir.name);
     this.sourceDir = sourceDir;
-    this.contextValue = this.kind;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
 
     // Add a command to open the config file
@@ -435,7 +443,25 @@ class SpriteSourceFolder extends StitchTreeItemBase<'sprite-source'> {
     };
     this.tooltip = `A folder containing folders-of-images (sprites sources) that can be imported into the game as sprites.`;
 
+    // NOTE: Calling 'unwatch' here will cause the watcher to
+    // turn itself off, since these instances are recreated every
+    // time the tree is refreshed.
+    // We need to set the contextValue based on what's currently being watch
+    const isWatching = SpriteSourcesTree.sourceWatchers.has(
+      this.sourceDir.absolute,
+    );
+    this.contextValue = `${this.kind}-${isWatching ? '' : 'un'}watched`;
+
     this.setBaseIcon('library');
+
+    // Handle watch-on-startup
+    if (
+      stitchConfig.spriteAutoImportOnStartup &&
+      !SpriteSourceFolder.sources.has(this.sourceDir.absolute)
+    ) {
+      this.watch();
+    }
+    SpriteSourceFolder.sources.add(this.sourceDir.absolute);
   }
 
   async getChildren(): Promise<SpriteSourceStageItem[]> {
@@ -457,6 +483,54 @@ class SpriteSourceFolder extends StitchTreeItemBase<'sprite-source'> {
   get configPath() {
     return this.sourceDir.join('.stitch/sprites.source.json');
   }
+
+  async watch() {
+    this.unwatch();
+    this.contextValue = `${this.kind}-watched`;
+
+    // Do an initial import
+    debounceImport();
+
+    // Whenever a png file is added, removed, or changed, we
+    // need to run the import
+    const watchers = ['png', 'atlas', 'json'].map((ext) =>
+      vscode.workspace.createFileSystemWatcher(
+        new vscode.RelativePattern(this.sourceDir.absolute, `**/*.${ext}`),
+      ),
+    );
+
+    // Watch the content of the staged folders
+    const children = await this.getChildren();
+    for (const child of children) {
+      watchers.push(
+        vscode.workspace.createFileSystemWatcher(
+          new vscode.RelativePattern(child.sourceDir.absolute, `**/*.png`),
+        ),
+      );
+    }
+
+    for (const watcher of watchers) {
+      for (const listener of ['onDidCreate', 'onDidChange'] as const) {
+        watcher[listener]((uri: vscode.Uri) => {
+          if (uri.fsPath.split(/[\\/]+/).includes('.stitch')) {
+            return;
+          }
+          debounceImport();
+        });
+      }
+    }
+
+    SpriteSourcesTree.sourceWatchers.set(this.sourceDir.absolute, watchers);
+  }
+
+  unwatch() {
+    this.contextValue = `${this.kind}-unwatched`;
+    const watchers = SpriteSourcesTree.sourceWatchers.get(
+      this.sourceDir.absolute,
+    );
+    watchers?.forEach((watcher) => watcher.dispose());
+    SpriteSourcesTree.sourceWatchers.delete(this.sourceDir.absolute);
+  }
 }
 
 class SpriteSourceStageItem extends StitchTreeItemBase<'sprite-source-stage'> {
@@ -471,51 +545,6 @@ class SpriteSourceStageItem extends StitchTreeItemBase<'sprite-source-stage'> {
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     this.tooltip = `A folder of images that will be transformed and moved into the parent SpriteSource folder prior to an import operation.`;
     this.setBaseIcon('inbox');
-    // NOTE: Calling 'unwatch' here will cause the watcher to
-    // turn itself off, since these instances are recreated every
-    // time the tree is refreshed.
-    // We need to set the contextValue based on what's currently being watch
-    const isWatching = SpriteSourcesTree.sourceWatchers.has(
-      this.sourceDir.absolute,
-    );
-
-    this.contextValue = `${this.kind}-${isWatching ? '' : 'un'}watched`;
-  }
-
-  async watch() {
-    this.contextValue = `${this.kind}-watched`;
-
-    // Do an initial import
-    await vscode.commands.executeCommand('stitch.spriteSource.import');
-
-    // Whenever a png file is added, removed, or changed, we
-    // need to run the import
-    const watcher = vscode.workspace.createFileSystemWatcher(
-      new vscode.RelativePattern(this.sourceDir.absolute, '**/*.png'),
-    );
-
-    let timeoutId: NodeJS.Timeout | null = null;
-    for (const listener of ['onDidCreate', 'onDidChange'] as const) {
-      watcher[listener](() => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        timeoutId = setTimeout(() => {
-          // Call the import command
-          vscode.commands.executeCommand('stitch.spriteSource.import');
-        }, 500);
-      });
-    }
-    SpriteSourcesTree.sourceWatchers.set(this.sourceDir.absolute, watcher);
-  }
-
-  unwatch() {
-    this.contextValue = `${this.kind}-unwatched`;
-    const watcher = SpriteSourcesTree.sourceWatchers.get(
-      this.sourceDir.absolute,
-    );
-    watcher?.dispose();
-    SpriteSourcesTree.sourceWatchers.delete(this.sourceDir.absolute);
   }
 
   get sourceDir() {
@@ -580,4 +609,16 @@ class SpriteItem extends ObjectSpriteItem {
     );
     this.description = relativeTimeFormatter.format(-minutesAgo, 'minutes');
   }
+}
+
+let timeoutId: NodeJS.Timeout | null = null;
+
+function debounceImport() {
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
+  timeoutId = setTimeout(() => {
+    // Call the import command
+    vscode.commands.executeCommand('stitch.spriteSource.import');
+  }, stitchConfig.spriteAutoImportDelay);
 }
