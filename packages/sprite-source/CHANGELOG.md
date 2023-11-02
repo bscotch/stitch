@@ -1,5 +1,12 @@
 # @bscotch/sprite-source Changelog
 
+## 0.4.7 (2023-11-02)
+
+### Fixes
+
+- Re-using FrameIds causes Stitch to be unable to update sprite icons due to VSCode caching. Resolve by creating new FrameIds for changed sprites.
+- Resolved issue where non-watcher functionality was lot from the Sprite Source tree
+
 ## 0.4.6 (2023-11-02)
 
 ### Fixes

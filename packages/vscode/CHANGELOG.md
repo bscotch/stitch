@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.54.1 (2023-11-02)
+
+### Fixes
+
+- Resolved issue where non-watcher functionality was lot from the Sprite Source tree
+
 ## 1.54.0 (2023-11-02)
 
 ### Features

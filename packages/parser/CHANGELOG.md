@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 0.61.1 (2023-11-02)
+
+### Fixes
+
+- Resolved issue where non-watcher functionality was lot from the Sprite Source tree
+
 ## 0.61.0 (2023-11-01)
 
 ### Features
