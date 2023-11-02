@@ -1,14 +1,29 @@
 import { pathy } from '@bscotch/pathy';
 import { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
-import { parseStringifiedQuest } from './cl2.quest.parse.js';
+import {
+  parseStringifiedQuest,
+  updateBsArrayOrder,
+} from './cl2.quest.parse.js';
 import { stringifyQuest } from './cl2.quest.stringify.js';
-import { bsArrayToArray, isQuestMote } from './helpers.js';
+import { BsArrayItem, bsArrayToArray, isQuestMote } from './helpers.js';
 import { Crashlands2 } from './types.cl2.js';
 
 const sampleQuestMoteId = 'k04f0p';
 
 describe('Cl2 Quests', function () {
+  it('can update order fields for a BsArray', function () {
+    const sorted: BsArrayItem[] = [
+      { element: 'a' },
+      { element: 'b', order: 3 },
+      { element: 'c', order: 10 },
+      { element: 'd', order: 7 },
+      { element: 'e', order: 1 },
+    ];
+    updateBsArrayOrder(sorted);
+    console.log(sorted);
+  });
+
   it('can convert a quest mote to a text format', async function () {
     const packed = await GameChanger.from('Crashlands2');
     assert(packed, 'Packed data should be loaded');

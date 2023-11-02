@@ -201,3 +201,11 @@ export function computeMotePointersFromSchema(
   }
   return collection;
 }
+
+export function isUndefined(value: any): value is undefined {
+  return value === undefined;
+}
+
+export function isDefined<T>(value: T): value is Exclude<T, undefined> {
+  return value !== undefined;
+}

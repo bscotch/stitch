@@ -11,6 +11,7 @@ import {
   changeSchema,
   changesSchema,
   isBschemaBoolean,
+  isBschemaNumeric,
   isBschemaObject,
   isBschemaString,
   type Mote,
@@ -103,21 +104,24 @@ export class GameChanger {
       `Could not resolve ${dataPath} in schema ${workingMote.schema_id}}`,
     );
 
+    // Only allow for scalar values
+    assert(!isBschemaObject(subschema), 'Can only set scalar values');
+
     // Do some basic schema validation to avoid really dumb errors
     if (typeof value === 'string') {
       assert(
         isBschemaString(subschema),
         'Invalid value. Bschema is not for a string.',
       );
-    } else if (typeof value === 'object') {
-      assert(
-        isBschemaObject(subschema),
-        'Invalid value. Bschema is not for an object.',
-      );
     } else if (typeof value === 'boolean') {
       assert(
         isBschemaBoolean(subschema),
         'Invalid value. Bschema is not boolean',
+      );
+    } else if (typeof value === 'number') {
+      assert(
+        isBschemaBoolean(subschema) || isBschemaNumeric(subschema),
+        'Invalid value. Bschema is not numeric',
       );
     }
 

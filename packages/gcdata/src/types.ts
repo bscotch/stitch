@@ -78,6 +78,15 @@ export function isBschemaBoolean(schema: any): schema is BschemaBoolean {
   return typeof schema === 'object' && schema['type'] === 'boolean';
 }
 
+export function isBschemaNumeric(
+  schema: any,
+): schema is BschemaNumber | BschemaInteger {
+  return (
+    typeof schema === 'object' &&
+    (schema['type'] === 'number' || schema['type'] === 'integer')
+  );
+}
+
 interface BschemaBase {
   $id?: SchemaId;
   type?: BschemaTypeName;
