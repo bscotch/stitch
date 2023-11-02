@@ -227,7 +227,7 @@ export class SpriteDest extends SpriteCache {
           (err) => {
             this.issues.push(
               new SpriteSourceError(
-                `Failed to import from "${sourceConfig.source}"`,
+                `Failed to infer actions for "${sourceConfig.source}"`,
                 err,
               ),
             );

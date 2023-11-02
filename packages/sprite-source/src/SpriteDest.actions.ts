@@ -110,6 +110,7 @@ export async function applySpriteAction({
           }),
         );
         keepers.add(destFile.basename.toLowerCase());
+        keepers.add(`${uuid}.${fileType}`.toLowerCase());
       }
       // Delete excess files
       for (const file of initialDestFiles) {
