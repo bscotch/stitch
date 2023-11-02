@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 0.4.6 (2023-11-02)
+
+### Fixes
+
+- On import, GameMaker-generated Spine thumbnails are deleted
+
 ## 0.4.5 (2023-11-01)
 
 ### Fixes

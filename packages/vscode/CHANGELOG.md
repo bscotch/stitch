@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.54.0 (2023-11-02)
+
+### Features
+
+- Sprite watchers now work at the source level instead of staged level, have improved debounce logic, and include a setting to enable on startup
+
 ## 1.53.1 (2023-11-01)
 
 ### Fixes
