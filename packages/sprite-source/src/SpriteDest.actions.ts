@@ -1,5 +1,5 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
-import { Yy, yySpriteSchema, type YypResourceId } from '@bscotch/yy';
+import { Yy, YySprite, yySpriteSchema, type YypResourceId } from '@bscotch/yy';
 import fsp from 'fs/promises';
 import path from 'path';
 import type { SpriteDestAction } from './SpriteDest.schemas.js';
@@ -86,7 +86,8 @@ export async function applySpriteAction({
     let yy = await Yy.read(yyFile.absolute, 'sprites');
 
     // Populate the frames to get UUIDs
-    const frames = yy.frames || [];
+    // const frames = yy.frames || []; // Keep the old frameIds
+    const frames: YySprite['frames'] = [];
     frames.length = action.spine ? 1 : sourcePngs.length;
     yy = yySpriteSchema.parse({ ...yy, frames });
 
