@@ -348,7 +348,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return this.addGmlFile(path);
   }
 
-  protected async readYy(): Promise<YyDataStrict<T>> {
+  async readYy(): Promise<YyDataStrict<T>> {
     let asPath: Pathy | undefined = pathy(this.yyPath);
     if (!(await asPath.exists())) {
       const filePattern = new RegExp(`${this.name}\\.yy$`, 'i');

@@ -31,7 +31,7 @@ export const when = {
   viewItemIsInspectorEvents: 'viewItem == inspector-object-events',
   viewItemIsInspectorParents: 'viewItem == inspector-object-parents',
   viewItemIsInspectorSprite: 'viewItem == inspector-object-sprites',
-  viewItemIsSpriteSource: 'viewItem == sprite-source',
+  viewItemIsSpriteSource: 'viewItem =~ /^sprite-source(-(un)?watched)?$/',
   viewItemIsSpriteSourceStage: 'viewItem =~ /^sprite-source-stage-/',
   viewItemIsSpriteSourceWatched: 'viewItem == sprite-source-watched',
   viewItemIsSpriteSourceUnwatched: 'viewItem == sprite-source-unwatched',

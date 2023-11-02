@@ -55,6 +55,10 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
   constructor(readonly workspace: StitchWorkspace) {
     // Whenever a project changes we may have different sprites to show
     stitchEvents.on('project-changed', () => this.rebuild());
+    stitchEvents.on(
+      'asset-changed',
+      (asset) => isAssetOfKind(asset, 'sprites') && this.rebuild(),
+    );
   }
 
   get currentProject() {
@@ -608,6 +612,7 @@ class SpriteItem extends ObjectSpriteItem {
       (new Date().getTime() - this.info.when.getTime()) / 1000 / 60,
     );
     this.description = relativeTimeFormatter.format(-minutesAgo, 'minutes');
+    this.setIcon();
   }
 }
 

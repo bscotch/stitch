@@ -142,17 +142,24 @@ export class ObjectSpriteItem extends StitchTreeItemBase<'asset-sprites'> {
   constructor(readonly asset: Asset<'sprites'>) {
     super(asset.name);
     this.contextValue = this.kind;
-    const frame = this.asset.framePaths?.[0];
-    if (frame) {
-      this.iconPath = vscode.Uri.file(frame.absolute);
-    } else {
-      this.setGameMakerIcon('sprite');
-    }
+
     this.command = {
       command: 'stitch.assets.editSprite',
       title: 'Edit Sprite',
       arguments: [this],
     };
+
+    this.setIcon();
+  }
+
+  setIcon() {
+    const frame = this.asset.framePaths?.[0];
+    if (frame) {
+      const uri = vscode.Uri.file(frame.absolute);
+      this.iconPath = uri;
+    } else {
+      this.setGameMakerIcon('sprite');
+    }
   }
 }
 

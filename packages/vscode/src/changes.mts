@@ -34,7 +34,6 @@ export class ChangeTracker {
   }
 
   addChange(event: ChangeEvent) {
-    console.log('File change detected', event);
     this.queue.push(event);
     clearTimeout(this.timeout);
     this.timeout = setTimeout(

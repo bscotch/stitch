@@ -88,8 +88,14 @@ export class SpriteDir {
         ]);
       }
     } else {
+      // Remove any frames that no longer exist
+      const excessFrames = new Set(Object.keys(spriteCache.frames));
       for (const frame of this.frames) {
+        excessFrames.delete(frame.path.relative);
         frameWaits.push(frame.updateCache(spriteCache));
+      }
+      for (const frame of excessFrames) {
+        delete spriteCache.frames[frame];
       }
     }
     const frames = await Promise.all(frameWaits);

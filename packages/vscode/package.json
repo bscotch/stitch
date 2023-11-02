@@ -35,7 +35,7 @@
     "package": "vsce package --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
     "vscode:publish": "vsce publish --no-dependencies --githubBranch develop",
-    "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --watch ../parser/dist --ignore src/icons.types.mts --exec \"npm run build\"",
+    "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml --watch src --watch syntaxes --watch ../parser/dist --watch ../sprite-source/dist --ignore src/icons.types.mts --exec \"npm run build\"",
     "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
@@ -689,12 +689,12 @@
         },
         {
           "command": "stitch.spriteSource.clearCache",
-          "when": "viewItem == sprite-source",
+          "when": "viewItem =~ /^sprite-source(-(un)?watched)?$/",
           "group": "navigation@8"
         },
         {
           "command": "stitch.spriteSource.addStage",
-          "when": "viewItem == sprite-source",
+          "when": "viewItem =~ /^sprite-source(-(un)?watched)?$/",
           "group": "navigation@1"
         },
         {
@@ -709,12 +709,12 @@
         },
         {
           "command": "stitch.spriteSource.delete",
-          "when": "viewItem == sprite-source",
+          "when": "viewItem =~ /^sprite-source(-(un)?watched)?$/",
           "group": "7_modification@9"
         },
         {
           "command": "stitch.spriteSource.openExplorer",
-          "when": "viewItem == sprite-source || viewItem =~ /^sprite-source-stage-/",
+          "when": "viewItem =~ /^sprite-source(-(un)?watched)?$/ || viewItem =~ /^sprite-source-stage-/",
           "group": "navigation@9"
         }
       ],
