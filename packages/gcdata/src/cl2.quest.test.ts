@@ -17,8 +17,9 @@ describe('Cl2 Quests', function () {
       { element: 'a' },
       { element: 'b', order: 3 },
       { element: 'c', order: 10 },
-      { element: 'd', order: 7 },
-      { element: 'e', order: 1 },
+      { element: 'e' },
+      { element: 'e', order: 7 },
+      { element: 'f', order: 1 },
     ];
     updateBsArrayOrder(sorted);
     console.log(sorted);

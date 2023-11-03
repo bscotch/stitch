@@ -552,12 +552,15 @@ export function updateBsArrayOrder(sorted: BsArrayItem[]) {
         sortedWithDefinedOrder[index - 1];
       const nextItem: Required<BsArrayItem> | undefined =
         sortedWithDefinedOrder[index + 1];
-      if (index === 0) {
+      const isFirstItem = index === 0;
+      const isLastItem = index === sortedWithDefinedOrder.length - 1;
+
+      if (isFirstItem) {
         // Just make sure this value is less than the next one
         if (nextItem.order <= item.order) {
           item.order = nextItem.order / 2;
         }
-      } else if (index === sortedWithDefinedOrder.length - 1) {
+      } else if (isLastItem) {
         // Just make sure this value is greater than the prior one
         if (priorItem.order >= item.order) {
           item.order = priorItem.order + ORDER_INCREMENT;
@@ -566,11 +569,18 @@ export function updateBsArrayOrder(sorted: BsArrayItem[]) {
         // Then we're already in between the values. Move along!
         continue;
       } else if (priorItem.order < nextItem.order) {
-        // Then just set this one to the halfway point
+        // Then the neighbors are in the right order, just go between them
         item.order = (priorItem.order + nextItem.order) / 2;
       } else {
         // Then we're in a rough spot. Just make this one bigger than the prior one.
-        item.order = priorItem.order + ORDER_INCREMENT;
+        // TODO: In the rest of the array, find the smallest order that is bigger than this one, and set this to halfway between that and the prior one.
+        const largerOrders = sortedWithDefinedOrder
+          .slice(index + 1)
+          .map((s) => s.order)
+          .filter((o) => o > item.order);
+        item.order = largerOrders.length
+          ? (priorItem.order + Math.min(...largerOrders)) / 2
+          : priorItem.order + ORDER_INCREMENT;
       }
     }
   }
@@ -578,8 +588,11 @@ export function updateBsArrayOrder(sorted: BsArrayItem[]) {
   // Next we fill in the gaps between defined order values.
   for (const [index, item] of sorted.entries()) {
     if (item.order !== undefined) continue;
+    const isFirstItem = index === 0;
+    const isLastItem = index === sorted.length - 1;
+
     let priorOrder = sorted[index - 1]?.order;
-    if (index === sorted.length - 1) {
+    if (isLastItem) {
       // Then we're at the end. Just add 5 to the last one.
       item.order = (priorOrder || 0) + ORDER_INCREMENT;
       continue;
@@ -598,11 +611,12 @@ export function updateBsArrayOrder(sorted: BsArrayItem[]) {
       item.order = (priorOrder || 0) + ORDER_INCREMENT;
     }
     // Otherwise, we need to fill in the gap
-    const increment = (nextOrder! - priorOrder!) / missingAfter;
-    item.order = priorOrder! + increment;
+    const increment = (nextOrder! - (priorOrder || 0)) / (missingAfter + 1);
+    item.order = (priorOrder || 0) + increment;
   }
 
   // Make sure the order values are INCREMENTING and EXIST
+  console.log(sorted);
   for (const [index, item] of sorted.entries()) {
     assert(
       item.order !== undefined,
