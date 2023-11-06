@@ -96,6 +96,9 @@ class StitchConfig {
   get spriteAutoImportOnStartup() {
     return this.config.get<boolean>('sprites.sources.watchOnStartup') ?? false;
   }
+  get openFoldersOnFilter() {
+    return this.config.get<boolean>('assets.filters.openAllFolders') ?? false;
+  }
 }
 
 export const stitchConfig = new StitchConfig();

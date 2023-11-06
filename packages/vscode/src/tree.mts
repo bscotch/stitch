@@ -36,6 +36,13 @@ import {
   validateFolderName,
 } from './tree.utility.mjs';
 
+/**
+ * Tree Structure:
+ *
+ * - GameMakerProjectFolder
+ *   -
+ */
+
 export type Treeable =
   | TreeAsset
   | TreeCode
@@ -753,7 +760,9 @@ export class GameMakerTreeProvider
         }
         let parent = projectFolder as GameMakerFolder;
         for (let i = 0; i < pathParts.length; i++) {
-          parent = parent.addFolder(pathParts[i]);
+          parent = parent.addFolder(pathParts[i], {
+            open: !!filter && stitchConfig.openFoldersOnFilter,
+          });
         }
         const asset = new TreeAsset(parent, resource);
         parent.addResource(asset);

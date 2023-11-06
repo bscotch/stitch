@@ -250,6 +250,12 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.assets.filters.openAllFolders": {
+          "title": "Open all folders when filtering",
+          "description": "When filtering assets, you may want all folders to be auto-opened in the sidebar to reveal filtered results. This is disabled by default since there can be a very large number of filter results!",
+          "type": "boolean",
+          "default": false
+        },
         "stitch.diagnostics.autoDeclaredGlobalsPatterns": {
           "title": "Prefixes for auto-declared globals",
           "description": "Variables with these prefixes will be automatically declared as globals if they are't declared in the user code.",

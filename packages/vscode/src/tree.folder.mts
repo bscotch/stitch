@@ -58,6 +58,10 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
       .join('/');
   }
 
+  open() {
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+  }
+
   /**
    * Check through the entire parent heirarchy, returning `true` if
    * the current folder appears in the `folder`'s heirarchy.
@@ -76,13 +80,16 @@ export class GameMakerFolder extends StitchTreeItemBase<'folder'> {
 
   addFolder(
     name: string,
-    options?: { project?: GameMakerProject },
+    options?: { project?: GameMakerProject; open?: boolean },
   ): GameMakerFolder {
     let folder = this.getFolder(name);
     if (!folder) {
       folder = options?.project
         ? new GameMakerProjectFolder(this, name, options.project)
         : new GameMakerFolder(this, name);
+      if (options?.open) {
+        folder.open();
+      }
       this.folders.push(folder);
     }
     return folder;
