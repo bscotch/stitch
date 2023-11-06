@@ -1,5 +1,12 @@
 # Stitch Changelog
 
+## 1.55.0 (2023-11-06)
+
+### Features
+
+- Improved "Show in Asset Tree" command to work with all editor view types
+- Added option to auto-open folders when a filter is applied
+
 ## 1.54.1 (2023-11-02)
 
 ### Fixes
