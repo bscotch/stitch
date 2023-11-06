@@ -3,6 +3,7 @@ import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 import { stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
+import { getGameMakerIcon } from './icons.mjs';
 import { compile, computeInitialZoom } from './spriteEditor.template.mjs';
 
 export interface SpriteEditedMessage {
@@ -75,6 +76,8 @@ export class StitchSpriteEditorProvider {
   async revealPanel(sprite: Asset<'sprites'>) {
     this.editing = sprite;
     this.panel ||= this.createPanel();
+    this.panel.title = sprite.name;
+    this.panel.iconPath = getGameMakerIcon('sprites');
     this.panel.onDidDispose(() => (this.panel = undefined));
     // Rebuild the webview
     this.panel.webview.html = await this.getWebviewContent();

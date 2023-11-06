@@ -19,7 +19,12 @@ import { activateStitchExtension } from './extension.activate.mjs';
 import { completionTriggerCharacters } from './extension.completions.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.highlighting.mjs';
 import { GameMakerProject } from './extension.project.mjs';
-import { pathyFromUri, uriFromCodeFile } from './lib.mjs';
+import {
+  activeTab,
+  isSpriteTab,
+  pathyFromUri,
+  uriFromCodeFile,
+} from './lib.mjs';
 import { info, logger, warn } from './log.mjs';
 
 export class StitchWorkspace implements vscode.SignatureHelpProvider {
@@ -178,6 +183,7 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
     return project || this.projects[0];
   }
 
+  /** Given a URI, get the project that contains that file */
   getProject(
     document: vscode.TextDocument | vscode.Uri,
   ): GameMakerProject | undefined {
@@ -266,12 +272,22 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
   }
 
   getCurrentAsset() {
-    const currentDocument = vscode.window.activeTextEditor?.document;
-    if (!currentDocument) {
+    const tab = activeTab();
+    if (!tab) {
       return;
     }
-    const currentProject = this.getProject(currentDocument);
-    return currentProject?.getAsset(pathyFromUri(currentDocument));
+    if (isSpriteTab(tab)) {
+      // Then we have the asset name, get the first project
+      // that has that name.
+      const project = this.projects.find((p) =>
+        p.getAssetByName(tab.assetName),
+      );
+      return project?.getAssetByName(tab.assetName);
+    }
+    // Otherwise we have a full URI so we can find the project
+    // and asset.
+    const currentProject = this.getProject(tab.uri);
+    return currentProject?.getAsset(pathyFromUri(tab.uri));
   }
 
   getAsset(document: vscode.TextDocument, name: string): Asset | undefined {

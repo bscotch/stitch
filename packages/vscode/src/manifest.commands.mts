@@ -57,7 +57,7 @@ export const commands = {
   'stitch.assets.reveal': {
     command: 'stitch.assets.reveal',
     title: 'Stitch: Show Asset in Tree',
-    enablement: `${when.hasProjects} && resourceExtname =~ /\\.(yy|gml)$/`,
+    enablement: when.hasProjects,
     [$showInPalette]: true,
   },
   'stitch.assets.filters.enable': {

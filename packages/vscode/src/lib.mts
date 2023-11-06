@@ -68,6 +68,80 @@ export function rangeFrom(location: Range) {
   });
 }
 
+export type Tab = DocTab | ImageTab | AudioTab | SpriteTab;
+
+export interface DocTab {
+  kind: 'document';
+  uri: vscode.Uri;
+  document: vscode.TextDocument;
+}
+
+export interface ImageTab {
+  kind: 'image';
+  uri: vscode.Uri;
+}
+
+export interface AudioTab {
+  kind: 'audio';
+  uri: vscode.Uri;
+}
+
+export interface SpriteTab {
+  kind: 'sprite';
+  assetName: string;
+}
+
+export function isDocTab(tab: Tab | undefined): tab is DocTab {
+  return tab?.kind === 'document';
+}
+
+export function isPngTab(tab: Tab | undefined): tab is ImageTab {
+  return tab?.kind === 'image';
+}
+
+export function isAudioTab(tab: Tab | undefined): tab is AudioTab {
+  return tab?.kind === 'audio';
+}
+
+export function isSpriteTab(tab: Tab | undefined): tab is SpriteTab {
+  return tab?.kind === 'sprite';
+}
+
+export function activeTab(): Tab | undefined {
+  const doc = vscode.window.activeTextEditor?.document;
+  if (doc) {
+    return {
+      kind: 'document',
+      uri: doc.uri,
+      document: doc,
+    };
+  }
+  const tab = vscode.window.tabGroups.activeTabGroup?.activeTab;
+  const tabInput = tab?.input as Record<string, any> | undefined;
+  if (!tab || !tabInput) return;
+  // console.log(tab);
+  if ('viewType' in tabInput) {
+    if (tabInput.viewType === 'imagePreview.previewEditor') {
+      return {
+        kind: 'image',
+        uri: tabInput.uri,
+      };
+    } else if (tabInput.viewType === 'vscode.audioPreview') {
+      return {
+        kind: 'audio',
+        uri: tabInput.uri,
+      };
+    } else if (tabInput.viewType.endsWith('stitch-sprite-editor')) {
+      return {
+        kind: 'sprite',
+        assetName: tab.label,
+      };
+    }
+  }
+  console.log('UNKNOWN TAB', tab);
+  return;
+}
+
 export function findProject(
   workspace: StitchWorkspace,
   uriOrFolder: string[] | GameMakerFolder | undefined,

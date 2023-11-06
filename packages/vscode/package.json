@@ -74,7 +74,7 @@
       {
         "command": "stitch.assets.reveal",
         "title": "Stitch: Show Asset in Tree",
-        "enablement": "stitch.projectCount > 0 && resourceExtname =~ /\\.(yy|gml)$/"
+        "enablement": "stitch.projectCount > 0"
       },
       {
         "command": "stitch.assets.filters.enable",
