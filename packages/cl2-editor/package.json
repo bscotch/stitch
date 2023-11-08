@@ -47,7 +47,14 @@
     "configuration": {
       "title": "Crashlands",
       "properties": {
+        "crashlands.editor.parse.delay": {
+          "title": "Parse Delay",
+          "type": "number",
+          "default": 50,
+          "description": "Delay in milliseconds between changing the file and it getting reparsed."
+        },
         "crashlands.editor.backup.delay": {
+          "title": "Backup Delay",
           "type": "number",
           "default": 1000,
           "description": "Backups are created automatically upon file change. This setting controls how long to wait until changes have stopped before making a backup."

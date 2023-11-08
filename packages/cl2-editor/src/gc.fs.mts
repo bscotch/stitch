@@ -15,6 +15,7 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     return pathy('.stitch/cl2-editor/backups', homedir());
   }
   protected backups: BackupsIndex | undefined;
+  protected debouncedParses = new Map<string, NodeJS.Timeout>();
 
   protected getMoteDoc(uri: vscode.Uri): QuestDocument {
     return QuestDocument.from(uri, this.workspace);
@@ -163,12 +164,22 @@ export class GameChangerFs implements vscode.FileSystemProvider {
       if (!moteDoc) {
         console.warn("Couldn't find mote doc for", uri.toString());
       } else if (doc) {
-        const text = doc.getText();
-        moteDoc.parse(text);
-        if (!moteDoc.parseResults?.diagnostics.length) {
-          // Create a backup
-          provider.createBackup(moteDoc.mote.id, moteDoc.mote.schema_id, text);
-        }
+        clearTimeout(provider.debouncedParses.get(uri.toString()));
+        provider.debouncedParses.set(
+          uri.toString(),
+          setTimeout(() => {
+            const text = doc.getText();
+            moteDoc.parse(text);
+            if (!moteDoc.parseResults?.diagnostics.length) {
+              // Create a backup
+              provider.createBackup(
+                moteDoc.mote.id,
+                moteDoc.mote.schema_id,
+                text,
+              );
+            }
+          }, crashlandsConfig.parseDelay),
+        );
       } else {
         console.warn("Couldn't find doc for", uri.toString());
       }
