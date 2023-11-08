@@ -2,13 +2,14 @@ import {
   QuestUpdateResult,
   isQuestMote,
   parseStringifiedQuest,
+  updateChangesFromParsedQuest,
   type Crashlands2,
   type GameChanger,
   type Mote,
 } from '@bscotch/gcdata';
 import { stringifyQuest } from '@bscotch/gcdata/dist/cl2.quest.stringify.js';
 import vscode from 'vscode';
-import { assertInternalClaim } from './assert.mjs';
+import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
 import {
   filterRanges,
@@ -21,8 +22,6 @@ import type { CrashlandsWorkspace } from './workspace.mjs';
 /** Representation of an active Quest Document */
 export class QuestDocument {
   static cache = new Map<string, QuestDocument>();
-
-  protected debouncedSave: NodeJS.Timeout | undefined;
 
   protected constructor(
     readonly uri: vscode.Uri,
@@ -199,23 +198,26 @@ export class QuestDocument {
     this.parse(this.document?.getText());
   }
 
-  async parse(content?: string) {
+  /** Save the last-parsed content to the changes file */
+  async save(content: string) {
+    this.parse(content);
+    assertLoudly(
+      this.parseResults?.diagnostics.length === 0,
+      'Cannot save a quest with errors.',
+    );
+    await updateChangesFromParsedQuest(
+      this.parseResults.parsed,
+      this.mote.id,
+      this.packed,
+    );
+  }
+
+  parse(content?: string) {
     try {
       if (!content) {
         content = this.toString();
       }
-      this.parseResults = await parseStringifiedQuest(
-        content!,
-        this.mote.id,
-        this.packed,
-      );
-      if (this.parseResults.saved && this.document) {
-        clearTimeout(this.debouncedSave);
-        this.debouncedSave = setTimeout(
-          () => this.parseResults?.saved && this.document?.save(),
-          100,
-        );
-      }
+      this.parseResults = parseStringifiedQuest(content!, this.packed);
 
       // Apply any edits
       for (const edit of this.parseResults.edits) {

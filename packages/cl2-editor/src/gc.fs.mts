@@ -54,16 +54,13 @@ export class GameChangerFs implements vscode.FileSystemProvider {
   createDirectory(uri: vscode.Uri): void | Thenable<void> {
     throw new Error('CreateDir not implemented.');
   }
-  writeFile(
-    uri: vscode.Uri,
-    content: Uint8Array,
-    options: { readonly create: boolean; readonly overwrite: boolean },
-  ): void | Thenable<void> {
+  async writeFile(uri: vscode.Uri, content: Uint8Array) {
     const doc = this.getMoteDoc(uri);
     assertInternalClaim(isQuestMote(doc.mote), 'Only quests are supported.');
-    if (!doc.parseResults?.saved) {
+    if (doc.parseResults?.diagnostics.length !== 0) {
       throw new Error('Cannot save until issues are resolved.');
     }
+    await doc.save(content.toString());
   }
   delete(
     uri: vscode.Uri,
