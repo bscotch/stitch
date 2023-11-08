@@ -86,7 +86,6 @@ export interface QuestUpdateResult {
   hovers: (Range & { title?: string; description?: string })[];
   edits: (Range & { newText: string })[];
   completions: (Range & CompletionsData)[];
-  saved: boolean;
   parsed: {
     name?: string;
     /** The moteId for the storyline */

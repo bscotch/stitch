@@ -127,7 +127,7 @@ describe('Cl2 Quests', function () {
       );
     for (const quest of quests) {
       const asText = stringifyQuest(quest, packed);
-      const results = await parseStringifiedQuest(asText, quest.id, packed);
+      const results = parseStringifiedQuest(asText, packed);
       if (results.diagnostics.length > 0) {
         console.error(results.diagnostics.map((d) => d.message).join('\n'));
       }

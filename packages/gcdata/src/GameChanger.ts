@@ -20,6 +20,7 @@ import {
   type SchemaId,
 } from './types.js';
 import {
+  computePointers,
   resolvePointer,
   resolvePointerInSchema,
   setValueAtPointer,
@@ -100,13 +101,19 @@ export class GameChanger {
   }
 
   updateMoteData(moteId: string, dataPath: string, value: any) {
+    assert(moteId, 'Must specify mote ID');
+    assert(
+      typeof dataPath === 'string' && dataPath.startsWith('data/'),
+      'Data path must start with "data/"',
+    );
+
     // Make sure this is a valid request
     const workingMote = this.working.getMote(moteId);
     assert(workingMote, `Cannot update non-existent mote ${moteId}`);
     const schema = this.working.getSchema(workingMote.schema_id);
     assert(schema, `Mote schema ${workingMote.schema_id} does not exist`);
     const subschema = resolvePointerInSchema(
-      dataPath,
+      dataPath.replace(/^data\//, ''),
       workingMote,
       this.working,
     );
@@ -115,31 +122,44 @@ export class GameChanger {
       `Could not resolve ${dataPath} in schema ${workingMote.schema_id}}`,
     );
 
-    // Only allow for scalar values
-    assert(!isBschemaObject(subschema), 'Can only set scalar values');
-
     // Do some basic schema validation to avoid really dumb errors
     if (typeof value === 'string') {
       assert(
         isBschemaString(subschema),
-        'Invalid value. Bschema is not for a string.',
+        `Invalid value '${JSON.stringify(
+          value,
+        )}'. Schema for ${dataPath} is not for a string.`,
       );
     } else if (typeof value === 'boolean') {
       assert(
         isBschemaBoolean(subschema),
-        'Invalid value. Bschema is not boolean',
+        `Invalid value '${JSON.stringify(
+          value,
+        )}'. Schema for ${dataPath} is not boolean`,
       );
     } else if (typeof value === 'number') {
       assert(
         isBschemaBoolean(subschema) || isBschemaNumeric(subschema),
-        'Invalid value. Bschema is not numeric',
+        `Invalid value '${JSON.stringify(
+          value,
+        )}'. Schema for ${dataPath} is not numeric`,
       );
     }
 
-    const fullPath = `data/${dataPath}`;
+    if (isBschemaObject(subschema) && value === null) {
+      // Then we are deleting a sub-object, so we need to find each
+      // entry by path and add a deletion for it
+      const subdata = resolvePointer(dataPath, this.workingData.motes[moteId]);
+      const pointers = computePointers(subdata, dataPath);
+      for (const pointer of pointers) {
+        this.updateMoteData(moteId, pointer, null);
+      }
+      // We don't store the deletion of the sub-object itself, so we're done!
+      return;
+    }
 
     // Update the working data
-    setValueAtPointer(this.workingData.motes[moteId], fullPath, value);
+    setValueAtPointer(this.workingData.motes[moteId], dataPath, value);
 
     // See if we have a change relative to the base
     const currentValue =
@@ -151,12 +171,12 @@ export class GameChanger {
     if (currentValue == value) {
       // Then we haven't changed from the base data, but
       // we might be *undoing* a working data change.
-      delete this.changes.changes.motes?.[moteId]?.diffs?.[fullPath];
+      delete this.changes.changes.motes?.[moteId]?.diffs?.[dataPath];
       return;
     }
     this.createChange('motes', moteId, {
       type: 'changed',
-      pointer: fullPath,
+      pointer: dataPath,
       newValue: value,
     });
   }
@@ -243,6 +263,13 @@ export class GameChanger {
         const change = this.changes.changes[type][id];
         if (change.type === 'deleted') {
           delete this.workingData[type][id];
+          continue;
+        } else if (
+          change.type === 'changed' &&
+          !Object.keys(change.diffs || {}).length
+        ) {
+          // Then we can remove this entry altogether
+          delete this.changes.changes[type][id];
           continue;
         }
         // Ensure the base object exists

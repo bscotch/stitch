@@ -72,7 +72,7 @@ export function setValueAtPointer(
   for (let i = 0; i < pointer.length; i++) {
     if (i === pointer.length - 1) {
       current[pointer[i]] = value;
-    } else if (current[pointer[i]] === undefined) {
+    } else if ([undefined, null].includes(current[pointer[i]])) {
       current[pointer[i]] = {};
     } else if (typeof current[pointer[i]] !== 'object') {
       throw new Error(
@@ -132,6 +132,38 @@ export function resolvePointerInSchema(
 
 export function capitalize(str: string) {
   return str[0].toUpperCase() + str.slice(1);
+}
+
+/**
+ * Given some kind of data object, traverse it to generate all
+ * of the terminal pointers through the data.
+ * Optionally prefix each pointer with some string.
+ */
+export function computePointers(
+  data: any,
+  prefixWith?: string,
+  collection = new Set<string>(),
+  __basePointer: string[] = [],
+): Set<string> {
+  const addToCollection = () => {
+    const pointer = [...__basePointer];
+    collection.add(pointer.join('/'));
+    return collection;
+  };
+
+  __basePointer = prefixWith
+    ? [prefixWith, ...__basePointer]
+    : [...__basePointer];
+
+  if (typeof data === 'object') {
+    for (const key in data) {
+      const subdata = data[key];
+      computePointers(subdata, undefined, collection, [...__basePointer, key]);
+    }
+  } else {
+    addToCollection();
+  }
+  return collection;
 }
 
 /**

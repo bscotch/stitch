@@ -1,6 +1,6 @@
 import { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
-import { QuestMotePointer } from './cl2.quest.pointers.js';
+import { QuestMoteDataPointer } from './cl2.quest.pointers.js';
 import {
   ParsedClue,
   ParsedDialog,
@@ -23,11 +23,10 @@ import { Crashlands2 } from './types.cl2.js';
 import { Position } from './types.editor.js';
 import { Mote } from './types.js';
 
-export async function parseStringifiedQuest(
+export function parseStringifiedQuest(
   text: string,
-  moteId: string,
   packed: GameChanger,
-): Promise<QuestUpdateResult> {
+): QuestUpdateResult {
   const motes = getMoteLists(packed.working);
   const momentStyles = getMomentStyleNames(packed.working);
   // Remove 'Dialogue' and 'Emote' from the list of moment styles
@@ -57,7 +56,6 @@ export async function parseStringifiedQuest(
     hovers: [],
     edits: [],
     completions: [],
-    saved: false,
     parsed: {
       clues: [],
       quest_end_moments: [],
@@ -446,15 +444,10 @@ export async function parseStringifiedQuest(
     index += line.length;
   }
 
-  if (result.diagnostics.length === 0) {
-    await updateChangesFromParsedQuest(result.parsed, moteId, packed);
-    result.saved = true;
-  }
-
   return result;
 }
 
-async function updateChangesFromParsedQuest(
+export async function updateChangesFromParsedQuest(
   parsed: QuestUpdateResult['parsed'],
   moteId: string,
   packed: GameChanger,
@@ -471,30 +464,31 @@ async function updateChangesFromParsedQuest(
   const schema = packed.working.getSchema('cl2_quest')!;
   assert(schema.name, 'Quest mote must have a name pointer');
   assert(schema, 'cl2_quest schema not found in working copy');
-  const updateMote = (path: QuestMotePointer, value: any) => {
+  const updateMote = (path: QuestMoteDataPointer, value: any) => {
     packed.updateMoteData(moteId, path, value);
   };
 
-  updateMote('name', parsed.name);
-  updateMote('quest_giver/item', parsed.quest_giver);
-  updateMote('quest_receiver/item', parsed.quest_receiver);
-  updateMote('quest_start_log/text', parsed.quest_start_log);
-  updateMote('wip/draft', parsed.draft);
-  updateMote('storyline', parsed.storyline);
+  updateMote('data/name', parsed.name);
+  updateMote('data/quest_giver/item', parsed.quest_giver);
+  updateMote('data/quest_receiver/item', parsed.quest_receiver);
+  updateMote('data/quest_start_log/text', parsed.quest_start_log);
+  updateMote('data/wip/draft', parsed.draft);
+  updateMote('data/storyline', parsed.storyline);
 
   const parsedComments = parsed.comments.filter((c) => !!c.text);
+  const parsedClues = parsed.clues.filter((c) => !!c.id && !!c.speaker);
 
   //#region COMMENTS
   // Add/Update COMMENTS
   for (const comment of parsedComments) {
-    updateMote(`wip/comments/${comment.id}/element`, comment.text);
+    updateMote(`data/wip/comments/${comment.id}/element`, comment.text);
   }
   // Remove deleted comments
   for (const existingComment of bsArrayToArray(
     questMoteBase?.data.wip?.comments || {},
   )) {
     if (!parsedComments.find((c) => c.id === existingComment.id)) {
-      updateMote(`wip/comments/${existingComment.id}`, null);
+      updateMote(`data/wip/comments/${existingComment.id}`, null);
     }
   }
   // Get the BASE order of the comments (if any) and use those
@@ -512,12 +506,54 @@ async function updateChangesFromParsedQuest(
   });
   updateBsArrayOrder(comments);
   comments.forEach((comment) => {
-    updateMote(`wip/comments/${comment.id}/order`, comment.order);
+    updateMote(`data/wip/comments/${comment.id}/order`, comment.order);
   });
   //#endregion
 
-  // TODO
-  parsed.clues;
+  //#region CLUES
+  // Add/update clues
+  for (const clue of parsedClues) {
+    updateMote(`data/clues/${clue.id}/element/speaker`, clue.speaker);
+    for (const phrase of clue.phrases) {
+      updateMote(
+        `data/clues/${clue.id}/element/phrases/${phrase.id}/element/phrase/text/text`,
+        phrase.text || '',
+      );
+      if (phrase.emoji) {
+        updateMote(
+          `data/clues/${clue.id}/element/phrases/${phrase.id}/element/phrase/emoji`,
+          phrase.emoji,
+        );
+      }
+    }
+  }
+  // Delete clues that were removed
+  for (const existingClue of bsArrayToArray(questMoteBase?.data.clues || {})) {
+    if (!parsedClues.find((c) => c.id === existingClue.id)) {
+      updateMote(`data/clues/${existingClue.id}`, null);
+    }
+  }
+  // TODO: Ensure proper order of clues and phrases
+  const clues = parsedClues.map((c) => {
+    // Look up the base clue
+    let clue = questMoteBase?.data.clues?.[c.id!];
+    if (!clue) {
+      clue = questMoteWorking?.data.clues?.[c.id!];
+      // @ts-expect-error - order is a required field, but it'll be re-added
+      delete clue?.order;
+    }
+    // TODO: Ensure proper order of phrases
+    assert(clue, `Clue ${c.id} not found in base or working mote`);
+    return { ...clue, id: c.id! };
+  });
+  updateBsArrayOrder(clues);
+  clues.forEach((clue) => {
+    updateMote(`data/clues/${clue.id}/order`, clue.order);
+    // TODO: Ensure proper order of phrases
+  });
+
+  //#endregion
+
   // TODO
   parsed.quest_end_moments;
   // TODO
