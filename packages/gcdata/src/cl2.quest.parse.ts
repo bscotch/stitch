@@ -459,6 +459,9 @@ async function updateChangesFromParsedQuest(
   moteId: string,
   packed: GameChanger,
 ) {
+  // We're always going to be computing ALL changes, so clear whatever
+  // we previously had.
+  packed.clearMoteChanges(moteId);
   const questMoteBase = packed.base.getMote(moteId) as
     | Mote<Crashlands2.Schemas['cl2_quest']>
     | undefined;

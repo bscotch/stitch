@@ -88,6 +88,17 @@ export class GameChanger {
     return this.base.data;
   }
 
+  clearMoteChanges(moteId: string) {
+    delete this.changes.changes.motes?.[moteId];
+    // Re-clone the base data to reset the working data
+    delete this.working.data.motes[moteId];
+    if (this.base.data.motes[moteId]) {
+      this.working.data.motes[moteId] = structuredClone(
+        this.base.data.motes[moteId],
+      );
+    }
+  }
+
   updateMoteData(moteId: string, dataPath: string, value: any) {
     // Make sure this is a valid request
     const workingMote = this.working.getMote(moteId);
@@ -132,9 +143,12 @@ export class GameChanger {
 
     // See if we have a change relative to the base
     const currentValue =
-      resolvePointer(dataPath, this.base.getMote(moteId)) ?? null;
+      resolvePointer(dataPath, this.base.getMote(moteId)) ??
+      (subschema.defaultValue === undefined
+        ? null
+        : structuredClone(subschema.defaultValue));
     value = value ?? null;
-    if (currentValue === value) {
+    if (currentValue == value) {
       // Then we haven't changed from the base data, but
       // we might be *undoing* a working data change.
       delete this.changes.changes.motes?.[moteId]?.diffs?.[fullPath];
