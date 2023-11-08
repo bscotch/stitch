@@ -22,6 +22,8 @@ import type { CrashlandsWorkspace } from './workspace.mjs';
 export class QuestDocument {
   static cache = new Map<string, QuestDocument>();
 
+  protected debouncedSave: NodeJS.Timeout | undefined;
+
   protected constructor(
     readonly uri: vscode.Uri,
     readonly mote: Mote<Crashlands2.Quest>,
@@ -207,6 +209,13 @@ export class QuestDocument {
         this.mote.id,
         this.packed,
       );
+      if (this.parseResults.saved && this.document) {
+        clearTimeout(this.debouncedSave);
+        this.debouncedSave = setTimeout(
+          () => this.parseResults?.saved && this.document?.save(),
+          100,
+        );
+      }
 
       // Apply any edits
       for (const edit of this.parseResults.edits) {

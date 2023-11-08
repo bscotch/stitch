@@ -60,7 +60,9 @@ export class GameChangerFs implements vscode.FileSystemProvider {
   ): void | Thenable<void> {
     const doc = this.getMoteDoc(uri);
     assertInternalClaim(isQuestMote(doc.mote), 'Only quests are supported.');
-    throw new Error('WriteFile not implemented.');
+    if (!doc.parseResults?.saved) {
+      throw new Error('Cannot save until issues are resolved.');
+    }
   }
   delete(
     uri: vscode.Uri,

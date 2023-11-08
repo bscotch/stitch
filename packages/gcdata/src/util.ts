@@ -74,7 +74,7 @@ export function setValueAtPointer(
       current[pointer[i]] = value;
     } else if (current[pointer[i]] === undefined) {
       current[pointer[i]] = {};
-    } else {
+    } else if (typeof current[pointer[i]] !== 'object') {
       throw new Error(
         `Cannot set intermediate pointer at ${pointer
           .slice(0, i + 1)

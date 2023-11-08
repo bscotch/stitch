@@ -1,6 +1,9 @@
+import { assert } from './assert.js';
 import type { Crashlands2 } from './types.cl2.js';
 import { Position } from './types.editor.js';
 import type { BschemaBsArray, BschemaObject, Mote } from './types.js';
+
+export const ORDER_INCREMENT = 5;
 
 export interface BsArrayItem {
   /** The element's content */
@@ -81,4 +84,107 @@ export function changedPosition(
     position.index += change.characters;
   }
   return position;
+}
+
+export function updateBsArrayOrder(sorted: BsArrayItem[]) {
+  // BsArrayItems have an 'order' field, which must be incrementing for
+  // their sorted order. We want to minimize changes to "order" values,
+  // so we need to do some fancy logic.
+  // Entries in the sorted array might not have their order set,
+  // and entries that are supposed to be adjacent might have things in
+  // the wrong order.
+  // The first step is to ensure that all * existing *
+  // order values are properly incrementing.
+  const sortedWithDefinedOrder = sorted.filter(
+    (s) => s.order !== undefined,
+  ) as Required<BsArrayItem>[];
+  if (sortedWithDefinedOrder.length > 1) {
+    for (const [index, item] of sortedWithDefinedOrder.entries()) {
+      const priorItem: Required<BsArrayItem> | undefined =
+        sortedWithDefinedOrder[index - 1];
+      const nextItem: Required<BsArrayItem> | undefined =
+        sortedWithDefinedOrder[index + 1];
+      const isFirstItem = index === 0;
+      const isLastItem = index === sortedWithDefinedOrder.length - 1;
+
+      if (isFirstItem) {
+        // Just make sure this value is less than the next one
+        if (item.order >= nextItem.order) {
+          item.order = nextItem.order - ORDER_INCREMENT;
+        }
+      } else if (isLastItem) {
+        // Just make sure this value is greater than the prior one
+        if (item.order <= priorItem.order) {
+          item.order = priorItem.order + ORDER_INCREMENT;
+        }
+      } else if (item.order > priorItem.order && item.order < nextItem.order) {
+        // Then we're already in between the values. Move along!
+        continue;
+      } else if (priorItem.order < nextItem.order) {
+        // Then the neighbors are in the right order, just go between them
+        item.order = (priorItem.order + nextItem.order) / 2;
+      } else if (item.order > priorItem.order) {
+        // Then the next item is a problem, but this one isn't!
+        continue;
+      } else {
+        item.order = priorItem.order + ORDER_INCREMENT;
+      }
+    }
+  } else if (sortedWithDefinedOrder.length === 0) {
+    // Then just iterate through and add values
+    for (const [index, item] of sorted.entries()) {
+      item.order = (index + 1) * ORDER_INCREMENT;
+    }
+    return sorted;
+  }
+
+  // Next we fill in the gaps between defined order values.
+  for (const [index, item] of sorted.entries()) {
+    if (item.order !== undefined) continue;
+    const isLastItem = index === sorted.length - 1;
+
+    /** Must be defined, except for the case where the 0th element has  */
+    let priorOrder = sorted[index - 1]?.order;
+
+    if (isLastItem) {
+      // Then we're at the end. Just add 5 to the last one.
+      item.order = (priorOrder || 0) + ORDER_INCREMENT;
+      continue;
+    }
+
+    let nextOrder: number | undefined;
+    let numMissing = 1;
+    for (let j = index + 1; j < sorted.length; j++) {
+      if (sorted[j].order !== undefined) {
+        nextOrder = sorted[j].order;
+        break;
+      }
+      numMissing++;
+    }
+    if (nextOrder === undefined) {
+      // To get to this case, we must have had at least 1 defined
+      // order. And it isn't later! Therefore priorOrder must be defined.
+      item.order = priorOrder! + ORDER_INCREMENT;
+    } else if (priorOrder === undefined) {
+      item.order = nextOrder - ORDER_INCREMENT * numMissing;
+    } else {
+      const increment = (nextOrder - priorOrder) / (numMissing + 1);
+      item.order = priorOrder + increment;
+    }
+  }
+
+  // Make sure the order values are INCREMENTING and EXIST
+  for (const [index, item] of sorted.entries()) {
+    assert(
+      item.order !== undefined,
+      `Order value should be defined at this point`,
+    );
+    if (index > 0) {
+      assert(
+        item.order > sorted[index - 1].order!,
+        `Order values should be incrementing`,
+      );
+    }
+  }
+  return sorted;
 }

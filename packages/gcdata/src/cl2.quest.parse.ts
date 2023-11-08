@@ -14,16 +14,14 @@ import {
 } from './cl2.quest.types.js';
 import { getMomentStyleNames, getMoteLists } from './cl2.quest.utils.js';
 import {
-  BsArrayItem,
   bsArrayToArray,
   changedPosition,
   createBsArrayKey,
+  updateBsArrayOrder,
 } from './helpers.js';
 import { Crashlands2 } from './types.cl2.js';
 import { Position } from './types.editor.js';
 import { Mote } from './types.js';
-
-const ORDER_INCREMENT = 5;
 
 export async function parseStringifiedQuest(
   text: string,
@@ -59,6 +57,7 @@ export async function parseStringifiedQuest(
     hovers: [],
     edits: [],
     completions: [],
+    saved: false,
     parsed: {
       clues: [],
       quest_end_moments: [],
@@ -449,6 +448,7 @@ export async function parseStringifiedQuest(
 
   if (result.diagnostics.length === 0) {
     await updateChangesFromParsedQuest(result.parsed, moteId, packed);
+    result.saved = true;
   }
 
   return result;
@@ -479,47 +479,38 @@ async function updateChangesFromParsedQuest(
   updateMote('wip/draft', parsed.draft);
   updateMote('storyline', parsed.storyline);
 
+  const parsedComments = parsed.comments.filter((c) => !!c.text);
+
   //#region COMMENTS
   // Add/Update COMMENTS
-  for (const comment of parsed.comments) {
+  for (const comment of parsedComments) {
     updateMote(`wip/comments/${comment.id}/element`, comment.text);
   }
   // Remove deleted comments
   for (const existingComment of bsArrayToArray(
     questMoteBase?.data.wip?.comments || {},
   )) {
-    if (!parsed.comments.find((c) => c.id === existingComment.id)) {
+    if (!parsedComments.find((c) => c.id === existingComment.id)) {
       updateMote(`wip/comments/${existingComment.id}`, null);
     }
   }
-  // Ensure ORDER fields put things in the right order
-  for (const [index, comment] of parsed.comments.entries()) {
-    let priorCommentId = parsed.comments[index - 1]?.id;
-    let nextCommentId = parsed.comments[index + 1]?.id;
-    let priorCommentOrder = priorCommentId
-      ? questMoteWorking?.data.wip?.comments?.[priorCommentId!]?.order
-      : undefined;
-    let nextCommentOrder = nextCommentId
-      ? questMoteWorking?.data.wip?.comments?.[nextCommentId!]?.order
-      : undefined;
-    let order = questMoteBase?.data.wip?.comments?.[comment.id!]?.order ?? 0;
-    const orderKey = `wip/comments/${comment.id}/order` as const;
-    if (priorCommentOrder === undefined) {
-      if (nextCommentOrder !== undefined && nextCommentOrder < order) {
-        updateMote(orderKey, order / 2);
-      } else {
-        updateMote(orderKey, order);
-      }
-    } else if (priorCommentOrder > order) {
-      if (
-        nextCommentOrder !== undefined &&
-        nextCommentOrder > priorCommentOrder
-      ) {
-        // Then we need to move this comment to the middle
-        updateMote(orderKey, (priorCommentOrder + nextCommentOrder) / 2);
-      }
+  // Get the BASE order of the comments (if any) and use those
+  // as the starting point for an up to date order.
+  const comments = parsedComments.map((c) => {
+    // Look up the base comment
+    let comment = questMoteBase?.data.wip?.comments?.[c.id!];
+    if (!comment) {
+      comment = questMoteWorking?.data.wip?.comments?.[c.id!];
+      // @ts-expect-error - order is a required field, but it'll be re-added
+      delete comment?.order;
     }
-  }
+    assert(comment, `Comment ${c.id} not found in base or working mote`);
+    return { ...comment, id: c.id! };
+  });
+  updateBsArrayOrder(comments);
+  comments.forEach((comment) => {
+    updateMote(`wip/comments/${comment.id}/order`, comment.order);
+  });
   //#endregion
 
   // TODO
@@ -529,110 +520,5 @@ async function updateChangesFromParsedQuest(
   // TODO
   parsed.quest_start_moments;
 
-  // await packed.writeChanges();
-}
-
-export function updateBsArrayOrder(sorted: BsArrayItem[]) {
-  // BsArrayItems have an 'order' field, which must be incrementing for
-  // their sorted order. We want to minimize changes to "order" values,
-  // so we need to do some fancy logic.
-  // Entries in the sorted array might not have their order set,
-  // and entries that are supposed to be adjacent might have things in
-  // the wrong order.
-
-  // The first step is to ensure that all * existing *
-  // order values are properly incrementing.
-
-  const sortedWithDefinedOrder = sorted.filter(
-    (s) => s.order !== undefined,
-  ) as Required<BsArrayItem>[];
-  if (sortedWithDefinedOrder.length > 1) {
-    for (const [index, item] of sortedWithDefinedOrder.entries()) {
-      const priorItem: Required<BsArrayItem> | undefined =
-        sortedWithDefinedOrder[index - 1];
-      const nextItem: Required<BsArrayItem> | undefined =
-        sortedWithDefinedOrder[index + 1];
-      const isFirstItem = index === 0;
-      const isLastItem = index === sortedWithDefinedOrder.length - 1;
-
-      if (isFirstItem) {
-        // Just make sure this value is less than the next one
-        if (item.order >= nextItem.order) {
-          item.order = nextItem.order - ORDER_INCREMENT;
-        }
-      } else if (isLastItem) {
-        // Just make sure this value is greater than the prior one
-        if (item.order <= priorItem.order) {
-          item.order = priorItem.order + ORDER_INCREMENT;
-        }
-      } else if (item.order > priorItem.order && item.order < nextItem.order) {
-        // Then we're already in between the values. Move along!
-        continue;
-      } else if (priorItem.order < nextItem.order) {
-        // Then the neighbors are in the right order, just go between them
-        item.order = (priorItem.order + nextItem.order) / 2;
-      } else if (item.order > priorItem.order) {
-        // Then the next item is a problem, but this one isn't!
-        continue;
-      } else {
-        item.order = priorItem.order + ORDER_INCREMENT;
-      }
-    }
-  } else if (sortedWithDefinedOrder.length === 0) {
-    // Then just iterate through and add values
-    for (const [index, item] of sorted.entries()) {
-      item.order = (index + 1) * ORDER_INCREMENT;
-    }
-    return sorted;
-  }
-
-  // Next we fill in the gaps between defined order values.
-  for (const [index, item] of sorted.entries()) {
-    if (item.order !== undefined) continue;
-    const isLastItem = index === sorted.length - 1;
-
-    /** Must be defined, except for the case where the 0th element has  */
-    let priorOrder = sorted[index - 1]?.order;
-
-    if (isLastItem) {
-      // Then we're at the end. Just add 5 to the last one.
-      item.order = (priorOrder || 0) + ORDER_INCREMENT;
-      continue;
-    }
-
-    let nextOrder: number | undefined;
-    let numMissing = 1;
-    for (let j = index + 1; j < sorted.length; j++) {
-      if (sorted[j].order !== undefined) {
-        nextOrder = sorted[j].order;
-        break;
-      }
-      numMissing++;
-    }
-    if (nextOrder === undefined) {
-      // To get to this case, we must have had at least 1 defined
-      // order. And it isn't later! Therefore priorOrder must be defined.
-      item.order = priorOrder! + ORDER_INCREMENT;
-    } else if (priorOrder === undefined) {
-      item.order = nextOrder - ORDER_INCREMENT * numMissing;
-    } else {
-      const increment = (nextOrder - priorOrder) / (numMissing + 1);
-      item.order = priorOrder + increment;
-    }
-  }
-
-  // Make sure the order values are INCREMENTING and EXIST
-  for (const [index, item] of sorted.entries()) {
-    assert(
-      item.order !== undefined,
-      `Order value should be defined at this point`,
-    );
-    if (index > 0) {
-      assert(
-        item.order > sorted[index - 1].order!,
-        `Order values should be incrementing`,
-      );
-    }
-  }
-  return sorted;
+  await packed.writeChanges();
 }

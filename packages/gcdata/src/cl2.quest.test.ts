@@ -2,12 +2,14 @@ import { pathy } from '@bscotch/pathy';
 import { ok } from 'node:assert';
 import { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
-import {
-  parseStringifiedQuest,
-  updateBsArrayOrder,
-} from './cl2.quest.parse.js';
+import { parseStringifiedQuest } from './cl2.quest.parse.js';
 import { stringifyQuest } from './cl2.quest.stringify.js';
-import { BsArrayItem, bsArrayToArray, isQuestMote } from './helpers.js';
+import {
+  BsArrayItem,
+  bsArrayToArray,
+  isQuestMote,
+  updateBsArrayOrder,
+} from './helpers.js';
 import { Crashlands2 } from './types.cl2.js';
 
 const sampleQuestMoteId = 'k04f0p';
