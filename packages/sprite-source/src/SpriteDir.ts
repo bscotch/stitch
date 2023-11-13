@@ -1,9 +1,9 @@
 import { Pathy, pathy } from '@bscotch/pathy';
 import { Yy } from '@bscotch/yy';
-import fsp from 'fs/promises';
 import type { SpritesInfo } from './SpriteCache.schemas.js';
 import { SpriteFrame } from './SpriteFrame.js';
 import { computeFilesChecksum, computeStringChecksum } from './checksum.js';
+import { readdirSafe } from './safeFs.js';
 import type { Log } from './types.js';
 import { SpriteSourceError, assert } from './utility.js';
 
@@ -157,7 +157,9 @@ export class SpriteDir {
         fromTo.map(([from, to]) =>
           from
             .copy(to)
-            .then(() => from.delete({ retryDelay: 100, maxRetries: 5 })),
+            .then(() =>
+              from.delete({ retryDelay: 50, maxRetries: 5, force: true }),
+            ),
         ),
       );
       this.logs.push(
@@ -174,9 +176,13 @@ export class SpriteDir {
       ]);
       await Promise.all(
         this.frames.map((frame) =>
-          frame
-            .saveTo(newSpriteDir.join(frame.path.basename))
-            .then(() => frame.path.delete({ retryDelay: 100, maxRetries: 5 })),
+          frame.saveTo(newSpriteDir.join(frame.path.basename)).then(() =>
+            frame.path.delete({
+              retryDelay: 50,
+              maxRetries: 5,
+              force: true,
+            }),
+          ),
         ),
       );
       this.logs.push(
@@ -191,8 +197,9 @@ export class SpriteDir {
     try {
       await this.path.delete({
         recursive: true,
-        retryDelay: 10,
+        retryDelay: 50,
         maxRetries: 5,
+        force: true,
       });
     } catch (err) {
       this.issues.push(
@@ -213,7 +220,7 @@ export class SpriteDir {
     logs: Log[],
     issues: Error[],
   ): Promise<SpriteDir | undefined> {
-    const files = (await fsp.readdir(path.absolute)).map((file) =>
+    const files = (await readdirSafe(path.absolute)).map((file) =>
       pathy(file, path.absolute),
     );
     const pngs = files.filter((file) => file.basename.match(/\.png$/i));

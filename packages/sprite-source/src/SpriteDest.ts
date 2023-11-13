@@ -319,11 +319,19 @@ export class SpriteDest extends SpriteCache {
     );
     // Update the config
     await this.stitchDir.ensureDirectory();
-    const config = await this.configFile.read({ fallback: { sources: [] } });
+    const config = await this.configFile.read({
+      fallback: { sources: [] },
+      maxRetries: 10,
+      retryDelayMillis: 50,
+    });
     if (overrides?.sources) {
       config.sources = overrides.sources;
     }
-    await this.configFile.write(config);
+    await this.configFile.write(config, {
+      // @ts-expect-error Type is missing in library
+      maxRetries: 10,
+      retryDelayMillis: 50,
+    });
     return config;
   }
 

@@ -86,7 +86,12 @@ export class SpriteSource extends SpriteCache {
       const dirs = await getDirs(dir.absolute);
       for (const dir of dirs) {
         if ((await dir.exists()) && (await dir.isEmptyDirectory())) {
-          await dir.delete({ recursive: true });
+          await dir.delete({
+            recursive: true,
+            force: true,
+            retryDelay: 50,
+            maxRetries: 5,
+          });
         }
       }
     }
@@ -108,14 +113,22 @@ export class SpriteSource extends SpriteCache {
     );
     // Update the config
     await this.stitchDir.ensureDirectory();
-    const config = await this.configFile.read({ fallback: {} });
+    const config = await this.configFile.read({
+      fallback: {},
+      maxRetries: 10,
+      retryDelayMillis: 50,
+    });
     if (overrides?.ignore !== undefined) {
       config.ignore = overrides.ignore;
     }
     if (overrides?.staging !== undefined) {
       config.staging = overrides.staging;
     }
-    await this.configFile.write(config);
+    await this.configFile.write(config, {
+      // @ts-expect-error Type is missing in library
+      maxRetries: 10,
+      retryDelayMillis: 50,
+    });
     return config;
   }
 

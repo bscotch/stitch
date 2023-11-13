@@ -62,6 +62,8 @@ export class SpriteCache {
     try {
       cache = await this.cacheFile.read({
         fallback: {},
+        maxRetries: 10,
+        retryDelayMillis: 50,
       });
     } catch (err) {
       cache = {
@@ -149,7 +151,11 @@ export class SpriteCache {
     }
 
     // Save and return the updated cache
-    await this.cacheFile.write(cache);
+    await this.cacheFile.write(cache, {
+      // @ts-expect-error Type is missing in library
+      maxRetries: 10,
+      retryDelayMillis: 50,
+    });
     return cache;
   }
 }

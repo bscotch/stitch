@@ -487,8 +487,8 @@ importers:
   packages/sprite-source:
     dependencies:
       '@bscotch/pathy':
-        specifier: 2.9.0
-        version: 2.9.0
+        specifier: 2.10.0
+        version: 2.10.0
       '@bscotch/pixel-checksum':
         specifier: workspace:*
         version: link:../pixel-checksum
@@ -496,18 +496,18 @@ importers:
         specifier: workspace:*
         version: link:../yy
       image-js:
-        specifier: 0.35.4
-        version: 0.35.4
+        specifier: 0.35.5
+        version: 0.35.5
       tslib:
         specifier: ^2.6.2
         version: 2.6.2
       zod:
-        specifier: ^3.22.2
-        version: 3.22.2
+        specifier: ^3.22.4
+        version: 3.22.4
     devDependencies:
       chai:
-        specifier: ^4.3.8
-        version: 4.3.8
+        specifier: ^4.3.10
+        version: 4.3.10
       typescript:
         specifier: 5.2.2
         version: 5.2.2
@@ -789,6 +789,18 @@ packages:
     dependencies:
       '@bscotch/emitter': 0.2.1
       '@bscotch/utility': 7.2.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /@bscotch/pathy@2.10.0:
+    resolution: {integrity: sha512-/wcNo5zuMpeAxZXGn8a2dHmMOz1fKGY31OXAo/SeJi4afBGH/V6ISoW53f95B1CbFUd89UX7TLLXn5McX3yJcA==}
+    dependencies:
+      '@bscotch/utility': 7.2.0
+      fs-extra: 11.1.1
+      json5: 2.2.3
+      tslib: 2.6.2
+      yaml: 2.3.2
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -2125,7 +2137,7 @@ packages:
     dependencies:
       '@vitest/spy': 0.34.4
       '@vitest/utils': 0.34.4
-      chai: 4.3.8
+      chai: 4.3.10
     dev: true
 
   /@vitest/runner@0.34.4:
@@ -2546,6 +2558,19 @@ packages:
       check-error: 1.0.2
     dev: true
 
+  /chai@4.3.10:
+    resolution: {integrity: sha512-0UXG04VuVbruMUYbJ6JctvH0YnC/4q3/AkT18q4NaITo91CUm0liMS9VqzT9vZhVQ/1eqPanMWjBM+Juhfb/9g==}
+    engines: {node: '>=4'}
+    dependencies:
+      assertion-error: 1.1.0
+      check-error: 1.0.3
+      deep-eql: 4.1.3
+      get-func-name: 2.0.2
+      loupe: 2.3.6
+      pathval: 1.1.1
+      type-detect: 4.0.8
+    dev: true
+
   /chai@4.3.8:
     resolution: {integrity: sha512-vX4YvVVtxlfSZ2VecZgFUTU5qPCYsobVI2O9FmwEXBhDigYGQA6jRXCycIs1yJnnWbZ6/+a2zNIF5DfVCcJBFQ==}
     engines: {node: '>=4'}
@@ -2605,6 +2630,12 @@ packages:
 
   /check-error@1.0.2:
     resolution: {integrity: sha512-BrgHpW9NURQgzoNyjfq0Wu6VFO6D7IZEmJNdtgNqpzGG8RuNFHt2jQxWlAs4HMe119chBnv+34syEZtc6IhLtA==}
+    dev: true
+
+  /check-error@1.0.3:
+    resolution: {integrity: sha512-iKEoDYaRmd1mxM90a2OEfWhjsjPpYPuQ+lMYsoxB126+t8fw7ySEO48nmDg5COTjxDI65/Y2OWpeEHk3ZOe8zg==}
+    dependencies:
+      get-func-name: 2.0.2
     dev: true
 
   /cheerio-select@2.1.0:
@@ -3714,6 +3745,10 @@ packages:
     resolution: {integrity: sha512-Hm0ixYtaSZ/V7C8FJrtZIuBBI+iSgL+1Aq82zSu8VQNB4S3Gk8e7Qs3VwBDJAhmRZcFqkl3tQu36g/Foh5I5ig==}
     dev: true
 
+  /get-func-name@2.0.2:
+    resolution: {integrity: sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==}
+    dev: true
+
   /get-intrinsic@1.2.1:
     resolution: {integrity: sha512-2DcsyfABl+gVHEfCOaTrWgyt+tb6MSEGmKq+kI5HwLbIYgjgmMcV8KQ41uaKz1xxUcn9tJtgFbQUEVcEbd0FYw==}
     dependencies:
@@ -3949,6 +3984,37 @@ packages:
 
   /image-js@0.35.4:
     resolution: {integrity: sha512-DI0O6PPrBv0nY/+ON/VluS3rkqyOiOAUGfmsX5OdKN5a0yLaX4iFPQvWKrqSLBZAs6QJMemgJcl4D+KgwBxPiw==}
+    engines: {node: '>= 12.0.0'}
+    dependencies:
+      '@swiftcarrot/color-fns': 3.2.0
+      blob-util: 2.0.2
+      canny-edge-detector: 1.0.0
+      fast-bmp: 2.0.1
+      fast-jpeg: 1.0.1
+      fast-list: 1.0.3
+      fast-png: 6.2.0
+      has-own: 1.0.1
+      image-type: 4.1.0
+      is-array-type: 1.0.0
+      is-integer: 1.0.7
+      jpeg-js: 0.4.4
+      js-priority-queue: 0.1.5
+      js-quantities: 1.8.0
+      median-quickselect: 1.0.1
+      ml-convolution: 0.2.0
+      ml-disjoint-set: 1.0.0
+      ml-matrix: 6.10.4
+      ml-matrix-convolution: 0.4.3
+      ml-regression: 5.0.0
+      monotone-chain-convex-hull: 1.1.0
+      new-array: 1.0.0
+      robust-point-in-polygon: 1.0.3
+      tiff: 5.0.3
+      web-worker-manager: 0.2.0
+    dev: false
+
+  /image-js@0.35.5:
+    resolution: {integrity: sha512-JCtn+ggFG6qkVaKZkJDnMMLO6Xg9/WVDK+BIWcXHwT+XEdu8dzp/nlYzB5opxBkIoitWB2GGYRpF69WQmucJhQ==}
     engines: {node: '>= 12.0.0'}
     dependencies:
       '@swiftcarrot/color-fns': 3.2.0
@@ -4380,7 +4446,7 @@ packages:
   /loupe@2.3.6:
     resolution: {integrity: sha512-RaPMZKiMy8/JruncMU5Bt6na1eftNoo++R4Y+N2FrxkDVTrGvcyzFTsaGif4QTeKESheMGegbhw6iUAq+5A8zA==}
     dependencies:
-      get-func-name: 2.0.0
+      get-func-name: 2.0.2
     dev: true
 
   /lower-case@2.0.2:
@@ -6648,7 +6714,7 @@ packages:
       acorn: 8.10.0
       acorn-walk: 8.2.0
       cac: 6.7.14
-      chai: 4.3.8
+      chai: 4.3.10
       debug: 4.3.4(supports-color@8.1.1)
       local-pkg: 0.4.3
       magic-string: 0.30.3

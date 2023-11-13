@@ -26,15 +26,15 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/pathy": "2.9.0",
+    "@bscotch/pathy": "2.10.0",
     "@bscotch/pixel-checksum": "workspace:*",
     "@bscotch/yy": "workspace:*",
-    "image-js": "0.35.4",
+    "image-js": "0.35.5",
     "tslib": "^2.6.2",
-    "zod": "^3.22.2"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "chai": "^4.3.8",
+    "chai": "^4.3.10",
     "typescript": "5.2.2"
   }
 }

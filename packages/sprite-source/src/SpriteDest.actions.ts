@@ -1,7 +1,7 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
 import { Yy, YySprite, yySpriteSchema, type YypResourceId } from '@bscotch/yy';
-import fsp from 'fs/promises';
 import path from 'path';
+import { readdirSafeWithFileTypes } from './safeFs.js';
 import type { SpriteDestAction } from './SpriteDest.schemas.js';
 import { getPngSize } from './utility.js';
 
@@ -44,8 +44,8 @@ export async function applySpriteAction({
     // Get the list of children in the source and destination
     trace.push(`Reading ${targetFolder.absolute} and ${action.source}`);
     const [initialDestFileNames, sourceFileNames] = await Promise.all([
-      fsp.readdir(targetFolder.absolute, { withFileTypes: true }),
-      fsp.readdir(action.source, { withFileTypes: true }),
+      readdirSafeWithFileTypes(targetFolder),
+      readdirSafeWithFileTypes(action.source),
     ]);
     const initialDestFiles = initialDestFileNames
       .filter((f) => f.isFile())
