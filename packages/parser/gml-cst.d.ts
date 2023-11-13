@@ -607,7 +607,7 @@ export interface LocalVarDeclarationCstNode extends CstNode {
 
 export type LocalVarDeclarationCstChildren = {
   Identifier: IToken[];
-  Assign?: IToken[];
+  AssignmentOperator?: IToken[];
   assignmentRightHandSide?: AssignmentRightHandSideCstNode[];
 };
 
@@ -629,7 +629,7 @@ export interface StaticVarDeclarationsCstNode extends CstNode {
 export type StaticVarDeclarationsCstChildren = {
   Static: IToken[];
   Identifier: IToken[];
-  Assign: IToken[];
+  AssignmentOperator: IToken[];
   assignmentRightHandSide: AssignmentRightHandSideCstNode[];
 };
 
@@ -650,7 +650,7 @@ export interface VariableAssignmentCstNode extends CstNode {
 
 export type VariableAssignmentCstChildren = {
   Identifier: IToken[];
-  Assign: IToken[];
+  AssignmentOperator: IToken[];
   assignmentRightHandSide: AssignmentRightHandSideCstNode[];
 };
 

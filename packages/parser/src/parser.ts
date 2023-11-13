@@ -486,7 +486,7 @@ export class GmlParser extends CstParser {
   readonly localVarDeclaration = this.RULE('localVarDeclaration', () => {
     this.CONSUME(t.Identifier);
     this.OPTION(() => {
-      this.CONSUME(t.Assign);
+      this.CONSUME(c.AssignmentOperator);
       this.SUBRULE(this.assignmentRightHandSide);
     });
   });
@@ -502,7 +502,7 @@ export class GmlParser extends CstParser {
   readonly staticVarDeclaration = this.RULE('staticVarDeclarations', () => {
     this.CONSUME(t.Static);
     this.CONSUME(t.Identifier);
-    this.CONSUME(t.Assign);
+    this.CONSUME(c.AssignmentOperator);
     this.SUBRULE(this.assignmentRightHandSide);
   });
 
@@ -517,7 +517,7 @@ export class GmlParser extends CstParser {
 
   readonly variableAssignment = this.RULE('variableAssignment', () => {
     this.CONSUME(t.Identifier);
-    this.CONSUME(t.Assign);
+    this.CONSUME(c.AssignmentOperator);
     this.SUBRULE(this.assignmentRightHandSide);
   });
 

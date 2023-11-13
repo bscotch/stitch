@@ -67,3 +67,6 @@ globalvar ITEMS; ITEMS = {};
 
 /// @type {X|Array<Struct.GlobalConstructor>|String}
 var a_thing;
+
+var decremented = 100;
+decremented -= a_thing;

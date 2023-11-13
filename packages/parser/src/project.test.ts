@@ -80,7 +80,7 @@ describe('Project', function () {
     await Project.fallbackGmlSpecPath.exists({ assert: true });
   });
 
-  it('can analyze a representative project', async function () {
+  it.only('can analyze a representative project', async function () {
     const projectDir = 'samples/project';
     const project = await Project.initialize(projectDir);
     ok(project);
@@ -155,6 +155,12 @@ describe('Project', function () {
     ok(grandChildRef.item.def);
 
     //#endregion OBJECT INHERITANCE
+
+    // Check fancy assignmnent operators
+    const decrementer = script.gmlFile.getReferenceAt(72, 3);
+    ok(decrementer);
+    const decrementRhs = script.gmlFile.getReferenceAt(72, 19);
+    ok(decrementRhs);
 
     //#region GLOBALVARS
     const globalVarName = 'GLOBAL_SCRIPT_VAR';
