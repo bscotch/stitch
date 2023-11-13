@@ -17,6 +17,7 @@ import {
   type SpriteDestSource,
 } from './SpriteDest.schemas.js';
 import { SpriteSource } from './SpriteSource.js';
+import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
 import { Reporter } from './types.js';
 import { SpriteSourceError, assert, rethrow, sequential } from './utility.js';
 
@@ -321,16 +322,15 @@ export class SpriteDest extends SpriteCache {
     await this.stitchDir.ensureDirectory();
     const config = await this.configFile.read({
       fallback: { sources: [] },
-      maxRetries: 10,
-      retryDelayMillis: 50,
+      maxRetries: MAX_FIO_RETRIES,
+      retryDelayMillis: FIO_RETRY_DELAY,
     });
     if (overrides?.sources) {
       config.sources = overrides.sources;
     }
     await this.configFile.write(config, {
-      // @ts-expect-error Type is missing in library
-      maxRetries: 10,
-      retryDelayMillis: 50,
+      maxRetries: MAX_FIO_RETRIES,
+      retryDelayMillis: FIO_RETRY_DELAY,
     });
     return config;
   }

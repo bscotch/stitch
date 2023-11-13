@@ -1,6 +1,7 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
 import { Yy, YySprite, yySpriteSchema, type YypResourceId } from '@bscotch/yy';
 import path from 'path';
+import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
 import { readdirSafeWithFileTypes } from './safeFs.js';
 import type { SpriteDestAction } from './SpriteDest.schemas.js';
 import { getPngSize } from './utility.js';
@@ -34,8 +35,8 @@ export async function applySpriteAction({
       await targetFolder.delete({
         recursive: true,
         force: true,
-        maxRetries: 5,
-        retryDelay: 50,
+        maxRetries: MAX_FIO_RETRIES,
+        retryDelay: FIO_RETRY_DELAY,
       });
     }
     trace.push(`Ensuring ${targetFolder}`);
@@ -121,8 +122,8 @@ export async function applySpriteAction({
             file
               .delete({
                 force: true,
-                maxRetries: 5,
-                retryDelay: 50,
+                maxRetries: MAX_FIO_RETRIES,
+                retryDelay: FIO_RETRY_DELAY,
               })
               .catch((reason) => {
                 trace.push(reason);
@@ -166,8 +167,8 @@ export async function applySpriteAction({
             file
               .delete({
                 force: true,
-                maxRetries: 5,
-                retryDelay: 50,
+                maxRetries: MAX_FIO_RETRIES,
+                retryDelay: FIO_RETRY_DELAY,
               })
               .catch((reason) => {
                 trace.push(reason);

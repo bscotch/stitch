@@ -3,6 +3,7 @@ import { Yy } from '@bscotch/yy';
 import type { SpritesInfo } from './SpriteCache.schemas.js';
 import { SpriteFrame } from './SpriteFrame.js';
 import { computeFilesChecksum, computeStringChecksum } from './checksum.js';
+import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
 import { readdirSafe } from './safeFs.js';
 import type { Log } from './types.js';
 import { SpriteSourceError, assert } from './utility.js';
@@ -155,11 +156,13 @@ export class SpriteDir {
       ];
       await Promise.all(
         fromTo.map(([from, to]) =>
-          from
-            .copy(to)
-            .then(() =>
-              from.delete({ retryDelay: 50, maxRetries: 5, force: true }),
-            ),
+          from.copy(to).then(() =>
+            from.delete({
+              retryDelay: FIO_RETRY_DELAY,
+              maxRetries: MAX_FIO_RETRIES,
+              force: true,
+            }),
+          ),
         ),
       );
       this.logs.push(
@@ -178,8 +181,8 @@ export class SpriteDir {
         this.frames.map((frame) =>
           frame.saveTo(newSpriteDir.join(frame.path.basename)).then(() =>
             frame.path.delete({
-              retryDelay: 50,
-              maxRetries: 5,
+              retryDelay: FIO_RETRY_DELAY,
+              maxRetries: MAX_FIO_RETRIES,
               force: true,
             }),
           ),
@@ -197,8 +200,8 @@ export class SpriteDir {
     try {
       await this.path.delete({
         recursive: true,
-        retryDelay: 50,
-        maxRetries: 5,
+        retryDelay: FIO_RETRY_DELAY,
+        maxRetries: MAX_FIO_RETRIES,
         force: true,
       });
     } catch (err) {

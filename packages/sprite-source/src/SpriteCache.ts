@@ -3,6 +3,7 @@ import { computePngChecksums } from '@bscotch/pixel-checksum';
 import { SpritesInfo, spritesInfoSchema } from './SpriteCache.schemas.js';
 import { SpriteDir } from './SpriteDir.js';
 import { computeStringChecksum } from './checksum.js';
+import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
 import type { Log } from './types.js';
 import { SpriteSourceError, getDirs } from './utility.js';
 
@@ -62,8 +63,8 @@ export class SpriteCache {
     try {
       cache = await this.cacheFile.read({
         fallback: {},
-        maxRetries: 10,
-        retryDelayMillis: 50,
+        maxRetries: MAX_FIO_RETRIES,
+        retryDelayMillis: FIO_RETRY_DELAY,
       });
     } catch (err) {
       cache = {
@@ -152,9 +153,8 @@ export class SpriteCache {
 
     // Save and return the updated cache
     await this.cacheFile.write(cache, {
-      // @ts-expect-error Type is missing in library
-      maxRetries: 10,
-      retryDelayMillis: 50,
+      maxRetries: MAX_FIO_RETRIES,
+      retryDelayMillis: FIO_RETRY_DELAY,
     });
     return cache;
   }

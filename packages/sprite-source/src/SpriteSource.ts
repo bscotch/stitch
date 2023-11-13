@@ -6,6 +6,7 @@ import {
   type SpriteSourceConfig,
   type SpriteSourceStage,
 } from './SpriteSource.schemas.js';
+import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
 import {
   SpriteSourceError,
   assert,
@@ -89,8 +90,8 @@ export class SpriteSource extends SpriteCache {
           await dir.delete({
             recursive: true,
             force: true,
-            retryDelay: 50,
-            maxRetries: 5,
+            retryDelay: FIO_RETRY_DELAY,
+            maxRetries: MAX_FIO_RETRIES,
           });
         }
       }
@@ -115,8 +116,8 @@ export class SpriteSource extends SpriteCache {
     await this.stitchDir.ensureDirectory();
     const config = await this.configFile.read({
       fallback: {},
-      maxRetries: 10,
-      retryDelayMillis: 50,
+      maxRetries: MAX_FIO_RETRIES,
+      retryDelayMillis: FIO_RETRY_DELAY,
     });
     if (overrides?.ignore !== undefined) {
       config.ignore = overrides.ignore;
@@ -125,9 +126,8 @@ export class SpriteSource extends SpriteCache {
       config.staging = overrides.staging;
     }
     await this.configFile.write(config, {
-      // @ts-expect-error Type is missing in library
-      maxRetries: 10,
-      retryDelayMillis: 50,
+      maxRetries: MAX_FIO_RETRIES,
+      retryDelayMillis: FIO_RETRY_DELAY,
     });
     return config;
   }

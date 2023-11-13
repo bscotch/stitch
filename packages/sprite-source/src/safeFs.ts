@@ -1,10 +1,8 @@
 import { Pathy } from '@bscotch/pathy';
 import type { Dirent } from 'node:fs';
 import fsp from 'node:fs/promises';
+import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
 import { SpriteSourceError } from './utility.js';
-
-const MAX_RETRIES = 10;
-const RETRY_DELAY = 50;
 
 /**
  * A wrapper around `fs.readdir` that retries a few times and
@@ -17,7 +15,7 @@ async function _readdirSafe<T extends boolean>(
   let retries = 0;
   let files: any[] = [];
   let error: SpriteSourceError | null = null;
-  while (retries < MAX_RETRIES) {
+  while (retries < MAX_FIO_RETRIES) {
     error = null;
     try {
       // @ts-expect-error withFileTypes can only be `true` in the types
@@ -26,7 +24,7 @@ async function _readdirSafe<T extends boolean>(
     } catch (err) {
       error = new SpriteSourceError(`Failed to read directory ${dir}`, err);
       retries++;
-      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+      await new Promise((resolve) => setTimeout(resolve, FIO_RETRY_DELAY));
       continue;
     }
   }
