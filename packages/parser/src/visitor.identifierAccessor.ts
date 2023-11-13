@@ -162,13 +162,6 @@ function processNextAccessor(
   accessor: AccessorNode,
   nextAccessor?: AccessorNode,
 ): LastAccessed {
-  // Many suffix cases include an expression we need to evaluate.
-  // For example, `hello[expression]`
-  const accessorExpressionType =
-    'expression' in accessor.children
-      ? visitor.visit(accessor.children.expression, lastAccessed.ctx)
-      : visitor.ANY;
-
   let nextAccessed: LastAccessed;
 
   switch (accessor.name) {
@@ -409,6 +402,8 @@ function processDotAccessor(
         `Type does not allow dot accessors.`,
       );
     }
+    lastAccessed.rhs &&
+      visitor.assignmentRightHandSide(lastAccessed.rhs, lastAccessed.ctx);
     return nextAccessed;
   }
 

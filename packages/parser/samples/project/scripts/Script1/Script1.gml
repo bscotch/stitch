@@ -70,3 +70,7 @@ var a_thing;
 
 var decremented = 100;
 decremented -= a_thing;
+
+// Unknown stuff
+var something;
+something.field = decremented;

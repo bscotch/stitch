@@ -80,7 +80,7 @@ describe('Project', function () {
     await Project.fallbackGmlSpecPath.exists({ assert: true });
   });
 
-  it.only('can analyze a representative project', async function () {
+  it('can analyze a representative project', async function () {
     const projectDir = 'samples/project';
     const project = await Project.initialize(projectDir);
     ok(project);
@@ -161,6 +161,12 @@ describe('Project', function () {
     ok(decrementer);
     const decrementRhs = script.gmlFile.getReferenceAt(72, 19);
     ok(decrementRhs);
+
+    // Check assignment to an unknown variable
+    const unknownVar = script.gmlFile.getReferenceAt(76, 13);
+    ok(!unknownVar);
+    const unknownVarRhs = script.gmlFile.getReferenceAt(76, 24);
+    ok(unknownVarRhs);
 
     //#region GLOBALVARS
     const globalVarName = 'GLOBAL_SCRIPT_VAR';
