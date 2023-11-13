@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 0.4.9 (2023-11-13)
+
+### Fixes
+
+- Increased retry delay and number of retries for file i/o, to try to resolve Dropbox-induced errors
+
 ## 0.4.8 (2023-11-13)
 
 ### Fixes
