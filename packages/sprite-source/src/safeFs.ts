@@ -22,6 +22,7 @@ async function _readdirSafe<T extends boolean>(
     try {
       // @ts-expect-error withFileTypes can only be `true` in the types
       files = await fsp.readdir(dir.toString(), { withFileTypes });
+      return files;
     } catch (err) {
       error = new SpriteSourceError(`Failed to read directory ${dir}`, err);
       retries++;
@@ -29,8 +30,7 @@ async function _readdirSafe<T extends boolean>(
       continue;
     }
   }
-  if (error) throw error;
-  return files;
+  throw error;
 }
 
 export async function readdirSafe(dir: string | Pathy): Promise<string[]> {
