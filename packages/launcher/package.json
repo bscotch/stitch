@@ -50,20 +50,20 @@
   "dependencies": {
     "@bscotch/gamemaker-releases": "workspace:*",
     "@bscotch/logger": "0.2.2",
-    "@bscotch/pathy": "^2.9.0",
+    "@bscotch/pathy": "^2.10.0",
     "@bscotch/utility": "^7.2.0",
-    "axios": "^1.5.0",
+    "axios": "^1.6.1",
     "tslib": "^2.6.2",
-    "zod": "^3.22.2"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.6",
-    "@types/inquirer": "^9.0.3",
-    "@types/mocha": "^10.0.1",
-    "chai": "^4.3.8",
-    "inquirer": "9.2.11",
+    "@types/chai": "^4.3.10",
+    "@types/inquirer": "^9.0.7",
+    "@types/mocha": "^10.0.4",
+    "chai": "^4.3.10",
+    "inquirer": "9.2.12",
     "mocha": "^10.2.0",
-    "rimraf": "^5.0.1",
+    "rimraf": "^5.0.5",
     "typescript": "5.2.2"
   },
   "publishConfig": {

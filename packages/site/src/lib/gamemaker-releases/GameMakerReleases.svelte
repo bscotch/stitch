@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { GameMakerReleaseWithNotes } from '@bscotch/gamemaker-releases';
 	import { faDownload } from '@fortawesome/free-solid-svg-icons';
+	import { onMount } from 'svelte';
 	import Fa from 'svelte-fa';
 	import { loadProperty, saveProperty, toDateIso, toDateLocal } from '../util.js';
 	import FilteredReleases from './FilteredReleases.svelte';
@@ -18,12 +19,12 @@
 	export let releases: GameMakerReleaseWithNotes[];
 
 	// We only want to show the download button for Windows clients.
-	const onWindows = navigator.userAgent.includes('Windows');
+	let onWindows = true;
 
 	let filteredReleases: GameMakerReleaseWithNotes[] = [];
 
 	function loadChannelPreference(): Channel[] {
-		let stored: Channel[] = loadProperty('feed-channels');
+		let stored: Channel[] = loadProperty('feed-channels', ['lts', 'stable', 'beta']);
 		stored = Array.isArray(stored) ? stored : [];
 		stored = stored.filter((channel) => channels.includes(channel));
 		if (!stored.length) {
@@ -31,6 +32,10 @@
 		}
 		return stored;
 	}
+
+	onMount(() => {
+		onWindows = navigator.userAgent.includes('Windows');
+	});
 
 	$: {
 		saveProperty('feed-channels', showChannels);

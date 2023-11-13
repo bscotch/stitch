@@ -114,8 +114,6 @@ export class GameMakerIssue extends GameMakerIssueStatic {
       config: options?.compilerConfig,
       excludeLogFileTimestamps: true,
       logDir: this.attachmentsDirectory.absolute,
-      // name: paramCase(issueName),
-      // outDir: issueDir.absolute,
       yyc: options?.useYyc,
     });
     // Copy the latest ui.log

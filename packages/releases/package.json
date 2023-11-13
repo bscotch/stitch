@@ -45,21 +45,21 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/pathy": "^2.9.0",
+    "@bscotch/pathy": "^2.10.0",
     "@bscotch/utility": "^7.2.0",
     "entities": "^4.5.0",
-    "fast-xml-parser": "^4.3.0",
+    "fast-xml-parser": "^4.3.2",
     "node-fetch": "^3.3.2",
     "tslib": "^2.6.2",
-    "zod": "^3.22.2"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.6",
-    "@types/mocha": "^10.0.1",
+    "@types/chai": "^4.3.10",
+    "@types/mocha": "^10.0.4",
     "@types/rimraf": "^3",
-    "chai": "^4.3.8",
+    "chai": "^4.3.10",
     "mocha": "^10.2.0",
-    "rimraf": "^5.0.1",
+    "rimraf": "^5.0.5",
     "typescript": "5.2.2"
   },
   "publishConfig": {

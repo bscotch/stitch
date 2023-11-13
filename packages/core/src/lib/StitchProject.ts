@@ -2,7 +2,7 @@ import { pathy, Pathy } from '@bscotch/pathy';
 import { explode, oneline, RequiredBy } from '@bscotch/utility';
 import { Yyp, yypAudioGroupSchema, yypTextureGroupSchema } from '@bscotch/yy';
 import archiver from 'archiver';
-import { paramCase } from 'change-case';
+import { kebabCase } from 'change-case';
 import fse from 'fs-extra';
 import { basename, join, parse as parsePath } from 'path';
 import { Gms2ProjectComponents } from '../types/Gms2ProjectComponents.js';
@@ -745,7 +745,7 @@ export class StitchProject extends StitchProjectStatic {
     const templateFolder = new Pathy(template.yypDirAbsolute);
     const where = (
       options.where ? new Pathy(options.where) : templateFolder.up()
-    ).join(paramCase(options.name || template.name));
+    ).join(kebabCase(options.name || template.name));
     await where.ensureDirectory();
     await where.isEmptyDirectory({ assert: true });
 

@@ -40,22 +40,22 @@
   },
   "dependencies": {
     "@bscotch/debounce-watch": "^1.1.0",
-    "@bscotch/pathy": "^2.9.0",
+    "@bscotch/pathy": "^2.10.0",
     "@bscotch/utility": "^7.2.0",
-    "commander": "11.0.0",
+    "commander": "11.1.0",
     "fs-extra": "11.1.1",
-    "image-js": "0.35.4",
+    "image-js": "0.35.5",
     "image-size": "1.0.2",
     "tslib": "^2.6.2",
-    "yaml": "2.3.2"
+    "yaml": "2.3.4"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.6",
-    "@types/fs-extra": "^11.0.2",
-    "@types/mocha": "^10.0.1",
-    "chai": "^4.3.8",
+    "@types/chai": "^4.3.10",
+    "@types/fs-extra": "^11.0.4",
+    "@types/mocha": "^10.0.4",
+    "chai": "^4.3.10",
     "mocha": "^10.2.0",
-    "rimraf": "^5.0.1",
+    "rimraf": "^5.0.5",
     "typescript": "5.2.2"
   },
   "engines": {

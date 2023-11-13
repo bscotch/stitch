@@ -29,10 +29,15 @@ export function toDateLocal(date: string | Date): string {
 }
 
 export function saveProperty(name: string, value: any) {
-	localStorage.setItem(name, JSON.stringify(value));
+	try{localStorage.setItem(name, JSON.stringify(value));}catch{}
 }
 
-export function loadProperty(name: string) {
-	const value = localStorage.getItem(name);
-	return value ? JSON.parse(value) : null;
+export function loadProperty(name: string, defaultVal: any) {
+	try {
+		const value = localStorage.getItem(name);
+		return value ? JSON.parse(value) : defaultVal;
+	}
+	catch {
+		return defaultVal;
+	}
 }

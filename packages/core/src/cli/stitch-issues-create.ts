@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Pathy } from '@bscotch/pathy';
-import { paramCase } from 'change-case';
+import { kebabCase } from 'change-case';
 import { default as inquirer } from 'inquirer';
 import Gms2Project from '../index.js';
 import {
@@ -118,7 +118,7 @@ const answers = await inquirer.prompt<
         return 'You must enter a name!';
       }
       return (await GameMakerIssue.issuesDirectory
-        .join(paramCase(name))
+        .join(kebabCase(name))
         .isEmptyDirectory({ allowNotFound: true }))
         ? true
         : 'An issue with that name already exists';

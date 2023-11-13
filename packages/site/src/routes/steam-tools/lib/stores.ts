@@ -51,8 +51,14 @@ function createUrlStore() {
 	const { subscribe, update } = writable<ConfigStore>({});
 
 	function overrideFromCurrentUrl() {
-		const url = new URL(window.location.href);
-		const hash = url.hash.slice(1);
+		let hash: string | undefined;
+		try {
+			const url = new URL(window.location.href);
+			hash = url.hash.slice(1);
+		}
+		catch(err) {
+			console.error(err);
+		}
 		if (hash) {
 			const json = JSON.parse(atob(hash));
 			update((store) => {
@@ -139,10 +145,15 @@ export const links = derived(
 );
 
 function updateUrl(store: ConfigStore) {
-	const url = new URL(window.location.href);
-	const hash = btoa(JSON.stringify(store));
-	url.hash = hash;
-	window.history.replaceState({}, '', url.href);
+	try {
+		const url = new URL(window.location.href);
+		const hash = btoa(JSON.stringify(store));
+		url.hash = hash;
+		window.history.replaceState({}, '', url.href);
+	}
+	catch (err) {
+		console.error(err);
+	}
 }
 
 function cleanStore(values: ConfigStore): Required<ConfigStore> {
