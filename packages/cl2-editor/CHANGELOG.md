@@ -1,5 +1,12 @@
 # Crashlands 2 Editor Changelog
 
+## 0.9.0 (2023-11-08)
+
+### Features
+
+- Implemented file Quest Editor saving
+- Added a parse delay to prevent weird stuff from happening on auto-insertion of tags etc
+
 ## 0.8.1 (2023-11-01)
 
 ### Fixes

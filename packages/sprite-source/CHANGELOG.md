@@ -1,5 +1,12 @@
 # @bscotch/sprite-source Changelog
 
+## 0.4.8 (2023-11-13)
+
+### Fixes
+
+- Resolved infinite loop in file i/o
+- Added more redundancy to file i/o
+
 ## 0.4.7 (2023-11-02)
 
 ### Fixes

@@ -1,5 +1,12 @@
 # @bscotch/gml-parser Changelog
 
+## 0.61.2 (2023-11-13)
+
+### Fixes
+
+- Resolved issue where the RHS of an assignment was not processed if the LHS was a dot-accessed variable of an Any-type variable.
+- Resolved issue where compound assignment operators cause the RHS to lose references.
+
 ## 0.61.1 (2023-11-02)
 
 ### Fixes

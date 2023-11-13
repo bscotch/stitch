@@ -1,5 +1,12 @@
 # @bscotch/gcdata Changelog
 
+## 0.7.0 (2023-11-08)
+
+### Features
+
+- Changes via the Quest Editor can now sync properly to the GameChanger changes file
+- Implemented BsArray ordering
+
 ## 0.6.1 (2023-11-01)
 
 ### Fixes
