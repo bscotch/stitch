@@ -11,6 +11,7 @@ import {
   changeSchema,
   changesSchema,
   isBschemaBoolean,
+  isBschemaConst,
   isBschemaNumeric,
   isBschemaObject,
   isBschemaString,
@@ -123,7 +124,14 @@ export class GameChanger {
     );
 
     // Do some basic schema validation to avoid really dumb errors
-    if (typeof value === 'string') {
+    if (isBschemaConst(subschema)) {
+      assert(
+        value === null || value === subschema.bConst,
+        `Expected constant value ${JSON.stringify(
+          subschema.bConst,
+        )}, got ${JSON.stringify(value)}`,
+      );
+    } else if (typeof value === 'string') {
       assert(
         isBschemaString(subschema),
         `Invalid value '${JSON.stringify(

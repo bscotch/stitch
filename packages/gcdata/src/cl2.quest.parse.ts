@@ -12,7 +12,11 @@ import {
   linePatterns,
   parseIfMatch,
 } from './cl2.quest.types.js';
-import { getMomentStyleNames, getMoteLists } from './cl2.quest.utils.js';
+import {
+  getMomentStyleNames,
+  getMoteLists,
+  isEmoteMoment,
+} from './cl2.quest.utils.js';
 import {
   bsArrayToArray,
   changedPosition,
@@ -246,6 +250,7 @@ export function parseStringifiedQuest(
           };
         }
         const moment: ParsedDialog = {
+          kind: 'dialogue',
           id: parsedLine.arrayTag?.value?.trim(),
           speaker: lastSpeaker,
           emoji,
@@ -297,6 +302,7 @@ export function parseStringifiedQuest(
           // Then this is a declaration line for an Emote moment
           // Create the new emoji group
           lastEmojiGroup = {
+            kind: 'emote',
             id: parsedLine.arrayTag?.value?.trim(),
             emotes: [],
           };
@@ -369,6 +375,7 @@ export function parseStringifiedQuest(
           // Add to data if this momentStyle actually exists
           if (momentStyles.includes(parsedLine.style?.value as any)) {
             result.parsed[lastMomentGroup].push({
+              kind: 'other',
               id: parsedLine.arrayTag?.value?.trim(),
               style: parsedLine.style?.value as any,
             });
@@ -581,13 +588,127 @@ export async function updateChangesFromParsedQuest(
       );
     });
   });
-
   //#endregion
 
-  // TODO
-  parsed.quest_end_moments;
-  // TODO
-  parsed.quest_start_moments;
+  //#region QUEST MOMENTS
+  for (const momentGroup of [
+    'quest_start_moments',
+    'quest_end_moments',
+  ] as const) {
+    const parsedMoments = parsed[momentGroup];
+    // Add/Update moments
+    for (const moment of parsedMoments) {
+      if (moment.kind === 'other') {
+        // Note: we're only tracking style for moment types that
+        // are not fully implemented.
+        updateMote(
+          `data/${momentGroup}/${moment.id}/element/style`,
+          moment.style,
+        );
+      } else if (moment.kind === 'dialogue') {
+        updateMote(
+          `data/${momentGroup}/${moment.id}/element/speech/speaker`,
+          moment.speaker,
+        );
+        updateMote(
+          `data/${momentGroup}/${moment.id}/element/speech/emotion`,
+          moment.emoji,
+        );
+        updateMote(
+          `data/${momentGroup}/${moment.id}/element/speech/text/text`,
+          moment.text,
+        );
+      } else if (moment.kind === 'emote') {
+        for (const emote of moment.emotes) {
+          updateMote(
+            `data/${momentGroup}/${moment.id}/element/emotes/${emote.id}/element/key`,
+            emote.speaker,
+          );
+          updateMote(
+            `data/${momentGroup}/${moment.id}/element/emotes/${emote.id}/element/value`,
+            emote.emoji,
+          );
+        }
+      }
+    }
+    // Delete moments that were removed
+    for (const existingMoment of bsArrayToArray(
+      questMoteBase?.data[momentGroup] || {},
+    )) {
+      const parsedMoment = parsedMoments.find(
+        (m) => m.id === existingMoment.id,
+      );
+      const existingElement = existingMoment.element;
+      if (!parsedMoment) {
+        updateMote(`data/${momentGroup}/${existingMoment.id}`, null);
+      } else if (existingElement.style === 'Emote') {
+        // Delete emotes that were removed
+        assert(
+          parsedMoment.kind === 'emote',
+          `Expected moment ${existingMoment.id} to be an emote`,
+        );
+        for (const existingEmote of bsArrayToArray(existingElement.emotes)) {
+          if (!parsedMoment.emotes.find((e) => e.id === existingEmote.id)) {
+            updateMote(
+              `data/${momentGroup}/${existingMoment.id}/element/emotes/${existingEmote.id}`,
+              null,
+            );
+          }
+        }
+      }
+    }
+    // Update the order of the moments
+    const moments = parsedMoments.map((m) => {
+      // Look up the base moment
+      let moment = questMoteBase?.data[momentGroup]?.[m.id!];
+      if (!moment) {
+        moment = questMoteWorking?.data[momentGroup]?.[m.id!];
+        // @ts-expect-error - order is a required field, but it'll be re-added
+        delete moment?.order;
+      }
+      assert(moment, `Moment ${m.id} not found in base or working mote`);
+      moment.element.style;
+      const element = moment.element;
+      if (element.style === 'Emote') {
+        assert(m.kind === 'emote', `Expected moment ${m.id} to be an emote`);
+        // Then make sure the emotes are in the right order
+        const emotes = m.emotes.map((e) => {
+          let emoteElement = questMoteBase?.data[momentGroup]?.[m.id!]?.element;
+          let emote: Crashlands2.Emotes1[string] | undefined;
+          if (emoteElement && isEmoteMoment(emoteElement)) {
+            emote = emoteElement.emotes[e.id!];
+          }
+          if (!emote) {
+            emoteElement =
+              questMoteWorking?.data[momentGroup]?.[m.id!]?.element;
+            if (emoteElement && isEmoteMoment(emoteElement)) {
+              emote = emoteElement.emotes[e.id!];
+            }
+            // Then we don't need to try to keep a prior order value
+            delete emote?.order;
+          }
+          assert(emote, `Emote ${e.id} not found in base or working mote`);
+          return { ...emote, id: e.id! };
+        });
+        updateBsArrayOrder(emotes);
+        return { ...moment, emotes, id: m.id! };
+      }
+      return { ...moment, id: m.id! };
+    });
+    updateBsArrayOrder(moments);
+    moments.forEach((m) => {
+      updateMote(`data/${momentGroup}/${m.id}/order`, m.order);
+      if ('emotes' in m) {
+        m.emotes.forEach((e) => {
+          updateMote(
+            `data/${momentGroup}/${m.id}/element/emotes/${e.id}/order`,
+            e.order,
+          );
+        });
+      }
+    });
+  }
+  //#endregion
 
   await packed.writeChanges();
 }

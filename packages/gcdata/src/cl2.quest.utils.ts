@@ -103,3 +103,9 @@ function getAllowedGivers(packed: Gcdata) {
     ...giverSubchema.formatProperties!.allowSchemas!,
   );
 }
+
+export function isEmoteMoment<T extends Crashlands2.QuestMoment>(
+  moment: T,
+): moment is T & { style: 'Emote' } {
+  return moment.style === 'Emote';
+}

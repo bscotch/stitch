@@ -54,17 +54,20 @@ export interface ParsedEmote {
 }
 
 export interface ParsedEmoteGroup {
+  kind: 'emote';
   /** arrayId */
   id: string | undefined;
   emotes: ParsedEmote[];
 }
 
 export interface ParsedOtherMoment {
+  kind: 'other';
   id: string | undefined;
   style: string | undefined;
 }
 
 export interface ParsedDialog {
+  kind: 'dialogue';
   /** arrayId */
   id: string | undefined;
   speaker: string | undefined;

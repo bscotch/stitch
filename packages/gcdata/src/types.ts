@@ -70,6 +70,10 @@ export function isBschemaObject(schema: any): schema is BschemaObject {
   );
 }
 
+export function isBschemaConst(schema: any): schema is BschemaConst {
+  return typeof schema === 'object' && 'bConst' in schema;
+}
+
 export function isBschemaString(schema: any): schema is BschemaString {
   return typeof schema === 'object' && schema['type'] === 'string';
 }
