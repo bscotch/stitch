@@ -1,5 +1,5 @@
+import { sequential } from '@bscotch/utility';
 import { expect } from 'chai';
-import { sequential } from './utility.js';
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));

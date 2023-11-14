@@ -492,6 +492,9 @@ importers:
       '@bscotch/pixel-checksum':
         specifier: workspace:*
         version: link:../pixel-checksum
+      '@bscotch/utility':
+        specifier: ^7.2.0
+        version: 7.2.0
       '@bscotch/yy':
         specifier: workspace:*
         version: link:../yy

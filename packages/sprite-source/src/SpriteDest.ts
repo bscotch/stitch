@@ -1,4 +1,5 @@
 import { Pathy, pathy } from '@bscotch/pathy';
+import { sequential } from '@bscotch/utility';
 import { Yy } from '@bscotch/yy';
 import { SpriteCache } from './SpriteCache.js';
 import type {
@@ -19,7 +20,7 @@ import {
 import { SpriteSource } from './SpriteSource.js';
 import { retryOptions } from './constants.js';
 import { Reporter } from './types.js';
-import { SpriteSourceError, assert, rethrow, sequential } from './utility.js';
+import { SpriteSourceError, assert, rethrow } from './utility.js';
 
 export class SpriteDest extends SpriteCache {
   protected constructor(

@@ -1,9 +1,10 @@
 import { Pathy, statSafe } from '@bscotch/pathy';
+import { sequential } from '@bscotch/utility';
 import { Image } from 'image-js';
 import type { SpriteSummary } from './SpriteCache.schemas.js';
 import { retryOptions } from './constants.js';
 import type { BBox } from './types.js';
-import { getPngSize, sequential } from './utility.js';
+import { getPngSize } from './utility.js';
 
 export class SpriteFrame {
   protected _size: undefined | { width: number; height: number };

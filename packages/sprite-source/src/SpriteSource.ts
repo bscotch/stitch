@@ -1,4 +1,5 @@
 import { Pathy, existsSafe, pathy } from '@bscotch/pathy';
+import { sequential } from '@bscotch/utility';
 import { SpriteCache } from './SpriteCache.js';
 import { SpriteDir } from './SpriteDir.js';
 import {
@@ -13,7 +14,6 @@ import {
   deletePngChildren,
   getDirs,
   rethrow,
-  sequential,
 } from './utility.js';
 
 export class SpriteSource extends SpriteCache {
