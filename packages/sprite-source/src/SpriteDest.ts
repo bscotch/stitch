@@ -17,7 +17,7 @@ import {
   type SpriteDestSource,
 } from './SpriteDest.schemas.js';
 import { SpriteSource } from './SpriteSource.js';
-import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
+import { retryOptions } from './constants.js';
 import { Reporter } from './types.js';
 import { SpriteSourceError, assert, rethrow, sequential } from './utility.js';
 
@@ -322,15 +322,13 @@ export class SpriteDest extends SpriteCache {
     await this.stitchDir.ensureDirectory();
     const config = await this.configFile.read({
       fallback: { sources: [] },
-      maxRetries: MAX_FIO_RETRIES,
-      retryDelayMillis: FIO_RETRY_DELAY,
+      ...retryOptions,
     });
     if (overrides?.sources) {
       config.sources = overrides.sources;
     }
     await this.configFile.write(config, {
-      maxRetries: MAX_FIO_RETRIES,
-      retryDelayMillis: FIO_RETRY_DELAY,
+      ...retryOptions,
     });
     return config;
   }

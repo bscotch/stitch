@@ -1,4 +1,4 @@
-import { Pathy, pathy } from '@bscotch/pathy';
+import { Pathy, existsSafe, pathy } from '@bscotch/pathy';
 import { SpriteCache } from './SpriteCache.js';
 import { SpriteDir } from './SpriteDir.js';
 import {
@@ -6,7 +6,7 @@ import {
   type SpriteSourceConfig,
   type SpriteSourceStage,
 } from './SpriteSource.schemas.js';
-import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
+import { FIO_RETRY_DELAY, MAX_FIO_RETRIES, retryOptions } from './constants.js';
 import {
   SpriteSourceError,
   assert,
@@ -25,7 +25,7 @@ export class SpriteSource extends SpriteCache {
 
   protected async resolveStaged(staging: SpriteSourceStage) {
     const dir = pathy(staging.dir, this.spritesRoot);
-    if (!(await dir.exists())) {
+    if (!(await existsSafe(dir, retryOptions))) {
       this.issues.push(
         new SpriteSourceError(`Staging directory does not exist: ${dir}`),
       );
@@ -161,7 +161,7 @@ export class SpriteSource extends SpriteCache {
   static async from(spritesRoot: string | Pathy, options?: SpriteSourceConfig) {
     // Ensure the spritesRoot exists
     assert(
-      await pathy(spritesRoot).exists(),
+      await existsSafe(spritesRoot, retryOptions),
       `Sprites root does not exist: ${spritesRoot}`,
     );
     const source = new SpriteSource(spritesRoot);

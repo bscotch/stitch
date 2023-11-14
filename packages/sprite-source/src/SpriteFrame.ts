@@ -1,6 +1,7 @@
-import { Pathy } from '@bscotch/pathy';
+import { Pathy, statSafe } from '@bscotch/pathy';
 import { Image } from 'image-js';
 import type { SpriteSummary } from './SpriteCache.schemas.js';
+import { retryOptions } from './constants.js';
 import type { BBox } from './types.js';
 import { getPngSize, sequential } from './utility.js';
 
@@ -22,7 +23,9 @@ export class SpriteFrame {
   }
 
   async updateCache(cache: SpriteSummary) {
-    const lastChanged = (await this.path.stat()).mtime.getTime();
+    const lastChanged = (
+      await statSafe(this.path, retryOptions)
+    ).mtime.getTime();
     const needsUpdate =
       (cache.frames[this.path.relative]?.changed || 0) !== lastChanged;
     if (!needsUpdate) return cache.frames[this.path.relative];

@@ -487,8 +487,8 @@ importers:
   packages/sprite-source:
     dependencies:
       '@bscotch/pathy':
-        specifier: 2.10.1
-        version: 2.10.1
+        specifier: 2.11.0
+        version: 2.11.0
       '@bscotch/pixel-checksum':
         specifier: workspace:*
         version: link:../pixel-checksum
@@ -804,8 +804,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@bscotch/pathy@2.10.1:
-    resolution: {integrity: sha512-Gr+A+LVZGHiUOaBC1uzCcUdBpF/Nao7PeZpv6m+0I8GhLjjxMNbJxGLoCzGjnVqXNA4P4wqfc8njplqD52EXaA==}
+  /@bscotch/pathy@2.11.0:
+    resolution: {integrity: sha512-GIb4rFc+RCh3zn++7tnA8HHzupmTZmjWOU0NZhQgxkGI9PlNNrbtJW5bRCwbP/sVEZw30ZrT+1t1wwNt0pDGeA==}
     dependencies:
       '@bscotch/utility': 7.2.0
       fs-extra: 11.1.1

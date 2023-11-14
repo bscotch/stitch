@@ -1,9 +1,9 @@
-import { Pathy, pathy } from '@bscotch/pathy';
+import { Pathy, pathy, statSafe } from '@bscotch/pathy';
 import { Yy } from '@bscotch/yy';
 import type { SpritesInfo } from './SpriteCache.schemas.js';
 import { SpriteFrame } from './SpriteFrame.js';
 import { computeFilesChecksum, computeStringChecksum } from './checksum.js';
-import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
+import { retryOptions } from './constants.js';
 import { readdirSafe } from './safeFs.js';
 import type { Log } from './types.js';
 import { SpriteSourceError, assert } from './utility.js';
@@ -64,16 +64,16 @@ export class SpriteDir {
       pngs.sort((a, b) => a.basename.localeCompare(b.basename, 'en-US'));
       const lastChanged = Math.max(
         ...(await Promise.all([
-          this.spinePaths.atlas.stat().then(
+          statSafe(this.spinePaths.atlas, retryOptions).then(
             (s) => s.mtime.getTime(),
             () => 0,
           ),
-          this.spinePaths.json.stat().then(
+          statSafe(this.spinePaths.json, retryOptions).then(
             (s) => s.mtime.getTime(),
             () => 0,
           ),
           ...pngs.map((png) =>
-            png.stat().then(
+            statSafe(png, retryOptions).then(
               (s) => s.mtime.getTime(),
               () => 0,
             ),
@@ -158,8 +158,7 @@ export class SpriteDir {
         fromTo.map(([from, to]) =>
           from.copy(to).then(() =>
             from.delete({
-              retryDelay: FIO_RETRY_DELAY,
-              maxRetries: MAX_FIO_RETRIES,
+              ...retryOptions,
               force: true,
             }),
           ),
@@ -181,8 +180,7 @@ export class SpriteDir {
         this.frames.map((frame) =>
           frame.saveTo(newSpriteDir.join(frame.path.basename)).then(() =>
             frame.path.delete({
-              retryDelay: FIO_RETRY_DELAY,
-              maxRetries: MAX_FIO_RETRIES,
+              ...retryOptions,
               force: true,
             }),
           ),
@@ -200,8 +198,7 @@ export class SpriteDir {
     try {
       await this.path.delete({
         recursive: true,
-        retryDelay: FIO_RETRY_DELAY,
-        maxRetries: MAX_FIO_RETRIES,
+        ...retryOptions,
         force: true,
       });
     } catch (err) {

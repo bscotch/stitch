@@ -26,7 +26,7 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/pathy": "2.10.1",
+    "@bscotch/pathy": "2.11.0",
     "@bscotch/pixel-checksum": "workspace:*",
     "@bscotch/yy": "workspace:*",
     "image-js": "0.35.5",
