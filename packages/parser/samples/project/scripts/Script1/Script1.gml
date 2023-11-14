@@ -74,3 +74,9 @@ decremented -= a_thing;
 // Unknown stuff
 var something;
 something.field = decremented;
+
+/// @type {Array<String>} 
+var some_array = [];
+for(var i=0; i<array_length(some_array); i++){
+	var fetched = some_array[i];
+}

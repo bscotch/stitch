@@ -168,6 +168,10 @@ describe('Project', function () {
     const unknownVarRhs = script.gmlFile.getReferenceAt(76, 24);
     ok(unknownVarRhs);
 
+    // Check reference inside of an accessor
+    const accessorRef = script.gmlFile.getReferenceAt(81, 27);
+    ok(accessorRef);
+
     //#region GLOBALVARS
     const globalVarName = 'GLOBAL_SCRIPT_VAR';
     const globalvarDef = scriptFile.getReferenceAt(2, 18);
@@ -581,7 +585,7 @@ function validateJsdocs(project: Project) {
 
   // This one was misbehaving despite the above tests passing
   const scriptFile = project.getAssetByName('Script1')!.gmlFile;
-  const lastJsdoc = scriptFile.jsdocs.at(-2)!;
+  const lastJsdoc = scriptFile.jsdocs.at(-3)!;
   expect(lastJsdoc.start.line).to.equal(55);
   expect(lastJsdoc.start.column).to.equal(1);
   expect(lastJsdoc.end.line).to.equal(55);

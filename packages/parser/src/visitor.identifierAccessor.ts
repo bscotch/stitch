@@ -162,7 +162,11 @@ function processNextAccessor(
   accessor: AccessorNode,
   nextAccessor?: AccessorNode,
 ): LastAccessed {
-  let nextAccessed: LastAccessed;
+  // For example, `hello[expression]`
+  if ('expression' in accessor.children) {
+    visitor.visit(accessor.children.expression, lastAccessed.ctx);
+  }
+  let nextAccessed: LastAccessed; // Many suffix cases include an expression we need to evaluate.
 
   switch (accessor.name) {
     case 'arrayMutationAccessorSuffix':
@@ -180,14 +184,14 @@ function processNextAccessor(
         accessor.name.startsWith('array')
           ? 'Array'
           : accessor.name === 'mapAccessSuffix'
-          ? 'Id.DsMap'
-          : accessor.name === 'gridAccessSuffix'
-          ? 'Id.DsGrid'
-          : accessor.name === 'listAccessSuffix'
-          ? 'Id.DsList'
-          : accessor.name === 'structAccessSuffix'
-          ? 'Struct'
-          : 'Any',
+            ? 'Id.DsMap'
+            : accessor.name === 'gridAccessSuffix'
+              ? 'Id.DsGrid'
+              : accessor.name === 'listAccessSuffix'
+                ? 'Id.DsList'
+                : accessor.name === 'structAccessSuffix'
+                  ? 'Struct'
+                  : 'Any',
       );
       nextAccessed = {
         range: Range.fromCst(visitor.PROCESSOR.file, accessor.location!),
@@ -355,8 +359,8 @@ function processFunctionArguments(
       (lastAccessed.usesNew
         ? functionType?.self
         : isMethodCall
-        ? methodReturns
-        : functionType?.returns) || visitor.ANY,
+          ? methodReturns
+          : functionType?.returns) || visitor.ANY,
       visitor.PROCESSOR.project.types,
       generics,
     ),
