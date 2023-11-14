@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 0.4.11 (2023-11-14)
+
+### Fixes
+
+- Resolved queueing issue causing some methods to fail
+
 ## 0.4.10 (2023-11-14)
 
 ### Fixes
