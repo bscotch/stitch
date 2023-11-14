@@ -20,9 +20,9 @@
   },
   "devDependencies": {
     "@bscotch/gamemaker-releases": "workspace:*",
-    "@bscotch/pathy": "^2.10.0",
+    "@bscotch/pathy": "^2.11.0",
     "@sveltejs/adapter-static": "2.0.3",
-    "@sveltejs/kit": "^1.27.5",
+    "@sveltejs/kit": "^1.27.6",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint": "^8.53.0",

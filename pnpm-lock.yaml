@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@bscotch/pathy':
-        specifier: ^2.10.0
-        version: 2.10.0
+        specifier: ^2.11.0
+        version: 2.11.0
       '@bscotch/trebuchet':
-        specifier: 2.9.1
-        version: 2.9.1
+        specifier: 2.9.3
+        version: 2.9.3
       '@types/chai':
         specifier: ^4.3.10
         version: 4.3.10
@@ -73,11 +73,11 @@ importers:
         specifier: workspace:*
         version: link:../gcdata
       '@bscotch/pathy':
-        specifier: ^2.10.0
-        version: 2.10.0
+        specifier: ^2.11.0
+        version: 2.11.0
       '@bscotch/trebuchet':
-        specifier: 2.9.1
-        version: 2.9.1
+        specifier: 2.9.3
+        version: 2.9.3
       '@bscotch/utility':
         specifier: ^7.2.0
         version: 7.2.0
@@ -115,8 +115,8 @@ importers:
         specifier: 0.2.2
         version: 0.2.2
       '@bscotch/pathy':
-        specifier: ^2.10.0
-        version: 2.10.0
+        specifier: ^2.11.0
+        version: 2.11.0
       '@bscotch/spritely':
         specifier: workspace:*
         version: link:../spritely
@@ -245,8 +245,8 @@ importers:
   packages/gcdata:
     dependencies:
       '@bscotch/pathy':
-        specifier: 2.10.0
-        version: 2.10.0
+        specifier: 2.11.0
+        version: 2.11.0
       zod:
         specifier: 3.22.4
         version: 3.22.4
@@ -270,8 +270,8 @@ importers:
         specifier: 0.2.2
         version: 0.2.2
       '@bscotch/pathy':
-        specifier: ^2.10.0
-        version: 2.10.0
+        specifier: ^2.11.0
+        version: 2.11.0
       '@bscotch/utility':
         specifier: ^7.2.0
         version: 7.2.0
@@ -316,8 +316,8 @@ importers:
         specifier: workspace:*
         version: link:../releases
       '@bscotch/pathy':
-        specifier: ^2.10.0
-        version: 2.10.0
+        specifier: ^2.11.0
+        version: 2.11.0
       '@bscotch/stitch-launcher':
         specifier: workspace:*
         version: link:../launcher
@@ -371,8 +371,8 @@ importers:
   packages/releases:
     dependencies:
       '@bscotch/pathy':
-        specifier: ^2.10.0
-        version: 2.10.0
+        specifier: ^2.11.0
+        version: 2.11.0
       '@bscotch/utility':
         specifier: ^7.2.0
         version: 7.2.0
@@ -433,14 +433,14 @@ importers:
         specifier: workspace:*
         version: link:../releases
       '@bscotch/pathy':
-        specifier: ^2.10.0
-        version: 2.10.0
+        specifier: ^2.11.0
+        version: 2.11.0
       '@sveltejs/adapter-static':
         specifier: 2.0.3
-        version: 2.0.3(@sveltejs/kit@1.27.5)
+        version: 2.0.3(@sveltejs/kit@1.27.6)
       '@sveltejs/kit':
-        specifier: ^1.27.5
-        version: 1.27.5(svelte@4.2.3)(vite@4.5.0)
+        specifier: ^1.27.6
+        version: 1.27.6(svelte@4.2.3)(vite@4.5.0)
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
         version: 6.11.0(@typescript-eslint/parser@6.11.0)(eslint@8.53.0)(typescript@5.2.2)
@@ -521,8 +521,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
       '@bscotch/pathy':
-        specifier: ^2.10.0
-        version: 2.10.0
+        specifier: ^2.11.0
+        version: 2.11.0
       '@bscotch/utility':
         specifier: ^7.2.0
         version: 7.2.0
@@ -583,8 +583,8 @@ importers:
         specifier: workspace:*
         version: link:../parser
       '@bscotch/pathy':
-        specifier: ^2.10.0
-        version: 2.10.0
+        specifier: ^2.11.0
+        version: 2.11.0
       '@bscotch/sprite-source':
         specifier: workspace:*
         version: link:../sprite-source
@@ -595,8 +595,8 @@ importers:
         specifier: workspace:*
         version: link:../launcher
       '@bscotch/trebuchet':
-        specifier: 2.9.1
-        version: 2.9.1
+        specifier: 2.9.3
+        version: 2.9.3
       '@bscotch/utility':
         specifier: ^7.2.0
         version: 7.2.0
@@ -756,10 +756,10 @@ packages:
       js-yaml: 4.1.0
     dev: true
 
-  /@bscotch/config@1.4.1:
-    resolution: {integrity: sha512-dXEegVJinywiG/K7bfI28x0piNZ0UUZu4Yib0DN0G09GSl3eePr5J76ejS7+zioBFim6DDrGxCso9fPU59Gazw==}
+  /@bscotch/config@1.4.3:
+    resolution: {integrity: sha512-QTBetrbujJF7V4l0kqjUDuuc3kA8ngMhJvOeKx0nTWO4U+adn9yHMzbQjNyfXSl2/Q49n0gQ6Wb2MiaD8PyEFw==}
     dependencies:
-      '@bscotch/pathy': 2.10.0
+      '@bscotch/pathy': 2.11.0
       '@bscotch/utility': 7.2.0
       '@bscotch/validation': 0.3.0
       globby: 13.2.2
@@ -796,17 +796,6 @@ packages:
       - supports-color
     dev: false
 
-  /@bscotch/pathy@2.10.0:
-    resolution: {integrity: sha512-/wcNo5zuMpeAxZXGn8a2dHmMOz1fKGY31OXAo/SeJi4afBGH/V6ISoW53f95B1CbFUd89UX7TLLXn5McX3yJcA==}
-    dependencies:
-      '@bscotch/utility': 7.2.0
-      fs-extra: 11.1.1
-      json5: 2.2.3
-      tslib: 2.6.2
-      yaml: 2.3.2
-    transitivePeerDependencies:
-      - supports-color
-
   /@bscotch/pathy@2.11.0:
     resolution: {integrity: sha512-GIb4rFc+RCh3zn++7tnA8HHzupmTZmjWOU0NZhQgxkGI9PlNNrbtJW5bRCwbP/sVEZw30ZrT+1t1wwNt0pDGeA==}
     dependencies:
@@ -817,13 +806,12 @@ packages:
       yaml: 2.3.2
     transitivePeerDependencies:
       - supports-color
-    dev: false
 
-  /@bscotch/project@2.4.1:
-    resolution: {integrity: sha512-ytS+FH3bl7fEIlddWeHN0oYzlsQM0mT44hhcJfdylwzeiM8wPLpLAv8XV3USM5YV/GbidY+Y9SAIF/DF3HSAmA==}
+  /@bscotch/project@2.4.3:
+    resolution: {integrity: sha512-y9IbOJTke9R2NOeSbtgYI42dW56Dc9esNBDIU8e7HhxMGZziTEMvapLoCKJq11T+/ylJzLKxirrNBLTtob/khg==}
     dependencies:
-      '@bscotch/config': 1.4.1
-      '@bscotch/pathy': 2.10.0
+      '@bscotch/config': 1.4.3
+      '@bscotch/pathy': 2.11.0
       '@bscotch/utility': 7.2.0
       '@bscotch/validation': 0.3.0
       chalk: 5.3.0
@@ -844,13 +832,13 @@ packages:
       tslib: 2.6.2
     dev: false
 
-  /@bscotch/trebuchet@2.9.1:
-    resolution: {integrity: sha512-+NPWVn/R+SIAMkQnOLepLKkjHCNRBdd/xfMWYkeejTySO0hilT8dbkUJ2mRj0baFonNumQSPCbxWzjq7BLR8Kg==}
+  /@bscotch/trebuchet@2.9.3:
+    resolution: {integrity: sha512-Pjm+1uhyriExP9sc4hBOkfEYX4dKdjCCXgr2Xm96mtt4IfkqW7rFCWrLORr7+LXeTdFxhcVWhWo6pQJCWfchGQ==}
     hasBin: true
     dependencies:
-      '@bscotch/config': 1.4.1
-      '@bscotch/pathy': 2.10.0
-      '@bscotch/project': 2.4.1
+      '@bscotch/config': 1.4.3
+      '@bscotch/pathy': 2.11.0
+      '@bscotch/project': 2.4.3
       '@bscotch/utility': 7.2.0
       '@bscotch/validation': 0.3.0
       '@sinclair/typebox': 0.31.23
@@ -1556,16 +1544,16 @@ packages:
   /@sinclair/typebox@0.31.23:
     resolution: {integrity: sha512-ZzrzE8yCrWWU4mcBstBgdlBMjB8My3ESY9nZ/v996GptIJb4+MU1p7s1Qxrc2xvZeOiDDnAheLLmdHjPgZV79g==}
 
-  /@sveltejs/adapter-static@2.0.3(@sveltejs/kit@1.27.5):
+  /@sveltejs/adapter-static@2.0.3(@sveltejs/kit@1.27.6):
     resolution: {integrity: sha512-VUqTfXsxYGugCpMqQv1U0LIdbR3S5nBkMMDmpjGVJyM6Q2jHVMFtdWJCkeHMySc6mZxJ+0eZK3T7IgmUCDrcUQ==}
     peerDependencies:
       '@sveltejs/kit': ^1.5.0
     dependencies:
-      '@sveltejs/kit': 1.27.5(svelte@4.2.3)(vite@4.5.0)
+      '@sveltejs/kit': 1.27.6(svelte@4.2.3)(vite@4.5.0)
     dev: true
 
-  /@sveltejs/kit@1.27.5(svelte@4.2.3)(vite@4.5.0):
-    resolution: {integrity: sha512-+L1WPs/ZYNjXoBFoFARypD4aZOjkT51vFpRCtQI45+Fmmfi4Y0dH/8VFlmYD6VlGe89ViIPg7lgf/JpGQ2tr7A==}
+  /@sveltejs/kit@1.27.6(svelte@4.2.3)(vite@4.5.0):
+    resolution: {integrity: sha512-GsjTkMbKzXdbeRg0tk8S7HNShQ4879ftRr0ZHaZfjbig1xQwG57Bvcm9U9/mpLJtCapLbLWUnygKrgcLISLC8A==}
     engines: {node: ^16.14 || >=18}
     hasBin: true
     requiresBuild: true
