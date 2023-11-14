@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 0.61.3 (2023-11-14)
+
+### Fixes
+
+- Resolved issue with refs inside accessors caused by deletion of code with required side effects
+
 ## 0.61.2 (2023-11-13)
 
 ### Fixes

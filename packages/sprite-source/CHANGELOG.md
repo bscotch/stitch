@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 0.4.12 (2023-11-14)
+
+### Fixes
+
+- Now only saving the source config if it has changed.
+
 ## 0.4.11 (2023-11-14)
 
 ### Fixes
