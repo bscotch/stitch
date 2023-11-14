@@ -1,7 +1,10 @@
+import sourceMapSupport from 'source-map-support';
+sourceMapSupport.install();
+//
 import { pathy } from '@bscotch/pathy';
 import { ok } from 'assert';
 import { compile } from 'json-schema-to-typescript';
-import { GameChanger, Gcdata } from '../dist/Packed.js';
+import { GameChanger, Gcdata } from '../dist/GameChanger.js';
 import { computeMotePointersFromSchema } from '../dist/util.js';
 
 const packed = await GameChanger.from('Crashlands2');
