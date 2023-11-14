@@ -260,18 +260,24 @@ export class GameChanger {
       this.projectName,
     );
     await backupsFolder.ensureDirectory();
-    const now = new Date();
-    const parts = [
-      now.getFullYear(),
-      now.getMonth() + 1,
-      now.getDate(),
-      now.getHours(),
-      now.getMinutes(),
-      now.getSeconds(),
-    ].map((n) => n.toString().padStart(2, '0'));
-    const timestamp = parts.join('');
-    const backupFile = backupsFolder.join(`${timestamp}.changes.json`);
-    await backupFile.write(this.changes);
+    const changesFile = GameChanger.projectGameChangerChangesFile(
+      this.projectName,
+    );
+    if (await changesFile.exists()) {
+      // Copy it to the backup folder
+      const now = new Date();
+      const parts = [
+        now.getFullYear(),
+        now.getMonth() + 1,
+        now.getDate(),
+        now.getHours(),
+        now.getMinutes(),
+        now.getSeconds(),
+      ].map((n) => n.toString().padStart(2, '0'));
+      const timestamp = parts.join('');
+      const backupFile = backupsFolder.join(`${timestamp}.changes.json`);
+      await changesFile.copy(backupFile);
+    }
     await GameChanger.projectGameChangerChangesFile(this.projectName).write(
       this.changes,
     );
