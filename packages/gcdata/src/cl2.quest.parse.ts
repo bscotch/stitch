@@ -529,11 +529,24 @@ export async function updateChangesFromParsedQuest(
   }
   // Delete clues that were removed
   for (const existingClue of bsArrayToArray(questMoteBase?.data.clues || {})) {
-    if (!parsedClues.find((c) => c.id === existingClue.id)) {
+    const parsedClue = parsedClues.find((c) => c.id === existingClue.id);
+    if (!parsedClue) {
       updateMote(`data/clues/${existingClue.id}`, null);
+    } else {
+      // Delete phrases that were removed
+      for (const existingPhrase of bsArrayToArray(
+        existingClue.element.phrases,
+      )) {
+        if (!parsedClue.phrases.find((p) => p.id === existingPhrase.id)) {
+          updateMote(
+            `data/clues/${existingClue.id}/element/phrases/${existingPhrase.id}`,
+            null,
+          );
+        }
+      }
     }
   }
-  // TODO: Ensure proper order of clues and phrases
+  // Update the order of the clues and phrases
   const clues = parsedClues.map((c) => {
     // Look up the base clue
     let clue = questMoteBase?.data.clues?.[c.id!];
@@ -542,14 +555,31 @@ export async function updateChangesFromParsedQuest(
       // @ts-expect-error - order is a required field, but it'll be re-added
       delete clue?.order;
     }
-    // TODO: Ensure proper order of phrases
     assert(clue, `Clue ${c.id} not found in base or working mote`);
-    return { ...clue, id: c.id! };
+    const phrases = c.phrases.map((p) => {
+      let phrase =
+        questMoteBase?.data.clues?.[c.id!]?.element?.phrases?.[p.id!];
+      if (!phrase) {
+        phrase =
+          questMoteWorking?.data.clues?.[c.id!]?.element?.phrases?.[p.id!];
+        // @ts-expect-error - order is a required field, but it'll be re-added
+        delete phrase?.order;
+      }
+      assert(phrase, `Phrase ${p.id} not found in base or working mote`);
+      return { ...phrase, id: p.id! };
+    });
+    updateBsArrayOrder(phrases);
+    return { ...clue, phrases, id: c.id! };
   });
   updateBsArrayOrder(clues);
   clues.forEach((clue) => {
     updateMote(`data/clues/${clue.id}/order`, clue.order);
-    // TODO: Ensure proper order of phrases
+    clue.phrases.forEach((phrase) => {
+      updateMote(
+        `data/clues/${clue.id}/element/phrases/${phrase.id}/order`,
+        phrase.order,
+      );
+    });
   });
 
   //#endregion
