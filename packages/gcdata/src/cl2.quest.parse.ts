@@ -474,7 +474,6 @@ export async function updateChangesFromParsedQuest(
   const updateMote = (path: QuestMoteDataPointer, value: any) => {
     packed.updateMoteData(moteId, path, value);
   };
-
   updateMote('data/name', parsed.name);
   updateMote('data/quest_giver/item', parsed.quest_giver);
   updateMote('data/quest_receiver/item', parsed.quest_receiver);
@@ -709,6 +708,5 @@ export async function updateChangesFromParsedQuest(
     });
   }
   //#endregion
-
   await packed.writeChanges();
 }

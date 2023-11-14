@@ -11,6 +11,7 @@ import { stringifyQuest } from '@bscotch/gcdata/dist/cl2.quest.stringify.js';
 import vscode from 'vscode';
 import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
+import { crashlandsEvents } from './events.mjs';
 import {
   filterRanges,
   getCursorPosition,
@@ -25,7 +26,6 @@ export class QuestDocument {
 
   protected constructor(
     readonly uri: vscode.Uri,
-    readonly mote: Mote<Crashlands2.Quest>,
     readonly packed: GameChanger,
   ) {}
   parseResults: QuestUpdateResult | undefined;
@@ -34,6 +34,14 @@ export class QuestDocument {
     return vscode.workspace.textDocuments.find(
       (doc) => doc.uri.toString() === this.uri.toString(),
     );
+  }
+
+  get moteId() {
+    return parseGameChangerUri(this.uri).moteId!;
+  }
+
+  get mote() {
+    return this.packed.working.getMote(this.moteId)!;
   }
 
   getAutoCompleteItems(position: vscode.Position): vscode.CompletionItem[] {
@@ -53,10 +61,10 @@ export class QuestDocument {
     const lineType = text.startsWith('>')
       ? 'dialog'
       : text.startsWith('?')
-      ? 'momentStyle'
-      : text.startsWith('!')
-      ? 'emote'
-      : 'unknown';
+        ? 'momentStyle'
+        : text.startsWith('!')
+          ? 'emote'
+          : 'unknown';
 
     const completes = matchingAutocompletes
       .map((c) => {
@@ -205,11 +213,22 @@ export class QuestDocument {
       this.parseResults?.diagnostics.length === 0,
       'Cannot save a quest with errors.',
     );
+    const nameBefore = this.packed.working.getMoteName(this.mote);
     await updateChangesFromParsedQuest(
       this.parseResults.parsed,
       this.mote.id,
       this.packed,
     );
+    const nameAfter = this.packed.working.getMoteName(this.mote);
+    if (nameAfter != nameBefore) {
+      crashlandsEvents.emit('mote-name-changed', {
+        file: this.uri,
+        schemaId: this.mote.schema_id,
+        moteId: this.mote.id,
+        newName: this.parseResults.parsed.name,
+        oldName: nameBefore,
+      });
+    }
   }
 
   parse(content?: string) {
@@ -256,7 +275,7 @@ export class QuestDocument {
     const mote = workspace.packed.working.getMote(moteId);
     assertInternalClaim(mote, `No mote found with id ${moteId}`);
     assertInternalClaim(isQuestMote(mote), 'Only quests are supported.');
-    const doc = new QuestDocument(uri, mote, workspace.packed);
+    const doc = new QuestDocument(uri, workspace.packed);
     this.cache.set(uri.toString(), doc);
     doc.parse();
     return doc;

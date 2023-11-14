@@ -43,7 +43,7 @@ export class Gcdata {
 
   getMoteName(mote: Mote | string | undefined): string | undefined {
     if (!mote) return undefined;
-    const foundMote = typeof mote === 'string' ? this.getMote(mote) : mote;
+    const foundMote = this.getMote(typeof mote === 'string' ? mote : mote.id);
     if (!foundMote) return undefined;
     const schema = this.getSchema(foundMote.schema_id);
     if (!schema || !schema.name) {
@@ -167,7 +167,7 @@ export class GameChanger {
     }
 
     // Update the working data
-    setValueAtPointer(this.workingData.motes[moteId], dataPath, value);
+    setValueAtPointer(this.working.data.motes[moteId], dataPath, value);
 
     // See if we have a change relative to the base
     const currentValue =
