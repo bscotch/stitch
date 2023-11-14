@@ -119,16 +119,23 @@ export class SpriteSource extends SpriteCache {
       maxRetries: MAX_FIO_RETRIES,
       retryDelayMillis: FIO_RETRY_DELAY,
     });
+    const snapshot = JSON.stringify(config);
     if (overrides?.ignore !== undefined) {
       config.ignore = overrides.ignore;
     }
     if (overrides?.staging !== undefined) {
       config.staging = overrides.staging;
     }
-    await this.configFile.write(config, {
-      maxRetries: MAX_FIO_RETRIES,
-      retryDelayMillis: FIO_RETRY_DELAY,
-    });
+    if (snapshot !== JSON.stringify(config)) {
+      try {
+        await this.configFile.write(config, {
+          maxRetries: MAX_FIO_RETRIES,
+          retryDelayMillis: FIO_RETRY_DELAY,
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
     return config;
   }
 
