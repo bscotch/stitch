@@ -1,6 +1,7 @@
-import { Pathy, pathy } from '@bscotch/pathy';
+import { Pathy, pathy, rmSafe } from '@bscotch/pathy';
 import fsp from 'fs/promises';
 import path from 'path';
+import { readdirSafe, readdirSafeWithFileTypes } from './safeFs.js';
 
 export type AnyFunc = (...args: any) => any;
 export type Checked<T extends AnyFunc> =
@@ -68,7 +69,7 @@ export async function getDirs(
 
   async function walk(dir: string, depth = 1): Promise<void> {
     if (depth > maxDepth) return;
-    const files = await fsp.readdir(dir, { withFileTypes: true });
+    const files = await readdirSafeWithFileTypes(dir);
     await Promise.all(
       files.map(async (file) => {
         const filePath = path.join(dir, file.name);
@@ -93,14 +94,14 @@ export async function deletePngChildren(path: Pathy) {
   if (!(await path.exists())) {
     return [];
   }
-  const files = await fsp.readdir(path.absolute);
+  const files = await readdirSafe(path.absolute);
   const deleteWaits: Promise<void>[] = [];
   const deleted: Pathy[] = [];
   for (const file of files) {
     if (file.match(/\.png$/i)) {
       const toDelete = path.join(file);
       deleted.push(toDelete);
-      deleteWaits.push(fsp.unlink(toDelete.absolute));
+      deleteWaits.push(rmSafe(toDelete.absolute));
     }
   }
   await Promise.all(deleteWaits);
@@ -129,30 +130,46 @@ export async function getPngSize(
   return size;
 }
 
-/**
- * A decorator for async methods that ensures that calls to
- * the method are resolved in order, and that only one call
- * is active at a time.
- */
-export function Sequential() {
-  return function (
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor,
-  ) {
-    const originalMethod = descriptor.value;
-    let promise: Promise<any> = Promise.resolve();
+export function sequential(
+  target: any,
+  propertyKey: string,
+  descriptor: PropertyDescriptor,
+) {
+  const originalMethod = descriptor.value;
 
-    descriptor.value = function (...args: any[]) {
-      const result = promise.then(() => {
-        promise = originalMethod.apply(this, args);
-        return promise;
+  // Queue to store the method calls
+  const callQueue: (() => Promise<void>)[] = [];
+  let isRunning = false;
+
+  // Wrapper function for the original method
+  descriptor.value = function (...args: any[]) {
+    return new Promise<void>((resolve, reject) => {
+      // Enqueue the method call
+      callQueue.push(async () => {
+        try {
+          await originalMethod.apply(this, args);
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
       });
-      return result;
-    };
 
-    return descriptor;
+      // Process the queue if not already running
+      if (!isRunning) {
+        isRunning = true;
+        void processQueue();
+      }
+    });
   };
-}
 
-export const sequential = Sequential();
+  // Function to process the queue
+  async function processQueue() {
+    while (callQueue.length > 0) {
+      const call = callQueue.shift();
+      if (call) {
+        await call();
+      }
+    }
+    isRunning = false;
+  }
+}
