@@ -1,5 +1,12 @@
 # @bscotch/sprite-source Changelog
 
+## 0.4.10 (2023-11-14)
+
+### Fixes
+
+- Added additional retry logic to file i/o
+- Resolved an issue where sequential i/o were not actually being forced to be sequential
+
 ## 0.4.9 (2023-11-13)
 
 ### Fixes
