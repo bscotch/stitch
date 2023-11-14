@@ -307,10 +307,35 @@ export class GameChanger {
     const changesFile = GameChanger.projectGameChangerChangesFile(
       this.projectName,
     );
-    assert(
-      await changesFile.exists(),
-      'Could not find game-changer changes file. Open the GameChanger to ensure that it gets created.',
-    );
+    if (!(await changesFile.exists())) {
+      // TODO: Create a changes file
+      // TODO: Get the latest commit ID
+
+      const metadata = await this.readCommitsMetadata();
+      // Get the commitIds, sorted descending by number
+      const commitIds = Object.keys(metadata.item_metadata)
+        .map((itemId) => metadata.item_metadata[itemId].name)
+        .sort((a, b) => {
+          const aNum = parseInt(a.replace(/^c/, ''));
+          const bNum = parseInt(b.replace(/^c/, ''));
+          return bNum - aNum;
+        });
+      assert(
+        commitIds.length,
+        'No commits found. Open the GameChanger to download the latest commit.',
+      );
+
+      const initial = {
+        changes: {
+          message: '',
+          motes: {},
+          schemas: {},
+          conflicts: { motes: {}, schemas: {} },
+        },
+        commitId: commitIds[0],
+      };
+      await changesFile.write(initial);
+    }
     this.changes = await changesFile.read();
   }
 
