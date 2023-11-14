@@ -253,6 +253,25 @@ export class GameChanger {
   }
 
   async writeChanges() {
+    // Write it to a backup file first (to ensure that the GameChanger)
+    // doesn't clobber what we've done without a recovery option.
+    // Then write it to the actual file.
+    const backupsFolder = GameChanger.projectGameChangerChangesBackupFolder(
+      this.projectName,
+    );
+    await backupsFolder.ensureDirectory();
+    const now = new Date();
+    const parts = [
+      now.getFullYear(),
+      now.getMonth() + 1,
+      now.getDate(),
+      now.getHours(),
+      now.getMinutes(),
+      now.getSeconds(),
+    ].map((n) => n.toString().padStart(2, '0'));
+    const timestamp = parts.join('');
+    const backupFile = backupsFolder.join(`${timestamp}.changes.json`);
+    await backupFile.write(this.changes);
     await GameChanger.projectGameChangerChangesFile(this.projectName).write(
       this.changes,
     );
@@ -421,8 +440,18 @@ export class GameChanger {
   }
 
   static projectGameChangerChangesFile(projectName: string) {
-    return this.projectSaveDir(projectName)
-      .join('gcdata/changes.json')
+    return this.projectGameChangerChangesFolder(projectName)
+      .join('changes.json')
       .withValidator(changesSchema);
+  }
+
+  static projectGameChangerChangesFolder(projectName: string) {
+    return this.projectSaveDir(projectName).join('gcdata');
+  }
+
+  static projectGameChangerChangesBackupFolder(projectName: string) {
+    return this.projectGameChangerChangesFolder(projectName).join(
+      'stitch-backups',
+    );
   }
 }
