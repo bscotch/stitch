@@ -35,21 +35,12 @@ export class QuestTreeProvider
     return element.parent;
   }
   getChildren(element?: QuestTreeItem): vscode.ProviderResult<QuestTreeItem[]> {
-    const getQuestMotesForStoryline = (storylineId: string) => {
-      return this.packed.working
-        .listMotesBySchema<Crashlands2.Schemas['cl2_quest']>('cl2_quest')
-        .filter((m) => m.data.storyline === storylineId)
-        .map((m) => new MoteItem(this.packed, m, element));
-    };
     if (!element) {
-      const items = this.packed.working
-        .listMotesBySchema('cl2_storyline')
+      const items = this.storylineMotes
         .map((m) => {
-          const storyItem = new MoteItem(this.packed, m);
-          // Go ahead and add the quests so they'll be in the lookup
-          getQuestMotesForStoryline(m.id);
-          return storyItem;
-        });
+          return MoteItem.lookup.get(m.id);
+        })
+        .filter(Boolean) as MoteItem<Crashlands2.Schemas['cl2_storyline']>[];
       items?.sort((a, b) =>
         a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
       );
@@ -59,14 +50,50 @@ export class QuestTreeProvider
       element.schemaId === 'cl2_storyline'
     ) {
       // Then get all of the Quest motes that are in this storyline
-      const questMotes = getQuestMotesForStoryline(element.mote.id);
+      const questMotes = this.questMotes
+        .filter((m) => m.data.storyline === element.moteId)
+        .map(
+          (m) =>
+            MoteItem.lookup.get(m.id) as MoteItem<
+              Crashlands2.Schemas['cl2_quest']
+            >,
+        )
+        .filter(Boolean);
       questMotes?.sort((a, b) => a.mote.data.order - b.mote.data.order);
       return questMotes;
     }
     return [];
   }
 
-  async rebuild() {
+  get storylineMotes() {
+    return this.packed.working.listMotesBySchema<
+      Crashlands2.Schemas['cl2_storyline']
+    >('cl2_storyline');
+  }
+
+  get questMotes() {
+    return this.packed.working.listMotesBySchema<
+      Crashlands2.Schemas['cl2_quest']
+    >('cl2_quest');
+  }
+
+  rebuild() {
+    // Ensure all motes have a tree item instance
+
+    this.storylineMotes.forEach((storylineMote) => {
+      const storyItem =
+        MoteItem.lookup.get(storylineMote.id) ||
+        new MoteItem(this.packed, storylineMote.id);
+      // Add the story's quests
+      this.questMotes
+        .filter((questMote) => questMote.data.storyline === storylineMote.id)
+        .forEach(
+          (questMote) =>
+            MoteItem.lookup.get(questMote.id) ||
+            new MoteItem(this.packed, questMote.id, storyItem),
+        );
+    });
+
     this._onDidChangeTreeData.fire();
   }
 
@@ -76,8 +103,19 @@ export class QuestTreeProvider
       treeDataProvider: provider,
     });
     crashlandsEvents.on('mote-name-changed', (event) => {
-      console.log('CHANGED MOTE NAME', event);
       void provider.rebuild();
+    });
+    crashlandsEvents.on('quest-opened', (uri, info) => {
+      // Reveal the quest in the tree
+      const questItem = MoteItem.lookup.get(info.moteId!);
+      if (!questItem) {
+        console.log("Couldn't find tree item for quest", info.moteId);
+        return;
+      }
+      provider.view.reveal(questItem, {
+        focus: true,
+        expand: true,
+      });
     });
     const subs = [provider.view];
 
@@ -86,10 +124,15 @@ export class QuestTreeProvider
   }
 }
 
-class MoteItem<Data = unknown> extends TreeItemBase<'mote'> {
+type MoteItemData =
+  | Crashlands2.Schemas['cl2_quest']
+  | Crashlands2.Schemas['cl2_storyline'];
+
+class MoteItem<
+  Data extends MoteItemData = MoteItemData,
+> extends TreeItemBase<'mote'> {
   override readonly kind = 'mote';
   parent: MoteItem | undefined;
-  schema: Bschema;
   document: vscode.TextDocument | undefined;
   /**
    * Map of moteId:item pairs, to allow lookup up a current tree item by its moteId
@@ -98,12 +141,11 @@ class MoteItem<Data = unknown> extends TreeItemBase<'mote'> {
 
   constructor(
     readonly packed: GameChanger,
-    readonly mote: Mote<Data>,
+    readonly moteId: string,
     parent?: MoteItem,
   ) {
-    super(packed.working.getMoteName(mote)!);
-    MoteItem.lookup.set(mote.id, this);
-    this.schema = packed.working.getSchema(mote.schema_id)!;
+    super(packed.working.getMoteName(moteId)!);
+    MoteItem.lookup.set(moteId, this);
     this.parent = parent;
     this.collapsibleState = this.isStoryline
       ? vscode.TreeItemCollapsibleState.Collapsed
@@ -112,13 +154,21 @@ class MoteItem<Data = unknown> extends TreeItemBase<'mote'> {
     this.iconPath = new vscode.ThemeIcon(this.isStoryline ? 'book' : 'note');
     if (this.isQuest) {
       // Make it openable in the editor
-      this.resourceUri = vscode.Uri.parse(moteToPath(mote));
+      this.resourceUri = vscode.Uri.parse(moteToPath(this.mote));
       this.command = {
         command: 'vscode.open',
         title: 'Open',
         arguments: [this.resourceUri],
       };
     }
+  }
+
+  get schema(): Bschema {
+    return this.packed.working.getSchema(this.mote.schema_id)!;
+  }
+
+  get mote(): Mote<Data> {
+    return this.packed.working.getMote(this.moteId)! as Mote<Data>;
   }
 
   get name(): string {

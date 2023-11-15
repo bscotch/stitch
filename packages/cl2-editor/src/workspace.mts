@@ -34,13 +34,10 @@ export class CrashlandsWorkspace {
         }
         crashlandsEvents.emit('quest-updated', event.document.uri);
       }),
-      vscode.workspace.onDidOpenTextDocument((doc) => {
-        if (isQuestUri(doc.uri)) {
-          crashlandsEvents.emit(
-            'quest-opened',
-            doc.uri,
-            parseGameChangerUri(doc.uri),
-          );
+      vscode.window.onDidChangeActiveTextEditor((editor) => {
+        const uri = editor?.document.uri;
+        if (uri && isQuestUri(uri)) {
+          crashlandsEvents.emit('quest-opened', uri, parseGameChangerUri(uri));
         }
       }),
     );
