@@ -1,5 +1,13 @@
 # Crashlands 2 Editor Changelog
 
+## 0.10.0 (2023-11-15)
+
+### Features
+
+- Implemented drag-drop organization of quests within stories
+- The focused quest is now always revealed in the tree.
+- Quest renames are now reflected in the tree
+
 ## 0.9.0 (2023-11-08)
 
 ### Features

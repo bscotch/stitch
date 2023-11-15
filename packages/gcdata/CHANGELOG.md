@@ -1,5 +1,20 @@
 # @bscotch/gcdata Changelog
 
+## 0.8.0 (2023-11-14)
+
+### Features
+
+- Quest renames are now reflected in the tree
+- On save to change.json, a backup is now always made
+- Updated CL2 types
+- Now creating the changes file if it doesn't already exist, instead of relying on the GameChanger to do so
+- Implemented saving of Quest Moment changes
+- Changes Clues are now fully saved
+
+### Fixes
+
+- Changed the changes.json backup to backup the old file instead of the new one, to prevent losing changes written by GameChanger
+
 ## 0.7.0 (2023-11-08)
 
 ### Features
