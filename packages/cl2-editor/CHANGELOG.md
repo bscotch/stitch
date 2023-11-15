@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.10.1 (2023-11-15)
+
+### Fixes
+
+- Resolved issue with the listed VSCode engine version
+
 ## 0.10.0 (2023-11-15)
 
 ### Features
