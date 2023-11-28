@@ -15,7 +15,12 @@ import { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { getAssetIcon, getBaseIcon } from './icons.mjs';
 import type { ObjectParentFolder } from './inspector.mjs';
-import { registerCommand, showProgress, uriFromCodeFile } from './lib.mjs';
+import {
+  getAssetFromRef,
+  registerCommand,
+  showProgress,
+  uriFromCodeFile,
+} from './lib.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
 import {
   GameMakerFolder,
@@ -227,8 +232,8 @@ export class GameMakerTreeProvider
       typeof item === 'string'
         ? GameMakerFolder.lookup.get(item)
         : item instanceof Asset
-        ? TreeAsset.lookup.get(item)
-        : TreeCode.lookup.get(item);
+          ? TreeAsset.lookup.get(item)
+          : TreeCode.lookup.get(item);
     if (!treeItem) {
       return;
     }
@@ -429,8 +434,13 @@ export class GameMakerTreeProvider
     }
   }
 
-  editSprite(treeItem: TreeAsset) {
-    const asset = treeItem.asset;
+  editSprite(entity: TreeAsset | Asset | undefined) {
+    entity ||= getAssetFromRef(this.workspace.getRefFromSelection());
+    if (!entity) {
+      console.log('No entity to edit sprite for');
+      return;
+    }
+    const asset = '$tag' in entity ? entity : entity.asset;
     if (!isAssetOfKind(asset, 'sprites')) {
       return;
     }
@@ -869,8 +879,9 @@ export class GameMakerTreeProvider
         'stitch.assets.rename',
         this.promptToRenameAsset.bind(this),
       ),
-      registerCommand('stitch.assets.editSprite', (item: TreeAsset) =>
-        this.editSprite(item),
+      registerCommand(
+        'stitch.assets.editSprite',
+        (item: TreeAsset | Asset | undefined) => this.editSprite(item),
       ),
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),

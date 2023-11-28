@@ -133,6 +133,14 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return this.assetKind === 'objects';
   }
 
+  get isSprite() {
+    return this.assetKind === 'sprites';
+  }
+
+  get isSound() {
+    return this.assetKind === 'sounds';
+  }
+
   get isSpineSprite() {
     if (this.assetKind !== 'sprites') {
       return false;
@@ -474,8 +482,8 @@ export class Asset<T extends YyResourceType = YyResourceType> {
           const type = constant.value.startsWith('"')
             ? 'String'
             : constant.value.match(/^-?[\d_.]+$/)
-            ? 'Real'
-            : 'Any';
+              ? 'Real'
+              : 'Any';
           const signifier = new Signifier(
             this.project.self,
             constant.name,

@@ -1,6 +1,5 @@
 import { isAssetOfKind } from '@bscotch/gml-parser';
 import vscode from 'vscode';
-import { stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { locationOf, registerCommand } from './lib.mjs';
 
@@ -65,14 +64,14 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
           return locationOf(files[0].startRange);
         }
       } else if (isAssetOfKind(asset, 'sprites')) {
-        // Then open the sprite viewer
-        stitchEvents.emit('sprite-editor-open', asset);
+        // // Then open the sprite viewer
+        // stitchEvents.emit('sprite-editor-open', asset);
       } else if (isAssetOfKind(asset, 'sounds')) {
-        // Then just open the sound file
-        vscode.commands.executeCommand(
-          'vscode.open',
-          vscode.Uri.file(asset.dir.join(asset.yy.soundFile).absolute),
-        );
+        // // Then just open the sound file
+        // vscode.commands.executeCommand(
+        //   'vscode.open',
+        //   vscode.Uri.file(asset.dir.join(asset.yy.soundFile).absolute),
+        // );
       }
     }
     return;

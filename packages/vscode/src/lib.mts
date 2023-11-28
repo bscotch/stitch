@@ -1,4 +1,4 @@
-import type { Code, Range } from '@bscotch/gml-parser';
+import type { Asset, Code, Range, Reference } from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
 import { exec } from 'node:child_process';
 import os from 'node:os';
@@ -22,6 +22,14 @@ export function getWorkspaceRoot() {
     throw new Error('Not in a workspace!');
   }
   return root;
+}
+
+export function getAssetFromRef(ref: Reference | undefined): Asset | undefined {
+  if (!ref) return;
+  const project = ref.file.project;
+  return ref.item.asset
+    ? project.getAssetByName(ref.item.name)
+    : ref.item.def?.file?.asset;
 }
 
 /**
@@ -266,8 +274,8 @@ export function createSorter<T extends string | undefined>(
       typeof entry === 'string'
         ? entry
         : options?.sortByField && typeof entry === 'object' && entry !== null
-        ? entry[options.sortByField as any]
-        : `${entry}`;
+          ? entry[options.sortByField as any]
+          : `${entry}`;
     return options?.caseSensitive ? value : value.toLocaleLowerCase();
   };
 

@@ -323,6 +323,29 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
     return file;
   }
 
+  getRefFromSelection(
+    document?: vscode.TextDocument,
+    selection?: readonly vscode.Selection[],
+  ) {
+    document ||= vscode.window.activeTextEditor?.document;
+    if (
+      !document ||
+      document.uri.scheme !== 'file' ||
+      !document.uri.fsPath.endsWith('.gml')
+    ) {
+      return;
+    }
+    const file = this.getGmlFile(document);
+    if (!file) return;
+
+    // Get the reference at the cursor
+    selection ||= vscode.window.activeTextEditor?.selections;
+    if (!selection) return;
+    const start = selection[0].start;
+    const ref = file.getReferenceAt(start.line + 1, start.character);
+    return ref;
+  }
+
   /**
    * A general function for reprocessing files upon change. Handles
    * debounding and the like.

@@ -27,6 +27,7 @@ import { GameMakerInspectorProvider } from './inspector.mjs';
 import {
   createSorter,
   findProject,
+  getAssetFromRef,
   pathyFromUri,
   registerCommand,
 } from './lib.mjs';
@@ -256,27 +257,28 @@ export async function activateStitchExtension(
     workspace.semanticHighlightProvider.register(),
     workspace.signatureHelpStatus,
     vscode.window.onDidChangeTextEditorSelection((e) => {
-      // Update the 'when' clause for the 'stitch.selectionIsNative' context
-
-      // This includes events from the output window, so skip those
-      if (e.textEditor.document.uri.scheme !== 'file') {
-        return;
-      }
-      // If our cursor is in a native symbol, update the 'when' clause
-      // for that to be true.
-      const wordRange = e.textEditor.document.getWordRangeAtPosition(
-        e.selections[0].start,
+      // Update the 'when' clause for the 'stitch.selectionIs(Native|Sprite|Sound)' contexts
+      const ref = workspace.getRefFromSelection(
+        e.textEditor.document,
+        e.selections,
       );
-      if (!wordRange) {
-        return;
-      }
-      const word = e.textEditor.document.getText(wordRange);
-      const item = workspace.getActiveProject()?.self.getMember(word);
+      if (!ref) return;
+      const asset = getAssetFromRef(ref);
 
       void vscode.commands.executeCommand(
         'setContext',
         'stitch.selectionIsNative',
-        item?.native || false,
+        !!ref.item?.native,
+      );
+      void vscode.commands.executeCommand(
+        'setContext',
+        'stitch.selectionIsSprite',
+        asset?.isSprite && asset.name,
+      );
+      void vscode.commands.executeCommand(
+        'setContext',
+        'stitch.selectionIsSound',
+        asset?.isSound && asset.name,
       );
     }),
     vscode.window.onDidChangeTextEditorSelection((e) => {

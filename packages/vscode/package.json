@@ -493,6 +493,11 @@
         "args": {
           "from": "keybind"
         }
+      },
+      {
+        "command": "stitch.assets.editSprite",
+        "key": "f12",
+        "when": "editorTextFocus && resourceExtname =~ /\\.gml$/ && stitch.selectionIsSprite"
       }
     ],
     "languages": [
