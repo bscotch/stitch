@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.55.6 (2023-11-28)
+
+### Fixes
+
+- Resolved issue where inaccessible Program Files folders block checking for GameMaker installs
+
 ## 1.55.0 (2023-11-06)
 
 ### Features
