@@ -123,6 +123,10 @@
         "title": "Edit..."
       },
       {
+        "command": "stitch.assets.editSound",
+        "title": "Edit..."
+      },
+      {
         "command": "stitch.assets.delete",
         "title": "Delete",
         "icon": "$(close)"
@@ -498,6 +502,11 @@
         "command": "stitch.assets.editSprite",
         "key": "f12",
         "when": "editorTextFocus && resourceExtname =~ /\\.gml$/ && stitch.selectionIsSprite"
+      },
+      {
+        "command": "stitch.assets.editSound",
+        "key": "f12",
+        "when": "editorTextFocus && resourceExtname =~ /\\.gml$/ && stitch.selectionIsSound"
       }
     ],
     "languages": [

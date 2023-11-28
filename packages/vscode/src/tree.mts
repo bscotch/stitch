@@ -434,8 +434,25 @@ export class GameMakerTreeProvider
     }
   }
 
+  editSound(entity: TreeAsset | Asset | undefined) {
+    entity ||= getAssetFromRef(this.workspace.getRefFromSelection());
+    if (!entity) {
+      console.log('No entity to edit sprite for');
+      return;
+    }
+    const asset = '$tag' in entity ? entity : entity.asset;
+    if (!isAssetOfKind(asset, 'sounds')) {
+      return;
+    }
+    vscode.commands.executeCommand(
+      'vscode.open',
+      vscode.Uri.file(asset.dir.join(asset.yy.soundFile).absolute),
+    );
+  }
+
   editSprite(entity: TreeAsset | Asset | undefined) {
     entity ||= getAssetFromRef(this.workspace.getRefFromSelection());
+    console.log('editing sprite', entity);
     if (!entity) {
       console.log('No entity to edit sprite for');
       return;
@@ -882,6 +899,13 @@ export class GameMakerTreeProvider
       registerCommand(
         'stitch.assets.editSprite',
         (item: TreeAsset | Asset | undefined) => this.editSprite(item),
+      ),
+      registerCommand(
+        'stitch.assets.editSound',
+        (item: TreeAsset | Asset | undefined) => {
+          console.log('triggered edit sound');
+          this.editSound(item);
+        },
       ),
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),

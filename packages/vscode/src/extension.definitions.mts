@@ -63,15 +63,6 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
         if (files.length > 0) {
           return locationOf(files[0].startRange);
         }
-      } else if (isAssetOfKind(asset, 'sprites')) {
-        // // Then open the sprite viewer
-        // stitchEvents.emit('sprite-editor-open', asset);
-      } else if (isAssetOfKind(asset, 'sounds')) {
-        // // Then just open the sound file
-        // vscode.commands.executeCommand(
-        //   'vscode.open',
-        //   vscode.Uri.file(asset.dir.join(asset.yy.soundFile).absolute),
-        // );
       }
     }
     return;

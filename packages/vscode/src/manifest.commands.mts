@@ -149,6 +149,10 @@ export const commands = {
       group: '7_modification@1',
     },
   },
+  'stitch.assets.editSound': {
+    command: 'stitch.assets.editSound',
+    title: 'Edit...',
+  },
   'stitch.assets.delete': {
     command: 'stitch.assets.delete',
     title: 'Delete',
