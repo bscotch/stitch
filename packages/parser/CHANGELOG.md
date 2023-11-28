@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 0.61.4 (2023-11-28)
+
+### Fixes
+
+- Sprite editor now only opens upon F12, rather than as a side effect of go-to-definition. This prevents accidental opening of sprite editors.
+
 ## 0.61.3 (2023-11-14)
 
 ### Fixes

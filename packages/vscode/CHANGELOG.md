@@ -1,5 +1,13 @@
 # Stitch Changelog
 
+## 1.55.7 (2023-11-28)
+
+### Fixes
+
+- Resolved issue where go-to-definition on 'event_inherited' calls opened the docs instead of resolving to the parent event
+- Sound previews now only open upon F12, rather than as a side effect of go-to-definition. This prevents accidental opening of sounds.
+- Sprite editor now only opens upon F12, rather than as a side effect of go-to-definition. This prevents accidental opening of sprite editors.
+
 ## 1.55.6 (2023-11-28)
 
 ### Fixes
