@@ -265,10 +265,15 @@ export async function activateStitchExtension(
       if (!ref) return;
       const asset = getAssetFromRef(ref);
 
+      // Skip 'event_inherited' since we want to be able to
+      // go-to-def on it to trace the inheritance chain.
+      const isNative =
+        !!ref.item?.native && ref.item.name !== 'event_inherited';
+
       void vscode.commands.executeCommand(
         'setContext',
         'stitch.selectionIsNative',
-        !!ref.item?.native,
+        isNative,
       );
       void vscode.commands.executeCommand(
         'setContext',

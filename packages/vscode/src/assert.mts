@@ -26,6 +26,10 @@ export class StitchVscodeInternalError extends StitchVscodeError {
   }
 }
 
+export function throwUserError(message: string): never {
+  throw new StitchVscodeUserError(message, throwUserError);
+}
+
 /**
  * Call a function with its arguments. If
  * it throws an error, log it with console.log

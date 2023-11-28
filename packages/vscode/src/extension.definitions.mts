@@ -9,7 +9,6 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
   provideDefinition(
     document: vscode.TextDocument,
     position: vscode.Position,
-    token: vscode.CancellationToken,
   ): vscode.Definition | undefined {
     const offset = document.offsetAt(position);
     const file = this.workspace.getGmlFile(document);
@@ -23,7 +22,7 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
       : item?.getTypeByKind('Id.Instance')?.name ||
         item?.getTypeByKind('Asset.GMObject')?.name;
 
-    if (item && item.native) {
+    if (item && item.native && item.name !== 'event_inherited') {
       // const helpLink = file?.project.helpLinks[item.name];
       // helpLink && vscode.env.openExternal(vscode.Uri.parse(helpLink));
     } else if (item && !item.native && item.def?.file) {
