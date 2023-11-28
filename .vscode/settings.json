@@ -24,10 +24,10 @@
     "readme.md": "todo*, changelog*, license*, contributing*"
   },
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.organizeImports": false,
-    "source.fixAll": true,
-    "source.addMissingImports": true
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never",
+    "source.fixAll": "explicit",
+    "source.addMissingImports": "explicit"
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "[typescript]": {

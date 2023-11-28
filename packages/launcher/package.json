@@ -50,7 +50,7 @@
   "dependencies": {
     "@bscotch/gamemaker-releases": "workspace:*",
     "@bscotch/logger": "0.2.2",
-    "@bscotch/pathy": "^2.11.0",
+    "@bscotch/pathy": "^2.12.0",
     "@bscotch/utility": "^7.2.0",
     "axios": "^1.6.1",
     "tslib": "^2.6.2",

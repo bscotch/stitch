@@ -56,7 +56,7 @@
   "dependencies": {
     "@bscotch/debounce-watch": "^1.1.0",
     "@bscotch/logger": "0.2.2",
-    "@bscotch/pathy": "^2.11.0",
+    "@bscotch/pathy": "^2.12.0",
     "@bscotch/spritely": "workspace:*",
     "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/stringify": "^0.3.0",
