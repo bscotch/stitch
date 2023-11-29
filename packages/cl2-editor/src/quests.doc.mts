@@ -57,6 +57,7 @@ export class QuestDocument {
     // support for things that aren't fully implemented.
     const line = this.document!.lineAt(position.line);
     const text = line.text;
+    const isAtLineStart = position.character === 0;
     const isAtTrigger = text[position.character - 1] === '@';
     const lineType = text.startsWith('>')
       ? 'dialog'
@@ -114,7 +115,7 @@ export class QuestDocument {
             const item = new vscode.CompletionItem(o);
             item.kind = vscode.CompletionItemKind.Property;
             item.detail = 'Moment Style';
-            item.insertText = `? ${o}`;
+            item.insertText = isAtLineStart ? `? ${o}` : o;
             return item;
           });
         }
