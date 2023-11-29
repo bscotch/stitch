@@ -1,5 +1,12 @@
 # @bscotch/gcdata Changelog
 
+## 0.8.1 (2023-11-29)
+
+### Fixes
+
+- Added support for commas and parens for mote names
+- Resolved issues causing error-on-save with new moment content.
+
 ## 0.8.0 (2023-11-14)
 
 ### Features

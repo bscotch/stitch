@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.11.0 (2023-11-29)
+
+### Features
+
+- Added workspace symbol search for CL2 quest names and ids
+
 ## 0.10.1 (2023-11-15)
 
 ### Fixes
