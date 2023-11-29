@@ -2,8 +2,12 @@ import type { Mote, Range } from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 
-export function moteToPath(mote: Mote) {
+export function moteToPath(mote: Mote): string {
   return `bschema:///schemas/${mote.schema_id}/motes/${mote.id}.${mote.schema_id}`;
+}
+
+export function moteToUri(mote: Mote): vscode.Uri {
+  return vscode.Uri.parse(moteToPath(mote));
 }
 
 export function isQuestUri(uri: vscode.Uri) {

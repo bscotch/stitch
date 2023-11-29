@@ -177,6 +177,8 @@ export class QuestDocument {
     if (line.text.match(/^\/\//)) {
       // Then default to adding another comment line
       newEdit.insert(this.uri, cursor, '\n// ');
+    } else if (line.text.match(/^:\)/)) {
+      newEdit.insert(this.uri, cursor, '\n!');
     } else if (line.text.match(/^.(#\w+)?\s*$/)) {
       // Then we want to replace that line with a blank one
       newEdit.delete(this.uri, line.range);

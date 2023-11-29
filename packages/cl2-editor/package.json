@@ -154,6 +154,7 @@
     "typeDefinitionProvider": "true",
     "documentFormattingProvider": "true",
     "renameProvider": "true",
+    "workspaceSymbolProvider": "true",
     "completionProvider": {
       "resolveProvider": "true",
       "triggerCharacters": [
