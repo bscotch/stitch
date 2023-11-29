@@ -113,10 +113,24 @@ export class GameChanger {
     assert(workingMote, `Cannot update non-existent mote ${moteId}`);
     const schema = this.working.getSchema(workingMote.schema_id);
     assert(schema, `Mote schema ${workingMote.schema_id} does not exist`);
+
+    // // Need a data structure that can be used for reference
+    // // when resolving schema pointers, to handle oneOfs.
+    const sampleDataFromPath = setValueAtPointer(
+      {
+        id: moteId,
+        schema_id: this.working.getMote(moteId)?.schema_id,
+        data: {},
+      } as Mote,
+      dataPath,
+      value,
+    );
+
     const subschema = resolvePointerInSchema(
       dataPath.replace(/^data\//, ''),
       workingMote,
       this.working,
+      sampleDataFromPath,
     );
     assert(
       subschema,

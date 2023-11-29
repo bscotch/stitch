@@ -1,8 +1,12 @@
 import { expect } from 'chai';
 import { assertThrows } from './assert.js';
-import { setValueAtPointer } from './util.js';
+import { debugOnError, setValueAtPointer } from './util.js';
 
 describe('Utilities', function () {
+  it('can get debugOnFail results when there is no error', function () {
+    expect(debugOnError(() => 10)).to.equal(10);
+  });
+
   it('can set values using a pointer', function () {
     let data = {};
     setValueAtPointer(data, ['a', 'b', 'c'], 'd');

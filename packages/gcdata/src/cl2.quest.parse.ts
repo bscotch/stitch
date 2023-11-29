@@ -459,254 +459,306 @@ export async function updateChangesFromParsedQuest(
   moteId: string,
   packed: GameChanger,
 ) {
-  // We're always going to be computing ALL changes, so clear whatever
-  // we previously had.
-  packed.clearMoteChanges(moteId);
-  const questMoteBase = packed.base.getMote(moteId) as
-    | Mote<Crashlands2.Schemas['cl2_quest']>
-    | undefined;
-  const questMoteWorking = packed.working.getMote(moteId) as
-    | Mote<Crashlands2.Schemas['cl2_quest']>
-    | undefined;
-  const schema = packed.working.getSchema('cl2_quest')!;
-  assert(schema.name, 'Quest mote must have a name pointer');
-  assert(schema, 'cl2_quest schema not found in working copy');
-  const updateMote = (path: QuestMoteDataPointer, value: any) => {
-    packed.updateMoteData(moteId, path, value);
-  };
-  updateMote('data/name', parsed.name);
-  updateMote('data/quest_giver/item', parsed.quest_giver);
-  updateMote('data/quest_receiver/item', parsed.quest_receiver);
-  updateMote('data/quest_start_log/text', parsed.quest_start_log);
-  updateMote('data/wip/draft', parsed.draft);
-  updateMote('data/storyline', parsed.storyline);
+  const _traceLogs: any[] = [];
+  const trace = (log: any) => _traceLogs.push(log);
+  trace(`Updating mote ${moteId}`);
+  try {
+    // We're always going to be computing ALL changes, so clear whatever
+    // we previously had.
+    packed.clearMoteChanges(moteId);
+    const questMoteBase = packed.base.getMote(moteId) as
+      | Mote<Crashlands2.Schemas['cl2_quest']>
+      | undefined;
+    const questMoteWorking = packed.working.getMote(moteId) as
+      | Mote<Crashlands2.Schemas['cl2_quest']>
+      | undefined;
+    const schema = packed.working.getSchema('cl2_quest')!;
+    assert(schema.name, 'Quest mote must have a name pointer');
+    assert(schema, 'cl2_quest schema not found in working copy');
+    const updateMote = (path: QuestMoteDataPointer, value: any) => {
+      packed.updateMoteData(moteId, path, value);
+    };
+    updateMote('data/name', parsed.name);
+    updateMote('data/quest_giver/item', parsed.quest_giver);
+    updateMote('data/quest_receiver/item', parsed.quest_receiver);
+    updateMote('data/quest_start_log/text', parsed.quest_start_log);
+    updateMote('data/wip/draft', parsed.draft);
+    updateMote('data/storyline', parsed.storyline);
 
-  const parsedComments = parsed.comments.filter((c) => !!c.text);
-  const parsedClues = parsed.clues.filter((c) => !!c.id && !!c.speaker);
+    const parsedComments = parsed.comments.filter((c) => !!c.text);
+    const parsedClues = parsed.clues.filter((c) => !!c.id && !!c.speaker);
 
-  //#region COMMENTS
-  // Add/Update COMMENTS
-  for (const comment of parsedComments) {
-    updateMote(`data/wip/comments/${comment.id}/element`, comment.text);
-  }
-  // Remove deleted comments
-  for (const existingComment of bsArrayToArray(
-    questMoteBase?.data.wip?.comments || {},
-  )) {
-    if (!parsedComments.find((c) => c.id === existingComment.id)) {
-      updateMote(`data/wip/comments/${existingComment.id}`, null);
+    //#region COMMENTS
+    // Add/Update COMMENTS
+    trace(`Updating comments`);
+    for (const comment of parsedComments) {
+      trace(`Updating comment ${comment.id} with text "${comment.text}"`);
+      updateMote(`data/wip/comments/${comment.id}/element`, comment.text);
     }
-  }
-  // Get the BASE order of the comments (if any) and use those
-  // as the starting point for an up to date order.
-  const comments = parsedComments.map((c) => {
-    // Look up the base comment
-    let comment = questMoteBase?.data.wip?.comments?.[c.id!];
-    if (!comment) {
-      comment = questMoteWorking?.data.wip?.comments?.[c.id!];
-      // @ts-expect-error - order is a required field, but it'll be re-added
-      delete comment?.order;
-    }
-    assert(comment, `Comment ${c.id} not found in base or working mote`);
-    return { ...comment, id: c.id! };
-  });
-  updateBsArrayOrder(comments);
-  comments.forEach((comment) => {
-    updateMote(`data/wip/comments/${comment.id}/order`, comment.order);
-  });
-  //#endregion
-
-  //#region CLUES
-  // Add/update clues
-  for (const clue of parsedClues) {
-    updateMote(`data/clues/${clue.id}/element/speaker`, clue.speaker);
-    for (const phrase of clue.phrases) {
-      updateMote(
-        `data/clues/${clue.id}/element/phrases/${phrase.id}/element/phrase/text/text`,
-        phrase.text || '',
-      );
-      if (phrase.emoji) {
-        updateMote(
-          `data/clues/${clue.id}/element/phrases/${phrase.id}/element/phrase/emoji`,
-          phrase.emoji,
-        );
-      }
-    }
-  }
-  // Delete clues that were removed
-  for (const existingClue of bsArrayToArray(questMoteBase?.data.clues || {})) {
-    const parsedClue = parsedClues.find((c) => c.id === existingClue.id);
-    if (!parsedClue) {
-      updateMote(`data/clues/${existingClue.id}`, null);
-    } else {
-      // Delete phrases that were removed
-      for (const existingPhrase of bsArrayToArray(
-        existingClue.element.phrases,
-      )) {
-        if (!parsedClue.phrases.find((p) => p.id === existingPhrase.id)) {
-          updateMote(
-            `data/clues/${existingClue.id}/element/phrases/${existingPhrase.id}`,
-            null,
-          );
-        }
-      }
-    }
-  }
-  // Update the order of the clues and phrases
-  const clues = parsedClues.map((c) => {
-    // Look up the base clue
-    let clue = questMoteBase?.data.clues?.[c.id!];
-    if (!clue) {
-      clue = questMoteWorking?.data.clues?.[c.id!];
-      // @ts-expect-error - order is a required field, but it'll be re-added
-      delete clue?.order;
-    }
-    assert(clue, `Clue ${c.id} not found in base or working mote`);
-    const phrases = c.phrases.map((p) => {
-      let phrase =
-        questMoteBase?.data.clues?.[c.id!]?.element?.phrases?.[p.id!];
-      if (!phrase) {
-        phrase =
-          questMoteWorking?.data.clues?.[c.id!]?.element?.phrases?.[p.id!];
-        // @ts-expect-error - order is a required field, but it'll be re-added
-        delete phrase?.order;
-      }
-      assert(phrase, `Phrase ${p.id} not found in base or working mote`);
-      return { ...phrase, id: p.id! };
-    });
-    updateBsArrayOrder(phrases);
-    return { ...clue, phrases, id: c.id! };
-  });
-  updateBsArrayOrder(clues);
-  clues.forEach((clue) => {
-    updateMote(`data/clues/${clue.id}/order`, clue.order);
-    clue.phrases.forEach((phrase) => {
-      updateMote(
-        `data/clues/${clue.id}/element/phrases/${phrase.id}/order`,
-        phrase.order,
-      );
-    });
-  });
-  //#endregion
-
-  //#region QUEST MOMENTS
-  for (const momentGroup of [
-    'quest_start_moments',
-    'quest_end_moments',
-  ] as const) {
-    const parsedMoments = parsed[momentGroup];
-    // Add/Update moments
-    for (const moment of parsedMoments) {
-      if (moment.kind === 'other') {
-        // Note: we're only tracking style for moment types that
-        // are not fully implemented.
-        updateMote(
-          `data/${momentGroup}/${moment.id}/element/style`,
-          moment.style,
-        );
-      } else if (moment.kind === 'dialogue') {
-        updateMote(
-          `data/${momentGroup}/${moment.id}/element/speech/speaker`,
-          moment.speaker,
-        );
-        updateMote(
-          `data/${momentGroup}/${moment.id}/element/speech/emotion`,
-          moment.emoji,
-        );
-        updateMote(
-          `data/${momentGroup}/${moment.id}/element/speech/text/text`,
-          moment.text,
-        );
-      } else if (moment.kind === 'emote') {
-        for (const emote of moment.emotes) {
-          updateMote(
-            `data/${momentGroup}/${moment.id}/element/emotes/${emote.id}/element/key`,
-            emote.speaker,
-          );
-          updateMote(
-            `data/${momentGroup}/${moment.id}/element/emotes/${emote.id}/element/value`,
-            emote.emoji,
-          );
-        }
-      }
-    }
-    // Delete moments that were removed
-    for (const existingMoment of bsArrayToArray(
-      questMoteBase?.data[momentGroup] || {},
+    // Remove deleted comments
+    for (const existingComment of bsArrayToArray(
+      questMoteBase?.data.wip?.comments || {},
     )) {
-      const parsedMoment = parsedMoments.find(
-        (m) => m.id === existingMoment.id,
-      );
-      const existingElement = existingMoment.element;
-      if (!parsedMoment) {
-        updateMote(`data/${momentGroup}/${existingMoment.id}`, null);
-      } else if (existingElement.style === 'Emote') {
-        // Delete emotes that were removed
-        assert(
-          parsedMoment.kind === 'emote',
-          `Expected moment ${existingMoment.id} to be an emote`,
+      if (!parsedComments.find((c) => c.id === existingComment.id)) {
+        trace(`Deleting comment ${existingComment.id}`);
+        updateMote(`data/wip/comments/${existingComment.id}`, null);
+      }
+    }
+    // Get the BASE order of the comments (if any) and use those
+    // as the starting point for an up to date order.
+    const comments = parsedComments.map((c) => {
+      // Look up the base comment
+      let comment = questMoteBase?.data.wip?.comments?.[c.id!];
+      if (!comment) {
+        comment = questMoteWorking?.data.wip?.comments?.[c.id!];
+        // @ts-expect-error - order is a required field, but it'll be re-added
+        delete comment?.order;
+      }
+      assert(comment, `Comment ${c.id} not found in base or working mote`);
+      return { ...comment, id: c.id! };
+    });
+    trace('Updating comment order');
+    updateBsArrayOrder(comments);
+    comments.forEach((comment) => {
+      trace(`Updating comment ${comment.id} order to ${comment.order}`);
+      updateMote(`data/wip/comments/${comment.id}/order`, comment.order);
+    });
+    //#endregion
+
+    //#region CLUES
+    // Add/update clues
+    trace(`Updating clues`);
+    for (const clue of parsedClues) {
+      trace(`Setting clue ${clue.id} speaker to "${clue.speaker}"`);
+      updateMote(`data/clues/${clue.id}/element/speaker`, clue.speaker);
+      for (const phrase of clue.phrases) {
+        trace(`Setting phrase ${phrase.id} text to "${phrase.text}"`);
+        updateMote(
+          `data/clues/${clue.id}/element/phrases/${phrase.id}/element/phrase/text/text`,
+          phrase.text || '',
         );
-        for (const existingEmote of bsArrayToArray(existingElement.emotes)) {
-          if (!parsedMoment.emotes.find((e) => e.id === existingEmote.id)) {
+        if (phrase.emoji) {
+          trace(`Setting phrase ${phrase.id} emoji to "${phrase.emoji}"`);
+          updateMote(
+            `data/clues/${clue.id}/element/phrases/${phrase.id}/element/phrase/emoji`,
+            phrase.emoji,
+          );
+        }
+      }
+    }
+    // Delete clues that were removed
+    trace(`Deleting removed clues`);
+    for (const existingClue of bsArrayToArray(
+      questMoteBase?.data.clues || {},
+    )) {
+      const parsedClue = parsedClues.find((c) => c.id === existingClue.id);
+      if (!parsedClue) {
+        trace(`Deleting clue ${existingClue.id}`);
+        updateMote(`data/clues/${existingClue.id}`, null);
+      } else {
+        // Delete phrases that were removed
+        for (const existingPhrase of bsArrayToArray(
+          existingClue.element.phrases,
+        )) {
+          if (!parsedClue.phrases.find((p) => p.id === existingPhrase.id)) {
+            trace(
+              `Deleting phrase ${existingPhrase.id} from clue ${existingClue.id}`,
+            );
             updateMote(
-              `data/${momentGroup}/${existingMoment.id}/element/emotes/${existingEmote.id}`,
+              `data/clues/${existingClue.id}/element/phrases/${existingPhrase.id}`,
               null,
             );
           }
         }
       }
     }
-    // Update the order of the moments
-    const moments = parsedMoments.map((m) => {
-      // Look up the base moment
-      let moment = questMoteBase?.data[momentGroup]?.[m.id!];
-      if (!moment) {
-        moment = questMoteWorking?.data[momentGroup]?.[m.id!];
+    // Update the order of the clues and phrases
+    trace(`Updating clue order`);
+    const clues = parsedClues.map((c) => {
+      // Look up the base clue
+      let clue = questMoteBase?.data.clues?.[c.id!];
+      if (!clue) {
+        clue = questMoteWorking?.data.clues?.[c.id!];
         // @ts-expect-error - order is a required field, but it'll be re-added
-        delete moment?.order;
+        delete clue?.order;
       }
-      assert(moment, `Moment ${m.id} not found in base or working mote`);
-      moment.element.style;
-      const element = moment.element;
-      if (element.style === 'Emote') {
-        assert(m.kind === 'emote', `Expected moment ${m.id} to be an emote`);
-        // Then make sure the emotes are in the right order
-        const emotes = m.emotes.map((e) => {
-          let emoteElement = questMoteBase?.data[momentGroup]?.[m.id!]?.element;
-          let emote: Crashlands2.Emotes1[string] | undefined;
-          if (emoteElement && isEmoteMoment(emoteElement)) {
-            emote = emoteElement.emotes[e.id!];
+      assert(clue, `Clue ${c.id} not found in base or working mote`);
+      const phrases = c.phrases.map((p) => {
+        let phrase =
+          questMoteBase?.data.clues?.[c.id!]?.element?.phrases?.[p.id!];
+        if (!phrase) {
+          phrase =
+            questMoteWorking?.data.clues?.[c.id!]?.element?.phrases?.[p.id!];
+          // @ts-expect-error - order is a required field, but it'll be re-added
+          delete phrase?.order;
+        }
+        assert(phrase, `Phrase ${p.id} not found in base or working mote`);
+        return { ...phrase, id: p.id! };
+      });
+      trace(`Updating phrase order for clue ${c.id}`);
+      updateBsArrayOrder(phrases);
+      return { ...clue, phrases, id: c.id! };
+    });
+    updateBsArrayOrder(clues);
+    clues.forEach((clue) => {
+      trace(`Updating clue ${clue.id} order to ${clue.order}`);
+      updateMote(`data/clues/${clue.id}/order`, clue.order);
+      clue.phrases.forEach((phrase) => {
+        trace(`Updating phrase ${phrase.id} order to ${phrase.order}`);
+        updateMote(
+          `data/clues/${clue.id}/element/phrases/${phrase.id}/order`,
+          phrase.order,
+        );
+      });
+    });
+    //#endregion
+
+    //#region QUEST MOMENTS
+    for (const momentGroup of [
+      'quest_start_moments',
+      'quest_end_moments',
+    ] as const) {
+      trace(`Updating Moment Group ${momentGroup}`);
+      const parsedMoments = parsed[momentGroup];
+      // Add/Update moments
+      trace('Adding/updating moments');
+      for (const moment of parsedMoments) {
+        trace(`Updating moment ${moment.id} of kind ${moment.kind}`);
+        const setStyle = (style: string) =>
+          updateMote(`data/${momentGroup}/${moment.id}/element/style`, style);
+        if (moment.kind === 'other') {
+          // Note: we're only tracking style for moment types that
+          // are not fully implemented.
+          setStyle(moment.style!);
+        } else if (moment.kind === 'dialogue') {
+          trace('Updating speaker');
+          setStyle('Dialogue');
+          updateMote(
+            `data/${momentGroup}/${moment.id}/element/speech/speaker`,
+            moment.speaker,
+          );
+          trace('Updating emoji');
+          updateMote(
+            `data/${momentGroup}/${moment.id}/element/speech/emotion`,
+            moment.emoji,
+          );
+          trace('Updating text');
+          updateMote(
+            `data/${momentGroup}/${moment.id}/element/speech/text/text`,
+            moment.text,
+          );
+        } else if (moment.kind === 'emote') {
+          setStyle('Emote');
+          for (const emote of moment.emotes) {
+            updateMote(
+              `data/${momentGroup}/${moment.id}/element/emotes/${emote.id}/element/key`,
+              emote.speaker,
+            );
+            updateMote(
+              `data/${momentGroup}/${moment.id}/element/emotes/${emote.id}/element/value`,
+              emote.emoji,
+            );
           }
-          if (!emote) {
-            emoteElement =
-              questMoteWorking?.data[momentGroup]?.[m.id!]?.element;
+        }
+        trace(`Updated moment ${moment.id}`);
+      }
+      // Delete moments that were removed
+      trace('Deleting removed moments');
+      for (const existingMoment of bsArrayToArray(
+        questMoteBase?.data[momentGroup] || {},
+      )) {
+        const parsedMoment = parsedMoments.find(
+          (m) => m.id === existingMoment.id,
+        );
+        const existingElement = existingMoment.element;
+        if (!parsedMoment) {
+          trace(`Deleting removed moment ${existingMoment.id}`);
+          updateMote(`data/${momentGroup}/${existingMoment.id}`, null);
+        } else if (existingElement.style === 'Emote') {
+          // Delete emotes that were removed
+          trace(`Deleting removed emotes from moment ${existingMoment.id}`);
+          assert(
+            parsedMoment.kind === 'emote',
+            `Expected moment ${existingMoment.id} to be an emote`,
+          );
+          for (const existingEmote of bsArrayToArray(existingElement.emotes)) {
+            if (!parsedMoment.emotes.find((e) => e.id === existingEmote.id)) {
+              trace(
+                `Deleting removed emote ${existingEmote.id} from moment ${existingMoment.id}`,
+              );
+              updateMote(
+                `data/${momentGroup}/${existingMoment.id}/element/emotes/${existingEmote.id}`,
+                null,
+              );
+            }
+          }
+        }
+      }
+      // Update the order of the moments
+      trace('Updating moment order');
+      const moments = parsedMoments.map((m) => {
+        // Look up the base moment
+        let moment = questMoteBase?.data[momentGroup]?.[m.id!];
+        if (!moment) {
+          moment = questMoteWorking?.data[momentGroup]?.[m.id!];
+          // @ts-expect-error - order is a required field, but it'll be re-added
+          delete moment?.order;
+        }
+        assert(moment, `Moment ${m.id} not found in base or working mote`);
+        moment.element.style;
+        const element = moment.element;
+        if (element.style === 'Emote') {
+          assert(m.kind === 'emote', `Expected moment ${m.id} to be an emote`);
+          // Then make sure the emotes are in the right order
+          const emotes = m.emotes.map((e) => {
+            let emoteElement =
+              questMoteBase?.data[momentGroup]?.[m.id!]?.element;
+            let emote: Crashlands2.Emotes1[string] | undefined;
             if (emoteElement && isEmoteMoment(emoteElement)) {
               emote = emoteElement.emotes[e.id!];
             }
-            // Then we don't need to try to keep a prior order value
-            delete emote?.order;
-          }
-          assert(emote, `Emote ${e.id} not found in base or working mote`);
-          return { ...emote, id: e.id! };
-        });
-        updateBsArrayOrder(emotes);
-        return { ...moment, emotes, id: m.id! };
-      }
-      return { ...moment, id: m.id! };
-    });
-    updateBsArrayOrder(moments);
-    moments.forEach((m) => {
-      updateMote(`data/${momentGroup}/${m.id}/order`, m.order);
-      if ('emotes' in m) {
-        m.emotes.forEach((e) => {
-          updateMote(
-            `data/${momentGroup}/${m.id}/element/emotes/${e.id}/order`,
-            e.order,
-          );
-        });
-      }
-    });
+            if (!emote) {
+              emoteElement =
+                questMoteWorking?.data[momentGroup]?.[m.id!]?.element;
+              if (emoteElement && isEmoteMoment(emoteElement)) {
+                emote = emoteElement.emotes[e.id!];
+              }
+              // Then we don't need to try to keep a prior order value
+              delete emote?.order;
+            }
+            assert(emote, `Emote ${e.id} not found in base or working mote`);
+            return { ...emote, id: e.id! };
+          });
+          trace(`Updating emote order for moment ${m.id}`);
+          updateBsArrayOrder(emotes);
+          return { ...moment, emotes, id: m.id! };
+        }
+        return { ...moment, id: m.id! };
+      });
+      updateBsArrayOrder(moments);
+      moments.forEach((m) => {
+        trace(`Updating moment ${m.id} order to ${m.order}`);
+        updateMote(`data/${momentGroup}/${m.id}/order`, m.order);
+        if ('emotes' in m) {
+          m.emotes.forEach((e) => {
+            trace(`Updating emote ${e.id} order to ${e.order}`);
+            updateMote(
+              `data/${momentGroup}/${m.id}/element/emotes/${e.id}/order`,
+              e.order,
+            );
+          });
+        }
+      });
+    }
+    //#endregion
+    trace(`Writing changes`);
+    await packed.writeChanges();
+  } catch (err) {
+    console.error(err);
+    console.error(_traceLogs);
+    if (err instanceof Error) {
+      err.cause = _traceLogs;
+    }
+    throw err;
   }
-  //#endregion
-  await packed.writeChanges();
 }

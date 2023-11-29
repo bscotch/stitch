@@ -129,6 +129,7 @@ describe('Cl2 Quests', function () {
       const asText = stringifyQuest(quest, packed);
       const results = parseStringifiedQuest(asText, packed);
       if (results.diagnostics.length > 0) {
+        console.error('Quest not parsed:', quest.id, quest.data.name);
         console.error(results.diagnostics.map((d) => d.message).join('\n'));
       }
       assert(results.diagnostics.length === 0, 'Should have no errors');

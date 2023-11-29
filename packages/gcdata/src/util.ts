@@ -61,14 +61,14 @@ function resolveOneOf(schema: Bschema, data: any): Bschema {
  *
  * Only works with Bschema-style pointers.
  */
-export function setValueAtPointer(
-  data: any,
+export function setValueAtPointer<T>(
+  data: T,
   pointer: string | string[],
   value: any,
-) {
+): T {
   // Ensure that the path to the value exists
   pointer = normalizePointer(pointer);
-  let current = data;
+  let current = data as Record<string, any>;
   for (let i = 0; i < pointer.length; i++) {
     if (i === pointer.length - 1) {
       current[pointer[i]] = value;
@@ -87,6 +87,7 @@ export function setValueAtPointer(
     }
     current = current[pointer[i]];
   }
+  return data;
 }
 
 /**
@@ -97,6 +98,11 @@ export function resolvePointerInSchema(
   pointer: string | string[],
   mote: Mote,
   gcData: Gcdata,
+  /**
+   * For cases where the mote data is incomplete and we need some
+   * data to resolve the schema, provide that fallback value here.
+   */
+  moteFallback?: any,
 ): Bschema | undefined {
   pointer = normalizePointer(pointer);
   let current = gcData.getSchema(mote.schema_id)!;
@@ -104,7 +110,10 @@ export function resolvePointerInSchema(
     if ('$ref' in current) {
       current = gcData.getSchema(current.$ref)!;
     }
-    const data = resolvePointer(pointer.slice(0, i), mote.data);
+    const currentPointer = pointer.slice(0, i);
+    const data =
+      resolvePointer(currentPointer, mote.data) ??
+      resolvePointer(currentPointer, moteFallback?.data);
     current = resolveOneOf(current, data);
     if ('properties' in current) {
       if (current.properties![pointer[i]]) {
@@ -240,4 +249,24 @@ export function isUndefined(value: any): value is undefined {
 
 export function isDefined<T>(value: T): value is Exclude<T, undefined> {
   return value !== undefined;
+}
+
+export function debugOnError<A extends any[], R, T extends (...args: A) => R>(
+  fn: T,
+  ...args: A
+): R {
+  for (let i = 0; i < 2; i++) {
+    try {
+      // eslint-disable-next-line no-debugger
+      if (i === 1) debugger;
+      return fn(...args);
+    } catch (e) {
+      if (i === 0) {
+        console.error(e);
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw new Error('Cannot happen. This is to satisfy the type checker.');
 }
