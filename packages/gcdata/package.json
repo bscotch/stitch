@@ -14,6 +14,9 @@
   },
   "dependencies": {
     "@bscotch/pathy": "^2.12.0",
+    "@types/nspell": "2.1.6",
+    "dictionary-en": "4.0.0",
+    "nspell": "2.1.5",
     "zod": "3.22.4"
   },
   "devDependencies": {

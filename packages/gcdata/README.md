@@ -10,11 +10,13 @@ This project contains parsers and helpers for GameChanger data.
 
 This project is intended to be used by other projects that need to read and write GameChanger data *outside* of the GameMaker context. For example, to create a VSCode extension for editing GameChanger data, or to create a web-based editor.
 
-### Features
- 
-- [ ] Typescript types for modeling GameChanger data
-- [ ] Reader for packed data
-- [ ] Helpers for updating GameChanger data while generating changelogs for ingest by the actual GameChanger tool
+## Features
+
+### Spell Check
+
+Given a GameChanger project, we need to have spell-checking capabilities that take into account all of the made-up names and terms from the project, and that make it easy to modify allowed/disallowed terms.
+
+The spellchecker starts with a base `en-US` dictionary, adds names of things found in the GameChanger data (when those names are localized), and then loads a final custom dictionary on top.
 
 ## Definitions
 
