@@ -1,14 +1,14 @@
 {
   "name": "@bscotch/gcdata",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "private": true,
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build": "pnpm build:dictionary && tsc --build && pnpm build:types",
-    "build:types": "node scripts/compile-types.mjs",
     "build:dictionary": "node scripts/compile-dict.mjs",
+    "build:types": "node scripts/compile-types.mjs",
     "test": "mocha --config ../../config/.mocharc.cjs",
     "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
     "watch": "tsc --build --watch"
