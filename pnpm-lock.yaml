@@ -250,12 +250,6 @@ importers:
       '@bscotch/pathy':
         specifier: ^2.12.0
         version: 2.12.0
-      '@types/nspell':
-        specifier: 2.1.6
-        version: 2.1.6
-      dictionary-en:
-        specifier: 4.0.0
-        version: 4.0.0
       nspell:
         specifier: 2.1.5
         version: 2.1.5
@@ -263,9 +257,15 @@ importers:
         specifier: 3.22.4
         version: 3.22.4
     devDependencies:
+      '@types/nspell':
+        specifier: 2.1.6
+        version: 2.1.6
       chai:
         specifier: ^4.3.10
         version: 4.3.10
+      dictionary-en:
+        specifier: 4.0.0
+        version: 4.0.0
       json-schema-to-typescript:
         specifier: 13.1.1
         version: 13.1.1
@@ -1768,7 +1768,7 @@ packages:
     resolution: {integrity: sha512-PnWYqrBZhkKAreX2kIZDJcBeigZJzXC8VmSuNiXeILUNreczBZHLxGEv/pRT+zL8rsXLxT5bRbiIF9wuh6cGgg==}
     dependencies:
       '@types/node': 20.9.0
-    dev: false
+    dev: true
 
   /@types/pako@2.0.3:
     resolution: {integrity: sha512-bq0hMV9opAcrmE0Byyo0fY3Ew4tgOevJmQ9grUhpXQhYfyLJ1Kqg3P33JT5fdbT2AjeAjR51zqqVjAL/HMkx7Q==}
@@ -2875,7 +2875,7 @@ packages:
 
   /dictionary-en@4.0.0:
     resolution: {integrity: sha512-3NHnE1uq33ZE/CIwaZ6gqxa4BnglHnxeAcTM0GJ7cmtRGcvX9InMK/IqLtYcUMFCUpUNgybH+DzkqdgAo3F1zg==}
-    dev: false
+    dev: true
 
   /diff-sequences@29.6.3:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}

@@ -1,8 +1,8 @@
-import dictionary from 'dictionary-en';
 import nspell from 'nspell';
 import { gameChangerEvents } from './GameChanger.events.js';
 import type { GameChanger } from './GameChanger.js';
 import { ParsedLineItem } from './cl2.quest.types.js';
+import { aff, dic } from './dict.js';
 import {
   normalizePointer,
   parsedItemToWords,
@@ -10,10 +10,7 @@ import {
 } from './util.js';
 
 export class SpellChecker {
-  protected checker = nspell(
-    Buffer.from(dictionary.aff),
-    Buffer.from(dictionary.dic),
-  );
+  protected checker = nspell(Buffer.from(aff), Buffer.from(dic));
 
   constructor(
     public readonly gameChanger: GameChanger,
@@ -54,10 +51,7 @@ export class SpellChecker {
   }
 
   reload() {
-    this.checker = nspell(
-      Buffer.from(dictionary.aff),
-      Buffer.from(dictionary.dic),
-    );
+    this.checker = nspell(Buffer.from(aff), Buffer.from(dic));
     const words = this.listMoteNameWords();
     this.checker.personal(words.join('\n'));
   }
