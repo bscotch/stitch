@@ -239,7 +239,9 @@ export class QuestDocument {
       if (!content) {
         content = this.toString();
       }
-      this.parseResults = parseStringifiedQuest(content!, this.packed);
+      this.parseResults = parseStringifiedQuest(content!, this.packed, {
+        checkSpelling: true,
+      });
 
       // Apply any edits
       for (const edit of this.parseResults.edits) {
@@ -249,17 +251,24 @@ export class QuestDocument {
       }
 
       // Update diagnostics
-      diagnostics.set(
-        this.uri,
-        this.parseResults.diagnostics.map(
-          (d) =>
-            new vscode.Diagnostic(
-              range(d),
-              d.message,
-              vscode.DiagnosticSeverity.Error,
-            ),
-        ),
+      const issues = this.parseResults.diagnostics.map(
+        (d) =>
+          new vscode.Diagnostic(
+            range(d),
+            d.message,
+            vscode.DiagnosticSeverity.Error,
+          ),
       );
+      for (const word of this.parseResults.words) {
+        if (word.valid) continue;
+        const diagnostic = new vscode.Diagnostic(
+          range(word),
+          `Unknown word: ${word.value}`,
+          vscode.DiagnosticSeverity.Warning,
+        );
+        issues.push(diagnostic);
+      }
+      diagnostics.set(this.uri, issues);
     } catch (err) {
       console.error(err);
     }
