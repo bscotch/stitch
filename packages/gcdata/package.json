@@ -13,6 +13,7 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
+    "@bscotch/emitter": "0.2.1",
     "@bscotch/pathy": "^2.12.0",
     "@types/nspell": "2.1.6",
     "dictionary-en": "4.0.0",

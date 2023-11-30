@@ -1,4 +1,6 @@
 import { pathy } from '@bscotch/pathy';
+import { gameChangerEvents } from './GameChanger.events.js';
+import { SpellChecker } from './SpellChecker.js';
 import { GcdataError, assert } from './assert.js';
 import {
   GameChangerRumpusMetadata,
@@ -85,8 +87,15 @@ export class GameChanger {
   base!: Gcdata;
   working!: Gcdata;
   protected changes!: Changes;
+  #spellChecker?: SpellChecker | undefined;
 
   protected constructor(readonly projectName: string) {}
+
+  get spellChecker() {
+    // Lazy-load the spell checker to save some compute
+    this.#spellChecker ||= new SpellChecker(this);
+    return this.#spellChecker;
+  }
 
   protected get workingData(): PackedData {
     return this.working.data;
@@ -270,6 +279,7 @@ export class GameChanger {
     }
 
     this.applyChanges();
+    gameChangerEvents.emit('gamechanger-working-updated', mote);
   }
 
   async writeChanges() {
@@ -301,6 +311,7 @@ export class GameChanger {
     await GameChanger.projectGameChangerChangesFile(this.projectName).write(
       this.changes,
     );
+    gameChangerEvents.emit('gamechanger-changes-saved');
   }
 
   /** Apply changes to the baseData to get the updated workingData */

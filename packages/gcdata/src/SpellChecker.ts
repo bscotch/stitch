@@ -1,7 +1,13 @@
 import dictionary from 'dictionary-en';
 import nspell from 'nspell';
+import { gameChangerEvents } from './GameChanger.events.js';
 import type { GameChanger } from './GameChanger.js';
-import { normalizePointer, resolvePointerInSchema } from './util.js';
+import { ParsedLineItem } from './cl2.quest.types.js';
+import {
+  normalizePointer,
+  parsedItemToWords,
+  resolvePointerInSchema,
+} from './util.js';
 
 export class SpellChecker {
   protected checker = nspell(
@@ -17,6 +23,39 @@ export class SpellChecker {
     } = {},
   ) {
     this.reload();
+    gameChangerEvents.on('gamechanger-changes-saved', () => this.reload());
+  }
+
+  check(text: ParsedLineItem) {
+    // Split the text into words
+    return parsedItemToWords(text)
+      .map((w) => {
+        let value = w.value;
+        if (value.match(/in'$/)) {
+          // Then it's a Tendraam-style contraction
+          value = value.replace(/in'$/, 'ing');
+        }
+        if (value.match(/'s$/)) {
+          // Probably an intentional possessive of something.
+          value = value.replace(/'s$/, '');
+        }
+        if (value.match(/s$/) && !this.checker.correct(value)) {
+          // Probably a simple plural
+          value = value.replace(/s$/, '');
+        }
+        if (this.checker.correct(value)) {
+          return null;
+        }
+        const recs = this.checker.suggest(value);
+        return {
+          invalid: w,
+          suggestions: recs,
+        };
+      })
+      .filter((w) => w !== null) as {
+      invalid: ParsedLineItem;
+      suggestions: string[];
+    }[];
   }
 
   reload() {
@@ -25,7 +64,7 @@ export class SpellChecker {
       Buffer.from(dictionary.dic),
     );
     const words = this.listMoteNameWords();
-    console.log(JSON.stringify(words, null, 2), words.length);
+    this.checker.personal(words.join('\n'));
   }
 
   /** Get the list of localized Mote Names, broken into "words" for use in the dictionary. */

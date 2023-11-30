@@ -4,11 +4,19 @@ import { Crashlands2 } from './types.cl2.js';
 import { Position, Range } from './types.editor.js';
 import { Mote } from './types.js';
 
+export interface ParsedLineItem<V = string> {
+  start: Position;
+  end: Position;
+  value: V;
+}
+
 export type ParsedLine = {
-  [K in keyof LineParts | '_']?: {
+  [K in keyof LineParts]?: ParsedLineItem<LineParts[K]>;
+} & {
+  _: {
     start: Position;
     end: Position;
-    value: K extends keyof LineParts ? LineParts[K] : string;
+    value: string;
   };
 };
 
@@ -89,6 +97,7 @@ export interface QuestUpdateResult {
   hovers: (Range & { title?: string; description?: string })[];
   edits: (Range & { newText: string })[];
   completions: (Range & CompletionsData)[];
+  misspellings: (Range & { value: string; suggestions: string[] })[];
   parsed: {
     name?: string;
     /** The moteId for the storyline */

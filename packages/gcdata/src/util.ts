@@ -1,4 +1,5 @@
 import type { Gcdata } from './GameChanger.js';
+import { ParsedLineItem } from './cl2.quest.types.js';
 import {
   getAdditionalProperties,
   getProperties,
@@ -287,4 +288,39 @@ export function debugOnError<A extends any[], R, T extends (...args: A) => R>(
     }
   }
   throw new Error('Cannot happen. This is to satisfy the type checker.');
+}
+
+export function parsedItemToWords(item: ParsedLineItem): ParsedLineItem[] {
+  const words: ParsedLineItem[] = [];
+  let currentWordStart = item.start.character;
+  let currentWord = '';
+  for (let i = 0; i < item.value.length; i++) {
+    const char = item.value[i];
+    const position = item.start.character + i;
+    if (char.match(/[<>()[\].:;|@#,!?"*\s-]/)) {
+      // Normalize some stuff to reduce false positives
+      currentWord ||= currentWord
+        .replace(/'(s|d|ll|ve|re|n)$/, '')
+        .replace(/^\d+%?$/, '');
+      if (currentWord) {
+        // Clean up a bit to allow focusing on the WORDS
+        const word = {
+          start: { ...item.start },
+          end: { ...item.start },
+          value: currentWord,
+        };
+        word.start.character = currentWordStart;
+        word.start.index = item.start.index + currentWordStart;
+        word.end.character = currentWordStart + currentWord.length;
+        word.end.index =
+          item.start.index + currentWordStart + currentWord.length;
+        currentWord = '';
+        words.push(word);
+      }
+      currentWordStart = position + 1;
+    } else {
+      currentWord += char;
+    }
+  }
+  return words;
 }

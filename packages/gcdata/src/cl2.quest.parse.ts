@@ -6,6 +6,7 @@ import {
   ParsedDialog,
   ParsedEmoteGroup,
   ParsedLine,
+  ParsedLineItem,
   QuestUpdateResult,
   arrayTagPattern,
   lineIsArrayItem,
@@ -30,6 +31,9 @@ import { Mote } from './types.js';
 export function parseStringifiedQuest(
   text: string,
   packed: GameChanger,
+  options: {
+    checkSpelling?: boolean;
+  } = {},
 ): QuestUpdateResult {
   const motes = getMoteLists(packed.working);
   const momentStyles = getMomentStyleNames(packed.working);
@@ -60,6 +64,7 @@ export function parseStringifiedQuest(
     hovers: [],
     edits: [],
     completions: [],
+    misspellings: [],
     parsed: {
       clues: [],
       quest_end_moments: [],
@@ -83,6 +88,16 @@ export function parseStringifiedQuest(
           name?.trim().toLowerCase() || e.id === name?.trim(),
     );
     return emoji?.id;
+  };
+
+  const checkSpelling = (item: ParsedLineItem<any> | undefined) => {
+    if (!item || !options.checkSpelling) return;
+    for (const issue of packed.spellChecker.check(item)) {
+      result.misspellings.push({
+        ...issue.invalid,
+        suggestions: issue.suggestions,
+      });
+    }
   };
 
   /** The MoteId for the last speaker we saw. Used to figure out who to assign stuff to */
@@ -249,6 +264,7 @@ export function parseStringifiedQuest(
             options: motes.emojis,
           };
         }
+        checkSpelling(parsedLine.text);
         const moment: ParsedDialog = {
           kind: 'dialogue',
           id: parsedLine.arrayTag?.value?.trim(),
@@ -279,6 +295,7 @@ export function parseStringifiedQuest(
         result.parsed.draft = parsedLine.text?.value?.trim() === 'true';
       } else if (labelLower === 'log') {
         result.parsed.quest_start_log = parsedLine.text?.value?.trim();
+        checkSpelling(parsedLine.text);
       } else if (labelLower === 'storyline') {
         requiresMote = {
           at: parsedLine.labelGroup!.end,
@@ -397,6 +414,7 @@ export function parseStringifiedQuest(
           id: parsedLine.arrayTag?.value?.trim(),
           text: parsedLine.text?.value?.trim(),
         });
+        checkSpelling(parsedLine.text);
       }
 
       if (requiresEmoji) {
