@@ -27,6 +27,7 @@ import {
 import { Crashlands2 } from './types.cl2.js';
 import { Position } from './types.editor.js';
 import { Mote } from './types.js';
+import { parsedItemToWords } from './util.js';
 
 export function parseStringifiedQuest(
   text: string,
@@ -64,7 +65,7 @@ export function parseStringifiedQuest(
     hovers: [],
     edits: [],
     completions: [],
-    misspellings: [],
+    words: [],
     parsed: {
       clues: [],
       quest_end_moments: [],
@@ -92,11 +93,10 @@ export function parseStringifiedQuest(
 
   const checkSpelling = (item: ParsedLineItem<any> | undefined) => {
     if (!item || !options.checkSpelling) return;
-    for (const issue of packed.spellChecker.check(item)) {
-      result.misspellings.push({
-        ...issue.invalid,
-        suggestions: issue.suggestions,
-      });
+    // Parse out the word positions so they can be used as ranges to check cursor position
+    const words = parsedItemToWords(item);
+    for (const word of words) {
+      result.words.push(packed.spellChecker.checkWord(word));
     }
   };
 

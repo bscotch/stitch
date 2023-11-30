@@ -26,36 +26,31 @@ export class SpellChecker {
     gameChangerEvents.on('gamechanger-changes-saved', () => this.reload());
   }
 
+  checkWord(word: ParsedLineItem) {
+    let value = word.value;
+    if (value.match(/in'$/)) {
+      // Then it's a Tendraam-style contraction
+      value = value.replace(/in'$/, 'ing');
+    }
+    if (value.match(/'s$/)) {
+      // Probably an intentional possessive of something.
+      value = value.replace(/'s$/, '');
+    }
+    if (value.match(/s$/) && !this.checker.correct(value)) {
+      // Probably a simple plural
+      value = value.replace(/s$/, '');
+    }
+    const valid = this.checker.correct(value);
+    return {
+      ...word,
+      valid,
+      suggestions: valid ? undefined : this.checker.suggest(value),
+    };
+  }
+
   check(text: ParsedLineItem) {
     // Split the text into words
-    return parsedItemToWords(text)
-      .map((w) => {
-        let value = w.value;
-        if (value.match(/in'$/)) {
-          // Then it's a Tendraam-style contraction
-          value = value.replace(/in'$/, 'ing');
-        }
-        if (value.match(/'s$/)) {
-          // Probably an intentional possessive of something.
-          value = value.replace(/'s$/, '');
-        }
-        if (value.match(/s$/) && !this.checker.correct(value)) {
-          // Probably a simple plural
-          value = value.replace(/s$/, '');
-        }
-        if (this.checker.correct(value)) {
-          return null;
-        }
-        const recs = this.checker.suggest(value);
-        return {
-          invalid: w,
-          suggestions: recs,
-        };
-      })
-      .filter((w) => w !== null) as {
-      invalid: ParsedLineItem;
-      suggestions: string[];
-    }[];
+    return parsedItemToWords(text).map((w) => this.checkWord(w));
   }
 
   reload() {

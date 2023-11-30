@@ -97,7 +97,7 @@ export interface QuestUpdateResult {
   hovers: (Range & { title?: string; description?: string })[];
   edits: (Range & { newText: string })[];
   completions: (Range & CompletionsData)[];
-  misspellings: (Range & { value: string; suggestions: string[] })[];
+  words: (Range & { value: string; suggestions?: string[]; valid: boolean })[];
   parsed: {
     name?: string;
     /** The moteId for the storyline */
