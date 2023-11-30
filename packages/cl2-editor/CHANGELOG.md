@@ -1,5 +1,15 @@
 # Crashlands 2 Editor Changelog
 
+## 0.12.0 (2023-11-30)
+
+### Features
+
+- Now showing spellcheck warnings in the editor
+
+### Fixes
+
+- Autcomplete of 'other' moment types now only prefixes the result with '?' if at the start of the line
+
 ## 0.11.0 (2023-11-29)
 
 ### Features

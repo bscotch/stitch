@@ -1,5 +1,17 @@
 # @bscotch/gcdata Changelog
 
+## 0.9.0 (2023-11-30)
+
+### Features
+
+- Added all parsed words to results to enable finding a word given a cursor position
+- Added spellcheck functionality to the quest parser
+
+### Fixes
+
+- Added build step to remove cjs-incompatible dictionary-en import
+- Resolved several issues causing fragility of schema pointer resolution
+
 ## 0.8.1 (2023-11-29)
 
 ### Fixes
