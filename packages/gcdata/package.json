@@ -6,7 +6,7 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "build": "pnpm build:dictionary && tsc --build && pnpm build:types",
+    "build": "tsc --build",
     "build:dictionary": "node scripts/compile-dict.mjs",
     "build:types": "node scripts/compile-types.mjs",
     "test": "mocha --config ../../config/.mocharc.cjs",
