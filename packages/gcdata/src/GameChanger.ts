@@ -41,20 +41,26 @@ export class Gcdata {
     };
   }
 
-  getMoteName(mote: Mote | string | undefined): string | undefined {
+  getMoteNamePointer(mote: Mote | string | undefined): string | undefined {
     if (!mote) return undefined;
-    const foundMote = this.getMote(typeof mote === 'string' ? mote : mote.id);
+    const foundMote = this.getMote(mote);
     if (!foundMote) return undefined;
     const schema = this.getSchema(foundMote.schema_id);
-    if (!schema || !schema.name) {
-      return foundMote.id;
-    }
-    return resolvePointer(schema.name, foundMote.data) || foundMote.id;
+    return schema?.name;
   }
 
-  getMote(moteId: string | MoteId | undefined): Mote | undefined {
+  getMoteName(moteId: Mote | string | undefined): string | undefined {
+    const pointer = this.getMoteNamePointer(moteId);
+    const mote = this.getMote(moteId);
+    if (!pointer || !mote) {
+      return mote?.id;
+    }
+    return resolvePointer(pointer, mote.data) || mote.id;
+  }
+
+  getMote(moteId: Mote | string | MoteId | undefined): Mote | undefined {
     if (!moteId) return;
-    return this.data.motes[moteId as MoteId];
+    return this.data.motes[typeof moteId === 'string' ? moteId : moteId.id];
   }
 
   getSchema(schemaId: string | SchemaId | undefined): Bschema | undefined {
@@ -347,9 +353,6 @@ export class GameChanger {
       this.projectName,
     );
     if (!(await changesFile.exists())) {
-      // TODO: Create a changes file
-      // TODO: Get the latest commit ID
-
       const metadata = await this.readCommitsMetadata();
       // Get the commitIds, sorted descending by number
       const commitIds = Object.keys(metadata.item_metadata)

@@ -1,6 +1,7 @@
 import type { Gcdata } from './GameChanger.js';
-import { assert } from './assert.js';
 import {
+  getAdditionalProperties,
+  getProperties,
   isBschemaObject,
   type Bschema,
   type BschemaConst,
@@ -34,11 +35,12 @@ export function resolvePointer(pointer: string | string[], data: any) {
   return current;
 }
 
-function resolveOneOf(schema: Bschema, data: any): Bschema {
-  if (!('oneOf' in schema) || !('discriminator' in schema)) {
+function resolveOneOf(schema: Bschema, data: any): Bschema | undefined {
+  if (!schema || !('oneOf' in schema) || !('discriminator' in schema)) {
     return schema;
   }
   const dataDescriminator = data[schema.discriminator!.propertyName];
+  const possibleMatches: string[] = [];
   const matching = schema.oneOf!.find((subschema) => {
     if (!('properties' in subschema)) {
       return false;
@@ -46,12 +48,12 @@ function resolveOneOf(schema: Bschema, data: any): Bschema {
     const subschemaDescriminator = (
       subschema.properties![schema.discriminator!.propertyName] as BschemaConst
     ).bConst;
+    possibleMatches.push(subschemaDescriminator);
     if (subschemaDescriminator === dataDescriminator) {
       return true;
     }
     return false;
   });
-  assert(matching, 'Could not find matching oneOf schema');
   return matching;
 }
 
@@ -107,36 +109,52 @@ export function resolvePointerInSchema(
   pointer = normalizePointer(pointer);
   let current = gcData.getSchema(mote.schema_id)!;
   for (let i = 0; i < pointer.length; i++) {
-    if ('$ref' in current) {
-      current = gcData.getSchema(current.$ref)!;
-    }
     const currentPointer = pointer.slice(0, i);
     const data =
       resolvePointer(currentPointer, mote.data) ??
       resolvePointer(currentPointer, moteFallback?.data);
-    current = resolveOneOf(current, data);
-    if ('properties' in current) {
-      if (current.properties![pointer[i]]) {
-        current = current.properties![pointer[i]];
-        continue;
-      }
+    current = normalizeSchema(current, gcData, data);
+    if ('properties' in current && current.properties?.[pointer[i]]) {
+      current = current.properties![pointer[i]];
+      continue;
     }
     if (
       'additionalProperties' in current &&
       typeof current.additionalProperties === 'object'
     ) {
-      current = current.additionalProperties!;
+      current = current.additionalProperties;
       continue;
     }
-    console.error(
-      'Could not resolve pointer',
-      pointer,
-      'in schema',
-      mote.schema_id,
-    );
     return undefined;
   }
-  return resolveOneOf(current, resolvePointer(pointer, mote.data));
+  return normalizeSchema(current, gcData, resolvePointer(pointer, mote.data));
+}
+
+export function normalizeSchema(
+  schema: Bschema,
+  gcData: Gcdata,
+  /** For resolving oneOfs */
+  data: any,
+): Bschema {
+  if ('$ref' in schema) {
+    schema = gcData.getSchema(schema.$ref)!;
+  }
+  const oneOf = 'oneOf' in schema ? resolveOneOf(schema, data) : undefined;
+  const properties = {
+    ...getProperties(schema),
+    ...getProperties(oneOf),
+  };
+  const additionalProperties = {
+    ...getAdditionalProperties(schema),
+    ...getAdditionalProperties(oneOf),
+  } as Bschema;
+  return {
+    ...schema,
+    properties,
+    // @ts-ignore
+    additionalProperties,
+    oneOf: undefined,
+  };
 }
 
 export function capitalize(str: string) {

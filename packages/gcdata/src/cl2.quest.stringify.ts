@@ -113,6 +113,7 @@ export function stringifyQuest(
         } else if (moment.style === 'Emote') {
           const emojiLines: string[] = [`:)${arrayTag(momentContainer)}`];
           for (const emote of bsArrayToArray(moment.emotes)) {
+            if (!emote.element?.key) continue;
             emojiLines.push(
               `!${arrayTag(emote)} ${characterString(
                 emote.element?.key!,
@@ -145,6 +146,7 @@ export function stringifyQuest(
   }
 
   function characterString(characterId: string) {
+    assert(characterId, 'Character ID must be defined');
     const character = packed.working.getMote(characterId);
     const name =
       packed.working.getMoteName(character) || character?.id || 'UNKNOWN';
@@ -156,7 +158,7 @@ export function stringifyQuest(
 function moteTag(item: string | { id: string } | undefined): string {
   assert(
     item && (typeof item === 'string' || 'id' in item),
-    'ID must be a string or Mote',
+    `ID must be a string or Mote, instead got ${item}`,
   );
   const idStr = typeof item === 'string' ? item : item.id;
   return `@${idStr}`;

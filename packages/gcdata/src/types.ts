@@ -24,7 +24,7 @@ export interface UidPool {
   type: 'u16';
 }
 
-export interface Mote<T = unknown, S extends SchemaId = SchemaId> {
+export interface Mote<T = any, S extends SchemaId = SchemaId> {
   id: MoteId;
   uid: UidPool;
   /** The actual data, as described by the schema */
@@ -50,6 +50,7 @@ export type BschemaTypeName =
 
 export type Bschema =
   | BschemaObject
+  | BschemaL10nString
   | BschemaString
   | BschemaMoteId
   | BschemaNull
@@ -60,6 +61,26 @@ export type Bschema =
   | BschemaNumber
   | BschemaInteger
   | BschemaBsArray;
+
+export function getProperties(
+  schema: Bschema | undefined,
+): BschemaObject['properties'] | undefined {
+  if (!schema) return;
+  if (isBschemaObject(schema)) {
+    return schema.properties;
+  }
+  return;
+}
+
+export function getAdditionalProperties(
+  schema: Bschema | undefined,
+): Bschema | undefined {
+  if (!schema) return;
+  if (isBschemaObject(schema)) {
+    return schema.additionalProperties;
+  }
+  return;
+}
 
 export function isBschemaObject(schema: any): schema is BschemaObject {
   return (
@@ -169,8 +190,12 @@ export interface BschemaString extends BschemaBase {
   stringContains?: string;
 }
 
+export interface BschemaL10nString extends BschemaString {
+  format: 'l10n';
+}
+
 export interface BschemaMoteId extends BschemaString {
-  format?: 'moteId';
+  format: 'moteId';
   formatProperties?: {
     blockSchemas?: SchemaId[];
     allowSchemas?: SchemaId[];
