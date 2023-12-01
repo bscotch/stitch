@@ -1,5 +1,4 @@
 import nspell from 'nspell';
-import { gameChangerEvents } from './GameChanger.events.js';
 import type { GameChanger } from './GameChanger.js';
 import { ParsedLineItem } from './cl2.quest.types.js';
 import { aff, dic } from './dict.js';
@@ -20,7 +19,8 @@ export class SpellChecker {
     } = {},
   ) {
     this.reload();
-    gameChangerEvents.on('gamechanger-changes-saved', () => this.reload());
+    // // NOTE: This is pretty expensive since it rebuilds the whole dictionary.
+    // gameChangerEvents.on('gamechanger-changes-saved', () => this.reload());
   }
 
   checkWord(word: ParsedLineItem) {
