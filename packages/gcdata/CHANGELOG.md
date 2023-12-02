@@ -1,5 +1,15 @@
 # @bscotch/gcdata Changelog
 
+## 0.10.0 (2023-12-02)
+
+### Features
+
+- Editor now includes read-only listing of quest requirements, with autocompletes
+
+### Fixes
+
+- Remove dictionary-rebuild on save, since that is very costly for perf
+
 ## 0.9.0 (2023-11-30)
 
 ### Features

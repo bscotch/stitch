@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 0.16.0 (2023-12-02)
+
+### Features
+
+- Added passthrough room layer schema for 'GMREffectLayer' types
+
 ## 0.15.2 (2023-10-30)
 
 ### Fixes

@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.13.0 (2023-12-02)
+
+### Features
+
+- Editor now includes read-only listing of quest requirements, with autocompletes
+
 ## 0.12.0 (2023-11-30)
 
 ### Features
