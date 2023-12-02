@@ -110,12 +110,15 @@ export class QuestDocument {
             item.keepWhitespace = true;
             return item;
           });
-        } else if (c.type === 'momentStyles') {
+        } else if (['momentStyles', 'requirementStyles'].includes(c.type)) {
           return [...c.options].map((o) => {
             const item = new vscode.CompletionItem(o);
             item.kind = vscode.CompletionItemKind.Property;
-            item.detail = 'Moment Style';
+            item.detail = 'Style';
             item.insertText = isAtLineStart ? `? ${o}` : o;
+            if (c.type === 'requirementStyles' && o.startsWith('Quest')) {
+              item.insertText += ': ';
+            }
             return item;
           });
         }

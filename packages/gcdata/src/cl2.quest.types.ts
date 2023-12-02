@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import { createBsArrayKey } from './helpers.js';
-import { Crashlands2 } from './types.cl2.js';
 import { Position, Range } from './types.editor.js';
 import { Mote } from './types.js';
 
@@ -35,6 +33,10 @@ type CompletionsData =
     }
   | {
       type: 'momentStyles';
+      options: string[];
+    }
+  | {
+      type: 'requirementStyles';
       options: string[];
     };
 
@@ -90,7 +92,25 @@ export interface ParsedComment {
   text: string | undefined;
 }
 
+export interface ParsedRequirementQuest {
+  kind: 'quest';
+  id: string | undefined;
+  /** The MoteId of the required quest */
+  quest: string | undefined;
+}
+
+export interface ParsedRequirementOther {
+  kind: 'other';
+  id: string | undefined;
+  style: string;
+}
+
 type ParsedMoment = ParsedEmoteGroup | ParsedDialog | ParsedOtherMoment;
+
+type ParsedRequirement = ParsedRequirementQuest | ParsedRequirementOther;
+
+export type QuestMomentsLabel = `quest_${'start' | 'end'}_moments`;
+export type QuestRequirementsLabel = `quest_${'start' | 'end'}_requirements`;
 
 export interface QuestUpdateResult {
   diagnostics: (Range & { message: string })[];
@@ -108,10 +128,12 @@ export interface QuestUpdateResult {
     quest_receiver?: string;
     clues: ParsedClue[];
     quest_start_log?: string;
-    quest_start_moments: ParsedMoment[];
-    quest_end_moments: ParsedMoment[];
     draft?: boolean;
     comments: ParsedComment[];
+  } & {
+    [K in QuestMomentsLabel]: ParsedMoment[];
+  } & {
+    [K in QuestRequirementsLabel]: ParsedRequirement[];
   };
 }
 
@@ -161,6 +183,10 @@ const linePartsSchema = z.object({
     .describe(
       'For array elements whose values come in distinct flavors, the identifier indicating which flavor it is',
     ),
+  status: z
+    .string()
+    .optional()
+    .describe('For entries that have some kind of "status" concept'),
 });
 
 export const arrayTagPattern = '(?:#(?<arrayTag>[a-z0-9]+))';
@@ -183,6 +209,9 @@ export const linePatterns = [
   `^(?<indicator>:\\))\\s*${arrayTagPattern}?\\s*$`,
   /** Emote */
   `^(?<indicator>!)\\s*?${arrayTagPattern}?(?<sep>\\s+)(${moteNamePattern}${moteTagPattern}\\s+${emojiGroupPattern})?\\s*$`,
+  /** Requirement: Quest */
+  // for e.g. `?#qpzc Quest Complete: Square Shaped@q_petget1_rc_c0_n5_2d`
+  `^(?<indicator>\\?)\\s*${arrayTagPattern}?\\s+(?<style>Quest)\\s+(?<status>Complete|Started|Not Started)\\s*:(?<sep>\\s+)(${moteNamePattern}${moteTagPattern}?)?$`,
   /** Non-Dialog Moment */
   `^(?<indicator>\\?)\\s*?${arrayTagPattern}?(?<sep>\\s+)(?<style>.*?)?\\s*$`,
 ];
@@ -228,64 +257,13 @@ export function parseIfMatch(
   return result;
 }
 
-export type Label = keyof typeof labels;
-const labels = {
-  name() {
-    return ['name'];
-  },
-  storyline() {
-    return ['storyline'];
-  },
-  draft() {
-    return ['wip', 'draft'];
-  },
-  '//'(tag?: string) {
-    return ['wip', 'comments', tag || createBsArrayKey()];
-  },
-  giver() {
-    return ['quest_giver', 'item'];
-  },
-  receiver() {
-    return ['quest_receiver', 'item'];
-  },
-  log() {
-    return ['quest_start_log', 'text'];
-  },
-  clue(tag?: string) {
-    return ['clues', tag || createBsArrayKey()];
-  },
-  'start moments'() {
-    return ['quest_start_moments'];
-  },
-  'end moments'() {
-    return ['quest_end_moments'];
-  },
-} satisfies {
-  [prefix: string]: (
-    extra: string,
-    section: Section,
-  ) => [keyof Crashlands2.Quest, ...string[]];
-};
-
 export function lineIsArrayItem(line: string): boolean {
   if (
     line.match(
-      /^(\t|name|draft|storyline|(start|end) moments|log|giver|receiver)/i,
+      /^(\t|name|draft|storyline|(start|end) (moments|requirements)|log|giver|receiver)/i,
     )
   ) {
     return false;
   }
   return true;
-}
-
-export function getPointerForLabel(
-  label: string,
-  arrayTag: string | undefined,
-  section: Section | undefined,
-): string[] | null {
-  label = label.toLowerCase();
-  if (label in labels) {
-    return labels[label as keyof typeof labels](arrayTag!);
-  }
-  return null;
 }

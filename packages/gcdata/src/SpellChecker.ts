@@ -41,7 +41,8 @@ export class SpellChecker {
     return {
       ...word,
       valid,
-      suggestions: valid ? undefined : this.checker.suggest(value),
+      // // NOTE: Suggestions are costly to compute, should do it on demand
+      // suggestions: valid ? undefined : this.checker.suggest(value),
     };
   }
 

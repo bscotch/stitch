@@ -7,6 +7,8 @@ import {
   ParsedEmoteGroup,
   ParsedLine,
   ParsedLineItem,
+  QuestMomentsLabel,
+  QuestRequirementsLabel,
   QuestUpdateResult,
   arrayTagPattern,
   lineIsArrayItem,
@@ -16,6 +18,8 @@ import {
 import {
   getMomentStyleNames,
   getMoteLists,
+  getRequirementStyleNames,
+  getReuirementQuestStatuses,
   isEmoteMoment,
 } from './cl2.quest.utils.js';
 import {
@@ -42,6 +46,13 @@ export function parseStringifiedQuest(
   for (const style of ['Dialogue', 'Emote']) {
     momentStyles.splice(momentStyles.indexOf(style), 1);
   }
+  const requirementStyles = getRequirementStyleNames(packed.working);
+  const requirementQuestStatuses = getReuirementQuestStatuses(packed.working);
+  const requirementCompletions = [...requirementStyles];
+  requirementCompletions.splice(requirementCompletions.indexOf('Quest'), 1);
+  requirementCompletions.push(
+    ...requirementQuestStatuses.map((s) => `Quest ${s}`),
+  );
 
   /**
    * Shared list of keywords that can be used at the start of any line,
@@ -55,7 +66,9 @@ export function parseStringifiedQuest(
     'Giver',
     'Receiver',
     'Clue',
+    'Start Requirements',
     'Start Moments',
+    'End Requirements',
     'End Moments',
     'Log',
   ]);
@@ -70,6 +83,8 @@ export function parseStringifiedQuest(
       clues: [],
       quest_end_moments: [],
       quest_start_moments: [],
+      quest_start_requirements: [],
+      quest_end_requirements: [],
       comments: [],
     },
   };
@@ -103,7 +118,7 @@ export function parseStringifiedQuest(
   /** The MoteId for the last speaker we saw. Used to figure out who to assign stuff to */
   let lastSpeaker: undefined | string;
   let lastClue: undefined | ParsedClue;
-  let lastMomentGroup: 'quest_start_moments' | 'quest_end_moments' | undefined;
+  let lastSectionGroup: QuestMomentsLabel | QuestRequirementsLabel | undefined;
   let lastEmojiGroup: undefined | ParsedEmoteGroup;
 
   for (const line of lines) {
@@ -140,10 +155,17 @@ export function parseStringifiedQuest(
           end: lineRange.end,
           options: availableGlobalLabels,
         });
-        if (lastMomentGroup) {
+        if (isQuestMomentLabel(lastSectionGroup)) {
           result.completions.push({
             type: 'momentStyles',
             options: momentStyles,
+            start: lineRange.start,
+            end: lineRange.end,
+          });
+        } else if (isQuestRequirementLabel(lastSectionGroup)) {
+          result.completions.push({
+            type: 'requirementStyles',
+            options: requirementCompletions,
             start: lineRange.start,
             end: lineRange.end,
           });
@@ -229,10 +251,15 @@ export function parseStringifiedQuest(
 
       // Parsing
       if (labelLower === 'start moments') {
-        lastMomentGroup = 'quest_start_moments';
+        lastSectionGroup = 'quest_start_moments';
       } else if (labelLower === 'end moments') {
-        lastMomentGroup = 'quest_end_moments';
+        lastSectionGroup = 'quest_end_moments';
+      } else if (labelLower === 'start requirements') {
+        lastSectionGroup = 'quest_start_requirements';
+      } else if (labelLower === 'end requirements') {
+        lastSectionGroup = 'quest_end_requirements';
       }
+
       if (indicator === '\t') {
         // No data gets stored here, this is just a convenience marker
         // to set the speaker for the next set of dialog lines.
@@ -274,8 +301,8 @@ export function parseStringifiedQuest(
         };
         if (lastClue) {
           lastClue.phrases.push(moment);
-        } else if (lastMomentGroup) {
-          result.parsed[lastMomentGroup].push(moment);
+        } else if (isQuestMomentLabel(lastSectionGroup)) {
+          result.parsed[lastSectionGroup].push(moment);
         } else {
           // Then this is an error!
           result.diagnostics.push({
@@ -315,7 +342,7 @@ export function parseStringifiedQuest(
         };
         result.parsed.quest_receiver = parsedLine.moteTag?.value?.trim();
       } else if (indicator === ':)') {
-        if (lastMomentGroup) {
+        if (isQuestMomentLabel(lastSectionGroup)) {
           // Then this is a declaration line for an Emote moment
           // Create the new emoji group
           lastEmojiGroup = {
@@ -323,7 +350,7 @@ export function parseStringifiedQuest(
             id: parsedLine.arrayTag?.value?.trim(),
             emotes: [],
           };
-          result.parsed[lastMomentGroup].push(lastEmojiGroup);
+          result.parsed[lastSectionGroup].push(lastEmojiGroup);
         } else {
           result.diagnostics.push({
             message: `Must be defined in a Start/End Moments section!`,
@@ -373,7 +400,7 @@ export function parseStringifiedQuest(
         }
       } else if (indicator === '?') {
         // Then this is a non-dialog quest moment. These are not implemented, but should be available as placeholders.
-        if (lastMomentGroup) {
+        if (isQuestMomentLabel(lastSectionGroup)) {
           // Put an autocomplete after the "?#meh " prefix
           if (parsedLine.sep) {
             result.completions.push({
@@ -391,7 +418,7 @@ export function parseStringifiedQuest(
 
           // Add to data if this momentStyle actually exists
           if (momentStyles.includes(parsedLine.style?.value as any)) {
-            result.parsed[lastMomentGroup].push({
+            result.parsed[lastSectionGroup].push({
               kind: 'other',
               id: parsedLine.arrayTag?.value?.trim(),
               style: parsedLine.style?.value as any,
@@ -402,6 +429,37 @@ export function parseStringifiedQuest(
               ...lineRange,
             });
           }
+        } else if (isQuestRequirementLabel(lastSectionGroup)) {
+          // Put an autocomplete after the "?#meh " prefix
+          if (parsedLine.sep) {
+            result.completions.push({
+              type: 'requirementStyles',
+              options: requirementCompletions,
+              start: parsedLine.sep!.end,
+              end: parsedLine.sep!.end,
+            });
+          } else {
+            result.diagnostics.push({
+              message: `Invalid syntax. Space required after the prefix.`,
+              ...lineRange,
+            });
+          }
+          // TODO: Autocomplete Quests
+          if (parsedLine.style?.value === 'Quest') {
+            if (parsedLine.sep) {
+              requiresMote = {
+                at: parsedLine.sep!.end,
+                options: motes.quests,
+              };
+            } else {
+              result.diagnostics.push({
+                message: `Invalid syntax. Space required after the prefix.`,
+                ...lineRange,
+              });
+            }
+          }
+
+          // TODO: Add to data!
         } else {
           result.diagnostics.push({
             message: `Must be defined in a Start/End Moments section!`,
@@ -779,4 +837,16 @@ export async function updateChangesFromParsedQuest(
     }
     throw err;
   }
+}
+
+function isQuestRequirementLabel(
+  label: string | undefined,
+): label is QuestRequirementsLabel {
+  return !!(label?.startsWith('quest_') && label.endsWith('_requirements'));
+}
+
+function isQuestMomentLabel(
+  label: string | undefined,
+): label is QuestMomentsLabel {
+  return !!(label?.startsWith('quest_') && label.endsWith('_moments'));
 }

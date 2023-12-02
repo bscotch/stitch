@@ -50,37 +50,29 @@ export function stringifyQuest(
     blocks.push('');
   }
 
-  // Clues
-  if (mote.data.clues) {
-    const clueGroups = bsArrayToArray(mote.data.clues);
-    for (const clueGroup of clueGroups) {
-      if (!clueGroup.element?.phrases || !clueGroup.element.speaker) continue;
-      const speaker = packed.working.getMote(clueGroup.element.speaker);
-      let clueString = `Clue${arrayTag(
-        clueGroup,
-      )}: ${packed.working.getMoteName(speaker)}${moteTag(
-        clueGroup.element.speaker,
-      )}`;
-      for (const phraseContainer of bsArrayToArray(
-        clueGroup.element!.phrases,
-      )) {
-        const clue = phraseContainer.element;
-        let line = `\n>${arrayTag(phraseContainer)} `;
-        const emoji = clue?.phrase.emoji;
-        if (emoji) {
-          line += `(${emoji}) `;
+  for (const momentType of ['start', 'end'] as const) {
+    // REQUIREMENTS
+    blocks.push(`${capitalize(momentType)} Requirements:`);
+    const reqsFieldName = `quest_${momentType}_requirements` as const;
+    const reqsData = mote.data[reqsFieldName];
+    if (reqsData) {
+      const reqs = bsArrayToArray(reqsData);
+      for (const req of reqs) {
+        if (req.element.style === 'Quest') {
+          const quest = packed.working.getMote(req.element.quest);
+          blocks.push(
+            `?${arrayTag(req)} ${req.element.style} ${
+              req.element.quest_status
+            }: ${packed.working.getMoteName(quest)}${moteTag(quest)}\n`,
+          );
+        } else {
+          blocks.push(`?${arrayTag(req)} ${req.element.style}\n`);
         }
-        line += clue?.phrase.text.text || '';
-        clueString += line;
       }
-      blocks.push(clueString);
-    }
-    if (clueGroups.length) {
+    } else {
       blocks.push('');
     }
-  }
 
-  for (const momentType of ['start', 'end'] as const) {
     // MOMENTS
     blocks.push(`${capitalize(momentType)} Moments:`);
     const fieldName = `quest_${momentType}_moments` as const;
@@ -134,6 +126,36 @@ export function stringifyQuest(
       // Start Log
       if (mote.data.quest_start_log) {
         blocks.push(`Log: ${mote.data.quest_start_log.text}`, '');
+      }
+      // Clues
+      if (mote.data.clues) {
+        const clueGroups = bsArrayToArray(mote.data.clues);
+        for (const clueGroup of clueGroups) {
+          if (!clueGroup.element?.phrases || !clueGroup.element.speaker)
+            continue;
+          const speaker = packed.working.getMote(clueGroup.element.speaker);
+          let clueString = `Clue${arrayTag(
+            clueGroup,
+          )}: ${packed.working.getMoteName(speaker)}${moteTag(
+            clueGroup.element.speaker,
+          )}`;
+          for (const phraseContainer of bsArrayToArray(
+            clueGroup.element!.phrases,
+          )) {
+            const clue = phraseContainer.element;
+            let line = `\n>${arrayTag(phraseContainer)} `;
+            const emoji = clue?.phrase.emoji;
+            if (emoji) {
+              line += `(${emoji}) `;
+            }
+            line += clue?.phrase.text.text || '';
+            clueString += line;
+          }
+          blocks.push(clueString);
+        }
+        if (clueGroups.length) {
+          blocks.push('');
+        }
       }
     }
   }

@@ -3,6 +3,7 @@ import { assert } from './assert.js';
 import { Crashlands2 } from './types.cl2.js';
 import type {
   BschemaBsArrayElement,
+  BschemaEnum,
   BschemaMoteId,
   BschemaObject,
 } from './types.js';
@@ -24,6 +25,9 @@ export function getMoteLists(packed: Gcdata) {
       'cl2_storyline',
     );
   assert(storylines.length > 0, 'Should have at least one storyline mote');
+  const quests =
+    packed.listMotesBySchema<Crashlands2.Schemas['cl2_quest']>('cl2_quest');
+  assert(quests.length > 0, 'Should have at least one quest mote');
 
   const emojis =
     packed.listMotesBySchema<Crashlands2.Schemas['cl2_emoji']>('cl2_emoji');
@@ -33,6 +37,7 @@ export function getMoteLists(packed: Gcdata) {
     allowedSpeakers,
     allowedGivers,
     storylines,
+    quests,
     emojis,
   };
 }
@@ -60,6 +65,52 @@ function getAllowedSpeakers(packed: Gcdata) {
   return packed.listMotesBySchema(
     ...speakerSubchema.formatProperties!.allowSchemas!,
   );
+}
+
+export function getReuirementQuestStatuses(packed: Gcdata): string[] {
+  const subschema = resolvePointerInSchema(
+    ['quest_start_requirements', 'anykey', 'element', 'quest_status'],
+    {
+      schema_id: 'cl2_quest',
+      data: {
+        quest_start_requirements: {
+          anykey: {
+            element: {
+              style: 'Quest',
+            },
+          },
+        },
+      },
+    } as any,
+    packed,
+  ) as BschemaEnum;
+
+  const statuses = subschema.enum;
+
+  assert(statuses.length, 'Should have required quest statuses');
+  return statuses as string[];
+}
+
+export function getRequirementStyleNames(packed: Gcdata): string[] {
+  const subschema = resolvePointerInSchema(
+    ['quest_start_requirements', 'anykey'],
+    {
+      schema_id: 'cl2_quest',
+      data: {
+        quest_start_requirements: {
+          anykey: {
+            element: {},
+          },
+        },
+      },
+    } as any,
+    packed,
+  ) as BschemaBsArrayElement;
+  const element = subschema.properties.element as { oneOf: BschemaObject[] };
+  const styles = element.oneOf.map((s) => (s.properties!.style as any).bConst);
+
+  assert(styles.length, 'Should have moment styles');
+  return styles as string[];
 }
 
 export function getMomentStyleNames(packed: Gcdata): string[] {
