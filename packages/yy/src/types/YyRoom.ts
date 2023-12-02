@@ -147,6 +147,13 @@ const yyRoomTileLayerSchema = z
   })
   .passthrough();
 
+export type YyRoomEffectLayer = z.infer<typeof yyRoomEffectLayer>;
+const yyRoomEffectLayer = z
+  .object({
+    resourceType: z.literal('GMREffectLayer'),
+  })
+  .passthrough();
+
 export type YyRoomInstanceLayer = z.infer<typeof yyRoomInstanceLayerSchema>;
 const yyRoomInstanceLayerSchema = yyRoomLayerBaseSchema
   .extend({
@@ -261,6 +268,7 @@ const yyRoomLayerSchema = z.discriminatedUnion('resourceType', [
   yyRoomAssetLayerSchema,
   yyRoomPathLayerSchema,
   yyRoomLayerLayerSchema,
+  yyRoomEffectLayer,
 ]);
 
 export type YyRoom = z.infer<typeof yyRoomSchema>;
