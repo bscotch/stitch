@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.11.0 (2023-12-04)
+
+### Features
+
+- Requirements are now parsed and saved to changes
+
 ## 0.10.0 (2023-12-02)
 
 ### Features
