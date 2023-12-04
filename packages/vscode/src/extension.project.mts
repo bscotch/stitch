@@ -80,7 +80,9 @@ export class GameMakerProject extends Project {
     if (stitchConfig.killOthersOnRun) {
       const windowTitle = await this.getWindowsName();
       if (windowTitle) {
+        logger.info(`Attempting to kill running "${windowTitle} instances...`);
         await killProjectRunner(windowTitle);
+        logger.info('Finished killing running instances!');
       }
     }
 
@@ -91,6 +93,7 @@ export class GameMakerProject extends Project {
     const config = options?.config ?? stitchConfig.runConfigDefault;
     const compiler = options?.compiler ?? stitchConfig.runCompilerDefault;
 
+    logger.info(`Looking for GameMaker v${this.ideVersion}...`);
     const release = await GameMakerRuntime.findRelease({
       ideVersion: this.ideVersion,
     });
@@ -100,9 +103,12 @@ export class GameMakerProject extends Project {
       );
       return;
     }
+    logger.info(`Looking for runtime ${release.runtime.version}...`);
     const runtime = await GameMakerLauncher.findInstalledRuntime({
       version: release.runtime.version,
     });
+
+    logger.info(`Found runtime? ${!!runtime}`);
     if (!runtime) {
       const installOptions = ['Yes', 'No'] as const;
       const chosenOption = await showErrorMessage(
