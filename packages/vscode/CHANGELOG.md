@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.55.9 (2023-12-04)
+
+### Fixes
+
+- Added some additional logging to the 'run' command
+
 ## 1.55.7 (2023-11-28)
 
 ### Fixes
