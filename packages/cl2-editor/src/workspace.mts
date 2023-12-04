@@ -6,7 +6,7 @@ import { GameChangerFs } from './gc.fs.mjs';
 import { QuestCompletionProvider } from './quests.autocompletes.mjs';
 import { StoryFoldingRangeProvider } from './quests.folding.mjs';
 import { QuestHoverProvider } from './quests.hover.mjs';
-import { QuestTreeProvider } from './quests.mjs';
+import { QuestTreeProvider } from './quests.new.mjs';
 import { QuestWorkspaceSymbolProvider } from './quests.symbols.mjs';
 import { isQuestUri, parseGameChangerUri } from './quests.util.mjs';
 

@@ -34,6 +34,11 @@ export interface Mote<T = any, S extends SchemaId = SchemaId> {
   parent?: MoteId;
   /** Path to the field holding a sprite name */
   sprite?: string;
+  /**
+   * path relative to the parent, or to the root if there is not parent
+   * of folders
+   */
+  folder?: string;
 }
 
 export type BschemaTypeName =

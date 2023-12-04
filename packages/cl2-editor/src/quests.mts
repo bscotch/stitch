@@ -156,20 +156,25 @@ export class QuestTreeProvider
   }
 
   rebuild() {
+    const root = MoteItem.lookup.get('root');
+
     // Ensure all motes have a tree item instance
 
     this.storylineMotes.forEach((storylineMote) => {
       const storyItem =
         MoteItem.lookup.get(storylineMote.id) ||
         new MoteItem(this.packed, storylineMote.id);
+      console.log(storyItem.mote.parent, storyItem.mote.folder);
       // Add the story's quests
       this.questMotes
         .filter((questMote) => questMote.data.storyline === storylineMote.id)
-        .forEach(
-          (questMote) =>
+        .forEach((questMote) => {
+          const mote =
             MoteItem.lookup.get(questMote.id) ||
-            new MoteItem(this.packed, questMote.id, storyItem),
-        );
+            new MoteItem(this.packed, questMote.id, storyItem);
+
+          console.log('  ', mote.mote.parent, mote.mote.folder);
+        });
     });
 
     this._onDidChangeTreeData.fire();

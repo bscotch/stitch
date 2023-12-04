@@ -5,7 +5,6 @@ export abstract class TreeItemBase<
 > extends vscode.TreeItem {
   /** The kind of Node this item is. Also used as the default `contextValue` value */
   readonly kind!: Kind;
-  abstract readonly parent: TreeItemBase | undefined;
 
   constructor(label: string) {
     super(label);
