@@ -91,6 +91,10 @@ export function isBschemaObject(schema: any): schema is BschemaObject {
   );
 }
 
+export function isBschemaEnum(schema: any): schema is BschemaEnum {
+  return typeof schema === 'object' && Array.isArray(schema['enum']);
+}
+
 export function isBschemaConst(schema: any): schema is BschemaConst {
   return typeof schema === 'object' && 'bConst' in schema;
 }

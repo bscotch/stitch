@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Crashlands2 } from './types.cl2.js';
 import { Position, Range } from './types.editor.js';
 import { Mote } from './types.js';
 
@@ -97,6 +98,8 @@ export interface ParsedRequirementQuest {
   id: string | undefined;
   /** The MoteId of the required quest */
   quest: string | undefined;
+  status: Crashlands2.QuestStatus;
+  style: 'Quest';
 }
 
 export interface ParsedRequirementOther {

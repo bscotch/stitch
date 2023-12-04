@@ -14,6 +14,7 @@ import {
   changesSchema,
   isBschemaBoolean,
   isBschemaConst,
+  isBschemaEnum,
   isBschemaNumeric,
   isBschemaObject,
   isBschemaString,
@@ -159,6 +160,11 @@ export class GameChanger {
         `Expected constant value ${JSON.stringify(
           subschema.bConst,
         )}, got ${JSON.stringify(value)}`,
+      );
+    } else if (isBschemaEnum(subschema)) {
+      assert(
+        subschema.enum.includes(value),
+        `'${value}' is not in enum ${JSON.stringify(subschema.enum)}`,
       );
     } else if (typeof value === 'string') {
       assert(

@@ -444,9 +444,18 @@ export function parseStringifiedQuest(
               ...lineRange,
             });
           }
-          // TODO: Autocomplete Quests
-          if (parsedLine.style?.value === 'Quest') {
-            if (parsedLine.sep) {
+
+          const style = parsedLine.style?.value;
+          const isValidStyle = requirementStyles.includes(style as any);
+          const isQuest = style === 'Quest';
+          const hasValidQuestStatus = requirementQuestStatuses.includes(
+            parsedLine.status?.value as any,
+          );
+
+          // Autocomplete Quests
+          if (isQuest) {
+            const canProvideAutocomplete = !!parsedLine.sep;
+            if (canProvideAutocomplete) {
               requiresMote = {
                 at: parsedLine.sep!.end,
                 options: motes.quests,
@@ -459,10 +468,37 @@ export function parseStringifiedQuest(
             }
           }
 
-          // TODO: Add to data!
+          // Add to parsed data
+          if (isQuest) {
+            if (hasValidQuestStatus) {
+              result.parsed[lastSectionGroup].push({
+                kind: 'quest',
+                style: 'Quest',
+                id: parsedLine.arrayTag?.value?.trim(),
+                quest: parsedLine.moteTag?.value?.trim(),
+                status: parsedLine.status?.value as any,
+              });
+            } else {
+              result.diagnostics.push({
+                message: `Unknown quest status "${parsedLine.status?.value}"`,
+                ...lineRange,
+              });
+            }
+          } else if (isValidStyle) {
+            result.parsed[lastSectionGroup].push({
+              kind: 'other',
+              id: parsedLine.arrayTag?.value?.trim(),
+              style: style!,
+            });
+          } else {
+            result.diagnostics.push({
+              message: `Unknown requirement style "${style}"`,
+              ...lineRange,
+            });
+          }
         } else {
           result.diagnostics.push({
-            message: `Must be defined in a Start/End Moments section!`,
+            message: `Must be defined in a Start/End Moments/Requirements section!`,
             ...lineRange,
           });
         }
@@ -688,6 +724,69 @@ export async function updateChangesFromParsedQuest(
       });
     });
     //#endregion
+
+    for (const requirementGroup of [
+      'quest_start_requirements',
+      'quest_end_requirements',
+    ] as const) {
+      trace(`Updating Requirement Group ${requirementGroup}`);
+      const parsedRequirements = parsed[requirementGroup];
+      // Add/Update requirements
+      trace('Adding/updating requirements');
+      for (const requirement of parsedRequirements) {
+        trace(`Updating requirement ${requirement.id}`);
+        updateMote(
+          `data/${requirementGroup}/${requirement.id}/element/style`,
+          requirement.style,
+        );
+        if (requirement.kind === 'quest') {
+          updateMote(
+            `data/${requirementGroup}/${requirement.id}/element/quest`,
+            requirement.quest,
+          );
+          updateMote(
+            `data/${requirementGroup}/${requirement.id}/element/quest_status`,
+            requirement.status,
+          );
+        }
+      }
+      // Delete requirements that were removed
+      trace('Deleting removed requirements');
+      for (const existingRequirement of bsArrayToArray(
+        questMoteBase?.data[requirementGroup] || {},
+      )) {
+        const parsedRequirement = parsedRequirements.find(
+          (r) => r.id === existingRequirement.id,
+        );
+        if (!parsedRequirement) {
+          trace(`Deleting removed requirement ${existingRequirement.id}`);
+          updateMote(
+            `data/${requirementGroup}/${existingRequirement.id}`,
+            null,
+          );
+        }
+      }
+      // Update the requirement order
+      trace('Updating requirement order');
+      const requirements = parsedRequirements.map((r) => {
+        let requirement = questMoteBase?.data[requirementGroup]?.[r.id!];
+        if (!requirement) {
+          requirement = questMoteWorking?.data[requirementGroup]?.[r.id!];
+          // @ts-expect-error - order is a required field, but it'll be re-added
+          delete requirement?.order;
+        }
+        assert(
+          requirement,
+          `Requirement ${r.id} not found in base or working mote`,
+        );
+        return { ...requirement, id: r.id! };
+      });
+      updateBsArrayOrder(requirements);
+      requirements.forEach((r) => {
+        trace(`Updating requirement ${r.id} order to ${r.order}`);
+        updateMote(`data/${requirementGroup}/${r.id}/order`, r.order);
+      });
+    }
 
     //#region QUEST MOMENTS
     for (const momentGroup of [
