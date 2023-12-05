@@ -200,51 +200,54 @@ export class QuestTreeProvider
     const item = new vscode.DataTransferItem(source);
     dataTransfer.set(this.treeMimeType, item);
   }
-  handleDrop(
+  async handleDrop(
     target: QuestTreeItem | undefined,
     dataTransfer: vscode.DataTransfer,
   ) {
     if (!target) return;
-    const dropping = dataTransfer.get(this.treeMimeType)
-      ?.value as QuestTreeItem[];
-    if (dropping.length !== 1) return;
-    if (this.dropMode === 'nest') {
-      return this.handleNestDrop(target, dropping[0]);
-    }
-    return this.handleOrderDrop(target, dropping[0]);
-  }
+    const dropping: QuestTreeItem[] = (dataTransfer.get(this.treeMimeType)
+      ?.value || [])[0];
+    if (!dropping) return;
 
-  protected async handleOrderDrop(
-    target: QuestTreeItem,
-    dropping: QuestTreeItem,
-  ) {
     // Need different outcomes for every combination of target and dropping (each can be a mote or a folder)
     // 1. Dropping a mote onto a mote
+    //    a. (order mode) Place it before the target, OR
+    //    b. OR (nesting mode) make it a child of the target
     // 2. Dropping a mote onto a folder
+    //    - Put the mote into the folder as the first item (children will automatically be moved)
     // 3. Dropping a folder onto a mote
+    //    - Move all motes in the folder (recursively) by setting their parent to the target mote and updating their folder to slice the path items up to the dropped folder
     // 4. Dropping a folder onto a folder
+    //    - Move all motes in the folder (recursively) by setting their parent to the mote containing the target folder
     const motes = this.storylineAndQuestMotes;
+    const getSiblings = (mote: Mote) =>
+      motes
+        .filter(
+          (otherMote) =>
+            otherMote.parent === mote.parent &&
+            otherMote.folder === mote.folder,
+        )
+        .sort((a, b) => a.data.order - b.data.order);
 
-    if (target instanceof MoteItem && dropping instanceof MoteItem) {
+    if (
+      target instanceof MoteItem &&
+      dropping instanceof MoteItem &&
+      this.dropMode === 'order'
+    ) {
+      // Case 1.a
       // Then we're dropping a mote onto a mote. That should cause the dropped Mote to
       // have the same parent & folder as the target, and be placed immediately after it.
       // To properly place, we need to know the order of the target and its next sibling
-      const targetSiblings = motes
-        .filter(
-          (mote) =>
-            mote.parent === target.mote.parent &&
-            mote.folder === target.mote.folder,
-        )
-        .sort((a, b) => a.data.order - b.data.order);
-      const nextSibling = targetSiblings.find(
+      const targetSiblings = getSiblings(target.mote);
+      const priorSibling = targetSiblings.findLast(
         (sib) =>
-          sib.data.order >= target.mote.data.order &&
+          sib.data.order <= target.mote.data.order &&
           sib.id !== target.mote.id &&
           sib.id !== dropping.mote.id,
       );
-      const newOrder = nextSibling
-        ? (nextSibling.data.order + target.mote.data.order) / 2
-        : target.mote.data.order + ORDER_INCREMENT;
+      const newOrder = priorSibling
+        ? (priorSibling.data.order + target.mote.data.order) / 2
+        : target.mote.data.order - ORDER_INCREMENT;
       this.packed.updateMoteData(dropping.moteId, 'data/order', newOrder);
       this.packed.updateMoteLocation(
         dropping.moteId,
@@ -252,7 +255,46 @@ export class QuestTreeProvider
         target.mote.folder,
       );
       await this.packed.writeChanges();
+    } else if (
+      target instanceof MoteItem &&
+      dropping instanceof MoteItem &&
+      this.dropMode === 'nest'
+    ) {
+      // Case 1.b
+      // We need to make the dropped mote a child of the target mote:
+      // - Remove its folder value
+      // - Set its parent to the target mote
+      // - Make it the last child of the target mote
+      const targetSiblings = getSiblings(target.mote);
+      this.packed.updateMoteLocation(
+        dropping.moteId,
+        target.mote.id,
+        undefined,
+      );
+      this.packed.updateMoteData(
+        dropping.moteId,
+        'data/order',
+        (targetSiblings.at(-1)?.data.order ?? 0) + ORDER_INCREMENT,
+      );
+    } else if (target instanceof FolderItem && dropping instanceof MoteItem) {
+      // Case 2
+      // Then we're dropping a mote onto a folder.
+      // That cannot have meaningful 'order' implications,
+      // since folders are just sorted alphabetically in
+      // their own group. This is the mechanism by which
+      // TODO
+    } else if (target instanceof MoteItem && dropping instanceof FolderItem) {
+      // Case 3
+      // Then we're dropping a folder onto a mote.
+      // TODO
+    } else if (target instanceof FolderItem && dropping instanceof FolderItem) {
+      // Case 4
+      // Then we're dropping a folder onto a folder.
+      // TODO
+    } else {
+      throw new Error(`Unhandled drop case: ${target} onto ${dropping}`);
     }
+
     this.rebuild();
   }
 
