@@ -36,12 +36,28 @@
       {
         "command": "crashlands.quests.enter",
         "enablement": "editorLangId == 'cl2-quest'",
+        "category": "Crashlands",
         "title": "On Enter"
       },
       {
         "command": "crashlands.editor.backup.restore",
         "enablement": "editorLangId == 'cl2-quest'",
-        "title": "Crashlands: Restore Backup"
+        "category": "Crashlands",
+        "title": "Restore Backup"
+      },
+      {
+        "command": "crashlands.tree.dropMode.order.enable",
+        "title": "Enable Order Mode (Drag/Drop)",
+        "category": "Crashlands",
+        "shortTitle": "Enable Order Mode",
+        "icon": "$(list-flat)"
+      },
+      {
+        "command": "crashlands.tree.dropMode.nest.enable",
+        "title": "Enable Nesting Mode (Drag/Drop)",
+        "category": "Crashlands",
+        "shortTitle": "Enable Nesting Mode",
+        "icon": "$(list-tree)"
       }
     ],
     "configuration": {
@@ -98,13 +114,25 @@
           "command": "crashlands.editor.backup.restore",
           "when": "editorLangId == 'cl2-quest'"
         }
+      ],
+      "view/title": [
+        {
+          "command": "crashlands.tree.dropMode.order.enable",
+          "when": "view == cl2-stories && crashlands.dropMode == 'nest'",
+          "group": "navigation@1"
+        },
+        {
+          "command": "crashlands.tree.dropMode.nest.enable",
+          "when": "view == cl2-stories && crashlands.dropMode == 'order'",
+          "group": "navigation@1"
+        }
       ]
     },
     "views": {
       "cl2": [
         {
           "id": "cl2-stories",
-          "name": "Stories",
+          "name": "Motes",
           "icon": "./images/cl2-editor-logo.svg",
           "type": "tree"
         }
@@ -114,7 +142,7 @@
       "activitybar": [
         {
           "id": "cl2",
-          "title": "Crashlands 2",
+          "title": "Crashlands",
           "icon": "./images/cl2-editor-logo.svg"
         }
       ]

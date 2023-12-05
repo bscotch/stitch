@@ -174,6 +174,30 @@ export class QuestTreeProvider
     this._onDidChangeTreeData.fire();
   }
 
+  handleDrag(
+    source: readonly QuestTreeItem[],
+    dataTransfer: vscode.DataTransfer,
+  ): void | Thenable<void> {
+    const item = new vscode.DataTransferItem(source);
+    dataTransfer.set(this.treeMimeType, item);
+  }
+  handleDrop(
+    target: QuestTreeItem | undefined,
+    dataTransfer: vscode.DataTransfer,
+  ) {
+    if (!target) return;
+    const dropping = dataTransfer.get(this.treeMimeType);
+    console.log(target, dropping);
+  }
+
+  setDropMode(mode: 'order' | 'nest') {
+    void vscode.commands.executeCommand(
+      'setContext',
+      'crashlands.dropMode',
+      mode,
+    );
+  }
+
   static register(workspace: CrashlandsWorkspace) {
     const provider = new QuestTreeProvider(workspace);
     provider.view = vscode.window.createTreeView('cl2-stories', {
@@ -183,18 +207,25 @@ export class QuestTreeProvider
     crashlandsEvents.on('mote-name-changed', (event) => {
       void provider.rebuild();
     });
-    crashlandsEvents.on('quest-opened', (uri, info) => {
-      // Reveal the quest in the tree
-      const questItem = MoteItem.lookup.get(info.moteId!);
-      if (!questItem) {
-        console.log("Couldn't find tree item for quest", info.moteId);
-        return;
-      }
-      provider.view.reveal(questItem, {
-        expand: true,
-      });
-    });
-    const subs = [provider.view];
+
+    // Default the drop-mode to 'order'
+    provider.setDropMode('order');
+
+    const subs = [
+      vscode.commands.registerCommand(
+        'crashlands.tree.dropMode.order.enable',
+        () => {
+          provider.setDropMode('order');
+        },
+      ),
+      vscode.commands.registerCommand(
+        'crashlands.tree.dropMode.nest.enable',
+        () => {
+          provider.setDropMode('nest');
+        },
+      ),
+      provider.view,
+    ];
 
     provider.rebuild();
     return subs;
@@ -203,10 +234,6 @@ export class QuestTreeProvider
 
 class FolderItem extends TreeItemBase<'folder'> {
   override readonly kind = 'folder';
-  static lookup = new Map<Mote | undefined, Map<string, FolderItem>>();
-  static getFolder(parent: Mote | undefined, relativePath: string[]) {
-    return FolderItem.lookup.get(parent)?.get(relativePath.join('/'));
-  }
 
   constructor(
     /**
@@ -226,8 +253,6 @@ class FolderItem extends TreeItemBase<'folder'> {
       ? vscode.TreeItemCollapsibleState.Expanded
       : vscode.TreeItemCollapsibleState.Collapsed;
     this.iconPath = new vscode.ThemeIcon('folder');
-    FolderItem.lookup.set(parent, FolderItem.lookup.get(parent) || new Map());
-    FolderItem.lookup.get(parent)!.set(relativePath.join('/'), this);
   }
 }
 
@@ -238,10 +263,6 @@ class MoteItem<
 > extends TreeItemBase<'mote'> {
   override readonly kind = 'mote';
   document: vscode.TextDocument | undefined;
-  /**
-   * Map of moteId:item pairs, to allow lookup up a current tree item by its moteId
-   */
-  static lookup: Map<string, MoteItem> = new Map();
 
   constructor(
     readonly packed: GameChanger,
@@ -250,7 +271,6 @@ class MoteItem<
     options?: { hasChildren?: boolean },
   ) {
     super(packed.working.getMoteName(moteId)!);
-    MoteItem.lookup.set(moteId, this);
     this.collapsibleState = options?.hasChildren
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
