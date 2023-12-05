@@ -46,6 +46,11 @@
         "title": "Restore Backup"
       },
       {
+        "command": "crashlands.open.saveDir",
+        "category": "Crashlands",
+        "title": "Open Save Folder"
+      },
+      {
         "command": "crashlands.tree.dropMode.order.enable",
         "title": "Enable Order Mode (Drag/Drop)",
         "category": "Crashlands",

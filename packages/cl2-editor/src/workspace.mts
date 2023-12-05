@@ -30,6 +30,12 @@ export class CrashlandsWorkspace {
       ...QuestHoverProvider.register(this.workspace),
       ...QuestCompletionProvider.register(this.workspace),
       ...QuestWorkspaceSymbolProvider.register(this.workspace),
+      vscode.commands.registerCommand('crashlands.open.saveDir', async () => {
+        await vscode.commands.executeCommand(
+          'vscode.openFolder',
+          vscode.Uri.file(packed.projectSaveDir.absolute),
+        );
+      }),
       vscode.workspace.onDidChangeTextDocument((event) => {
         if (!isQuestUri(event.document.uri)) {
           return;

@@ -1,4 +1,10 @@
-import { Bschema, Crashlands2, GameChanger, Mote } from '@bscotch/gcdata';
+import {
+  Bschema,
+  Crashlands2,
+  GameChanger,
+  Mote,
+  ORDER_INCREMENT,
+} from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { crashlandsEvents } from './events.mjs';
 import { moteToPath } from './quests.util.mjs';
@@ -8,6 +14,7 @@ import type { CrashlandsWorkspace } from './workspace.mjs';
 export type QuestTreeItem = MoteItem | FolderItem;
 type QuestData = Crashlands2.Schemas['cl2_quest'];
 type StorylineData = Crashlands2.Schemas['cl2_storyline'];
+type DropMode = 'order' | 'nest';
 
 export class QuestTreeProvider
   implements vscode.TreeDataProvider<QuestTreeItem>
@@ -16,6 +23,7 @@ export class QuestTreeProvider
   protected readonly treeMimeType = 'application/vnd.code.tree.cl2-stories';
   readonly dragMimeTypes = [this.treeMimeType];
   readonly dropMimeTypes = [this.treeMimeType];
+  protected dropMode: DropMode = 'order';
 
   get packed() {
     return this.workspace.packed;
@@ -36,9 +44,9 @@ export class QuestTreeProvider
   getTreeItem(element: QuestTreeItem): QuestTreeItem {
     return element;
   }
-  // getParent(element: QuestTreeItem): vscode.ProviderResult<QuestTreeItem> {
-  //   return element.parent;
-  // }
+  getParent(element: QuestTreeItem): vscode.ProviderResult<QuestTreeItem> {
+    return element.parentItem;
+  }
   getChildren(item?: QuestTreeItem): vscode.ProviderResult<QuestTreeItem[]> {
     const motes = this.storylineAndQuestMotes;
     const items: QuestTreeItem[] = [];
@@ -71,7 +79,9 @@ export class QuestTreeProvider
             }),
           );
         } else if (!parent && folder.length && !baseFolders.has(folder[0])) {
-          items.push(new FolderItem(undefined, [folder[0]], { open: true }));
+          items.push(
+            new FolderItem(undefined, undefined, [folder[0]], { open: true }),
+          );
           baseFolders.add(folder[0]);
         }
       }
@@ -79,7 +89,7 @@ export class QuestTreeProvider
       // For all motes that have the same parent as this folder, add them or their folder base
       for (const mote of motes) {
         const parent = getParent(mote);
-        if (parent !== item.parent) {
+        if (parent !== item.parentMote) {
           continue;
         }
         // Is this mote in this or a deeper folder?
@@ -106,7 +116,9 @@ export class QuestTreeProvider
           // Then add the subfolder
           const subfolder = moteFolder.slice(0, item.relativePath.length + 1);
           if (!baseFolders.has(subfolder.at(-1)!)) {
-            items.push(new FolderItem(undefined, subfolder, { open: false }));
+            items.push(
+              new FolderItem(undefined, item, subfolder, { open: false }),
+            );
             baseFolders.add(subfolder.at(-1)!);
           }
         }
@@ -121,11 +133,13 @@ export class QuestTreeProvider
         const moteFolder = getFolder(mote);
         if (moteFolder.length && !baseFolders.has(moteFolder[0])) {
           // Then add the subfolder
-          items.push(new FolderItem(parent, [moteFolder[0]], { open: false }));
+          items.push(
+            new FolderItem(parent, item, [moteFolder[0]], { open: false }),
+          );
           baseFolders.add(moteFolder[0]);
         } else {
           items.push(
-            new MoteItem(this.packed, mote.id, parent, {
+            new MoteItem(this.packed, mote.id, item, {
               hasChildren: !!hasChildren.get(mote),
             }),
           );
@@ -159,10 +173,7 @@ export class QuestTreeProvider
     });
   }
 
-  get storylineAndQuestMotes(): Mote<
-    Crashlands2.Quest | Crashlands2.Storyline,
-    string
-  >[] {
+  get storylineAndQuestMotes() {
     return this.packed.working.listMotesBySchema<StorylineData | QuestData>(
       'cl2_storyline',
       'cl2_quest',
@@ -174,6 +185,14 @@ export class QuestTreeProvider
     this._onDidChangeTreeData.fire();
   }
 
+  setDropMode(mode: DropMode) {
+    void vscode.commands.executeCommand(
+      'setContext',
+      'crashlands.dropMode',
+      mode,
+    );
+    this.dropMode = mode;
+  }
   handleDrag(
     source: readonly QuestTreeItem[],
     dataTransfer: vscode.DataTransfer,
@@ -186,17 +205,58 @@ export class QuestTreeProvider
     dataTransfer: vscode.DataTransfer,
   ) {
     if (!target) return;
-    const dropping = dataTransfer.get(this.treeMimeType);
-    console.log(target, dropping);
+    const dropping = dataTransfer.get(this.treeMimeType)
+      ?.value as QuestTreeItem[];
+    if (dropping.length !== 1) return;
+    if (this.dropMode === 'nest') {
+      return this.handleNestDrop(target, dropping[0]);
+    }
+    return this.handleOrderDrop(target, dropping[0]);
   }
 
-  setDropMode(mode: 'order' | 'nest') {
-    void vscode.commands.executeCommand(
-      'setContext',
-      'crashlands.dropMode',
-      mode,
-    );
+  protected async handleOrderDrop(
+    target: QuestTreeItem,
+    dropping: QuestTreeItem,
+  ) {
+    // Need different outcomes for every combination of target and dropping (each can be a mote or a folder)
+    // 1. Dropping a mote onto a mote
+    // 2. Dropping a mote onto a folder
+    // 3. Dropping a folder onto a mote
+    // 4. Dropping a folder onto a folder
+    const motes = this.storylineAndQuestMotes;
+
+    if (target instanceof MoteItem && dropping instanceof MoteItem) {
+      // Then we're dropping a mote onto a mote. That should cause the dropped Mote to
+      // have the same parent & folder as the target, and be placed immediately after it.
+      // To properly place, we need to know the order of the target and its next sibling
+      const targetSiblings = motes
+        .filter(
+          (mote) =>
+            mote.parent === target.mote.parent &&
+            mote.folder === target.mote.folder,
+        )
+        .sort((a, b) => a.data.order - b.data.order);
+      const nextSibling = targetSiblings.find(
+        (sib) =>
+          sib.data.order >= target.mote.data.order &&
+          sib.id !== target.mote.id &&
+          sib.id !== dropping.mote.id,
+      );
+      const newOrder = nextSibling
+        ? (nextSibling.data.order + target.mote.data.order) / 2
+        : target.mote.data.order + ORDER_INCREMENT;
+      this.packed.updateMoteData(dropping.moteId, 'data/order', newOrder);
+      this.packed.updateMoteLocation(
+        dropping.moteId,
+        target.mote.parent,
+        target.mote.folder,
+      );
+      await this.packed.writeChanges();
+    }
+    this.rebuild();
   }
+
+  protected handleNestDrop(target: QuestTreeItem, dropping: QuestTreeItem) {}
 
   static register(workspace: CrashlandsWorkspace) {
     const provider = new QuestTreeProvider(workspace);
@@ -240,7 +300,8 @@ class FolderItem extends TreeItemBase<'folder'> {
      * Folders are defined relative to a parent Mote,
      * or relative to the root if there is no parent.
      */
-    readonly parent: Mote | undefined,
+    readonly parentMote: Mote | undefined,
+    readonly parentItem: QuestTreeItem | undefined,
     /**
      * Path to this folder relative to its parent Mote
      * (or the root if there is no parent)
@@ -267,7 +328,7 @@ class MoteItem<
   constructor(
     readonly packed: GameChanger,
     readonly moteId: string,
-    readonly parent?: Mote,
+    readonly parentItem?: QuestTreeItem,
     options?: { hasChildren?: boolean },
   ) {
     super(packed.working.getMoteName(moteId)!);
