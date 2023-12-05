@@ -19,6 +19,8 @@ export type QuestMotePointer = ``
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/following`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_requirement)`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/group_requirements`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/infusion_status`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/infusion`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/insight_status`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/insight`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/invert`
@@ -139,6 +141,8 @@ export type QuestMotePointer = ``
   | `quest_end_moments/${string}/element/requirements/${string}/element/following`
   | `quest_end_moments/${string}/element/requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_moment_requirement)`
   | `quest_end_moments/${string}/element/requirements/${string}/element/group_requirements`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/infusion_status`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/infusion`
   | `quest_end_moments/${string}/element/requirements/${string}/element/insight_status`
   | `quest_end_moments/${string}/element/requirements/${string}/element/insight`
   | `quest_end_moments/${string}/element/requirements/${string}/element/invert`
@@ -196,6 +200,8 @@ export type QuestMotePointer = ``
   | `quest_end_requirements/${string}/element/following`
   | `quest_end_requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_requirement)`
   | `quest_end_requirements/${string}/element/group_requirements`
+  | `quest_end_requirements/${string}/element/infusion_status`
+  | `quest_end_requirements/${string}/element/infusion`
   | `quest_end_requirements/${string}/element/insight_status`
   | `quest_end_requirements/${string}/element/insight`
   | `quest_end_requirements/${string}/element/invert`
@@ -283,6 +289,8 @@ export type QuestMotePointer = ``
   | `quest_start_moments/${string}/element/requirements/${string}/element/following`
   | `quest_start_moments/${string}/element/requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_moment_requirement)`
   | `quest_start_moments/${string}/element/requirements/${string}/element/group_requirements`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/infusion_status`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/infusion`
   | `quest_start_moments/${string}/element/requirements/${string}/element/insight_status`
   | `quest_start_moments/${string}/element/requirements/${string}/element/insight`
   | `quest_start_moments/${string}/element/requirements/${string}/element/invert`
@@ -340,6 +348,8 @@ export type QuestMotePointer = ``
   | `quest_start_requirements/${string}/element/following`
   | `quest_start_requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_requirement)`
   | `quest_start_requirements/${string}/element/group_requirements`
+  | `quest_start_requirements/${string}/element/infusion_status`
+  | `quest_start_requirements/${string}/element/infusion`
   | `quest_start_requirements/${string}/element/insight_status`
   | `quest_start_requirements/${string}/element/insight`
   | `quest_start_requirements/${string}/element/invert`

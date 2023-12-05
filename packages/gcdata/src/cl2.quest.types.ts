@@ -194,7 +194,7 @@ const linePartsSchema = z.object({
 
 export const arrayTagPattern = '(?:#(?<arrayTag>[a-z0-9]+))';
 const moteTagPattern = '(?:@(?<moteTag>[a-z0-9_]+))';
-const moteNamePattern = "(?<moteName>[A-Za-z0-9:&?! ',()-]+)";
+const moteNamePattern = "(?<moteName>[A-Za-z0-9:&?! ',()/-]+)";
 const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]*?)\\s*\\))';
 
 export const linePatterns = [
