@@ -1,5 +1,5 @@
 import { assert } from './assert.js';
-import type { Crashlands2 } from './types.cl2.js';
+import type { Crashlands2 } from './cl2.types.auto.js';
 import { Position } from './types.editor.js';
 import type { BschemaBsArray, BschemaObject, Mote } from './types.js';
 
@@ -187,4 +187,27 @@ export function updateBsArrayOrder(sorted: BsArrayItem[]) {
     }
   }
   return sorted;
+}
+
+/**
+ * Given a moteId (or a mote), return `@${moteId}`.
+ */
+export function toMoteTag(item: string | { id: string } | undefined): string {
+  assert(
+    item && (typeof item === 'string' || 'id' in item),
+    `ID must be a string or Mote, instead got ${item}`,
+  );
+  const idStr = typeof item === 'string' ? item : item.id;
+  return `@${idStr}`;
+}
+/**
+ * Given a BschemaArray element ID (or an element), return `#${elementId}`.
+ */
+export function toArrayTag(item: string | { id: string }): string {
+  assert(
+    typeof item === 'string' || 'id' in item,
+    'ID must be a string or Mote',
+  );
+  const idStr = typeof item === 'string' ? item : item.id;
+  return `#${idStr}`;
 }

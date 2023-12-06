@@ -1,7 +1,7 @@
 import type { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
-import { bsArrayToArray } from './helpers.js';
-import type { Crashlands2 } from './types.cl2.js';
+import type { Crashlands2 } from './cl2.types.auto.js';
+import { bsArrayToArray, toArrayTag, toMoteTag } from './helpers.js';
 import type { Mote } from './types.js';
 import { capitalize } from './util.js';
 
@@ -15,7 +15,7 @@ export function stringifyQuest(
     `Name: ${packed.working.getMoteName(mote)}`,
     `Storyline: ` +
       (storyline
-        ? `${packed.working.getMoteName(storyline)}${moteTag(storyline)}`
+        ? `${packed.working.getMoteName(storyline)}${toMoteTag(storyline)}`
         : ''),
     `Draft: ${mote.data.wip?.draft ? 'true' : 'false'}\n`,
   ];
@@ -26,7 +26,7 @@ export function stringifyQuest(
     if (comments.length) {
       blocks.push(
         ...bsArrayToArray(mote.data.wip.comments).map(
-          (c) => `//${arrayTag(c.id)} ${c.element}`,
+          (c) => `//${toArrayTag(c.id)} ${c.element}`,
         ),
         '',
       );
@@ -36,13 +36,15 @@ export function stringifyQuest(
   // GIVER
   if (mote.data.quest_giver) {
     const giver = packed.working.getMote(mote.data.quest_giver.item);
-    blocks.push(`Giver: ${packed.working.getMoteName(giver)}${moteTag(giver)}`);
+    blocks.push(
+      `Giver: ${packed.working.getMoteName(giver)}${toMoteTag(giver)}`,
+    );
   }
   // RECEIVER
   if (mote.data.quest_receiver) {
     const receiver = packed.working.getMote(mote.data.quest_receiver.item);
     blocks.push(
-      `Receiver: ${packed.working.getMoteName(receiver)}${moteTag(receiver)}`,
+      `Receiver: ${packed.working.getMoteName(receiver)}${toMoteTag(receiver)}`,
     );
   }
 
@@ -61,12 +63,12 @@ export function stringifyQuest(
         if (req.element.style === 'Quest') {
           const quest = packed.working.getMote(req.element.quest);
           blocks.push(
-            `?${arrayTag(req)} ${req.element.style} ${
+            `?${toArrayTag(req)} ${req.element.style} ${
               req.element.quest_status
-            }: ${packed.working.getMoteName(quest)}${moteTag(quest)}\n`,
+            }: ${packed.working.getMoteName(quest)}${toMoteTag(quest)}\n`,
           );
         } else {
-          blocks.push(`?${arrayTag(req)} ${req.element.style}\n`);
+          blocks.push(`?${toArrayTag(req)} ${req.element.style}\n`);
         }
       }
     } else {
@@ -98,23 +100,23 @@ export function stringifyQuest(
             line += `\t${characterString(moment.speech.speaker)}\n`;
           }
           const emojiStr = emojiString(moment.speech.emotion);
-          line += `>${arrayTag(momentContainer)} ${
+          line += `>${toArrayTag(momentContainer)} ${
             emojiStr ? emojiStr + ' ' : ''
           }${moment.speech.text.text}`;
           lastSpeaker = moment.speech.speaker;
         } else if (moment.style === 'Emote') {
-          const emojiLines: string[] = [`:)${arrayTag(momentContainer)}`];
+          const emojiLines: string[] = [`:)${toArrayTag(momentContainer)}`];
           for (const emote of bsArrayToArray(moment.emotes)) {
             if (!emote.element?.key) continue;
             emojiLines.push(
-              `!${arrayTag(emote)} ${characterString(
+              `!${toArrayTag(emote)} ${characterString(
                 emote.element?.key!,
               )} ${emojiString(emote.element?.value)}`,
             );
           }
           line += emojiLines.join('\n');
         } else {
-          line += `?${arrayTag(momentContainer)} ${moment.style}`;
+          line += `?${toArrayTag(momentContainer)} ${moment.style}`;
         }
         blocks.push(line + '\n');
       }
@@ -134,16 +136,16 @@ export function stringifyQuest(
           if (!clueGroup.element?.phrases || !clueGroup.element.speaker)
             continue;
           const speaker = packed.working.getMote(clueGroup.element.speaker);
-          let clueString = `Clue${arrayTag(
+          let clueString = `Clue${toArrayTag(
             clueGroup,
-          )}: ${packed.working.getMoteName(speaker)}${moteTag(
+          )}: ${packed.working.getMoteName(speaker)}${toMoteTag(
             clueGroup.element.speaker,
           )}`;
           for (const phraseContainer of bsArrayToArray(
             clueGroup.element!.phrases,
           )) {
             const clue = phraseContainer.element;
-            let line = `\n>${arrayTag(phraseContainer)} `;
+            let line = `\n>${toArrayTag(phraseContainer)} `;
             const emoji = clue?.phrase.emoji;
             if (emoji) {
               line += `(${emoji}) `;
@@ -172,24 +174,8 @@ export function stringifyQuest(
     const character = packed.working.getMote(characterId);
     const name =
       packed.working.getMoteName(character) || character?.id || 'UNKNOWN';
-    return name ? `${name.toUpperCase()}${moteTag(characterId)}` : '';
+    return name ? `${name.toUpperCase()}${toMoteTag(characterId)}` : '';
   }
 
   return blocks.join('\n') + '\n';
-}
-function moteTag(item: string | { id: string } | undefined): string {
-  assert(
-    item && (typeof item === 'string' || 'id' in item),
-    `ID must be a string or Mote, instead got ${item}`,
-  );
-  const idStr = typeof item === 'string' ? item : item.id;
-  return `@${idStr}`;
-}
-function arrayTag(item: string | { id: string }): string {
-  assert(
-    typeof item === 'string' || 'id' in item,
-    'ID must be a string or Mote',
-  );
-  const idStr = typeof item === 'string' ? item : item.id;
-  return `#${idStr}`;
 }

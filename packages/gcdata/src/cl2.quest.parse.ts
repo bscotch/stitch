@@ -22,13 +22,13 @@ import {
   getReuirementQuestStatuses,
   isEmoteMoment,
 } from './cl2.quest.utils.js';
+import { Crashlands2 } from './cl2.types.auto.js';
 import {
   bsArrayToArray,
   changedPosition,
   createBsArrayKey,
   updateBsArrayOrder,
 } from './helpers.js';
-import { Crashlands2 } from './types.cl2.js';
 import { Position } from './types.editor.js';
 import { Mote } from './types.js';
 import { parsedItemToWords } from './util.js';

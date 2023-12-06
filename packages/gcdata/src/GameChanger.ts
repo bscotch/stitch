@@ -5,7 +5,7 @@ import { GcdataError, assert } from './assert.js';
 import {
   GameChangerRumpusMetadata,
   gameChangerRumpusMetadataSchema,
-} from './types.cl2.rumpus.js';
+} from './cl2.types.rumpus.js';
 import {
   Bschema,
   ChangeType,

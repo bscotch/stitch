@@ -1,6 +1,6 @@
 import type { Gcdata } from './GameChanger.js';
 import { assert } from './assert.js';
-import { Crashlands2 } from './types.cl2.js';
+import { Crashlands2 } from './cl2.types.auto.js';
 import type {
   BschemaBsArrayElement,
   BschemaEnum,

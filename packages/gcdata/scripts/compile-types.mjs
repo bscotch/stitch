@@ -52,7 +52,7 @@ const rootSchema = {
 const storylineTypes = await compile(rootSchema, 'Schemas', {
   additionalProperties: false,
 });
-await pathy('src/types.cl2.ts').write(
+await pathy('src/cl2.types.auto.ts').write(
   `export namespace Crashlands2 {\n\t${storylineTypes.replace(
     /\n/g,
     '\n\t',
@@ -62,14 +62,27 @@ await pathy('src/types.cl2.ts').write(
 // Create types for Quest Mote paths
 const questMoteSchema = packed.base.getSchema('cl2_quest');
 ok(questMoteSchema);
-const pointers = [
+const questPointers = [
   ...computeMotePointersFromSchema(packed.base, questMoteSchema),
 ]
   .filter((p) => !p.startsWith('objectives'))
   .map((p) => `\`${p.replace(/\*/g, '${string}')}\``)
   .sort();
 await pathy('src/cl2.quest.pointers.ts').write(
-  `export type QuestMoteDataPointer = \`data/\${QuestMotePointer}\`;\nexport type QuestMotePointer = ${pointers.join(
+  `export type QuestMoteDataPointer = \`data/\${QuestMotePointer}\`;\nexport type QuestMotePointer = ${questPointers.join(
+    '\n  | ',
+  )};\n`,
+);
+const storylinePointers = [
+  ...computeMotePointersFromSchema(
+    packed.base,
+    exists(packed.base.getSchema('cl2_storyline')),
+  ),
+]
+  .map((p) => `\`${p.replace(/\*/g, '${string}')}\``)
+  .sort();
+await pathy('src/cl2.storyline.pointers.ts').write(
+  `export type StorylineMoteDataPointer = \`data/\${StorylineMotePointer}\`;\nexport type StorylineMotePointer = ${storylinePointers.join(
     '\n  | ',
   )};\n`,
 );
@@ -96,4 +109,15 @@ function recursivelyPortBschemaToJsonSchema(schema) {
   }
   recursivelyPortBschemaToJsonSchema(schema.additionalProperties);
   return schema;
+}
+
+/**
+ * @template T
+ * @param {T} thing
+ * @returns {Exclude<T, undefined | null>}
+ */
+function exists(thing) {
+  if ([undefined, null].includes(thing))
+    throw new Error(`Expected ${thing} to exist`);
+  return thing;
 }

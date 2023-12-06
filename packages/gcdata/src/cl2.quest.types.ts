@@ -1,7 +1,17 @@
 import { z } from 'zod';
-import { Crashlands2 } from './types.cl2.js';
-import { Position, Range } from './types.editor.js';
-import { Mote } from './types.js';
+import type { Gcdata } from './GameChanger.js';
+import type { Crashlands2 } from './cl2.types.auto.js';
+import type { Position, Range } from './types.editor.js';
+import type { Mote } from './types.js';
+
+export const questSchemaId = 'cl2_quest';
+
+export type QuestData = Crashlands2.Schemas['cl2_quest'];
+export type QuestMote = Mote<QuestData>;
+
+export function listQuests(gcData: Gcdata): QuestMote[] {
+  return gcData.listMotesBySchema<QuestData>(questSchemaId);
+}
 
 export interface ParsedLineItem<V = string> {
   start: Position;
