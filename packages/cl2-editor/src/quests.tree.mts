@@ -365,6 +365,18 @@ export class QuestTreeProvider
       void provider.rebuild();
     });
 
+    crashlandsEvents.on('quest-opened', (uri, info) => {
+      // Reveal the quest in the tree
+      const questItem = MoteItem.lookup.get(info.moteId!);
+      if (!questItem) {
+        console.log("Couldn't find tree item for quest", info.moteId);
+        return;
+      }
+      provider.view.reveal(questItem, {
+        expand: true,
+      });
+    });
+
     // Default the drop-mode to 'order'
     provider.setDropMode('order');
 
@@ -425,6 +437,7 @@ class MoteItem<
 > extends TreeItemBase<'mote'> {
   override readonly kind = 'mote';
   document: vscode.TextDocument | undefined;
+  static lookup = new Map<string, MoteItem>();
 
   constructor(
     readonly packed: GameChanger,
@@ -433,6 +446,7 @@ class MoteItem<
     options?: { hasChildren?: boolean },
   ) {
     super(packed.working.getMoteName(moteId)!);
+    MoteItem.lookup.set(moteId, this);
     this.collapsibleState = options?.hasChildren
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
