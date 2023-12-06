@@ -4,7 +4,7 @@ import {
   QuestData,
   QuestTreeItem,
   StorylineData,
-} from 'quests.new.mjs';
+} from 'quests.tree.mjs';
 import vscode from 'vscode';
 import { moteToPath } from './quests.util.mjs';
 import { TreeItemBase } from './tree.base.mjs';
