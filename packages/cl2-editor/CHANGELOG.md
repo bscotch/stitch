@@ -1,5 +1,16 @@
 # Crashlands 2 Editor Changelog
 
+## 0.15.0 (2023-12-06)
+
+### Features
+
+- Added context menu command to set a mote's folder
+- Added context menu command for copying a folder's path
+
+### Fixes
+
+- Moving folders now causes all non-story/quest motes in that folder to also be moved
+
 ## 0.14.0 (2023-12-06)
 
 ### Features
