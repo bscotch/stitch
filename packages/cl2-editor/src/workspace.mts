@@ -8,7 +8,11 @@ import { StoryFoldingRangeProvider } from './quests.folding.mjs';
 import { QuestHoverProvider } from './quests.hover.mjs';
 import { QuestWorkspaceSymbolProvider } from './quests.symbols.mjs';
 import { QuestTreeProvider } from './quests.tree.mjs';
-import { isQuestUri, parseGameChangerUri } from './quests.util.mjs';
+import {
+  isQuestUri,
+  isStorylineUri,
+  parseGameChangerUri,
+} from './quests.util.mjs';
 
 export class CrashlandsWorkspace {
   static workspace = undefined as CrashlandsWorkspace | undefined;
@@ -37,10 +41,11 @@ export class CrashlandsWorkspace {
         );
       }),
       vscode.workspace.onDidChangeTextDocument((event) => {
-        if (!isQuestUri(event.document.uri)) {
-          return;
+        if (isQuestUri(event.document.uri)) {
+          crashlandsEvents.emit('quest-updated', event.document.uri);
+        } else if (isStorylineUri(event.document.uri)) {
+          crashlandsEvents.emit('storyline-updated', event.document.uri);
         }
-        crashlandsEvents.emit('quest-updated', event.document.uri);
       }),
       vscode.window.onDidChangeActiveTextEditor((editor) => {
         const uri = editor?.document.uri;

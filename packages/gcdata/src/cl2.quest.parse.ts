@@ -570,7 +570,7 @@ export async function updateChangesFromParsedQuest(
   parsed: QuestUpdateResult['parsed'],
   moteId: string,
   packed: GameChanger,
-) {
+): Promise<void> {
   const _traceLogs: any[] = [];
   const trace = (log: any) => _traceLogs.push(log);
   trace(`Updating mote ${moteId}`);

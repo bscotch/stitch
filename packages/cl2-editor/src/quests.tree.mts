@@ -1,9 +1,10 @@
 import {
-  Bschema,
-  Crashlands2,
-  GameChanger,
-  Mote,
   ORDER_INCREMENT,
+  type Bschema,
+  type GameChanger,
+  type Mote,
+  type QuestData,
+  type StorylineData,
 } from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
@@ -13,8 +14,6 @@ import { TreeItemBase } from './tree.base.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
 
 export type QuestTreeItem = MoteItem | FolderItem;
-type QuestData = Crashlands2.Schemas['cl2_quest'];
-type StorylineData = Crashlands2.Schemas['cl2_storyline'];
 type DropMode = 'order' | 'nest';
 
 export class QuestTreeProvider
@@ -521,15 +520,13 @@ class MoteItem<
     this.iconPath = new vscode.ThemeIcon(
       this.isStoryline() ? 'book' : this.isQuest() ? 'note' : 'question',
     );
-    if (this.isQuest()) {
-      // Make it openable in the editor
-      this.resourceUri = vscode.Uri.parse(moteToPath(this.mote));
-      this.command = {
-        command: 'vscode.open',
-        title: 'Open',
-        arguments: [this.resourceUri],
-      };
-    }
+    // Make it openable in the editor
+    this.resourceUri = vscode.Uri.parse(moteToPath(this.mote));
+    this.command = {
+      command: 'vscode.open',
+      title: 'Open',
+      arguments: [this.resourceUri],
+    };
   }
 
   get parentMote(): Mote | undefined {

@@ -1,4 +1,9 @@
-import type { Mote, Range } from '@bscotch/gcdata';
+import {
+  questSchemaId,
+  storylineSchemaId,
+  type Mote,
+  type Range,
+} from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 
@@ -11,7 +16,11 @@ export function moteToUri(mote: Mote): vscode.Uri {
 }
 
 export function isQuestUri(uri: vscode.Uri) {
-  return uri.scheme === 'bschema' && uri.path.endsWith('.cl2_quest');
+  return uri.scheme === 'bschema' && uri.path.endsWith(`.${questSchemaId}`);
+}
+
+export function isStorylineUri(uri: vscode.Uri) {
+  return uri.scheme === 'bschema' && uri.path.endsWith(`.${storylineSchemaId}`);
 }
 
 export interface ParsedGameChangerUri {

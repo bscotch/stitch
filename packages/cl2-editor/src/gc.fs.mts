@@ -1,12 +1,13 @@
-import { isQuestMote } from '@bscotch/gcdata';
 import { pathy } from '@bscotch/pathy';
 import { homedir } from 'os';
 import vscode from 'vscode';
-import { assertInternalClaim, assertLoudly } from './assert.mjs';
+import { assertLoudly } from './assert.mjs';
 import { crashlandsConfig } from './config.mjs';
 import { crashlandsEvents } from './events.mjs';
 import type { BackupsIndex } from './gc.fs.types.mjs';
 import { QuestDocument } from './quests.doc.mjs';
+import { isQuestUri, isStorylineUri } from './quests.util.mjs';
+import { StorylineDocument } from './storyline.doc.mjs';
 import { computeChecksum } from './utility.mjs';
 import { CrashlandsWorkspace } from './workspace.mjs';
 
@@ -17,11 +18,16 @@ export class GameChangerFs implements vscode.FileSystemProvider {
   protected backups: BackupsIndex | undefined;
   protected debouncedParses = new Map<string, NodeJS.Timeout>();
 
-  protected getMoteDoc(uri: vscode.Uri): QuestDocument {
-    return QuestDocument.from(uri, this.workspace);
+  protected getMoteDoc(uri: vscode.Uri): QuestDocument | StorylineDocument {
+    if (isQuestUri(uri)) {
+      return QuestDocument.from(uri, this.workspace);
+    } else if (isStorylineUri(uri)) {
+      return StorylineDocument.from(uri, this.workspace);
+    }
+    throw new Error('Unknown uri type: ' + uri.toString());
   }
 
-  protected getActiveMoteDoc(): QuestDocument | undefined {
+  protected getActiveMoteDoc(): QuestDocument | StorylineDocument | undefined {
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) {
       return;
@@ -56,7 +62,6 @@ export class GameChangerFs implements vscode.FileSystemProvider {
   }
   async writeFile(uri: vscode.Uri, content: Uint8Array) {
     const doc = this.getMoteDoc(uri);
-    assertInternalClaim(isQuestMote(doc.mote), 'Only quests are supported.');
     if (doc.parseResults?.diagnostics.length !== 0) {
       throw new Error('Cannot save until issues are resolved.');
     }
@@ -153,33 +158,35 @@ export class GameChangerFs implements vscode.FileSystemProvider {
 
   static register(workspace: CrashlandsWorkspace) {
     const provider = new GameChangerFs(workspace);
-    crashlandsEvents.on('quest-updated', (uri) => {
-      const doc = vscode.workspace.textDocuments.find(
-        (d) => d.uri.toString() === uri.toString(),
-      );
-      const moteDoc = provider.getMoteDoc(uri);
-      if (!moteDoc) {
-        console.warn("Couldn't find mote doc for", uri.toString());
-      } else if (doc) {
-        clearTimeout(provider.debouncedParses.get(uri.toString()));
-        provider.debouncedParses.set(
-          uri.toString(),
-          setTimeout(() => {
-            const text = doc.getText();
-            moteDoc.parse(text);
-            if (!moteDoc.parseResults?.diagnostics.length) {
-              // Create a backup
-              provider.createBackup(
-                moteDoc.mote.id,
-                moteDoc.mote.schema_id,
-                text,
-              );
-            }
-          }, crashlandsConfig.parseDelay),
+    (['quest-updated', 'storyline-updated'] as const).forEach((eventName) => {
+      crashlandsEvents.on(eventName, (uri) => {
+        const doc = vscode.workspace.textDocuments.find(
+          (d) => d.uri.toString() === uri.toString(),
         );
-      } else {
-        console.warn("Couldn't find doc for", uri.toString());
-      }
+        const moteDoc = provider.getMoteDoc(uri);
+        if (!moteDoc) {
+          console.warn("Couldn't find mote doc for", uri.toString());
+        } else if (doc) {
+          clearTimeout(provider.debouncedParses.get(uri.toString()));
+          provider.debouncedParses.set(
+            uri.toString(),
+            setTimeout(() => {
+              const text = doc.getText();
+              moteDoc.parse(text);
+              if (!moteDoc.parseResults?.diagnostics.length) {
+                // Create a backup
+                provider.createBackup(
+                  moteDoc.mote.id,
+                  moteDoc.mote.schema_id,
+                  text,
+                );
+              }
+            }, crashlandsConfig.parseDelay),
+          );
+        } else {
+          console.warn("Couldn't find doc for", uri.toString());
+        }
+      });
     });
     provider.loadBackupsIndex();
     return [
@@ -191,7 +198,9 @@ export class GameChangerFs implements vscode.FileSystemProvider {
         'crashlands.quests.enter',
         (mods?: { shift?: boolean }) => {
           const doc = provider.getActiveMoteDoc();
-          doc?.onEnter(mods?.shift);
+          if (doc instanceof QuestDocument) {
+            doc?.onEnter(mods?.shift);
+          }
         },
       ),
       vscode.commands.registerCommand(
@@ -202,10 +211,6 @@ export class GameChangerFs implements vscode.FileSystemProvider {
             return;
           }
           const moteDoc = provider.getMoteDoc(uri);
-          assertInternalClaim(
-            isQuestMote(moteDoc.mote),
-            'Only quests are supported.',
-          );
           const backups = await provider.listBackups(moteDoc.mote.id);
           // sort reverse chronologically
           backups.sort((a, b) => b.date.getTime() - a.date.getTime());

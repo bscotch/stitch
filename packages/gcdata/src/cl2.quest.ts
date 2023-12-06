@@ -4,6 +4,7 @@ export {
 } from './cl2.quest.parse.js';
 export { stringifyQuest } from './cl2.quest.stringify.js';
 export {
+  isQuestMote,
   listQuests,
   questSchemaId,
   type QuestData,

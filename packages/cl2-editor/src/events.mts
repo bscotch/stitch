@@ -3,9 +3,18 @@ import type vscode from 'vscode';
 import type { ParsedGameChangerUri } from './quests.util.mjs';
 
 export namespace CrashlandsEvents {
-  export type All = [QuestUpdated, QuestOpened, MoteNameChanged];
+  export type All = [
+    QuestUpdated,
+    QuestOpened,
+    StorylineUpdated,
+    MoteNameChanged,
+  ];
   export interface QuestUpdated {
     name: 'quest-updated';
+    payload: [vscode.Uri];
+  }
+  export interface StorylineUpdated {
+    name: 'storyline-updated';
     payload: [vscode.Uri];
   }
   export interface QuestOpened {

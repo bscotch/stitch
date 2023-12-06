@@ -3,8 +3,9 @@ import { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
 import { parseStringifiedQuest } from './cl2.quest.parse.js';
 import { stringifyQuest } from './cl2.quest.stringify.js';
+import { isQuestMote } from './cl2.quest.types.js';
 import { Crashlands2 } from './cl2.types.auto.js';
-import { bsArrayToArray, isQuestMote } from './helpers.js';
+import { bsArrayToArray } from './helpers.js';
 
 describe('Cl2 Quests', function () {
   it('can convert a quest mote to a text format', async function () {

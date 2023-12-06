@@ -6,9 +6,6 @@ export function stringifyStoryline(
   mote: StorylineMote,
   packed: GameChanger,
 ): string {
-  const name = packed.working.getMoteName(mote);
-  const description = mote.data.description;
-
   // METADATA
   const blocks: string[] = [
     `Name: ${packed.working.getMoteName(mote)}`,

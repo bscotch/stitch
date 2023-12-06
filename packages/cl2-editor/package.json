@@ -103,12 +103,12 @@
       {
         "command": "crashlands.quests.enter",
         "key": "enter",
-        "when": "editorLangId == 'cl2-quest' && editorTextFocus && !suggestWidgetVisible"
+        "when": "resourceExtname == .cl2-quest && editorTextFocus && !suggestWidgetVisible"
       },
       {
         "command": "crashlands.quests.enter",
         "key": "shift+enter",
-        "when": "editorLangId == 'cl2-quest' && editorTextFocus && !suggestWidgetVisible",
+        "when": "resourceExtname == .cl2-quest && editorTextFocus && !suggestWidgetVisible",
         "args": {
           "shift": true
         }
@@ -119,7 +119,8 @@
         "id": "cl2-quest",
         "configuration": "./languages/cl2-quest.language-configuration.json",
         "extensions": [
-          ".cl2_quest"
+          ".cl2_quest",
+          ".cl2_storyline"
         ]
       }
     ],
