@@ -202,13 +202,13 @@ export class QuestTreeProvider
     dataTransfer.set(this.treeMimeType, item);
   }
   async handleDrop(
-    target: QuestTreeItem | undefined,
+    onto: QuestTreeItem | undefined,
     dataTransfer: vscode.DataTransfer,
   ) {
-    if (!target) return;
+    if (!onto) return;
     const dropping: QuestTreeItem = (dataTransfer.get(this.treeMimeType)
       ?.value || [])[0];
-    if (!dropping || dropping === target) return;
+    if (!dropping || dropping === onto) return;
 
     // Need different outcomes for every combination of target and dropping (each can be a mote or a folder)
     // 1. Dropping a mote onto a mote
@@ -233,9 +233,21 @@ export class QuestTreeProvider
     };
     const getSiblings = (mote: Mote | undefined) =>
       getChildren(mote?.parent, mote?.folder);
+    const assertIsNotInParents = (
+      ofMote: Mote | undefined,
+      hopefullyNonParent: Mote,
+    ) => {
+      if (!ofMote || !hopefullyNonParent) return;
+      assertLoudly(
+        this.workspace.packed.working
+          .getAncestors(ofMote)
+          .find((m) => m.id === hopefullyNonParent.id) === undefined,
+        "Can't create circular relationships!",
+      );
+    };
 
     if (
-      target instanceof MoteItem &&
+      onto instanceof MoteItem &&
       dropping instanceof MoteItem &&
       this.dropMode === 'order'
     ) {
@@ -243,25 +255,24 @@ export class QuestTreeProvider
       // Then we're dropping a mote onto a mote. That should cause the dropped Mote to
       // have the same parent & folder as the target, and be placed immediately after it.
       // To properly place, we need to know the order of the target and its next sibling
-      const targetSiblings = getSiblings(target.mote);
+      const targetSiblings = getSiblings(onto.mote);
       const priorSibling = targetSiblings.findLast(
         (sib) =>
-          sib.data.order <= target.mote.data.order &&
-          sib.id !== target.mote.id &&
+          sib.data.order <= onto.mote.data.order &&
+          sib.id !== onto.mote.id &&
           sib.id !== dropping.mote.id,
       );
       const newOrder = priorSibling
-        ? (priorSibling.data.order + target.mote.data.order) / 2
-        : target.mote.data.order - ORDER_INCREMENT;
+        ? (priorSibling.data.order + onto.mote.data.order) / 2
+        : onto.mote.data.order - ORDER_INCREMENT;
       this.packed.updateMoteData(dropping.moteId, 'data/order', newOrder);
       this.packed.updateMoteLocation(
         dropping.moteId,
-        target.mote.parent,
-        target.mote.folder,
+        onto.mote.parent,
+        onto.mote.folder,
       );
-      await this.packed.writeChanges();
     } else if (
-      target instanceof MoteItem &&
+      onto instanceof MoteItem &&
       dropping instanceof MoteItem &&
       this.dropMode === 'nest'
     ) {
@@ -271,60 +282,64 @@ export class QuestTreeProvider
       // - Remove its folder value
       // - Set its parent to the target mote
       // - Make it the last child of the target mote
-      assertLoudly(
-        target.moteHeirarchy.find((m) => m.id === dropping.mote.id) ===
-          undefined,
-        "Can't create circular relationships!",
-      );
+      assertIsNotInParents(onto.mote, dropping.mote);
 
-      const targetSiblings = getSiblings(target.mote);
-      this.packed.updateMoteLocation(
-        dropping.moteId,
-        target.mote.id,
-        undefined,
-      );
+      const targetSiblings = getSiblings(onto.mote);
+      this.packed.updateMoteLocation(dropping.moteId, onto.mote.id, undefined);
       this.packed.updateMoteData(
         dropping.moteId,
         'data/order',
         (targetSiblings.at(-1)?.data.order ?? 0) + ORDER_INCREMENT,
       );
-    } else if (target instanceof FolderItem && dropping instanceof MoteItem) {
+    } else if (dropping instanceof MoteItem && onto instanceof FolderItem) {
       // Case 2
       // Then we're dropping a mote onto a folder.
       // Put the mote into the folder as the *last* item,
       // which requires finding the mote-parent for this folder,
       // setting the drop-mote's parent to that, and its folder
-      // TODO
+      assertIsNotInParents(onto.parentMote, dropping.mote);
       const targetSiblings = getChildren(
-        target.parentMote?.id,
-        target.relativePathString,
+        onto.parentMote?.id,
+        onto.relativePathString,
       );
       this.packed.updateMoteLocation(
         dropping.moteId,
-        target.parentMote?.id,
-        target.relativePathString,
+        onto.parentMote?.id,
+        onto.relativePathString,
       );
       this.packed.updateMoteData(
         dropping.moteId,
         'data/order',
         (targetSiblings.at(-1)?.data.order ?? 0) + ORDER_INCREMENT,
       );
-    } else if (target instanceof MoteItem && dropping instanceof FolderItem) {
+    } else if (dropping instanceof FolderItem && onto instanceof MoteItem) {
       // Case 3
       // Then we're dropping a folder onto a mote.
-      // TODO
-    } else if (target instanceof FolderItem && dropping instanceof FolderItem) {
+      // We need to get all motes that are in this folder (no need for recursion since things are all defined relatively)
+      // Each mote needs to have its parent set to the target mote, and its folder set to the final part of the folder path
+      const motesToMove = getChildren(
+        dropping.parentMote?.id,
+        dropping.relativePathString,
+      );
+      for (const mote of motesToMove) {
+        assertIsNotInParents(onto.mote, mote);
+        this.packed.updateMoteLocation(
+          mote.id,
+          onto.mote.id,
+          dropping.relativePath.at(-1),
+        );
+      }
+    } else if (onto instanceof FolderItem && dropping instanceof FolderItem) {
       // Case 4
       // Then we're dropping a folder onto a folder.
       // TODO
     } else {
-      throw new Error(`Unhandled drop case: ${target} onto ${dropping}`);
+      throw new Error(`Unhandled drop case: ${onto} onto ${dropping}`);
     }
 
+    await this.packed.writeChanges();
     this.rebuild();
   }
-
-  protected handleNestDrop(target: QuestTreeItem, dropping: QuestTreeItem) {}
 
   static register(workspace: CrashlandsWorkspace) {
     const provider = new QuestTreeProvider(workspace);
@@ -427,22 +442,7 @@ class MoteItem<
    * in order from most-distant to most-recent ancestor
    */
   get moteHeirarchy(): Mote[] {
-    const heirarchy: Mote[] = [];
-    let parent: Mote | undefined = this.packed.working.getMote(
-      this.mote.parent,
-    )!;
-    const seen = new Set<string>();
-    while (parent) {
-      heirarchy.push(parent);
-      parent = this.packed.working.getMote(parent.parent);
-      // Prevent infinite loops
-      if (parent && seen.has(parent.id)) {
-        throw new Error(`Mote ${parent.id} is in a circular hierarchy!`);
-      } else if (parent) {
-        seen.add(parent.id);
-      }
-    }
-    return heirarchy.reverse();
+    return this.packed.working.getAncestors(this.mote);
   }
 
   get schema(): Bschema {
