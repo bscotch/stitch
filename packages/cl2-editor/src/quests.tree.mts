@@ -190,6 +190,45 @@ export class QuestTreeProvider
     this._onDidChangeTreeData.fire();
   }
 
+  async setFolder(item: MoteItem) {
+    if (!item) return;
+    // Figure out what the relative path will be to
+    const parent = item.parentMote;
+    let currentFolder = item.mote.folder || '';
+    if (!parent) {
+      currentFolder = `/${currentFolder}/`;
+    } else if (currentFolder) {
+      currentFolder = `${currentFolder}/`;
+    }
+
+    // Prompt for a folder name, with the description showing what the relative path will be to. If we're inside another folder, prefix the path with that folderpath.
+    let newFolder = await vscode.window.showInputBox({
+      prompt: parent
+        ? `Adding relative to ${this.workspace.packed.working.getMoteName(
+            parent,
+          )}. Prefix with a '/' to add relative to the root.`
+        : `Add new root folder relative to the root.`,
+      value: currentFolder,
+      valueSelection: [currentFolder.length, currentFolder.length],
+    });
+    if (!newFolder || currentFolder === newFolder) return;
+    let fromRoot = !parent;
+    if (newFolder.startsWith('/')) {
+      fromRoot = true;
+      newFolder = newFolder.slice(1);
+    }
+    // Remove trailing slashes
+    newFolder = newFolder.replace(/\/+$/, '');
+
+    this.packed.updateMoteLocation(
+      item.moteId,
+      fromRoot ? undefined : parent?.id,
+      newFolder || undefined,
+    );
+    await this.packed.writeChanges();
+    this.rebuild();
+  }
+
   setDropMode(mode: DropMode) {
     void vscode.commands.executeCommand(
       'setContext',
@@ -402,6 +441,13 @@ export class QuestTreeProvider
         },
       ),
       vscode.commands.registerCommand(
+        'crashlands.tree.setFolder',
+        (item: MoteItem) => {
+          if (!(item instanceof MoteItem)) return;
+          provider.setFolder(item);
+        },
+      ),
+      vscode.commands.registerCommand(
         'crashlands.tree.copyFolderPath',
         (item: QuestTreeItem) => {
           if (!(item instanceof FolderItem)) return;
@@ -465,6 +511,8 @@ class MoteItem<
     options?: { hasChildren?: boolean },
   ) {
     super(packed.working.getMoteName(moteId)!);
+    this.contextValue =
+      this.kind + '-' + packed.working.getMote(moteId)!.schema_id;
     MoteItem.lookup.set(moteId, this);
     this.collapsibleState = options?.hasChildren
       ? vscode.TreeItemCollapsibleState.Collapsed
