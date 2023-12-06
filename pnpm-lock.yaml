@@ -65,13 +65,14 @@ importers:
         version: 5.2.2
 
   packages/cl2-editor:
+    dependencies:
+      '@bscotch/gcdata':
+        specifier: workspace:*
+        version: link:../gcdata
     devDependencies:
       '@bscotch/emitter':
         specifier: 0.2.1
         version: 0.2.1
-      '@bscotch/gcdata':
-        specifier: workspace:*
-        version: link:../gcdata
       '@bscotch/pathy':
         specifier: ^2.12.0
         version: 2.12.0
