@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.13.0 (2023-12-06)
+
+### Features
+
+- Storylines can now be edited in VSCode
+
 ## 0.12.0 (2023-12-06)
 
 ### Features

@@ -1,5 +1,12 @@
 # Crashlands 2 Editor Changelog
 
+## 0.16.0 (2023-12-06)
+
+### Features
+
+- Storylines are now included in the symbol search
+- Storylines can now be edited in VSCode
+
 ## 0.15.0 (2023-12-06)
 
 ### Features
