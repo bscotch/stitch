@@ -1,5 +1,19 @@
 # Crashlands 2 Editor Changelog
 
+## 0.14.0 (2023-12-06)
+
+### Features
+
+- Implemented drag-drop of folders onto folders
+- Implemented drag-drop of a folder onto a Mote
+- Implemented drag-drop mote nesting
+- Implemented drag-drop ordering of motes relative to other motes
+- Added toggle for setting the drop mode in the tree
+
+### Fixes
+
+- Added back an autoreveal (only works if the item is already visible in the tree)
+
 ## 0.13.0 (2023-12-02)
 
 ### Features

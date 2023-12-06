@@ -1,5 +1,12 @@
 # @bscotch/gcdata Changelog
 
+## 0.12.0 (2023-12-06)
+
+### Features
+
+- Added method for getting the ancestry of a mote
+- Added method for changing a mote's GameChanger location
+
 ## 0.11.0 (2023-12-04)
 
 ### Features
