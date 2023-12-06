@@ -332,7 +332,21 @@ export class QuestTreeProvider
     } else if (onto instanceof FolderItem && dropping instanceof FolderItem) {
       // Case 4
       // Then we're dropping a folder onto a folder.
-      // TODO
+      // Get all of the motes in this folder
+      // For each mote, set its parent to the parent of the target folder, and its folder to the target folder's path + the final part of its own path
+      const motesToMove = getChildren(
+        dropping.parentMote?.id,
+        dropping.relativePathString,
+      );
+      for (const mote of motesToMove) {
+        assertIsNotInParents(onto.parentMote, mote);
+        const folder = mote.folder?.split('/').at(-1);
+        this.packed.updateMoteLocation(
+          mote.id,
+          onto.parentMote?.id,
+          onto.relativePathString + (folder ? `/${folder}` : ''),
+        );
+      }
     } else {
       throw new Error(`Unhandled drop case: ${onto} onto ${dropping}`);
     }
