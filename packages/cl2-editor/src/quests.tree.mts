@@ -401,6 +401,13 @@ export class QuestTreeProvider
           provider.setDropMode('nest');
         },
       ),
+      vscode.commands.registerCommand(
+        'crashlands.tree.copyFolderPath',
+        (item: QuestTreeItem) => {
+          if (!(item instanceof FolderItem)) return;
+          vscode.env.clipboard.writeText(item.relativePathString);
+        },
+      ),
       provider.view,
     ];
 
@@ -427,6 +434,7 @@ class FolderItem extends TreeItemBase<'folder'> {
     options?: { open?: boolean },
   ) {
     super(relativePath.at(-1)!);
+    this.contextValue = this.kind;
     this.collapsibleState = options?.open
       ? vscode.TreeItemCollapsibleState.Expanded
       : vscode.TreeItemCollapsibleState.Collapsed;
@@ -474,6 +482,12 @@ class MoteItem<
         arguments: [this.resourceUri],
       };
     }
+  }
+
+  get parentMote(): Mote | undefined {
+    return this.mote.parent
+      ? this.packed.working.getMote(this.mote.parent)
+      : undefined;
   }
 
   /**

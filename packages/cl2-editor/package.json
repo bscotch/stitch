@@ -51,6 +51,11 @@
         "title": "Open Save Folder"
       },
       {
+        "command": "crashlands.tree.copyFolderPath",
+        "category": "Crashlands",
+        "title": "Copy Path"
+      },
+      {
         "command": "crashlands.tree.dropMode.order.enable",
         "title": "Enable Order Mode (Drag/Drop)",
         "category": "Crashlands",
