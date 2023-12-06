@@ -6,6 +6,7 @@ import {
   ORDER_INCREMENT,
 } from '@bscotch/gcdata';
 import vscode from 'vscode';
+import { assertLoudly } from './assert.mjs';
 import { crashlandsEvents } from './events.mjs';
 import { moteToPath } from './quests.util.mjs';
 import { TreeItemBase } from './tree.base.mjs';
@@ -205,29 +206,33 @@ export class QuestTreeProvider
     dataTransfer: vscode.DataTransfer,
   ) {
     if (!target) return;
-    const dropping: QuestTreeItem[] = (dataTransfer.get(this.treeMimeType)
+    const dropping: QuestTreeItem = (dataTransfer.get(this.treeMimeType)
       ?.value || [])[0];
-    if (!dropping) return;
+    if (!dropping || dropping === target) return;
 
     // Need different outcomes for every combination of target and dropping (each can be a mote or a folder)
     // 1. Dropping a mote onto a mote
     //    a. (order mode) Place it before the target, OR
     //    b. OR (nesting mode) make it a child of the target
     // 2. Dropping a mote onto a folder
-    //    - Put the mote into the folder as the first item (children will automatically be moved)
+    //    - Put the mote into the folder as the last item (children will automatically be moved)
     // 3. Dropping a folder onto a mote
     //    - Move all motes in the folder (recursively) by setting their parent to the target mote and updating their folder to slice the path items up to the dropped folder
     // 4. Dropping a folder onto a folder
     //    - Move all motes in the folder (recursively) by setting their parent to the mote containing the target folder
     const motes = this.storylineAndQuestMotes;
-    const getSiblings = (mote: Mote) =>
-      motes
-        .filter(
-          (otherMote) =>
-            otherMote.parent === mote.parent &&
-            otherMote.folder === mote.folder,
-        )
-        .sort((a, b) => a.data.order - b.data.order);
+    const getChildren = (
+      moteId: string | undefined,
+      folder: string | undefined,
+    ) => {
+      const children = motes.filter(
+        (otherMote) =>
+          otherMote.parent === moteId && otherMote.folder === folder,
+      );
+      return children.sort((a, b) => a.data.order - b.data.order);
+    };
+    const getSiblings = (mote: Mote | undefined) =>
+      getChildren(mote?.parent, mote?.folder);
 
     if (
       target instanceof MoteItem &&
@@ -262,9 +267,16 @@ export class QuestTreeProvider
     ) {
       // Case 1.b
       // We need to make the dropped mote a child of the target mote:
+      // - Make sure we aren't creating a circularity
       // - Remove its folder value
       // - Set its parent to the target mote
       // - Make it the last child of the target mote
+      assertLoudly(
+        target.moteHeirarchy.find((m) => m.id === dropping.mote.id) ===
+          undefined,
+        "Can't create circular relationships!",
+      );
+
       const targetSiblings = getSiblings(target.mote);
       this.packed.updateMoteLocation(
         dropping.moteId,
@@ -279,10 +291,24 @@ export class QuestTreeProvider
     } else if (target instanceof FolderItem && dropping instanceof MoteItem) {
       // Case 2
       // Then we're dropping a mote onto a folder.
-      // That cannot have meaningful 'order' implications,
-      // since folders are just sorted alphabetically in
-      // their own group. This is the mechanism by which
+      // Put the mote into the folder as the *last* item,
+      // which requires finding the mote-parent for this folder,
+      // setting the drop-mote's parent to that, and its folder
       // TODO
+      const targetSiblings = getChildren(
+        target.parentMote?.id,
+        target.relativePathString,
+      );
+      this.packed.updateMoteLocation(
+        dropping.moteId,
+        target.parentMote?.id,
+        target.relativePathString,
+      );
+      this.packed.updateMoteData(
+        dropping.moteId,
+        'data/order',
+        (targetSiblings.at(-1)?.data.order ?? 0) + ORDER_INCREMENT,
+      );
     } else if (target instanceof MoteItem && dropping instanceof FolderItem) {
       // Case 3
       // Then we're dropping a folder onto a mote.
@@ -357,6 +383,10 @@ class FolderItem extends TreeItemBase<'folder'> {
       : vscode.TreeItemCollapsibleState.Collapsed;
     this.iconPath = new vscode.ThemeIcon('folder');
   }
+
+  get relativePathString() {
+    return this.relativePath.join('/');
+  }
 }
 
 type MoteItemData = QuestData | StorylineData;
@@ -378,7 +408,9 @@ class MoteItem<
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
 
-    this.iconPath = new vscode.ThemeIcon(this.isStoryline() ? 'book' : 'note');
+    this.iconPath = new vscode.ThemeIcon(
+      this.isStoryline() ? 'book' : this.isQuest() ? 'note' : 'question',
+    );
     if (this.isQuest()) {
       // Make it openable in the editor
       this.resourceUri = vscode.Uri.parse(moteToPath(this.mote));
@@ -388,6 +420,29 @@ class MoteItem<
         arguments: [this.resourceUri],
       };
     }
+  }
+
+  /**
+   * Get the motes leading to this one via 'parent' relationships,
+   * in order from most-distant to most-recent ancestor
+   */
+  get moteHeirarchy(): Mote[] {
+    const heirarchy: Mote[] = [];
+    let parent: Mote | undefined = this.packed.working.getMote(
+      this.mote.parent,
+    )!;
+    const seen = new Set<string>();
+    while (parent) {
+      heirarchy.push(parent);
+      parent = this.packed.working.getMote(parent.parent);
+      // Prevent infinite loops
+      if (parent && seen.has(parent.id)) {
+        throw new Error(`Mote ${parent.id} is in a circular hierarchy!`);
+      } else if (parent) {
+        seen.add(parent.id);
+      }
+    }
+    return heirarchy.reverse();
   }
 
   get schema(): Bschema {
