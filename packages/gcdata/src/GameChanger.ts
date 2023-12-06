@@ -44,6 +44,32 @@ export class Gcdata {
     };
   }
 
+  getAncestors(
+    ofMoteId: Mote | string,
+    options?: {
+      /** If true, circularity will cause an early return of the parents rather than throwing. */
+      ignoreCircularity: boolean;
+    },
+  ): Mote[] {
+    const mote = this.getMote(ofMoteId);
+    assert(mote, `Cannot get parents: mote not found ${ofMoteId}`);
+    const hierarchy: Mote[] = [];
+    let parent: Mote | undefined = this.getMote(mote.parent)!;
+    const seen = new Set<string>();
+    while (parent) {
+      hierarchy.push(parent);
+      parent = this.getMote(parent.parent);
+      // Prevent infinite loops
+      if (parent && seen.has(parent.id)) {
+        if (options?.ignoreCircularity) break;
+        throw new Error(`Mote ${parent.id} is in a circular hierarchy!`);
+      } else if (parent) {
+        seen.add(parent.id);
+      }
+    }
+    return hierarchy.reverse();
+  }
+
   getMoteNamePointer(mote: Mote | string | undefined): string | undefined {
     if (!mote) return undefined;
     const foundMote = this.getMote(mote);
