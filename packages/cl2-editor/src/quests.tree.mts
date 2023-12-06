@@ -181,6 +181,10 @@ export class QuestTreeProvider
     );
   }
 
+  get allMotes() {
+    return this.packed.working.listMotes();
+  }
+
   rebuild() {
     // Ensure all motes have a tree item instance
     this._onDidChangeTreeData.fire();
@@ -220,19 +224,21 @@ export class QuestTreeProvider
     //    - Move all motes in the folder (recursively) by setting their parent to the target mote and updating their folder to slice the path items up to the dropped folder
     // 4. Dropping a folder onto a folder
     //    - Move all motes in the folder (recursively) by setting their parent to the mote containing the target folder
-    const motes = this.storylineAndQuestMotes;
+    const storyAndQuestMotes = this.storylineAndQuestMotes;
+    const allMotes = this.allMotes;
     const getChildren = (
       moteId: string | undefined,
       folder: string | undefined,
+      includeAllMotes?: boolean,
     ) => {
-      const children = motes.filter(
+      const children = (includeAllMotes ? allMotes : storyAndQuestMotes).filter(
         (otherMote) =>
           otherMote.parent === moteId && otherMote.folder === folder,
       );
       return children.sort((a, b) => a.data.order - b.data.order);
     };
-    const getSiblings = (mote: Mote | undefined) =>
-      getChildren(mote?.parent, mote?.folder);
+    const getSiblings = (mote: Mote | undefined, includeAllMotes?: boolean) =>
+      getChildren(mote?.parent, mote?.folder, includeAllMotes);
     const assertIsNotInParents = (
       ofMote: Mote | undefined,
       hopefullyNonParent: Mote,
@@ -320,6 +326,7 @@ export class QuestTreeProvider
       const motesToMove = getChildren(
         dropping.parentMote?.id,
         dropping.relativePathString,
+        true,
       );
       for (const mote of motesToMove) {
         assertIsNotInParents(onto.mote, mote);
@@ -337,6 +344,7 @@ export class QuestTreeProvider
       const motesToMove = getChildren(
         dropping.parentMote?.id,
         dropping.relativePathString,
+        true,
       );
       for (const mote of motesToMove) {
         assertIsNotInParents(onto.parentMote, mote);
@@ -430,7 +438,10 @@ class FolderItem extends TreeItemBase<'folder'> {
   }
 }
 
-type MoteItemData = QuestData | StorylineData;
+type MoteItemData =
+  | QuestData
+  | StorylineData
+  | { id: unknown; schema: unknown; order: number };
 
 class MoteItem<
   Data extends MoteItemData = MoteItemData,
