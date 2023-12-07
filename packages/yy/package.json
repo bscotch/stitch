@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/yy",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Stringify, parse, read, and write GameMaker yy and yyp files.",
   "keywords": [
     "yy",
