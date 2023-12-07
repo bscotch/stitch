@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/gamemaker-releases",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Utility for combining GameMaker release data into a single feed.",
   "keywords": [
     "gamemaker",
