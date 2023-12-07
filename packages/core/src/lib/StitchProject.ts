@@ -696,7 +696,7 @@ export class StitchProject extends StitchProjectStatic {
     // @ts-ignore
     this.components = {
       ...yyp,
-      Options: new Gms2ComponentArray(yyp.Options, Gms2Option),
+      Options: new Gms2ComponentArray(yyp.Options || [], Gms2Option),
       configs: new Gms2Config(yyp.configs),
       Folders: new Gms2FolderArray(yyp.Folders),
       RoomOrderNodes: new Gms2ComponentArray(yyp.RoomOrderNodes, Gms2RoomOrder),
