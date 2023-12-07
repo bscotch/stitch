@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.55.13 (2023-12-07)
+
+### Fixes
+
+- Removed unneeded dependency that also impacts build time
+
 ## 1.55.9 (2023-12-04)
 
 ### Fixes
