@@ -21,8 +21,8 @@ export type YySchemaName = keyof YySchemas;
 export type YySchema<T extends YySchemaRef> = T extends YySchemaName
   ? YySchemas[T]
   : T extends Schema
-  ? T
-  : unknown;
+    ? T
+    : unknown;
 export type YyDataStrict<T extends YySchemaRef> = T extends undefined
   ? unknown
   : z.output<YySchema<Exclude<T, undefined>>>;
@@ -147,7 +147,9 @@ export class Yy {
     yyData: YyDataLoose<T>,
     schema: T,
   ): Promise<boolean> {
-    let populated = schema ? Yy.populate(yyData, schema) : yyData;
+    let populated = schema
+      ? Yy.populate(yyData, schema, { sortKeys: true })
+      : yyData;
     await fsp.mkdir(path.dirname(filePath), { recursive: true });
 
     // Only clobber if the target is a file with different
@@ -180,7 +182,9 @@ export class Yy {
     yyData: YyDataLoose<T>,
     schema: T,
   ): boolean {
-    let populated = schema ? Yy.populate(yyData, schema) : yyData;
+    let populated = schema
+      ? Yy.populate(yyData, schema, { sortKeys: true })
+      : yyData;
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     if (existsSync(filePath)) {
       const currentRawContent = Yy.readSync(filePath) as YyDataLoose<T>;
@@ -202,9 +206,63 @@ export class Yy {
   static populate<T extends Exclude<YySchemaRef, undefined>>(
     yyData: PartialDeep<YyDataLoose<T>>,
     schema: T,
+    options?: { sortKeys?: boolean },
   ): YyDataStrict<T> {
     const foundSchema = Yy.getSchema(schema);
-    return foundSchema.parse(yyData);
+    const populated = foundSchema.parse(yyData);
+    if (options?.sortKeys) {
+      Yy.sortKeys(populated);
+    }
+    return populated;
+  }
+
+  /**
+   * Sort keys GameMaker-style (which does change over time!).
+   * At this time, the order is:
+   * - "resourceType": "GMSprite",
+   * - "resourceVersion": "1.0",
+   * - "name": "barrel_tendraam",
+   * - Everything else, in alphabetical order (case-insensitive).
+   */
+  static sortKeys<T>(yyData: T): T {
+    if (Array.isArray(yyData)) {
+      yyData.forEach((item) => Yy.sortKeys(item));
+    } else if (typeof yyData === 'object' && yyData !== null) {
+      const keys = Object.keys(yyData) as (keyof T)[];
+      keys.sort((a, b) => {
+        if (a === 'resourceType') {
+          return -1;
+        }
+        if (b === 'resourceType') {
+          return 1;
+        }
+        if (a === 'resourceVersion') {
+          return -1;
+        }
+        if (b === 'resourceVersion') {
+          return 1;
+        }
+        if (a === 'name') {
+          return -1;
+        }
+        if (b === 'name') {
+          return 1;
+        }
+        return (a as string)
+          .toLowerCase()
+          .localeCompare((b as string).toLowerCase(), 'en');
+      });
+      const copy = { ...yyData };
+      // Delete each entry and re-add it in the sorted order.
+      // (need to mutate in place to preserve references)
+      keys.forEach((key) => delete yyData[key]);
+      keys.forEach((key) => {
+        yyData[key] = copy[key];
+        Yy.sortKeys(yyData[key]);
+      });
+    }
+
+    return yyData;
   }
 
   static diff(firstYy: unknown, secondYy: unknown): YyDiff {
@@ -287,8 +345,8 @@ export class Yy {
         typeof secondYy === 'object'
       ) {
         // If both have primitive versions, compare those
-        const asPrimitives = [firstYy, secondYy].map((obj: any) =>
-          obj[Symbol.toPrimitive]?.('default'),
+        const asPrimitives = [firstYy, secondYy].map(
+          (obj: any) => obj[Symbol.toPrimitive]?.('default'),
         );
         if (
           asPrimitives[0] !== undefined &&
