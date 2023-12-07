@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 0.62.0 (2023-12-07)
+
+### Features
+
+- New assets are now inserted into random locations in the yyp file to avoid creating git conflicts.
+
 ## 0.61.4 (2023-11-28)
 
 ### Fixes

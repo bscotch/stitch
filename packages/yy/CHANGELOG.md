@@ -1,5 +1,15 @@
 # @bscotch/yy Changelog
 
+## 0.17.0 (2023-12-07)
+
+### Features
+
+- When yy files are being written, they now default to the key order that latest GameMaker uses. If the file already exists, the existing file's key order will still be used. Collectively this should reduce git noise and conflicts.
+
+### Fixes
+
+- The 'Options' field is now properly set to optional, so that Stitch doesn't constantly re-add it.
+
 ## 0.16.0 (2023-12-02)
 
 ### Features

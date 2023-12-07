@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 0.5.0 (2023-12-07)
+
+### Features
+
+- New assets are now inserted into random locations in the yyp file to avoid creating git conflicts.
+
 ## 0.4.12 (2023-11-14)
 
 ### Fixes
