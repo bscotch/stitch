@@ -1,5 +1,11 @@
 # @bscotch/gamemaker-releases Changelog
 
+## 0.7.0 (2023-12-07)
+
+### Features
+
+- Changed IDE/runtime pairing logic to just find the closest in pubdate time. This should prevent missing IDE entries.
+
 ## 0.6.0 (2023-09-20)
 
 ### Features
