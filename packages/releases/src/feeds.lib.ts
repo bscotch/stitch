@@ -1,4 +1,3 @@
-import { dateDifferenceDays } from '@bscotch/utility/browser';
 import {
   RssFeedEntry,
   rssFeedSchema,
@@ -6,54 +5,34 @@ import {
 } from './feeds.types.js';
 import { fetchXml } from './fetch.js';
 
-function daysApart(a: string, b: string) {
-  return dateDifferenceDays(new Date(a), new Date(b));
-}
-
-function absoluteDaysApart(a: string, b: string) {
-  return Math.abs(daysApart(a, b));
-}
-
+/**
+ * Get the runtime with the closest release date to the given IDE
+ */
 export function findPairedRuntime(
   runtimeFeed: GameMakerArtifact[],
   ide: GameMakerArtifact,
-  searchIndex: number,
 ) {
-  // Go backwards until the dateDiff starts growing
-  let dateDiff = Infinity;
-  for (let r = searchIndex; r >= 0; r--) {
-    const runtime = runtimeFeed[r];
-    if (!runtime.publishedAt || runtime.channel !== ide.channel) {
-      continue;
-    }
-    const diff = absoluteDaysApart(runtime.publishedAt, ide.publishedAt);
-    if (diff < dateDiff) {
-      dateDiff = diff;
-      searchIndex = r;
-    } else {
-      break;
-    }
-  }
-  // Go forwards until the dateDiff starts growing
-  dateDiff = Infinity;
-  for (let r = searchIndex; r < runtimeFeed.length; r++) {
-    const runtime = runtimeFeed[r];
-    if (!runtime.publishedAt || runtime.channel !== ide.channel) {
-      continue;
-    }
-    const diff = absoluteDaysApart(runtime.publishedAt, ide.publishedAt);
-    if (diff < dateDiff) {
-      dateDiff = diff;
-      searchIndex = r;
-    } else {
-      break;
-    }
-  }
-  const runtime = runtimeFeed[searchIndex];
-  if (!runtime || absoluteDaysApart(runtime.publishedAt, ide.publishedAt) > 1) {
-    return -1;
-  }
-  return searchIndex;
+  const location = runtimeFeed.reduce(
+    (acc, cur, idx) => {
+      if (!cur.publishedAt || cur.channel !== ide.channel) {
+        return acc;
+      }
+      const diff = Math.abs(
+        new Date(cur.publishedAt).getTime() -
+          new Date(ide.publishedAt).getTime(),
+      );
+      if (diff < acc.minDiff) {
+        acc.minDiff = diff;
+        acc.minIndex = idx;
+      }
+      return acc;
+    },
+    {
+      minDiff: Infinity,
+      minIndex: -1,
+    },
+  );
+  return location.minIndex === -1 ? undefined : runtimeFeed[location.minIndex];
 }
 
 export async function downloadRssFeed(url: string): Promise<RssFeedEntry[]> {
