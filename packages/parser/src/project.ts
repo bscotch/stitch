@@ -440,7 +440,11 @@ export class Project {
         path: `${type}/${name}/${basename}`,
       },
     };
-    this.yyp.resources.push(resourceEntry);
+    // Insert the resource into a random spot in the list to avoid git conflicts,
+    // avoiding the last spot because that's where changes are most likely to be.
+    const lastAllowed = Math.max(0, this.yyp.resources.length - 1);
+    const insertAt = Math.floor(Math.random() * lastAllowed);
+    this.yyp.resources.splice(insertAt, 0, resourceEntry);
     if (!options?.skipSave) {
       await this.saveYyp();
     }
@@ -588,6 +592,12 @@ export class Project {
     const folders = this.yyp.Folders;
     let current = 'folders/';
     let folder: YypFolder | undefined;
+    /** A random location in the list where this new folder should be put,
+     * to reduce git conflicts.*/
+    const insertAt = Math.max(
+      Math.floor(Math.random() * folders.length - 1),
+      0,
+    );
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       if (!part) {
@@ -600,7 +610,7 @@ export class Project {
           folderPath: thisFolderPath,
           name: part,
         });
-        folders.push(folder);
+        folders.splice(insertAt, 0, folder);
       }
       current += part + '/';
     }

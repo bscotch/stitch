@@ -284,14 +284,25 @@ export class SpriteDest extends SpriteCache {
     report(0, 'Updating project file...');
     for (const appliedAction of appliedActions) {
       if (!existingSprites.has(appliedAction.resource.name)) {
-        yyp.resources.push({
+        // Add to a random spot in the resources array to reduce git conflicts,
+        // skipping the last spot entirely if possible
+        const insertAt = Math.max(
+          Math.floor(Math.random() * yyp.resources.length) - 1,
+          0, // in case there are no resources yet
+        );
+        yyp.resources.splice(insertAt, 0, {
           id: appliedAction.resource,
         });
         existingSprites.add(appliedAction.resource.name);
       }
       if (!existingFolders.has(appliedAction.folder.folderPath)) {
+        // Also add to a random spot in the Folders array
+        const insertAt = Math.max(
+          Math.floor(Math.random() * yyp.Folders.length) - 1,
+          0,
+        );
         // @ts-expect-error The object is partial, but gets validated and completed on write
-        yyp.Folders.push(appliedAction.folder);
+        yyp.Folders.splice(insertAt, 0, appliedAction.folder);
         existingFolders.add(appliedAction.folder.folderPath);
       }
     }
