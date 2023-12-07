@@ -118,7 +118,7 @@ export const yypSchema = z
     resourceType: z.literal('GMProject').default('GMProject'),
     resources: z.array(yypResourceSchema).default([]),
     RoomOrderNodes: z.array(yypRoomOrderNodeSchema).default([]),
-    Options: z.array(yypOptionSchema).default([]),
+    Options: z.array(yypOptionSchema).optional(),
     isDnDProject: z.boolean().optional(),
     defaultScriptType: z.number().default(1),
     isEcma: z.boolean().default(false),
