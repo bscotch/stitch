@@ -1,5 +1,11 @@
 # @bscotch/stitch Changelog
 
+## 10.9.7 (2023-12-07)
+
+### Fixes
+
+- Resolved issue caused by the yyp "Options" field now being optional
+
 ## 10.9.0 (2023-09-20)
 
 ### Features
