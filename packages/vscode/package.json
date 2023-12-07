@@ -878,7 +878,6 @@
     "@bscotch/gml-parser": "workspace:*",
     "@bscotch/pathy": "^2.12.0",
     "@bscotch/sprite-source": "workspace:*",
-    "@bscotch/stitch": "workspace:*",
     "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/trebuchet": "2.9.3",
     "@bscotch/utility": "^7.2.0",

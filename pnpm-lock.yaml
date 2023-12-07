@@ -604,9 +604,6 @@ importers:
       '@bscotch/sprite-source':
         specifier: workspace:*
         version: link:../sprite-source
-      '@bscotch/stitch':
-        specifier: workspace:*
-        version: link:../core
       '@bscotch/stitch-launcher':
         specifier: workspace:*
         version: link:../launcher
