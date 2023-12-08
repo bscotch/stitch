@@ -1,4 +1,4 @@
-import { pathy } from '@bscotch/pathy';
+import { Pathy, pathy } from '@bscotch/pathy';
 import { gameChangerEvents } from './GameChanger.events.js';
 import { SpellChecker } from './SpellChecker.js';
 import { GcdataError, assert } from './assert.js';
@@ -30,6 +30,27 @@ import {
   setValueAtPointer,
 } from './util.js';
 
+interface MoteVisitorDataCtx {
+  /** The data at this point in the heirarchy */
+  data: any;
+  /** The key in the parent that points to this data. `undefined` at the data root */
+  key: string | undefined;
+  /** The full pointer, as a split array of strings, to the this data. Empty at the data root */
+  pointer: string[];
+  /** The subschema mapping onto this data */
+  subschema: Bschema;
+}
+
+export interface MoteVisitorCtx<T = undefined> {
+  mote: Mote;
+  schema: Bschema;
+  current: MoteVisitorDataCtx;
+  /** `undefined` at the root, otherwise the prior visitor context data */
+  parent: MoteVisitorDataCtx | undefined;
+  /** A place for your custom store to accumulate things during visits. Passed by reference. */
+  store: T;
+}
+
 export class Gcdata {
   constructor(public data: PackedData) {}
   get motes(): PackedData['motes'] {
@@ -42,6 +63,71 @@ export class Gcdata {
     return {
       ...this.data.schemas,
     };
+  }
+
+  visitMoteData(
+    moteId: string | Mote,
+    /** Function to call on every node in the mote data */
+    visitor: (ctx: MoteVisitorCtx) => void,
+  ): void;
+  visitMoteData<Store>(
+    moteId: string | Mote,
+    visitor: (ctx: MoteVisitorCtx<Store>) => void,
+    store: Store,
+  ): void;
+  visitMoteData(
+    moteId: string | Mote,
+    visitor: (ctx: MoteVisitorCtx<any>) => void,
+    store?: any,
+  ) {
+    const mote = this.getMote(moteId);
+    assert(mote, `Cannot visit non-existent mote ${moteId}`);
+    const schema = this.getSchema(mote.schema_id);
+    assert(schema, `Cannot visit mote ${moteId}: schema not found`);
+    const initialCtx: MoteVisitorCtx<any> = {
+      mote,
+      schema,
+      current: {
+        data: mote.data,
+        key: undefined,
+        pointer: [],
+        subschema: schema,
+      },
+      parent: undefined,
+      store,
+    };
+
+    const visit = (ctx: MoteVisitorCtx<any>) => {
+      // Call on this node!
+      visitor(ctx);
+      // Then visit the children
+      // TODO: Get each data field (there are no arrays, so that simplifies things!)
+      const data = ctx.current.data;
+      if (typeof data === 'object' && data !== null) {
+        for (const key of Object.keys(data)) {
+          const pointer = [...ctx.current.pointer, key];
+          const subschema = resolvePointerInSchema(pointer, ctx.mote, this);
+          assert(
+            subschema,
+            `Could not resolve pointer ${pointer.join('/')} for schema ${
+              ctx.mote.schema_id
+            }`,
+          );
+          const newCtx: MoteVisitorCtx = {
+            ...ctx,
+            current: {
+              data: data[key],
+              key,
+              pointer,
+              subschema,
+            },
+            parent: ctx.current,
+          };
+          visit(newCtx as MoteVisitorCtx);
+        }
+      }
+    };
+    visit(initialCtx);
   }
 
   getAncestors(
@@ -109,6 +195,11 @@ export class Gcdata {
     return Object.values(this.data.motes).filter((mote) =>
       schemaId.includes(mote.schema_id),
     ) as Mote<D>[];
+  }
+
+  static async from(gcdataFile: Pathy) {
+    const data = JSON.parse(await gcdataFile.read({ parse: false }));
+    return new Gcdata(data);
   }
 }
 

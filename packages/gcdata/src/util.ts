@@ -1,4 +1,5 @@
 import type { Gcdata } from './GameChanger.js';
+import { assert } from './assert.js';
 import { ParsedLineItem } from './cl2.quest.types.js';
 import {
   getAdditionalProperties,
@@ -138,7 +139,13 @@ export function normalizeSchema(
   data: any,
 ): Bschema {
   if ('$ref' in schema) {
-    schema = gcData.getSchema(schema.$ref)!;
+    const refParts = schema.$ref.split('/');
+    schema = gcData.getSchema(refParts[0])!;
+    assert(schema, `Could not resolve $ref ${refParts[0]}`);
+    if (refParts.length > 1) {
+      schema = resolvePointer(refParts.slice(1), schema)!;
+      assert(schema, `Could not resolve subpointer $ref ${refParts.join('/')}`);
+    }
   }
   const oneOf = 'oneOf' in schema ? resolveOneOf(schema, data) : undefined;
   const properties = {
@@ -270,10 +277,10 @@ export function isDefined<T>(value: T): value is Exclude<T, undefined> {
   return value !== undefined;
 }
 
-export function debugOnError<A extends any[], R, T extends (...args: A) => R>(
+export function debugOnError<T extends (...args: any[]) => any>(
   fn: T,
-  ...args: A
-): R {
+  ...args: Parameters<T>
+): ReturnType<T> {
   for (let i = 0; i < 2; i++) {
     try {
       // eslint-disable-next-line no-debugger
