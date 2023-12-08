@@ -1,5 +1,5 @@
 import type { IRecognitionException, IToken } from 'chevrotain';
-import type { Range } from './project.location.js';
+import type { IRange, Range } from './project.location.js';
 
 export type GmlParseError = IRecognitionException & { previousToken?: IToken };
 export type DiagnosticSeverity = 'error' | 'warning' | 'info';
@@ -24,7 +24,7 @@ export class Diagnostic {
 
   constructor(
     readonly message: string,
-    readonly location: Range,
+    readonly location: IRange,
     readonly severity: DiagnosticSeverity = 'warning',
     readonly payload?: any,
   ) {}

@@ -19,12 +19,7 @@ import { activateStitchExtension } from './extension.activate.mjs';
 import { completionTriggerCharacters } from './extension.completions.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.highlighting.mjs';
 import { GameMakerProject } from './extension.project.mjs';
-import {
-  activeTab,
-  isSpriteTab,
-  pathyFromUri,
-  uriFromCodeFile,
-} from './lib.mjs';
+import { activeTab, isSpriteTab, pathyFromUri } from './lib.mjs';
 import { info, logger, warn } from './log.mjs';
 
 export class StitchWorkspace implements vscode.SignatureHelpProvider {
@@ -70,13 +65,13 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
   emitDiagnostics(payload: DiagnosticsEventPayload) {
     const suppresedGroups = stitchConfig.suppressDiagnosticsInGroups;
     for (const group of suppresedGroups) {
-      if (payload.code.asset.isInFolder(group)) {
+      if (payload.code?.asset.isInFolder(group)) {
         // Then skip this file!
         return;
       }
     }
     this.diagnosticCollection.set(
-      uriFromCodeFile(payload.code),
+      vscode.Uri.file(payload.filePath),
       normalizeDiagnosticsEvents(payload),
     );
   }

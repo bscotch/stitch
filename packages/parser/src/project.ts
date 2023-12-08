@@ -37,7 +37,8 @@ export interface SymbolInfo {
 }
 
 export interface DiagnosticsEventPayload {
-  code: Code;
+  filePath: string;
+  code?: Code;
   diagnostics: Diagnostic[];
 }
 
@@ -159,14 +160,17 @@ export class Project {
     return () => this.emitter.off('diagnostics', callback);
   }
 
-  emitDiagnostics(code: Code, diagnostics: Diagnostic[]): void {
+  emitDiagnostics(code: Code | string, diagnostics: Diagnostic[]): void {
     // Ensure they are valid diagnostics
     for (const diagnostic of diagnostics) {
       ok(diagnostic.$tag === 'diagnostic');
       ok(diagnostic.location);
-      ok(diagnostic.location.file);
     }
-    this.emitter.emit('diagnostics', { code, diagnostics });
+    this.emitter.emit('diagnostics', {
+      code: code instanceof Code ? code : undefined,
+      filePath: code instanceof Code ? code.path.absolute : code,
+      diagnostics,
+    });
   }
 
   getAssetByName<Assert extends boolean>(

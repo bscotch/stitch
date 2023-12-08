@@ -15,6 +15,7 @@ import {
 import type { ObjectEvent, ObjectEventName } from './lib.objects.js';
 import { logger } from './logger.js';
 import { Code } from './project.code.js';
+import { Diagnostic } from './project.diagnostics.js';
 import { Project } from './project.js';
 import { Signifier } from './signifiers.js';
 import { StructType, Type } from './types.js';
@@ -455,6 +456,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
 
   async reload() {
     // Find all immediate children, which might include legacy GML files
+
     const [, children] = await Promise.all([
       await this.readYy(),
       this.dir.listChildren(),
@@ -464,6 +466,8 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     } else if (this.assetKind === 'objects') {
       this.addObjectFile(children as Pathy<string>[]);
     } else if (this.assetKind === 'extensions') {
+      const diagnostics: Diagnostic[] = [];
+
       // Load constants and functions from the extension
       const typeIndexToName = (idx: 1 | 2): 'String' | 'Real' => {
         return idx === 1 ? 'String' : 'Real';
@@ -478,23 +482,37 @@ export class Asset<T extends YyResourceType = YyResourceType> {
           if (this.project.self.getMember(constant.name)) {
             continue;
           }
-          // TODO: Get the type by parsing the value. For now we'll just check for number or string, else "Any".
-          const type = constant.value.startsWith('"')
-            ? 'String'
-            : constant.value.match(/^-?[\d_.]+$/)
-              ? 'Real'
-              : 'Any';
-          const signifier = new Signifier(
-            this.project.self,
-            constant.name,
-            new Type(type),
-          );
-          signifier.macro = true;
-          signifier.global = true;
-          signifier.writable = false;
-          signifier.def = {};
+          try {
+            // Get the type by parsing the value. For now we'll just check for number or string, else "Any".
+            const type = constant.value.startsWith('"')
+              ? 'String'
+              : constant.value.match(/^-?[\d_.]+$/)
+                ? 'Real'
+                : 'Any';
+            const signifier = new Signifier(
+              this.project.self,
+              constant.name,
+              new Type(type),
+            );
+            signifier.macro = true;
+            signifier.global = true;
+            signifier.writable = false;
+            signifier.def = {};
 
-          this.project.self.addMember(signifier);
+            this.project.self.addMember(signifier);
+          } catch (err) {
+            diagnostics.push(
+              new Diagnostic(
+                `Error loading extension constant: ${constant.name}`,
+                {
+                  start: { line: 0, column: 0, offset: 0 },
+                  end: { line: 0, column: 0, offset: 0 },
+                },
+                'error',
+                err,
+              ),
+            );
+          }
         }
         for (const func of file.functions) {
           if (func.hidden) {
@@ -503,24 +521,40 @@ export class Asset<T extends YyResourceType = YyResourceType> {
           if (this.project.self.getMember(func.externalName)) {
             continue;
           }
-          const type = new Type('Function')
-            .named(func.externalName)
-            .describe(func.help);
-          type.setReturnType(new Type(typeIndexToName(func.returnType)));
-          for (let i = 0; i < func.args.length; i++) {
-            const typeIdx = func.args[i];
-            type.addParameter(i, `argument${i}`, {
-              type: new Type(typeIndexToName(typeIdx)),
-            });
+          try {
+            const type = new Type('Function')
+              .named(func.externalName)
+              .describe(func.help);
+            type.setReturnType(new Type(typeIndexToName(func.returnType)));
+            for (let i = 0; i < func.args.length; i++) {
+              const typeIdx = func.args[i];
+              type.addParameter(i, `argument${i}`, {
+                type: new Type(typeIndexToName(typeIdx)),
+              });
+            }
+            const signifier = new Signifier(this.project.self, func.name, type);
+            signifier.global = true;
+            signifier.writable = false;
+            signifier.def = {};
+            this.project.self.addMember(signifier);
+            this.project.types.set(`Function.${func.externalName}`, type);
+          } catch (err) {
+            diagnostics.push(
+              new Diagnostic(
+                `Error loading extension function: ${func.name}`,
+                {
+                  start: { line: 0, column: 0, offset: 0 },
+                  end: { line: 0, column: 0, offset: 0 },
+                },
+                'error',
+                err,
+              ),
+            );
           }
-          const signifier = new Signifier(this.project.self, func.name, type);
-          signifier.global = true;
-          signifier.writable = false;
-          signifier.def = {};
-          this.project.self.addMember(signifier);
-          this.project.types.set(`Function.${func.externalName}`, type);
         }
       }
+
+      this.project.emitDiagnostics(this.yyPath.absolute, diagnostics);
     }
     await this.initiallyReadAndParseGml();
   }
