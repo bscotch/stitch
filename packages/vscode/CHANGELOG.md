@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.55.14 (2023-12-08)
+
+### Fixes
+
+- Resolved issue where duplicate extension variables would throw uncaught errors instead of emitting diagnostics
+
 ## 1.55.13 (2023-12-07)
 
 ### Fixes

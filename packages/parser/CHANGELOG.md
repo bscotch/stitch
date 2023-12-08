@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 0.62.1 (2023-12-08)
+
+### Fixes
+
+- Resolved issue where duplicate extension variables would throw uncaught errors instead of emitting diagnostics
+
 ## 0.62.0 (2023-12-07)
 
 ### Features
