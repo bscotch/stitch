@@ -15,7 +15,12 @@ const numberSchema = z
   .string()
   .refine((v) => /[\d.-]+/)
   .transform((v) => +v);
-const featureFlagSchema = z.enum(['rollback', 'audio-fx']);
+/**
+ * There appear to be a very small number of allowed strings, but
+ * they can change with new spec versions so we shouldn't have strong
+ * opinions about them.
+ */
+const featureFlagSchema = z.string();
 
 const optionalTuple = (types: [ZodTypeAny, ...ZodTypeAny[]]) => {
   return z.preprocess((d) => {
