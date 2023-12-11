@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 0.62.2 (2023-12-11)
+
+### Fixes
+
+- Removed opinions about what the allowed GML Spec 'feature flags' could be.
+
 ## 0.62.1 (2023-12-08)
 
 ### Fixes

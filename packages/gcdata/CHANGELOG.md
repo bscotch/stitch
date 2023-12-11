@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.14.0 (2023-12-08)
+
+### Features
+
+- Added a GCData mote-data-visitor method to simplify gcdata tasks
+
 ## 0.13.0 (2023-12-06)
 
 ### Features
