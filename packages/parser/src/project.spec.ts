@@ -15,7 +15,7 @@ const numberSchema = z
   .string()
   .refine((v) => /[\d.-]+/)
   .transform((v) => +v);
-const featureFlagSchema = z.enum(['rollback', 'audio-fx']);
+const featureFlagSchema = z.enum(['rollback', 'audio-fx', 'live_wallpaper_subscription']);
 
 const optionalTuple = (types: [ZodTypeAny, ...ZodTypeAny[]]) => {
   return z.preprocess((d) => {
