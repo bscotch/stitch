@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "CL2 Quest",
+  "name": "CL2 Storyline",
   "scopeName": "source.cl2-quest",
   "fileTypes": ["cl2_quest"],
   "patterns": [
