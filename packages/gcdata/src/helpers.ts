@@ -1,6 +1,5 @@
 import { assert } from './assert.js';
 import { Position } from './types.editor.js';
-import type { BschemaBsArray, BschemaObject } from './types.js';
 
 export const ORDER_INCREMENT = 5;
 
@@ -29,23 +28,6 @@ export function bsArrayToArray<T extends BsArray>(
       element: item.element,
     }))
     .sort((a, b) => a.order - b.order);
-}
-
-export function isObjectSchema(schema: any): schema is BschemaObject {
-  return (
-    !!schema &&
-    !!(
-      schema.type === 'object' ||
-      schema.properties ||
-      schema.additionalProperties
-    )
-  );
-}
-
-export function isBsArraySchema(schema: any): schema is BschemaBsArray {
-  return (
-    isObjectSchema(schema) && 'format' in schema && schema.format === 'bsArray'
-  );
 }
 
 /**

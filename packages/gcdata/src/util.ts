@@ -2,6 +2,7 @@ import type { Gcdata } from './GameChanger.js';
 import { assert } from './assert.js';
 import { ParsedLineItem } from './cl2.quest.types.js';
 import {
+  BschemaObject,
   getAdditionalProperties,
   getProperties,
   isBschemaObject,
@@ -148,14 +149,19 @@ export function normalizeSchema(
     }
   }
   const oneOf = 'oneOf' in schema ? resolveOneOf(schema, data) : undefined;
-  const properties = {
-    ...getProperties(schema),
-    ...getProperties(oneOf),
-  };
-  const additionalProperties = {
-    ...getAdditionalProperties(schema),
-    ...getAdditionalProperties(oneOf),
-  } as Bschema;
+  let properties: BschemaObject['properties'] | undefined;
+  let additionalProperties: BschemaObject['additionalProperties'] | undefined;
+  if (isBschemaObject(oneOf) || isBschemaObject(schema)) {
+    properties = {
+      ...getProperties(schema),
+      ...getProperties(oneOf),
+    };
+    additionalProperties = {
+      ...getAdditionalProperties(schema),
+      ...getAdditionalProperties(oneOf),
+    } as Bschema;
+  }
+
   return {
     ...schema,
     properties,
@@ -174,7 +180,7 @@ export function capitalize(str: string) {
  * of the terminal pointers through the data.
  * Optionally prefix each pointer with some string.
  */
-export function computePointers(
+export function computeTerminalPointers(
   data: any,
   prefixWith?: string,
   collection = new Set<string>(),
@@ -193,7 +199,10 @@ export function computePointers(
   if (typeof data === 'object') {
     for (const key in data) {
       const subdata = data[key];
-      computePointers(subdata, undefined, collection, [...__basePointer, key]);
+      computeTerminalPointers(subdata, undefined, collection, [
+        ...__basePointer,
+        key,
+      ]);
     }
   } else {
     addToCollection();

@@ -24,7 +24,7 @@ import {
   type SchemaId,
 } from './types.js';
 import {
-  computePointers,
+  computeTerminalPointers,
   resolvePointer,
   resolvePointerInSchema,
   setValueAtPointer,
@@ -101,18 +101,20 @@ export class Gcdata {
       // Call on this node!
       visitor(ctx);
       // Then visit the children
-      // TODO: Get each data field (there are no arrays, so that simplifies things!)
+      // Get each data field (there are no arrays, so that simplifies things!)
       const data = ctx.current.data;
       if (typeof data === 'object' && data !== null) {
         for (const key of Object.keys(data)) {
           const pointer = [...ctx.current.pointer, key];
           const subschema = resolvePointerInSchema(pointer, ctx.mote, this);
-          assert(
-            subschema,
-            `Could not resolve pointer ${pointer.join('/')} for schema ${
-              ctx.mote.schema_id
-            }`,
-          );
+          if (!subschema) {
+            console.warn(
+              `Could not resolve pointer ${pointer.join('/')} for schema ${
+                ctx.mote.schema_id
+              }`,
+            );
+            continue;
+          }
           const newCtx: MoteVisitorCtx = {
             ...ctx,
             current: {
@@ -369,7 +371,7 @@ export class GameChanger {
       // Then we are deleting a sub-object, so we need to find each
       // entry by path and add a deletion for it
       const subdata = resolvePointer(dataPath, this.workingData.motes[moteId]);
-      const pointers = computePointers(subdata, dataPath);
+      const pointers = computeTerminalPointers(subdata, dataPath);
       for (const pointer of pointers) {
         this.updateMoteData(moteId, pointer, null);
       }
@@ -514,7 +516,7 @@ export class GameChanger {
           change.type === 'changed' &&
           !Object.keys(change.diffs || {}).length
         ) {
-          // Then we can remove this entry altogether
+          // Then we can remove this change entry altogether
           delete this.changes.changes[type][id];
           continue;
         }
@@ -522,19 +524,32 @@ export class GameChanger {
         this.workingData[type][id] ||= {} as any;
         for (const [pointer, diff] of Object.entries(change.diffs || {})) {
           let data = this.workingData[type][id] as any;
+          const dataPath = [{ data, key: undefined as string | undefined }];
           const pointerParts = pointer.split('/');
           for (let p = 0; p < pointerParts.length; p++) {
             const part = pointerParts[p];
-            if (p === pointerParts.length - 1) {
-              if (diff[1] === null) {
-                delete data[part];
-              } else {
-                data[part] = diff[1];
-              }
+            const isLastPart = p === pointerParts.length - 1;
+            if (isLastPart) {
+              data[part] = diff[1];
             } else {
               data[part] ||= {};
-              data = data[part];
             }
+            data = data[part];
+            dataPath.push({ data, key: part });
+          }
+          // Work backwards through the data, deleting it if it is empty
+          // (except for the root!)
+          for (let p = dataPath.length - 1; p > 0; p--) {
+            const part = dataPath[p];
+            // If the entry is `null`, `undefined`, or an empty object, delete it. Else break.
+            if (
+              part.data === undefined ||
+              part.data === null ||
+              Object.keys(part.data).length === 0
+            ) {
+              const parent = dataPath[p - 1].data;
+              delete parent[part.key!];
+            } else break;
           }
         }
       }

@@ -91,8 +91,8 @@ export function isBschemaObject(schema: any): schema is BschemaObject {
   return (
     typeof schema === 'object' &&
     (schema['type'] === 'object' ||
-      schema['properties'] ||
-      schema['additionalProperties'])
+      (!schema['type'] &&
+        (schema['properties'] || schema['additionalProperties'])))
   );
 }
 
