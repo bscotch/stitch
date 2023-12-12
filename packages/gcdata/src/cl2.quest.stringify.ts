@@ -33,21 +33,6 @@ export function stringifyQuest(
     }
   }
 
-  // GIVER
-  if (mote.data.quest_giver) {
-    const giver = packed.working.getMote(mote.data.quest_giver.item);
-    blocks.push(
-      `Giver: ${packed.working.getMoteName(giver)}${toMoteTag(giver)}`,
-    );
-  }
-  // RECEIVER
-  if (mote.data.quest_receiver) {
-    const receiver = packed.working.getMote(mote.data.quest_receiver.item);
-    blocks.push(
-      `Receiver: ${packed.working.getMoteName(receiver)}${toMoteTag(receiver)}`,
-    );
-  }
-
   if (mote.data.quest_giver || mote.data.quest_receiver) {
     blocks.push('');
   }
@@ -73,6 +58,26 @@ export function stringifyQuest(
       }
     } else {
       blocks.push('');
+    }
+
+    if (momentType === 'start') {
+      // GIVER
+      if (mote.data.quest_giver) {
+        const giver = packed.working.getMote(mote.data.quest_giver.item);
+        blocks.push(
+          `Giver: ${packed.working.getMoteName(giver)}${toMoteTag(giver)}`,
+        );
+      }
+    } else {
+      // RECEIVER
+      if (mote.data.quest_receiver) {
+        const receiver = packed.working.getMote(mote.data.quest_receiver.item);
+        blocks.push(
+          `Receiver: ${packed.working.getMoteName(receiver)}${toMoteTag(
+            receiver,
+          )}`,
+        );
+      }
     }
 
     // MOMENTS
