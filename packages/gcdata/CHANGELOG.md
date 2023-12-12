@@ -1,5 +1,12 @@
 # @bscotch/gcdata Changelog
 
+## 0.14.1 (2023-12-12)
+
+### Fixes
+
+- Resolved infinite loop caused by improper type checking of Bschema objects
+- Moved quest giver/receiver after the quest requirements instead of at the top
+
 ## 0.14.0 (2023-12-08)
 
 ### Features

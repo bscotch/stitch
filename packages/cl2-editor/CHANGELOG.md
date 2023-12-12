@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.16.2 (2023-12-12)
+
+### Fixes
+
+- Added CL2 storylines as a separate "language" for convenience
+
 ## 0.16.0 (2023-12-06)
 
 ### Features
