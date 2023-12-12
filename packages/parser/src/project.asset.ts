@@ -543,8 +543,8 @@ export class Asset<T extends YyResourceType = YyResourceType> {
               new Diagnostic(
                 `Error loading extension function: ${func.name}`,
                 {
-                  start: { line: 0, column: 0, offset: 0 },
-                  end: { line: 0, column: 0, offset: 0 },
+                  start: { line: 1, column: 1, offset: 0 },
+                  end: { line: 1, column: 1, offset: 0 },
                 },
                 'error',
                 err,
