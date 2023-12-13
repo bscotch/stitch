@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.14.2 (2023-12-13)
+
+### Fixes
+
+- Made gcdata public so it can be easily used in other projects
+
 ## 0.14.1 (2023-12-12)
 
 ### Fixes
