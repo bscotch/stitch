@@ -4,7 +4,7 @@ Our games use a JSON-Schema-like format to describe game content. This is used b
 
 This project contains parsers and helpers for GameChanger data.
 
-*NOTE: This project is visible to the public, but will not be of any use to anyone besides Bscotch since our GameChanger tool is internal!*
+*⚠️ This project is visible to the public, but will not be of any use to anyone besides Bscotch since our GameChanger tool is internal! ⚠️*
 
 ## Purpose
 

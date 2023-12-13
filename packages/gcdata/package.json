@@ -1,7 +1,9 @@
 {
   "name": "@bscotch/gcdata",
   "version": "0.14.1",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
