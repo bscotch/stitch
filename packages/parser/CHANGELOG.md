@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 0.62.3 (2023-12-12)
+
+### Fixes
+
+- extension exception diagnostics crash because line number is decremented by 1.
+
 ## 0.62.2 (2023-12-11)
 
 ### Fixes
