@@ -34,9 +34,12 @@ export function bsArrayToArray<T extends BsArray>(
  * Create a four-character, consonumeric key for a BschemaArray item.
  */
 export function createBsArrayKey(length = 4) {
-  const characters = 'bcdfghjklmnpqrstvwxyz0123456789';
-  let key = '';
-  for (let i = 0; i < length; i++) {
+  const letters = 'bcdfghjklmnpqrstvwxyz';
+  const numbers = '0123456789';
+  const characters = letters + numbers;
+  // Ensure it starts with a letter
+  let key = letters[Math.floor(Math.random() * letters.length)];
+  for (let i = 1; i < length; i++) {
     key += characters[Math.floor(Math.random() * characters.length)];
   }
   return key;

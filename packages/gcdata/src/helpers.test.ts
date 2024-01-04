@@ -1,7 +1,19 @@
 import { ok } from 'node:assert';
-import { BsArrayItem, updateBsArrayOrder } from './helpers.js';
+import {
+  BsArrayItem,
+  createBsArrayKey,
+  updateBsArrayOrder,
+} from './helpers.js';
 
 describe('Helpers', function () {
+  it('can create a four-character, consonumeric key', function () {
+    for (let i = 0; i < 10_000; i++) {
+      const key = createBsArrayKey();
+      ok(key.length === 4);
+      ok(key.match(/^[a-z][a-z0-9]{3}$/));
+    }
+  });
+
   it('can update order fields for a BsArray', function () {
     let sorted: BsArrayItem[] = [
       { element: 'a' },
