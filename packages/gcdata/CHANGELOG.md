@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.14.3 (2024-01-04)
+
+### Fixes
+
+- Resolved issue where bsArray keys could be all-numeric
+
 ## 0.14.2 (2023-12-13)
 
 ### Fixes
