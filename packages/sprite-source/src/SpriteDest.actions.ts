@@ -87,7 +87,8 @@ export async function applySpriteAction({
     let yy = await Yy.read(yyFile.absolute, 'sprites');
 
     // Populate the frames to get UUIDs
-    const frames: YySprite['frames'] = action.spine ? yy.frames : []; // Keep the old frameIds if it's a spine sprite (the alternative would be to ensure we rename the GameMaker-generated thumbnail)
+    // Keep the old frameIds if it's a spine sprite (the alternative would be to ensure we rename the GameMaker-generated thumbnail)
+    const frames: YySprite['frames'] = action.spine ? yy.frames : [];
     frames.length = action.spine ? 1 : sourcePngs.length;
     yy = yySpriteSchema.parse({ ...yy, frames });
 
