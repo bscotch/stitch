@@ -1,5 +1,12 @@
 # @bscotch/sprite-source Changelog
 
+## 0.5.2 (2024-01-15)
+
+### Fixes
+
+- Actually fixed the prior issue...
+- Spine sprites no longer have their IDs recreated on update, thus preventing lots of Git chaos
+
 ## 0.5.0 (2023-12-07)
 
 ### Features
