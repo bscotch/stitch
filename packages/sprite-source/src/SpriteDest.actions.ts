@@ -1,9 +1,9 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
 import { Yy, YySprite, yySpriteSchema, type YypResourceId } from '@bscotch/yy';
 import path from 'path';
+import type { SpriteDestAction } from './SpriteDest.schemas.js';
 import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
 import { readdirSafeWithFileTypes } from './safeFs.js';
-import type { SpriteDestAction } from './SpriteDest.schemas.js';
 import { getPngSize } from './utility.js';
 
 export interface ApplySpriteActionOptions {
@@ -87,8 +87,7 @@ export async function applySpriteAction({
     let yy = await Yy.read(yyFile.absolute, 'sprites');
 
     // Populate the frames to get UUIDs
-    // const frames = yy.frames || []; // Keep the old frameIds
-    const frames: YySprite['frames'] = [];
+    const frames: YySprite['frames'] = action.spine ? yy.frames : []; // Keep the old frameIds if it's a spine sprite (the alternative would be to ensure we rename the GameMaker-generated thumbnail)
     frames.length = action.spine ? 1 : sourcePngs.length;
     yy = yySpriteSchema.parse({ ...yy, frames });
 
