@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 0.6.0 (2024-01-17)
+
+### Features
+
+- Sprite caches now have a version, so that they can be autocleared when the cache-generating mechanism changes.
+
 ## 0.5.3 (2024-01-17)
 
 ### Fixes
