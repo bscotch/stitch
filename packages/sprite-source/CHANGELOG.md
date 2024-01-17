@@ -1,5 +1,12 @@
 # @bscotch/sprite-source Changelog
 
+## 0.5.3 (2024-01-17)
+
+### Fixes
+
+- Hashes for non-PNG files are now computed after normalizing newlines.
+- For Spine sprites, PNG images are now only included if they are referenced in the atlas file.
+
 ## 0.5.2 (2024-01-15)
 
 ### Fixes
