@@ -1,25 +1,20 @@
 import { computePngChecksum } from '@bscotch/pixel-checksum';
-import crypto from 'crypto';
-import fs from 'fs';
+import crypto from 'node:crypto';
+import fsp from 'node:fs/promises';
 
 /**
- * A quick checksum for arbitrary file types, focusing on
- * speed. This is not a cryptographic hash.
+ * A quick checksum for arbitrary text-based file types
+ * (like JSON or atlas), where newlines are first normalized.
  */
-export function quickChecksum(filePath: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const hash = crypto.createHash('md5');
-    const stream = fs.createReadStream(filePath);
-
-    stream.on('data', (chunk) => hash.update(chunk));
-    stream.on('end', () => resolve(hash.digest('hex')));
-    stream.on('error', reject);
-  });
+async function textFileChecksum(filePath: string): Promise<string> {
+  const content = await fsp.readFile(filePath, 'utf8');
+  const normalized = content.replace(/\r/g, '').trim();
+  return computeStringChecksum(normalized);
 }
 
 export async function computeFileChecksum(filePath: string): Promise<string> {
   if (!filePath.match(/\.png$/i)) {
-    return await quickChecksum(filePath);
+    return await textFileChecksum(filePath);
   }
   return computePngChecksum(filePath);
 }
