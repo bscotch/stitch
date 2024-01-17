@@ -1,6 +1,10 @@
 import { Pathy, pathy } from '@bscotch/pathy';
 import { computePngChecksums } from '@bscotch/pixel-checksum';
-import { SpritesInfo, spritesInfoSchema } from './SpriteCache.schemas.js';
+import {
+  SpritesInfo,
+  cacheVersion,
+  spritesInfoSchema,
+} from './SpriteCache.schemas.js';
 import { SpriteDir } from './SpriteDir.js';
 import { computeStringChecksum } from './checksum.js';
 import { retryOptions } from './constants.js';
@@ -65,8 +69,20 @@ export class SpriteCache {
         fallback: {},
         ...retryOptions,
       });
+      if (cache.version !== cacheVersion) {
+        cache = {
+          version: cacheVersion,
+          info: {},
+        };
+        this.issues.push(
+          new SpriteSourceError(
+            `Sprite cache version is out of date. Will rebuild.`,
+          ),
+        );
+      }
     } catch (err) {
       cache = {
+        version: cacheVersion,
         info: {},
       };
       this.issues.push(

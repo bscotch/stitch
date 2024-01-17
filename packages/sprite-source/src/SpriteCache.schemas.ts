@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const cacheVersion = 2;
+
 export type ImageSummary = z.infer<typeof imageSummarySchema>;
 const imageSummarySchema = z.object({
   width: z.number(),
@@ -36,6 +38,7 @@ const spineSummarySchema = z.object({
 
 export type SpritesInfo = z.infer<typeof spritesInfoSchema>;
 export const spritesInfoSchema = z.object({
+  version: z.number().default(1),
   info: z
     .record(
       z.discriminatedUnion('spine', [spriteSummarySchema, spineSummarySchema]),
