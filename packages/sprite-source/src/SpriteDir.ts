@@ -223,7 +223,7 @@ export class SpriteDir {
     const files = (await readdirSafe(path.absolute)).map((file) =>
       pathy(file, path.absolute),
     );
-    const pngs = files.filter((file) => file.basename.match(/\.png$/i));
+    let pngs = files.filter((file) => file.basename.match(/\.png$/i));
     pngs.sort();
     if (pngs.length === 0) {
       return;
@@ -274,11 +274,20 @@ export class SpriteDir {
         `No .atlas file found for ${path.relative}/${frameId}`,
       );
 
-      // 3. Set the spine paths (note that there can be multiple pngs, so grab them all)
+      // 3. Set the spine paths. There can be multiple PNGs, and in the case
+      //    of GameMaker assets there can be *other* PNGs (like thumbnails).
+      //    So we need to read the atlas file to determine which PNGs are
+      //    the ones we want.
+      const atlasContent = (await skeletonAtlas.read({
+        encoding: 'utf8',
+      })) as string;
+      const pngNames = atlasContent.match(/^.*\.png$/gm);
+      pngs = pngs.filter((png) => pngNames?.includes(png.basename));
+      assert(pngs.length > 0, 'No PNGs found in atlas file.');
       sprite._spinePaths = {
         atlas: skeletonAtlas,
         json: skeletonJson,
-        pngs: pngs,
+        pngs,
       };
     } else {
       sprite._frames = pngs.map((png) => new SpriteFrame(png));
