@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 0.17.1 (2024-01-17)
+
+### Fixes
+
+- YYP files now strip out the Options field if it is an empty array
+
 ## 0.17.0 (2023-12-07)
 
 ### Features
