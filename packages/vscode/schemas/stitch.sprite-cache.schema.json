@@ -1,6 +1,10 @@
 {
   "type": "object",
   "properties": {
+    "version": {
+      "type": "number",
+      "default": 1
+    },
     "info": {
       "type": "object",
       "additionalProperties": {
