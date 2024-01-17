@@ -89,7 +89,7 @@ export function setProjectVersion(
         string
       >;
       const platform = paths.basename(paths.dirname(file)) as Gms2Platform;
-      if (gms2Platforms.includes(platform)) {
+      if (gms2Platforms.includes(platform) && platform !== 'switch') {
         const versionKey = versionKeyForPlatform(platform);
         content[versionKey] = normalizedVersionString;
         project.storage.writeYySync(file, content);
