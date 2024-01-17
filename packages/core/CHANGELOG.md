@@ -1,5 +1,11 @@
 # @bscotch/stitch Changelog
 
+## 10.10.0 (2024-01-17)
+
+### Features
+
+- When Stitch Core sets the game version in options files, it now skips Switch since GameMaker now removes that version key.
+
 ## 10.9.7 (2023-12-07)
 
 ### Fixes

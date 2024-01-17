@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.55.21 (2024-01-17)
+
+### Fixes
+
+- Updated the sprite cache JSON Schema to include the new version field
+
 ## 1.55.14 (2023-12-08)
 
 ### Fixes
