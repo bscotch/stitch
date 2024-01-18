@@ -46,7 +46,7 @@ export interface MoteVisitorCtx<T = undefined> {
   schema: Bschema;
   current: MoteVisitorDataCtx;
   /** `undefined` at the root, otherwise the prior visitor context data */
-  parent: MoteVisitorDataCtx | undefined;
+  parent: MoteVisitorCtx<T> | undefined;
   /** A place for your custom store to accumulate things during visits. Passed by reference. */
   store: T;
 }
@@ -123,7 +123,7 @@ export class Gcdata {
               pointer,
               subschema,
             },
-            parent: ctx.current,
+            parent: ctx,
           };
           visit(newCtx as MoteVisitorCtx);
         }
