@@ -1,5 +1,12 @@
 # @bscotch/gcdata Changelog
 
+## 0.16.0 (2024-01-18)
+
+### Features
+
+- Added a 'priorReturn' argument to Mote data visitors, for easier accumulationg of data along a path
+- Changed the MoteVisitor to use the full context as the parent to allow for working back up the tree
+
 ## 0.14.3 (2024-01-04)
 
 ### Fixes
