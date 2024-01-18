@@ -65,19 +65,22 @@ export class Gcdata {
     };
   }
 
-  visitMoteData(
+  visitMoteData<R>(
     moteId: string | Mote,
     /** Function to call on every node in the mote data */
-    visitor: (ctx: MoteVisitorCtx) => void,
-  ): void;
-  visitMoteData<Store>(
+    visitor: (ctx: MoteVisitorCtx, priorVisitorReturn?: R | undefined) => R,
+  ): R;
+  visitMoteData<Store, R>(
     moteId: string | Mote,
-    visitor: (ctx: MoteVisitorCtx<Store>) => void,
+    visitor: (
+      ctx: MoteVisitorCtx<Store>,
+      priorVisitorReturn?: R | undefined,
+    ) => R,
     store: Store,
-  ): void;
+  ): R;
   visitMoteData(
     moteId: string | Mote,
-    visitor: (ctx: MoteVisitorCtx<any>) => void,
+    visitor: (ctx: MoteVisitorCtx<any>, priorVisitorReturn?: any) => any,
     store?: any,
   ) {
     const mote = this.getMote(moteId);
@@ -97,9 +100,9 @@ export class Gcdata {
       store,
     };
 
-    const visit = (ctx: MoteVisitorCtx<any>) => {
+    const visit = (ctx: MoteVisitorCtx<any>, priorResult: any) => {
       // Call on this node!
-      visitor(ctx);
+      priorResult = visitor(ctx, priorResult);
       // Then visit the children
       // Get each data field (there are no arrays, so that simplifies things!)
       const data = ctx.current.data;
@@ -125,11 +128,11 @@ export class Gcdata {
             },
             parent: ctx,
           };
-          visit(newCtx as MoteVisitorCtx);
+          visit(newCtx as MoteVisitorCtx, priorResult);
         }
       }
     };
-    visit(initialCtx);
+    visit(initialCtx, undefined);
   }
 
   getAncestors(
