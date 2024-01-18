@@ -1,7 +1,7 @@
 {
   "name": "crashlands-editor",
   "displayName": "Crashlands 2 Editor",
-  "version": "0.16.4",
+  "version": "0.16.5",
   "private": true,
   "description": "Tools for Crashlands 2 development.",
   "categories": [
