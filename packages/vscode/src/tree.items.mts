@@ -9,6 +9,7 @@ import vscode from 'vscode';
 import { getAssetIcon } from './icons.mjs';
 import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
+import * as fs from "fs";
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
@@ -171,7 +172,21 @@ export class TreeCode extends StitchTreeItemBase<'code'> {
 
     // Ensure that the tree label is human-friendly.
     this.label = getEventFromFilename(this.uri.fsPath);
+
+    // If no label try to use the @description
+    if (!this.label) {
+      const key = '/// @description';
+      let firstLine = this.getFirstLine(this.uri.fsPath);
+      this.label = firstLine.toLowerCase().includes(key) ?
+        firstLine.replace(key, '').trim() :
+        '';
+    }
   }
+
+  private getFirstLine(filePath:string) {
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+      return (fileContent.match(/(^.*)/) || [])[1] || '';
+  } 
 
   get uri() {
     return vscode.Uri.file(this.code.path.absolute);
