@@ -70,27 +70,30 @@ export const yypAudioGroupSchema = z.object({
 });
 
 export type YypTextureGroup = z.infer<typeof yypTextureGroupSchema>;
-export const yypTextureGroupSchema = z.object({
-  ConfigValues: z.record(z.record(z.string())).optional(),
-  name: z.string(),
-  groupParent: z
-    .object({
-      name: z.string(),
-      path: z.string(),
-    })
-    .nullable()
-    .default(null),
-  isScaled: z.boolean().default(true),
-  compressFormat: z.string().optional(),
-  autocrop: z.boolean().default(true),
-  border: z.number().default(2),
-  mipsToGenerate: z.number().default(0),
-  targets: bigNumber().default(-1n),
-  loadType: z.enum(['default', 'dynamicpages']).optional(),
-  directory: z.string().optional(),
-  resourceType: z.literal('GMTextureGroup').default('GMTextureGroup'),
-  resourceVersion: z.string().default('1.3'),
-});
+export const yypTextureGroupSchema = z
+  .object({
+    ConfigValues: z.record(z.record(z.string())).optional(),
+    name: z.string(),
+    groupParent: z
+      .object({
+        name: z.string(),
+        path: z.string(),
+      })
+      .nullable()
+      .default(null),
+    isScaled: z.boolean().default(true),
+    customOptions: z.string().optional(),
+    compressFormat: z.string().optional(),
+    autocrop: z.boolean().default(true),
+    border: z.number().default(2),
+    mipsToGenerate: z.number().default(0),
+    targets: bigNumber().default(-1n),
+    loadType: z.enum(['default', 'dynamicpages']).optional(),
+    directory: z.string().optional(),
+    resourceType: z.literal('GMTextureGroup').default('GMTextureGroup'),
+    resourceVersion: z.string().default('1.3'),
+  })
+  .passthrough();
 
 export type YypIncludedFile = z.infer<typeof yypIncludedFileSchema>;
 const yypIncludedFileSchema = z.object({
