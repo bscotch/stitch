@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 1.0.2 (2024-01-29)
+
+### Fixes
+
+- Added missing Texture Groups field from the new project format
+
 ## 1.0.1 (2024-01-29)
 
 ### Fixes
