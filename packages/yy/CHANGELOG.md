@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 1.0.1 (2024-01-29)
+
+### Fixes
+
+- Resolved issues with key order in new project format
+
 ## 1.0.0 (2024-01-29)
 
 ### Features
