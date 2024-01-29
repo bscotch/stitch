@@ -1,4 +1,5 @@
-import { FixedNumber } from './types/utility.js';
+import type { Yyp } from './types/Yyp.js';
+import { FixedNumber, yyIsNewFormat } from './types/utility.js';
 
 const escapable =
   // eslint-disable-next-line no-control-regex, no-misleading-character-class
@@ -39,13 +40,18 @@ export type AnyExceptPromise<T> = T extends Promise<any> ? never : T;
 
 /**
  * Jsonify, with GameMaker-like JSON and allowing for BigInts.
- * Based on {@link https://github.com/sidorares/json-bigint/blob/master/lib/stringify.js json-bigint}
+ * Based on {@link https://github.com/sidorares/json-bigint/blob/master/lib/stringify.js json-bigint}.
+ *
+ * The yyp file can be passed in to use as a reference,
+ * e.g. to ensure the write format is used for new files.
  */
-export function stringifyYy(yyData: any): string {
+export function stringifyYy(yyData: any, yyp?: Yyp): string {
   let gap = '';
   let level = 0; // Level 1 are root elements
   const indent = '  ';
   type Pointer = (string | number)[];
+
+  yyData = prepareForStringification(yyData, yyp);
 
   /**
    * Recursively JSON-stringify
@@ -146,13 +152,13 @@ export function stringifyYy(yyData: any): string {
           partial.length === 0
             ? '{}'
             : includeGaps
-            ? `{${eol}` +
-              gap +
-              partial.join(`,${eol}` + gap) +
-              `,${eol}` +
-              mind +
-              '}'
-            : '{' + partial.join(',') + ',}';
+              ? `{${eol}` +
+                gap +
+                partial.join(`,${eol}` + gap) +
+                `,${eol}` +
+                mind +
+                '}'
+              : '{' + partial.join(',') + ',}';
         gap = mind;
         level = startingLevel;
         return v;
@@ -174,4 +180,89 @@ export function stringifyYy(yyData: any): string {
     },
     [],
   );
+}
+
+/**
+ * Get a clone of some yyData, ready for stringification
+ * (keys in the right order, the right keys, etc)
+ *
+ * Sort keys GameMaker-style (which does change over time!).
+ * For the new format (where the '%Name' key exists), sort order
+ * is just alphabetical (case-insensitive).
+ *
+ * Prior to the new format, the final sort order was:
+ * - "resourceType": "GMSprite",
+ * - "resourceVersion": "1.0",
+ * - "name": "barrel_tendraam",
+ * - Everything else, in alphabetical order (case-insensitive).
+ */
+function prepareForStringification<T>(yyData: T, yyp?: Yyp): T {
+  const isNewFormat = yyIsNewFormat(yyData) || yyIsNewFormat(yyp);
+  // Make a deep clone so we don't mutate the original.
+  // yyData = structuredClone(yyData);
+
+  if (Array.isArray(yyData)) {
+    return yyData.map((item) => prepareForStringification(item)) as T;
+  } else if (yyData instanceof FixedNumber) {
+    return yyData;
+  } else if (typeof yyData === 'object' && yyData !== null) {
+    const yyDataCopy = { ...yyData } as Record<string, any>;
+    if (
+      isNewFormat &&
+      'resourceType' in yyData &&
+      typeof yyData.resourceType === 'string'
+    ) {
+      // Then we need to ensure that the file has the `${resourceType}` key
+      // @ts-expect-error
+      yyDataCopy[`$${yyData.resourceType}`] = yyData.resourceVersion || '';
+    }
+
+    const keys = Object.keys(yyDataCopy) as (keyof T)[];
+    keys.sort((a, b) => {
+      if (!isNewFormat) {
+        if (a === 'resourceType') {
+          return -1;
+        }
+        if (b === 'resourceType') {
+          return 1;
+        }
+        if (a === 'resourceVersion') {
+          return -1;
+        }
+        if (b === 'resourceVersion') {
+          return 1;
+        }
+        if (a === 'name') {
+          return -1;
+        }
+        if (b === 'name') {
+          return 1;
+        }
+      }
+      return (a as string)
+        .toLowerCase()
+        .localeCompare((b as string).toLowerCase(), 'en');
+    });
+    // Delete each entry and re-add it in the sorted order.
+    const reference = { ...yyDataCopy };
+    keys.forEach((key) => delete yyDataCopy[key as string]);
+    keys.forEach((key) => {
+      if (
+        isNewFormat &&
+        ['name', 'resourceType', 'resourceVersion'].includes(key as any)
+      ) {
+        // Then these are legacy format keys that we should skip
+        return;
+      }
+      // @ts-expect-error
+      yyDataCopy[key] = prepareForStringification(reference[key]);
+    });
+    // Ensure that the %name field actually has a value
+    if (isNewFormat) {
+      yyDataCopy['%Name'] = yyDataCopy['%Name'] || reference['name'] || '';
+    }
+    return yyDataCopy as T;
+  }
+
+  return yyData;
 }

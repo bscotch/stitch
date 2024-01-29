@@ -2,9 +2,9 @@ import { undent } from '@bscotch/utility';
 import { expect } from 'chai';
 import { existsSync, readdirSync } from 'fs';
 import { z } from 'zod';
-import { FixedNumber, fixedNumber } from './types/utility.js';
-import { yyResourceTypes } from './types/YyBase.js';
 import { Yy } from './Yy.js';
+import { yyResourceTypes } from './types/YyBase.js';
+import { FixedNumber, fixedNumber } from './types/utility.js';
 
 async function expectToThrowAsync(f: () => Promise<any>): Promise<void> {
   try {
@@ -38,18 +38,18 @@ const sampleSchema = z.object({
 
 const sampleDataAsString = undent`
 {
+  "array": [
+    {"name":"child1","field":true,},
+    {"name":"child2",},
+  ],
   "hello": "world",
+  "number": 15.1234134,
   "parent": {
     "child": [
       "10",
       "20",
     ],
   },
-  "number": 15.1234134,
-  "array": [
-    {"name":"child1","field":true,},
-    {"name":"child2",},
-  ],
 }
 `.replace(/\r?\n/gm, '\r\n');
 
@@ -187,7 +187,7 @@ describe('Yy Files', function () {
     const sampleFiles = readdirSync(samplesFolder);
 
     for (const sampleFile of sampleFiles) {
-      it(`can validate a ${resourceType} file (v${sampleFile.replace(
+      it(`can validate a ${resourceType} file (${sampleFile.replace(
         /\.yyp?$/,
         '',
       )})`, async function () {
@@ -195,6 +195,15 @@ describe('Yy Files', function () {
         // Will throw if invalid
         const parsed = await Yy.read(yyFilePath, resourceType);
         // (Can't check if stringification is exactly correct, because samples may end up with different formatting than GameMaker applies)
+        if (parsed['%Name']) {
+          // Make sure that we can stringify and get it back in the new format
+          const stringified = Yy.stringify(parsed, resourceType);
+          const reparsed = Yy.parse(stringified, resourceType);
+          expect(reparsed['%Name']).to.equal(parsed['%Name']);
+          expect(reparsed.resourceType).to.be.a('string');
+          // @ts-expect-error
+          expect(reparsed[`$${reparsed.resourceType}`]).to.be.a('string');
+        }
       });
     }
   }

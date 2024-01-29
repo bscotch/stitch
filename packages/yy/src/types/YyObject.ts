@@ -48,7 +48,7 @@ export const yyObjectEventSchema = unstable({
   collisionObjectId: yypResourceIdSchema.nullable().default(null),
   name: z.string().default(''),
   tags: z.array(z.string()).optional(),
-  resourceVersion: z.literal('1.0').default('1.0'),
+  resourceVersion: z.string().default('1.0'),
   resourceType: z.literal('GMEvent').default('GMEvent'),
   parent: z.unknown().optional(),
 });
@@ -80,7 +80,7 @@ export const yyObjectPropertySchema = unstable({
    */
   filters: z.array(z.unknown()).default([]),
   tags: z.array(z.string()).optional(),
-  resourceVersion: z.literal('1.0').default('1.0'),
+  resourceVersion: z.string().default('1.0'),
   resourceType: z.literal('GMObjectProperty').default('GMObjectProperty'),
 });
 

@@ -123,7 +123,12 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   @sequential
   async saveYy() {
     assert(this.yyPath, 'Cannot save YY without a path');
-    await Yy.write(this.yyPath.absolute, this.yy, this.assetKind);
+    await Yy.write(
+      this.yyPath.absolute,
+      this.yy,
+      this.assetKind,
+      this.project.yyp,
+    );
   }
 
   get isScript() {

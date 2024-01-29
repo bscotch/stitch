@@ -88,6 +88,7 @@ export class StitchProject extends StitchProjectStatic {
   readonly config: StitchProjectConfig;
   protected plugins: StitchProjectPlugin[] = [];
   readonly storage: StitchStorage;
+  yypRaw!: Yyp;
 
   /**
    * A representation of an "Issue" for submission
@@ -689,6 +690,7 @@ export class StitchProject extends StitchProjectStatic {
 
     // Load the YYP file, store RAW (ensure field resourceType: "GMProject" exists)
     const yyp = await StitchProject.parseYypFile(this.storage.yypPathAbsolute);
+    this.yypRaw = yyp;
 
     // TODO: Figure out how to safely manage different typings due
     // TODO: to changes in the YYP (and potentially YY) files with

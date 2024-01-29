@@ -176,13 +176,19 @@ export class Gms2ResourceBase<YyData extends YyBase = YyBase> {
       this.yyPathAbsolute,
       this.yyData,
       this.resourceRoot,
+      this.io.project.yypRaw,
     );
     if (result) result.changed = changed;
     return this;
   }
 
   async replaceYyFile(yyData: Partial<YyData>) {
-    await this.storage.writeYy(this.yyPathAbsolute, yyData, this.resourceRoot);
+    await this.storage.writeYy(
+      this.yyPathAbsolute,
+      yyData,
+      this.resourceRoot,
+      this.io.project.yypRaw,
+    );
     return this;
   }
 

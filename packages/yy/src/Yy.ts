@@ -1,4 +1,3 @@
-import { sortKeysByReference } from '@bscotch/utility';
 import { ok } from 'assert';
 import fs from 'fs';
 import fsp from 'fs/promises';
@@ -14,7 +13,7 @@ import { yyRoomSchema } from './types/YyRoom.js';
 import { yyScriptSchema } from './types/YyScript.js';
 import { yySoundSchema } from './types/YySound.js';
 import { yySpriteSchema } from './types/YySprite.js';
-import { yypSchema } from './types/Yyp.js';
+import { Yyp, yypSchema } from './types/Yyp.js';
 
 export type YySchemaRef = YyResourceType | 'project' | Schema | undefined;
 export type YySchemaName = keyof YySchemas;
@@ -30,7 +29,11 @@ export type YyDataLoose<T extends YySchemaRef> = T extends undefined
   ? unknown
   : z.input<YySchema<Exclude<T, undefined>>>;
 
-const anyObject = z.object({}).passthrough();
+const anyObject = z
+  .object({
+    ['%Name']: z.string().optional(),
+  })
+  .passthrough();
 
 export type YySchemas = typeof yySchemas;
 export const yySchemas = {
@@ -75,11 +78,11 @@ export class Yy {
    * it will be used to validate and populate defaults before
    * stringifying.
    */
-  static stringify(yyObject: unknown, schema?: YySchemaRef): string {
+  static stringify(yyObject: unknown, schema?: YySchemaRef, yyp?: Yyp): string {
     if (typeof schema === 'string') {
       schema = Yy.schemas[schema];
     }
-    return stringifyYy(schema ? schema.parse(yyObject) : yyObject);
+    return stringifyYy(schema ? schema.parse(yyObject) : yyObject, yyp);
   }
 
   static parse<T extends YySchemaRef>(
@@ -101,6 +104,7 @@ export class Yy {
     try {
       return Yy.parse(await fsp.readFile(filePath, 'utf8'), schema);
     } catch (err) {
+      console.log(err);
       const error = new Error(
         `Error reading file: ${filePath}\n${
           err && err instanceof Error && err.message
@@ -141,64 +145,52 @@ export class Yy {
    * Calls that result in a no-op because the existing
    * file matches return `false`, while calls that *do*
    * write to disk return `true`.
+   *
+   * @param yyp If provided, the yyp will be used to determine format information
    */
   static async write<T extends YySchemaRef>(
     filePath: string,
     yyData: YyDataLoose<T>,
     schema: T,
+    yyp?: Yyp,
   ): Promise<boolean> {
-    let populated = schema
-      ? Yy.populate(yyData, schema, { sortKeys: true })
-      : yyData;
+    let populated = schema ? Yy.populate(yyData, schema) : yyData;
+    const stringified = Yy.stringify(populated, schema, yyp);
     await fsp.mkdir(path.dirname(filePath), { recursive: true });
 
     // Only clobber if the target is a file with different
     // contents. This is to prevent file-watcher triggers from
     // creating noise.
     if (await exists(filePath)) {
-      // If the existing file is identical, do nothing.
-      // (Read it without the schema first, so that we have
-      // a record of *key order*).
-      const currentRawContent = (await Yy.read(filePath)) as YyDataLoose<T>;
-      // Fully parse/populate it so we can compare normalized-to-normalized
-      const currentParsedContent = schema
-        ? Yy.populate(currentRawContent, schema)
-        : currentRawContent;
-      if (Yy.areEqual(currentParsedContent, populated)) {
+      const currentRawContent = await fsp.readFile(filePath, 'utf8');
+      if (currentRawContent === stringified) {
         return false;
       }
-      // Sort the keys prior to writing to minimize git noise.
-      populated = sortKeysByReference(populated, currentRawContent);
     }
-    await fsp.writeFile(filePath, Yy.stringify(populated));
+    await fsp.writeFile(filePath, stringified);
     return true;
   }
 
   /**
    * Synchronous version of {@link Yy.write}.
+   *
+   * @param yyp If provided, the yyp will be used to determine format information
    */
   static writeSync<T extends YySchemaRef>(
     filePath: string,
     yyData: YyDataLoose<T>,
     schema: T,
+    yyp?: Yyp,
   ): boolean {
-    let populated = schema
-      ? Yy.populate(yyData, schema, { sortKeys: true })
-      : yyData;
+    let populated = schema ? Yy.populate(yyData, schema) : yyData;
+    const stringified = Yy.stringify(populated, schema, yyp);
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     if (existsSync(filePath)) {
-      const currentRawContent = Yy.readSync(filePath) as YyDataLoose<T>;
-      // Fully parse/populate it so we can compare normalized-to-normalized
-      const currentParsedContent = schema
-        ? Yy.populate(currentRawContent, schema)
-        : currentRawContent;
-      if (Yy.areEqual(currentParsedContent, populated)) {
+      const currentRawContent = fs.readFileSync(filePath, 'utf8');
+      if (currentRawContent === stringified) {
         return false;
       }
-      // Sort the keys prior to writing to minimize git noise.
-      populated = sortKeysByReference(populated, currentRawContent);
     }
-    const stringified = Yy.stringify(populated);
     fs.writeFileSync(filePath, stringified);
     return true;
   }
@@ -206,63 +198,10 @@ export class Yy {
   static populate<T extends Exclude<YySchemaRef, undefined>>(
     yyData: PartialDeep<YyDataLoose<T>>,
     schema: T,
-    options?: { sortKeys?: boolean },
   ): YyDataStrict<T> {
     const foundSchema = Yy.getSchema(schema);
     const populated = foundSchema.parse(yyData);
-    if (options?.sortKeys) {
-      Yy.sortKeys(populated);
-    }
     return populated;
-  }
-
-  /**
-   * Sort keys GameMaker-style (which does change over time!).
-   * At this time, the order is:
-   * - "resourceType": "GMSprite",
-   * - "resourceVersion": "1.0",
-   * - "name": "barrel_tendraam",
-   * - Everything else, in alphabetical order (case-insensitive).
-   */
-  static sortKeys<T>(yyData: T): T {
-    if (Array.isArray(yyData)) {
-      yyData.forEach((item) => Yy.sortKeys(item));
-    } else if (typeof yyData === 'object' && yyData !== null) {
-      const keys = Object.keys(yyData) as (keyof T)[];
-      keys.sort((a, b) => {
-        if (a === 'resourceType') {
-          return -1;
-        }
-        if (b === 'resourceType') {
-          return 1;
-        }
-        if (a === 'resourceVersion') {
-          return -1;
-        }
-        if (b === 'resourceVersion') {
-          return 1;
-        }
-        if (a === 'name') {
-          return -1;
-        }
-        if (b === 'name') {
-          return 1;
-        }
-        return (a as string)
-          .toLowerCase()
-          .localeCompare((b as string).toLowerCase(), 'en');
-      });
-      const copy = { ...yyData };
-      // Delete each entry and re-add it in the sorted order.
-      // (need to mutate in place to preserve references)
-      keys.forEach((key) => delete yyData[key]);
-      keys.forEach((key) => {
-        yyData[key] = copy[key];
-        Yy.sortKeys(yyData[key]);
-      });
-    }
-
-    return yyData;
   }
 
   static diff(firstYy: unknown, secondYy: unknown): YyDiff {

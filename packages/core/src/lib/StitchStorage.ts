@@ -1,11 +1,11 @@
 import { pathy } from '@bscotch/pathy';
 import { oneline } from '@bscotch/utility';
-import { Yy } from '@bscotch/yy';
+import { Yy, Yyp } from '@bscotch/yy';
 import { ok } from 'assert';
 import child_process from 'child_process';
 import { difference } from 'lodash-es';
 import { z } from 'zod';
-import { assert, StitchError } from '../utility/errors.js';
+import { StitchError, assert } from '../utility/errors.js';
 import fs from '../utility/files.js';
 import { debug } from '../utility/log.js';
 import paths from '../utility/paths.js';
@@ -241,9 +241,10 @@ export class StitchStorage {
     filePath: string,
     data: any,
     type?: Gms2ResourceType | 'project',
+    yyp?: Yyp,
   ): boolean {
     if (!this.isReadOnly) {
-      if (Yy.writeSync(filePath, data, type)) {
+      if (Yy.writeSync(filePath, data, type, yyp)) {
         debug(`Wrote file ${paths.basename(filePath)}`);
         return true;
       }
@@ -255,9 +256,10 @@ export class StitchStorage {
     filePath: string,
     data: any,
     type?: Gms2ResourceType | 'project',
+    yyp?: Yyp,
   ) {
     if (!this.isReadOnly) {
-      if (await Yy.write(filePath, data, type)) {
+      if (await Yy.write(filePath, data, type, yyp)) {
         debug(`Wrote file ${paths.basename(filePath)}`);
       }
     }

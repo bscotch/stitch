@@ -1,5 +1,11 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
-import { Yy, YySprite, yySpriteSchema, type YypResourceId } from '@bscotch/yy';
+import {
+  Yy,
+  YySprite,
+  yySpriteSchema,
+  type YypResourceId,
+  type Yyp,
+} from '@bscotch/yy';
 import path from 'path';
 import type { SpriteDestAction } from './SpriteDest.schemas.js';
 import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
@@ -9,6 +15,7 @@ import { getPngSize } from './utility.js';
 export interface ApplySpriteActionOptions {
   projectYypPath: string;
   action: SpriteDestAction;
+  yyp: Yyp;
 }
 
 export interface SpriteDestActionResult {
@@ -21,6 +28,7 @@ export interface SpriteDestActionResult {
 export async function applySpriteAction({
   projectYypPath,
   action,
+  yyp,
 }: ApplySpriteActionOptions): Promise<SpriteDestActionResult> {
   let trace: any[] = [];
   try {
@@ -81,6 +89,7 @@ export async function applySpriteAction({
           sequence: { xorigin, yorigin },
         },
         'sprites',
+        yyp,
       );
     }
     trace.push(`Reading yy file ${yyFile}`);
@@ -183,7 +192,7 @@ export async function applySpriteAction({
 
     // Save the yy file
     trace.push(`Saving yy file ${yyFile}`);
-    await Yy.write(yyFile.absolute, yy, 'sprites');
+    await Yy.write(yyFile.absolute, yy, 'sprites', yyp);
 
     // Send back info that can be used to update the project file
     return {

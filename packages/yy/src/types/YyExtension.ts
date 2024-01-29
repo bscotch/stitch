@@ -55,6 +55,7 @@ const yyExtensionFileSchema = z
 export type YyExtension = z.infer<typeof yyExtensionSchema>;
 export const yyExtensionSchema = z
   .object({
+    ['%Name']: z.string().optional(),
     resourceType: z.literal('GMExtension').default('GMExtension'),
     resourceVersion: z.string().default('1.2'),
     name: z.string(),

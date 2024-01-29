@@ -137,7 +137,7 @@ const spriteFrameSchema = unstable({
       path: z.string(),
     })
     .optional(),
-  resourceVersion: z.enum(['1.0', '1.1']).default('1.1'),
+  resourceVersion: z.string().default('1.1'),
 });
 
 const spriteLayerBlendModeSchema = z.nativeEnum(SpriteLayerBlendMode);
@@ -211,14 +211,14 @@ const spriteSequenceTrackKeyframeBaseSchema = z.object({
             path: z.string(),
           })
           .default({ name: '', path: '' }),
-        resourceVersion: z.literal('1.0').default('1.0'),
+        resourceVersion: z.string().default('1.0'),
         resourceType: z
           .literal('SpriteFrameKeyframe')
           .default('SpriteFrameKeyframe'),
       }),
     ),
   ).default({ '0': {} }),
-  resourceVersion: z.literal('1.0').default('1.0'),
+  resourceVersion: z.string().default('1.0'),
 });
 
 const spriteSequenceTrackKeyframeTypeSchema = z.discriminatedUnion(
@@ -306,7 +306,7 @@ const spriteKeyframesSchema = z.preprocess(
         }
         return frames;
       }, z.array(spriteSequenceTrackKeyframeSchema).default([])),
-      resourceVersion: z.literal('1.0').default('1.0'),
+      resourceVersion: z.string().default('1.0'),
     })
     .and(spriteSequenceTrackKeyframesTypeSchema)
     .transform((arg) => {
@@ -332,7 +332,7 @@ const spriteSequenceTrackSchema = unstable({
   events: z.array(z.unknown()).default([]),
   modifiers: z.array(z.unknown()).default([]),
   isCreationTrack: z.boolean().default(false),
-  resourceVersion: z.literal('1.0').default('1.0'),
+  resourceVersion: z.string().default('1.0'),
   tags: z.array(z.string()).optional(),
   resourceType: z.literal('GMSpriteFramesTrack').default('GMSpriteFramesTrack'),
   keyframes: spriteKeyframesSchema,
@@ -384,7 +384,7 @@ const spriteSequenceSchema = unstable({
     z
       .object({
         Keyframes: z.array(z.unknown()).default([]),
-        resourceVersion: z.literal('1.0').default('1.0'),
+        resourceVersion: z.string().default('1.0'),
       })
       .and(spriteSequenceEventTypeSchema),
   ).default({ resourceType: 'KeyframeStore<MessageEventKeyframe>' }),
@@ -392,7 +392,7 @@ const spriteSequenceSchema = unstable({
     z
       .object({
         Keyframes: z.array(z.unknown()).default([]),
-        resourceVersion: z.literal('1.0').default('1.0'),
+        resourceVersion: z.string().default('1.0'),
       })
       .and(spriteSequenceMomentTypeSchema),
   ).default({ resourceType: 'KeyframeStore<MomentsEventKeyframe>' }),

@@ -56,7 +56,7 @@ export const yypFolderSchema = z.object({
   folderPath: z.string(),
   order: z.number().optional(),
   resourceType: z.literal('GMFolder').default('GMFolder'),
-  resourceVersion: z.literal('1.0').default('1.0'),
+  resourceVersion: z.string().default('1.0'),
 });
 
 export type YypAudioGroup = z.infer<typeof yypAudioGroupSchema>;
@@ -66,7 +66,7 @@ export const yypAudioGroupSchema = z.object({
   name: z.string(),
   targets: bigNumber().default(461609314234257646n),
   resourceType: z.literal('GMAudioGroup').default('GMAudioGroup'),
-  resourceVersion: z.literal('1.3').default('1.3'),
+  resourceVersion: z.string().default('1.3'),
 });
 
 export type YypTextureGroup = z.infer<typeof yypTextureGroupSchema>;
@@ -89,7 +89,7 @@ export const yypTextureGroupSchema = z.object({
   loadType: z.enum(['default', 'dynamicpages']).optional(),
   directory: z.string().optional(),
   resourceType: z.literal('GMTextureGroup').default('GMTextureGroup'),
-  resourceVersion: z.literal('1.3').default('1.3'),
+  resourceVersion: z.string().default('1.3'),
 });
 
 export type YypIncludedFile = z.infer<typeof yypIncludedFileSchema>;
@@ -107,7 +107,7 @@ const yypIncludedFileSchema = z.object({
   /** `datafiles/${subdir}` */
   filePath: z.string(),
   resourceType: z.literal('GMIncludedFile').default('GMIncludedFile'),
-  resourceVersion: z.literal('1.0').default('1.0'),
+  resourceVersion: z.string().default('1.0'),
 });
 
 /** The YYP content that has not changed across GMS2.3 subversions */
@@ -129,6 +129,7 @@ export const yypSchema = z.preprocess(
   },
   z
     .object({
+      ['%Name']: z.string().optional(),
       name: z.string(),
       resourceType: z.literal('GMProject').default('GMProject'),
       resources: z.array(yypResourceSchema).default([]),

@@ -267,7 +267,7 @@ export class Project {
     // Update the "name" field
     const yy = await Yy.read(newYyFile.absolute, asset.assetKind);
     yy.name = to;
-    await Yy.write(newYyFile.absolute, yy, asset.assetKind);
+    await Yy.write(newYyFile.absolute, yy, asset.assetKind, this.yyp);
 
     // Register the new asset
     const info = await this.addAssetToYyp(newYyFile!.absolute);
@@ -346,6 +346,7 @@ export class Project {
         eventList: [{ eventNum: 0, eventType: 0 }],
       },
       'objects',
+      this.yyp,
     );
 
     // Update the yyp file
@@ -385,6 +386,7 @@ export class Project {
         },
       },
       'scripts',
+      this.yyp,
     );
 
     // Create the gml file

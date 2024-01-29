@@ -258,6 +258,7 @@ export class SpriteDest extends SpriteCache {
         applySpriteAction({
           projectYypPath: this.yypPath.absolute,
           action,
+          yyp,
         })
           .then((result) => {
             appliedActions.push(result);

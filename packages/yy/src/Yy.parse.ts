@@ -228,7 +228,17 @@ export function parseYy<T extends Schema | undefined>(
     // Parse an object value.
 
     let key: string;
-    const obj = {} as Record<string, any>;
+    const obj = {} as Record<string | symbol, any>;
+
+    /**
+     * In 2024, GameMaker started using a new format,
+     * where `resourceType` is replaced with a key
+     * `${ResourceType}` (whose value is the version for that type).
+     * To simplify downstream use, we'll normalize by adding
+     * a common resourcetype key via the `yyResourceTypeSymbol`,
+     * and note the format while we're at it using the
+     * `yyFormatSymbol` key.
+     */
 
     if (ch === '{') {
       next('{');
@@ -241,9 +251,6 @@ export function parseYy<T extends Schema | undefined>(
         key = string();
         white();
         next(':');
-        if (Object.hasOwnProperty.call(obj, key)) {
-          error('Duplicate key "' + key + '"');
-        }
 
         if (suspectProtoRx.test(key) === true) {
           error('Object contains forbidden prototype property');
@@ -251,6 +258,15 @@ export function parseYy<T extends Schema | undefined>(
           error('Object contains forbidden constructor property');
         } else {
           obj[key] = value();
+          if (key === '%Name') {
+            obj.name = obj[key];
+          } else if (key.startsWith('$')) {
+            // Then we're in the new format and this is the resourceType
+            // Add the usual fields for the old format
+            obj.resourceType = key.slice(1);
+            // Just need SOME version to pass validation
+            obj.resourceVersion = obj[key];
+          }
         }
 
         white();

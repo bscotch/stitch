@@ -1,0 +1,55 @@
+{
+  "$GMProject": "",
+  "%Name": "newformat",
+  "AudioGroups": [
+    {"$GMAudioGroup":"","%Name":"audiogroup_default","targets":-1,},
+  ],
+  "configs": {
+    "children": [
+      {"children":[],"name":"NewConfig1",},
+    ],
+    "name": "Default",
+  },
+  "defaultScriptType": 1,
+  "Folders": [
+    {"$GMFolder":"","%Name":"Sprites","folderPath":"folders/Sprites.yy",},
+    {"$GMFolder":"","%Name":"Tile Sets","folderPath":"folders/Tile Sets.yy",},
+    {"$GMFolder":"","%Name":"Sounds","folderPath":"folders/Sounds.yy",},
+    {"$GMFolder":"","%Name":"Paths","folderPath":"folders/Paths.yy",},
+    {"$GMFolder":"","%Name":"Scripts","folderPath":"folders/Scripts.yy",},
+    {"$GMFolder":"","%Name":"Shaders","folderPath":"folders/Shaders.yy",},
+    {"$GMFolder":"","%Name":"Fonts","folderPath":"folders/Fonts.yy",},
+    {"$GMFolder":"","%Name":"Timelines","folderPath":"folders/Timelines.yy",},
+    {"$GMFolder":"","%Name":"Objects","folderPath":"folders/Objects.yy",},
+    {"$GMFolder":"","%Name":"Rooms","folderPath":"folders/Rooms.yy",},
+    {"$GMFolder":"","%Name":"Sequences","folderPath":"folders/Sequences.yy",},
+    {"$GMFolder":"","%Name":"Animation Curves","folderPath":"folders/Animation Curves.yy",},
+    {"$GMFolder":"","%Name":"Notes","folderPath":"folders/Notes.yy",},
+    {"$GMFolder":"","%Name":"Extensions","folderPath":"folders/Extensions.yy",},
+    {"$GMFolder":"","%Name":"Particle Systems","folderPath":"folders/Particle Systems.yy",},
+  ],
+  "IncludedFiles": [
+    {"$GMIncludedFile":"","%Name":"test.txt","CopyToMask":-1,"filePath":"datafiles",},
+  ],
+  "isEcma": false,
+  "LibraryEmitters": [],
+  "MetaData": {
+    "IDEVersion":"2024.200.0.475",
+  },
+  "resources": [
+    {"id":{"name":"Script1","path":"scripts/Script1/Script1.yy",},},
+    {"id":{"name":"Object1","path":"objects/Object1/Object1.yy",},},
+    {"id":{"name":"Sound1","path":"sounds/Sound1/Sound1.yy",},},
+    {"id":{"name":"Extension1","path":"extensions/Extension1/Extension1.yy",},},
+    {"id":{"name":"Sprite1","path":"sprites/Sprite1/Sprite1.yy",},},
+    {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
+  ],
+  "resourceVersion": "2.0",
+  "RoomOrderNodes": [
+    {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
+  ],
+  "templateType": "game",
+  "TextureGroups": [
+    {"$GMTextureGroup":"","%Name":"Default","autocrop":true,"border":2,"compressFormat":"bz2","customOptions":"","directory":"","groupParent":null,"isScaled":true,"loadType":"default","mipsToGenerate":0,"targets":-1,},
+  ],
+}

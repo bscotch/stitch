@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { YyResourceType } from './YyBase.js';
-import { YypResourceId } from './Yyp.js';
+import type { YyResourceType } from './YyBase.js';
+import type { YypResourceId } from './Yyp.js';
 
 export function randomString(length = 32) {
   let a = '';
@@ -100,7 +100,11 @@ export function ensureObjects<
 export function unstable<T extends z.ZodRawShape>(shape: T): z.ZodObject<T> {
   return z.object(shape).catchall(
     z.unknown().superRefine((_arg, ctx) => {
-      console.log(`WARNING: Unexpected Key "${ctx.path.join('/')}"`);
+      // The new format for name/resourcetype keys should be ignore, since those are handled in other ways.
+      const isNewKey = `${ctx.path.at(-1)}`.match(/^[$%]/);
+      if (!isNewKey) {
+        console.log(`WARNING: Unexpected Key "${ctx.path.join('/')}"`);
+      }
     }),
   );
 }
@@ -137,5 +141,14 @@ export function yyResourceIdSchemaGenerator(yyType: YyResourceType) {
         path: z.string(),
       })
       .refine((arg) => arg.path === pathFromName(arg.name)),
+  );
+}
+
+export function yyIsNewFormat<T>(yyData: T): yyData is T & { '%Name': string } {
+  return (
+    yyData &&
+    typeof yyData === 'object' &&
+    '%Name' in yyData &&
+    yyData['%Name'] !== undefined
   );
 }
