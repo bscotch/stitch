@@ -1,10 +1,13 @@
 import { undent } from '@bscotch/utility';
 import { expect } from 'chai';
-import { existsSync, readdirSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync } from 'fs';
 import { z } from 'zod';
 import { Yy } from './Yy.js';
 import { yyResourceTypes } from './types/YyBase.js';
 import { FixedNumber, fixedNumber } from './types/utility.js';
+
+const sampleOutDir = './samples-out';
+mkdirSync(sampleOutDir, { recursive: true });
 
 async function expectToThrowAsync(f: () => Promise<any>): Promise<void> {
   try {
@@ -179,10 +182,12 @@ describe('Yy Files', function () {
 
   for (const resourceType of ['project', ...yyResourceTypes] as const) {
     const samplesFolder = `./samples/${resourceType}`;
+    const outFolder = `${sampleOutDir}/${resourceType}`;
     if (!existsSync(samplesFolder)) {
       it.skip(`can validate a ${resourceType} file (no samples)`);
       continue;
     }
+    mkdirSync(outFolder, { recursive: true });
     // NOTE: Must be sync for tests to run!
     const sampleFiles = readdirSync(samplesFolder);
 
@@ -195,6 +200,8 @@ describe('Yy Files', function () {
         // Will throw if invalid
         const parsed = await Yy.read(yyFilePath, resourceType);
         // (Can't check if stringification is exactly correct, because samples may end up with different formatting than GameMaker applies)
+        // Write to disk so we can eyeball it
+        await Yy.write(`${outFolder}/${sampleFile}`, parsed, resourceType);
         if (parsed['%Name']) {
           // Make sure that we can stringify and get it back in the new format
           const stringified = Yy.stringify(parsed, resourceType);

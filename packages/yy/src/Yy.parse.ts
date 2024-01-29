@@ -265,7 +265,7 @@ export function parseYy<T extends Schema | undefined>(
             // Add the usual fields for the old format
             obj.resourceType = key.slice(1);
             // Just need SOME version to pass validation
-            obj.resourceVersion = obj[key];
+            obj.resourceVersion ||= obj[key];
           }
         }
 

@@ -196,13 +196,20 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
  * - "name": "barrel_tendraam",
  * - Everything else, in alphabetical order (case-insensitive).
  */
-function prepareForStringification<T>(yyData: T, yyp?: Yyp): T {
-  const isNewFormat = yyIsNewFormat(yyData) || yyIsNewFormat(yyp);
+function prepareForStringification<T>(
+  yyData: T,
+  yyp?: Yyp,
+  __isNewFormat?: boolean,
+): T {
+  const isNewFormat =
+    __isNewFormat || yyIsNewFormat(yyData) || yyIsNewFormat(yyp);
   // Make a deep clone so we don't mutate the original.
   // yyData = structuredClone(yyData);
 
   if (Array.isArray(yyData)) {
-    return yyData.map((item) => prepareForStringification(item)) as T;
+    return yyData.map((item) =>
+      prepareForStringification(item, yyp, isNewFormat),
+    ) as T;
   } else if (yyData instanceof FixedNumber) {
     return yyData;
   } else if (typeof yyData === 'object' && yyData !== null) {
@@ -213,8 +220,7 @@ function prepareForStringification<T>(yyData: T, yyp?: Yyp): T {
       typeof yyData.resourceType === 'string'
     ) {
       // Then we need to ensure that the file has the `${resourceType}` key
-      // @ts-expect-error
-      yyDataCopy[`$${yyData.resourceType}`] = yyData.resourceVersion || '';
+      yyDataCopy[`$${yyData.resourceType}`] = ''; //yyData.resourceVersion || '';
     }
 
     const keys = Object.keys(yyDataCopy) as (keyof T)[];
@@ -238,27 +244,54 @@ function prepareForStringification<T>(yyData: T, yyp?: Yyp): T {
         if (b === 'name') {
           return 1;
         }
+      } else {
+        // localeCompare puts '%' before '$', but '$' should always come first
+        const aFirst = (a as string)[0];
+        const bFirst = (b as string)[0];
+        if (aFirst === '$') return -1;
+        if (bFirst === '$') return 1;
+        if (aFirst === '%') return -1;
+        if (bFirst === '%') return 1;
       }
       return (a as string)
         .toLowerCase()
         .localeCompare((b as string).toLowerCase(), 'en');
     });
+    // @ts-expect-error
+    const newFormatResourceTypeKey = keys[0]?.[0] === '$' ? keys[0] : undefined;
+    if (newFormatResourceTypeKey && keys[1] !== '%Name') {
+      // Insert it after the resourceType key
+      // @ts-expect-error
+      keys.splice(1, 0, '%Name');
+    }
     // Delete each entry and re-add it in the sorted order.
     const reference = { ...yyDataCopy };
     keys.forEach((key) => delete yyDataCopy[key as string]);
     keys.forEach((key) => {
-      if (
-        isNewFormat &&
-        ['name', 'resourceType', 'resourceVersion'].includes(key as any)
-      ) {
+      if (isNewFormat && key === 'resourceType') {
         // Then these are legacy format keys that we should skip
+        return;
+      } else if (
+        isNewFormat &&
+        key === 'resourceVersion' &&
+        newFormatResourceTypeKey !== '$GMProject'
+      ) {
+        // There is a bug in the project file where resourceVersion is still included and required
+        return;
+      }
+      if (newFormatResourceTypeKey && key === 'name') {
         return;
       }
       // @ts-expect-error
-      yyDataCopy[key] = prepareForStringification(reference[key]);
+      yyDataCopy[key] = prepareForStringification(
+        // @ts-expect-error
+        reference[key],
+        yyp,
+        isNewFormat,
+      );
     });
     // Ensure that the %name field actually has a value
-    if (isNewFormat) {
+    if (isNewFormat && newFormatResourceTypeKey) {
       yyDataCopy['%Name'] = yyDataCopy['%Name'] || reference['name'] || '';
     }
     return yyDataCopy as T;
