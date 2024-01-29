@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 1.0.0 (2024-01-29)
+
+### Features
+
+- Added support for the new GameMaker project format
+
 ## 0.6.0 (2024-01-17)
 
 ### Features

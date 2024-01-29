@@ -1,5 +1,11 @@
 # @bscotch/stitch Changelog
 
+## 11.0.0 (2024-01-29)
+
+### Features
+
+- Added support for the new GameMaker project format
+
 ## 10.10.0 (2024-01-17)
 
 ### Features
