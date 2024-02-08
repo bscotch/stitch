@@ -12,6 +12,14 @@ Crashlands 2 quests are organized by "Storyline". This extension reads the GameC
 
 The GameChanger data is highly structured JSON, described by JSON Schema-like structures. This extension creates a text-based view of Quest "motes" from the GameChanger, converting back and forth between the JSON and the text representation, to provide a good editing experience for narrative-focused content.
 
+### Spell Check
+
+We use a LOT of made-up words, and we want to avoid duplication of effort in maintaining a glossary for both spell check and localization. To that end we have the Bscotch String Server, where we manage our strings and glossary.
+
+To enable spell check, log into the Bscotch String Server via the command: "Crashlands: Activate Spell Check" and log in via the prompts.
+
+### Syntax Highlighting
+
 For syntax highlighting, you'll need to add some settings to your User Settings JSON file. For example:
 
 ```json
