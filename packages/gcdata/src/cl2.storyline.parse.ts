@@ -17,7 +17,7 @@ import {
   createBsArrayKey,
   updateBsArrayOrder,
 } from './helpers.js';
-import { parsedItemToWords } from './util.js';
+import { checkWords } from './util.js';
 
 export function parseStringifiedStoryline(
   text: string,
@@ -39,11 +39,7 @@ export function parseStringifiedStoryline(
 
   const checkSpelling = (item: ParsedLineItem<any> | undefined) => {
     if (!item || !options.checkSpelling) return;
-    // Parse out the word positions so they can be used as ranges to check cursor position
-    const words = parsedItemToWords(item);
-    for (const word of words) {
-      result.words.push(packed.spellChecker.checkWord(word));
-    }
+    result.words.push(...checkWords(item, packed.glossary));
   };
 
   const lines = text.split(/(\r?\n)/g);

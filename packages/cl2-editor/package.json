@@ -73,6 +73,12 @@
         "category": "Crashlands",
         "shortTitle": "Enable Nesting Mode",
         "icon": "$(list-tree)"
+      },
+      {
+        "command": "bscotch.strings.logIn",
+        "category": "Crashlands",
+        "title": "String Server: Log In",
+        "icon": "$(key)"
       }
     ],
     "configuration": {

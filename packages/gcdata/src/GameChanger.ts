@@ -1,6 +1,7 @@
+import { Client, Glossary } from '@bscotch/cl2-string-server-shared';
 import { Pathy, pathy } from '@bscotch/pathy';
+import fetch from 'node-fetch';
 import { gameChangerEvents } from './GameChanger.events.js';
-import { SpellChecker } from './SpellChecker.js';
 import { GcdataError, assert } from './assert.js';
 import {
   GameChangerRumpusMetadata,
@@ -212,15 +213,9 @@ export class GameChanger {
   base!: Gcdata;
   working!: Gcdata;
   protected changes!: Changes;
-  #spellChecker?: SpellChecker | undefined;
+  glossary?: Glossary;
 
   protected constructor(readonly projectName: string) {}
-
-  get spellChecker() {
-    // Lazy-load the spell checker to save some compute
-    this.#spellChecker ||= new SpellChecker(this);
-    return this.#spellChecker;
-  }
 
   protected get workingData(): PackedData {
     return this.working.data;
@@ -643,6 +638,22 @@ export class GameChanger {
     this.working ||= new Gcdata(workingData);
     this.working.data = workingData;
     this.applyChanges();
+  }
+
+  async loadGlossary(access: {
+    host: string;
+    username: string;
+    password: string;
+  }) {
+    const client = new Client({
+      baseUrl: access.host,
+      password: access.password,
+      user: access.username,
+      // @ts-expect-error A type mismatch, but this is the correct thing!
+      fetch,
+    });
+    this.glossary = await Glossary.create(client);
+    return this.glossary;
   }
 
   /**

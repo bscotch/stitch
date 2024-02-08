@@ -31,7 +31,7 @@ import {
 } from './helpers.js';
 import { Position } from './types.editor.js';
 import { Mote } from './types.js';
-import { parsedItemToWords } from './util.js';
+import { checkWords } from './util.js';
 
 export function parseStringifiedQuest(
   text: string,
@@ -107,12 +107,8 @@ export function parseStringifiedQuest(
   };
 
   const checkSpelling = (item: ParsedLineItem<any> | undefined) => {
-    if (!item || !options.checkSpelling) return;
-    // Parse out the word positions so they can be used as ranges to check cursor position
-    const words = parsedItemToWords(item);
-    for (const word of words) {
-      result.words.push(packed.spellChecker.checkWord(word));
-    }
+    if (!item || !options.checkSpelling || !packed.glossary) return;
+    result.words.push(...checkWords(item, packed.glossary));
   };
 
   /** The MoteId for the last speaker we saw. Used to figure out who to assign stuff to */

@@ -93,7 +93,7 @@ export class StorylineDocument {
         const diagnostic = new vscode.Diagnostic(
           range(word),
           `Unknown word: ${word.value}`,
-          vscode.DiagnosticSeverity.Information,
+          vscode.DiagnosticSeverity.Error,
         );
         issues.push(diagnostic);
       }

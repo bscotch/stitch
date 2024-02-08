@@ -1,6 +1,8 @@
+import type { Glossary } from '@bscotch/cl2-string-server-shared';
 import type { Gcdata } from './GameChanger.js';
 import { assert } from './assert.js';
 import { ParsedLineItem } from './cl2.quest.types.js';
+import { ParsedWord } from './cl2.types.editor.js';
 import {
   BschemaObject,
   getAdditionalProperties,
@@ -339,4 +341,29 @@ export function parsedItemToWords(item: ParsedLineItem): ParsedLineItem[] {
     }
   }
   return words;
+}
+
+export function checkWords(
+  item: ParsedLineItem<any> | undefined,
+  glossary?: Glossary,
+): ParsedWord[] {
+  const result: ParsedWord[] = [];
+  if (!item || !glossary) return result;
+  // Parse out the word positions so they can be used as ranges to check cursor position
+  const words = glossary.parse(item.value);
+  for (const word of words) {
+    const checked = glossary.checkWord(word);
+    const asGcWord: ParsedWord = {
+      valid: checked.valid,
+      value: checked.substr,
+      start: { ...item.start },
+      end: { ...item.start },
+    };
+    asGcWord.start.character += checked.start;
+    asGcWord.start.index += checked.start;
+    asGcWord.end.character = asGcWord.start.character + checked.substr.length;
+    asGcWord.end.index = asGcWord.start.index + checked.substr.length;
+    result.push(asGcWord);
+  }
+  return result;
 }

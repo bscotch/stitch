@@ -12,11 +12,16 @@ export interface ParsedBase {
   comments: ParsedComment[];
 }
 
+export type ParsedWord = Range & {
+  value: string;
+  suggestions?: string[];
+  valid: boolean;
+};
 export interface ParserResult {
   diagnostics: (Range & { message: string })[];
   hovers: (Range & { title?: string; description?: string })[];
   edits: (Range & { newText: string })[];
   completions: Range[];
-  words: (Range & { value: string; suggestions?: string[]; valid: boolean })[];
+  words: ParsedWord[];
   parsed: ParsedBase;
 }
