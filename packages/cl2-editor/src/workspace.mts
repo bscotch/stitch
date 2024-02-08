@@ -25,13 +25,19 @@ export class CrashlandsWorkspace {
     const packed = await GameChanger.from('Crashlands2');
     assertLoudly(packed, 'Could not load packed file');
 
-    // Load the glossary if we can
     const stringServerAuthSecretName = 'bscotch.strings.auth';
-    const stringServerAuth = await ctx.secrets.get(stringServerAuthSecretName);
-    if (stringServerAuth) {
+
+    const loadGlossary = async () => {
+      const stringServerAuth = await ctx.secrets.get(
+        stringServerAuthSecretName,
+      );
+      if (!stringServerAuth) return false;
       const { host, username, password } = JSON.parse(stringServerAuth);
       await packed.loadGlossary({ host, username, password });
-    }
+      return true;
+    };
+
+    await loadGlossary();
 
     this.workspace = new CrashlandsWorkspace(ctx, packed);
 
@@ -47,6 +53,10 @@ export class CrashlandsWorkspace {
           'vscode.openFolder',
           vscode.Uri.file(packed.projectSaveDir.absolute),
         );
+      }),
+      vscode.commands.registerCommand('bscotch.strings.reload', async () => {
+        const loaded = await loadGlossary();
+        assertLoudly(loaded, 'You need to activate the glossary first!');
       }),
       vscode.commands.registerCommand('bscotch.strings.logIn', async () => {
         // Get the host, username, and password
@@ -69,7 +79,7 @@ export class CrashlandsWorkspace {
           stringServerAuthSecretName,
           JSON.stringify({ host, username, password }),
         );
-        await packed.loadGlossary({ host, username, password });
+        await loadGlossary();
       }),
       vscode.workspace.onDidChangeTextDocument((event) => {
         if (isQuestUri(event.document.uri)) {

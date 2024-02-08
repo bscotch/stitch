@@ -77,7 +77,13 @@
       {
         "command": "bscotch.strings.logIn",
         "category": "Crashlands",
-        "title": "Activate Spell Check",
+        "title": "Activate Spell Check Glossary",
+        "icon": "$(key)"
+      },
+      {
+        "command": "bscotch.strings.reload",
+        "category": "Crashlands",
+        "title": "Reload Spell Check Glossary",
         "icon": "$(key)"
       }
     ],
