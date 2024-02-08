@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.17.0 (2024-02-08)
+
+### Features
+
+- Changed spellcheck mechanism to use the new String Server
+
 ## 0.16.0 (2024-01-18)
 
 ### Features

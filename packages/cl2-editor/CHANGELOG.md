@@ -1,5 +1,15 @@
 # Crashlands 2 Editor Changelog
 
+## 0.17.0 (2024-02-08)
+
+### Docs
+
+- Added documentation for spellcheck.
+
+### Features
+
+- Changed spellcheck mechanism to use the new String Server
+
 ## 0.16.2 (2023-12-12)
 
 ### Fixes
