@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.18.0 (2024-02-08)
+
+### Features
+
+- Added command to reload the glossary
+
 ## 0.17.0 (2024-02-08)
 
 ### Docs
