@@ -4,7 +4,7 @@ License information for the content of this extension. This extension was develo
 
 ## Stitch name and logo
 
-![Stitch Logo](images/stitch-logo.png The Stitch Logo, copyright and trademark Butterscotch Shenanigans, all rights reserved.)
+![Stitch Logo](https://img.bscotch.net/fit-in/256x256/logos/stitch.png "The Stitch Logo, copyright and trademark Butterscotch Shenanigans, all rights reserved.")
 
 Stitch™ and its logo are trademarks of Bscotch. Bscotch reserves all rights to Stitch and its logo.
 
