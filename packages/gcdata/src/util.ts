@@ -13,6 +13,15 @@ import {
   type Mote,
 } from './types.js';
 
+export function sizeOf(thing: any): number {
+  if (!thing) return 0;
+  if ('length' in thing && typeof thing.length === 'number')
+    return thing.length;
+  if ('size' in thing && typeof thing.size === 'number') return thing.size;
+  assert(typeof thing === 'object', 'Cannot get size of non-object');
+  return Object.keys(thing).length;
+}
+
 export function objectToMap<T>(obj: T): Map<keyof T, T[keyof T]> {
   const map = new Map<keyof T, T[keyof T]>();
   for (const key in obj) {
@@ -50,11 +59,16 @@ function resolveOneOf(schema: Bschema, data: any): Bschema | undefined {
     if (!('properties' in subschema)) {
       return false;
     }
+    if (
+      !('bConst' in subschema.properties![schema.discriminator!.propertyName])
+    ) {
+      return false;
+    }
     const subschemaDescriminator = (
       subschema.properties![schema.discriminator!.propertyName] as BschemaConst
     ).bConst;
     possibleMatches.push(subschemaDescriminator);
-    if (subschemaDescriminator === dataDescriminator) {
+    if (subschemaDescriminator == dataDescriminator) {
       return true;
     }
     return false;
@@ -161,7 +175,8 @@ export function normalizeSchema(
     additionalProperties = {
       ...getAdditionalProperties(schema),
       ...getAdditionalProperties(oneOf),
-    } as Bschema;
+    } as Bschema | undefined;
+    if (!sizeOf(additionalProperties)) additionalProperties = undefined;
   }
 
   return {

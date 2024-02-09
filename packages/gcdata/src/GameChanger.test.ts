@@ -1,4 +1,5 @@
-import { GameChanger } from './GameChanger.js';
+import fs from 'node:fs/promises';
+import { GameChanger, Gcdata } from './GameChanger.js';
 import { assert } from './assert.js';
 import { objectToMap } from './util.js';
 
@@ -18,12 +19,18 @@ describe('Packed data', function () {
     const strings = new Map<string, string>();
     let wordCount = 0;
     let charCount = 0;
-    const packed = await GameChanger.from('Crashlands2');
+    const data = JSON.parse(
+      await fs.readFile(
+        `../../../crashlands-2/Crashlands2/datafiles/GameData/gamechanger.json`,
+        'utf8',
+      ),
+    );
+    const packed = new Gcdata(data);
     assert(packed, 'Packed data should be loaded');
-    const motes = packed.base.listMotes();
+    const motes = packed.listMotes();
     assert(motes.length > 0, 'Packed data should have motes');
     for (const mote of motes) {
-      packed.base.visitMoteData(
+      packed.visitMoteData(
         mote,
         (ctx) => {
           const subschema = ctx.current.subschema;
