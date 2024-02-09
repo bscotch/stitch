@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.17.1 (2024-02-09)
+
+### Fixes
+
+- Resolved some issues causing schema pointer-resolution failures
+
 ## 0.17.0 (2024-02-08)
 
 ### Features
