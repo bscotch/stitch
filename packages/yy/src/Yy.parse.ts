@@ -258,15 +258,6 @@ export function parseYy<T extends Schema | undefined>(
           error('Object contains forbidden constructor property');
         } else {
           obj[key] = value();
-          if (key === '%Name') {
-            obj.name = obj[key];
-          } else if (key.startsWith('$')) {
-            // Then we're in the new format and this is the resourceType
-            // Add the usual fields for the old format
-            obj.resourceType = key.slice(1);
-            // Just need SOME version to pass validation
-            obj.resourceVersion ||= obj[key];
-          }
         }
 
         white();

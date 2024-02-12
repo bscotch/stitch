@@ -268,20 +268,6 @@ function prepareForStringification<T>(
     const reference = { ...yyDataCopy };
     keys.forEach((key) => delete yyDataCopy[key as string]);
     keys.forEach((key) => {
-      if (isNewFormat && key === 'resourceType') {
-        // Then these are legacy format keys that we should skip
-        return;
-      } else if (
-        isNewFormat &&
-        key === 'resourceVersion' &&
-        newFormatResourceTypeKey !== '$GMProject'
-      ) {
-        // There is a bug in the project file where resourceVersion is still included and required
-        return;
-      }
-      if (newFormatResourceTypeKey && key === 'name') {
-        return;
-      }
       // @ts-expect-error
       yyDataCopy[key] = prepareForStringification(
         // @ts-expect-error

@@ -1,12 +1,15 @@
 {
   "$GMObject": "",
   "%Name": "Object1",
-  "eventList": [],
+  "eventList": [
+    {"$GMEvent":"","%Name":"","collisionObjectId":null,"eventNum":64,"eventType":8,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+  ],
   "managed": true,
+  "name": "Object1",
   "overriddenProperties": [],
   "parent": {
-    "name": "newformat",
-    "path": "newformat.yyp",
+    "name": "Objects",
+    "path": "folders/Objects.yy",
   },
   "parentObjectId": null,
   "persistent": false,
@@ -23,6 +26,8 @@
   "physicsShapePoints": [],
   "physicsStartAwake": true,
   "properties": [],
+  "resourceType": "GMObject",
+  "resourceVersion": "2.0",
   "solid": false,
   "spriteId": null,
   "spriteMaskId": null,
