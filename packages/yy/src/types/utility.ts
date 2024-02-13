@@ -145,10 +145,8 @@ export function yyResourceIdSchemaGenerator(yyType: YyResourceType) {
 }
 
 export function yyIsNewFormat<T>(yyData: T): yyData is T & { '%Name': string } {
-  return (
-    yyData &&
-    typeof yyData === 'object' &&
-    '%Name' in yyData &&
-    yyData['%Name'] !== undefined
-  );
+  if (!yyData || typeof yyData !== 'object') return false;
+  if ('%Name' in yyData && yyData['%Name'] !== undefined) return true;
+  if ('resourceType' in yyData && yyData.resourceType === '2.0') return true;
+  return false;
 }

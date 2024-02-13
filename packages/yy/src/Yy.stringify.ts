@@ -46,10 +46,13 @@ export type AnyExceptPromise<T> = T extends Promise<any> ? never : T;
  * e.g. to ensure the write format is used for new files.
  */
 export function stringifyYy(yyData: any, yyp?: Yyp): string {
+  const isNewFormat = yyIsNewFormat(yyData) || yyIsNewFormat(yyp);
+
   let gap = '';
   let level = 0; // Level 1 are root elements
   const indent = '  ';
   type Pointer = (string | number)[];
+  let arrayLevel = 0;
 
   yyData = prepareForStringification(yyData, yyp);
 
@@ -114,6 +117,7 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
         if (Array.isArray(value)) {
           // Stringify every element. Use null as a placeholder
           // for non-JSON values.
+          arrayLevel++;
 
           const jsonifiedValues = value.map(
             (_, i) => stringify(i, value, [...pointer]) || 'null',
@@ -132,10 +136,16 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
                 ']';
           gap = mind;
           level = startingLevel;
+          arrayLevel--;
           return v;
         }
 
-        const includeGaps = level <= 2;
+        let includeGaps = level <= 2;
+        if (isNewFormat && arrayLevel > 0) {
+          includeGaps = false;
+        } else if (isNewFormat) {
+          includeGaps = true;
+        }
 
         const partial: string[] = [];
         Object.keys(value).forEach(function (k) {
@@ -148,10 +158,14 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
         // Join all of the member texts together, separated with commas,
         // and wrap them in braces.
 
+        // In the new format, the Channels object deep within a sprite has its keys newlined
+        const isChannels =
+          isNewFormat && pointer[pointer.length - 1] === 'Channels';
+
         const v =
           partial.length === 0
             ? '{}'
-            : includeGaps
+            : includeGaps || isChannels
               ? `{${eol}` +
                 gap +
                 partial.join(`,${eol}` + gap) +
@@ -203,9 +217,6 @@ function prepareForStringification<T>(
 ): T {
   const isNewFormat =
     __isNewFormat || yyIsNewFormat(yyData) || yyIsNewFormat(yyp);
-  // Make a deep clone so we don't mutate the original.
-  // yyData = structuredClone(yyData);
-
   if (Array.isArray(yyData)) {
     return yyData.map((item) =>
       prepareForStringification(item, yyp, isNewFormat),
@@ -214,16 +225,29 @@ function prepareForStringification<T>(
     return yyData;
   } else if (typeof yyData === 'object' && yyData !== null) {
     const yyDataCopy = { ...yyData } as Record<string, any>;
+    const hasResourceType =
+      'resourceType' in yyData && typeof yyData.resourceType === 'string';
+    if (isNewFormat && hasResourceType) {
+      // Then we need to ensure that the file has the `${resourceType}` key,
+      // because we may be converting an old format to the new one.
+      yyDataCopy[`$${yyData.resourceType}`] ||= '';
+    }
     if (
       isNewFormat &&
-      'resourceType' in yyData &&
-      typeof yyData.resourceType === 'string'
+      'name' in yyData &&
+      typeof yyData.name === 'string' &&
+      hasResourceType // Otherwise it's just a different kind of 'name' field
     ) {
-      // Then we need to ensure that the file has the `${resourceType}` key
-      yyDataCopy[`$${yyData.resourceType}`] = ''; //yyData.resourceVersion || '';
+      // Then we need to ensure that the file has the `%Name` key,
+      // because we may be converting an old format to the new one.
+      yyDataCopy['%Name'] ||= yyData.name;
+    }
+    if (isNewFormat && hasResourceType) {
+      // Then there should always be a resourceVersion key with value "2.0"
+      yyDataCopy['resourceVersion'] = '2.0';
     }
 
-    const keys = Object.keys(yyDataCopy) as (keyof T)[];
+    const keys = Object.keys(yyDataCopy) as (keyof T)[] as string[];
     keys.sort((a, b) => {
       if (!isNewFormat) {
         if (a === 'resourceType') {
@@ -244,42 +268,23 @@ function prepareForStringification<T>(
         if (b === 'name') {
           return 1;
         }
-      } else {
-        // localeCompare puts '%' before '$', but '$' should always come first
-        const aFirst = (a as string)[0];
-        const bFirst = (b as string)[0];
-        if (aFirst === '$') return -1;
-        if (bFirst === '$') return 1;
-        if (aFirst === '%') return -1;
-        if (bFirst === '%') return 1;
       }
-      return (a as string)
-        .toLowerCase()
-        .localeCompare((b as string).toLowerCase(), 'en');
+      if (a === b) return 0;
+      a = a.toLowerCase();
+      b = b.toLowerCase();
+      if (a < b) return -1;
+      return 1;
     });
-    // @ts-expect-error
-    const newFormatResourceTypeKey = keys[0]?.[0] === '$' ? keys[0] : undefined;
-    if (newFormatResourceTypeKey && keys[1] !== '%Name') {
-      // Insert it after the resourceType key
-      // @ts-expect-error
-      keys.splice(1, 0, '%Name');
-    }
     // Delete each entry and re-add it in the sorted order.
     const reference = { ...yyDataCopy };
     keys.forEach((key) => delete yyDataCopy[key as string]);
     keys.forEach((key) => {
-      // @ts-expect-error
       yyDataCopy[key] = prepareForStringification(
-        // @ts-expect-error
         reference[key],
         yyp,
         isNewFormat,
       );
     });
-    // Ensure that the %name field actually has a value
-    if (isNewFormat && newFormatResourceTypeKey) {
-      yyDataCopy['%Name'] = yyDataCopy['%Name'] || reference['name'] || '';
-    }
     return yyDataCopy as T;
   }
 
