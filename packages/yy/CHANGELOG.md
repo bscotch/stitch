@@ -1,5 +1,12 @@
 # @bscotch/yy Changelog
 
+## 2.0.0 (2024-02-13)
+
+### Features
+
+- Re-updated YY stringification logic to account for additional changes to the new format
+- Added support for GameMaker project format whose runtime is 2024.200.0.508+, and removed support for 2024.200.0.490.
+
 ## 1.0.2 (2024-01-29)
 
 ### Fixes
