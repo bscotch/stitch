@@ -5,6 +5,7 @@ import {
   Yyp,
   yyParentSchema,
   yypFolderSchema,
+  YySchema,
   type YypConfig,
   type YypFolder,
   type YypResource,
@@ -315,6 +316,55 @@ export class Project {
     return await importAssets(fromProject, this, options);
   }
 
+  async duplicateAsset(sourceName: string, newPath: string) {
+    const source = this.getAssetByName(sourceName, { assertExists: true });
+    const parsed = await this.parseNewAssetPath(newPath);
+    assert(parsed, `Invalid new asset path: ${newPath}`);
+    // Copy all files in the source's directory to a new directory named
+    // after the new name.
+    const kind = source.assetKind;
+    const cloneDir = this.dir.join(`${kind}/${parsed.name}`);
+    await cloneDir.ensureDirectory();
+    await source.dir.copy(cloneDir);
+    // Rename any files named after the original asset
+    const oldNamePattern = new RegExp(`\\b${sourceName}\\b`, 'gi');
+    let yyFile: Pathy<YySchema<any>> | undefined;
+    await cloneDir.listChildrenRecursively({
+      filter: async (p) => {
+        if (await p.isDirectory()) return;
+        // Get the relative path
+        const relative = p.relativeFrom(cloneDir);
+        const newRelative = relative.replaceAll(oldNamePattern, parsed.name);
+        if (newRelative === relative) return;
+        // Rename!
+        const newFile = cloneDir.join(newRelative);
+        await p.copy(newFile);
+        await p.delete();
+        if (
+          newFile.hasExtension('yy') &&
+          newFile.name.toLowerCase() === parsed.name.toLowerCase()
+        ) {
+          yyFile = newFile;
+        }
+      },
+    });
+    assert(yyFile, `Could not find yy file for new asset ${parsed.name}`);
+    // Update the yy files to replace the old name with the new
+    // Just read them as text so we don't have to deal with parsing
+    const content: string = await yyFile.read({ encoding: 'utf8' });
+    const newContent = content.replaceAll(
+      new RegExp(`"${sourceName}"`, 'gi'),
+      `"${parsed.name}"`,
+    );
+    await yyFile.write(newContent);
+    // Add the new asset to the yyp file
+    const info = await this.addAssetToYyp(yyFile.absolute);
+    const newAsset = await Asset.from(this, info);
+    assert(newAsset, `Could not create new asset ${parsed.name}`);
+    this.registerAsset(newAsset);
+    return newAsset;
+  }
+
   /**
    * Add an object to the yyp file. The string can include separators,
    * in which case folders will be ensured up to the final component.
@@ -411,6 +461,7 @@ export class Project {
       logger.error(`Attempted to add script with no name: ${path}`);
       return;
     }
+    assertIsValidIdentifier(name);
     const existingAsset = this.getAssetByName(name);
     if (existingAsset) {
       logger.error(

@@ -162,6 +162,14 @@ export const commands = {
       group: '7_modification@9',
     },
   },
+  'stitch.assets.duplicate': {
+    command: 'stitch.assets.duplicate',
+    title: 'Duplicate',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsAsset,
+      group: '7_modification@1',
+    },
+  },
   'stitch.assets.newScript': {
     command: 'stitch.assets.newScript',
     title: 'New Script...',

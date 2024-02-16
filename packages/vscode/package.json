@@ -132,6 +132,10 @@
         "icon": "$(close)"
       },
       {
+        "command": "stitch.assets.duplicate",
+        "title": "Duplicate"
+      },
+      {
         "command": "stitch.assets.newScript",
         "title": "New Script..."
       },
@@ -651,6 +655,11 @@
           "command": "stitch.assets.delete",
           "when": "viewItem =~ /^asset-/",
           "group": "7_modification@9"
+        },
+        {
+          "command": "stitch.assets.duplicate",
+          "when": "viewItem =~ /^asset-/",
+          "group": "7_modification@1"
         },
         {
           "command": "stitch.assets.newScript",

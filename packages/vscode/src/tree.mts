@@ -642,6 +642,16 @@ export class GameMakerTreeProvider
     this.rebuild();
   }
 
+  async duplicateAsset(item: TreeAsset) {
+    const dest = await this.prepareForNewAsset(item.parent);
+    if (!dest) return;
+    const asset = await item.parent.project!.duplicateAsset(
+      item.asset.name,
+      dest.path,
+    );
+    this.afterNewAssetCreated(asset, dest.folder, item.parent);
+  }
+
   /**
    * Create a new folder in the GameMaker asset tree. */
   async createFolder(where: GameMakerFolder | undefined) {
@@ -906,6 +916,10 @@ export class GameMakerTreeProvider
           console.log('triggered edit sound');
           this.editSound(item);
         },
+      ),
+      registerCommand(
+        'stitch.assets.duplicate',
+        this.duplicateAsset.bind(this),
       ),
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),

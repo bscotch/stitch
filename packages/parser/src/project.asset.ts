@@ -30,6 +30,13 @@ export function isAssetOfKind<T extends YyResourceType>(
   );
 }
 
+export function assertIsAssetOfKind<T extends YyResourceType>(
+  asset: any,
+  kind: T,
+): asserts asset is Asset<T> {
+  assert(isAssetOfKind(asset, kind), `Expected asset to be of kind ${kind}`);
+}
+
 export class Asset<T extends YyResourceType = YyResourceType> {
   readonly $tag = 'Asset';
   readonly assetKind: T;
