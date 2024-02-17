@@ -19,6 +19,7 @@ import { Asset, isAssetOfKind } from './project.asset.js';
 import { Code } from './project.code.js';
 import { Diagnostic } from './project.diagnostics.js';
 import { Native } from './project.native.js';
+import { fshDefault, vshDefault } from './shaderDefaults.js';
 import { Signifier } from './signifiers.js';
 import { StructType, Type } from './types.js';
 import {
@@ -316,6 +317,7 @@ export class Project {
     return await importAssets(fromProject, this, options);
   }
 
+  @sequential
   async duplicateAsset(sourceName: string, newPath: string) {
     const source = this.getAssetByName(sourceName, { assertExists: true });
     const parsed = await this.parseNewAssetPath(newPath);
@@ -401,6 +403,47 @@ export class Project {
 
     // Update the yyp file
     const info = await this.addAssetToYyp(objectYy.absolute);
+
+    // Create and add the asset
+    const asset = await Asset.from(this, info);
+    if (asset) {
+      this.registerAsset(asset);
+    }
+    return asset;
+  }
+
+  @sequential
+  async createShader(path: string) {
+    // Create the yy file
+    const parsed = await this.parseNewAssetPath(path);
+    if (!parsed) {
+      return;
+    }
+    const { name, folder } = parsed;
+    const shaderDir = this.dir.join(`shaders/${name}`);
+    await shaderDir.ensureDirectory();
+    const shaderYy = shaderDir.join(`${name}.yy`);
+    await Yy.write(
+      shaderYy.absolute,
+      {
+        name,
+        parent: {
+          name: folder.name,
+          path: folder.folderPath,
+        },
+      },
+      'shaders',
+      this.yyp,
+    );
+
+    // Create the fsh and vsh files
+    const fsh = shaderYy.changeExtension('fsh');
+    await fsh.write(fshDefault);
+    const vsh = shaderYy.changeExtension('vsh');
+    await vsh.write(vshDefault);
+
+    // Update the yyp file
+    const info = await this.addAssetToYyp(shaderYy.absolute);
 
     // Create and add the asset
     const asset = await Asset.from(this, info);

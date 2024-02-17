@@ -144,6 +144,10 @@
         "title": "New Object..."
       },
       {
+        "command": "stitch.assets.newShader",
+        "title": "New Shader..."
+      },
+      {
         "command": "stitch.assets.setParent",
         "title": "Set Parent..."
       },
@@ -670,6 +674,11 @@
           "command": "stitch.assets.newObject",
           "when": "viewItem == folder",
           "group": "navigation@2"
+        },
+        {
+          "command": "stitch.assets.newShader",
+          "when": "viewItem == folder",
+          "group": "navigation@3"
         },
         {
           "command": "stitch.assets.setParent",

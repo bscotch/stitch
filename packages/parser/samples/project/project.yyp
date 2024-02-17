@@ -6,14 +6,15 @@
     {"resourceType":"GMAudioGroup","resourceVersion":"1.3","name":"audiogroup_default","targets":-1,},
   ],
   "configs": {
-    "children": [],
     "name": "Default",
+    "children": [],
   },
   "defaultScriptType": 1,
   "Folders": [
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Extensions","folderPath":"folders/Extensions.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Objects","folderPath":"folders/Objects.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Rooms","folderPath":"folders/Rooms.yy",},
+    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Stuff","folderPath":"folders/Stuff.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Scripts","folderPath":"folders/Scripts.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Subfolder","folderPath":"folders/Scripts/Subfolder.yy",},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Subsubfolder","folderPath":"folders/Scripts/Subfolder/Subsubfolder.yy",},
@@ -30,6 +31,7 @@
     {"id":{"name":"Jsdocs","path":"scripts/Jsdocs/Jsdocs.yy",},},
     {"id":{"name":"o_child2","path":"objects/o_child2/o_child2.yy",},},
     {"id":{"name":"Recovery","path":"scripts/Recovery/Recovery.yy",},},
+    {"id":{"name":"shad_pretty","path":"shaders/shad_pretty/shad_pretty.yy",},},
     {"id":{"name":"o_object","path":"objects/o_object/o_object.yy",},},
     {"id":{"name":"o_child1","path":"objects/o_child1/o_child1.yy",},},
     {"id":{"name":"Complicated","path":"scripts/Complicated/Complicated.yy",},},
@@ -49,5 +51,4 @@
   "TextureGroups": [
     {"resourceType":"GMTextureGroup","resourceVersion":"1.3","name":"Default","autocrop":true,"border":2,"compressFormat":"bz2","directory":"","groupParent":null,"isScaled":true,"loadType":"default","mipsToGenerate":0,"targets":-1,},
   ],
-  "Options": [],
 }

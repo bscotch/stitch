@@ -186,6 +186,14 @@ export const commands = {
       group: 'navigation@2',
     },
   },
+  'stitch.assets.newShader': {
+    command: 'stitch.assets.newShader',
+    title: 'New Shader...',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsFolder,
+      group: 'navigation@3',
+    },
+  },
   'stitch.assets.setParent': {
     command: 'stitch.assets.setParent',
     title: 'Set Parent...',

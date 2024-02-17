@@ -11,6 +11,7 @@ import { yyExtensionSchema } from './types/YyExtension.js';
 import { yyObjectSchema } from './types/YyObject.js';
 import { yyRoomSchema } from './types/YyRoom.js';
 import { yyScriptSchema } from './types/YyScript.js';
+import { yyShaderSchema } from './types/YyShader.js';
 import { yySoundSchema } from './types/YySound.js';
 import { yySpriteSchema } from './types/YySprite.js';
 import { Yyp, yypSchema } from './types/Yyp.js';
@@ -48,7 +49,7 @@ export const yySchemas = {
   rooms: yyRoomSchema,
   scripts: yyScriptSchema,
   sequences: anyObject,
-  shaders: anyObject,
+  shaders: yyShaderSchema,
   sounds: yySoundSchema,
   sprites: yySpriteSchema,
   tilesets: anyObject,

@@ -4,6 +4,7 @@ export * from './types/YyExtension.js';
 export * from './types/YyObject.js';
 export * from './types/YyRoom.js';
 export * from './types/YyScript.js';
+export * from './types/YyShader.js';
 export * from './types/YySound.js';
 export * from './types/YySprite.js';
 export * from './types/Yyp.js';

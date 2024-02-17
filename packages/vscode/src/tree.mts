@@ -557,6 +557,16 @@ export class GameMakerTreeProvider
     vscode.window.showTextDocument(uriFromCodeFile(code));
   }
 
+  async createShader(where: GameMakerFolder) {
+    const info = await this.prepareForNewAsset(where);
+    if (!info) {
+      return;
+    }
+    const { folder, path } = info;
+    const asset = await where.project!.createShader(path);
+    this.afterNewAssetCreated(asset, folder, where);
+  }
+
   async createObject(where: GameMakerFolder) {
     const info = await this.prepareForNewAsset(where);
     if (!info) {
@@ -924,6 +934,7 @@ export class GameMakerTreeProvider
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),
       registerCommand('stitch.assets.newObject', this.createObject.bind(this)),
+      registerCommand('stitch.assets.newShader', this.createShader.bind(this)),
       registerCommand('stitch.assets.newEvent', this.createEvent.bind(this)),
       registerCommand('stitch.assets.setParent', this.setParent.bind(this)),
       registerCommand('stitch.assets.setSprite', this.setSprite.bind(this)),
