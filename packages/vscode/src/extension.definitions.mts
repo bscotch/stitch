@@ -62,6 +62,12 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
         if (files.length > 0) {
           return locationOf(files[0].startRange);
         }
+      } else if (isAssetOfKind(asset, 'shaders')) {
+        // Go to the fragment shader
+        const fragShad = asset.shaderPaths.fragment;
+        if (fragShad) {
+          return locationOf(fragShad.absolute);
+        }
       }
     }
     return;

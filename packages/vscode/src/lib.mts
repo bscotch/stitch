@@ -59,7 +59,13 @@ export function uriFromCodeFile(file: Code) {
   return vscode.Uri.file(file.path.absolute);
 }
 
-export function locationOf(thing: Range): vscode.Location | undefined {
+export function locationOf(thing: Range | string): vscode.Location | undefined {
+  if (typeof thing === 'string') {
+    return new vscode.Location(
+      vscode.Uri.file(thing),
+      new vscode.Position(0, 0),
+    );
+  }
   // Get a vscode.Range from the thing
   return new vscode.Location(
     vscode.Uri.file(thing.file.path.absolute),
