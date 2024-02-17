@@ -1,5 +1,12 @@
 # @bscotch/gml-parser Changelog
 
+## 1.1.0 (2024-02-17)
+
+### Features
+
+- Can now add shader assets
+- Can now duplicate assets.
+
 ## 1.0.0 (2024-01-29)
 
 ### Features

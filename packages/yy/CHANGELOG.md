@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.1.0 (2024-02-17)
+
+### Features
+
+- Can now add shader assets
+
 ## 2.0.0 (2024-02-13)
 
 ### Features

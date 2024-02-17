@@ -1,5 +1,14 @@
 # Stitch Changelog
 
+## 1.56.0 (2024-02-17)
+
+### Features
+
+- Go to Definition on shader references now goes to their fragment file.
+- Symbol search for shaders now takes you to the fragment file rather than the yy file
+- Can now add shader assets
+- Can now duplicate assets.
+
 ## 1.55.21 (2024-01-17)
 
 ### Fixes
