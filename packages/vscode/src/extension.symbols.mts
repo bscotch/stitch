@@ -1,4 +1,5 @@
 import {
+  isAssetOfKind,
   type Asset,
   type Code,
   type Signifier,
@@ -61,6 +62,21 @@ export class StitchWorkspaceSymbolProvider
               vscode.Uri.file(resource.gmlFile!.path.absolute),
               start,
             ),
+          ),
+        );
+      }
+    } else if (isAssetOfKind(resource, 'shaders')) {
+      // Go to the fragment shader
+      const canAdd = isMatch(resource.name) && !symbols.has(resource);
+      const fragShad = resource.shaderPaths.fragment;
+      if (canAdd && fragShad) {
+        symbols.set(
+          resource,
+          new vscode.SymbolInformation(
+            resource.name,
+            vscode.SymbolKind.Module,
+            resource.assetKind,
+            new vscode.Location(vscode.Uri.file(fragShad.absolute), start),
           ),
         );
       }
@@ -144,14 +160,14 @@ export class StitchWorkspaceSymbolProvider
     const kind = item.enum
       ? vscode.SymbolKind.Enum
       : item.enumMember
-      ? vscode.SymbolKind.EnumMember
-      : item.macro
-      ? vscode.SymbolKind.Constant
-      : functionType?.isConstructor
-      ? vscode.SymbolKind.Constructor
-      : functionType
-      ? vscode.SymbolKind.Function
-      : vscode.SymbolKind.Variable;
+        ? vscode.SymbolKind.EnumMember
+        : item.macro
+          ? vscode.SymbolKind.Constant
+          : functionType?.isConstructor
+            ? vscode.SymbolKind.Constructor
+            : functionType
+              ? vscode.SymbolKind.Function
+              : vscode.SymbolKind.Variable;
     return new vscode.SymbolInformation(
       item.name,
       kind,

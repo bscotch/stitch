@@ -79,4 +79,5 @@ something.field = decremented;
 var some_array = [];
 for(var i=0; i<array_length(some_array); i++){
 	var fetched = some_array[i];
+	var shader = shad_pretty;
 }
