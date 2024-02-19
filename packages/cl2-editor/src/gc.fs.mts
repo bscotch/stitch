@@ -125,7 +125,7 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     }
     return backupsInfo
       .filter((_, i) => exist[i])
-      .sort((a, b) => b.lastOpened.getTime() - a.lastOpened.getTime());
+      .sort((a, b) => b.created.getTime() - a.created.getTime());
   }
 
   protected async loadBackupsIndex() {
