@@ -1,9 +1,11 @@
+export interface Backup {
+  schema: string;
+  date: number;
+  lastOpened: number;
+  checksum: string;
+}
 export interface BackupsIndex {
   motes: {
-    [name: string]: {
-      schema: string;
-      date: number;
-      checksum: string;
-    }[];
+    [name: string]: Backup[];
   };
 }

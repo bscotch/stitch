@@ -4,7 +4,7 @@ import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { crashlandsConfig } from './config.mjs';
 import { crashlandsEvents } from './events.mjs';
-import type { BackupsIndex } from './gc.fs.types.mjs';
+import type { Backup, BackupsIndex } from './gc.fs.types.mjs';
 import { QuestDocument } from './quests.doc.mjs';
 import { isQuestUri, isStorylineUri } from './quests.util.mjs';
 import { StorylineDocument } from './storyline.doc.mjs';
@@ -94,7 +94,8 @@ export class GameChangerFs implements vscode.FileSystemProvider {
       backups.map((b) => ({
         schemaId: b.schema,
         moteId,
-        date: new Date(b.date),
+        created: new Date(b.date),
+        lastOpened: new Date(b.lastOpened || b.date),
         filePath: GameChangerFs.backupsDir.join(
           moteId,
           `${b.checksum}.${b.schema}`,
@@ -116,6 +117,26 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     const indexFile = GameChangerFs.backupsDir.join<BackupsIndex>('index.json');
     this.backups = await indexFile.read({ fallback: { motes: {} } });
     // TODO: prune old backups
+    // TODO: merge backups that have the same checksum
+    const backupsByChecksum = new Map<string, Backup>();
+    const backedUpMoteIds = Object.keys(this.backups?.motes || {});
+    for (const moteId in backedUpMoteIds) {
+      const backups = this.backups?.motes[moteId] || [];
+      for (let i = backups.length - 1; i >= 0; i--) {
+        const backup = backups[i];
+        const checksum = `${backup.schema}.${backup.checksum}`;
+        const existing = backupsByChecksum.get(checksum);
+        if (!existing) {
+          backupsByChecksum.set(checksum, backup);
+          continue;
+        }
+        if (existing.lastOpened < backup.lastOpened) {
+          existing.lastOpened = backup.lastOpened;
+        }
+        backups.splice(i, 1);
+      }
+    }
+    await this.saveBackupsIndex();
   }
   protected async saveBackupsIndex() {
     assertLoudly(
@@ -144,12 +165,22 @@ export class GameChangerFs implements vscode.FileSystemProvider {
           .join(`${checksum}.${schemaId}`)
           .write(content, { serialize: false });
         this.backups.motes[moteId] ||= [];
-        this.backups.motes[moteId].push({
-          schema: schemaId,
-          date: Date.now(),
-          checksum,
-        });
-        await this.saveBackupsIndex();
+        // Does the backup already exist?
+        const backupIndex = this.backups.motes[moteId].findIndex(
+          (b) => b.schema === schemaId && b.checksum === checksum,
+        );
+        if (backupIndex > -1) {
+          const backup = this.backups.motes[moteId][backupIndex];
+          backup.lastOpened = Date.now();
+        } else {
+          this.backups.motes[moteId].push({
+            schema: schemaId,
+            date: Date.now(),
+            lastOpened: Date.now(),
+            checksum,
+          });
+          await this.saveBackupsIndex();
+        }
       }, crashlandsConfig.backupDelay),
     );
   }
@@ -213,11 +244,13 @@ export class GameChangerFs implements vscode.FileSystemProvider {
           const moteDoc = provider.getMoteDoc(uri);
           const backups = await provider.listBackups(moteDoc.mote.id);
           // sort reverse chronologically
-          backups.sort((a, b) => b.date.getTime() - a.date.getTime());
+          backups.sort(
+            (a, b) => b.lastOpened.getTime() - a.lastOpened.getTime(),
+          );
           assertLoudly(backups.length, 'No backups found.');
           const backup = await vscode.window.showQuickPick(
             backups.map((b) => ({
-              label: b.date.toLocaleString(),
+              label: `Created: ${b.created.toLocaleString()}, Opened: ${b.lastOpened.toLocaleString()}`,
               filePath: b.filePath,
             })),
             {
