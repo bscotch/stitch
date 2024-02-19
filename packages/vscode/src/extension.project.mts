@@ -77,7 +77,7 @@ export class GameMakerProject extends Project {
     compiler?: 'yyc' | 'vm';
     clean?: boolean;
   }) {
-    if (stitchConfig.killOthersOnRun) {
+    if (stitchConfig.killOthersOnRun && !options?.clean) {
       const windowTitle = await this.getWindowsName();
       if (windowTitle) {
         logger.info(`Attempting to kill running "${windowTitle} instances...`);
