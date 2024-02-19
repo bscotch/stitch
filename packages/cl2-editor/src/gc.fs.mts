@@ -85,6 +85,19 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     return new vscode.Disposable(() => {});
   }
 
+  async updateBackupLastOpened(moteId: string, checksum: string) {
+    const backups = this.backups?.motes?.[moteId];
+    if (!backups) {
+      return;
+    }
+    const backup = backups.find((b) => b.checksum === checksum);
+    if (!backup) {
+      return;
+    }
+    backup.lastOpened = Date.now();
+    await this.saveBackupsIndex();
+  }
+
   async listBackups(moteId: string) {
     const backups = this.backups?.motes?.[moteId];
     if (!backups) {
@@ -96,6 +109,7 @@ export class GameChangerFs implements vscode.FileSystemProvider {
         moteId,
         created: new Date(b.date),
         lastOpened: new Date(b.lastOpened || b.date),
+        checksum: b.checksum,
         filePath: GameChangerFs.backupsDir.join(
           moteId,
           `${b.checksum}.${b.schema}`,
@@ -109,7 +123,9 @@ export class GameChangerFs implements vscode.FileSystemProvider {
       if (exist[i]) continue;
       backupsInfo.splice(i, 1);
     }
-    return backupsInfo.filter((_, i) => exist[i]);
+    return backupsInfo
+      .filter((_, i) => exist[i])
+      .sort((a, b) => b.lastOpened.getTime() - a.lastOpened.getTime());
   }
 
   protected async loadBackupsIndex() {
@@ -120,8 +136,8 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     // TODO: merge backups that have the same checksum
     const backupsByChecksum = new Map<string, Backup>();
     const backedUpMoteIds = Object.keys(this.backups?.motes || {});
-    for (const moteId in backedUpMoteIds) {
-      const backups = this.backups?.motes[moteId] || [];
+    for (const moteId of backedUpMoteIds) {
+      const backups = this.backups!.motes[moteId] || [];
       for (let i = backups.length - 1; i >= 0; i--) {
         const backup = backups[i];
         const checksum = `${backup.schema}.${backup.checksum}`;
@@ -243,14 +259,12 @@ export class GameChangerFs implements vscode.FileSystemProvider {
           }
           const moteDoc = provider.getMoteDoc(uri);
           const backups = await provider.listBackups(moteDoc.mote.id);
-          // sort reverse chronologically
-          backups.sort(
-            (a, b) => b.lastOpened.getTime() - a.lastOpened.getTime(),
-          );
           assertLoudly(backups.length, 'No backups found.');
           const backup = await vscode.window.showQuickPick(
-            backups.map((b) => ({
-              label: `Created: ${b.created.toLocaleString()}, Opened: ${b.lastOpened.toLocaleString()}`,
+            backups.map((b, idx) => ({
+              label: `Created: ${b.created.toLocaleString()} | Opened: ${b.lastOpened.toLocaleString()}`,
+              moteId: b.moteId,
+              checksum: b.checksum,
               filePath: b.filePath,
             })),
             {
@@ -273,6 +287,7 @@ export class GameChangerFs implements vscode.FileSystemProvider {
           );
           edit.replace(moteDoc.uri, range, content);
           vscode.workspace.applyEdit(edit);
+          await provider.updateBackupLastOpened(backup.moteId, backup.checksum);
         },
       ),
     ];
