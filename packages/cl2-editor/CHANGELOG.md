@@ -1,5 +1,17 @@
 # Crashlands 2 Editor Changelog
 
+## 0.19.0 (2024-02-19)
+
+### Features
+
+- Editor backups now track last-opened
+- Editor backups now re-use matching backups, dramatically reducing noise
+
+### Fixes
+
+- Backups are now sorted by creation date
+- Changed "Opened" to "Restored" in the backups picker
+
 ## 0.18.0 (2024-02-08)
 
 ### Features
