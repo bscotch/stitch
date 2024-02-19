@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.17.2 (2024-02-19)
+
+### Fixes
+
+- Resolved issues caused by incomplete object deletions
+
 ## 0.17.1 (2024-02-09)
 
 ### Fixes
