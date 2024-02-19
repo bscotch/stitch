@@ -587,8 +587,18 @@ export async function updateChangesFromParsedQuest(
       packed.updateMoteData(moteId, path, value);
     };
     updateMote('data/name', parsed.name);
-    updateMote('data/quest_giver/item', parsed.quest_giver);
-    updateMote('data/quest_receiver/item', parsed.quest_receiver);
+    if (!parsed.quest_giver) {
+      // Then we need to delete the entire quest_giver field
+      updateMote('data/quest_giver', null);
+    } else {
+      updateMote('data/quest_giver/item', parsed.quest_giver);
+    }
+    if (!parsed.quest_receiver) {
+      // Then we need to delete the entire quest_receiver field
+      updateMote('data/quest_receiver', null);
+    } else {
+      updateMote('data/quest_receiver/item', parsed.quest_receiver);
+    }
     updateMote('data/quest_start_log/text', parsed.quest_start_log);
     updateMote('data/wip/draft', parsed.draft);
     updateMote('data/storyline', parsed.storyline);

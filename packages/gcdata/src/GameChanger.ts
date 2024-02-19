@@ -17,7 +17,6 @@ import {
   isBschemaConst,
   isBschemaEnum,
   isBschemaNumeric,
-  isBschemaObject,
   isBschemaString,
   type Mote,
   type MoteId,
@@ -25,7 +24,6 @@ import {
   type SchemaId,
 } from './types.js';
 import {
-  computeTerminalPointers,
   resolvePointer,
   resolvePointerInSchema,
   setValueAtPointer,
@@ -363,18 +361,6 @@ export class GameChanger {
           value,
         )}'. Schema for ${dataPath} is not numeric`,
       );
-    }
-
-    if (isBschemaObject(subschema) && value === null) {
-      // Then we are deleting a sub-object, so we need to find each
-      // entry by path and add a deletion for it
-      const subdata = resolvePointer(dataPath, this.workingData.motes[moteId]);
-      const pointers = computeTerminalPointers(subdata, dataPath);
-      for (const pointer of pointers) {
-        this.updateMoteData(moteId, pointer, null);
-      }
-      // We don't store the deletion of the sub-object itself, so we're done!
-      return;
     }
 
     // Update the working data
