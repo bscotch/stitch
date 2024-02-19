@@ -260,9 +260,10 @@ export class GameChangerFs implements vscode.FileSystemProvider {
           const moteDoc = provider.getMoteDoc(uri);
           const backups = await provider.listBackups(moteDoc.mote.id);
           assertLoudly(backups.length, 'No backups found.');
+
           const backup = await vscode.window.showQuickPick(
-            backups.map((b, idx) => ({
-              label: `Created: ${b.created.toLocaleString()} | Opened: ${b.lastOpened.toLocaleString()}`,
+            backups.map((b) => ({
+              label: `Created: ${b.created.toLocaleString()} | Restored: ${b.lastOpened.toLocaleString()}`,
               moteId: b.moteId,
               checksum: b.checksum,
               filePath: b.filePath,
