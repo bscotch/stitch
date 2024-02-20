@@ -1,23 +1,9 @@
-import { pathy } from '@bscotch/pathy';
 import { expect } from 'chai';
 import { computeAssetDeps, importAssets } from './modules.js';
 import { Project } from './project.js';
+import { resetSandbox } from './test.lib.js';
 import { assert } from './util.js';
 import { assertThrowsAsync } from './util.test.js';
-
-async function resetSandbox() {
-  for (const dir of ['target']) {
-    const srcDir = pathy('samples').join(dir);
-    const destDir = pathy('sandbox').join(dir);
-    await destDir.rm({ recursive: true, maxRetries: 5 });
-    await destDir.ensureDir();
-    await srcDir.copy(destDir);
-  }
-
-  const targetProject = await Project.initialize('sandbox/target');
-  assert(targetProject);
-  return targetProject;
-}
 
 describe('Modules', function () {
   it('can compute intra-project dependencies', async function () {

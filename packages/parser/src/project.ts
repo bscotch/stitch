@@ -224,6 +224,64 @@ export class Project {
     return resource.getGmlFile(path);
   }
 
+  parseIncludedFilePath(
+    filePath: string,
+    name?: string,
+  ): { filePath: string; name: string } {
+    filePath.replace(/[/\\]+$/, '/').replace(/\/$/, '');
+    if (!name) {
+      ({ folder: filePath, name } =
+        filePath.match(/^(?<folder>.*)[/\\](?<name>[^/\\]+)$/)?.groups || {});
+    }
+    assert(filePath, `Invalid folder: ${filePath}`);
+    assert(name, `Invalid name: ${name}`);
+    assert(
+      filePath.startsWith('datafiles/'),
+      `Folder must be in datafiles: ${filePath}`,
+    );
+    return { filePath, name };
+  }
+
+  findIncludedFile(filePath: string, name?: string) {
+    ({ filePath, name } = this.parseIncludedFilePath(filePath, name));
+    return this.datafiles.find(
+      (f) =>
+        f.name.toLowerCase() === name!.toLowerCase() &&
+        f.filePath.toLowerCase() === filePath.toLowerCase(),
+    );
+  }
+
+  /**
+   * Ensure that the included files listed in the YYP exactly match
+   * the files in the `datafiles` directory.
+   */
+  @sequential
+  async syncIncludedFiles() {
+    const includedFiles = (
+      await this.dir.join('datafiles').listChildrenRecursively()
+    )
+      .map((f) => {
+        /** The filepath relative to the project dir (starts with 'datafiles') */
+        const fullPath = f.relativeFrom(this.dir);
+        // Will throw with unexpected paths, preventing anything from being
+        // overwritten. This is a better outcome than skipping those files.
+        const { filePath, name } = this.parseIncludedFilePath(fullPath);
+        return { filePath, name, fullPath };
+      })
+      .sort((a, b) => a.fullPath.localeCompare(b.fullPath));
+    // No need to compare with what's already in there, just overwrite it!
+    // GameMaker seems to sort these by full path, so we'll do the same to
+    // prevent git noise.
+    // @ts-expect-error The schema will ensure it's written correctly
+    this.yyp.IncludedFiles = includedFiles.map((f) => {
+      return {
+        name: f.name,
+        filePath: f.filePath,
+      };
+    });
+    await this.saveYyp();
+  }
+
   registerAsset(resource: Asset): void {
     const name = this.assetNameFromPath(resource.dir);
     ok(!this.assets.has(name), `Resource ${name} already exists`);

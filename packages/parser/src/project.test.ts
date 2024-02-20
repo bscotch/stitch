@@ -4,6 +4,7 @@ import type { Asset } from './project.asset.js';
 import { Project } from './project.js';
 import { Native } from './project.native.js';
 import { Signifier } from './signifiers.js';
+import { resetSandbox } from './test.lib.js';
 import { Type, TypeStore } from './types.js';
 import type { PrimitiveName } from './types.primitives.js';
 import { assert, ok } from './util.js';
@@ -358,6 +359,20 @@ describe('Project', function () {
     await complexScriptFile.reload();
     logger.log('Re-running after reload...');
     validateBschemaConstructor(project);
+  });
+
+  it('can sync datafiles', async function () {
+    const project = await resetSandbox();
+    await project.dir
+      .join('datafiles/test-folder/test-file.txt')
+      .write('hello');
+    await project.syncIncludedFiles();
+    assert(
+      project.datafiles.find(
+        (f) =>
+          f.name === 'test-file.txt' && f.filePath === 'datafiles/test-folder',
+      ),
+    );
   });
 
   xit('can parse sample project', async function () {
