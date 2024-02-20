@@ -4,6 +4,7 @@ import {
   ImportModuleOptions,
   ObjectEvent,
   Project,
+  assertIsAssetOfKind,
   isAssetOfKind,
   objectEvents,
 } from '@bscotch/gml-parser';
@@ -569,15 +570,34 @@ export class GameMakerTreeProvider
     this.afterNewAssetCreated(asset, folder, where);
   }
 
-  async createSprite(where: GameMakerFolder) {
-    const project = where.project!;
-    assertLoudly(project, 'Cannot create sprite without a project.');
-    const info = await this.prepareForNewAsset(where);
-    if (!info) {
-      return;
-    }
-    const { folder, path, name } = info;
+  async replaceSpriteFrames(item: TreeAsset) {
+    const asset = item.asset;
+    assertIsAssetOfKind(asset, 'sprites');
+    const project = item.parent.project!;
+    // Prompt for the source folder
+    const spriteDir = await this.getSpriteSource();
+    if (!spriteDir) return;
 
+    // TODO: Convert into an "Action"
+    // TODO: Call applySpriteAction() to complete the process
+    const dest = project.dir.join('sprites').join(asset.name);
+    await applySpriteAction({
+      action: {
+        kind: 'update',
+        name: asset.name,
+        source: spriteDir.path.absolute,
+        sourceRoot: '', // Not needed for this
+        dest: dest.absolute,
+        spine: spriteDir.isSpine,
+      },
+      projectYypPath: project.yypPath.absolute,
+      yyp: project.yyp,
+    });
+    this._onDidChangeTreeData.fire(item);
+    this.view.reveal(item, { focus: true });
+  }
+
+  private async getSpriteSource() {
     // Prompt for the source folder
     const sourceFolder = await vscode.window.showOpenDialog({
       canSelectFiles: false,
@@ -625,6 +645,20 @@ export class GameMakerTreeProvider
     if (bleed) {
       await spriteDir.bleed();
     }
+    return spriteDir;
+  }
+
+  async createSprite(where: GameMakerFolder) {
+    const project = where.project!;
+    assertLoudly(project, 'Cannot create sprite without a project.');
+    const info = await this.prepareForNewAsset(where);
+    if (!info) {
+      return;
+    }
+    const { folder, path, name } = info;
+
+    const spriteDir = await this.getSpriteSource();
+    if (!spriteDir) return;
 
     // TODO: Convert into an "Action"
     // TODO: Call applySpriteAction() to complete the process
@@ -633,7 +667,7 @@ export class GameMakerTreeProvider
       action: {
         kind: 'create',
         name,
-        source: sourceFolder[0].fsPath,
+        source: spriteDir.path.absolute,
         sourceRoot: '', // Not needed for this
         dest: dest.absolute,
         spine: spriteDir.isSpine,
@@ -650,8 +684,8 @@ export class GameMakerTreeProvider
     const asset = await Asset.from(project, assetInfo);
     assertLoudly(asset, 'Failed to create sprite asset.');
     project.registerAsset(asset);
-    await project.createFolder(path);
-    await asset.moveToFolder(path);
+    await project.createFolder(folder.path);
+    await asset.moveToFolder(folder.path);
     this.afterNewAssetCreated(asset, folder, where);
   }
 
@@ -1023,6 +1057,10 @@ export class GameMakerTreeProvider
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),
       registerCommand('stitch.assets.newObject', this.createObject.bind(this)),
       registerCommand('stitch.assets.newSprite', this.createSprite.bind(this)),
+      registerCommand(
+        'stitch.assets.replaceSpriteFrames',
+        this.replaceSpriteFrames.bind(this),
+      ),
       registerCommand('stitch.assets.newShader', this.createShader.bind(this)),
       registerCommand('stitch.assets.newEvent', this.createEvent.bind(this)),
       registerCommand('stitch.assets.setParent', this.setParent.bind(this)),

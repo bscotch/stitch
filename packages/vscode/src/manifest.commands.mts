@@ -194,6 +194,14 @@ export const commands = {
       group: 'navigation@3',
     },
   },
+  'stitch.assets.replaceSpriteFrames': {
+    command: 'stitch.assets.replaceSpriteFrames',
+    title: 'Replace Frames...',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsSprite,
+      group: '7_modification@1',
+    },
+  },
   'stitch.assets.newShader': {
     command: 'stitch.assets.newShader',
     title: 'New Shader...',
