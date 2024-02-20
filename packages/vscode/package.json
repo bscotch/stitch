@@ -211,6 +211,11 @@
         "title": "Stitch: Copy @self"
       },
       {
+        "command": "stitch.includedFiles.newFolder",
+        "title": "New Folder...",
+        "icon": "$(new-folder)"
+      },
+      {
         "command": "stitch.spriteSource.clearRecentImports",
         "title": "Clear Recent Imports",
         "enablement": "stitch.projectCount > 0"
@@ -587,6 +592,11 @@
           "group": "navigation@3"
         },
         {
+          "command": "stitch.includedFiles.newFolder",
+          "when": "view == bscotch-stitch-files && stitch.projectCount > 0",
+          "group": "navigation@1"
+        },
+        {
           "command": "stitch.spriteSource.clearCache",
           "when": "view == bscotch-stitch-sprite-sources",
           "group": "navigation@1"
@@ -737,6 +747,11 @@
           "command": "stitch.clean",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
           "group": "inline@3"
+        },
+        {
+          "command": "stitch.includedFiles.newFolder",
+          "when": "viewItem == datafiles-folder",
+          "group": "navigation@9"
         },
         {
           "command": "stitch.spriteSource.clearRecentImports",

@@ -329,6 +329,25 @@ export const commands = {
       group: '1_stitch@3',
     },
   },
+
+  //#region Included Files
+  'stitch.includedFiles.newFolder': {
+    command: 'stitch.includedFiles.newFolder',
+    title: 'New Folder...',
+    icon: '$(new-folder)',
+    [$showInViewTitle]: {
+      when: `${when.includedFileTreeFocused} && ${when.hasProjects}`,
+      group: 'navigation@1',
+    },
+    [$showInViewItemContextMenu]: [
+      {
+        when: when.viewItemIsIncludedFileFolder,
+        group: 'navigation@9',
+      },
+    ],
+  },
+  //#endregion Included Files
+
   //#region Sprite Sources
   'stitch.spriteSource.clearRecentImports': {
     command: 'stitch.spriteSource.clearRecentImports',

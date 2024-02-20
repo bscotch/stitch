@@ -31,6 +31,8 @@ export const when = {
   viewItemIsObject: 'viewItem == asset-objects',
   viewItemIsSprite: 'viewItem == asset-sprites',
   viewItemIsCode: 'viewItem == code',
+  viewItemIsIncludedFileFolder: 'viewItem == datafiles-folder',
+  viewItemIsIncludedFile: 'viewItem == datafiles-file',
   viewItemIsInspectorEvents: 'viewItem == inspector-object-events',
   viewItemIsInspectorParents: 'viewItem == inspector-object-parents',
   viewItemIsInspectorSprite: 'viewItem == inspector-object-sprites',
