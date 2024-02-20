@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 1.1.0 (2024-02-20)
+
+### Features
+
+- Now exporting elements to allow for creation of individual sprites
+
 ## 1.0.0 (2024-01-29)
 
 ### Features

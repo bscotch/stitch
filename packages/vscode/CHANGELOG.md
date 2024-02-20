@@ -1,5 +1,15 @@
 # Stitch Changelog
 
+## 1.57.0 (2024-02-20)
+
+### Features
+
+- Can now add new sprites via the resource tree.
+
+### Fixes
+
+- No longer killing running instances on cache-clean.
+
 ## 1.56.0 (2024-02-17)
 
 ### Features
