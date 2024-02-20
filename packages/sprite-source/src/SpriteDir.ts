@@ -217,8 +217,8 @@ export class SpriteDir {
    */
   static async from(
     path: Pathy,
-    logs: Log[],
-    issues: Error[],
+    logs: Log[] = [],
+    issues: Error[] = [],
   ): Promise<SpriteDir | undefined> {
     const files = (await readdirSafe(path.absolute)).map((file) =>
       pathy(file, path.absolute),
