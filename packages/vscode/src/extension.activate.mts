@@ -15,6 +15,7 @@ import {
 import { StitchDefinitionsProvider } from './extension.definitions.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { StitchHoverProvider } from './extension.hover.mjs';
+import { StitchLensProvider } from './extension.lens.mjs';
 import { StitchLocationsProvider } from './extension.locations.mjs';
 import { StitchReferenceProvider } from './extension.refs.mjs';
 import { StitchReleasePickerProvider } from './extension.releases.mjs';
@@ -137,6 +138,7 @@ export async function activateStitchExtension(
     ...StitchRenameProvider.register(workspace),
     ...(SpriteSourcesTree?.register(workspace) || []),
     StitchHoverProvider.register(workspace),
+    StitchLensProvider.register(workspace),
     StitchWorkspaceSymbolProvider.register(workspace),
     StitchCompletionProvider.register(workspace),
     ...StitchSpriteEditorProvider.register(workspace),

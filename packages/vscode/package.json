@@ -965,6 +965,9 @@
         "("
       ]
     },
-    "hoverProvider": "true"
+    "hoverProvider": "true",
+    "codeLensProvider": {
+      "resolveProvider": "true"
+    }
   }
 }

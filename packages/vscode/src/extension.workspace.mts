@@ -285,12 +285,13 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
     return currentProject?.getAsset(pathyFromUri(tab.uri));
   }
 
-  getAsset(document: vscode.TextDocument, name: string): Asset | undefined {
+  getAsset(document: vscode.TextDocument, name?: string): Asset | undefined {
     const project = this.getProject(document);
     if (!project) {
       warn(`getAsset: Could not find project for`, document);
       return;
     }
+    name ||= pathyFromUri(document).name;
     const asset = project.getAssetByName(name);
     return asset;
   }

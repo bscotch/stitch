@@ -4,7 +4,7 @@ import { assertUserClaim } from './assert.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 
 export class StitchHoverProvider implements vscode.HoverProvider {
-  constructor(readonly provider: StitchWorkspace) {}
+  protected constructor(readonly provider: StitchWorkspace) {}
 
   provideHover(
     document: vscode.TextDocument,
