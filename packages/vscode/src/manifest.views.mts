@@ -9,6 +9,12 @@ export const views = {
     icon: './images/stitch-logo-mono.svg',
     type: 'tree',
   },
+  'bscotch-stitch-files': {
+    id: 'bscotch-stitch-files',
+    name: 'Included Files',
+    icon: './images/stitch-logo-mono.svg',
+    type: 'tree',
+  },
   'bscotch-stitch-resources': {
     id: 'bscotch-stitch-resources',
     name: 'Project',

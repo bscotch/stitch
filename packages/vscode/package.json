@@ -871,6 +871,12 @@
           "type": "tree"
         },
         {
+          "id": "bscotch-stitch-files",
+          "name": "Included Files",
+          "icon": "./images/stitch-logo-mono.svg",
+          "type": "tree"
+        },
+        {
           "id": "bscotch-stitch-resources",
           "name": "Project",
           "icon": "./images/stitch-logo-mono.svg",

@@ -151,6 +151,10 @@ export class Project {
     return configs;
   }
 
+  get datafiles() {
+    return this.yyp.IncludedFiles;
+  }
+
   get folders() {
     return this.yyp.Folders.map((f) => groupPathToPosix(f.folderPath));
   }

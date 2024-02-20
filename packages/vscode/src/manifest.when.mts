@@ -2,6 +2,7 @@
 
 const assetTreeFocused = 'view == bscotch-stitch-resources';
 const spriteSourceTreeFocused = 'view == bscotch-stitch-sprite-sources';
+const includedFileTreeFocused = 'view == bscotch-stitch-files';
 const hasProjects = 'stitch.projectCount > 0';
 const hasOneProject = 'stitch.projectCount == 1';
 const viewItemIsProject = 'viewItem == project';
@@ -11,6 +12,7 @@ export const when = {
   onWindows: 'isWindows',
   assetTreeFocused,
   spriteSourceTreeFocused,
+  includedFileTreeFocused,
   inspectorFocused: 'view == bscotch-stitch-inspector',
   editorFocused: 'editorFocus',
   hasProjects,
