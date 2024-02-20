@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.58.0 (2024-02-20)
+
+### Features
+
+- Can now replace the frames of an existing sprite.
+
 ## 1.57.0 (2024-02-20)
 
 ### Features
