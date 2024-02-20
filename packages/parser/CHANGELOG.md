@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.2.0 (2024-02-20)
+
+### Features
+
+- Added code lenses to yy files to simplify navigation to associated resources
+
 ## 1.1.0 (2024-02-17)
 
 ### Features
