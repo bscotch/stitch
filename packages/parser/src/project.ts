@@ -236,7 +236,7 @@ export class Project {
     assert(filePath, `Invalid folder: ${filePath}`);
     assert(name, `Invalid name: ${name}`);
     assert(
-      filePath.startsWith('datafiles/'),
+      filePath === 'datafiles' || filePath.startsWith('datafiles/'),
       `Folder must be in datafiles: ${filePath}`,
     );
     return { filePath, name };
@@ -266,19 +266,18 @@ export class Project {
         // Will throw with unexpected paths, preventing anything from being
         // overwritten. This is a better outcome than skipping those files.
         const { filePath, name } = this.parseIncludedFilePath(fullPath);
-        return { filePath, name, fullPath };
+        const existing = this.findIncludedFile(filePath, name);
+
+        return existing || { filePath, name };
       })
-      .sort((a, b) => a.fullPath.localeCompare(b.fullPath));
+      .sort((a, b) =>
+        `${a.filePath}/${a.name}`.localeCompare(`${b.filePath}/${b.name}`),
+      );
     // No need to compare with what's already in there, just overwrite it!
     // GameMaker seems to sort these by full path, so we'll do the same to
     // prevent git noise.
     // @ts-expect-error The schema will ensure it's written correctly
-    this.yyp.IncludedFiles = includedFiles.map((f) => {
-      return {
-        name: f.name,
-        filePath: f.filePath,
-      };
-    });
+    this.yyp.IncludedFiles = includedFiles;
     await this.saveYyp();
   }
 

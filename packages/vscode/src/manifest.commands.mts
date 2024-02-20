@@ -331,20 +331,13 @@ export const commands = {
   },
 
   //#region Included Files
-  'stitch.includedFiles.newFolder': {
-    command: 'stitch.includedFiles.newFolder',
-    title: 'New Folder...',
-    icon: '$(new-folder)',
-    [$showInViewTitle]: {
-      when: `${when.includedFileTreeFocused} && ${when.hasProjects}`,
-      group: 'navigation@1',
+  'stitch.includedFiles.revealInExplorerView': {
+    command: 'stitch.includedFiles.revealInExplorerView',
+    title: 'Reveal in Explorer View',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsIncludedFile,
+      group: 'navigation@9',
     },
-    [$showInViewItemContextMenu]: [
-      {
-        when: when.viewItemIsIncludedFileFolder,
-        group: 'navigation@9',
-      },
-    ],
   },
   //#endregion Included Files
 

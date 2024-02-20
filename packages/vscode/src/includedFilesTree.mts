@@ -1,11 +1,11 @@
 import vscode from 'vscode';
-import { assertLoudly } from './assert.mjs';
+import { stitchEvents } from './events.mjs';
 import type { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { registerCommand } from './lib.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 
-type IncludedFileTreeItem = IncludedFileFolder;
+type IncludedFileTreeItem = IncludedFileFolder | IncludedFile;
 
 export class StitchIncludedFilesTree
   implements vscode.TreeDataProvider<IncludedFileTreeItem>
@@ -51,70 +51,44 @@ export class StitchIncludedFilesTree
     if (!this.project) {
       return;
     }
+    if (element && !(element instanceof IncludedFileFolder)) {
+      return [];
+    }
     // If we have no element we need the root.
     element ||= IncludedFileFolder.lookup.get('datafiles');
 
     // Then we're at the root.
-    const children = element?.subfolders || [];
+    const children =
+      element?.subfolders || ([] as (IncludedFile | IncludedFileFolder)[]);
+    children.push(...(element?.files || []));
     return [...children].sort((a, b) => {
+      if (a instanceof IncludedFileFolder && b instanceof IncludedFile) {
+        return -1;
+      }
+      if (a instanceof IncludedFile && b instanceof IncludedFileFolder) {
+        return 1;
+      }
       const aStr = (a.label?.toString() || '').toLocaleLowerCase();
       const bStr = (b.label?.toString() || '').toLocaleLowerCase();
       return aStr.localeCompare(bStr);
     });
   }
 
-  async createFolder(parent?: IncludedFileFolder) {
-    assertLoudly(this.project, 'No active project');
-    let relativePath: string | undefined = '';
-    if (parent) {
-      relativePath = parent.path.split('/').slice(1).join('/') + '/';
-    }
-    relativePath = await vscode.window.showInputBox({
-      prompt: 'Enter the name of the new folder',
-      value: relativePath,
-      valueSelection: [relativePath.length, relativePath.length],
-      validateInput(input) {
-        if (!input.match(/^[/\\a-zA-Z0-9_-]+$/)) {
-          return 'Folders must be alphanumeric, and may contain dashes and underscores. Path separators are allowed for creating nested folders.';
-        }
-        return;
-      },
-    });
-    if (relativePath === undefined) {
-      return;
-    }
-    const newFolderPath = `datafiles/${relativePath}`
-      .replace(/[/\\]+/g, '/')
-      .replace(/\/+$/, '');
-    await this.project.dir.join(newFolderPath).ensureDir();
-    this.rebuild();
-    const createdFolder = IncludedFileFolder.from(
-      newFolderPath as IncludedFilePath,
-    );
-    this.reveal(createdFolder);
-  }
-
-  async rebuild() {
+  rebuild() {
     // Convert the project's included files into a tree,
     // consisting of folders and files.
     IncludedFileFolder.clear();
+    IncludedFile.clear();
     if (!this.project) {
       return;
     }
     for (const file of this.project.yyp.IncludedFiles || []) {
-      const folder = IncludedFileFolder.from(file.filePath as IncludedFilePath);
+      IncludedFile.from(
+        this.project,
+        file.filePath as IncludedFilePath,
+        file.name,
+      );
     }
-    // Also add folders that are *on disk* but not in the project, for convenience. (Also a good way to show warnings for unregistered files)
-    const dataFilesDir = this.project.dir.join('datafiles');
-    await dataFilesDir.listChildrenRecursively({
-      filter: async (path) => {
-        if (this.project && (await path.isDirectory())) {
-          const relativePath = path.relativeFrom(this.project.dir);
-          IncludedFileFolder.from(relativePath as IncludedFilePath);
-        }
-        return true;
-      },
-    });
 
     this._onDidChangeTreeData.fire(undefined);
   }
@@ -135,20 +109,27 @@ export class StitchIncludedFilesTree
 
     tree.rebuild();
 
-    // // Handle emitted events
-    // stitchEvents.on('code-file-deleted', (code) => {
-    //   if (this.asset === code.asset) {
-    //     this.rebuild();
-    //   }
-    // });
+    stitchEvents.on('datafiles-changed', (project) => {
+      if (tree.project === project) {
+        tree.rebuild();
+      }
+    });
 
     // Return subscriptions to owned events and this view
     const subscriptions = [
       tree.view,
       activeEditorMonitor,
       registerCommand(
-        'stitch.includedFiles.newFolder',
-        tree.createFolder.bind(tree),
+        'stitch.includedFiles.revealInExplorerView',
+        (item?: IncludedFile) => {
+          if (item instanceof IncludedFile) {
+            // Call the vscode command to show the file in the explorer view
+            vscode.commands.executeCommand(
+              'revealInExplorer',
+              vscode.Uri.file(item.path.absolute),
+            );
+          }
+        },
       ),
     ];
     return subscriptions;
@@ -160,6 +141,7 @@ class IncludedFileFolder extends StitchTreeItemBase<'datafiles-folder'> {
   override readonly kind = 'datafiles-folder';
   parent: IncludedFileFolder | undefined;
   subfolders: IncludedFileFolder[] = [];
+  files: IncludedFile[] = [];
 
   static lookup = new Map<string, IncludedFileFolder>();
   protected constructor(readonly path: IncludedFilePath) {
@@ -168,9 +150,9 @@ class IncludedFileFolder extends StitchTreeItemBase<'datafiles-folder'> {
     this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
   }
 
-  static from(folderPath: IncludedFilePath) {
+  static from(folderPath: IncludedFilePath): IncludedFileFolder {
     if (this.lookup.has(folderPath)) {
-      return this.lookup.get(folderPath);
+      return this.lookup.get(folderPath)!;
     }
 
     const folderParts = folderPath.split('/');
@@ -187,8 +169,56 @@ class IncludedFileFolder extends StitchTreeItemBase<'datafiles-folder'> {
       }
       parentFolder = current;
     }
-    return parentFolder;
+    return parentFolder!;
   }
+  static clear() {
+    this.lookup.clear();
+  }
+}
+
+class IncludedFile extends StitchTreeItemBase<'datafiles-file'> {
+  override readonly kind = 'datafiles-file';
+  parent: IncludedFileFolder;
+  static lookup = new Map<string, IncludedFile>();
+
+  protected constructor(
+    readonly project: GameMakerProject,
+    readonly folder: IncludedFilePath,
+    readonly name: string,
+  ) {
+    super(name);
+    this.contextValue = this.kind;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+    this.parent = IncludedFileFolder.from(folder);
+    this.parent.files.push(this);
+    this.command = {
+      title: 'Open',
+      command: 'vscode.open',
+      arguments: [
+        vscode.Uri.file(this.project.dir.join(folder).join(name).absolute),
+      ],
+    };
+    this.iconPath = new vscode.ThemeIcon('file');
+  }
+
+  get path() {
+    return this.project.dir.join(this.folder).join(this.name);
+  }
+
+  static from(
+    project: GameMakerProject,
+    folderPath: IncludedFilePath,
+    name: string,
+  ): IncludedFile {
+    const fullPath = `${folderPath}/${name}`;
+    if (this.lookup.has(fullPath)) {
+      return this.lookup.get(fullPath)!;
+    }
+    const file = new IncludedFile(project, folderPath, name);
+    this.lookup.set(fullPath, file);
+    return file;
+  }
+
   static clear() {
     this.lookup.clear();
   }

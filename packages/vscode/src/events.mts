@@ -13,7 +13,12 @@ export namespace StitchEvents {
     OpenProjectStart,
     AssetChanged,
     ProjectChanged,
+    DatafilesChanged,
   ];
+  export interface DatafilesChanged {
+    name: 'datafiles-changed';
+    payload: [GameMakerProject];
+  }
   export interface AssetDeleted {
     name: 'asset-deleted';
     payload: [Asset];

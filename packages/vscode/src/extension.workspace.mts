@@ -107,6 +107,9 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
             });
           },
         );
+        try {
+          await project.syncIncludedFiles();
+        } catch {}
         progress.report({
           increment: 100,
           message: 'Done!',

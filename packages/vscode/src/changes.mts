@@ -71,6 +71,16 @@ export class ChangeTracker {
         logger.warn(`For change event ${type} ${uri.path}, no project found.`);
         continue;
       }
+
+      // If this is an included file, we need to force-sync the project's files
+      if (project.dir.join('datafiles').isParentOf(pathy(uri.fsPath))) {
+        try {
+          await project.syncIncludedFiles();
+          stitchEvents.emit('datafiles-changed', project);
+        } catch {}
+        continue;
+      }
+
       /** The asset this changed file belongs to, if any. */
       const asset = project.getAsset(pathy(uri.fsPath));
 

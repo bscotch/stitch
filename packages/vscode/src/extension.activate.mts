@@ -78,6 +78,7 @@ export async function activateStitchExtension(
         new vscode.RelativePattern(base, '*/*/*.gml'),
         new vscode.RelativePattern(base, '*/*/*.atlas'),
         new vscode.RelativePattern(base, '*/*/*.png'),
+        new vscode.RelativePattern(base, 'datafiles/**/*'),
       );
     } catch (error) {
       logger.error(error);
