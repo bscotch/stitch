@@ -133,7 +133,7 @@ export const commands = {
     [$showInViewItemContextMenu]: [
       {
         when: when.viewItemIsFolder,
-        group: 'navigation@3',
+        group: 'navigation@9',
       },
       {
         when: when.isInlineProject,
@@ -186,12 +186,20 @@ export const commands = {
       group: 'navigation@2',
     },
   },
+  'stitch.assets.newSprite': {
+    command: 'stitch.assets.newSprite',
+    title: 'New Sprite...',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsFolder,
+      group: 'navigation@3',
+    },
+  },
   'stitch.assets.newShader': {
     command: 'stitch.assets.newShader',
     title: 'New Shader...',
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsFolder,
-      group: 'navigation@3',
+      group: 'navigation@4',
     },
   },
   'stitch.assets.setParent': {

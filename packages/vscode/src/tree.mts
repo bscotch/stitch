@@ -7,6 +7,8 @@ import {
   isAssetOfKind,
   objectEvents,
 } from '@bscotch/gml-parser';
+import { pathy } from '@bscotch/pathy';
+import { SpriteDir, applySpriteAction } from '@bscotch/sprite-source';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
@@ -567,6 +569,92 @@ export class GameMakerTreeProvider
     this.afterNewAssetCreated(asset, folder, where);
   }
 
+  async createSprite(where: GameMakerFolder) {
+    const project = where.project!;
+    assertLoudly(project, 'Cannot create sprite without a project.');
+    const info = await this.prepareForNewAsset(where);
+    if (!info) {
+      return;
+    }
+    const { folder, path, name } = info;
+
+    // Prompt for the source folder
+    const sourceFolder = await vscode.window.showOpenDialog({
+      canSelectFiles: false,
+      canSelectFolders: true,
+      canSelectMany: false,
+      openLabel: 'Import as Sprite',
+      title: 'Choose a folder containing sprite frames',
+    });
+    if (!sourceFolder?.length) return;
+
+    // Create a SpriteDir from that folder
+    const errors: Error[] = [];
+    const spriteDir = await SpriteDir.from(
+      pathy(sourceFolder[0].fsPath),
+      [],
+      errors,
+    );
+    assertLoudly(
+      spriteDir,
+      `Failed to create sprite from folder. ${errors
+        .map((e) => e.message)
+        .join(', ')}`,
+    );
+
+    // Prompt for bleed/crop options (note will mutate source)
+    const preparations = await vscode.window.showQuickPick(
+      [
+        {
+          label: 'Bleed',
+          description:
+            'Add a layer of low-alpha pixels around the foreground to improve aliasing.',
+        },
+        {
+          label: 'Crop',
+          description: 'Crop to reduce excessive bounding box size.',
+        },
+      ],
+      { canPickMany: true, title: 'Source Mutations' },
+    );
+    const bleed = preparations?.find((p) => p.label === 'Bleed');
+    const crop = preparations?.find((p) => p.label === 'Crop');
+    if (crop) {
+      await spriteDir.crop();
+    }
+    if (bleed) {
+      await spriteDir.bleed();
+    }
+
+    // TODO: Convert into an "Action"
+    // TODO: Call applySpriteAction() to complete the process
+    const dest = project.dir.join('sprites').join(name);
+    await applySpriteAction({
+      action: {
+        kind: 'create',
+        name,
+        source: sourceFolder[0].fsPath,
+        sourceRoot: '', // Not needed for this
+        dest: dest.absolute,
+        spine: spriteDir.isSpine,
+      },
+      projectYypPath: project.yypPath.absolute,
+      yyp: project.yyp,
+    });
+
+    // NOTE: At this point we've bypassed the parser, so we'll need to
+    // register the asset manually.
+    const assetInfo = await project.addAssetToYyp(
+      dest.join(`${name}.yy`).absolute,
+    );
+    const asset = await Asset.from(project, assetInfo);
+    assertLoudly(asset, 'Failed to create sprite asset.');
+    project.registerAsset(asset);
+    await project.createFolder(path);
+    await asset.moveToFolder(path);
+    this.afterNewAssetCreated(asset, folder, where);
+  }
+
   async createObject(where: GameMakerFolder) {
     const info = await this.prepareForNewAsset(where);
     if (!info) {
@@ -934,6 +1022,7 @@ export class GameMakerTreeProvider
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),
       registerCommand('stitch.assets.newObject', this.createObject.bind(this)),
+      registerCommand('stitch.assets.newSprite', this.createSprite.bind(this)),
       registerCommand('stitch.assets.newShader', this.createShader.bind(this)),
       registerCommand('stitch.assets.newEvent', this.createEvent.bind(this)),
       registerCommand('stitch.assets.setParent', this.setParent.bind(this)),
