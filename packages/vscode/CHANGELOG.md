@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.59.1 (2024-02-20)
+
+### Fixes
+
+- Resolved issue where the new sprite features prevent the extension from loading at all on non-Windows platforms
+
 ## 1.59.0 (2024-02-20)
 
 ### Features
