@@ -8,6 +8,7 @@ const viewItemIsProject = 'viewItem == project';
 const resourceIsGml = 'resourceExtname == .gml';
 
 export const when = {
+  onWindows: 'isWindows',
   assetTreeFocused,
   spriteSourceTreeFocused,
   inspectorFocused: 'view == bscotch-stitch-inspector',

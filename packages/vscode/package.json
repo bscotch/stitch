@@ -685,12 +685,12 @@
         },
         {
           "command": "stitch.assets.newSprite",
-          "when": "viewItem == folder",
+          "when": "viewItem == folder && isWindows",
           "group": "navigation@3"
         },
         {
           "command": "stitch.assets.replaceSpriteFrames",
-          "when": "viewItem == asset-sprites",
+          "when": "viewItem == asset-sprites && isWindows",
           "group": "7_modification@1"
         },
         {

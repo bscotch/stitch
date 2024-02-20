@@ -190,7 +190,7 @@ export const commands = {
     command: 'stitch.assets.newSprite',
     title: 'New Sprite...',
     [$showInViewItemContextMenu]: {
-      when: when.viewItemIsFolder,
+      when: `${when.viewItemIsFolder} && ${when.onWindows}`,
       group: 'navigation@3',
     },
   },
@@ -198,7 +198,7 @@ export const commands = {
     command: 'stitch.assets.replaceSpriteFrames',
     title: 'Replace Frames...',
     [$showInViewItemContextMenu]: {
-      when: when.viewItemIsSprite,
+      when: `${when.viewItemIsSprite} && ${when.onWindows}`,
       group: '7_modification@1',
     },
   },
