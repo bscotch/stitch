@@ -1,5 +1,12 @@
 # @bscotch/gml-parser Changelog
 
+## 1.3.0 (2024-02-20)
+
+### Features
+
+- Stitch for VSCode now forces included files on disk to match the YYP. The Included Files tree provides a read-only view that links to the Explorer.
+- Added method for syncing the YYP's listed IncludedFiles to what's on disk
+
 ## 1.2.0 (2024-02-20)
 
 ### Features

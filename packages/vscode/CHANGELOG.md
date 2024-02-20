@@ -1,5 +1,12 @@
 # Stitch Changelog
 
+## 1.60.0 (2024-02-20)
+
+### Features
+
+- Stitch for VSCode now forces included files on disk to match the YYP. The Included Files tree provides a read-only view that links to the Explorer.
+- The Included Files tree now shows local folders and allows creating new folders
+
 ## 1.59.1 (2024-02-20)
 
 ### Fixes
