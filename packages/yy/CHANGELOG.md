@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.1.2 (2024-02-21)
+
+### Fixes
+
+- Resolved sorting issue in older project format
+
 ## 2.1.1 (2024-02-21)
 
 ### Fixes
