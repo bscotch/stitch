@@ -42,7 +42,7 @@ const sampleSchema = z.object({
 const sampleDataAsString = undent`
 {
   "array": [
-    {"name":"child1","field":true,},
+    {"field":true,"name":"child1",},
     {"name":"child2",},
   ],
   "hello": "world",

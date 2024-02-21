@@ -151,7 +151,9 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
         Object.keys(value).forEach(function (k) {
           const v = stringify(k, value, [...pointer]);
           if (v) {
-            partial.push(quote(k) + (includeGaps ? ': ' : ':') + v);
+            partial.push(
+              quote(k) + (includeGaps && !isNewFormat ? ': ' : ':') + v,
+            );
           }
         });
 
@@ -236,7 +238,8 @@ function prepareForStringification<T>(
       isNewFormat &&
       'name' in yyData &&
       typeof yyData.name === 'string' &&
-      hasResourceType // Otherwise it's just a different kind of 'name' field
+      hasResourceType && // Otherwise it's just a different kind of 'name' field
+      !('$GMSpriteFramesTrack' in yyData) // Special case
     ) {
       // Then we need to ensure that the file has the `%Name` key,
       // because we may be converting an old format to the new one.
@@ -249,7 +252,7 @@ function prepareForStringification<T>(
 
     const keys = Object.keys(yyDataCopy) as (keyof T)[] as string[];
     keys.sort((a, b) => {
-      if (!isNewFormat) {
+      if (!isNewFormat && hasResourceType) {
         if (a === 'resourceType') {
           return -1;
         }
@@ -270,8 +273,9 @@ function prepareForStringification<T>(
         }
       }
       if (a === b) return 0;
-      a = a.toLowerCase();
-      b = b.toLowerCase();
+      // The GameMaker sort algorithm treats '_' as greater than all letters (no matter the case), so we have to force that behavior by replacing those chars with something that *actually* is (like `|`)
+      a = a.toLowerCase().replace(/_/g, '|');
+      b = b.toLowerCase().replace(/_/g, '|');
       if (a < b) return -1;
       return 1;
     });
