@@ -237,6 +237,16 @@ It may not support _very_ recent versions, since we only add support once we bum
 
 Different GameMaker versions may have different features and built-in functions, constants, etc. This extension tries to infer the correct features for your project's GameMaker version, but it might give you incorrect autocompletes or surprising command outcomes if it cannot find a match!
 
+## 📦 Recommended Extensions
+
+The nice thing about being in the VSCode ecosystem is that there are TONS of other great extensions out there! Here are some we recommend to get the most out of using VSCode for your GameMaker projects:
+
+- [Font Preview](https://marketplace.visualstudio.com/items?itemName=ctcuff.font-preview): an interactive preview for your font files, right in VSCode!
+- [Change Case](https://marketplace.visualstudio.com/items?itemName=wmaurer.change-case): quickly change the casing of some selected text. Includes all of the common code-casing strategies.
+- [Code Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker): Exactly what it sounds like! Smart enough to handle spellchecking for code. Best used with a per-project dictionary.
+- [TabOut](https://marketplace.visualstudio.com/items?itemName=albert.TabOut): Make keyboard navigation easier with a smarter tab key.
+- [vscode-color-picker](https://marketplace.visualstudio.com/items?itemName=AntiAntiSepticeye.vscode-color-picker): Use a color picker to set colors in code instead of typing them out! To get it working in GML, edit its settings to add `"gml"` to the languages list and replace calls to `make_color_rgb` with a new macro: `#macro rgb make_color_rgb`
+
 ## 🤔 Tips, Limitations, and Known Issues
 
 To see the current list of known issues and feature requests, check out the [issues page](https://github.com/bscotch/stitch/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Akeyboard%3A+vscode%22).
