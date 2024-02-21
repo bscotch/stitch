@@ -274,8 +274,12 @@ function prepareForStringification<T>(
       }
       if (a === b) return 0;
       // The GameMaker sort algorithm treats '_' as greater than all letters (no matter the case), so we have to force that behavior by replacing those chars with something that *actually* is (like `|`)
-      a = a.toLowerCase().replace(/_/g, '|');
-      b = b.toLowerCase().replace(/_/g, '|');
+      a = a.toLowerCase();
+      b = b.toLowerCase();
+      if (isNewFormat) {
+        a = a.replace(/_/g, '|');
+        b = b.replace(/_/g, '|');
+      }
       if (a < b) return -1;
       return 1;
     });
