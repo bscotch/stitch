@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.1.1 (2024-02-21)
+
+### Fixes
+
+- Updated yy stringification to match the latest new format
+
 ## 2.1.0 (2024-02-17)
 
 ### Features
