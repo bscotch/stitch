@@ -1,5 +1,12 @@
 # Stitch Changelog
 
+## 1.60.1 (2024-02-21)
+
+### Docs
+
+- Added a section for recommended extensions
+- Added information about Included Files
+
 ## 1.60.0 (2024-02-20)
 
 ### Features
