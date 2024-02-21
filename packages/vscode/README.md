@@ -99,6 +99,19 @@ GameMaker includes a type system called "Feather", which Stitch builds upon. Sti
 - **JSDoc Autocompletes:** Stitch provides autocompletes and syntax highlighting for Feather types within JSDoc comments.
 - **JSDoc helpers:** Stitch provides snippets for JSDoc tags, and context menus to copy the Feather type of a symbol to your clipboard.
 
+### 📄 Included Files ("Datafiles")
+
+In addition to GameMaker-specific Asset types, GameMaker allows you to include arbitrary files in your project (a.k.a. "Included Files"). These are found in the `datafiles` folder for your project.
+
+Since the built-in file Explorer view is fully-featured, that's the best place to manage Included Files (rather than trying to recreate all of that functionality in Stitch).
+
+Stitch adds a few features to make it easier to leverage VSCode's built-in stuff:
+
+- On project load, Stitch forces the project's YYP file to mirror the actual files found in the `datafiles` folder.
+- Stitch adds a watcher for changes in the `datafiles` folder, re-syncing to ensure the YYP matches any time there is a change.
+- The above items make it so you can manage your Included Files right in VSCode's built-in Explorer view, and Stitch will automatically ensure your changes are reflected in the game project.
+- Stitch also includes a read-only Included Files tree in the Stitch sidebar. This gives you a quick view of your Included Files so you don't have to go hunting for them in the Explorer view. Clicking a file will open it in VSCode, and the right-click context menu provides a "Reveal in Explorer View" option to take you to that same file in the Explorer view (making it easy to get to where you can manage that file).
+
 ### 🎁 Creating assets
 
 Stitch provides some support for creating new assets, but only for a few asset types. For any others, or for additional features, you'll need to use the GameMaker IDE.
