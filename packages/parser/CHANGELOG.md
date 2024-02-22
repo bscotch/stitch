@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.4.0 (2024-02-22)
+
+### Features
+
+- Can now add new sound assets, checking names and defaults against the Stitch config
+
 ## 1.3.3 (2024-02-22)
 
 ### Fixes

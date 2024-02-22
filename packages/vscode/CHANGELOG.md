@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.61.0 (2024-02-22)
+
+### Features
+
+- Can now add new sound assets, checking names and defaults against the Stitch config
+
 ## 1.60.1 (2024-02-21)
 
 ### Docs
