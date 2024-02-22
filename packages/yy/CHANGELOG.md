@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.1.4 (2024-02-22)
+
+### Fixes
+
+- Changed yy line endings to be LF instead of CRLF for the new format
+
 ## 2.1.3 (2024-02-22)
 
 ### Fixes
