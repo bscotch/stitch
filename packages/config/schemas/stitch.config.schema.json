@@ -1,0 +1,66 @@
+{
+  "type": "object",
+  "properties": {
+    "textureGroupAssignments": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {},
+      "description": "A map of resource tree paths to texture groups name. Supported Stitch utilities will use this to assign sprites in those paths (recursively) to the specified texture group."
+    },
+    "audioGroupAssignments": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {},
+      "description": "A map of resource tree paths to audio groups name. Supported Stitch utilities will use this to assign sounds in those paths (recursively) to the specified audio group."
+    },
+    "runtimeVersion": {
+      "type": "string",
+      "description": "When set, supported Stitch utilities will preferentially use this GameMaker runtime version."
+    },
+    "newSpriteRules": {
+      "type": "object",
+      "properties": {
+        "allowedNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of regex patterns that new assets must match. Enforced by supported Stitch utilities."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Rules for creating new sprite resources, followed by supported Stitch utilities."
+    },
+    "newSoundRules": {
+      "type": "object",
+      "properties": {
+        "allowedNames": {
+          "$ref": "#/properties/newSpriteRules/properties/allowedNames"
+        },
+        "defaults": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "mono": {
+                "type": "boolean",
+                "description": "Whether to default new sounds to mono. When not set, the default is stereo."
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Default properties for new sound assets, by name pattern. E.g. `{\".*\":{ mono: true}}` defaults all new sounds to mono. The first matching pattern is used."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Rules for creating new sound resources, followed by supported Stitch utilities."
+    }
+  },
+  "additionalProperties": true,
+  "description": "Stitch configuration schema. Stitch utilities may support subsets of this configuration.",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

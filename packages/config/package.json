@@ -1,0 +1,35 @@
+{
+  "name": "@bscotch/stitch-config",
+  "description": "Schemas and utilities for the stitch.config.json file.",
+  "keywords": [
+    "stitch",
+    "bscotch"
+  ],
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/config#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/config"
+  },
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --build && node scripts/update-schemas.mjs",
+    "test": "mocha --config ../../config/.mocharc.cjs",
+    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
+    "watch": "tsc --build --watch"
+  },
+  "dependencies": {
+    "zod": "3.22.4"
+  },
+  "devDependencies": {
+    "source-map-support": "0.5.21",
+    "typescript": "5.3.3",
+    "zod-to-json-schema": "3.21.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
