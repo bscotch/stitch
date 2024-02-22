@@ -62,5 +62,6 @@
   },
   "additionalProperties": true,
   "description": "Stitch configuration schema. Stitch utilities may support subsets of this configuration.",
-  "$schema": "http://json-schema.org/draft-07/schema#"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/bscotch/stitch/develop/packages/config/schemas/stitch.config.schema.json"
 }

@@ -6,10 +6,13 @@ const allowedNames = z
   .describe(
     'A list of regex patterns that new assets must match. Enforced by supported Stitch utilities.',
   );
+export const jsonSchemaUrl =
+  'https://raw.githubusercontent.com/bscotch/stitch/develop/packages/config/schemas/stitch.config.schema.json';
 
 export type StitchConfig = z.infer<typeof stitchConfigSchema>;
 export const stitchConfigSchema = z
   .object({
+    $schema: z.literal(jsonSchemaUrl).default(jsonSchemaUrl),
     textureGroupAssignments: z
       .record(z.string())
       .default({})
