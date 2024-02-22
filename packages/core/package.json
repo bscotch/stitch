@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/stitch",
-  "version": "11.0.8",
+  "version": "11.1.0",
   "description": "Stitch: The GameMaker Studio 2 Asset Pipeline Development Kit.",
   "keywords": [
     "gamemaker",
@@ -58,8 +58,8 @@
     "@bscotch/logger": "0.2.2",
     "@bscotch/pathy": "^2.12.0",
     "@bscotch/spritely": "workspace:*",
-    "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/stitch-config": "workspace:*",
+    "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/stringify": "^0.3.0",
     "@bscotch/utility": "^7.2.0",
     "@bscotch/validation": "^0.3.0",

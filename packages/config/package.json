@@ -1,5 +1,6 @@
 {
   "name": "@bscotch/stitch-config",
+  "version": "0.2.0",
   "description": "Schemas and utilities for the stitch.config.json file.",
   "keywords": [
     "stitch",
@@ -11,7 +12,6 @@
     "url": "https://github.com/bscotch/stitch.git",
     "directory": "packages/config"
   },
-  "version": "0.1.0",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
