@@ -17,8 +17,6 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc --build && node scripts/update-schemas.mjs",
-    "test": "mocha --config ../../config/.mocharc.cjs",
-    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
     "watch": "tsc --build --watch"
   },
   "dependencies": {
