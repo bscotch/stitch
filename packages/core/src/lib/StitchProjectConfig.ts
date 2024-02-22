@@ -1,15 +1,17 @@
+import { Pathy, pathy } from '@bscotch/pathy';
+import {
+  stitchConfigFilename,
+  stitchConfigSchema,
+} from '@bscotch/stitch-config';
+import { ok } from 'assert';
+import { z } from 'zod';
 import { assert } from '../utility/errors.js';
 import paths from '../utility/paths.js';
 import { StitchStorage } from './StitchStorage.js';
-import { z } from 'zod';
-import { Pathy, pathy } from '@bscotch/pathy';
-import { ok } from 'assert';
 
 export type StitchProjectConfigFile = z.infer<
-  typeof StitchProjectConfig['fileSchema']
+  (typeof StitchProjectConfig)['fileSchema']
 >;
-
-export const STITCH_PROJECT_CONFIG_BASENAME = 'stitch.config.json';
 
 type StitchProjectConfigAssignmentField =
   | 'textureGroupAssignments'
@@ -17,20 +19,14 @@ type StitchProjectConfigAssignmentField =
 
 /** The Project Config lives alongside the .yyp file */
 export class StitchProjectConfig {
-  static readonly fileSchema = z
-    .object({
-      textureGroupAssignments: z.record(z.string()).default({}),
-      audioGroupAssignments: z.record(z.string()).default({}),
-      runtimeVersion: z.string().optional(),
-    })
-    .passthrough();
+  static readonly fileSchema = stitchConfigSchema;
 
   // TODO: Make all of this ASYNNCCCC!!!!
 
   protected constructor(readonly storage: StitchStorage) {}
 
   get filePathAbsolute() {
-    return this.storage.toAbsolutePath(STITCH_PROJECT_CONFIG_BASENAME);
+    return this.storage.toAbsolutePath(stitchConfigFilename);
   }
 
   async getRuntimeVersion() {
