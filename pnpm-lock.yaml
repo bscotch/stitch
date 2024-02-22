@@ -107,6 +107,22 @@ importers:
         specifier: ^7.2.3
         version: 7.2.3
 
+  packages/config:
+    dependencies:
+      zod:
+        specifier: 3.22.4
+        version: 3.22.4
+    devDependencies:
+      source-map-support:
+        specifier: 0.5.21
+        version: 0.5.21
+      typescript:
+        specifier: 5.3.3
+        version: 5.3.3
+      zod-to-json-schema:
+        specifier: 3.21.4
+        version: 3.21.4(zod@3.22.4)
+
   packages/core:
     dependencies:
       '@bscotch/debounce-watch':
@@ -121,6 +137,9 @@ importers:
       '@bscotch/spritely':
         specifier: workspace:*
         version: link:../spritely
+      '@bscotch/stitch-config':
+        specifier: workspace:*
+        version: link:../config
       '@bscotch/stitch-launcher':
         specifier: workspace:*
         version: link:../launcher
@@ -6035,8 +6054,8 @@ packages:
       picocolors: 1.0.0
       sade: 1.8.1
       svelte: 4.2.3
-      svelte-preprocess: 5.1.0(postcss@8.4.31)(svelte@4.2.3)(typescript@5.2.2)
-      typescript: 5.2.2
+      svelte-preprocess: 5.1.0(postcss@8.4.31)(svelte@4.2.3)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
@@ -6079,7 +6098,7 @@ packages:
       svelte: 4.2.3
     dev: true
 
-  /svelte-preprocess@5.1.0(postcss@8.4.31)(svelte@4.2.3)(typescript@5.2.2):
+  /svelte-preprocess@5.1.0(postcss@8.4.31)(svelte@4.2.3)(typescript@5.3.3):
     resolution: {integrity: sha512-EkErPiDzHAc0k2MF5m6vBNmRUh338h2myhinUw/xaqsLs7/ZvsgREiLGj03VrSzbY/TB5ZXgBOsKraFee5yceA==}
     engines: {node: '>= 14.10.0'}
     requiresBuild: true
@@ -6124,7 +6143,7 @@ packages:
       sorcery: 0.11.0
       strip-indent: 3.0.0
       svelte: 4.2.3
-      typescript: 5.2.2
+      typescript: 5.3.3
     dev: true
 
   /svelte@4.2.3:
@@ -6473,6 +6492,12 @@ packages:
     resolution: {integrity: sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==}
     engines: {node: '>=14.17'}
     hasBin: true
+
+  /typescript@5.3.3:
+    resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+    dev: true
 
   /typical@4.0.0:
     resolution: {integrity: sha512-VAH4IvQ7BDFYglMd7BPRDfLgxZZX4O4TFcRDA6EN5X7erNJJq+McIEp8np9aVtxrCJ6qx4GTYVfOWNjcqwZgRw==}
