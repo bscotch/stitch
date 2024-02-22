@@ -1,0 +1,13 @@
+{
+  "newSoundRules": {
+    "allowedNames": ["^mus_", "^amb_", "^sfx_"],
+    "defaults": {
+      "^(mus|amb)_": {
+        "mono": false
+      },
+      "^(sfx)_": {
+        "mono": true
+      }
+    }
+  }
+}

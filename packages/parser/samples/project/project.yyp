@@ -6,8 +6,8 @@
     {"resourceType":"GMAudioGroup","resourceVersion":"1.3","name":"audiogroup_default","targets":-1,},
   ],
   "configs": {
-    "name": "Default",
     "children": [],
+    "name": "Default",
   },
   "defaultScriptType": 1,
   "Folders": [
