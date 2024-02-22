@@ -114,11 +114,6 @@
         "title": "Delete"
       },
       {
-        "command": "stitch.assets.newFolder",
-        "title": "New Group...",
-        "icon": "$(new-folder)"
-      },
-      {
         "command": "stitch.assets.editSprite",
         "title": "Edit..."
       },
@@ -148,12 +143,21 @@
         "title": "New Sprite..."
       },
       {
-        "command": "stitch.assets.replaceSpriteFrames",
-        "title": "Replace Frames..."
+        "command": "stitch.assets.newSound",
+        "title": "New Sound..."
       },
       {
         "command": "stitch.assets.newShader",
         "title": "New Shader..."
+      },
+      {
+        "command": "stitch.assets.newFolder",
+        "title": "New Group...",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "stitch.assets.replaceSpriteFrames",
+        "title": "Replace Frames..."
       },
       {
         "command": "stitch.assets.setParent",
@@ -467,6 +471,10 @@
     ],
     "jsonValidation": [
       {
+        "fileMatch": "stitch.config.json",
+        "url": "https://raw.githubusercontent.com/bscotch/stitch/develop/packages/config/schemas/stitch.config.schema.json"
+      },
+      {
         "fileMatch": ".stitch/sprites.info.json",
         "url": "./schemas/stitch.sprite-cache.schema.json"
       },
@@ -653,16 +661,6 @@
           "group": "7_modification@9"
         },
         {
-          "command": "stitch.assets.newFolder",
-          "when": "viewItem == folder",
-          "group": "navigation@9"
-        },
-        {
-          "command": "stitch.assets.newFolder",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
-          "group": "inline@1"
-        },
-        {
           "command": "stitch.assets.editSprite",
           "when": "viewItem == asset-sprites",
           "group": "7_modification@1"
@@ -693,14 +691,29 @@
           "group": "navigation@3"
         },
         {
-          "command": "stitch.assets.replaceSpriteFrames",
-          "when": "viewItem == asset-sprites && isWindows",
-          "group": "7_modification@1"
+          "command": "stitch.assets.newSound",
+          "when": "viewItem == folder",
+          "group": "navigation@4"
         },
         {
           "command": "stitch.assets.newShader",
           "when": "viewItem == folder",
-          "group": "navigation@4"
+          "group": "navigation@5"
+        },
+        {
+          "command": "stitch.assets.newFolder",
+          "when": "viewItem == folder",
+          "group": "navigation@9"
+        },
+        {
+          "command": "stitch.assets.newFolder",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
+          "group": "inline@1"
+        },
+        {
+          "command": "stitch.assets.replaceSpriteFrames",
+          "when": "viewItem == asset-sprites && isWindows",
+          "group": "7_modification@1"
         },
         {
           "command": "stitch.assets.setParent",

@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@bscotch/gamemaker-releases": "workspace:*",
+    "@bscotch/stitch-config": "workspace:*",
     "@bscotch/pathy": "^2.12.0",
     "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/utility": "^7.2.0",

@@ -20,6 +20,7 @@ import { getAssetIcon, getBaseIcon } from './icons.mjs';
 import type { ObjectParentFolder } from './inspector.mjs';
 import {
   getAssetFromRef,
+  pathyFromUri,
   registerCommand,
   showProgress,
   uriFromCodeFile,
@@ -365,13 +366,13 @@ export class GameMakerTreeProvider
     if (!newAssetName) {
       return;
     }
-    const existingAsset = where.project!.getAssetByName(newAssetName);
-    if (existingAsset) {
-      showErrorMessage(`An asset named ${newAssetName} already exists.`);
-      return;
-    }
     const parts = newAssetName.split('/');
     const name = parts.pop()!;
+    const existingAsset = where.project!.getAssetByName(name);
+    if (existingAsset) {
+      showErrorMessage(`An asset named ${name} already exists.`);
+      return;
+    }
     let folder = where;
     for (const part of parts) {
       folder = folder.addFolder(part);
@@ -601,6 +602,21 @@ export class GameMakerTreeProvider
     this.view.reveal(item, { focus: true });
   }
 
+  private async getSoundSources(): Promise<vscode.Uri[] | undefined> {
+    const sourceFiles = await vscode.window.showOpenDialog({
+      canSelectFiles: true,
+      canSelectFolders: false,
+      canSelectMany: true,
+      openLabel: 'Import as Sound',
+      title: 'Choose sound file(s) to import',
+      filters: {
+        Audio: ['ogg', 'mp3', 'wav'],
+      },
+    });
+    if (!sourceFiles?.length) return;
+    return sourceFiles;
+  }
+
   private async getSpriteSource() {
     assertLoudly(os.platform() === 'win32', 'This feature is Windows-only.');
     const { SpriteDir } = await import('@bscotch/sprite-source');
@@ -707,6 +723,53 @@ export class GameMakerTreeProvider
     const { folder, path } = info;
     const asset = await where.project!.createObject(path);
     this.afterNewAssetCreated(asset, folder, where);
+  }
+
+  async upsertSounds(where: GameMakerFolder, sourceFiles?: vscode.Uri[]) {
+    const project = where.project;
+    assertLoudly(project, 'Cannot upsert sounds without a project.');
+    sourceFiles ||= await this.getSoundSources();
+    if (!sourceFiles) return;
+    await project.reloadConfig(); // Ensure we have the latest config
+
+    const errors: Error[] = [];
+    const updated: string[] = [];
+    const created: string[] = [];
+    for (const sourceFile of sourceFiles) {
+      const sourcePath = pathyFromUri(sourceFile);
+      const resourcePath = where.path + '/' + sourcePath.name;
+      try {
+        // If there's an existing asset, just update it
+        const existing = project.getAssetByName(sourcePath.name);
+        if (existing) {
+          await sourcePath.copy(existing.soundFile);
+          updated.push(sourcePath.name);
+        } else {
+          // Otherwise, create a new asset
+          const asset = await project.createSound(resourcePath, sourcePath);
+          created.push(sourcePath.name);
+        }
+        // await where.project!.upsertSound(sourceFile.fs
+      } catch (err) {
+        errors.push(err as Error);
+      }
+    }
+    if (errors.length) {
+      showErrorMessage(
+        `Failed to update sounds:\n${errors.map((e) => e.message).join(', ')}`,
+      );
+    }
+    if (updated.length) {
+      vscode.window.showInformationMessage(
+        `Updated sounds:\n${updated.join(', ')}`,
+      );
+    }
+    if (created.length) {
+      vscode.window.showInformationMessage(
+        `Created sounds:\n${created.join(', ')}`,
+      );
+    }
+    this._onDidChangeTreeData.fire(where);
   }
 
   async createScript(where: GameMakerFolder) {
@@ -1063,6 +1126,7 @@ export class GameMakerTreeProvider
         'stitch.assets.duplicate',
         this.duplicateAsset.bind(this),
       ),
+      registerCommand('stitch.assets.newSound', this.upsertSounds.bind(this)),
       registerCommand('stitch.assets.newFolder', this.createFolder.bind(this)),
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),
       registerCommand('stitch.assets.newObject', this.createObject.bind(this)),

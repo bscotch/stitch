@@ -7,6 +7,7 @@ import {
   YyObject,
   YyResourceType,
   YySchemas,
+  YySound,
   YySprite,
   YypResource,
   yyObjectEventSchema,
@@ -160,6 +161,15 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     }
     const yy = this.yy as YySprite;
     return yy.type === 2;
+  }
+
+  get soundFile(): Pathy<Buffer> {
+    assert(
+      isAssetOfKind(this, 'sounds'),
+      'Can only get sound files from sound assets',
+    );
+    const yy = this.yy as YySound;
+    return this.dir.join(yy.soundFile);
   }
 
   get sprite(): Asset<'sprites'> | undefined {

@@ -122,25 +122,6 @@ export const commands = {
       group: '7_modification@9',
     },
   },
-  'stitch.assets.newFolder': {
-    command: 'stitch.assets.newFolder',
-    title: 'New Group...',
-    icon: '$(new-folder)',
-    [$showInViewTitle]: {
-      when: when.assetTreeFocusedAndHasOneProject,
-      group: 'navigation@1',
-    },
-    [$showInViewItemContextMenu]: [
-      {
-        when: when.viewItemIsFolder,
-        group: 'navigation@9',
-      },
-      {
-        when: when.isInlineProject,
-        group: 'inline@1',
-      },
-    ],
-  },
   'stitch.assets.editSprite': {
     command: 'stitch.assets.editSprite',
     title: 'Edit...',
@@ -194,12 +175,12 @@ export const commands = {
       group: 'navigation@3',
     },
   },
-  'stitch.assets.replaceSpriteFrames': {
-    command: 'stitch.assets.replaceSpriteFrames',
-    title: 'Replace Frames...',
+  'stitch.assets.newSound': {
+    command: 'stitch.assets.newSound',
+    title: 'New Sound...',
     [$showInViewItemContextMenu]: {
-      when: `${when.viewItemIsSprite} && ${when.onWindows}`,
-      group: '7_modification@1',
+      when: when.viewItemIsFolder,
+      group: 'navigation@4',
     },
   },
   'stitch.assets.newShader': {
@@ -207,7 +188,34 @@ export const commands = {
     title: 'New Shader...',
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsFolder,
-      group: 'navigation@4',
+      group: 'navigation@5',
+    },
+  },
+  'stitch.assets.newFolder': {
+    command: 'stitch.assets.newFolder',
+    title: 'New Group...',
+    icon: '$(new-folder)',
+    [$showInViewTitle]: {
+      when: when.assetTreeFocusedAndHasOneProject,
+      group: 'navigation@1',
+    },
+    [$showInViewItemContextMenu]: [
+      {
+        when: when.viewItemIsFolder,
+        group: 'navigation@9',
+      },
+      {
+        when: when.isInlineProject,
+        group: 'inline@1',
+      },
+    ],
+  },
+  'stitch.assets.replaceSpriteFrames': {
+    command: 'stitch.assets.replaceSpriteFrames',
+    title: 'Replace Frames...',
+    [$showInViewItemContextMenu]: {
+      when: `${when.viewItemIsSprite} && ${when.onWindows}`,
+      group: '7_modification@1',
     },
   },
   'stitch.assets.setParent': {

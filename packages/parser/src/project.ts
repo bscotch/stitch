@@ -1,6 +1,12 @@
 import { pathy, Pathy } from '@bscotch/pathy';
+import {
+  stitchConfigFilename,
+  stitchConfigSchema,
+  type StitchConfig,
+} from '@bscotch/stitch-config';
 import { sequential } from '@bscotch/utility';
 import {
+  SoundChannel,
   Yy,
   Yyp,
   yyParentSchema,
@@ -11,7 +17,6 @@ import {
   type YypResource,
 } from '@bscotch/yy';
 import { EventEmitter } from 'events';
-import { z } from 'zod';
 import { logger } from './logger.js';
 import { importAssets } from './modules.js';
 import { ImportModuleOptions } from './modules.types.js';
@@ -77,6 +82,8 @@ export class Project {
   /** Until this resolves, assume that this.yyp is not yet read */
   yypWaiter?: Promise<any>;
 
+  config!: StitchConfig;
+
   readonly assets = new Map<AssetName, Asset>();
   /**
    * Store the "native" functions, constants, and enums on
@@ -135,6 +142,12 @@ export class Project {
 
   get dir(): Pathy {
     return pathy(this.yypPath).up();
+  }
+
+  get stitchConfig() {
+    return this.dir
+      .join(stitchConfigFilename)
+      .withValidator(stitchConfigSchema);
   }
 
   get configs(): string[] {
@@ -429,6 +442,70 @@ export class Project {
     return newAsset;
   }
 
+  @sequential
+  async createSound(path: string, fromFile: string | Pathy) {
+    // Create the yy file
+    const parsed = await this.parseNewAssetPath(path);
+    if (!parsed) {
+      return;
+    }
+    const { name, folder } = parsed;
+    const rules = this.config.newSoundRules;
+    if (rules?.allowedNames?.length) {
+      assert(
+        rules.allowedNames.some((pattern) => name.match(new RegExp(pattern))),
+        `Sound name '${name}' does not match allowed patterns: ${rules.allowedNames.join(
+          '|',
+        )}`,
+      );
+    }
+    let mono = false;
+    if (rules?.defaults) {
+      const patterns = Object.keys(rules.defaults);
+      for (const pattern of patterns) {
+        if (name.match(new RegExp(pattern))) {
+          const defaults = rules.defaults[pattern];
+          if (defaults.mono) {
+            mono = true;
+          }
+          break;
+        }
+      }
+    }
+    const soundDir = this.dir.join(`sounds/${name}`);
+    await soundDir.ensureDirectory();
+    const soundYy = soundDir.join(`${name}.yy`);
+    // Copy the sound file over
+    fromFile = pathy(fromFile);
+    const soundFileName = `${name}${fromFile.extname}`;
+    await fromFile.copy(soundDir.join(soundFileName));
+
+    await Yy.write(
+      soundYy.absolute,
+      {
+        name,
+        parent: {
+          name: folder.name,
+          path: folder.folderPath,
+        },
+        type: mono ? SoundChannel.Mono : SoundChannel.Stereo,
+        soundFile: soundFileName,
+      },
+      'sounds',
+      this.yyp,
+    );
+
+    // Update the yyp file
+    const info = await this.addAssetToYyp(soundYy.absolute);
+
+    // Create and add the asset
+    const asset = await Asset.from(this, info);
+    if (asset) {
+      this.registerAsset(asset);
+    }
+    return asset;
+  }
+
   /**
    * Add an object to the yyp file. The string can include separators,
    * in which case folders will be ensured up to the final component.
@@ -441,7 +518,6 @@ export class Project {
       return;
     }
     const { name, folder } = parsed;
-    assertIsValidIdentifier(name);
     const objectDir = this.dir.join(`objects/${name}`);
     await objectDir.ensureDirectory();
     const objectYy = objectDir.join(`${name}.yy`);
@@ -882,6 +958,12 @@ export class Project {
   }
 
   @sequential
+  async reloadConfig() {
+    this.config = await this.stitchConfig.read({ fallback: {} });
+    return this.config;
+  }
+
+  @sequential
   async getWindowsName(): Promise<string | undefined> {
     const windowOptionsFile = this.dir.join(
       'options/windows/options_windows.yy',
@@ -912,15 +994,9 @@ export class Project {
     // Check for a stitch config file that specifies the runtime version.
     // If it exists, use that version. It's likely that it is correct, and this
     // way we don't have to download the releases summary.
-    const stitchConfig = this.dir
-      .join('stitch.config.json')
-      .withValidator(
-        z.object({ runtimeVersion: z.string().optional() }).passthrough(),
-      );
-    if (await stitchConfig.exists()) {
+    if (this.config.runtimeVersion) {
       logger.info('Found stitch config');
-      const config = await stitchConfig.read();
-      runtimeVersion = config.runtimeVersion;
+      runtimeVersion = this.config.runtimeVersion;
     }
     await this.yypWaiter; // To ensure that `this.ideVersion` exists
     const specFiles = await Native.listSpecFiles({
@@ -1020,13 +1096,14 @@ export class Project {
       this.onDiagnostics(options.onDiagnostics);
     }
     let t = Date.now();
-    this.nativeWaiter = this.loadGmlSpec();
+    await this.reloadConfig();
     assert(this.yypPath, 'Cannot initialize without a path');
     this.yypWaiter = Yy.read(this.yypPath.absolute, 'project').then((yyp) => {
       this.yyp = yyp;
       options?.onLoadProgress?.(5, 'Loaded project file');
       logger.info('Loaded yyp file!');
     });
+    this.nativeWaiter = this.loadGmlSpec();
     void this.nativeWaiter.then(() => {
       options?.onLoadProgress?.(5, 'Loaded GML spec');
     });
