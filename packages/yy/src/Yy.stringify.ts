@@ -15,8 +15,6 @@ const meta = {
   '\\': '\\\\',
 };
 
-const eol = `\r\n`; // GMS2 writes Windows-style line endings.
-
 function quote(string: string) {
   // If the string contains no control characters, no quote characters, and no
   // backslash characters, then we can safely slap some quotes around it.
@@ -47,6 +45,8 @@ export type AnyExceptPromise<T> = T extends Promise<any> ? never : T;
  */
 export function stringifyYy(yyData: any, yyp?: Yyp): string {
   const isNewFormat = yyIsNewFormat(yyData) || yyIsNewFormat(yyp);
+
+  const eol = isNewFormat ? '\n' : `\r\n`;
 
   let gap = '';
   let level = 0; // Level 1 are root elements
