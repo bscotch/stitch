@@ -746,10 +746,9 @@ export class GameMakerTreeProvider
           updated.push(sourcePath.name);
         } else {
           // Otherwise, create a new asset
-          const asset = await project.createSound(resourcePath, sourcePath);
+          await project.createSound(resourcePath, sourcePath);
           created.push(sourcePath.name);
         }
-        // await where.project!.upsertSound(sourceFile.fs
       } catch (err) {
         errors.push(err as Error);
       }
