@@ -1,5 +1,11 @@
 # @bscotch/stitch Changelog
 
+## 11.1.0 (2024-02-22)
+
+### Features
+
+- Now using the config package for cross-utility consistency
+
 ## 11.0.0 (2024-01-29)
 
 ### Features

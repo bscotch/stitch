@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.1.5 (2024-02-22)
+
+### Fixes
+
+- Now ensuring that '%Name' is definitely not in $GMSpriteFramesTrack objects
+
 ## 2.1.4 (2024-02-22)
 
 ### Fixes
