@@ -273,6 +273,7 @@ export class Project {
       .sort((a, b) =>
         `${a.filePath}/${a.name}`.localeCompare(`${b.filePath}/${b.name}`),
       );
+    // Note: Should check if there have been any changes, and only write if not!
     // No need to compare with what's already in there, just overwrite it!
     // GameMaker seems to sort these by full path, so we'll do the same to
     // prevent git noise.
