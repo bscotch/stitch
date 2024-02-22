@@ -1,0 +1,28 @@
+{
+  "$GMMainOptions":"",
+  "%Name":"Main",
+  "ConfigValues":{
+    "dev":{
+      "option_copy_on_write_enabled":"false",
+      "option_lastchanged":"16 March 2022 9:07:36",
+    },
+  },
+  "name":"Main",
+  "option_author":"",
+  "option_collision_compatibility":true,
+  "option_copy_on_write_enabled":false,
+  "option_draw_colour":4278190080,
+  "option_gameguid":"84f34fa2-fb86-4e67-81e4-dad42eb73ae4",
+  "option_gameid":"0",
+  "option_game_speed":60,
+  "option_mips_for_3d_textures":false,
+  "option_sci_usesci":false,
+  "option_spine_licence":true,
+  "option_steam_app_id":"1401730",
+  "option_template_description":null,
+  "option_template_icon":"${options_dir}/main/template_icon.png",
+  "option_template_image":"${base_options_dir}/main/template_image.png",
+  "option_window_colour":4278190080,
+  "resourceType":"GMMainOptions",
+  "resourceVersion":"2.0",
+}

@@ -161,13 +161,15 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
         // and wrap them in braces.
 
         // In the new format, the Channels object deep within a sprite has its keys newlined
-        const isChannels =
-          isNewFormat && pointer[pointer.length - 1] === 'Channels';
+        const needsLineBreak =
+          isNewFormat &&
+          (pointer.at(-1) === 'Channels' ||
+            pointer.find((p) => p === 'ConfigValues'));
 
         const v =
           partial.length === 0
             ? '{}'
-            : includeGaps || isChannels
+            : includeGaps || needsLineBreak
               ? `{${eol}` +
                 gap +
                 partial.join(`,${eol}` + gap) +
