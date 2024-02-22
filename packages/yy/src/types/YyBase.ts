@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { unstable } from './utility.js';
+import { nameField, unstable } from './utility.js';
 
 export type yyParentSchema = z.infer<typeof yyParentSchema>;
 export const yyParentSchema = z
@@ -11,7 +11,7 @@ export const yyParentSchema = z
 
 export type YyBase = z.infer<typeof yyBaseSchema>;
 export const yyBaseSchema = unstable({
-  ['%Name']: z.string().optional(),
+  [nameField]: z.string().optional(),
   ConfigValues: z.record(z.record(z.string())).optional(),
   name: z.string(),
   resourceType: z.string(),

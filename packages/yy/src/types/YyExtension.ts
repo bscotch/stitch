@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { yyParentSchema } from './YyBase.js';
+import { nameField } from './utility.js';
 
 export const yyExtensionStringTypeSchema = z
   .literal(1)
@@ -55,7 +56,7 @@ const yyExtensionFileSchema = z
 export type YyExtension = z.infer<typeof yyExtensionSchema>;
 export const yyExtensionSchema = z
   .object({
-    ['%Name']: z.string().optional(),
+    [nameField]: z.string().optional(),
     resourceType: z.literal('GMExtension').default('GMExtension'),
     resourceVersion: z.string().default('1.2'),
     name: z.string(),

@@ -2,6 +2,8 @@ import { z } from 'zod';
 import type { YyResourceType } from './YyBase.js';
 import type { YypResourceId } from './Yyp.js';
 
+export const nameField = '%Name';
+
 export function randomString(length = 32) {
   let a = '';
   for (let i = 0; i < length; i++) {
@@ -146,7 +148,7 @@ export function yyResourceIdSchemaGenerator(yyType: YyResourceType) {
 
 export function yyIsNewFormat<T>(yyData: T): yyData is T & { '%Name': string } {
   if (!yyData || typeof yyData !== 'object') return false;
-  if ('%Name' in yyData && yyData['%Name'] !== undefined) return true;
+  if (nameField in yyData && yyData[nameField] !== undefined) return true;
   if ('resourceType' in yyData && yyData.resourceType === '2.0') return true;
   return false;
 }

@@ -1,5 +1,5 @@
 import type { Yyp } from './types/Yyp.js';
-import { FixedNumber, yyIsNewFormat } from './types/utility.js';
+import { FixedNumber, nameField, yyIsNewFormat } from './types/utility.js';
 
 const escapable =
   // eslint-disable-next-line no-control-regex, no-misleading-character-class
@@ -245,13 +245,17 @@ function prepareForStringification<T>(
     ) {
       // Then we need to ensure that the file has the `%Name` key,
       // because we may be converting an old format to the new one.
-      yyDataCopy['%Name'] ||= yyData.name;
+      yyDataCopy[nameField] ||= yyData.name;
     }
     if (isNewFormat && hasResourceType) {
       // Then there should always be a resourceVersion key with value "2.0"
       yyDataCopy['resourceVersion'] = '2.0';
     }
 
+    if ('$GMSpriteFramesTrack' in yyData) {
+      // Make sure it doesn't have a '%Name' key, since that causes build failures
+      delete yyDataCopy[nameField];
+    }
     const keys = Object.keys(yyDataCopy) as (keyof T)[] as string[];
     keys.sort((a, b) => {
       if (!isNewFormat && hasResourceType) {

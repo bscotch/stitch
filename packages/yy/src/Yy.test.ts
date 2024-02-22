@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readdirSync } from 'fs';
 import { z } from 'zod';
 import { Yy } from './Yy.js';
 import { yyResourceTypes } from './types/YyBase.js';
-import { FixedNumber, fixedNumber } from './types/utility.js';
+import { FixedNumber, fixedNumber, nameField } from './types/utility.js';
 
 const sampleOutDir = './samples-out';
 mkdirSync(sampleOutDir, { recursive: true });
@@ -202,11 +202,11 @@ describe('Yy Files', function () {
         // (Can't check if stringification is exactly correct, because samples may end up with different formatting than GameMaker applies)
         // Write to disk so we can eyeball it
         await Yy.write(`${outFolder}/${sampleFile}`, parsed, resourceType);
-        if (parsed['%Name']) {
+        if (parsed[nameField]) {
           // Make sure that we can stringify and get it back in the new format
           const stringified = Yy.stringify(parsed, resourceType);
           const reparsed = Yy.parse(stringified, resourceType);
-          expect(reparsed['%Name']).to.equal(parsed['%Name']);
+          expect(reparsed[nameField]).to.equal(parsed[nameField]);
           expect(reparsed.resourceType).to.be.a('string');
           // @ts-expect-error
           expect(reparsed[`$${reparsed.resourceType}`]).to.be.a('string');
