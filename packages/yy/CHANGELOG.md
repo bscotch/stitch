@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.1.3 (2024-02-22)
+
+### Fixes
+
+- Fixed formatting of 'ConfigValues' entries to match the new format
+
 ## 2.1.2 (2024-02-21)
 
 ### Fixes
