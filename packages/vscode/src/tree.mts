@@ -11,6 +11,7 @@ import {
 import { pathy } from '@bscotch/pathy';
 import { isValidSpriteName } from '@bscotch/stitch-config';
 import os from 'node:os';
+import { fileURLToPath } from 'node:url';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
@@ -72,7 +73,7 @@ export class GameMakerTreeProvider
   protected readonly treeMimeType =
     'application/vnd.code.tree.bscotch-stitch-resources';
   readonly dragMimeTypes = [this.treeMimeType];
-  readonly dropMimeTypes = [this.treeMimeType];
+  readonly dropMimeTypes = [this.treeMimeType, 'text/uri-list'];
 
   private _onDidChangeTreeData: vscode.EventEmitter<
     Treeable | undefined | null | void
@@ -102,6 +103,16 @@ export class GameMakerTreeProvider
     return this.workspace.projects;
   }
 
+  protected async handleDroppedFiles(
+    targetFolder: GameMakerFolder,
+    uris: vscode.Uri[],
+  ) {
+    const soundFiles = uris.filter((u) => u.fsPath.match(/\.(ogg|mp3|wav)$/i));
+    if (soundFiles.length) {
+      await this.upsertSounds(targetFolder, soundFiles);
+    }
+  }
+
   handleDrop(target: Treeable | undefined, dataTransfer: vscode.DataTransfer) {
     if (!target) return;
     if (!(target instanceof GameMakerFolder)) {
@@ -114,6 +125,19 @@ export class GameMakerTreeProvider
       target.isProjectFolder
     ) {
       return;
+    }
+
+    const droppingFiles = dataTransfer
+      .get('text/uri-list')
+      ?.value?.split?.(/\r?\n/g);
+    if (Array.isArray(droppingFiles) && droppingFiles.length) {
+      this.handleDroppedFiles(
+        target,
+        droppingFiles.map((p) => {
+          const asPath = fileURLToPath(p);
+          return vscode.Uri.file(asPath);
+        }),
+      );
     }
 
     // Filter down the list to only root items.
