@@ -89,10 +89,14 @@ export function setProjectVersion(
         string
       >;
       const platform = paths.basename(paths.dirname(file)) as Gms2Platform;
-      if (gms2Platforms.includes(platform) && platform !== 'switch') {
+      if (gms2Platforms.includes(platform)) {
         const versionKey = versionKeyForPlatform(platform);
-        content[versionKey] = normalizedVersionString;
-        project.storage.writeYySync(file, content);
+        // Only set the version if that field exists in the file,
+        // otherwise GameMaker will crash.
+        if (content[versionKey]) {
+          content[versionKey] = normalizedVersionString;
+          project.storage.writeYySync(file, content);
+        }
       }
     }
     // Switch *.nmeta file needs special treatment
