@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.61.1 (2024-02-23)
+
+### Fixes
+
+- Improved validity checks for asset names
+
 ## 1.61.0 (2024-02-22)
 
 ### Features

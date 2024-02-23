@@ -1,5 +1,11 @@
 # @bscotch/stitch Changelog
 
+## 11.1.1 (2024-02-23)
+
+### Fixes
+
+- Now only writing the version to options files if they already have a matching field, to prevent GameMaker choking on unexpected fields
+
 ## 11.1.0 (2024-02-22)
 
 ### Features

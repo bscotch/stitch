@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.4.1 (2024-02-23)
+
+### Fixes
+
+- Improved validity checks for asset names
+
 ## 1.4.0 (2024-02-22)
 
 ### Features
