@@ -9,6 +9,16 @@ const allowedNames = z
 export const jsonSchemaUrl =
   'https://raw.githubusercontent.com/bscotch/stitch/develop/packages/config/schemas/stitch.config.schema.json';
 
+export type NewSoundDefaults = z.infer<typeof newSoundDefaultsSchema>;
+export const newSoundDefaultsSchema = z.object({
+  mono: z
+    .boolean()
+    .optional()
+    .describe(
+      'Whether to default new sounds to mono. When not set, the default is stereo.',
+    ),
+});
+
 export type StitchConfig = z.infer<typeof stitchConfigSchema>;
 export const stitchConfigSchema = z
   .object({
@@ -42,16 +52,7 @@ export const stitchConfigSchema = z
       .object({
         allowedNames,
         defaults: z
-          .record(
-            z.object({
-              mono: z
-                .boolean()
-                .optional()
-                .describe(
-                  'Whether to default new sounds to mono. When not set, the default is stereo.',
-                ),
-            }),
-          )
+          .record(newSoundDefaultsSchema)
           .optional()
           .describe(
             'Default properties for new sound assets, by name pattern. E.g. `{".*":{ mono: true}}` defaults all new sounds to mono. The first matching pattern is used.',
