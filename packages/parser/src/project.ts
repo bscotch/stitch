@@ -1,5 +1,7 @@
 import { pathy, Pathy } from '@bscotch/pathy';
 import {
+  getDefaultsForNewSound,
+  isValidSoundName,
   stitchConfigFilename,
   stitchConfigSchema,
   type StitchConfig,
@@ -450,28 +452,12 @@ export class Project {
       return;
     }
     const { name, folder } = parsed;
-    const rules = this.config.newSoundRules;
-    if (rules?.allowedNames?.length) {
-      assert(
-        rules.allowedNames.some((pattern) => name.match(new RegExp(pattern))),
-        `Sound name '${name}' does not match allowed patterns: ${rules.allowedNames.join(
-          '|',
-        )}`,
-      );
-    }
-    let mono = false;
-    if (rules?.defaults) {
-      const patterns = Object.keys(rules.defaults);
-      for (const pattern of patterns) {
-        if (name.match(new RegExp(pattern))) {
-          const defaults = rules.defaults[pattern];
-          if (defaults.mono) {
-            mono = true;
-          }
-          break;
-        }
-      }
-    }
+    assert(
+      isValidSoundName(name, this.config),
+      `Sound name '${name}' does not match allowed patterns`,
+    );
+
+    const defaults = getDefaultsForNewSound(name, this.config);
     const soundDir = this.dir.join(`sounds/${name}`);
     await soundDir.ensureDirectory();
     const soundYy = soundDir.join(`${name}.yy`);
@@ -488,7 +474,7 @@ export class Project {
           name: folder.name,
           path: folder.folderPath,
         },
-        type: mono ? SoundChannel.Mono : SoundChannel.Stereo,
+        type: defaults?.mono ? SoundChannel.Mono : SoundChannel.Stereo,
         soundFile: soundFileName,
       },
       'sounds',

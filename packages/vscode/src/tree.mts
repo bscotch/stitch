@@ -9,6 +9,7 @@ import {
   objectEvents,
 } from '@bscotch/gml-parser';
 import { pathy } from '@bscotch/pathy';
+import { isValidSpriteName } from '@bscotch/stitch-config';
 import os from 'node:os';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
@@ -682,6 +683,11 @@ export class GameMakerTreeProvider
       return;
     }
     const { folder, name } = info;
+    await project.reloadConfig();
+    assertLoudly(
+      isValidSpriteName(name, project.config),
+      'Sprite name does not match allowed patterns.',
+    );
 
     const spriteDir = await this.getSpriteSource();
     if (!spriteDir) return;
