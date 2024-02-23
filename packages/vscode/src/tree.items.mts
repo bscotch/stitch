@@ -110,6 +110,10 @@ export class TreeAsset extends StitchTreeItemBase<'asset'> {
     return this.parent.path + '/' + this.asset.name;
   }
 
+  get project() {
+    return this.parent.project;
+  }
+
   refreshTreeItem() {
     let file: vscode.Uri;
     const asset = this.asset;
@@ -196,6 +200,10 @@ export class TreeSpriteFrame extends StitchTreeItemBase<'sprite-frame'> {
       arguments: [this.iconPath],
     };
     this.id = this.parent.id + '/' + this.imagePath.name;
+  }
+
+  get project() {
+    return this.parent.project;
   }
 }
 

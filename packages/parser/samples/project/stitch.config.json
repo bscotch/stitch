@@ -9,5 +9,8 @@
         "mono": true
       }
     }
+  },
+  "newSpriteRules": {
+    "allowedNames": ["^sp_"]
   }
 }

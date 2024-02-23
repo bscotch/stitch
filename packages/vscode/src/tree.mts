@@ -103,29 +103,49 @@ export class GameMakerTreeProvider
     return this.workspace.projects;
   }
 
-  protected async handleDroppedFiles(
-    targetFolder: GameMakerFolder,
-    uris: vscode.Uri[],
-  ) {
+  protected async handleDroppedFiles(target: Treeable, uris: vscode.Uri[]) {
+    const project = 'project' in target ? target.project : undefined;
+    assertLoudly(project, 'Drop target not supported.');
     const soundFiles = uris.filter((u) => u.fsPath.match(/\.(ogg|mp3|wav)$/i));
     if (soundFiles.length) {
-      await this.upsertSounds(targetFolder, soundFiles);
+      assertLoudly(
+        target instanceof GameMakerFolder,
+        'Cannot drop sounds here.',
+      );
+      await this.upsertSounds(target, soundFiles);
+    }
+    const imageFiles = uris.filter((u) => u.fsPath.match(/\.png$/));
+    if (imageFiles.length) {
+      await project.reloadConfig();
+      if (target instanceof GameMakerFolder) {
+        // Then we're creating new sprites with these images
+        for (const imageFile of imageFiles) {
+          const sourcePath = pathyFromUri(imageFile);
+          const spriteName = sourcePath.name;
+          const dest = target.path + '/' + spriteName;
+          try {
+            const newSprite = await project.createSprite(
+              dest,
+              pathyFromUri(imageFile),
+            );
+            this.afterNewAssetCreated(newSprite, target, target);
+          } catch (err) {
+            showErrorMessage(`Failed to create sprite ${spriteName}: ${err}`);
+          }
+        }
+      } else if (
+        target instanceof TreeAsset &&
+        isAssetOfKind(target.asset, 'sprites')
+      ) {
+        // TODO: Then we're adding frames to this sprite
+      } else if (target instanceof TreeSpriteFrame) {
+        // TODO: Then we're adding a frame after this one
+      }
     }
   }
 
   handleDrop(target: Treeable | undefined, dataTransfer: vscode.DataTransfer) {
     if (!target) return;
-    if (!(target instanceof GameMakerFolder)) {
-      // Then change the target to the parent folder
-      target = target.parent;
-    }
-    if (
-      !target ||
-      !(target instanceof GameMakerFolder) ||
-      target.isProjectFolder
-    ) {
-      return;
-    }
 
     const droppingFiles = dataTransfer
       .get('text/uri-list')
@@ -138,6 +158,18 @@ export class GameMakerTreeProvider
           return vscode.Uri.file(asPath);
         }),
       );
+    }
+
+    if (!(target instanceof GameMakerFolder)) {
+      // Then change the target to the parent folder
+      target = target.parent;
+    }
+    if (
+      !target ||
+      !(target instanceof GameMakerFolder) ||
+      target.isProjectFolder
+    ) {
+      return;
     }
 
     // Filter down the list to only root items.

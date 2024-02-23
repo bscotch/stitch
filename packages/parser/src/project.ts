@@ -2,6 +2,7 @@ import { pathy, Pathy } from '@bscotch/pathy';
 import {
   getDefaultsForNewSound,
   isValidSoundName,
+  isValidSpriteName,
   stitchConfigFilename,
   stitchConfigSchema,
   type StitchConfig,
@@ -9,11 +10,13 @@ import {
 import { sequential } from '@bscotch/utility';
 import {
   SoundChannel,
+  SpriteType,
   Yy,
   Yyp,
   yyParentSchema,
   yypFolderSchema,
   YySchema,
+  yySpriteSchema,
   type YypConfig,
   type YypFolder,
   type YypResource,
@@ -32,6 +35,7 @@ import { StructType, Type } from './types.js';
 import {
   assert,
   assertIsValidIdentifier,
+  getPngSize,
   groupPathToPosix,
   ok,
   throwError,
@@ -483,6 +487,61 @@ export class Project {
 
     // Update the yyp file
     const info = await this.addAssetToYyp(soundYy.absolute);
+
+    // Create and add the asset
+    const asset = await Asset.from(this, info);
+    if (asset) {
+      this.registerAsset(asset);
+    }
+    return asset;
+  }
+
+  @sequential
+  async createSprite(path: string, fromImageFile: string | Pathy) {
+    // Create the yy file
+    const parsed = await this.parseNewAssetPath(path);
+    if (!parsed) {
+      return;
+    }
+    const { name, folder } = parsed;
+    assert(
+      isValidSpriteName(name, this.config),
+      `Sprite name '${name}' does not match allowed patterns`,
+    );
+
+    const spriteDir = this.dir.join(`sprites/${name}`);
+    await spriteDir.ensureDirectory();
+    const spriteYy = spriteDir.join(`${name}.yy`);
+
+    // Get the source image dimensions
+    fromImageFile = pathy(fromImageFile);
+    assert(fromImageFile.hasExtension('png'), `Expected a .png file`);
+    const { width, height } = await getPngSize(fromImageFile);
+    const xorigin = Math.floor(width / 2) - 1;
+    const yorigin = Math.floor(height / 2) - 1;
+    const frames: any[] = [];
+    frames.length = 1;
+    const yy = yySpriteSchema.parse({
+      name,
+      parent: {
+        name: folder.name,
+        path: folder.folderPath,
+      },
+      type: SpriteType.Default,
+      width,
+      height,
+      sequence: { xorigin, yorigin },
+      frames,
+    });
+    // Now we'll have a frameId
+    const frameId = yy.frames[0].name;
+    assert(frameId, `Expected a frameId`);
+    await fromImageFile.copy(spriteDir.join(`${frameId}.png`));
+
+    await Yy.write(spriteYy.absolute, yy, 'sprites', this.yyp);
+
+    // Update the yyp file
+    const info = await this.addAssetToYyp(spriteYy.absolute);
 
     // Create and add the asset
     const asset = await Asset.from(this, info);

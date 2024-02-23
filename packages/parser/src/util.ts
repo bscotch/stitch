@@ -1,4 +1,5 @@
 import { Pathy } from '@bscotch/pathy';
+import fs from 'node:fs/promises';
 import { logger } from './logger.js';
 import type { IRange, LinePosition } from './project.location.js';
 
@@ -179,4 +180,24 @@ export async function findYyFile(dir: Pathy): Promise<Pathy> {
     yyFiles.find((p) => p.name.toLowerCase() === dirName.toLowerCase());
   assert(match, `Multiple .yy files found in ${dir}`);
   return match;
+}
+
+/**
+ * Given the path to an image file, read just enough bytes to
+ * ensure it's a PNG and to get its width and height
+ */
+export async function getPngSize(path: string | Pathy) {
+  const size = { width: 0, height: 0 };
+  const fd = await fs.open(path.toString(), 'r');
+  try {
+    const buf = Buffer.alloc(24);
+    await fd.read(buf, 0, 24, 16);
+    size.width = buf.readUInt32BE(0);
+    size.height = buf.readUInt32BE(4);
+  } finally {
+    await fd.close();
+  }
+  assert(size.width > 0, `Invalid width for ${path}`);
+  assert(size.height > 0, `Invalid height for ${path}`);
+  return size;
 }
