@@ -1,5 +1,12 @@
 # Stitch Changelog
 
+## 1.63.0 (2024-02-23)
+
+### Features
+
+- Added drag-drop support for external images (which become new sprites)
+- Can now drag sound files from external sources into the asset tree
+
 ## 1.61.1 (2024-02-23)
 
 ### Fixes

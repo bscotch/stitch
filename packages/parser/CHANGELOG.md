@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.6.0 (2024-02-23)
+
+### Features
+
+- Added drag-drop support for external images (which become new sprites)
+
 ## 1.4.1 (2024-02-23)
 
 ### Fixes
