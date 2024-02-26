@@ -87,8 +87,11 @@ export class GameMakerTreeProvider
     return this.workspace.projects;
   }
 
-  handleDrop(target: Treeable | undefined, dataTransfer: vscode.DataTransfer) {
-    return handleDrop(this, target, dataTransfer);
+  async handleDrop(
+    target: Treeable | undefined,
+    dataTransfer: vscode.DataTransfer,
+  ) {
+    return await handleDrop(this, target, dataTransfer);
   }
 
   handleDrag(source: readonly Treeable[], dataTransfer: vscode.DataTransfer) {

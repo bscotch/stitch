@@ -26,6 +26,12 @@ async function handleDroppedFiles(
     .map((u) => pathyFromUri(u));
   if (imageFiles.length) {
     await project.reloadConfig();
+    const targetSprite =
+      target instanceof TreeAsset && isAssetOfKind(target.asset, 'sprites')
+        ? target.asset
+        : target instanceof TreeSpriteFrame
+          ? target.parent.asset
+          : undefined;
     if (target instanceof GameMakerFolder) {
       // Then we're creating new sprites with these images
       for (const imageFile of imageFiles) {
@@ -38,30 +44,26 @@ async function handleDroppedFiles(
           showErrorMessage(`Failed to create sprite ${spriteName}: ${err}`);
         }
       }
-    } else if (
-      target instanceof TreeAsset &&
-      isAssetOfKind(target.asset, 'sprites')
-    ) {
-      await target.asset.addFrames(imageFiles);
+    } else if (targetSprite) {
+      await targetSprite.addFrames(imageFiles);
       tree.changed(target);
-    } else if (target instanceof TreeSpriteFrame) {
-      // TODO: Then we're adding a frame after this one
     }
   }
 }
 
-export function handleDrop(
+export async function handleDrop(
   tree: GameMakerTreeProvider,
   target: Treeable | undefined,
   dataTransfer: vscode.DataTransfer,
 ) {
   if (!target) return;
 
+  // Handle dropped external files
   const droppingFiles = dataTransfer
     .get('text/uri-list')
     ?.value?.split?.(/\r?\n/g);
   if (Array.isArray(droppingFiles) && droppingFiles.length) {
-    handleDroppedFiles(
+    await handleDroppedFiles(
       tree,
       target,
       droppingFiles.map((p) => {
@@ -69,8 +71,54 @@ export function handleDrop(
         return vscode.Uri.file(asPath);
       }),
     );
+    return;
   }
 
+  // Otherwise we're dropping something internal to the tree
+  const dropping = dataTransfer.get(tree.treeMimeType)?.value as Treeable[];
+  if (!dropping?.length) return;
+
+  // Handle sprite subimage re-organization
+  if (dropping.find((d) => d instanceof TreeSpriteFrame)) {
+    const sequentialDropFrames = dropping.filter(
+      (d) => d instanceof TreeSpriteFrame,
+    ) as TreeSpriteFrame[];
+    const sequentialDropFrameIds = sequentialDropFrames.map((f) => f.frameId);
+    assertLoudly(
+      target instanceof TreeAsset || target instanceof TreeSpriteFrame,
+      'Invalid drop target for a sprite frame.',
+    );
+    const targetSprite =
+      target instanceof TreeAsset ? target.asset : target.parent.asset;
+    assertLoudly(
+      isAssetOfKind(targetSprite, 'sprites'),
+      `Target must be a Sprite!`,
+    );
+    // Every frame must be a member of of the same sprite
+    assertLoudly(
+      sequentialDropFrames.every((f) => f.parent.asset === targetSprite),
+      `Frames must already belong to the target sprite!`,
+    );
+    let currentFrames = targetSprite.frameIds;
+    // Delete the dropping frames from that array so they don't get duped
+    currentFrames = currentFrames.filter(
+      (f) => !sequentialDropFrameIds.includes(f),
+    );
+    // Find the position of the drop target in what's left. If the target is the parent sprite, put first in the frames
+    const dropPosition =
+      target instanceof TreeSpriteFrame
+        ? currentFrames.findIndex(
+            (f) => f === (target as TreeSpriteFrame).frameId,
+          )
+        : -1;
+    // Splice in the moved frames
+    currentFrames.splice(dropPosition + 1, 0, ...sequentialDropFrameIds);
+    await targetSprite.reorganizeFrames(currentFrames);
+    tree.changed(target instanceof TreeSpriteFrame ? target.parent : target);
+    return;
+  }
+
+  // Handle folder-based organization
   if (!(target instanceof GameMakerFolder)) {
     // Then change the target to the parent folder
     target = target.parent;
@@ -88,8 +136,6 @@ export function handleDrop(
   // and then any assets that are not in any of those folders.
   // We also need to make sure that we aren't moving a folder
   // into its own child!
-
-  const dropping = dataTransfer.get(tree.treeMimeType)?.value as Treeable[];
   const folders = new Set<GameMakerFolder>();
   const assets = new Set<TreeAsset>();
   // First find the root-most folders
@@ -182,11 +228,11 @@ export function handleDrop(
   );
 }
 
-export async function handleDrag(
+export function handleDrag(
   tree: GameMakerTreeProvider,
   source: readonly Treeable[],
   dataTransfer: vscode.DataTransfer,
-): Promise<void> {
+) {
   const item = new vscode.DataTransferItem(source);
   dataTransfer.set(tree.treeMimeType, item);
 }

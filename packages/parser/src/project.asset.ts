@@ -285,6 +285,14 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     } as any;
   }
 
+  get frameIds(): string[] {
+    if (this.assetKind !== 'sprites') {
+      return [];
+    }
+    const yy = this.yy as YySprite;
+    return yy.frames.map((f) => f.name);
+  }
+
   get framePaths(): Pathy<Buffer>[] {
     const paths: Pathy<Buffer>[] = [];
     if (this.assetKind !== 'sprites') {
@@ -350,6 +358,38 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     await this.saveYy();
   }
 
+  /**
+   * Re-order the existing frames of a sprite.
+   * Any frames not included in the new order will be deleted.
+   */
+  @sequential
+  async reorganizeFrames(newFrameIdOrder: string[]) {
+    assert(this.isSprite, 'Can only delete frames from a sprite');
+    assert(!this.isSpineSprite, 'Cannot delete frames from a Spine sprite');
+    if (!newFrameIdOrder.length) return;
+    let yy = this.yy as YySprite;
+    const oldFrameIds = yy.frames.map((x) => x.name);
+    assert(
+      newFrameIdOrder.every((x) => oldFrameIds.includes(x)),
+      "Can't reorder frames that don't exist",
+    );
+    yy.frames = newFrameIdOrder.map((frameId) => {
+      const oldFrame = yy.frames.find((x) => x.name === frameId);
+      assert(oldFrame, 'Frame not found');
+      return oldFrame;
+    });
+    await this.saveYy();
+    // Delete any old frame images
+    await Promise.all(
+      oldFrameIds
+        .filter((x) => !newFrameIdOrder.includes(x))
+        .map((frameId) => {
+          const path = this.dir.join(`${frameId}.png`);
+          return path.delete();
+        }),
+    );
+  }
+
   @sequential
   async deleteFrames(frameIds: string[]) {
     assert(this.isSprite, 'Can only delete frames from a sprite');
@@ -372,7 +412,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   async addFrames(sourceImages: Pathy[]) {
     assert(this.isSprite, 'Can only add frames to a sprite');
     assert(!this.isSpineSprite, 'Cannot add frames to a Spine sprite');
-    assert(sourceImages.length, 'Must provide at least one frame');
+    if (!sourceImages.length) return;
     assert(
       sourceImages.every((x) => x.hasExtension('png')),
       'All frames must be PNGs',
