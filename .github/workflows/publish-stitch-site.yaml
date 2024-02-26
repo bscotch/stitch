@@ -3,8 +3,8 @@ name: Publish Stitch Website
 on:
   workflow_dispatch:
   schedule:
-    # https://crontab.guru/#22_13,17,20,22_*_*_1-5
-    - cron: '22 13,17,20,22 * * 1-5'
+    # https://crontab.guru/#0_6_*_*_1-5
+    - cron: '0 6 * * 1-5'
 
 permissions:
   contents: read
