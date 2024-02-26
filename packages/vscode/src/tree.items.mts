@@ -10,6 +10,15 @@ import { getAssetIcon } from './icons.mjs';
 import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
 
+export type Treeable =
+  | TreeAsset
+  | TreeCode
+  | TreeSpriteFrame
+  | TreeShaderFile
+  | TreeFilterGroup
+  | TreeFilter
+  | GameMakerFolder;
+
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
 export class TreeFilterGroup extends StitchTreeItemBase<'tree-filter-group'> {

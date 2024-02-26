@@ -11,7 +11,6 @@ import {
 import { pathy } from '@bscotch/pathy';
 import { isValidSpriteName } from '@bscotch/stitch-config';
 import os from 'node:os';
-import { fileURLToPath } from 'node:url';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
@@ -28,6 +27,7 @@ import {
   uriFromCodeFile,
 } from './lib.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
+import { handleDrag, handleDrop } from './tree.dragDrop.mjs';
 import {
   GameMakerFolder,
   GameMakerProjectFolder,
@@ -40,28 +40,13 @@ import {
   TreeFilterGroup,
   TreeShaderFile,
   TreeSpriteFrame,
+  type Treeable,
 } from './tree.items.mjs';
 import {
   ensureFolders,
   getPathWithSelection,
   validateFolderName,
 } from './tree.utility.mjs';
-
-/**
- * Tree Structure:
- *
- * - GameMakerProjectFolder
- *   -
- */
-
-export type Treeable =
-  | TreeAsset
-  | TreeCode
-  | TreeSpriteFrame
-  | TreeShaderFile
-  | TreeFilterGroup
-  | TreeFilter
-  | GameMakerFolder;
 
 export class GameMakerTreeProvider
   implements
@@ -70,8 +55,7 @@ export class GameMakerTreeProvider
 {
   tree = new GameMakerRootFolder();
   view!: vscode.TreeView<Treeable>;
-  protected readonly treeMimeType =
-    'application/vnd.code.tree.bscotch-stitch-resources';
+  readonly treeMimeType = 'application/vnd.code.tree.bscotch-stitch-resources';
   readonly dragMimeTypes = [this.treeMimeType];
   readonly dropMimeTypes = [this.treeMimeType, 'text/uri-list'];
 
@@ -90,8 +74,8 @@ export class GameMakerTreeProvider
       const item = TreeAsset.lookup.get(asset);
       if (item) {
         item.refreshTreeItem();
-        this._onDidChangeTreeData.fire(item.parent);
-        this._onDidChangeTreeData.fire(item);
+        this.changed(item.parent);
+        this.changed(item);
       }
     });
     stitchEvents.on('project-changed', (project) => {
@@ -103,179 +87,16 @@ export class GameMakerTreeProvider
     return this.workspace.projects;
   }
 
-  protected async handleDroppedFiles(target: Treeable, uris: vscode.Uri[]) {
-    const project = 'project' in target ? target.project : undefined;
-    assertLoudly(project, 'Drop target not supported.');
-    const soundFiles = uris.filter((u) => u.fsPath.match(/\.(ogg|mp3|wav)$/i));
-    if (soundFiles.length) {
-      assertLoudly(
-        target instanceof GameMakerFolder,
-        'Cannot drop sounds here.',
-      );
-      await this.upsertSounds(target, soundFiles);
-    }
-    const imageFiles = uris
-      .filter((u) => u.fsPath.match(/\.png$/))
-      .map((u) => pathyFromUri(u));
-    if (imageFiles.length) {
-      await project.reloadConfig();
-      if (target instanceof GameMakerFolder) {
-        // Then we're creating new sprites with these images
-        for (const imageFile of imageFiles) {
-          const spriteName = imageFile.name;
-          const dest = target.path + '/' + spriteName;
-          try {
-            const newSprite = await project.createSprite(dest, imageFile);
-            this.afterNewAssetCreated(newSprite, target, target);
-          } catch (err) {
-            showErrorMessage(`Failed to create sprite ${spriteName}: ${err}`);
-          }
-        }
-      } else if (
-        target instanceof TreeAsset &&
-        isAssetOfKind(target.asset, 'sprites')
-      ) {
-        await target.asset.addFrames(imageFiles);
-        this._onDidChangeTreeData.fire(target);
-      } else if (target instanceof TreeSpriteFrame) {
-        // TODO: Then we're adding a frame after this one
-      }
-    }
-  }
-
   handleDrop(target: Treeable | undefined, dataTransfer: vscode.DataTransfer) {
-    if (!target) return;
-
-    const droppingFiles = dataTransfer
-      .get('text/uri-list')
-      ?.value?.split?.(/\r?\n/g);
-    if (Array.isArray(droppingFiles) && droppingFiles.length) {
-      this.handleDroppedFiles(
-        target,
-        droppingFiles.map((p) => {
-          const asPath = fileURLToPath(p);
-          return vscode.Uri.file(asPath);
-        }),
-      );
-    }
-
-    if (!(target instanceof GameMakerFolder)) {
-      // Then change the target to the parent folder
-      target = target.parent;
-    }
-    if (
-      !target ||
-      !(target instanceof GameMakerFolder) ||
-      target.isProjectFolder
-    ) {
-      return;
-    }
-
-    // Filter down the list to only root items.
-    // Basically, we want root - most folders only,
-    // and then any assets that are not in any of those folders.
-    // We also need to make sure that we aren't moving a folder
-    // into its own child!
-
-    const dropping = dataTransfer.get(this.treeMimeType)?.value as Treeable[];
-    const folders = new Set<GameMakerFolder>();
-    const assets = new Set<TreeAsset>();
-    // First find the root-most folders
-    outer: for (const item of dropping) {
-      if (!(item instanceof GameMakerFolder)) {
-        continue;
-      }
-      // Check for circularity
-      if (target.isChildOf(item) || target === item) {
-        continue;
-      }
-
-      // If this is the first/only item, just add it
-      if (!folders.size) {
-        folders.add(item);
-        continue;
-      }
-      // If this folder is a parent of any of the others, remove those others
-      for (const folder of folders) {
-        if (item.isChildOf(folder)) {
-          // Then we can skip this one!
-          continue outer;
-        }
-        if (item.isParentOf(folder)) {
-          // Then we need to remove that folder, since the current item
-          // is further rootward
-          folders.delete(folder);
-        }
-      }
-      folders.add(item);
-    }
-    // Then add any assets that aren't in any of these folders
-    outer: for (const item of dropping) {
-      if (item instanceof TreeAsset) {
-        for (const folder of folders) {
-          if (item.parent.isChildOf(folder)) {
-            continue outer;
-          }
-        }
-        assets.add(item);
-      }
-    }
-
-    // Now we have a NON-OVERLAPPING set of folders and assets to move!
-
-    // "Move" folders by renaming them. Basically just need to change their
-    // parent path to the target folder's path.
-    const totalRenames = folders.size + assets.size;
-    let renameCount = 0;
-    if (!totalRenames) return;
-
-    return vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: `Moving stuff.`,
-        cancellable: false,
-      },
-      async (progress) => {
-        if (!(target instanceof GameMakerFolder)) {
-          return;
-        }
-        for (const folder of folders) {
-          const newPath = `${target.path}/${folder.name}`;
-          ensureFolders(newPath, target.heirarchy[0]);
-          await target.project!.renameFolder(folder.path, newPath);
-          renameCount++;
-          progress.report({
-            increment: (renameCount / totalRenames) * 100,
-            message: `Moving root-most folders...`,
-          });
-        }
-        // Assets can be moved in parallel since they store their
-        // folder in their own file.
-        const waits: Promise<any>[] = [];
-        for (const asset of assets) {
-          waits.push(
-            asset.asset.moveToFolder(target.path).then(() => {
-              renameCount++;
-              progress.report({
-                increment: (renameCount / totalRenames) * 100,
-                message: `Moving assets...`,
-              });
-            }),
-          );
-        }
-        await Promise.all(waits);
-        // Move all of the assets!
-        this.rebuild();
-      },
-    );
+    return handleDrop(this, target, dataTransfer);
   }
 
-  handleDrag(
-    source: readonly Treeable[],
-    dataTransfer: vscode.DataTransfer,
-  ): void | Thenable<void> {
-    const item = new vscode.DataTransferItem(source);
-    dataTransfer.set(this.treeMimeType, item);
+  handleDrag(source: readonly Treeable[], dataTransfer: vscode.DataTransfer) {
+    handleDrag(this, source, dataTransfer);
+  }
+
+  changed(item?: Treeable) {
+    this._onDidChangeTreeData.fire(item);
   }
 
   /**
@@ -437,7 +258,7 @@ export class GameMakerTreeProvider
     return { folder, path, name };
   }
 
-  protected afterNewAssetCreated(
+  afterNewAssetCreated(
     asset: Asset | undefined,
     folder: GameMakerFolder,
     addedTo: GameMakerFolder,
@@ -447,7 +268,7 @@ export class GameMakerTreeProvider
       return;
     }
     const treeItem = folder.addResource(new TreeAsset(folder, asset));
-    this._onDidChangeTreeData.fire(addedTo);
+    this.changed(addedTo);
     this.view.reveal(treeItem, { focus: true });
   }
 
@@ -612,7 +433,7 @@ export class GameMakerTreeProvider
     ) {
       objectItem.onCreateEvent(eventInfo);
     }
-    this._onDidChangeTreeData.fire(objectItem);
+    this.changed(objectItem);
     this.view.reveal(objectItem);
     vscode.window.showTextDocument(uriFromCodeFile(code));
   }
@@ -654,7 +475,7 @@ export class GameMakerTreeProvider
       projectYypPath: project.yypPath.absolute,
       yyp: project.yyp,
     });
-    this._onDidChangeTreeData.fire(item);
+    this.changed(item);
     this.view.reveal(item, { focus: true });
   }
 
@@ -829,7 +650,7 @@ export class GameMakerTreeProvider
         `Created sounds:\n${created.join(', ')}`,
       );
     }
-    this._onDidChangeTreeData.fire(where);
+    this.changed(where);
   }
 
   async createScript(where: GameMakerFolder) {
@@ -910,7 +731,7 @@ export class GameMakerTreeProvider
   async deleteSpriteFrame(item: TreeSpriteFrame) {
     const asset = item.parent.asset;
     await asset.deleteFrames([item.frameId]);
-    this._onDidChangeTreeData.fire(item.parent);
+    this.changed(item.parent);
   }
 
   async duplicateAsset(item: TreeAsset) {
@@ -939,7 +760,7 @@ export class GameMakerTreeProvider
       return;
     }
     const folder = ensureFolders(newFolderName, where.heirarchy[0]);
-    this._onDidChangeTreeData.fire(where.heirarchy[0]);
+    this.changed(where.heirarchy[0]);
     // Ensure that this folder exists in the actual project.
     await where.project!.createFolder(folder.path);
     this.rebuild();
@@ -1079,7 +900,7 @@ export class GameMakerTreeProvider
         }
       }
     }
-    this._onDidChangeTreeData.fire();
+    this.changed();
     for (const element of toReveal) {
       this.view.reveal(element, { focus: false, expand: false, select: false });
     }
@@ -1117,7 +938,7 @@ export class GameMakerTreeProvider
     if (requiresRefresh) {
       this.rebuild();
     } else {
-      this._onDidChangeTreeData.fire(filter.parent);
+      this.changed(filter.parent);
     }
   }
 
@@ -1146,7 +967,7 @@ export class GameMakerTreeProvider
       }
       TreeAsset.lookup.delete(asset);
       treeItem.parent.removeResource(treeItem);
-      this._onDidChangeTreeData.fire(treeItem.parent);
+      this.changed(treeItem.parent);
     });
     stitchEvents.on('code-file-deleted', (code) => {
       const treeItem = TreeCode.lookup.get(code);
@@ -1154,7 +975,7 @@ export class GameMakerTreeProvider
         return;
       }
       TreeCode.lookup.delete(code);
-      this._onDidChangeTreeData.fire(treeItem.parent);
+      this.changed(treeItem.parent);
     });
 
     // Return subscriptions to owned commands and this view
