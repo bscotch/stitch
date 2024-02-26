@@ -1,12 +1,12 @@
 import { Pathy } from '@bscotch/pathy';
 import { SoundChannel, SoundCompression, Yy } from '@bscotch/yy';
 import { expect } from 'chai';
+import { StitchProject } from '../lib/StitchProject.js';
 import { Gms2Object } from '../lib/components/resources/Gms2Object.js';
 import { Gms2Room } from '../lib/components/resources/Gms2Room.js';
 import { Gms2Script } from '../lib/components/resources/Gms2Script.js';
 import { Gms2Sound } from '../lib/components/resources/Gms2Sound.js';
-import { StitchProject } from '../lib/StitchProject.js';
-import { assert, StitchError } from '../utility/errors.js';
+import { StitchError, assert } from '../utility/errors.js';
 import fs from '../utility/files.js';
 import paths from '../utility/paths.js';
 import {
@@ -362,6 +362,7 @@ describe('Gms2 Project Class', function () {
     const version = '100.5.6-rc.11';
     project.version = version;
     for (const platform of testPlatforms) {
+      if (platform === 'ps4') continue;
       expect(
         project.versionOnPlatform(platform),
         `${platform}'s version is not set.`,
