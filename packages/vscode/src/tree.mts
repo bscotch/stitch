@@ -114,20 +114,18 @@ export class GameMakerTreeProvider
       );
       await this.upsertSounds(target, soundFiles);
     }
-    const imageFiles = uris.filter((u) => u.fsPath.match(/\.png$/));
+    const imageFiles = uris
+      .filter((u) => u.fsPath.match(/\.png$/))
+      .map((u) => pathyFromUri(u));
     if (imageFiles.length) {
       await project.reloadConfig();
       if (target instanceof GameMakerFolder) {
         // Then we're creating new sprites with these images
         for (const imageFile of imageFiles) {
-          const sourcePath = pathyFromUri(imageFile);
-          const spriteName = sourcePath.name;
+          const spriteName = imageFile.name;
           const dest = target.path + '/' + spriteName;
           try {
-            const newSprite = await project.createSprite(
-              dest,
-              pathyFromUri(imageFile),
-            );
+            const newSprite = await project.createSprite(dest, imageFile);
             this.afterNewAssetCreated(newSprite, target, target);
           } catch (err) {
             showErrorMessage(`Failed to create sprite ${spriteName}: ${err}`);
@@ -137,7 +135,8 @@ export class GameMakerTreeProvider
         target instanceof TreeAsset &&
         isAssetOfKind(target.asset, 'sprites')
       ) {
-        // TODO: Then we're adding frames to this sprite
+        await target.asset.addFrames(imageFiles);
+        this._onDidChangeTreeData.fire(target);
       } else if (target instanceof TreeSpriteFrame) {
         // TODO: Then we're adding a frame after this one
       }
@@ -908,6 +907,10 @@ export class GameMakerTreeProvider
     this.rebuild();
   }
 
+  async deleteSpriteFrame(item: TreeSpriteFrame) {
+    throw new Error('Method not implemented.');
+  }
+
   async duplicateAsset(item: TreeAsset) {
     const dest = await this.prepareForNewAsset(item.parent);
     if (!dest) return;
@@ -1163,6 +1166,10 @@ export class GameMakerTreeProvider
       registerCommand(
         'stitch.assets.deleteFolder',
         this.deleteFolder.bind(this),
+      ),
+      registerCommand(
+        'stitch.assets.deleteSpriteFrame',
+        this.deleteSpriteFrame.bind(this),
       ),
       registerCommand(
         'stitch.diagnostics.suppress',

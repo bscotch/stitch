@@ -160,6 +160,10 @@
         "title": "Replace Frames..."
       },
       {
+        "command": "stitch.assets.deleteSpriteFrame",
+        "title": "Delete"
+      },
+      {
         "command": "stitch.assets.setParent",
         "title": "Set Parent..."
       },
@@ -714,6 +718,11 @@
           "command": "stitch.assets.replaceSpriteFrames",
           "when": "viewItem == asset-sprites && isWindows",
           "group": "7_modification@1"
+        },
+        {
+          "command": "stitch.assets.deleteSpriteFrame",
+          "when": "viewItem == sprite-frame && view == bscotch-stitch-resources",
+          "group": "7_modification@9"
         },
         {
           "command": "stitch.assets.setParent",

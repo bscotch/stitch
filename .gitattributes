@@ -1,3 +1,7 @@
+# Ensure line endings are handled consistently
+* text eol=lf
+
+# LFS
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.mp3 filter=lfs diff=lfs merge=lfs -text
 *.ogg filter=lfs diff=lfs merge=lfs -text
@@ -5,5 +9,6 @@
 *.wma filter=lfs diff=lfs merge=lfs -text
 *.png filter=lfs diff=lfs merge=lfs -text
 
+# Language indicators for GitHub
 *.yy linguist-documentation
 *.yyp linguist-documentation

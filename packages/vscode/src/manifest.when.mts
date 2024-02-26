@@ -30,6 +30,7 @@ export const when = {
   viewItemIsAsset: 'viewItem =~ /^asset-/',
   viewItemIsObject: 'viewItem == asset-objects',
   viewItemIsSprite: 'viewItem == asset-sprites',
+  viewItemIsSpriteFrame: 'viewItem == sprite-frame',
   viewItemIsCode: 'viewItem == code',
   viewItemIsIncludedFileFolder: 'viewItem == datafiles-folder',
   viewItemIsIncludedFile: 'viewItem == datafiles-file',

@@ -218,6 +218,14 @@ export const commands = {
       group: '7_modification@1',
     },
   },
+  'stitch.assets.deleteSpriteFrame': {
+    command: 'stitch.assets.deleteSpriteFrame',
+    title: 'Delete',
+    [$showInViewItemContextMenu]: {
+      when: `${when.viewItemIsSpriteFrame} && ${when.assetTreeFocused}`,
+      group: '7_modification@9',
+    },
+  },
   'stitch.assets.setParent': {
     command: 'stitch.assets.setParent',
     title: 'Set Parent...',

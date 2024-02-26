@@ -12,6 +12,7 @@ import {
   YypResource,
   yyObjectEventSchema,
   yySchemas,
+  yySpriteSchema,
 } from '@bscotch/yy';
 import type { ObjectEvent, ObjectEventName } from './lib.objects.js';
 import { logger } from './logger.js';
@@ -20,7 +21,7 @@ import { Diagnostic } from './project.diagnostics.js';
 import { Project } from './project.js';
 import { Signifier } from './signifiers.js';
 import { StructType, Type } from './types.js';
-import { assert, groupPathToPosix, ok } from './util.js';
+import { assert, getPngSize, groupPathToPosix, ok } from './util.js';
 
 export function isAssetOfKind<T extends YyResourceType>(
   asset: any,
@@ -346,6 +347,52 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     // @ts-expect-error
     logger.info('moving', this.name, 'from', this.yy.parent.path, 'to', path);
     this.yy.parent = { name: folderName, path };
+    await this.saveYy();
+  }
+
+  @sequential
+  async addFrames(sourceImages: Pathy[]) {
+    assert(this.isSprite, 'Can only add frames to a sprite');
+    assert(!this.isSpineSprite, 'Cannot add frames to a Spine sprite');
+    assert(sourceImages.length, 'Must provide at least one frame');
+    assert(
+      sourceImages.every((x) => x.hasExtension('png')),
+      'All frames must be PNGs',
+    );
+    let yy = this.yy as YySprite;
+    let expectedDims: { width: number; height: number };
+    if (!yy.frames.length) {
+      // Then get the expected dimensions from the first image
+      expectedDims = await getPngSize(sourceImages[0]);
+    } else {
+      expectedDims = {
+        width: yy.width,
+        height: yy.height,
+      };
+    }
+    const frameSizes = await Promise.all(
+      sourceImages.map((x) => getPngSize(x)),
+    );
+    assert(
+      frameSizes.every(
+        (x) =>
+          x.width === expectedDims.width && x.height === expectedDims.height,
+      ),
+      `Expected all frames to have width ${expectedDims.width} and height ${expectedDims.height}`,
+    );
+    const startingFrameCount = yy.frames.length;
+    // Update the YY file to get new frameIds
+    yy.frames.length = startingFrameCount + sourceImages.length;
+    yy = yySpriteSchema.parse(yy); // Will fill out the new frames
+    // Copy the new frames over.
+    await Promise.all(
+      sourceImages.map((source, i) => {
+        const dest = this.dir.join(
+          `${yy.frames[startingFrameCount + i].name}.png`,
+        );
+        return source.copy(dest);
+      }),
+    );
     await this.saveYy();
   }
 
