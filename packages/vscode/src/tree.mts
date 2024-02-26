@@ -231,8 +231,11 @@ export class GameMakerTreeProvider
    * Prompt the user for a new asset name and do all of
    * the non-type-specific prep work for creating the asset.
    */
-  protected async prepareForNewAsset(where: GameMakerFolder) {
-    const newAssetName = await promptForAssetPath();
+  protected async prepareForNewAsset(
+    where: GameMakerFolder,
+    initialName?: string,
+  ) {
+    const newAssetName = await promptForAssetPath(initialName);
     if (!newAssetName) {
       return;
     }
@@ -571,19 +574,20 @@ export class GameMakerTreeProvider
 
     const project = where.project!;
     assertLoudly(project, 'Cannot create sprite without a project.');
-    const info = await this.prepareForNewAsset(where);
+    await project.reloadConfig();
+
+    const spriteDir = await this.getSpriteSource();
+    if (!spriteDir) return;
+
+    const info = await this.prepareForNewAsset(where, spriteDir.path.name);
     if (!info) {
       return;
     }
     const { folder, name } = info;
-    await project.reloadConfig();
     assertLoudly(
       isValidSpriteName(name, project.config),
       'Sprite name does not match allowed patterns.',
     );
-
-    const spriteDir = await this.getSpriteSource();
-    if (!spriteDir) return;
 
     // TODO: Convert into an "Action"
     // TODO: Call applySpriteAction() to complete the process

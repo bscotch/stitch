@@ -21,8 +21,8 @@ export async function promptForAssetName(startingValue?: string) {
   return await vscode.window.showInputBox(options);
 }
 
-export async function promptForAssetPath() {
-  return await vscode.window.showInputBox({
+export async function promptForAssetPath(startingValue?: string) {
+  const options: vscode.InputBoxOptions = {
     prompt: `Provide a name for the new asset`,
     placeHolder: 'e.g. my/new/Asset',
     validateInput(value) {
@@ -34,7 +34,12 @@ export async function promptForAssetPath() {
       }
       return;
     },
-  });
+  };
+  if (startingValue) {
+    options.value = startingValue;
+    options.valueSelection = [0, startingValue.length];
+  }
+  return await vscode.window.showInputBox(options);
 }
 
 export function validateFolderName(value: string | undefined) {
