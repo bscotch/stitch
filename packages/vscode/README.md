@@ -116,19 +116,50 @@ Stitch adds a few features to make it easier to leverage VSCode's built-in stuff
 
 Stitch provides some support for creating new assets, but only for a few asset types. For any others, or for additional features, you'll need to use the GameMaker IDE.
 
-Supported asset types:
+You can enforce naming conventions for new assets by adding a `stitch.config.json` file alongside your project's `.yyp` file. VSCode provides autocompletes and hovertext for keys in that file.
+
+The following is a sample config file that ensures new sprites are prefixed with `sp_`, sounds are prefixed with one of `mus_`, `amb_`, or `sfx_`, and also automatically sets new sounds to the appropriate mono/stereo setting based on their names:
+
+```json
+{
+  "newSpriteRules": {
+    "allowedNames": ["^sp_"]
+  },
+  "newSoundRules": {
+    "allowedNames": ["^mus_", "^amb_", "^sfx_"],
+    "defaults": {
+      "^(mus|amb)_": {
+        "mono": false
+      },
+      "^sfx_ui_": {
+        "mono": false
+      },
+      "^sfx_": {
+        "mono": true
+      }
+    }
+  }
+}
+```
+
+Supported asset types include:
 
 #### Sprites
 
-You can create new sprites (via the context menu on a folder) and update an existing sprite's frames (via the context menu on a sprite asset).
+There are several ways to manage Sprite assets in Stitch:
 
-We take a very different approach for sprite management compared to GameMaker. Namely, we assume that you are creating/editing/managing your sprites _externally_ to GameMaker.
+- Drag-drop external images into a folder to create a new Sprite for each dropped image, named the same as the source file.
+- Drag-drop external images onto an existing Sprite to add them as frames.
+- Drag-drop frames within a Sprite to organize them relative to each other.
+- Use the `"New Sprite..."` context menu option of asset tree folders to create a new Sprite from a _folder of frames_. This also gives you the option to crop and bleed the frames. The frame order will match the alphanumeric sort order of the source images. Beyond that, it doesn't matter what your source image names are!
+- Use the `"Replace Frames..."` context menu option of and existing Sprite to force its frames to match a source folder of frames (same idea as `"New Sprite..."`)
 
-You create/update a sprite's frames by pointing to a source folder representing that sprite. The PNG images in that folder are assumed to be its frames. Stitch assumes that this folder is the _source of truth_ for your sprite, so it will always replace your asset frames with whatever is in the source.
+#### Sounds
 
-The frame order will match the alphanumeric sort order of the source images. Beyond that, it doesn't matter what your source image names are!
+There are several ways to manage Sound assets in Stitch:
 
-Spine sprites work basically the same way. When you point to a source folder, Stitch will automatically figure out if that source is a Spine sprite or a regular one.
+- Drag-drop external audio files into a folder to create Sounds for each dropped file. (Sounds matching an existing asset name will be udpated instead of duplicated!)
+- Use the `"New Sound..."` context menu option of asset tree folders to create a new Sound from an audio file.
 
 #### Scripts
 
