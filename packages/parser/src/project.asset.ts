@@ -351,6 +351,24 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   }
 
   @sequential
+  async deleteFrames(frameIds: string[]) {
+    assert(this.isSprite, 'Can only delete frames from a sprite');
+    assert(!this.isSpineSprite, 'Cannot delete frames from a Spine sprite');
+    if (!frameIds.length) return;
+    let yy = this.yy as YySprite;
+    yy.frames = yy.frames.filter((x) => !frameIds.includes(x.name));
+    await this.saveYy();
+
+    // TODO: Delete the image files
+    await Promise.all(
+      frameIds.map((frameId) => {
+        const path = this.dir.join(`${frameId}.png`);
+        return path.delete();
+      }),
+    );
+  }
+
+  @sequential
   async addFrames(sourceImages: Pathy[]) {
     assert(this.isSprite, 'Can only add frames to a sprite');
     assert(!this.isSpineSprite, 'Cannot add frames to a Spine sprite');

@@ -202,6 +202,10 @@ export class TreeSpriteFrame extends StitchTreeItemBase<'sprite-frame'> {
     this.id = this.parent.id + '/' + this.imagePath.name;
   }
 
+  get frameId() {
+    return this.imagePath.name;
+  }
+
   get project() {
     return this.parent.project;
   }

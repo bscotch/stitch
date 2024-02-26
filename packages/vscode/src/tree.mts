@@ -908,7 +908,9 @@ export class GameMakerTreeProvider
   }
 
   async deleteSpriteFrame(item: TreeSpriteFrame) {
-    throw new Error('Method not implemented.');
+    const asset = item.parent.asset;
+    await asset.deleteFrames([item.frameId]);
+    this._onDidChangeTreeData.fire(item.parent);
   }
 
   async duplicateAsset(item: TreeAsset) {
