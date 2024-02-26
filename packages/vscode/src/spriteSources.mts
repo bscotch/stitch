@@ -81,19 +81,18 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
 
   @sequential
   async importSprites() {
-    assertLoudly(this.currentProject, 'No active project.');
+    const project = this.currentProject;
+    assertLoudly(project, 'No active project.');
 
-    const dest = await SpriteDest.from(this.currentProject.yypPath.absolute);
+    const dest = await SpriteDest.from(project.yypPath.absolute);
 
     // Prep the tracker for this project
     SpriteSourcesTree.recentlyChangedSprites.set(
-      this.currentProject,
-      SpriteSourcesTree.recentlyChangedSprites.get(this.currentProject) ||
-        new Map(),
+      project,
+      SpriteSourcesTree.recentlyChangedSprites.get(project) || new Map(),
     );
-    const projectChanges = SpriteSourcesTree.recentlyChangedSprites.get(
-      this.currentProject,
-    )!;
+    const projectChanges =
+      SpriteSourcesTree.recentlyChangedSprites.get(project)!;
 
     await vscode.window.withProgress(
       {
@@ -102,7 +101,10 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
         cancellable: false,
       },
       async (progress) => {
-        const actions = await dest.import(undefined, progress);
+        await project.reloadConfig();
+        const actions = await dest.import(undefined, progress, {
+          allowedNamePatterns: project.config.newSpriteRules?.allowedNames,
+        });
 
         // Summarize all isues into a single popup
         const totalIssues = dest.issues.length;

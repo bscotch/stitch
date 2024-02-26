@@ -22,6 +22,10 @@ import { retryOptions } from './constants.js';
 import { Reporter } from './types.js';
 import { SpriteSourceError, assert, rethrow } from './utility.js';
 
+export interface SpriteDestImportOptions {
+  allowedNamePatterns?: (string | RegExp)[];
+}
+
 export class SpriteDest extends SpriteCache {
   protected constructor(
     spritesRoot: string | Pathy,
@@ -158,7 +162,11 @@ export class SpriteDest extends SpriteCache {
    * @param overrides Optionally override the configuration file (if it exists)
    */
   @sequential
-  async import(overrides?: SpriteDestConfig, reporter?: Reporter) {
+  async import(
+    overrides?: SpriteDestConfig,
+    reporter?: Reporter,
+    options?: SpriteDestImportOptions,
+  ) {
     let percentComplete = 0;
     const report = (byPercent: number, message?: string) => {
       percentComplete += byPercent;
@@ -253,6 +261,19 @@ export class SpriteDest extends SpriteCache {
           new SpriteSourceError(`Asset name collision: ${action.name}`),
         );
         continue;
+      }
+      // If we're trying to create a new asset with an invalid name, error!
+      if (action.kind === 'create' && options?.allowedNamePatterns?.length) {
+        const isValidName = options.allowedNamePatterns.some((pattern) => {
+          pattern = typeof pattern === 'string' ? new RegExp(pattern) : pattern;
+          return pattern.test(action.name);
+        });
+        if (!isValidName) {
+          this.issues.push(
+            new SpriteSourceError(`Sprite name violates rules: ${action.name}`),
+          );
+          continue;
+        }
       }
       applyActionsWaits.push(
         applySpriteAction({
