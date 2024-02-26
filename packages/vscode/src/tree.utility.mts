@@ -1,4 +1,41 @@
+import vscode from 'vscode';
 import type { GameMakerFolder } from './tree.folder.mjs';
+
+export async function promptForAssetName(startingValue?: string) {
+  const options: vscode.InputBoxOptions = {
+    prompt: `Asset name...`,
+    validateInput(value) {
+      if (!value) {
+        return;
+      }
+      if (!value.match(/^[a-zA-Z0-9_][a-zA-Z0-9_]*/)) {
+        return 'Asset names must start with a letter or underscore, and can only contain letters, numbers, and underscores.';
+      }
+      return;
+    },
+  };
+  if (startingValue) {
+    options.value = startingValue;
+    options.valueSelection = [0, startingValue.length];
+  }
+  return await vscode.window.showInputBox(options);
+}
+
+export async function promptForAssetPath() {
+  return await vscode.window.showInputBox({
+    prompt: `Provide a name for the new asset`,
+    placeHolder: 'e.g. my/new/Asset',
+    validateInput(value) {
+      if (!value) {
+        return;
+      }
+      if (!value.match(/^[a-zA-Z0-9_][a-zA-Z0-9_/]*/)) {
+        return 'Asset names must start with a letter or underscore, and can only contain letters, numbers, and underscores.';
+      }
+      return;
+    },
+  });
+}
 
 export function validateFolderName(value: string | undefined) {
   if (!value) {

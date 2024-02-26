@@ -27,11 +27,7 @@ import {
   uriFromCodeFile,
 } from './lib.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
-import {
-  handleDrag,
-  handleDrop,
-  handleDroppedFiles,
-} from './tree.dragDrop.mjs';
+import { handleDrag, handleDrop } from './tree.dragDrop.mjs';
 import {
   GameMakerFolder,
   GameMakerProjectFolder,
@@ -49,6 +45,8 @@ import {
 import {
   ensureFolders,
   getPathWithSelection,
+  promptForAssetName,
+  promptForAssetPath,
   validateFolderName,
 } from './tree.utility.mjs';
 
@@ -234,19 +232,7 @@ export class GameMakerTreeProvider
    * the non-type-specific prep work for creating the asset.
    */
   protected async prepareForNewAsset(where: GameMakerFolder) {
-    const newAssetName = await vscode.window.showInputBox({
-      prompt: `Provide a name for the new asset`,
-      placeHolder: 'e.g. my/new/Asset',
-      validateInput(value) {
-        if (!value) {
-          return;
-        }
-        if (!value.match(/^[a-zA-Z0-9_][a-zA-Z0-9_/]*/)) {
-          return 'Asset names must start with a letter or underscore, and can only contain letters, numbers, and underscores.';
-        }
-        return;
-      },
-    });
+    const newAssetName = await promptForAssetPath();
     if (!newAssetName) {
       return;
     }
@@ -570,8 +556,13 @@ export class GameMakerTreeProvider
       },
     });
     if (!sourceImage?.length) return;
-    // Works the same way as a dropped file!
-    await handleDroppedFiles(this, where, sourceImage);
+    const sourceImagePath = pathyFromUri(sourceImage[0]);
+    const name = await promptForAssetName(sourceImagePath.name);
+    if (!name) return;
+    const path = where.path + '/' + name;
+    const newSprite = await project.createSprite(path, sourceImagePath);
+    this.changed(where);
+    this.reveal(newSprite);
   }
 
   async createSprite(where: GameMakerFolder) {
