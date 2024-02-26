@@ -1,5 +1,13 @@
 # @bscotch/gml-parser Changelog
 
+## 1.7.0 (2024-02-26)
+
+### Features
+
+- Can now delete and reorganize sprite frames in the asset tree
+- Can now delete sprite frames from the asset tree
+- Can now add frames to a sprite
+
 ## 1.6.0 (2024-02-23)
 
 ### Features

@@ -1,5 +1,24 @@
 # Stitch Changelog
 
+## 1.64.0 (2024-02-26)
+
+### Docs
+
+- Updated docs for adding sprites and sounds
+
+### Features
+
+- Made context menu options for adding sprites more clear and flexible
+- Can now delete and reorganize sprite frames in the asset tree
+- Can now delete sprite frames from the asset tree
+- Can now add frames to a sprite
+- Sprite Source imports now respect the allowedNames config option for new sprites.
+
+### Fixes
+
+- Improved prompts when adding a new sprite from a folder
+- Improved prompt workflow when adding a Sprite from an image to allow renaming before creating.
+
 ## 1.63.0 (2024-02-23)
 
 ### Features

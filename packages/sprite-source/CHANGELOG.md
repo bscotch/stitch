@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 1.2.0 (2024-02-26)
+
+### Features
+
+- Sprite Source imports now respect the allowedNames config option for new sprites.
+
 ## 1.1.0 (2024-02-20)
 
 ### Features
