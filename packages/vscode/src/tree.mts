@@ -27,7 +27,11 @@ import {
   uriFromCodeFile,
 } from './lib.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
-import { handleDrag, handleDrop } from './tree.dragDrop.mjs';
+import {
+  handleDrag,
+  handleDrop,
+  handleDroppedFiles,
+} from './tree.dragDrop.mjs';
 import {
   GameMakerFolder,
   GameMakerProjectFolder,
@@ -551,6 +555,25 @@ export class GameMakerTreeProvider
     return spriteDir;
   }
 
+  async createSpriteFromImage(where: GameMakerFolder) {
+    const project = where.project!;
+    assertLoudly(project, 'Cannot create sprite without a project.');
+    // Prompt for the source folder
+    const sourceImage = await vscode.window.showOpenDialog({
+      canSelectFiles: true,
+      canSelectFolders: false,
+      canSelectMany: false,
+      openLabel: 'Import as Sprite',
+      title: 'Choose an image',
+      filters: {
+        Image: ['png'],
+      },
+    });
+    if (!sourceImage?.length) return;
+    // Works the same way as a dropped file!
+    await handleDroppedFiles(this, where, sourceImage);
+  }
+
   async createSprite(where: GameMakerFolder) {
     assertLoudly(os.platform() === 'win32', 'This feature is Windows-only.');
     const { applySpriteAction } = await import('@bscotch/sprite-source');
@@ -1025,6 +1048,10 @@ export class GameMakerTreeProvider
       registerCommand('stitch.assets.newScript', this.createScript.bind(this)),
       registerCommand('stitch.assets.newObject', this.createObject.bind(this)),
       registerCommand('stitch.assets.newSprite', this.createSprite.bind(this)),
+      registerCommand(
+        'stitch.assets.newSpriteFromImage',
+        this.createSpriteFromImage.bind(this),
+      ),
       registerCommand(
         'stitch.assets.replaceSpriteFrames',
         this.replaceSpriteFrames.bind(this),

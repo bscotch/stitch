@@ -169,18 +169,26 @@ export const commands = {
   },
   'stitch.assets.newSprite': {
     command: 'stitch.assets.newSprite',
-    title: 'New Sprite...',
+    title: 'New Sprite from Folder...',
     [$showInViewItemContextMenu]: {
       when: `${when.viewItemIsFolder} && ${when.onWindows}`,
       group: 'navigation@3',
     },
   },
+  'stitch.assets.newSpriteFromImage': {
+    command: 'stitch.assets.newSpriteFromImage',
+    title: 'New Sprite from Image...',
+    [$showInViewItemContextMenu]: {
+      when: `${when.viewItemIsFolder}`,
+      group: 'navigation@4',
+    },
+  },
   'stitch.assets.newSound': {
     command: 'stitch.assets.newSound',
-    title: 'New Sound...',
+    title: 'Add/Update Sounds...',
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsFolder,
-      group: 'navigation@4',
+      group: 'navigation@5',
     },
   },
   'stitch.assets.newShader': {
@@ -188,7 +196,7 @@ export const commands = {
     title: 'New Shader...',
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsFolder,
-      group: 'navigation@5',
+      group: 'navigation@6',
     },
   },
   'stitch.assets.newFolder': {

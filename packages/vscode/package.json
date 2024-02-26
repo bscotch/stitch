@@ -140,11 +140,15 @@
       },
       {
         "command": "stitch.assets.newSprite",
-        "title": "New Sprite..."
+        "title": "New Sprite from Folder..."
+      },
+      {
+        "command": "stitch.assets.newSpriteFromImage",
+        "title": "New Sprite from Image..."
       },
       {
         "command": "stitch.assets.newSound",
-        "title": "New Sound..."
+        "title": "Add/Update Sounds..."
       },
       {
         "command": "stitch.assets.newShader",
@@ -695,14 +699,19 @@
           "group": "navigation@3"
         },
         {
-          "command": "stitch.assets.newSound",
+          "command": "stitch.assets.newSpriteFromImage",
           "when": "viewItem == folder",
           "group": "navigation@4"
         },
         {
-          "command": "stitch.assets.newShader",
+          "command": "stitch.assets.newSound",
           "when": "viewItem == folder",
           "group": "navigation@5"
+        },
+        {
+          "command": "stitch.assets.newShader",
+          "when": "viewItem == folder",
+          "group": "navigation@6"
         },
         {
           "command": "stitch.assets.newFolder",

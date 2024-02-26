@@ -9,7 +9,7 @@ import { TreeAsset, TreeSpriteFrame, type Treeable } from './tree.items.mjs';
 import type { GameMakerTreeProvider } from './tree.mjs';
 import { ensureFolders } from './tree.utility.mjs';
 
-async function handleDroppedFiles(
+export async function handleDroppedFiles(
   tree: GameMakerTreeProvider,
   target: Treeable,
   uris: vscode.Uri[],
