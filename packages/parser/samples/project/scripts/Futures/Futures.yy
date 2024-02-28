@@ -1,11 +1,13 @@
 {
-  "name": "Futures",
-  "resourceType": "GMScript",
-  "parent": {
-    "name": "Scripts",
-    "path": "folders/Scripts.yy",
+  "$GMScript":"",
+  "%Name":"Futures",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Futures",
+  "parent":{
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
   },
-  "resourceVersion": "1.0",
-  "isDnD": false,
-  "isCompatibility": false,
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

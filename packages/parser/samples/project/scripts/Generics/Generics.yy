@@ -1,11 +1,13 @@
 {
-  "name": "Generics",
-  "resourceType": "GMScript",
-  "parent": {
-    "name": "Scripts",
-    "path": "folders/Scripts.yy",
+  "$GMScript":"",
+  "%Name":"Generics",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Generics",
+  "parent":{
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
   },
-  "resourceVersion": "1.0",
-  "isDnD": false,
-  "isCompatibility": false,
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }
