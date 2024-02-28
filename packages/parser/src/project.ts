@@ -480,6 +480,7 @@ export class Project {
         },
         type: defaults?.mono ? SoundChannel.Mono : SoundChannel.Stereo,
         soundFile: soundFileName,
+        duration: 0,
       },
       'sounds',
       this.yyp,
