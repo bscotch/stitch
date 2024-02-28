@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.7.1 (2024-02-28)
+
+### Fixes
+
+- Resolved issue with missing duration values
+
 ## 1.7.0 (2024-02-26)
 
 ### Features
