@@ -39,7 +39,7 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
   readonly processingFiles = new Map<string, Promise<any>>();
   readonly debouncingOnChange = new Map<string, NodeJS.Timeout>();
 
-  protected constructor() {
+  protected constructor(readonly ctx: vscode.ExtensionContext) {
     this.signatureHelpStatus.hide();
   }
 
@@ -416,7 +416,6 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
    * Only allow a single instance at a time.
    */
   protected static provider: StitchWorkspace;
-  protected static ctx: vscode.ExtensionContext;
 
   static async activate(ctx: vscode.ExtensionContext) {
     info('Activating extension...');
@@ -424,7 +423,7 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
       info('Extension already active!');
       return this.provider;
     }
-    this.provider = new StitchWorkspace();
+    this.provider = new StitchWorkspace(ctx);
     await activateStitchExtension(this.provider, ctx);
     return this.provider;
   }

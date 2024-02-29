@@ -20,7 +20,6 @@ import { StitchLocationsProvider } from './extension.locations.mjs';
 import { StitchReferenceProvider } from './extension.refs.mjs';
 import { StitchReleasePickerProvider } from './extension.releases.mjs';
 import { StitchRenameProvider } from './extension.rename.mjs';
-import { StitchSpriteEditorProvider } from './extension.spriteEditor.mjs';
 import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
 import { StitchTypeDefinitionProvider } from './extension.typeDefs.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
@@ -36,6 +35,8 @@ import {
 import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
 import type { SpriteSourcesTree as SpriteSourcesTreeType } from './spriteSources.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
+import { StitchIgorView } from './webview.igorOut.mjs';
+import { StitchSpriteEditorProvider } from './webviews.spriteEditor.mjs';
 
 export async function activateStitchExtension(
   workspace: StitchWorkspace,
@@ -144,6 +145,7 @@ export async function activateStitchExtension(
     StitchLensProvider.register(workspace),
     StitchWorkspaceSymbolProvider.register(workspace),
     StitchCompletionProvider.register(workspace),
+    ...StitchIgorView.register(workspace),
     ...StitchSpriteEditorProvider.register(workspace),
     ...StitchReferenceProvider.register(workspace),
     ...StitchLocationsProvider.register(workspace),
