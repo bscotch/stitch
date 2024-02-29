@@ -123,6 +123,10 @@ export class GameMakerProject extends Project {
       }
       return;
     }
+    logger.info(`Running Igor`, {
+      igorPath: runtime.executablePath,
+    });
+
     const cmd = await (options?.clean
       ? stringifyGameMakerCleanCommand
       : stringifyGameMakerBuildCommand)(runtime, {
@@ -132,6 +136,8 @@ export class GameMakerProject extends Project {
       noCache: false,
       quiet: true,
     });
+
+    logger.info(`Igor command:`, JSON.stringify(cmd));
 
     // Create or re-use a terminal
     const name = `GameMaker v${release.runtime.version}`;
