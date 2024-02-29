@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.64.2 (2024-02-29)
+
+### Fixes
+
+- Added some logging to the Igor commands in VSCode
+
 ## 1.64.0 (2024-02-26)
 
 ### Docs
