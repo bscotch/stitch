@@ -71,6 +71,9 @@ class StitchConfig {
   get enableYyFormatting() {
     return this.config.get<boolean>('yy.format.enable');
   }
+  get runInTerminal(): boolean {
+    return this.config.get<boolean>('run.inTerminal') ?? true;
+  }
   get runCompilerDefault(): 'vm' | 'yyc' {
     return (
       this.config.get<string>('run.defaultCompiler') || 'vm'

@@ -1,6 +1,6 @@
 import type { WebviewApi } from 'vscode-webview';
 
-export class Vscode<State = unknown, PostMessage = unknown, GetMessage = unknown> {
+export class Vscode<State = unknown, PostMessage = unknown, ExtensionPostMessage = unknown> {
 	private readonly api: WebviewApi<State> | undefined;
 
 	constructor() {
@@ -11,7 +11,11 @@ export class Vscode<State = unknown, PostMessage = unknown, GetMessage = unknown
 		}
 	}
 
-	public onMessage(listener: (message: GetMessage) => void) {
+	get developmentMode() {
+		return !this.api;
+	}
+
+	public onMessage(listener: (message: ExtensionPostMessage) => void) {
 		if (this.api) {
 			window.addEventListener('message', (event) => {
 				listener(event.data);

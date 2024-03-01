@@ -35,7 +35,7 @@ import {
 import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
 import type { SpriteSourcesTree as SpriteSourcesTreeType } from './spriteSources.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
-import { StitchIgorView } from './webview.igorOut.mjs';
+import { StitchIgorView } from './webview.igor.mjs';
 import { StitchSpriteEditorProvider } from './webviews.spriteEditor.mjs';
 
 export async function activateStitchExtension(

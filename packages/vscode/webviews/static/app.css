@@ -1,0 +1,57 @@
+@layer global {
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+	:root {
+		--color-background: var(--vscode-list-focusBackground, #171717);
+		--color-text: var(--vscode-list-focusForeground, #d8d8d8);
+		--color-text-muted: var(--vscode-list-hoverForeground, #a0a0a0);
+		--color-text-link: var(--vscode-textLink-activeForeground, #3794ff);
+		--color-text-error: var(--vscode-list-errorForeground, #e72929);
+		--color-text-warning: var(--vscode-list-warningForeground, #ccaa00);
+	}
+	body {
+		font-size: var(--vscode-editor-font-size);
+		background-color: var(--color-background);
+		color: var(--color-text);
+	}
+	a {
+		color: var(--color-text-link);
+	}
+	a[role='button'] {
+		cursor: pointer;
+	}
+	details > summary {
+		cursor: pointer;
+		user-select: none;
+	}
+	h1 {
+		font-size: 1.4em;
+	}
+	h2 {
+		font-size: 1.25em;
+	}
+	h3 {
+		font-size: 1.15em;
+	}
+	h4 {
+		font-size: 1.08em;
+	}
+	h2,
+	h3,
+	h4 {
+		margin: 0;
+	}
+	ul {
+		/* decrease default indent */
+		padding-inline-start: 1.5em;
+	}
+
+	ul.reset {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+}

@@ -146,11 +146,20 @@ export class GameMakerProject extends Project {
       existing.dispose();
     }
 
-    const terminal = vscode.window.createTerminal({
-      name: `GameMaker v${release.runtime.version}`,
-    });
-    terminal.sendText(cmd);
-    terminal.show();
+    if (stitchConfig.runInTerminal) {
+      const terminal = vscode.window.createTerminal({
+        name: `GameMaker v${release.runtime.version}`,
+      });
+      terminal.sendText(cmd);
+      terminal.show();
+    } else {
+      stitchEvents.emit('request-run-project-in-webview', {
+        cmd,
+        runtime,
+        project: this,
+        clean: options?.clean,
+      });
+    }
     return;
   }
 

@@ -1,5 +1,6 @@
 import { createEventEmitter } from '@bscotch/emitter';
 import type { Asset, Code } from '@bscotch/gml-parser';
+import type { GameMakerRuntime } from '@bscotch/stitch-launcher';
 import type vscode from 'vscode';
 import type { GameMakerProject } from './extension.project.mjs';
 
@@ -14,7 +15,19 @@ export namespace StitchEvents {
     AssetChanged,
     ProjectChanged,
     DatafilesChanged,
+    RequestRunInWebview,
   ];
+  export interface RequestRunInWebview {
+    name: 'request-run-project-in-webview';
+    payload: [
+      {
+        cmd: string;
+        runtime: GameMakerRuntime;
+        project: GameMakerProject;
+        clean?: boolean;
+      },
+    ];
+  }
   export interface DatafilesChanged {
     name: 'datafiles-changed';
     payload: [GameMakerProject];

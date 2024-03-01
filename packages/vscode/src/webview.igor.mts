@@ -1,23 +1,17 @@
 import type { Asset } from '@bscotch/gml-parser';
+import type { IgorWebviewExtensionPostRun } from '@local-vscode/shared';
 import vscode from 'vscode';
-import html from '../webviews/build/igor-out.html';
+import html from '../webviews/build/igor.html';
+import { StitchEvents, stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 
-export interface SpriteEditedMessage {
-  spriteName: string;
-  xorigin: number;
-  yorigin: number;
-  zoom: number;
-}
-
 export class StitchIgorView {
-  public panel: vscode.WebviewPanel;
+  public panel?: vscode.WebviewPanel;
   public editing: Asset<'sprites'> | undefined;
   public zooms = new Map<Asset<'sprites'>, number>();
+  protected lastRequest?: StitchEvents.RequestRunInWebview['payload'][0];
 
-  constructor(readonly workspace: StitchWorkspace) {
-    this.panel = this.createPanel();
-  }
+  constructor(readonly workspace: StitchWorkspace) {}
 
   protected getWebviewContent(panel: vscode.WebviewPanel) {
     let preparedHtml = html;
@@ -32,41 +26,47 @@ export class StitchIgorView {
       '<head>',
       `<head><base href="${compatibleBasePath}/">`,
     );
-    // const assetPaths = html.match(/src="\/(assets\/[^"]+)"/g);
-    // for (const assetPath of assetPaths || []) {
-    //   // Get as a full filepath
-    //   const fullPath = vscode.Uri.joinPath(
-    //     this.workspace.ctx.extensionUri,
-    //     'webviews-legacy/igor-out/dist/assets',
-    //     assetPath,
-    //   );
-    //   const viewPath = this.panel!.webview.asWebviewUri(fullPath);
-    //   preparedHtml = preparedHtml.replace(assetPath, `src="${viewPath}"`);
-    // }
     return preparedHtml;
   }
 
   protected createPanel(): vscode.WebviewPanel {
     const panel = vscode.window.createWebviewPanel(
-      'stitch-igor-output',
+      'stitch-igor',
       'Igor Output',
-      vscode.ViewColumn.Active,
+      vscode.ViewColumn.Beside,
       { enableScripts: true, retainContextWhenHidden: true },
     );
     return panel;
   }
 
-  async revealPanel() {
+  revealPanel() {
     this.panel ||= this.createPanel();
-    this.panel.title = 'IGOR';
+    this.panel.title = 'GameMaker Runner';
     // Rebuild the webview
     this.panel.webview.html = this.getWebviewContent(this.panel!);
     this.panel.reveal();
+    this.panel.onDidDispose(() => {
+      this.panel = undefined;
+    });
+  }
+
+  async run(event: StitchEvents.RequestRunInWebview['payload'][0]) {
+    this.revealPanel();
+    this.lastRequest = event;
+    const runMessage: IgorWebviewExtensionPostRun = {
+      kind: 'run',
+      runtimeVersion: event.runtime.version,
+      cmd: event.cmd,
+      projectName: event.project.name,
+    };
+    await this.panel?.webview.postMessage(runMessage);
   }
 
   static register(workspace: StitchWorkspace) {
     const spriteEditorProvider = new StitchIgorView(workspace);
-    spriteEditorProvider.revealPanel();
+    stitchEvents.on('request-run-project-in-webview', (payload) => {
+      spriteEditorProvider.run(payload);
+    });
     return [];
   }
 }

@@ -35,7 +35,7 @@
     "package": "vsce package --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
     "vscode:publish": "vsce publish --no-dependencies --githubBranch develop",
-    "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css --watch src --watch syntaxes --watch ../parser/dist --watch ../sprite-source/dist --ignore src/icons.types.mts --exec \"npm run build\"",
+    "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css --watch src --watch webviews/build --watch syntaxes --watch ../parser/dist --watch ../sprite-source/dist --ignore src/icons.types.mts --exec \"npm run build\"",
     "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
   },
   "contributes": {
@@ -420,6 +420,12 @@
             "yyc"
           ],
           "default": "vm"
+        },
+        "stitch.run.inTerminal": {
+          "title": "Run in terminal",
+          "description": "If true, when you run a project in Stitch it will run in a terminal window. When false, it will run internally and log to a webview (more feature-rich but potentially less performant).",
+          "type": "boolean",
+          "default": true
         },
         "stitch.editing.reprocessOnTypeDelay": {
           "title": "Reprocess on type delay",
@@ -955,6 +961,7 @@
     "tslib": "^2.6.2"
   },
   "devDependencies": {
+    "@local-vscode/shared": "workspace:*",
     "@bscotch/emitter": "0.2.1",
     "@bscotch/gamemaker-releases": "workspace:*",
     "@bscotch/gml-parser": "workspace:*",
