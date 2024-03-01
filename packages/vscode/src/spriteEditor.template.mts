@@ -1,8 +1,8 @@
 import { Spine, type Asset, type SpineSummary } from '@bscotch/gml-parser';
 import fsp from 'node:fs/promises';
 import vscode from 'vscode';
-import spineEditorHtml from '../webviews/spine-editor.html';
-import spriteEditorHtml from '../webviews/sprite-editor.html';
+import spineEditorHtml from '../webviews-legacy/spine-editor.html';
+import spriteEditorHtml from '../webviews-legacy/sprite-editor.html';
 import { stitchConfig } from './config.mjs';
 import { logger } from './log.mjs';
 
@@ -67,7 +67,8 @@ function compileRegularSprite(
       panel.webview
         .asWebviewUri(
           vscode.Uri.file(
-            stitchConfig.context.extensionPath + '/webviews/sprite-editor.js',
+            stitchConfig.context.extensionPath +
+              '/webviews-legacy/sprite-editor.js',
           ),
         )
         .toString(),
@@ -103,12 +104,10 @@ async function compileSpineSprite(
   };
   console.log(JSON.stringify(data.summary, null, 2));
 
-  data.spineDataUris[
-    atlas.basename
-  ] = `data:application/octet-stream;base64,${atlasContent.toString('base64')}`;
-  data.spineDataUris[
-    json.basename
-  ] = `data:application/json;base64,${jsonContent.toString('base64')}`;
+  data.spineDataUris[atlas.basename] =
+    `data:application/octet-stream;base64,${atlasContent.toString('base64')}`;
+  data.spineDataUris[json.basename] =
+    `data:application/json;base64,${jsonContent.toString('base64')}`;
 
   // Discover the PNGs and their data URIs
   await Promise.all(
@@ -125,9 +124,8 @@ async function compileSpineSprite(
           logger.info(`Atlas references existing file ${path.absolute}`);
         }
         const imageContent = await fsp.readFile(path.absolute);
-        data.spineDataUris[
-          path.basename
-        ] = `data:image/png;base64,${imageContent.toString('base64')}`;
+        data.spineDataUris[path.basename] =
+          `data:image/png;base64,${imageContent.toString('base64')}`;
       }),
   );
 
@@ -147,7 +145,8 @@ async function compileSpineSprite(
       panel.webview
         .asWebviewUri(
           vscode.Uri.file(
-            stitchConfig.context.extensionPath + '/webviews/spine-editor.js',
+            stitchConfig.context.extensionPath +
+              '/webviews-legacy/spine-editor.js',
           ),
         )
         .toString(),

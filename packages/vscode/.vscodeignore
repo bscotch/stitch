@@ -9,5 +9,7 @@ dist/manifest.*
 !syntaxes/
 !themes/
 !webviews/*.js
+!webviews/*.css
+!webviews-legacy/*.js
 !schemas/
 !languages/

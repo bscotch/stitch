@@ -1,6 +1,6 @@
 import type { Asset } from '@bscotch/gml-parser';
 import vscode from 'vscode';
-import html from '../webviews/igor-out/dist/index.html';
+import html from '../webviews-legacy/igor-out/dist/index.html';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 
 export interface SpriteEditedMessage {
@@ -26,7 +26,7 @@ export class StitchIgorView {
       // Get as a full filepath
       const fullPath = vscode.Uri.joinPath(
         this.workspace.ctx.extensionUri,
-        'webviews/igor-out/dist/assets',
+        'webviews-legacy/igor-out/dist/assets',
         assetPath,
       );
       const viewPath = this.panel!.webview.asWebviewUri(fullPath);
