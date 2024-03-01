@@ -1,6 +1,6 @@
 import type { Asset } from '@bscotch/gml-parser';
 import vscode from 'vscode';
-import html from '../webviews-legacy/igor-out/dist/index.html';
+import html from '../webviews/build/igor-out.html';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 
 export interface SpriteEditedMessage {
@@ -19,19 +19,30 @@ export class StitchIgorView {
     this.panel = this.createPanel();
   }
 
-  protected getWebviewContent() {
+  protected getWebviewContent(panel: vscode.WebviewPanel) {
     let preparedHtml = html;
-    const assetPaths = html.match(/src="\/(assets\/[^"]+)"/g);
-    for (const assetPath of assetPaths || []) {
-      // Get as a full filepath
-      const fullPath = vscode.Uri.joinPath(
-        this.workspace.ctx.extensionUri,
-        'webviews-legacy/igor-out/dist/assets',
-        assetPath,
-      );
-      const viewPath = this.panel!.webview.asWebviewUri(fullPath);
-      preparedHtml = preparedHtml.replace(assetPath, `src="${viewPath}"`);
-    }
+    // Add the <base> tag so that relative paths work
+    const basePath = vscode.Uri.joinPath(
+      this.workspace.ctx.extensionUri,
+      'webviews',
+      'build',
+    );
+    const compatibleBasePath = panel.webview.asWebviewUri(basePath);
+    preparedHtml = preparedHtml.replace(
+      '<head>',
+      `<head><base href="${compatibleBasePath}/">`,
+    );
+    // const assetPaths = html.match(/src="\/(assets\/[^"]+)"/g);
+    // for (const assetPath of assetPaths || []) {
+    //   // Get as a full filepath
+    //   const fullPath = vscode.Uri.joinPath(
+    //     this.workspace.ctx.extensionUri,
+    //     'webviews-legacy/igor-out/dist/assets',
+    //     assetPath,
+    //   );
+    //   const viewPath = this.panel!.webview.asWebviewUri(fullPath);
+    //   preparedHtml = preparedHtml.replace(assetPath, `src="${viewPath}"`);
+    // }
     return preparedHtml;
   }
 
@@ -49,7 +60,7 @@ export class StitchIgorView {
     this.panel ||= this.createPanel();
     this.panel.title = 'IGOR';
     // Rebuild the webview
-    this.panel.webview.html = this.getWebviewContent();
+    this.panel.webview.html = this.getWebviewContent(this.panel!);
     this.panel.reveal();
   }
 

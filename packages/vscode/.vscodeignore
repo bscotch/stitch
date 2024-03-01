@@ -8,8 +8,7 @@ dist/manifest.*
 !snippets/
 !syntaxes/
 !themes/
-!webviews/*.js
-!webviews/*.css
+!webviews/build/_app/**/*
 !webviews-legacy/*.js
 !schemas/
 !languages/
