@@ -1,5 +1,8 @@
 import type { Asset } from '@bscotch/gml-parser';
-import type { IgorWebviewExtensionPostRun } from '@local-vscode/shared';
+import type {
+  IgorWebviewExtensionPostRun,
+  IgorWebviewPosts,
+} from '@local-vscode/shared';
 import vscode from 'vscode';
 import html from '../webviews/build/igor.html';
 import { StitchEvents, stitchEvents } from './events.mjs';
@@ -59,7 +62,14 @@ export class StitchIgorView {
       cmd: event.cmd,
       projectName: event.project.name,
     };
-    await this.panel?.webview.postMessage(runMessage);
+    this.panel!.webview.onDidReceiveMessage(
+      async (message: IgorWebviewPosts) => {
+        if (message.kind === 'ready') {
+          // TODO: If we don't already have a runner going, start one. On start, send stdout/stderr to the webview.
+          await this.panel!.webview.postMessage(runMessage);
+        }
+      },
+    );
   }
 
   static register(workspace: StitchWorkspace) {

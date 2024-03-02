@@ -13,8 +13,12 @@ export interface IgorWebviewExtensionPostLogs {
   kind: 'log';
   logs: IgorWebviewLog[];
 }
+export interface WebviewReadyMessage {
+  kind: 'ready';
+}
 
 export type IgorWebviewExtensionPosts =
+  | WebviewReadyMessage
   | IgorWebviewExtensionPostRun
   | IgorWebviewExtensionPostLogs;
-export type IgorWebviewPosts = undefined;
+export type IgorWebviewPosts = WebviewReadyMessage;

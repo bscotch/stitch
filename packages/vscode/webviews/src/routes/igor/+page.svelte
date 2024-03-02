@@ -12,6 +12,7 @@
 	let running = $state<IgorWebviewExtensionPostRun | undefined>(undefined);
 	let logs = $state<IgorWebviewLog[]>([]);
 
+	vscode.postMessage({ kind: 'ready' });
 	vscode.onMessage((message) => {
 		if (message.kind === 'run') {
 			running = message;

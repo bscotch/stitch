@@ -653,6 +653,9 @@ importers:
       '@local-vscode/shared':
         specifier: workspace:*
         version: link:shared
+      '@local-vscode/webviews':
+        specifier: workspace:*
+        version: link:webviews
       '@types/plist':
         specifier: 3.0.5
         version: 3.0.5
