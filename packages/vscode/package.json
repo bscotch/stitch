@@ -27,16 +27,17 @@
   "publisher": "bscotch",
   "main": "./dist/extension.js",
   "scripts": {
-    "build": "pnpm build:grammar && node scripts/build-schemas.mjs && node scripts/build.mjs && pnpm build:manifest",
+    "build": "pnpm build:grammar && node scripts/build-schemas.mjs && pnpm build:webviews && node scripts/build.mjs && pnpm build:manifest",
     "build:deps": "pnpm turbo run build --filter=bscotch-stitch-vscode...",
+    "build:webviews": "cd webviews && pnpm build",
     "build:grammar": "node scripts/yaml-to-json.mjs syntaxes/gml.tmLanguage.yaml syntaxes/gml.tmLanguage.json",
     "build:manifest": "node dist/manifest.update.js && prettier -w package.json",
     "bump": "cd ../.. && pnpm bump",
     "package": "vsce package --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
     "vscode:publish": "vsce publish --no-dependencies --githubBranch develop",
-    "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css --watch src --watch webviews/build --watch syntaxes --watch ../parser/dist --watch ../sprite-source/dist --ignore src/icons.types.mts --exec \"npm run build\"",
-    "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"npm run build:grammar\""
+    "watch": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css,svelte --watch src --watch webviews/src --watch syntaxes --watch ../parser/dist --watch ../sprite-source/dist --ignore src/icons.types.mts --exec \"pnpm build\"",
+    "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"pnpm build:grammar\""
   },
   "contributes": {
     "commands": [
@@ -962,6 +963,7 @@
   },
   "devDependencies": {
     "@local-vscode/shared": "workspace:*",
+    "@local-vscode/webviews": "workspace:*",
     "@bscotch/emitter": "0.2.1",
     "@bscotch/gamemaker-releases": "workspace:*",
     "@bscotch/gml-parser": "workspace:*",
