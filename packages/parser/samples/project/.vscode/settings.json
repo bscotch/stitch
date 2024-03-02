@@ -25,8 +25,5 @@
       "textMateRules": []
     }
   },
-  "stitch.sprites.sources": {
-    "c:/Users/coste/CODE/BSCOTCH/stitch/packages/parser/samples/project/project.yyp": [],
-    "project.yyp": ["../../../../../../../Downloads/i18n_audit"]
-  }
+  "stitch.run.inTerminal": false
 }
