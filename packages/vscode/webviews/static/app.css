@@ -11,6 +11,21 @@
 		--color-text-link: var(--vscode-textLink-activeForeground, #3794ff);
 		--color-text-error: var(--vscode-list-errorForeground, #e72929);
 		--color-text-warning: var(--vscode-list-warningForeground, #ccaa00);
+
+		/* Primary button */
+		--color-button-primary-background: var(--vscode-button-background, #0e639c);
+		--color-button-primary-foreground: var(--vscode-button-foreground, #ffffff);
+		--color-button-primary-hover-background: var(--vscode-button-hoverBackground, #0e639c);
+		--color-button-primary-border: var(--vscode-button-border, #0e639c);
+
+		/* Secondary button */
+		--color-button-secondary-background: var(--vscode-button-secondaryBackground, #3a3d41);
+		--color-button-secondary-foreground: var(--vscode-button-secondaryForeground, #ffffff);
+		--color-button-secondary-hover-background: var(
+			--vscode-button-secondaryHoverBackground,
+			#3a3d41
+		);
+		--color-button-secondary-border: var(--vscode-button-border, #3a3d41);
 	}
 	body {
 		font-size: var(--vscode-editor-font-size, 1.5em);
@@ -60,5 +75,24 @@
 		list-style: none;
 		padding: 0;
 		margin: 0;
+	}
+
+	button {
+		cursor: pointer;
+		background-color: var(--color-button-primary-background);
+		color: var(--color-button-primary-foreground);
+		border: 1px solid var(--color-button-primary-border);
+		padding: 0.5em 1em;
+		border-radius: 0.25em;
+	}
+	button.secondary {
+		background-color: var(--color-button-secondary-background);
+		color: var(--color-button-secondary-foreground);
+		border-color: var(--color-button-secondary-border);
+	}
+	button.danger {
+		background-color: rgb(168, 20, 20);
+		color: rgb(222, 222, 222);
+		border-color: rgb(168, 20, 20);
 	}
 }

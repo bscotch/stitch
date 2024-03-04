@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { Vscode } from '$lib/Vscode.js';
+	import { parseArg } from '$lib/args.js';
+	import AnglesDownIcon from '$lib/icons/AnglesDownIcon.svelte';
 	import type {
 		IgorWebviewExtensionPostRun,
 		IgorWebviewExtensionPosts,
 		IgorWebviewLog,
 		IgorWebviewPosts
 	} from '@local-vscode/shared';
-	import { parseArg } from '../../lib/args.js';
 
 	const vscode = new Vscode<unknown, IgorWebviewPosts, IgorWebviewExtensionPosts>();
 
@@ -15,6 +16,11 @@
 	let footer = $state(undefined as HTMLElement | undefined);
 	let exitCode = $state(null as number | null);
 	let autoScroll = $state(true);
+	$effect(() => {
+		if (autoScroll) {
+			debouncedScrollToBottom();
+		}
+	});
 
 	vscode.postMessage({ kind: 'ready' });
 	vscode.onMessage((message) => {
@@ -57,9 +63,6 @@
 		}, 100);
 	}
 </script>
-
-<!-- Disable autoscroll if the user interacts with the scroller -->
-<svelte:window on:scrollend={() => (autoScroll = false)} />
 
 {#if !running}
 	<p><i>Nothing is running!</i></p>
@@ -104,13 +107,23 @@
 	{:else}
 		<ul class="logs">
 			{#each logs as log}
-				<li class="log">
-					<samp class={`log ${log.kind}`}>
+				<li class={`log ${log.kind}`}>
+					<samp>
 						{log.message}
 					</samp>
 				</li>
 			{/each}
 		</ul>
+		<aside class="sticky-footer-actions">
+			<button
+				type="button"
+				class={autoScroll ? 'primary' : 'secondary'}
+				title={autoScroll ? 'Disable auto-scroll' : 'Enable auto-scroll'}
+				on:click={() => (autoScroll = !autoScroll)}
+			>
+				<AnglesDownIcon />
+			</button>
+		</aside>
 		<footer bind:this={footer}>
 			{#if exitCode !== null}
 				<p>
@@ -146,5 +159,20 @@
 	}
 	.arg-flag {
 		color: gray;
+	}
+	.log.stderr {
+		color: var(--color-text-error);
+	}
+	section,
+	li,
+	code {
+		/* word-break: break-all; */
+		overflow-wrap: break-word;
+	}
+	aside.sticky-footer-actions {
+		/* Should be absolutely positioned in the bottom-right corner */
+		position: fixed;
+		bottom: 0.25em;
+		right: 0.25em;
 	}
 </style>
