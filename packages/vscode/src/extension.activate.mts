@@ -57,10 +57,25 @@ export async function activateStitchExtension(
   info('Loading projects...');
   const toWatch: vscode.RelativePattern[] = [];
 
-  const yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
+  let yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
   if (!yypFiles.length) {
     warn('No .yyp files found in workspace!');
   }
+
+  // Only allow loading one project at a time to reduce complexity
+  if (yypFiles.length > 1) {
+    const chosen = await vscode.window.showQuickPick(
+      yypFiles.map((yyp) => ({
+        label: pathyFromUri(yyp).basename,
+        description: pathyFromUri(yyp).up().basename,
+        uri: yyp,
+      })),
+      { placeHolder: 'Multiple projects found! Select a project to load' },
+    );
+    if (!chosen) yypFiles.length = 0;
+    else yypFiles = [chosen.uri];
+  }
+
   for (const yypFile of yypFiles) {
     info('Loading project', yypFile);
     const pt = Timer.start();
