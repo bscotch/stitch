@@ -22,6 +22,7 @@ export namespace StitchEvents {
     payload: [
       {
         cmd: string;
+        args: string[];
         runtime: GameMakerRuntime;
         project: GameMakerProject;
         clean?: boolean;

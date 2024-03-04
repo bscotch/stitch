@@ -9,6 +9,8 @@ import {
   GameMakerIde,
   GameMakerLauncher,
   GameMakerRuntime,
+  computeGameMakerBuildCommand,
+  computeGameMakerCleanCommand,
   stringifyGameMakerBuildCommand,
   stringifyGameMakerCleanCommand,
 } from '@bscotch/stitch-launcher';
@@ -123,38 +125,52 @@ export class GameMakerProject extends Project {
       }
       return;
     }
-    logger.info(`Running Igor`, {
-      igorPath: runtime.executablePath,
-    });
-
-    const cmd = await (options?.clean
-      ? stringifyGameMakerCleanCommand
-      : stringifyGameMakerBuildCommand)(runtime, {
-      project: this.yypPath.absolute,
-      config: config || undefined,
-      yyc: compiler === 'yyc',
-      noCache: false,
-      quiet: true,
-    });
-
-    logger.info(`Igor command:`, JSON.stringify(cmd));
-
-    // Create or re-use a terminal
-    const name = `GameMaker v${release.runtime.version}`;
-    const existing = vscode.window.terminals.find((term) => term.name === name);
-    if (existing) {
-      existing.dispose();
-    }
 
     if (stitchConfig.runInTerminal) {
+      logger.info(`Running Igor`, {
+        igorPath: runtime.executablePath,
+      });
+
+      const cmd = await (options?.clean
+        ? stringifyGameMakerCleanCommand
+        : stringifyGameMakerBuildCommand)(runtime, {
+        project: this.yypPath.absolute,
+        config: config || undefined,
+        yyc: compiler === 'yyc',
+        noCache: false,
+        quiet: true,
+      });
+
+      logger.info(`Igor command:`, JSON.stringify(cmd));
+
+      // Create or re-use a terminal
+      const name = `GameMaker v${release.runtime.version}`;
+      const existing = vscode.window.terminals.find(
+        (term) => term.name === name,
+      );
+      if (existing) {
+        existing.dispose();
+      }
+
       const terminal = vscode.window.createTerminal({
         name: `GameMaker v${release.runtime.version}`,
       });
       terminal.sendText(cmd);
       terminal.show();
     } else {
+      let { cmd, args } = await (options?.clean
+        ? computeGameMakerCleanCommand
+        : computeGameMakerBuildCommand)(runtime, {
+        project: this.yypPath.absolute,
+        config: config || undefined,
+        yyc: compiler === 'yyc',
+        noCache: false,
+        quiet: true,
+      });
+      cmd = cmd.replace(/[/\\]/g, '/').replace(/ /g, '\\ ');
       stitchEvents.emit('request-run-project-in-webview', {
         cmd,
+        args,
         runtime,
         project: this,
         clean: options?.clean,

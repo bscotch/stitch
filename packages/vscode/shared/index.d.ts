@@ -1,5 +1,5 @@
 export interface IgorWebviewLog {
-  kind: 'out' | 'err';
+  kind: 'stdout' | 'stderr';
   message: string;
 }
 export interface IgorWebviewExtensionPostRun {
@@ -16,8 +16,17 @@ export interface IgorWebviewExtensionPostLogs {
 export interface WebviewReadyMessage {
   kind: 'ready';
 }
+export interface WebviewResetMessage {
+  kind: 'reset';
+}
+export interface IgorExitedMessage {
+  kind: 'exited';
+  code: number | null;
+}
 
 export type IgorWebviewExtensionPosts =
+  | WebviewResetMessage
+  | IgorExitedMessage
   | WebviewReadyMessage
   | IgorWebviewExtensionPostRun
   | IgorWebviewExtensionPostLogs;

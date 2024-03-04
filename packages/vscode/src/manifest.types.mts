@@ -1,5 +1,4 @@
 import { type CommandName } from './manifest.commands.mjs';
-import type { ViewContainerId } from './manifest.views.mjs';
 
 export const $showInPalette = Symbol('showInPalette');
 export const $showInViewTitle = Symbol('showInViewTitle');
@@ -29,7 +28,8 @@ export interface ManifestView {
   id: string;
   name: string;
   icon: './images/stitch-logo-mono.svg';
-  type: 'tree';
+  type: 'tree' | 'webview';
+  contextualTitle?: string;
 }
 
 export interface ManifestViewContainer {
@@ -65,9 +65,10 @@ export interface ManifestCommandPalette {
 export interface Manifest {
   contributes: {
     commands: ManifestCommand[];
-    views: Record<ViewContainerId, ManifestView[]>;
+    views: Record<string, ManifestView[]>;
     viewsContainers: {
       activitybar: ManifestViewContainer[];
+      panel: ManifestViewContainer[];
     };
     menus: ManifestMenus;
   };

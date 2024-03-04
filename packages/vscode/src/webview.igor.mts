@@ -1,22 +1,52 @@
 import type { Asset } from '@bscotch/gml-parser';
 import type {
+  IgorExitedMessage,
+  IgorWebviewExtensionPostLogs,
   IgorWebviewExtensionPostRun,
+  IgorWebviewLog,
   IgorWebviewPosts,
+  WebviewResetMessage,
 } from '@local-vscode/shared';
+import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import vscode from 'vscode';
 import html from '../webviews/build/igor.html';
+import { assertLoudly } from './assert.mjs';
 import { StitchEvents, stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 
-export class StitchIgorView {
-  public panel?: vscode.WebviewPanel;
+export class StitchIgorView implements vscode.WebviewViewProvider {
+  readonly viewType = 'bscotch-stitch-igor';
+  protected container?: vscode.WebviewView;
   public editing: Asset<'sprites'> | undefined;
   public zooms = new Map<Asset<'sprites'>, number>();
   protected lastRequest?: StitchEvents.RequestRunInWebview['payload'][0];
+  protected runner?: ChildProcessWithoutNullStreams;
 
   constructor(readonly workspace: StitchWorkspace) {}
 
-  protected getWebviewContent(panel: vscode.WebviewPanel) {
+  resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    context: vscode.WebviewViewResolveContext<unknown>,
+  ): void | Thenable<void> {
+    this.container = webviewView;
+
+    webviewView.webview.options = { enableScripts: true };
+
+    webviewView.webview.html = this.getWebviewContent(webviewView.webview);
+
+    webviewView.webview.onDidReceiveMessage((data) => {
+      switch (data.type) {
+        case 'colorSelected': {
+          vscode.window.activeTextEditor?.insertSnippet(
+            new vscode.SnippetString(`#${data.value}`),
+          );
+          break;
+        }
+      }
+    });
+  }
+
+  protected getWebviewContent(webview: vscode.Webview) {
     let preparedHtml = html;
     // Add the <base> tag so that relative paths work
     const basePath = vscode.Uri.joinPath(
@@ -24,7 +54,7 @@ export class StitchIgorView {
       'webviews',
       'build',
     );
-    const compatibleBasePath = panel.webview.asWebviewUri(basePath);
+    const compatibleBasePath = webview.asWebviewUri(basePath);
     preparedHtml = preparedHtml.replace(
       '<head>',
       `<head><base href="${compatibleBasePath}/">`,
@@ -32,29 +62,8 @@ export class StitchIgorView {
     return preparedHtml;
   }
 
-  protected createPanel(): vscode.WebviewPanel {
-    const panel = vscode.window.createWebviewPanel(
-      'stitch-igor',
-      'Igor Output',
-      vscode.ViewColumn.Beside,
-      { enableScripts: true, retainContextWhenHidden: true },
-    );
-    return panel;
-  }
-
-  revealPanel() {
-    this.panel ||= this.createPanel();
-    this.panel.title = 'GameMaker Runner';
-    // Rebuild the webview
-    this.panel.webview.html = this.getWebviewContent(this.panel!);
-    this.panel.reveal();
-    this.panel.onDidDispose(() => {
-      this.panel = undefined;
-    });
-  }
-
   async run(event: StitchEvents.RequestRunInWebview['payload'][0]) {
-    this.revealPanel();
+    assertLoudly(this.container, 'Runner container not initialized!');
     this.lastRequest = event;
     const runMessage: IgorWebviewExtensionPostRun = {
       kind: 'run',
@@ -62,21 +71,55 @@ export class StitchIgorView {
       cmd: event.cmd,
       projectName: event.project.name,
     };
-    this.panel!.webview.onDidReceiveMessage(
-      async (message: IgorWebviewPosts) => {
-        if (message.kind === 'ready') {
-          // TODO: If we don't already have a runner going, start one. On start, send stdout/stderr to the webview.
-          await this.panel!.webview.postMessage(runMessage);
+    const webview = this.container.webview;
+    console.log('Webview is waiting!', webview, runMessage);
+    webview.postMessage({ kind: 'reset' } satisfies WebviewResetMessage);
+    webview.onDidReceiveMessage(async (message: IgorWebviewPosts) => {
+      if (message.kind === 'ready') {
+        if (this.runner && this.runner.exitCode === null) {
+          // TODO: Tell the webview to reload its logs?
+        } else {
+          console.log('Running');
+          await webview.postMessage(runMessage);
+          this.runner = spawn(event.cmd, event.args, { shell: true });
+          this.runner.stdout.on('data', (data) => {
+            webview.postMessage(messagesFromStdio(data, 'stdout'));
+          });
+          this.runner.stderr.on('data', (data) => {
+            webview.postMessage(messagesFromStdio(data, 'stderr'));
+          });
+          this.runner.on('exit', (code) => {
+            console.log('Exited with code', code);
+            this.runner = undefined;
+            webview.postMessage({
+              kind: 'exited',
+              code,
+            } satisfies IgorExitedMessage);
+          });
         }
-      },
-    );
+      }
+    });
   }
 
   static register(workspace: StitchWorkspace) {
-    const spriteEditorProvider = new StitchIgorView(workspace);
+    const igorView = new StitchIgorView(workspace);
     stitchEvents.on('request-run-project-in-webview', (payload) => {
-      spriteEditorProvider.run(payload);
+      igorView.run(payload);
     });
-    return [];
+    return [
+      vscode.window.registerWebviewViewProvider(igorView.viewType, igorView),
+    ];
   }
+}
+
+function messagesFromStdio(
+  data: Buffer,
+  stream: 'stdout' | 'stderr',
+): IgorWebviewExtensionPostLogs {
+  const logs: IgorWebviewLog[] = data
+    .toString()
+    .split(/\r?\n/)
+    .map((message) => ({ kind: stream, message }));
+  console.log('messagesFromStdio', logs);
+  return { kind: 'log', logs };
 }

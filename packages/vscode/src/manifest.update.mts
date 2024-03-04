@@ -8,7 +8,6 @@ import {
   commands,
 } from './manifest.commands.mjs';
 import { Manifest, MenuItem } from './manifest.types.mjs';
-import { viewsArray, viewsContainersArray } from './manifest.views.mjs';
 
 async function main() {
   const manifestPath = pathy('package.json');
@@ -23,9 +22,51 @@ async function main() {
     manifest.contributes.commands.push(commands[command]);
   }
 
-  // Update views
-  manifest.contributes.views['bscotch-stitch'] = viewsArray;
-  manifest.contributes.viewsContainers.activitybar = viewsContainersArray;
+  // Update Activity Bar view
+  manifest.contributes.viewsContainers.activitybar = [
+    {
+      id: 'bscotch-stitch',
+      title: 'Stitch',
+      icon: './images/stitch-logo-mono.svg',
+    },
+  ];
+  manifest.contributes.views['bscotch-stitch'] = [
+    {
+      id: 'bscotch-stitch-inspector',
+      name: 'Inspector',
+      icon: './images/stitch-logo-mono.svg',
+      type: 'tree',
+      contextualTitle: 'Stitch:Inspector',
+    },
+    {
+      id: 'bscotch-stitch-files',
+      name: 'Included Files',
+      icon: './images/stitch-logo-mono.svg',
+      type: 'tree',
+      contextualTitle: 'Stitch:Files',
+    },
+    {
+      id: 'bscotch-stitch-resources',
+      name: 'Resources',
+      icon: './images/stitch-logo-mono.svg',
+      type: 'tree',
+      contextualTitle: 'Stitch:Resources',
+    },
+    {
+      id: 'bscotch-stitch-igor',
+      name: 'Runner',
+      icon: './images/stitch-logo-mono.svg',
+      type: 'webview',
+      contextualTitle: 'Stitch:Runner',
+    },
+    {
+      id: 'bscotch-stitch-sprite-sources',
+      name: 'Sprite Sources',
+      icon: './images/stitch-logo-mono.svg',
+      type: 'tree',
+      contextualTitle: 'Stitch:SpriteSources',
+    },
+  ];
 
   // Update menus
   manifest.contributes.menus['commandPalette'] = commandNames

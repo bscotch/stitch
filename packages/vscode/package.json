@@ -600,17 +600,17 @@
         },
         {
           "command": "stitch.run",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
+          "when": "view == bscotch-stitch-igor",
           "group": "navigation@5"
         },
         {
           "command": "stitch.run.noDefaults",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
+          "when": "view == bscotch-stitch-igor",
           "group": "navigation@4"
         },
         {
           "command": "stitch.clean",
-          "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
+          "when": "view == bscotch-stitch-igor",
           "group": "navigation@3"
         },
         {
@@ -915,25 +915,36 @@
           "id": "bscotch-stitch-inspector",
           "name": "Inspector",
           "icon": "./images/stitch-logo-mono.svg",
-          "type": "tree"
+          "type": "tree",
+          "contextualTitle": "Stitch:Inspector"
         },
         {
           "id": "bscotch-stitch-files",
           "name": "Included Files",
           "icon": "./images/stitch-logo-mono.svg",
-          "type": "tree"
+          "type": "tree",
+          "contextualTitle": "Stitch:Files"
         },
         {
           "id": "bscotch-stitch-resources",
-          "name": "Project",
+          "name": "Resources",
           "icon": "./images/stitch-logo-mono.svg",
-          "type": "tree"
+          "type": "tree",
+          "contextualTitle": "Stitch:Resources"
+        },
+        {
+          "id": "bscotch-stitch-igor",
+          "name": "Runner",
+          "icon": "./images/stitch-logo-mono.svg",
+          "type": "webview",
+          "contextualTitle": "Stitch:Runner"
         },
         {
           "id": "bscotch-stitch-sprite-sources",
           "name": "Sprite Sources",
           "icon": "./images/stitch-logo-mono.svg",
-          "type": "tree"
+          "type": "tree",
+          "contextualTitle": "Stitch:SpriteSources"
         }
       ]
     },

@@ -290,7 +290,7 @@ export const commands = {
     enablement: when.hasProjects,
     [$showInPalette]: true,
     [$showInViewTitle]: {
-      when: when.assetTreeFocusedAndHasOneProject,
+      when: when.runnerViewFocused,
       group: 'navigation@5',
     },
     [$showInViewItemContextMenu]: {
@@ -306,7 +306,7 @@ export const commands = {
     enablement: when.hasProjects,
     [$showInPalette]: true,
     [$showInViewTitle]: {
-      when: when.assetTreeFocusedAndHasOneProject,
+      when: when.runnerViewFocused,
       group: 'navigation@4',
     },
     [$showInViewItemContextMenu]: {
@@ -321,7 +321,7 @@ export const commands = {
     icon: '$(discard)',
     [$showInPalette]: true,
     [$showInViewTitle]: {
-      when: when.assetTreeFocusedAndHasOneProject,
+      when: when.runnerViewFocused,
       group: 'navigation@3',
     },
     [$showInViewItemContextMenu]: {

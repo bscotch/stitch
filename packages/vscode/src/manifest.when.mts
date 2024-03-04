@@ -7,6 +7,7 @@ const hasProjects = 'stitch.projectCount > 0';
 const hasOneProject = 'stitch.projectCount == 1';
 const viewItemIsProject = 'viewItem == project';
 const resourceIsGml = 'resourceExtname == .gml';
+const runnerViewFocused = 'view == bscotch-stitch-igor';
 
 export const when = {
   onWindows: 'isWindows',
@@ -16,6 +17,7 @@ export const when = {
   inspectorFocused: 'view == bscotch-stitch-inspector',
   editorFocused: 'editorFocus',
   hasProjects,
+  runnerViewFocused,
   hasOneProject,
   assetTreeFocusedAndHasOneProject: `${assetTreeFocused} && ${hasOneProject}`,
   assetTreeFocusedAndHasProjects: `${assetTreeFocused} && ${hasProjects}`,

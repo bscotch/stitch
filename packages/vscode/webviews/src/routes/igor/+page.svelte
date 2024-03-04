@@ -19,6 +19,10 @@
 			logs = [];
 		} else if (message.kind === 'log') {
 			logs.push(...message.logs);
+		} else if (message.kind === 'reset') {
+			running = undefined;
+			logs = [];
+			vscode.postMessage({ kind: 'ready' });
 		}
 	});
 
