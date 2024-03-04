@@ -209,7 +209,8 @@
         "command": "stitch.clean",
         "title": "Stitch: Clean Project Cache",
         "shortTitle": "Clean Cache",
-        "icon": "$(discard)"
+        "icon": "$(discard)",
+        "enablement": "stitch.projectCount > 0"
       },
       {
         "command": "stitch.types.copy",

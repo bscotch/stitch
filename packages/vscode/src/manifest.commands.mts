@@ -319,6 +319,7 @@ export const commands = {
     title: 'Stitch: Clean Project Cache',
     shortTitle: 'Clean Cache',
     icon: '$(discard)',
+    enablement: when.hasProjects,
     [$showInPalette]: true,
     [$showInViewTitle]: {
       when: when.runnerViewFocused,

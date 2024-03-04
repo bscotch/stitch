@@ -11,6 +11,7 @@
 
 	let running = $state<IgorWebviewExtensionPostRun | undefined>(undefined);
 	let logs = $state<IgorWebviewLog[]>([]);
+	let footer = $state(undefined as HTMLElement | undefined);
 
 	vscode.postMessage({ kind: 'ready' });
 	vscode.onMessage((message) => {
@@ -19,6 +20,8 @@
 			logs = [];
 		} else if (message.kind === 'log') {
 			logs.push(...message.logs);
+			// Auto-scroll to the bottom
+			debouncedScrollToBottom();
 		} else if (message.kind === 'reset') {
 			running = undefined;
 			logs = [];
@@ -34,6 +37,18 @@
 
 	if (vscode.developmentMode) {
 		loadSamples();
+	}
+
+	// Debounced scroll-to-bottom
+	let timeout: NodeJS.Timeout | undefined;
+	function debouncedScrollToBottom() {
+		if (timeout) {
+			return;
+		}
+		timeout = setTimeout(() => {
+			timeout = undefined;
+			footer?.scrollIntoView({ behavior: 'smooth' });
+		}, 100);
 	}
 </script>
 
@@ -67,6 +82,8 @@
 		</ul>
 	{/if}
 {/if}
+
+<footer bind:this={footer}></footer>
 
 <style>
 </style>
