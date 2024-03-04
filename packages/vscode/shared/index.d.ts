@@ -6,6 +6,7 @@ export interface IgorWebviewExtensionPostRun {
   kind: 'run';
   runtimeVersion: string;
   cmd: string;
+  args: string[];
   projectName: string;
   cleaning?: boolean;
 }

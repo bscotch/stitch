@@ -4,12 +4,26 @@ export const running: IgorWebviewExtensionPostRun = {
 	kind: 'run',
 	projectName: 'Fake Project',
 	cleaning: false,
-	cmd: `c:/ProgramData/GameMakerStudio2-Beta/Cache/runtimes/runtime-2024.200.0.516/bin/igor/windows/x64/Igor.exe" --project="c:/project-dir/FakeProject.yyp" --user="c:/Users/user/AppData/Roaming/GameMakerStudio2-Beta/unknownUser_unknownUserID" --runtimePath="c:/ProgramData/GameMakerStudio2-Beta/Cache/runtimes/runtime-2024.200.0.516" --runtime=VM --config=dev --cache="c:/project-dir/tmp/igor/cache" --temp="c:/project-dir/tmp/igor/temp" --of="c:/project-dir/tmp/igor/out/FakeProject.win" --tf="c:/project-dir/FakeProject.zip" -- windows Run`,
+	cmd: `c:/ProgramData/GameMakerStudio2-Beta/Cache/runtimes/runtime-2024.200.0.516/bin/igor/windows/x64/Igor.exe`,
+	args: [
+		'--project="c:/PROJECT/project.yyp"',
+		'--user="c:/Users/USER/AppData/Roaming/GameMakerStudio2-Beta/unknownUser_unknownUserID"',
+		'--runtimePath="c:/ProgramData/GameMakerStudio2-Beta/Cache/runtimes/runtime-2024.200.0.516"',
+		'--runtime=VM',
+		'--config=dev',
+		'--cache="c:/PROJECT/tmp/igor/cache"',
+		'--temp="c:/PROJECT/tmp/igor/temp"',
+		'--of="c:/PROJECT/tmp/igor/out/project.win"',
+		'--tf="c:/PROJECT/project.zip"',
+		'--',
+		'windows',
+		'Run'
+	],
 	runtimeVersion: '2024.200.0.516'
 };
 
 const logSample = `Options: c:/ProgramData/GameMakerStudio2-Beta/Cache/runtimes/runtime-2024.200.0.516\\bin\\platform_setting_defaults.json
-Options: c:/Users/coste/AppData/Roaming/GameMakerStudio2-Beta/unknownUser_unknownUserID\\local_settings.json
+Options: c:/Users/USER/AppData/Roaming/GameMakerStudio2-Beta/unknownUser_unknownUserID\\local_settings.json
 Setting up the Asset compiler
 Found Project Format 2
 Core Resources : Debug Info - AddResourceName duplicate name Roofs ... An item with the same key has already been added. Key: Roofs
@@ -210,6 +224,6 @@ Igor complete.
 `;
 
 export const logs: IgorWebviewLog[] = logSample.split(/\r?\n/g).map((line, i) => ({
-	kind: 'out',
+	kind: 'stdout',
 	message: line
 }));

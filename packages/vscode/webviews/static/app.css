@@ -13,7 +13,7 @@
 		--color-text-warning: var(--vscode-list-warningForeground, #ccaa00);
 	}
 	body {
-		font-size: var(--vscode-editor-font-size);
+		font-size: var(--vscode-editor-font-size, 1.5em);
 		background-color: var(--color-background);
 		color: var(--color-text);
 	}
@@ -28,28 +28,35 @@
 		user-select: none;
 	}
 	h1 {
-		font-size: 1.4em;
+		font-size: 1.4rem;
 	}
 	h2 {
-		font-size: 1.25em;
+		font-size: 1.25rem;
 	}
 	h3 {
-		font-size: 1.15em;
+		font-size: 1.15rem;
 	}
 	h4 {
-		font-size: 1.08em;
+		font-size: 1.08rem;
 	}
 	h2,
 	h3,
 	h4 {
 		margin: 0;
 	}
-	ul {
+	ul,
+	ol {
 		/* decrease default indent */
-		padding-inline-start: 1.5em;
+		padding-inline-start: 1.5rem;
 	}
 
-	ul.reset {
+	ul.reset,
+	ol.reset {
+		padding: 0;
+		margin: 0;
+	}
+	ul.reset li,
+	ol.reset li {
 		list-style: none;
 		padding: 0;
 		margin: 0;

@@ -24,16 +24,10 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
 
   constructor(readonly workspace: StitchWorkspace) {}
 
-  resolveWebviewView(
-    webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext<unknown>,
-  ): void | Thenable<void> {
+  resolveWebviewView(webviewView: vscode.WebviewView): void | Thenable<void> {
     this.container = webviewView;
-
     webviewView.webview.options = { enableScripts: true };
-
     webviewView.webview.html = this.getWebviewContent(webviewView.webview);
-
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
         case 'colorSelected': {
@@ -69,17 +63,16 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
       kind: 'run',
       runtimeVersion: event.runtime.version,
       cmd: event.cmd,
+      args: event.args,
       projectName: event.project.name,
     };
     const webview = this.container.webview;
-    console.log('Webview is waiting!', webview, runMessage);
     webview.postMessage({ kind: 'reset' } satisfies WebviewResetMessage);
     webview.onDidReceiveMessage(async (message: IgorWebviewPosts) => {
       if (message.kind === 'ready') {
         if (this.runner && this.runner.exitCode === null) {
           // TODO: Tell the webview to reload its logs?
         } else {
-          console.log('Running');
           await webview.postMessage(runMessage);
           this.runner = spawn(event.cmd, event.args, { shell: true });
           this.runner.stdout.on('data', (data) => {
@@ -89,7 +82,6 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
             webview.postMessage(messagesFromStdio(data, 'stderr'));
           });
           this.runner.on('exit', (code) => {
-            console.log('Exited with code', code);
             this.runner = undefined;
             webview.postMessage({
               kind: 'exited',
@@ -119,7 +111,7 @@ function messagesFromStdio(
   const logs: IgorWebviewLog[] = data
     .toString()
     .split(/\r?\n/)
-    .map((message) => ({ kind: stream, message }));
-  console.log('messagesFromStdio', logs);
+    .map((message) => ({ kind: stream, message }))
+    .filter((x) => !!x.message);
   return { kind: 'log', logs };
 }
