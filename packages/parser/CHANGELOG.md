@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.7.2 (2024-03-05)
+
+### Fixes
+
+- Improved error messages when the project cannot be loaded due to a duplicate asset.
+
 ## 1.7.1 (2024-02-28)
 
 ### Fixes

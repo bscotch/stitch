@@ -1,5 +1,12 @@
 # Stitch Changelog
 
+## 1.65.1 (2024-03-05)
+
+### Fixes
+
+- The new Runner webview CSS was not being packaged
+- Improved error messages when the project cannot be loaded due to a duplicate asset.
+
 ## 1.65.0 (2024-03-05)
 
 ### Features
