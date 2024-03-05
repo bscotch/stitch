@@ -74,7 +74,7 @@ export async function activateStitchExtension(
     const chosen = await vscode.window.showQuickPick(
       yypFiles.map((yyp) => ({
         label: pathyFromUri(yyp).basename,
-        description: pathyFromUri(yyp).up().basename,
+        description: pathyFromUri(yyp).up().absolute,
         uri: yyp,
       })),
       { placeHolder: 'Multiple projects found! Select a project to load' },
