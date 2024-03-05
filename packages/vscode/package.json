@@ -192,6 +192,11 @@
         "icon": "$(edit)"
       },
       {
+        "command": "stitch.runner.toggleSearchWidget",
+        "title": "Toggle Search Widget",
+        "icon": "$(search)"
+      },
+      {
         "command": "stitch.run",
         "title": "Stitch: Run Project",
         "shortTitle": "Run",
@@ -429,6 +434,18 @@
           "type": "boolean",
           "default": true
         },
+        "stitch.runView.fontFamily": {
+          "title": "Runner View Font Family",
+          "type": "string",
+          "default": "",
+          "description": "The font family to use in the runner view. If not set, the default font will be used."
+        },
+        "stitch.runView.fontSize": {
+          "title": "Runner View Font Size",
+          "type": "number",
+          "default": 0,
+          "description": "The font size to use in the runner view. If 0, the default size will be used."
+        },
         "stitch.editing.reprocessOnTypeDelay": {
           "title": "Reprocess on type delay",
           "type": "number",
@@ -598,6 +615,11 @@
           "command": "stitch.openIde",
           "when": "view == bscotch-stitch-resources && stitch.projectCount == 1",
           "group": "navigation@3"
+        },
+        {
+          "command": "stitch.runner.toggleSearchWidget",
+          "when": "view == bscotch-stitch-igor",
+          "group": "navigation@1"
         },
         {
           "command": "stitch.run",

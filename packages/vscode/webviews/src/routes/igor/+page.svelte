@@ -3,6 +3,7 @@
 	import { Vscode } from '$lib/Vscode.js';
 	import { parseArg } from '$lib/args.js';
 	import AnglesDownIcon from '$lib/icons/AnglesDownIcon.svelte';
+	import SearchIcon from '$lib/icons/SearchIcon.svelte';
 	import { markSearchResults, type SearchProps } from '$lib/search.js';
 	import type {
 		IgorWebviewExtensionPostRun,
@@ -14,6 +15,8 @@
 
 	const vscode = new Vscode<unknown, IgorWebviewPosts, IgorWebviewExtensionPosts>();
 
+	let mainStyle = $state('');
+
 	let running = $state<IgorWebviewExtensionPostRun | undefined>(undefined);
 	let exitCode = $state(null as number | null);
 	let logs = $state<(IgorWebviewLog & { asSearchResult?: string })[]>([]);
@@ -21,7 +24,7 @@
 	let footer = $state(undefined as HTMLElement | undefined);
 	let logsList = $state(undefined as HTMLUListElement | undefined);
 
-	let showSearch = $state(true);
+	let showSearch = $state(false);
 	let search: SearchProps = $state({});
 	let searchResults = $state([] as HTMLElement[]);
 
@@ -36,8 +39,14 @@
 	vscode.onMessage((message) => {
 		if (message.kind === 'run') {
 			running = message;
-			console.log(message);
 			logs = [];
+			mainStyle = '';
+			if (message.config?.fontFamily) {
+				mainStyle += `--font-family: ${message.config.fontFamily};`;
+			}
+			if (message.config?.fontSize) {
+				mainStyle += `--font-size: ${message.config.fontSize}px;`;
+			}
 		} else if (message.kind === 'log') {
 			logs.push(...message.logs);
 			// Auto-scroll to the bottom
@@ -48,6 +57,8 @@
 			vscode.postMessage({ kind: 'ready' });
 		} else if (message.kind == 'exited') {
 			exitCode = message.code;
+		} else if (message.kind === 'toggle-search') {
+			toggleSearch();
 		}
 	});
 
@@ -78,6 +89,17 @@
 		await tick();
 		searchResults = [...document.querySelectorAll('mark.search-result').values()] as HTMLElement[];
 	}
+	function toggleSearch() {
+		if (showSearch) {
+			closeSearch();
+		} else {
+			openSearch();
+		}
+	}
+	function openSearch() {
+		showSearch = true;
+		onSearchChange(search);
+	}
 	function closeSearch() {
 		showSearch = false;
 		searchResults = [];
@@ -104,108 +126,113 @@
 	}
 </script>
 
-<svelte:window
-	on:keyup={(event) => {
-		if (['f', 'F'].includes(event.key) && event.ctrlKey) {
-			showSearch = true;
-			event.preventDefault();
-			event.stopPropagation();
-			onSearchChange(search);
-		}
-	}}
-/>
-
-{#if !running}
-	<p><i>Nothing is running!</i></p>
-{:else}
-	<aside class="search">
-		{#if showSearch}
-			<Search
-				{...search}
-				results={searchResults}
-				on:change={(event) => onSearchChange(event.detail)}
-				on:close={() => closeSearch()}
-			/>
-		{/if}
-	</aside>
-	<div>
-		<ul class="reset">
-			<li class="project-name">
-				<code><b>Project:</b> {running.projectName}</code>
-			</li>
-			<li>
-				<code><b>Runtime:</b> v{running.runtimeVersion}</code>
-			</li>
-			<li class="run-mode">
-				<code><b>Mode:</b> {running.cleaning ? 'Clean' : 'Run'}</code>
-			</li>
-		</ul>
-		<details>
-			<summary>Command</summary>
-			<div class="command">
-				<code>{running.cmd}</code>
-				<ol class="reset args">
-					{#each running.args as arg}
-						{@const parsed = parseArg(arg)}
-						{#if parsed.flag}
-							<li class="arg-flag">
-								<code>{@html parsed.flag}</code>
-							</li>
-						{/if}
-						{#if parsed.value}
-							<li class="arg-value">
-								<code>{parsed.value}</code>
-							</li>
-						{/if}
-					{/each}
-				</ol>
-			</div>
-		</details>
-	</div>
-
-	{#if logs.length === 0}
-		<p><i>No logs yet...</i></p>
+<main style={mainStyle}>
+	{#if !running}
+		<p><i>Nothing is running!</i></p>
 	{:else}
-		<ul class="logs" bind:this={logsList}>
-			{#each logs as log, i (i)}
-				<li class={`log ${log.kind}`}>
-					<!-- svelte-ignore a11y-missing-content -->
-					<a href={`#log-${i}`}></a>
-					<samp>
-						{#if log.asSearchResult}
-							{@html log.asSearchResult}
-						{:else}
-							{log.message}
-						{/if}
-					</samp>
+		{#if showSearch}
+			<aside class="search">
+				<Search
+					{...search}
+					results={searchResults}
+					on:change={(event) => onSearchChange(event.detail)}
+					on:close={() => closeSearch()}
+				/>
+			</aside>
+		{/if}
+		<div>
+			<ul class="reset">
+				<li class="project-name">
+					<b>Project:</b>
+					{running.projectName}
 				</li>
-			{/each}
-		</ul>
-		<aside class="sticky-footer-actions">
-			<button
-				type="button"
-				class={autoScroll ? 'primary' : 'secondary'}
-				title={autoScroll ? 'Disable auto-scroll' : 'Enable auto-scroll'}
-				on:click={() => (autoScroll = !autoScroll)}
-			>
-				<AnglesDownIcon />
-			</button>
-		</aside>
-		<footer bind:this={footer}>
-			{#if exitCode !== null}
-				<p>
-					<em>Process exited with code {exitCode}</em>
-				</p>
-			{/if}
-		</footer>
+				<li>
+					<b>Runtime:</b> v{running.runtimeVersion}
+				</li>
+				<li class="run-mode">
+					<b>Mode:</b>
+					{running.cleaning ? 'Clean' : 'Run'}
+				</li>
+			</ul>
+			<details>
+				<summary>Command</summary>
+				<div class="command">
+					<samp>{running.cmd}</samp>
+					<ol class="reset args">
+						{#each running.args as arg}
+							{@const parsed = parseArg(arg)}
+							{#if parsed.flag}
+								<li class="arg-flag">
+									<samp>{@html parsed.flag}</samp>
+								</li>
+							{/if}
+							{#if parsed.value}
+								<li class="arg-value">
+									<samp>{parsed.value}</samp>
+								</li>
+							{/if}
+						{/each}
+					</ol>
+				</div>
+			</details>
+		</div>
+
+		{#if logs.length === 0}
+			<p><i>No logs yet...</i></p>
+		{:else}
+			<ul class="logs" bind:this={logsList}>
+				{#each logs as log, i (i)}
+					<li class={`log ${log.kind}`}>
+						<!-- svelte-ignore a11y-missing-content -->
+						<a href={`#log-${i}`}></a>
+						<samp>
+							{#if log.asSearchResult}
+								{@html log.asSearchResult}
+							{:else}
+								{log.message}
+							{/if}
+						</samp>
+					</li>
+				{/each}
+			</ul>
+			<aside class="sticky-footer-actions">
+				{#if vscode.developmentMode}
+					<button
+						type="button"
+						class={showSearch ? 'primary' : 'secondary'}
+						title={showSearch ? 'Close search' : 'Open search'}
+						on:click={() => toggleSearch()}
+					>
+						<SearchIcon />
+					</button>
+				{/if}
+				<button
+					type="button"
+					class={autoScroll ? 'primary' : 'secondary'}
+					title={autoScroll ? 'Disable auto-scroll' : 'Enable auto-scroll'}
+					on:click={() => (autoScroll = !autoScroll)}
+				>
+					<AnglesDownIcon />
+				</button>
+			</aside>
+			<footer bind:this={footer}>
+				{#if exitCode !== null}
+					<p>
+						<em>Process exited with code {exitCode}</em>
+					</p>
+				{/if}
+			</footer>
+		{/if}
 	{/if}
-{/if}
+</main>
 
 <style>
 	aside.search {
-		position: fixed;
-		top: 0.25em;
-		right: 0.25em;
+		position: sticky;
+		top: 0;
+		padding-block: 0.25em;
+		background-color: var(--color-background);
+		border-bottom: 1px solid rgb(64, 64, 64);
 	}
 	ol.args {
 		display: flex;
@@ -247,6 +274,16 @@
 		position: fixed;
 		bottom: 0.25em;
 		right: 0.25em;
+		display: flex;
+		gap: 0.25em;
+	}
+	aside.sticky-footer-actions button {
+		padding: 0.25em 0.5em;
+		height: 2.25em;
+		width: 2.5em;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 	footer {
 		/* Add a little extra space to allow room for absolute

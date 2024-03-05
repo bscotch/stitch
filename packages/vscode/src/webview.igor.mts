@@ -11,8 +11,10 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import vscode from 'vscode';
 import html from '../webviews/build/igor.html';
 import { assertLoudly } from './assert.mjs';
+import { stitchConfig } from './config.mjs';
 import { StitchEvents, stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
+import { registerCommand } from './lib.mjs';
 
 export class StitchIgorView implements vscode.WebviewViewProvider {
   readonly viewType = 'bscotch-stitch-igor';
@@ -65,6 +67,10 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
       cmd: event.cmd,
       args: event.args,
       projectName: event.project.name,
+      config: {
+        fontFamily: stitchConfig.runnerViewFontFamily,
+        fontSize: stitchConfig.runnerViewFontSize,
+      },
     };
     const webview = this.container.webview;
     webview.postMessage({ kind: 'reset' } satisfies WebviewResetMessage);
@@ -100,6 +106,9 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
     });
     return [
       vscode.window.registerWebviewViewProvider(igorView.viewType, igorView),
+      registerCommand('stitch.runner.toggleSearchWidget', () => {
+        igorView.container?.webview.postMessage({ kind: 'toggle-search' });
+      }),
     ];
   }
 }

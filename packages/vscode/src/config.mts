@@ -74,6 +74,12 @@ class StitchConfig {
   get runInTerminal(): boolean {
     return this.config.get<boolean>('run.inTerminal') ?? true;
   }
+  get runnerViewFontFamily(): string | null {
+    return this.config.get<string>('runView.fontFamily') ?? '';
+  }
+  get runnerViewFontSize(): number {
+    return this.config.get<number>('runView.fontSize') ?? 0;
+  }
   get runCompilerDefault(): 'vm' | 'yyc' {
     return (
       this.config.get<string>('run.defaultCompiler') || 'vm'

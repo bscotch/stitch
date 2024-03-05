@@ -282,6 +282,15 @@ export const commands = {
       group: 'inline@3',
     },
   },
+  'stitch.runner.toggleSearchWidget': {
+    command: 'stitch.runner.toggleSearchWidget',
+    title: 'Toggle Search Widget',
+    icon: '$(search)',
+    [$showInViewTitle]: {
+      when: when.runnerViewFocused,
+      group: 'navigation@1',
+    },
+  },
   'stitch.run': {
     command: 'stitch.run',
     title: 'Stitch: Run Project',

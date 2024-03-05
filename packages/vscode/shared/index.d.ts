@@ -9,6 +9,10 @@ export interface IgorWebviewExtensionPostRun {
   args: string[];
   projectName: string;
   cleaning?: boolean;
+  config?: {
+    fontFamily: string | null;
+    fontSize: number;
+  };
 }
 export interface IgorWebviewExtensionPostLogs {
   kind: 'log';
@@ -24,11 +28,15 @@ export interface IgorExitedMessage {
   kind: 'exited';
   code: number | null;
 }
+export interface ToggleSearchMessage {
+  kind: 'toggle-search';
+}
 
 export type IgorWebviewExtensionPosts =
   | WebviewResetMessage
   | IgorExitedMessage
   | WebviewReadyMessage
   | IgorWebviewExtensionPostRun
-  | IgorWebviewExtensionPostLogs;
+  | IgorWebviewExtensionPostLogs
+  | ToggleSearchMessage;
 export type IgorWebviewPosts = WebviewReadyMessage;
