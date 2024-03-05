@@ -180,6 +180,145 @@ describe('Yy Files', function () {
     }
   });
 
+  it('yyp resource files sort as expected', function () {
+    const referenceOrder = [
+      {
+        id: { name: 'Extension1', path: 'extensions/Extension1/Extension1.yy' },
+      },
+      {
+        id: {
+          name: 'o_child1_child',
+          path: 'objects/o_child1_child/o_child1_child.yy',
+        },
+      },
+      { id: { name: 'o_child1', path: 'objects/o_child1/o_child1.yy' } },
+      { id: { name: 'o_child2', path: 'objects/o_child2/o_child2.yy' } },
+      { id: { name: 'o_object', path: 'objects/o_object/o_object.yy' } },
+      { id: { name: 'o_parent', path: 'objects/o_parent/o_parent.yy' } },
+      {
+        id: {
+          name: 'o_world_element',
+          path: 'objects/o_world_element/o_world_element.yy',
+        },
+      },
+      { id: { name: 'Room1', path: 'rooms/Room1/Room1.yy' } },
+      { id: { name: 'bump', path: 'scripts/bump/bump.yy' } },
+      {
+        id: { name: 'Complicated', path: 'scripts/Complicated/Complicated.yy' },
+      },
+      {
+        id: {
+          name: 'FunctionSelf',
+          path: 'scripts/FunctionSelf/FunctionSelf.yy',
+        },
+      },
+      { id: { name: 'Futures', path: 'scripts/Futures/Futures.yy' } },
+      { id: { name: 'Generics', path: 'scripts/Generics/Generics.yy' } },
+      { id: { name: 'Jsdocs', path: 'scripts/Jsdocs/Jsdocs.yy' } },
+      { id: { name: 'Reactions', path: 'scripts/Reactions/Reactions.yy' } },
+      { id: { name: 'Recovery', path: 'scripts/Recovery/Recovery.yy' } },
+      { id: { name: 's__a', path: 'scripts/s__a/s__a.yy' } },
+      { id: { name: 's_a', path: 'scripts/s_a/s_a.yy' } },
+      { id: { name: 's_B', path: 'scripts/s_B/s_B.yy' } },
+      { id: { name: 'sa___a', path: 'scripts/sa___a/sa___a.yy' } },
+      { id: { name: 'sa__a', path: 'scripts/sa__a/sa__a.yy' } },
+      { id: { name: 'sa_a', path: 'scripts/sa_a/sa_a.yy' } },
+      { id: { name: 'Script1', path: 'scripts/Script1/Script1.yy' } },
+      { id: { name: 'Withing', path: 'scripts/Withing/Withing.yy' } },
+    ];
+
+    const sorted = [...referenceOrder].sort((a, b) =>
+      a.id.path.toLowerCase().localeCompare(b.id.path.toLowerCase()),
+    );
+
+    for (let i = 0; i < referenceOrder.length; i++) {
+      expect(sorted[i].id.path).to.equal(referenceOrder[i].id.path);
+    }
+  });
+
+  it('yyp folders sort as expected', function () {
+    const referenceOrder = [
+      {
+        $GMFolder: '',
+        '%Name': 'Extensions',
+        folderPath: 'folders/Extensions.yy',
+        name: 'Extensions',
+        resourceType: 'GMFolder',
+        resourceVersion: '2.0',
+      },
+      {
+        $GMFolder: '',
+        '%Name': 'Objects',
+        folderPath: 'folders/Objects.yy',
+        name: 'Objects',
+        resourceType: 'GMFolder',
+        resourceVersion: '2.0',
+      },
+      {
+        $GMFolder: '',
+        '%Name': 'Rooms',
+        folderPath: 'folders/Rooms.yy',
+        name: 'Rooms',
+        resourceType: 'GMFolder',
+        resourceVersion: '2.0',
+      },
+      {
+        $GMFolder: '',
+        '%Name': 'Scripts',
+        folderPath: 'folders/Scripts.yy',
+        name: 'Scripts',
+        resourceType: 'GMFolder',
+        resourceVersion: '2.0',
+      },
+      {
+        $GMFolder: '',
+        '%Name': 'Subfolder',
+        folderPath: 'folders/Scripts/Subfolder.yy',
+        name: 'Subfolder',
+        resourceType: 'GMFolder',
+        resourceVersion: '2.0',
+      },
+      {
+        $GMFolder: '',
+        '%Name': 'Subsubfolder',
+        folderPath: 'folders/Scripts/Subfolder/Subsubfolder.yy',
+        name: 'Subsubfolder',
+        resourceType: 'GMFolder',
+        resourceVersion: '2.0',
+      },
+      {
+        $GMFolder: '',
+        '%Name': 'Sorting',
+        folderPath: 'folders/Sorting.yy',
+        name: 'Sorting',
+        resourceType: 'GMFolder',
+        resourceVersion: '2.0',
+      },
+      {
+        $GMFolder: '',
+        '%Name': 'group__a',
+        folderPath: 'folders/Sorting/group__a.yy',
+        name: 'group__a',
+        resourceType: 'GMFolder',
+        resourceVersion: '2.0',
+      },
+      {
+        $GMFolder: '',
+        '%Name': 'group_a',
+        folderPath: 'folders/Sorting/group_a.yy',
+        name: 'group_a',
+        resourceType: 'GMFolder',
+        resourceVersion: '2.0',
+      },
+    ];
+    const sorted = [...referenceOrder].sort((a, b) =>
+      a.folderPath.toLowerCase().localeCompare(b.folderPath.toLowerCase()),
+    );
+    for (let i = 0; i < referenceOrder.length; i++) {
+      expect(sorted[i].folderPath).to.equal(referenceOrder[i].folderPath);
+    }
+  });
+
   for (const resourceType of ['project', ...yyResourceTypes] as const) {
     const samplesFolder = `./samples/${resourceType}`;
     const outFolder = `${sampleOutDir}/${resourceType}`;

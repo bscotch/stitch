@@ -1,4 +1,4 @@
-import type { Yyp } from './types/Yyp.js';
+import type { Yyp, YypResource } from './types/Yyp.js';
 import { FixedNumber, nameField, yyIsNewFormat } from './types/utility.js';
 
 const escapable =
@@ -200,6 +200,12 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
   );
 }
 
+interface StringifyPrepMeta {
+  root: any;
+  isNewFormat: boolean;
+  path: (string | number)[];
+}
+
 /**
  * Get a clone of some yyData, ready for stringification
  * (keys in the right order, the right keys, etc)
@@ -217,14 +223,45 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
 function prepareForStringification<T>(
   yyData: T,
   yyp?: Yyp,
-  __isNewFormat?: boolean,
+  __meta: StringifyPrepMeta = { root: yyData, isNewFormat: false, path: [] },
 ): T {
   const isNewFormat =
-    __isNewFormat || yyIsNewFormat(yyData) || yyIsNewFormat(yyp);
+    __meta.isNewFormat || yyIsNewFormat(yyData) || yyIsNewFormat(yyp);
+  __meta = {
+    ...__meta,
+    isNewFormat,
+    path: [...__meta.path],
+  };
   if (Array.isArray(yyData)) {
-    return yyData.map((item) =>
-      prepareForStringification(item, yyp, isNewFormat),
-    ) as T;
+    const prepared = yyData.map((item, i) => {
+      const meta = { ...__meta, path: [...__meta.path, i] };
+      return prepareForStringification(item, yyp, meta);
+    }) as T;
+    if (isNewFormat && '$GMProject' in __meta.root) {
+      // Then we need to sort the resources, folders, and included files arrays
+      const currentPath = __meta.path.join('/');
+      if (currentPath === 'resources') {
+        // Sort based on the path
+        const resources = prepared as YypResource[];
+        resources.sort((a, b) =>
+          a.id.path.toLowerCase().localeCompare(b.id.path.toLowerCase()),
+        );
+      } else if (currentPath === 'IncludedFiles') {
+        const includedFiles = prepared as Yyp['IncludedFiles'];
+        includedFiles.sort((a, b) =>
+          `${a.filePath}/${a.name}`
+            .toLowerCase()
+            .localeCompare(`${b.filePath}/${b.name}`.toLowerCase()),
+        );
+      } else if (currentPath === 'Folders') {
+        const folders = prepared as Yyp['Folders'];
+        folders.sort((a, b) =>
+          a.folderPath.toLowerCase().localeCompare(b.folderPath.toLowerCase()),
+        );
+      }
+    }
+
+    return prepared;
   } else if (yyData instanceof FixedNumber) {
     return yyData;
   } else if (typeof yyData === 'object' && yyData !== null) {
@@ -293,11 +330,8 @@ function prepareForStringification<T>(
     const reference = { ...yyDataCopy };
     keys.forEach((key) => delete yyDataCopy[key as string]);
     keys.forEach((key) => {
-      yyDataCopy[key] = prepareForStringification(
-        reference[key],
-        yyp,
-        isNewFormat,
-      );
+      const meta = { ...__meta, path: [...__meta.path, key] };
+      yyDataCopy[key] = prepareForStringification(reference[key], yyp, meta);
     });
     return yyDataCopy as T;
   }
