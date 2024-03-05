@@ -32,7 +32,14 @@ import {
   pathyFromUri,
   registerCommand,
 } from './lib.mjs';
-import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
+import {
+  Timer,
+  getErrorMessage,
+  info,
+  logger,
+  showErrorMessage,
+  warn,
+} from './log.mjs';
 import type { SpriteSourcesTree as SpriteSourcesTreeType } from './spriteSources.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 import { StitchIgorView } from './webview.igor.mjs';
@@ -99,9 +106,12 @@ export async function activateStitchExtension(
     } catch (error) {
       logger.error(error);
       logger.error('Error loading project', yypFile);
-      showErrorMessage(
-        `Could not load project ${pathyFromUri(yypFile).basename}`,
-      );
+      let message = `Could not load project ${pathyFromUri(yypFile).basename}`;
+      const rootCause = getErrorMessage(error);
+      if (rootCause) {
+        message += ` ← ${rootCause}`;
+      }
+      showErrorMessage(message);
     }
   }
   const watchers = toWatch.map((pattern) =>

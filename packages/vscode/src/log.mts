@@ -145,3 +145,25 @@ function stringifyError(error: Error, includeStack = false, indent = 0) {
   }
   return lines.join('\n');
 }
+
+export function getErrorMessage(error: unknown): string {
+  let combinedMessage = '';
+  if (error instanceof Error) {
+    if (
+      'message' in error &&
+      typeof error.message === 'string' &&
+      error.message.length
+    ) {
+      combinedMessage = error.message;
+    }
+    if ('cause' in error && error.cause instanceof Error) {
+      const causeError = getErrorMessage(error.cause);
+      if (combinedMessage && causeError) {
+        combinedMessage += ` ← ${causeError}`;
+      } else if (causeError) {
+        combinedMessage = causeError;
+      }
+    }
+  }
+  return combinedMessage;
+}

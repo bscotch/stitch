@@ -406,7 +406,7 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
         existing === signifierArg ||
         signifierArg.override ||
         options?.override,
-      'Cannot replace existing member with new member',
+      `Cannot replace existing member "${name}" with new member of the same name`,
     );
     const existingOnThis = this.getMember(name, true);
 
