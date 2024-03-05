@@ -4,7 +4,6 @@ export interface Arg {
 }
 export function parseArg(arg: string): Arg {
 	const parts = arg.match(/^(?<flag>--\w+)(?:=(?<value>.*))?$/)?.groups;
-	console.log('parsed', arg, 'to', parts);
 	if (!parts) {
 		return { value: arg };
 	}

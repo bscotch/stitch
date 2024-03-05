@@ -5,9 +5,9 @@
 		box-sizing: border-box;
 	}
 	:root {
-		--color-background: var(--vscode-list-focusBackground, #171717);
-		--color-text: var(--vscode-list-focusForeground, #d8d8d8);
-		--color-text-muted: var(--vscode-list-hoverForeground, #a0a0a0);
+		--color-background: var(--vscode-sideBar-background, #171717);
+		--color-text: var(--vscode-sideBar-foreground, #d8d8d8);
+		--color-text-muted: var(--vscode-gitDecoration-ignoredResourceForeground, #a0a0a0);
 		--color-text-link: var(--vscode-textLink-activeForeground, #3794ff);
 		--color-text-error: var(--vscode-list-errorForeground, #e72929);
 		--color-text-warning: var(--vscode-list-warningForeground, #ccaa00);
@@ -89,10 +89,5 @@
 		background-color: var(--color-button-secondary-background);
 		color: var(--color-button-secondary-foreground);
 		border-color: var(--color-button-secondary-border);
-	}
-	button.danger {
-		background-color: rgb(168, 20, 20);
-		color: rgb(222, 222, 222);
-		border-color: rgb(168, 20, 20);
 	}
 }
