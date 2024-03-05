@@ -3,7 +3,7 @@ export interface Arg {
 	value?: string;
 }
 export function parseArg(arg: string): Arg {
-	const parts = arg.match(/^(?<flag>--\w+)(?:=(?<value>.*))?$/)?.groups;
+	const parts = arg.match(/^(?<flag>--\w*)(?:=(?<value>.*))?$/)?.groups;
 	if (!parts) {
 		return { value: arg };
 	}

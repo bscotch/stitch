@@ -42,7 +42,7 @@
 			logs = [];
 			mainStyle = '';
 			if (message.config?.fontFamily) {
-				mainStyle += `--font-family: ${message.config.fontFamily};`;
+				mainStyle += `--font-family: ${message.config.fontFamily}, Consolas, 'Courier New', monospace;`;
 			}
 			if (message.config?.fontSize) {
 				mainStyle += `--font-size: ${message.config.fontSize}px;`;
@@ -99,6 +99,9 @@
 	function openSearch() {
 		showSearch = true;
 		onSearchChange(search);
+		// Also disable auto-scroll, since the user probably wants to scroll manually
+		// while searching!
+		autoScroll = false;
 	}
 	function closeSearch() {
 		showSearch = false;
@@ -180,7 +183,7 @@
 		{#if logs.length === 0}
 			<p><i>No logs yet...</i></p>
 		{:else}
-			<ul class="logs" bind:this={logsList}>
+			<ul class="logs reset" bind:this={logsList}>
 				{#each logs as log, i (i)}
 					<li class={`log ${log.kind}`}>
 						<!-- svelte-ignore a11y-missing-content -->
@@ -234,31 +237,16 @@
 		background-color: var(--color-background);
 		border-bottom: 1px solid rgb(64, 64, 64);
 	}
-	ol.args {
-		display: flex;
-		flex-wrap: wrap;
-		flex-direction: row;
-		gap: 0.25em;
-	}
-	ol.args li {
-		display: inline;
-	}
 	details .command {
 		margin-inline-start: 0.5em;
-	}
-	ul.logs {
-		padding-inline-start: 0.5em;
-	}
-	li.log {
-		list-style-type: '›';
-		padding-inline-start: 0.25em;
-	}
-	li.log::marker {
-		color: gray;
-		font-size: 0.5em;
+		border: 1px solid rgb(64, 64, 64);
+		padding: 0.25em 0.4em;
 	}
 	.arg-flag {
 		color: gray;
+	}
+	.arg-value {
+		padding-left: 1em;
 	}
 	.log.stderr {
 		color: var(--color-text-error);
@@ -268,6 +256,14 @@
 	code {
 		/* word-break: break-all; */
 		overflow-wrap: break-word;
+	}
+	li.log {
+		border-left: 1px solid rgb(110, 110, 110);
+		padding-left: 0.5em;
+		margin-block: 0.5em;
+	}
+	li.log:hover {
+		border-color: white;
 	}
 	aside.sticky-footer-actions {
 		/* Should be absolutely positioned in the bottom-right corner */

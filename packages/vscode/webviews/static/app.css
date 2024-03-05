@@ -5,8 +5,8 @@
 		box-sizing: border-box;
 	}
 	:root {
-		--color-background: #171717;
-		--color-text: #d8d8d8;
+		--color-background: #111111;
+		--color-text: #e3e3e3;
 		--color-text-muted: #a0a0a0;
 		--color-text-link: #3794ff;
 		--color-text-error: #e72929;
@@ -24,10 +24,10 @@
 		--color-button-secondary-hover-background: #3a3d41;
 		--color-button-secondary-border: #3a3d41;
 		--font-family: 'Courier New', Courier, monospace;
-		--font-size: 1.25rem;
+		--font-size: 16px;
 	}
 	body {
-		font-size: var(--vscode-editor-font-size, var(--font-size));
+		font-size: var(--font-size);
 		background-color: var(--color-background);
 		color: var(--color-text);
 		font-family: var(--font-family);
@@ -93,5 +93,10 @@
 		background-color: var(--color-button-secondary-background);
 		color: var(--color-button-secondary-foreground);
 		border-color: var(--color-button-secondary-border);
+	}
+
+	mark[data-current] {
+		background-color: #ff9632;
+		color: black;
 	}
 }

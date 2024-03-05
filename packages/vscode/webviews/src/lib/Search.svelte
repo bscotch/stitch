@@ -23,7 +23,18 @@
 	$effect(() => {
 		currentResultIdx; // to trigger reactivity
 		results?.[currentResultIdx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		markCurrent();
 	});
+
+	function markCurrent() {
+		if (current) {
+			// Remove the current class
+			results?.forEach((result) => {
+				delete result.dataset.current;
+			});
+			current.dataset.current = 'true';
+		}
+	}
 
 	function goToPrior() {
 		if (!results?.length) return;
@@ -32,6 +43,7 @@
 		} else {
 			currentResultIdx = results.length - 1;
 		}
+		markCurrent();
 	}
 	function goToNext() {
 		if (!results?.length) return;
@@ -40,6 +52,7 @@
 		} else {
 			currentResultIdx = 0;
 		}
+		markCurrent();
 	}
 
 	let updateTimeout: NodeJS.Timeout | undefined;
@@ -74,58 +87,64 @@
 				} else update();
 			}}
 			type="text"
-			placeholder="Search logs"
+			placeholder="search..."
 		/>
 	</span>
-	<span class="search-options">
-		<button
-			title="Toggle Case Sensitive search"
-			class={'option ' + (caseSensitive ? 'active' : 'inactive')}
-			on:click={() => {
-				caseSensitive = !caseSensitive;
-				update();
-			}}
-		>
-			<CaseSensitiveIcon />
-		</button>
-		<button
-			title="Toggle Whole Word search"
-			class={'option ' + (wholeWord ? 'active' : 'inactive')}
-			on:click={() => {
-				wholeWord = !wholeWord;
-				if (wholeWord) regex = false; // wholeWord and regex are mutually exclusive
-				update();
-			}}
-		>
-			<WholeWordIcon />
-		</button>
-		<button
-			title="Toggle Regular Expression search"
-			class={'option ' + (regex ? 'active' : 'inactive')}
-			on:click={() => {
-				regex = !regex;
-				if (regex) wholeWord = false; // wholeWord and regex are mutually exclusive
-				update();
-			}}
-		>
-			<RegexIcon />
-		</button>
-	</span>
-	<span class="search-nav">
-		{#if total && query}
-			<span class="tally">{currentResultIdx + 1}/{total}</span>
-		{:else}
-			<span class={`tally ${query ? 'no-results' : ''}`}>0/0</span>
-		{/if}
-		<button class="option" title="Prior Result" on:click={() => goToPrior()}> ▲ </button>
-		<button class="option" title="Next Result" on:click={() => goToNext()}> ▼ </button>
+	<span class="controls">
+		<span class="search-options">
+			<button
+				title="Toggle Case Sensitive search"
+				class={'option ' + (caseSensitive ? 'active' : 'inactive')}
+				on:click={() => {
+					caseSensitive = !caseSensitive;
+					update();
+				}}
+			>
+				<CaseSensitiveIcon />
+			</button>
+			<button
+				title="Toggle Whole Word search"
+				class={'option ' + (wholeWord ? 'active' : 'inactive')}
+				on:click={() => {
+					wholeWord = !wholeWord;
+					if (wholeWord) regex = false; // wholeWord and regex are mutually exclusive
+					update();
+				}}
+			>
+				<WholeWordIcon />
+			</button>
+			<button
+				title="Toggle Regular Expression search"
+				class={'option ' + (regex ? 'active' : 'inactive')}
+				on:click={() => {
+					regex = !regex;
+					if (regex) wholeWord = false; // wholeWord and regex are mutually exclusive
+					update();
+				}}
+			>
+				<RegexIcon />
+			</button>
+		</span>
+		<span class="search-nav">
+			{#if total && query}
+				<span class="tally">{currentResultIdx + 1}/{total}</span>
+			{:else}
+				<span class={`tally ${query ? 'no-results' : ''}`}>0/0</span>
+			{/if}
+			<button disabled={!total} class="option" title="Prior Result" on:click={() => goToPrior()}>
+				▲
+			</button>
+			<button disabled={!total} class="option" title="Next Result" on:click={() => goToNext()}>
+				▼
+			</button>
+		</span>
 	</span>
 </search>
 
 <style>
 	search {
 		display: grid;
-		grid-template-columns: 1fr auto auto;
+		grid-template-columns: 1fr auto;
 		align-items: center;
 		gap: 0.25em;
 		background-color: var(--color-background);
@@ -147,6 +166,15 @@
 	input:focus-visible {
 		outline: none;
 	}
+	.controls {
+		display: flex;
+		align-items: center;
+	}
+	@media (width <= 360px) {
+		search {
+			grid-template-columns: auto;
+		}
+	}
 	.search-options,
 	.search-nav {
 		display: flex;
@@ -154,7 +182,6 @@
 	}
 	.search-options {
 		padding-inline-end: 0.2em;
-		border-right: 1px solid rgb(84, 84, 84);
 		gap: 0.1em;
 	}
 	.search-nav button.option {
@@ -178,9 +205,10 @@
 		background-color: rgba(36, 137, 219, 0.51);
 	}
 	.tally {
+		--color-border: rgb(84, 84, 84);
 		font-size: 0.75em;
-		padding-inline-end: 0.4em;
-		border-right: 1px solid rgb(84, 84, 84);
+		padding-inline: 0.4em;
+		border-inline: 1px solid var(--color-border);
 		margin-inline-end: 0.2em;
 	}
 	.tally.no-results {
