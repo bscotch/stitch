@@ -1,5 +1,23 @@
 # Stitch Changelog
 
+## 1.65.0 (2024-03-05)
+
+### Features
+
+- Completed draft of the new project Runner view
+- Cleaned up the search widget UI
+- Added whole-word search option.
+- Log-searching is now implemented
+- Added a toggle for auto-scroll
+- Completed base functionality for the Runner view
+- Added autoscroll to the runner view
+- Moved the Runner webview into the Stitch panel
+- Now only allowing one project to be loaded at a time.
+
+### Fixes
+
+- Resolved loading issues for the Igor webview
+
 ## 1.64.2 (2024-02-29)
 
 ### Fixes
