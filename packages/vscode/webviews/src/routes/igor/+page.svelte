@@ -65,7 +65,8 @@
 		logs = logs.map((log) => {
 			const marked = markSearchResults(log.message, search.query, {
 				ignoreCase: !search.caseSensitive,
-				asRegex: search.regex
+				asRegex: search.regex,
+				asWholeWord: search.wholeWord
 			});
 			return {
 				...log,

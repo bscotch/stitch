@@ -1,6 +1,7 @@
 <script lang="ts">
 	import CaseSensitiveIcon from '$lib/icons/CaseSensitiveIcon.svelte';
 	import RegexIcon from '$lib/icons/RegexIcon.svelte';
+	import WholeWordIcon from '$lib/icons/WholeWordIcon.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import type { SearchProps } from './search.js';
 
@@ -9,7 +10,7 @@
 		close: undefined;
 	}>();
 
-	let { caseSensitive, regex, query, results } = $props<
+	let { caseSensitive, regex, wholeWord, query, results } = $props<
 		SearchProps & { results?: HTMLElement[] }
 	>();
 
@@ -46,7 +47,7 @@
 			clearTimeout(updateTimeout);
 		}
 		updateTimeout = setTimeout(() => {
-			dispatch('change', { caseSensitive, regex, query });
+			dispatch('change', { caseSensitive, regex, query, wholeWord });
 			updateTimeout = undefined;
 			currentResultIdx = 0;
 			if (query && queryHistory.at(-1) !== query) {
@@ -73,6 +74,7 @@
 		placeholder="Search logs"
 	/>
 	<button
+		title="Toggle Case Sensitive search"
 		class={'option ' + (caseSensitive ? 'active' : 'inactive')}
 		on:click={() => {
 			caseSensitive = !caseSensitive;
@@ -82,9 +84,22 @@
 		<CaseSensitiveIcon />
 	</button>
 	<button
+		title="Toggle Whole Word search"
+		class={'option ' + (wholeWord ? 'active' : 'inactive')}
+		on:click={() => {
+			wholeWord = !wholeWord;
+			if (wholeWord) regex = false; // wholeWord and regex are mutually exclusive
+			update();
+		}}
+	>
+		<WholeWordIcon />
+	</button>
+	<button
+		title="Toggle Regular Expression search"
 		class={'option ' + (regex ? 'active' : 'inactive')}
 		on:click={() => {
 			regex = !regex;
+			if (regex) wholeWord = false; // wholeWord and regex are mutually exclusive
 			update();
 		}}
 	>

@@ -2,6 +2,7 @@ export interface SearchProps {
 	caseSensitive?: boolean;
 	regex?: boolean;
 	query?: string;
+	wholeWord?: boolean;
 }
 
 export type Position = [start: number, end: number];
@@ -20,6 +21,7 @@ export interface MarkOptions {
 export interface SearchOptions {
 	ignoreCase?: boolean;
 	asRegex?: boolean;
+	asWholeWord?: boolean;
 }
 
 /**
@@ -103,9 +105,16 @@ export function search(
 	assertIsString(source, 'Expected source to be a string');
 	assertIsString(pattern, 'Expected pattern to be a string');
 
-	const searchPattern = options?.asRegex
-		? new RegExp(pattern, `g${options?.ignoreCase ? 'i' : ''}`)
-		: pattern;
+	let searchPattern: string | RegExp = pattern;
+	if (options?.asRegex) {
+		searchPattern = new RegExp(pattern, `g${options?.ignoreCase ? 'i' : ''}`);
+	} else if (options?.asWholeWord) {
+		searchPattern = new RegExp(
+			`\\b${escapeRegexSpecialChars(pattern)}\\b`,
+			`g${options?.ignoreCase ? 'i' : ''}`
+		);
+	}
+
 	if (typeof searchPattern === 'string') {
 		// Find the indices of each instance of the pattern.
 		source = options?.ignoreCase ? source.toLowerCase() : source;
@@ -123,6 +132,10 @@ export function search(
 		}
 		return matches;
 	}
+}
+
+export function escapeRegexSpecialChars(str: string): string {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 export class SearchMarkError extends Error {
