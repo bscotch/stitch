@@ -1,41 +1,29 @@
 <script lang="ts">
+	import Search from '$lib/Search.svelte';
 	import { Vscode } from '$lib/Vscode.js';
 	import { parseArg } from '$lib/args.js';
 	import AnglesDownIcon from '$lib/icons/AnglesDownIcon.svelte';
+	import { markSearchResults, type SearchProps } from '$lib/search.js';
 	import type {
 		IgorWebviewExtensionPostRun,
 		IgorWebviewExtensionPosts,
 		IgorWebviewLog,
 		IgorWebviewPosts
 	} from '@local-vscode/shared';
-	import Search from '../../lib/Search.svelte';
-	import type { SearchProps } from '../../lib/search.js';
+	import { tick } from 'svelte';
 
 	const vscode = new Vscode<unknown, IgorWebviewPosts, IgorWebviewExtensionPosts>();
 
 	let running = $state<IgorWebviewExtensionPostRun | undefined>(undefined);
 	let exitCode = $state(null as number | null);
-	let logs = $state<(IgorWebviewLog & { isMatch?: boolean })[]>([]);
+	let logs = $state<(IgorWebviewLog & { asSearchResult?: string })[]>([]);
 
 	let footer = $state(undefined as HTMLElement | undefined);
 	let logsList = $state(undefined as HTMLUListElement | undefined);
 
 	let showSearch = $state(true);
 	let search: SearchProps = $state({});
-	let matchCount = $derived(logs.filter((log) => log.isMatch).length);
-	let currentResultIndex = $state(0);
-	$effect(() => {
-		if (currentResultIndex >= matchCount) {
-			currentResultIndex = 0;
-		}
-		if (currentResultIndex < 0) {
-			currentResultIndex = matchCount - 1;
-		}
-		if (showSearch && search.query && matchCount > 0) {
-			console.log([currentResultIndex, logsList?.children[currentResultIndex]]);
-			logsList?.children[currentResultIndex]?.scrollIntoView();
-		}
-	});
+	let searchResults = $state([] as HTMLElement[]);
 
 	let autoScroll = $state(true);
 	$effect(() => {
@@ -72,23 +60,33 @@
 		loadSamples();
 	}
 
-	function onSearchChange(props: SearchProps) {
-		console.log('search change', props);
+	async function onSearchChange(props: SearchProps) {
 		search = props;
-		currentResultIndex = 0;
-		// Update all the logs to indicate if they match the search
-		const matches = (log: IgorWebviewLog) => {
-			if (!props.query) return false;
-			if (props.regex) {
-				const regex = new RegExp(props.query, props.caseSensitive ? 'g' : 'gi');
-				return regex.test(log.message);
-			} else if (!props.caseSensitive) {
-				return log.message.toLowerCase().includes(props.query.toLowerCase());
-			} else {
-				return log.message.includes(props.query);
-			}
-		};
-		logs = logs.map((log) => ({ ...log, isMatch: matches(log) }));
+		logs = logs.map((log) => {
+			const marked = markSearchResults(log.message, search.query, {
+				ignoreCase: !search.caseSensitive,
+				asRegex: search.regex
+			});
+			return {
+				...log,
+				asSearchResult: marked === log.message ? undefined : marked
+			};
+		});
+
+		// Let the DOM update, then grab the list of nodes
+		await tick();
+		searchResults = [...document.querySelectorAll('mark.search-result').values()] as HTMLElement[];
+	}
+	function closeSearch() {
+		showSearch = false;
+		searchResults = [];
+		// Clear the asSearchResult html
+		logs = logs.map((log) => {
+			return {
+				...log,
+				asSearchResult: undefined
+			};
+		});
 	}
 
 	// Debounced scroll-to-bottom
@@ -105,30 +103,29 @@
 	}
 </script>
 
+<svelte:window
+	on:keyup={(event) => {
+		if (['f', 'F'].includes(event.key) && event.ctrlKey) {
+			showSearch = true;
+			event.preventDefault();
+			event.stopPropagation();
+			onSearchChange(search);
+		}
+	}}
+/>
+
 {#if !running}
 	<p><i>Nothing is running!</i></p>
 {:else}
 	<aside class="search">
-		<Search
-			total={matchCount}
-			current={currentResultIndex}
-			on:change={(event) => onSearchChange(event.detail)}
-			on:close={() => (showSearch = false)}
-			on:priorResult={() => {
-				if (currentResultIndex > 0) {
-					currentResultIndex--;
-				} else if (currentResultIndex === 0) {
-					currentResultIndex = matchCount - 1;
-				}
-			}}
-			on:nextResult={() => {
-				if (currentResultIndex < matchCount - 1) {
-					currentResultIndex++;
-				} else if (currentResultIndex === matchCount - 1) {
-					currentResultIndex = 0;
-				}
-			}}
-		/>
+		{#if showSearch}
+			<Search
+				{...search}
+				results={searchResults}
+				on:change={(event) => onSearchChange(event.detail)}
+				on:close={() => closeSearch()}
+			/>
+		{/if}
 	</aside>
 	<div>
 		<ul class="reset">
@@ -170,13 +167,15 @@
 	{:else}
 		<ul class="logs" bind:this={logsList}>
 			{#each logs as log, i (i)}
-				<li
-					class={`log ${log.kind}${search.query && log.isMatch ? ' search-result' : ''}${currentResultIndex === i ? ' current-result' : ''}`}
-				>
+				<li class={`log ${log.kind}`}>
 					<!-- svelte-ignore a11y-missing-content -->
 					<a href={`#log-${i}`}></a>
 					<samp>
-						{log.message}
+						{#if log.asSearchResult}
+							{@html log.asSearchResult}
+						{:else}
+							{log.message}
+						{/if}
 					</samp>
 				</li>
 			{/each}
@@ -229,15 +228,6 @@
 	li.log::marker {
 		color: gray;
 		font-size: 0.5em;
-	}
-	li.log.search-result {
-		list-style-type: '▶';
-	}
-	li.log.search-result::marker {
-		color: yellow;
-	}
-	li.log.search-result.current-result::marker {
-		color: rgb(0, 220, 0);
 	}
 	.arg-flag {
 		color: gray;

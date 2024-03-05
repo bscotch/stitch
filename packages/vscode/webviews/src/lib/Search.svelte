@@ -7,13 +7,38 @@
 	const dispatch = createEventDispatcher<{
 		change: SearchProps;
 		close: undefined;
-		priorResult: undefined;
-		nextResult: undefined;
 	}>();
 
-	let { caseSensitive, regex, query, total, current } = $props<
-		SearchProps & { total?: number; current?: number }
+	let { caseSensitive, regex, query, results } = $props<
+		SearchProps & { results?: HTMLElement[] }
 	>();
+
+	let currentResultIdx = $state(0);
+	let total = $derived(results?.length || 0);
+	let current = $derived(results?.length ? results[currentResultIdx] : undefined);
+	let queryHistory = $state<string[]>([]);
+
+	$effect(() => {
+		currentResultIdx; // to trigger reactivity
+		results?.[currentResultIdx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	});
+
+	function goToPrior() {
+		if (!results?.length) return;
+		if (currentResultIdx > 0) {
+			currentResultIdx--;
+		} else {
+			currentResultIdx = results.length - 1;
+		}
+	}
+	function goToNext() {
+		if (!results?.length) return;
+		if (currentResultIdx < results.length - 1) {
+			currentResultIdx++;
+		} else {
+			currentResultIdx = 0;
+		}
+	}
 
 	let updateTimeout: NodeJS.Timeout | undefined;
 	function update() {
@@ -22,12 +47,31 @@
 		}
 		updateTimeout = setTimeout(() => {
 			dispatch('change', { caseSensitive, regex, query });
+			updateTimeout = undefined;
+			currentResultIdx = 0;
+			if (query && queryHistory.at(-1) !== query) {
+				queryHistory.push(query);
+			}
 		}, 200);
 	}
 </script>
 
 <search>
-	<input bind:value={query} on:keyup={() => update()} type="text" placeholder="Search logs" />
+	<input
+		autofocus
+		bind:value={query}
+		on:keyup={(event) => {
+			if (event.key === 'Escape') {
+				dispatch('close');
+			} else if (event.key === 'ArrowUp') {
+				goToPrior();
+			} else if (event.key === 'ArrowDown') {
+				goToNext();
+			} else update();
+		}}
+		type="text"
+		placeholder="Search logs"
+	/>
 	<button
 		class={'option ' + (caseSensitive ? 'active' : 'inactive')}
 		on:click={() => {
@@ -46,13 +90,11 @@
 	>
 		<RegexIcon />
 	</button>
-	{#if total && typeof current === 'number'}
-		<span class="tally">{current + 1} / {total}</span>
+	{#if total && query}
+		<span class="tally">{currentResultIdx + 1} / {total}</span>
 	{/if}
-	<button class="secondary" title="Prior Result" on:click={() => dispatch('priorResult')}>
-		▲
-	</button>
-	<button class="secondary" title="Next Result" on:click={() => dispatch('nextResult')}> ▼ </button>
+	<button class="secondary" title="Prior Result" on:click={() => goToPrior()}> ▲ </button>
+	<button class="secondary" title="Next Result" on:click={() => goToNext()}> ▼ </button>
 	<button class="secondary" title="Close" on:click={() => dispatch('close')}> × </button>
 </search>
 
