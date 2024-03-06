@@ -623,17 +623,17 @@
         },
         {
           "command": "stitch.run",
-          "when": "view == bscotch-stitch-igor",
+          "when": "view == bscotch-stitch-igor || view == bscotch-stitch-resources",
           "group": "navigation@5"
         },
         {
           "command": "stitch.run.noDefaults",
-          "when": "view == bscotch-stitch-igor",
+          "when": "view == bscotch-stitch-igor || view == bscotch-stitch-resources",
           "group": "navigation@4"
         },
         {
           "command": "stitch.clean",
-          "when": "view == bscotch-stitch-igor",
+          "when": "view == bscotch-stitch-igor || view == bscotch-stitch-resources",
           "group": "navigation@3"
         },
         {

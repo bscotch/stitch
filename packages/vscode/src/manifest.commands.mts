@@ -299,7 +299,7 @@ export const commands = {
     enablement: when.hasProjects,
     [$showInPalette]: true,
     [$showInViewTitle]: {
-      when: when.runnerViewFocused,
+      when: `${when.runnerViewFocused} || ${when.assetTreeFocused}`,
       group: 'navigation@5',
     },
     [$showInViewItemContextMenu]: {
@@ -315,7 +315,7 @@ export const commands = {
     enablement: when.hasProjects,
     [$showInPalette]: true,
     [$showInViewTitle]: {
-      when: when.runnerViewFocused,
+      when: `${when.runnerViewFocused} || ${when.assetTreeFocused}`,
       group: 'navigation@4',
     },
     [$showInViewItemContextMenu]: {
@@ -331,7 +331,7 @@ export const commands = {
     enablement: when.hasProjects,
     [$showInPalette]: true,
     [$showInViewTitle]: {
-      when: when.runnerViewFocused,
+      when: `${when.runnerViewFocused} || ${when.assetTreeFocused}`,
       group: 'navigation@3',
     },
     [$showInViewItemContextMenu]: {
