@@ -277,12 +277,16 @@ function prepareForStringification<T>(
       isNewFormat &&
       'name' in yyData &&
       typeof yyData.name === 'string' &&
+      yyData.name.length &&
       hasResourceType && // Otherwise it's just a different kind of 'name' field
       !('$GMSpriteFramesTrack' in yyData) // Special case
     ) {
       // Then we need to ensure that the file has the `%Name` key,
       // because we may be converting an old format to the new one.
-      yyDataCopy[nameField] ||= yyData.name;
+      // Since older code updates the 'name' field when and doesn't know
+      // about the '%Name' field, the safest thing is to ALWAYS set
+      // the '%Name' field to the 'name' field.
+      yyDataCopy[nameField] = yyData.name;
     }
     if (isNewFormat && hasResourceType) {
       // Then there should always be a resourceVersion key with value "2.0"
