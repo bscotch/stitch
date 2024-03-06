@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.65.5 (2024-03-06)
+
+### Fixes
+
+- Resolved issues setting the Runner panel font, and removed smooth-scroll from the Runner autoscroll
+
 ## 1.65.2 (2024-03-06)
 
 ### Fixes

@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.1.8 (2024-03-06)
+
+### Fixes
+
+- Further improved detection of integer-like values for casting as BigInts
+
 ## 2.1.7 (2024-03-06)
 
 ### Fixes

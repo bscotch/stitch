@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.7.5 (2024-03-06)
+
+### Fixes
+
+- Resolved issues setting the Runner panel font, and removed smooth-scroll from the Runner autoscroll
+
 ## 1.7.3 (2024-03-06)
 
 ### Fixes
