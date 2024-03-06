@@ -1,5 +1,12 @@
 # Stitch Changelog
 
+## 1.65.2 (2024-03-06)
+
+### Fixes
+
+- Added the play buttons back to the resources panel to reduce confusion
+- When multiple projects exist, the picker now shows the entire path to help differentiate
+
 ## 1.65.1 (2024-03-05)
 
 ### Fixes
