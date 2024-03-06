@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.65.6 (2024-03-06)
+
+### Fixes
+
+- Resolved issue where the new Runner panel would not properly clear past runs, causing new runs to pile up (and all kinds of chaos)
+
 ## 1.65.5 (2024-03-06)
 
 ### Fixes
