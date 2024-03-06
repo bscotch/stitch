@@ -4,8 +4,6 @@ import type {
   IgorWebviewExtensionPostLogs,
   IgorWebviewExtensionPostRun,
   IgorWebviewLog,
-  IgorWebviewPosts,
-  WebviewResetMessage,
 } from '@local-vscode/shared';
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import vscode from 'vscode';
@@ -27,19 +25,11 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
   constructor(readonly workspace: StitchWorkspace) {}
 
   resolveWebviewView(webviewView: vscode.WebviewView): void | Thenable<void> {
+    if (this.container) return;
     this.container = webviewView;
-    webviewView.webview.options = { enableScripts: true };
-    webviewView.webview.html = this.getWebviewContent(webviewView.webview);
-    webviewView.webview.onDidReceiveMessage((data) => {
-      switch (data.type) {
-        case 'colorSelected': {
-          vscode.window.activeTextEditor?.insertSnippet(
-            new vscode.SnippetString(`#${data.value}`),
-          );
-          break;
-        }
-      }
-    });
+    const webview = webviewView.webview;
+    webview.options = { enableScripts: true };
+    webview.html = this.getWebviewContent(webview);
   }
 
   protected getWebviewContent(webview: vscode.Webview) {
@@ -60,6 +50,10 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
 
   async run(event: StitchEvents.RequestRunInWebview['payload'][0]) {
     assertLoudly(this.container, 'Runner container not initialized!');
+    if (this.runner && this.runner.exitCode === null) {
+      // Kill the current instance
+      this.runner.kill();
+    }
     this.lastRequest = event;
     const runMessage: IgorWebviewExtensionPostRun = {
       kind: 'run',
@@ -73,29 +67,23 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
       },
     };
     const webview = this.container.webview;
-    webview.postMessage({ kind: 'reset' } satisfies WebviewResetMessage);
-    webview.onDidReceiveMessage(async (message: IgorWebviewPosts) => {
-      if (message.kind === 'ready') {
-        if (this.runner && this.runner.exitCode === null) {
-          // TODO: Tell the webview to reload its logs?
-        } else {
-          await webview.postMessage(runMessage);
-          this.runner = spawn(event.cmd, event.args, { shell: true });
-          this.runner.stdout.on('data', (data) => {
-            webview.postMessage(messagesFromStdio(data, 'stdout'));
-          });
-          this.runner.stderr.on('data', (data) => {
-            webview.postMessage(messagesFromStdio(data, 'stderr'));
-          });
-          this.runner.on('exit', (code) => {
-            this.runner = undefined;
-            webview.postMessage({
-              kind: 'exited',
-              code,
-            } satisfies IgorExitedMessage);
-          });
-        }
-      }
+
+    // Tell the view we're about to run!
+    await webview.postMessage(runMessage);
+
+    this.runner = spawn(event.cmd, event.args, { shell: true });
+    this.runner.stdout.on('data', (data) => {
+      webview.postMessage(messagesFromStdio(data, 'stdout'));
+    });
+    this.runner.stderr.on('data', (data) => {
+      webview.postMessage(messagesFromStdio(data, 'stderr'));
+    });
+    this.runner.on('exit', (code) => {
+      this.runner = undefined;
+      webview.postMessage({
+        kind: 'exited',
+        code,
+      } satisfies IgorExitedMessage);
     });
   }
 
