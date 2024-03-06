@@ -278,20 +278,16 @@ export class Project {
   async syncIncludedFiles() {
     const includedFiles = (
       await this.dir.join('datafiles').listChildrenRecursively()
-    )
-      .map((f) => {
-        /** The filepath relative to the project dir (starts with 'datafiles') */
-        const fullPath = f.relativeFrom(this.dir);
-        // Will throw with unexpected paths, preventing anything from being
-        // overwritten. This is a better outcome than skipping those files.
-        const { filePath, name } = this.parseIncludedFilePath(fullPath);
-        const existing = this.findIncludedFile(filePath, name);
+    ).map((f) => {
+      /** The filepath relative to the project dir (starts with 'datafiles') */
+      const fullPath = f.relativeFrom(this.dir);
+      // Will throw with unexpected paths, preventing anything from being
+      // overwritten. This is a better outcome than skipping those files.
+      const { filePath, name } = this.parseIncludedFilePath(fullPath);
+      const existing = this.findIncludedFile(filePath, name);
 
-        return existing || { filePath, name };
-      })
-      .sort((a, b) =>
-        `${a.filePath}/${a.name}`.localeCompare(`${b.filePath}/${b.name}`),
-      );
+      return existing || { filePath, name };
+    });
     // Note: Should check if there have been any changes, and only write if not!
     // No need to compare with what's already in there, just overwrite it!
     // GameMaker seems to sort these by full path, so we'll do the same to
