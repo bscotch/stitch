@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.1.7 (2024-03-06)
+
+### Fixes
+
+- Resolved issue where values like 1E-10 were being interpreted as BigInts instead of as floats
+
 ## 2.1.6 (2024-03-06)
 
 ### Fixes
