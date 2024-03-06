@@ -93,7 +93,9 @@ export function parseYy<T extends Schema | undefined>(
     // 2. it's too big to store as a vanilla number.
     // (BigInts can only be parsed from purely-numeric strings)
     const num = +str;
-    if (!str.match(/[.E]/)) {
+    if (!str.match(/\.|E-/i)) {
+      // Then it's not a float or a scientific notation number that will
+      // turn into one. (e.g. not `1.0` or `1E-10`)
       const asBigInt = BigInt(str);
       if (asBigInt > Number.MAX_SAFE_INTEGER) {
         return asBigInt;
