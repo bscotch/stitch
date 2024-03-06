@@ -1,5 +1,12 @@
 # @bscotch/yy Changelog
 
+## 2.1.6 (2024-03-06)
+
+### Fixes
+
+- The '%Name' field is now always set to the 'name' field value, even when it was already set. This ensures that name-changing logic can work.
+- Resources, folders, and Included Files are now all sorted during stringification for the new GameMaker project format.
+
 ## 2.1.5 (2024-02-22)
 
 ### Fixes

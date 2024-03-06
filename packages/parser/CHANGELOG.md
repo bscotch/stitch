@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.7.3 (2024-03-06)
+
+### Fixes
+
+- No longer sorting included files prior to writing, since the stringifier has been updated to do that for us
+
 ## 1.7.2 (2024-03-05)
 
 ### Fixes
