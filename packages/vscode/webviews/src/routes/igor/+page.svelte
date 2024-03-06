@@ -22,7 +22,6 @@
 	let logs = $state<(IgorWebviewLog & { asSearchResult?: string })[]>([]);
 
 	let footer = $state(undefined as HTMLElement | undefined);
-	let logsList = $state(undefined as HTMLUListElement | undefined);
 
 	let showSearch = $state(false);
 	let search: SearchProps = $state({});
@@ -40,9 +39,10 @@
 		if (message.kind === 'run') {
 			running = message;
 			logs = [];
+			exitCode = null;
 			mainStyle = '';
 			if (message.config?.fontFamily) {
-				mainStyle += `--font-family: ${message.config.fontFamily}, Consolas, 'Courier New', monospace;`;
+				mainStyle += `--font-family: ${message.config.fontFamily};`;
 			}
 			if (message.config?.fontSize) {
 				mainStyle += `--font-size: ${message.config.fontSize}px;`;
@@ -121,10 +121,9 @@
 		if (timeout || !autoScroll) {
 			return;
 		}
-		7;
 		timeout = setTimeout(() => {
 			timeout = undefined;
-			footer?.scrollIntoView({ behavior: 'smooth' });
+			footer?.scrollIntoView();
 		}, 100);
 	}
 </script>
@@ -183,7 +182,7 @@
 		{#if logs.length === 0}
 			<p><i>No logs yet...</i></p>
 		{:else}
-			<ul class="logs reset" bind:this={logsList}>
+			<ul class="logs reset">
 				{#each logs as log, i (i)}
 					<li class={`log ${log.kind}`}>
 						<!-- svelte-ignore a11y-missing-content -->
@@ -230,6 +229,13 @@
 </main>
 
 <style>
+	main,
+	samp,
+	input,
+	code {
+		font-family: var(--font-family);
+		font-size: var(--font-size);
+	}
 	aside.search {
 		position: sticky;
 		top: 0;

@@ -18,6 +18,7 @@ export const when = {
   editorFocused: 'editorFocus',
   hasProjects,
   runnerViewFocused,
+  runningInTerminal: 'config.stitch.run.inTerminal',
   hasOneProject,
   assetTreeFocusedAndHasOneProject: `${assetTreeFocused} && ${hasOneProject}`,
   assetTreeFocusedAndHasProjects: `${assetTreeFocused} && ${hasProjects}`,

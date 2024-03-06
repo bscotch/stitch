@@ -77,7 +77,10 @@ export async function activateStitchExtension(
         description: pathyFromUri(yyp).up().absolute,
         uri: yyp,
       })),
-      { placeHolder: 'Multiple projects found! Select a project to load' },
+      {
+        title:
+          'Stitch: Multiple GameMaker projects found! Choose a project to load.',
+      },
     );
     if (!chosen) yypFiles.length = 0;
     else yypFiles = [chosen.uri];

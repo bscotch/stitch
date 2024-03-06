@@ -24,7 +24,7 @@
 		--color-button-secondary-hover-background: #3a3d41;
 		--color-button-secondary-border: #3a3d41;
 		--font-family: 'Courier New', Courier, monospace;
-		--font-size: 16px;
+		--font-size: 12px;
 	}
 	body {
 		font-size: var(--font-size);

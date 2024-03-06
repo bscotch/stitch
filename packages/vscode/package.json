@@ -623,17 +623,17 @@
         },
         {
           "command": "stitch.run",
-          "when": "view == bscotch-stitch-igor || view == bscotch-stitch-resources",
+          "when": "view == bscotch-stitch-igor || (view == bscotch-stitch-resources && config.stitch.run.inTerminal)",
           "group": "navigation@5"
         },
         {
           "command": "stitch.run.noDefaults",
-          "when": "view == bscotch-stitch-igor || view == bscotch-stitch-resources",
+          "when": "view == bscotch-stitch-igor || (view == bscotch-stitch-resources && config.stitch.run.inTerminal)",
           "group": "navigation@4"
         },
         {
           "command": "stitch.clean",
-          "when": "view == bscotch-stitch-igor || view == bscotch-stitch-resources",
+          "when": "view == bscotch-stitch-igor || (view == bscotch-stitch-resources && config.stitch.run.inTerminal)",
           "group": "navigation@3"
         },
         {
@@ -984,6 +984,22 @@
       {
         "view": "bscotch-stitch-sprite-sources",
         "contents": "A \"sprite source\" is a folder of images, or a folder of folders-of-images, representing sprites (folders) and their frames (images). Stitch can batch-import and update sprites from sprites sources."
+      },
+      {
+        "view": "bscotch-stitch-resources",
+        "contents": "The resources view is a tree of all assets in your project, including objects, sprites, sounds, and more. You can create, edit, and delete assets from this view."
+      },
+      {
+        "view": "bscotch-stitch-inspector",
+        "contents": "The inspector view shows detailed information about the currently selected asset in the resources view, for certain asset types."
+      },
+      {
+        "view": "bscotch-stitch-files",
+        "contents": "The Included Files view shows all datafiles included in your project."
+      },
+      {
+        "view": "bscotch-stitch-igor",
+        "contents": "The Runner view shows the output logs of your game when you run it from Stitch. By default the terminal is used instead of this panel."
       }
     ]
   },
