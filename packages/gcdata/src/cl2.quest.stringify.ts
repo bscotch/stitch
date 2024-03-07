@@ -90,8 +90,8 @@ export function stringifyQuest(
        * from the same speaker
        */
       let lastSpeaker: string | undefined;
-
-      for (const momentContainer of bsArrayToArray(data)) {
+      const momentContainers = bsArrayToArray(data);
+      for (const momentContainer of momentContainers) {
         const moment = momentContainer.element!;
         let line = '';
 

@@ -529,7 +529,8 @@ export class GameChanger {
             if (
               part.data === undefined ||
               part.data === null ||
-              Object.keys(part.data).length === 0
+              (typeof part.data === 'object' &&
+                Object.keys(part.data).length === 0)
             ) {
               const parent = dataPath[p - 1].data;
               delete parent[part.key!];

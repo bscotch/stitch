@@ -206,9 +206,7 @@
     }
   },
   "activationEvents": [
-    "onLanguage:cl2-quest",
-    "onLanguage:cl2-storyline",
-    "workspaceContains:**/*.{yyp}"
+    "*"
   ],
   "dependencies": {
     "@bscotch/gcdata": "workspace:*"
