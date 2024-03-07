@@ -1,3 +1,5 @@
+import type { GameConsoleStyle } from '@bscotch/stitch-config';
+
 export interface IgorWebviewLog {
   kind: 'stdout' | 'stderr';
   message: string;
@@ -8,11 +10,13 @@ export interface IgorWebviewExtensionPostRun {
   cmd: string;
   args: string[];
   projectName: string;
+  /** Absolute path to this project's folder on disk */
+  projectDir: string;
   cleaning?: boolean;
   config?: {
     fontFamily: string | null;
     fontSize: number;
-  };
+  } & GameConsoleStyle;
 }
 export interface IgorWebviewExtensionPostLogs {
   kind: 'log';

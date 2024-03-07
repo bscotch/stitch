@@ -58,6 +58,54 @@
       },
       "additionalProperties": true,
       "description": "Rules for creating new sound resources, followed by supported Stitch utilities."
+    },
+    "gameConsoleStyle": {
+      "type": "object",
+      "properties": {
+        "base": {
+          "type": "string",
+          "description": "Base style to apply to all lines, as a CSS string (e.g. 'color: #808080')"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "base": {
+                "type": "string",
+                "description": "Base style to apply to the matching line (e.g. 'color: #808080; font-weight: bold;')"
+              },
+              "description": {
+                "type": "string",
+                "description": "A description of the rule, for debugging purposes."
+              },
+              "pattern": {
+                "type": "string",
+                "description": "A regex pattern to match against the line. Named capture groups can be referenced in styles. Special names `_GMFILE_` and `_GMLINE_` may be used to enable linking to that part of the project code."
+              },
+              "caseSensitive": {
+                "type": "boolean",
+                "description": "If true, the pattern will be treated as case-sensitive. Default is false."
+              },
+              "styles": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "description": "CSS string to apply to this capture group."
+                },
+                "description": "A map of CSS styles to apply to named capture groups in the line, as a CSS string (e.g. 'color: #808080')."
+              }
+            },
+            "required": [
+              "pattern"
+            ],
+            "additionalProperties": true
+          },
+          "description": "An array of style rules to apply to lines of the game's STDOUT/STDERR. The first matching rule is used for a given line."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Styling rules for the game's STDOUT/STDERR for compatible runners"
     }
   },
   "additionalProperties": true,

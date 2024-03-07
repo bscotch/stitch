@@ -1,5 +1,37 @@
 import type { WebviewApi } from 'vscode-webview';
 
+interface HttpsUri {
+	scheme: 'https';
+	path: string;
+	/** @example 'www.bscotch.net */
+	authority: string;
+}
+
+interface FileUri {
+	scheme: 'file';
+	/** Absolute path to file */
+	path: string;
+	authority: '';
+}
+
+export function createFileUri(absolutePath: string) {
+	const uri: FileUri = {
+		scheme: 'file',
+		path: absolutePath,
+		authority: ''
+	};
+	return `command:vscode.open?${encodeURIComponent(JSON.stringify(uri))}`;
+}
+
+export function createHttpsUri(host: string, path: string) {
+	const uri: HttpsUri = {
+		scheme: 'https',
+		path,
+		authority: host
+	};
+	return `command:vscode.open?${encodeURIComponent(JSON.stringify(uri))}`;
+}
+
 export class Vscode<State = unknown, PostMessage = unknown, ExtensionPostMessage = unknown> {
 	private readonly api: WebviewApi<State> | undefined;
 

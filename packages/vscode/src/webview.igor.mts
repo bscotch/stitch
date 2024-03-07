@@ -28,7 +28,7 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
     if (this.container) return;
     this.container = webviewView;
     const webview = webviewView.webview;
-    webview.options = { enableScripts: true };
+    webview.options = { enableScripts: true, enableCommandUris: true };
     webview.html = this.getWebviewContent(webview);
   }
 
@@ -54,6 +54,8 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
       // Kill the current instance
       this.runner.kill();
     }
+    // Make sure our config is up to date for styling
+    await event.project.reloadConfig();
     this.lastRequest = event;
     const runMessage: IgorWebviewExtensionPostRun = {
       kind: 'run',
@@ -61,9 +63,11 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
       cmd: event.cmd,
       args: event.args,
       projectName: event.project.name,
+      projectDir: event.project.dir.absolute,
       config: {
         fontFamily: stitchConfig.runnerViewFontFamily,
         fontSize: stitchConfig.runnerViewFontSize,
+        ...event.project.config.gameConsoleStyle,
       },
     };
     const webview = this.container.webview;
@@ -71,7 +75,13 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
     // Tell the view we're about to run!
     await webview.postMessage(runMessage);
 
-    this.runner = spawn(event.cmd, event.args, { shell: true });
+    this.runner = spawn(event.cmd, event.args, {
+      shell: true,
+      env: {
+        ...process.env,
+        STITCH_VSCODE_RUNNER: 'custom',
+      },
+    });
     this.runner.stdout.on('data', (data) => {
       webview.postMessage(messagesFromStdio(data, 'stdout'));
     });

@@ -19,6 +19,60 @@ export const newSoundDefaultsSchema = z.object({
     ),
 });
 
+export type GameConsoleLineStyle = z.infer<typeof gameConsoleLineStyleSchema>;
+export const gameConsoleLineStyleSchema = z
+  .object({
+    base: z
+      .string()
+      .optional()
+      .describe(
+        "Base style to apply to the matching line (e.g. 'color: #808080; font-weight: bold;')",
+      ),
+    description: z
+      .string()
+      .optional()
+      .describe('A description of the rule, for debugging purposes.'),
+    pattern: z
+      .string()
+      .describe(
+        'A regex pattern to match against the line. Named capture groups can be referenced in styles. Special names `_GMFILE_` and `_GMLINE_` may be used to enable linking to that part of the project code.',
+      ),
+    caseSensitive: z
+      .boolean()
+      .optional()
+      .describe(
+        'If true, the pattern will be treated as case-sensitive. Default is false.',
+      ),
+    styles: z
+      .record(z.string().describe('CSS string to apply to this capture group.'))
+      .optional()
+      .describe(
+        "A map of CSS styles to apply to named capture groups in the line, as a CSS string (e.g. 'color: #808080').",
+      ),
+  })
+  .passthrough();
+
+export type GameConsoleStyle = z.infer<typeof gameConsoleStyleSchema>;
+export const gameConsoleStyleSchema = z
+  .object({
+    base: z
+      .string()
+      .optional()
+      .describe(
+        "Base style to apply to all lines, as a CSS string (e.g. 'color: #808080')",
+      ),
+    lines: z
+      .array(gameConsoleLineStyleSchema)
+      .optional()
+      .describe(
+        "An array of style rules to apply to lines of the game's STDOUT/STDERR. The first matching rule is used for a given line.",
+      ),
+  })
+  .passthrough()
+  .describe(
+    "Styling rules for the game's STDOUT/STDERR for compatible runners",
+  );
+
 export type StitchConfig = z.infer<typeof stitchConfigSchema>;
 export const stitchConfigSchema = z
   .object({
@@ -63,6 +117,7 @@ export const stitchConfigSchema = z
       .describe(
         'Rules for creating new sound resources, followed by supported Stitch utilities.',
       ),
+    gameConsoleStyle: gameConsoleStyleSchema.optional(),
   })
   .passthrough()
   .describe(

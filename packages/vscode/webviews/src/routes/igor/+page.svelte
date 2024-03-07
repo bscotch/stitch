@@ -1,25 +1,33 @@
 <script lang="ts">
-	import Search from '$lib/Search.svelte';
-	import { Vscode } from '$lib/Vscode.js';
 	import { parseArg } from '$lib/args.js';
 	import AnglesDownIcon from '$lib/icons/AnglesDownIcon.svelte';
 	import SearchIcon from '$lib/icons/SearchIcon.svelte';
 	import { markSearchResults, type SearchProps } from '$lib/search.js';
+	import Search from '$lib/Search.svelte';
+	import { Vscode } from '$lib/Vscode.js';
 	import type {
 		IgorWebviewExtensionPostRun,
 		IgorWebviewExtensionPosts,
 		IgorWebviewLog,
 		IgorWebviewPosts
 	} from '@local-vscode/shared';
+	import MagicString from 'magic-string';
 	import { tick } from 'svelte';
 
 	const vscode = new Vscode<unknown, IgorWebviewPosts, IgorWebviewExtensionPosts>();
+
+	interface Log extends IgorWebviewLog {
+		asSearchResult?: string;
+		asHtml?: string;
+	}
 
 	let mainStyle = $state('');
 
 	let running = $state<IgorWebviewExtensionPostRun | undefined>(undefined);
 	let exitCode = $state(null as number | null);
-	let logs = $state<(IgorWebviewLog & { asSearchResult?: string })[]>([]);
+	let logs = $state<Log[]>([]);
+	let run = $state({} as IgorWebviewExtensionPostRun);
+	let config = $derived(run?.config);
 
 	let footer = $state(undefined as HTMLElement | undefined);
 
@@ -37,18 +45,19 @@
 	vscode.postMessage({ kind: 'ready' });
 	vscode.onMessage((message) => {
 		if (message.kind === 'run') {
+			run = message;
 			running = message;
 			logs = [];
 			exitCode = null;
 			mainStyle = '';
-			if (message.config?.fontFamily) {
-				mainStyle += `--font-family: ${message.config.fontFamily};`;
+			if (config?.fontFamily) {
+				mainStyle += `--font-family: ${config.fontFamily};`;
 			}
-			if (message.config?.fontSize) {
-				mainStyle += `--font-size: ${message.config.fontSize}px;`;
+			if (config?.fontSize) {
+				mainStyle += `--font-size: ${config.fontSize}px;`;
 			}
 		} else if (message.kind === 'log') {
-			logs.push(...message.logs);
+			logs.push(...message.logs.map((log) => styleLog(log)));
 			// Auto-scroll to the bottom
 			debouncedScrollToBottom();
 		} else if (message.kind === 'reset') {
@@ -61,6 +70,67 @@
 			toggleSearch();
 		}
 	});
+
+	const stylePatterns = new Map<string, RegExp | null>();
+	function styleLog(log: Log): Log {
+		const source = new MagicString(log.message);
+		// Find the first matching line, if any
+		for (const line of config?.lines || []) {
+			let pattern = stylePatterns.get(line.pattern);
+			if (pattern === null) continue;
+			if (pattern === undefined) {
+				try {
+					let flags = 'd';
+					if (!line.caseSensitive) {
+						flags += 'i';
+					}
+					pattern = new RegExp(line.pattern, flags);
+					stylePatterns.set(line.pattern, pattern);
+				} catch (err) {
+					console.error(`Failed create regex for pattern ${line.pattern}`, err);
+					stylePatterns.set(line.pattern, null);
+					continue;
+				}
+			}
+			const match = log.message.match(pattern);
+			if (match) {
+				// If this has a base style, apply it!
+				if (line.base) {
+					source.prepend(`<span style="${line.base}">`);
+					source.append('</span>');
+				}
+
+				// We're using the 'd' flag, so we have index positions of groups
+				const groupPositions = match.indices?.groups;
+				const groupValues = match.groups;
+				const groupNames = Object.keys(groupPositions || {});
+
+				// // If the _GMFILE_ group is present, we need to parse it
+				// // as a file path so it can be linked.
+				// let gmlFileUri: string | undefined;
+				// if (groupValues?._GMFILE_) {
+				// 	const lineNumber = +(groupValues?._GMLINE_ || '0');
+				// 	gmlFileUri = gmlFileMacroToUri(run.projectDir, groupValues!._GMFILE_!, lineNumber);
+				// }
+
+				for (const groupName of groupNames) {
+					const position = groupPositions?.[groupName] as [number, number];
+					// if (gmlFileUri && ['_GMFILE_', line.gmlAnchor].includes(groupName)) {
+					// 	// Then we want to link the file
+					// 	source.prependRight(position[0], `<a href="${gmlFileUri}" title="Open in editor">`);
+					// 	source.appendLeft(position[1], '</a>');
+					// }
+					if (line.styles?.[groupName]) {
+						source.prependRight(position[0], `<span style="${line.styles[groupName]}">`);
+						source.appendLeft(position[1], '</span>');
+					}
+				}
+				log.asHtml = source.toString();
+				break; // Only use the first match!
+			}
+		}
+		return log;
+	}
 
 	async function loadSamples() {
 		const samples = await import('./samples.js');
@@ -182,7 +252,7 @@
 		{#if logs.length === 0}
 			<p><i>No logs yet...</i></p>
 		{:else}
-			<ul class="logs reset">
+			<ul class="logs reset" style={config?.base}>
 				{#each logs as log, i (i)}
 					<li class={`log ${log.kind}`}>
 						<!-- svelte-ignore a11y-missing-content -->
@@ -191,7 +261,7 @@
 							{#if log.asSearchResult}
 								{@html log.asSearchResult}
 							{:else}
-								{log.message}
+								{@html log.asHtml || log.message}
 							{/if}
 						</samp>
 					</li>
