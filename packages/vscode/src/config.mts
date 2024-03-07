@@ -9,7 +9,7 @@ class StitchConfig {
   }
 
   get killOthersOnRun() {
-    return this.config.get<boolean>('run.killOthers') ?? false;
+    return this.config.get<boolean>('run.killOthers') ?? true;
   }
 
   get sortSpriteSourceChangesBy() {

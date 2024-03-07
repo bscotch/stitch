@@ -25,6 +25,7 @@ setLogger(logger.withPrefix('PARSER'));
 
 export class GameMakerProject extends Project {
   readonly kind = 'project';
+  public runnerTerminal?: vscode.Terminal;
 
   protected constructor(yypPath: vscode.Uri, options: ProjectOptions) {
     super(pathy(yypPath.fsPath), options);
@@ -144,19 +145,18 @@ export class GameMakerProject extends Project {
       logger.info(`Igor command:`, JSON.stringify(cmd));
 
       // Create or re-use a terminal
-      const name = `GameMaker v${release.runtime.version}`;
-      const existing = vscode.window.terminals.find(
-        (term) => term.name === name,
-      );
-      if (existing) {
-        existing.dispose();
+      if (
+        !this.runnerTerminal ||
+        this.runnerTerminal.exitStatus ||
+        !stitchConfig.killOthersOnRun // Then we can't safely re-use
+      ) {
+        this.runnerTerminal?.dispose();
+        this.runnerTerminal = vscode.window.createTerminal({
+          name: `GameMaker Runner`,
+        });
       }
-
-      const terminal = vscode.window.createTerminal({
-        name: `GameMaker v${release.runtime.version}`,
-      });
-      terminal.sendText(cmd);
-      terminal.show();
+      this.runnerTerminal.sendText(cmd);
+      this.runnerTerminal.show();
     } else {
       let { cmd, args } = await (options?.clean
         ? computeGameMakerCleanCommand
