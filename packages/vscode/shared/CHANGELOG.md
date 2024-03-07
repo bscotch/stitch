@@ -11,4 +11,5 @@
 
 ### Fixes
 
+- Added a refresh button to the new Runner panel, so that changes to the styling config can be observed without re-running.
 - Resolved loading issues for the Igor webview

@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.66.2 (2024-03-07)
+
+### Fixes
+
+- Added a refresh button to the new Runner panel, so that changes to the styling config can be observed without re-running.
+
 ## 1.66.0 (2024-03-07)
 
 ### Features
