@@ -14,20 +14,35 @@
 	import MagicString from 'magic-string';
 	import { tick } from 'svelte';
 
-	const vscode = new Vscode<unknown, IgorWebviewPosts, IgorWebviewExtensionPosts>();
+	const vscode = new Vscode<
+		{
+			running?: IgorWebviewExtensionPostRun;
+			exitCode?: number | null;
+			logs?: IgorWebviewLog[];
+		},
+		IgorWebviewPosts,
+		IgorWebviewExtensionPosts
+	>();
 
 	interface Log extends IgorWebviewLog {
 		asSearchResult?: string;
 		asHtml?: string;
 	}
 
-	let mainStyle = $state('');
-
 	let running = $state<IgorWebviewExtensionPostRun | undefined>(undefined);
 	let exitCode = $state(null as number | null);
 	let logs = $state<Log[]>([]);
-	let run = $state({} as IgorWebviewExtensionPostRun);
-	let config = $derived(run?.config);
+	let config = $derived(running?.config);
+	let mainStyle = $derived.by(() => {
+		let style = '';
+		if (config?.fontFamily) {
+			style += `--font-family: ${config.fontFamily};`;
+		}
+		if (config?.fontSize) {
+			style += `--font-size: ${config.fontSize}px;`;
+		}
+		return style;
+	});
 
 	let footer = $state(undefined as HTMLElement | undefined);
 
@@ -45,17 +60,10 @@
 	vscode.postMessage({ kind: 'ready' });
 	vscode.onMessage((message) => {
 		if (message.kind === 'run') {
-			run = message;
 			running = message;
 			logs = [];
 			exitCode = null;
-			mainStyle = '';
-			if (config?.fontFamily) {
-				mainStyle += `--font-family: ${config.fontFamily};`;
-			}
-			if (config?.fontSize) {
-				mainStyle += `--font-size: ${config.fontSize}px;`;
-			}
+			vscode.setState({ running, logs, exitCode });
 		} else if (message.kind === 'log') {
 			logs.push(...message.logs.map((log) => styleLog(log)));
 			// Auto-scroll to the bottom
@@ -114,7 +122,8 @@
 				// }
 
 				for (const groupName of groupNames) {
-					const position = groupPositions?.[groupName] as [number, number];
+					const position = groupPositions?.[groupName] as [number, number] | undefined;
+					if (!position) continue; // The key can exist without the indices, for conditional groups
 					// if (gmlFileUri && ['_GMFILE_', line.gmlAnchor].includes(groupName)) {
 					// 	// Then we want to link the file
 					// 	source.prependRight(position[0], `<a href="${gmlFileUri}" title="Open in editor">`);
@@ -136,9 +145,6 @@
 		const samples = await import('./samples.js');
 		running = samples.running;
 		logs = samples.logs;
-	}
-	if (vscode.developmentMode) {
-		loadSamples();
 	}
 
 	async function onSearchChange(props: SearchProps) {
@@ -195,6 +201,17 @@
 			timeout = undefined;
 			footer?.scrollIntoView();
 		}, 100);
+	}
+
+	// Initial state
+
+	if (vscode.developmentMode) {
+		loadSamples();
+	} else {
+		const init = vscode.getState() || {};
+		running = init.running;
+		logs = init.logs || [];
+		exitCode = init.exitCode ?? null;
 	}
 </script>
 
@@ -336,7 +353,7 @@
 	li.log {
 		border-left: 1px solid rgb(110, 110, 110);
 		padding-left: 0.5em;
-		margin-block: 0.5em;
+		margin-block: 0.1em;
 	}
 	li.log:hover {
 		border-color: white;
