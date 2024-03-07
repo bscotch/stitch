@@ -1,5 +1,12 @@
 # Stitch Changelog
 
+## 1.66.0 (2024-03-07)
+
+### Features
+
+- When running projects via the terminal, Stitch now re-uses the same terminal instead of creating a new one.
+- Added support for styling runner logs
+
 ## 1.65.6 (2024-03-06)
 
 ### Fixes

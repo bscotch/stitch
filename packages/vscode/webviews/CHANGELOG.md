@@ -1,9 +1,10 @@
 # @local-vscode/webviews Changelog
 
-## 0.0.1 (2024-03-06)
+## 0.0.1 (2024-03-07)
 
 ### Features
 
+- Added support for styling runner logs
 - Completed draft of the new project Runner view
 - Cleaned up the search widget UI
 - Added whole-word search option.

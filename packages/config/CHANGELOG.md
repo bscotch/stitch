@@ -1,5 +1,11 @@
 # @bscotch/stitch-config Changelog
 
+## 0.4.0 (2024-03-07)
+
+### Features
+
+- Added support for styling runner logs
+
 ## 0.3.0 (2024-02-23)
 
 ### Features
