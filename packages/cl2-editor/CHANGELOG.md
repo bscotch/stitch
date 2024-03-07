@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.19.1 (2024-03-07)
+
+### Fixes
+
+- Resolved issue where non-object field changes were being deleted from the working copy.
+
 ## 0.19.0 (2024-02-19)
 
 ### Features

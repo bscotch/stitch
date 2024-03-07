@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.17.3 (2024-03-07)
+
+### Fixes
+
+- Resolved issue where non-object field changes were being deleted from the working copy.
+
 ## 0.17.2 (2024-02-19)
 
 ### Fixes
