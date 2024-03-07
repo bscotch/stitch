@@ -1,6 +1,7 @@
 import type { Asset } from '@bscotch/gml-parser';
 import type {
   IgorExitedMessage,
+  IgorWebviewConfig,
   IgorWebviewExtensionPostLogs,
   IgorWebviewExtensionPostRun,
   IgorWebviewLog,
@@ -48,6 +49,22 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
     return preparedHtml;
   }
 
+  protected async getConfig(): Promise<IgorWebviewConfig> {
+    await this.lastRequest?.project.reloadConfig();
+    return {
+      fontFamily: stitchConfig.runnerViewFontFamily,
+      fontSize: stitchConfig.runnerViewFontSize,
+      ...this.lastRequest?.project.config.gameConsoleStyle,
+    };
+  }
+
+  async refreshConfig() {
+    this.container?.webview.postMessage({
+      kind: 'config',
+      config: await this.getConfig(),
+    });
+  }
+
   async run(event: StitchEvents.RequestRunInWebview['payload'][0]) {
     assertLoudly(this.container, 'Runner container not initialized!');
     if (this.runner && this.runner.exitCode === null) {
@@ -55,7 +72,6 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
       this.runner.kill();
     }
     // Make sure our config is up to date for styling
-    await event.project.reloadConfig();
     this.lastRequest = event;
     const runMessage: IgorWebviewExtensionPostRun = {
       kind: 'run',
@@ -64,11 +80,7 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
       args: event.args,
       projectName: event.project.name,
       projectDir: event.project.dir.absolute,
-      config: {
-        fontFamily: stitchConfig.runnerViewFontFamily,
-        fontSize: stitchConfig.runnerViewFontSize,
-        ...event.project.config.gameConsoleStyle,
-      },
+      config: await this.getConfig(),
     };
     const webview = this.container.webview;
 
@@ -106,6 +118,9 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
       vscode.window.registerWebviewViewProvider(igorView.viewType, igorView),
       registerCommand('stitch.runner.toggleSearchWidget', () => {
         igorView.container?.webview.postMessage({ kind: 'toggle-search' });
+      }),
+      registerCommand('stitch.runner.refresh', () => {
+        igorView.refreshConfig();
       }),
     ];
   }

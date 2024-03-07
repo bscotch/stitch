@@ -4,6 +4,12 @@ export interface IgorWebviewLog {
   kind: 'stdout' | 'stderr';
   message: string;
 }
+
+export interface IgorWebviewConfig extends GameConsoleStyle {
+  fontFamily: string | null;
+  fontSize: number;
+}
+
 export interface IgorWebviewExtensionPostRun {
   kind: 'run';
   runtimeVersion: string;
@@ -13,10 +19,11 @@ export interface IgorWebviewExtensionPostRun {
   /** Absolute path to this project's folder on disk */
   projectDir: string;
   cleaning?: boolean;
-  config?: {
-    fontFamily: string | null;
-    fontSize: number;
-  } & GameConsoleStyle;
+  config?: IgorWebviewConfig;
+}
+export interface IgorWebviewExtensionPostConfig {
+  kind: 'config';
+  config: IgorWebviewConfig;
 }
 export interface IgorWebviewExtensionPostLogs {
   kind: 'log';
@@ -39,6 +46,7 @@ export interface ToggleSearchMessage {
 export type IgorWebviewExtensionPosts =
   | WebviewResetMessage
   | IgorExitedMessage
+  | IgorWebviewExtensionPostConfig
   | WebviewReadyMessage
   | IgorWebviewExtensionPostRun
   | IgorWebviewExtensionPostLogs

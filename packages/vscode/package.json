@@ -194,7 +194,14 @@
       {
         "command": "stitch.runner.toggleSearchWidget",
         "title": "Toggle Search Widget",
-        "icon": "$(search)"
+        "icon": "$(search)",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
+        "command": "stitch.runner.refresh",
+        "title": "Refresh",
+        "icon": "$(sync)",
+        "enablement": "stitch.projectCount > 0"
       },
       {
         "command": "stitch.run",
@@ -620,6 +627,11 @@
           "command": "stitch.runner.toggleSearchWidget",
           "when": "view == bscotch-stitch-igor",
           "group": "navigation@1"
+        },
+        {
+          "command": "stitch.runner.refresh",
+          "when": "view == bscotch-stitch-igor",
+          "group": "navigation@2"
         },
         {
           "command": "stitch.run",

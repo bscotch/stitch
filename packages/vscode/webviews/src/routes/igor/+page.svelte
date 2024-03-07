@@ -6,6 +6,7 @@
 	import Search from '$lib/Search.svelte';
 	import { Vscode } from '$lib/Vscode.js';
 	import type {
+		IgorWebviewConfig,
 		IgorWebviewExtensionPostRun,
 		IgorWebviewExtensionPosts,
 		IgorWebviewLog,
@@ -32,7 +33,7 @@
 	let running = $state<IgorWebviewExtensionPostRun | undefined>(undefined);
 	let exitCode = $state(null as number | null);
 	let logs = $state<Log[]>([]);
-	let config = $derived(running?.config);
+	let config = $state(undefined as IgorWebviewConfig | undefined);
 	let mainStyle = $derived.by(() => {
 		let style = '';
 		if (config?.fontFamily) {
@@ -40,6 +41,9 @@
 		}
 		if (config?.fontSize) {
 			style += `--font-size: ${config.fontSize}px;`;
+		}
+		if (config?.base) {
+			style += config.base;
 		}
 		return style;
 	});
@@ -63,11 +67,17 @@
 			running = message;
 			logs = [];
 			exitCode = null;
+			config = message.config;
+			vscode.setState({ running, logs, exitCode });
+		} else if (message.kind === 'config') {
+			config = message.config;
+			logs = logs.map((log) => styleLog(log));
 			vscode.setState({ running, logs, exitCode });
 		} else if (message.kind === 'log') {
 			logs.push(...message.logs.map((log) => styleLog(log)));
 			// Auto-scroll to the bottom
 			debouncedScrollToBottom();
+			vscode.setState({ running, logs, exitCode });
 		} else if (message.kind === 'reset') {
 			running = undefined;
 			logs = [];
@@ -81,6 +91,7 @@
 
 	const stylePatterns = new Map<string, RegExp | null>();
 	function styleLog(log: Log): Log {
+		log.asHtml = undefined; // reset
 		const source = new MagicString(log.message);
 		// Find the first matching line, if any
 		for (const line of config?.lines || []) {
@@ -269,7 +280,7 @@
 		{#if logs.length === 0}
 			<p><i>No logs yet...</i></p>
 		{:else}
-			<ul class="logs reset" style={config?.base}>
+			<ul class="logs reset">
 				{#each logs as log, i (i)}
 					<li class={`log ${log.kind}`}>
 						<!-- svelte-ignore a11y-missing-content -->
