@@ -23,6 +23,13 @@ export type Treeable =
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
+export function isTreeAssetOfKind(
+  item: any,
+  kind: YyResourceType,
+): item is TreeAsset<YyResourceType> {
+  return item instanceof TreeAsset && isAssetOfKind(item.asset, kind);
+}
+
 export class TreeFilterGroup extends StitchTreeItemBase<'tree-filter-group'> {
   override readonly kind = 'tree-filter-group';
   readonly filters: TreeFilter[] = [];

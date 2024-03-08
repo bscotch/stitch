@@ -269,7 +269,13 @@ export class GameMakerTreeProvider
     this.view.reveal(treeItem, { focus: true });
   }
 
-  async addInstanceToRoom(roomItem: TreeAsset<'rooms'>) {
+  async deleteRoomInstance(item: TreeRoomInstance) {
+    const room = item.parent.asset;
+    await room.removeRoomInstance(item.instanceId);
+    this.changed(item.parent);
+  }
+
+  async addRoomInstance(roomItem: TreeAsset<'rooms'>) {
     const asset = roomItem.asset;
 
     const objectOptions = [...asset.project.assets.values()]
@@ -284,7 +290,7 @@ export class GameMakerTreeProvider
     if (!objectChoice) {
       return;
     }
-    await asset.addObjectInstance(objectChoice.object);
+    await asset.addRoomInstance(objectChoice.object);
     this.changed(roomItem);
   }
 
@@ -1097,8 +1103,12 @@ export class GameMakerTreeProvider
       registerCommand('stitch.assets.setParent', this.setParent.bind(this)),
       registerCommand('stitch.assets.setSprite', this.setSprite.bind(this)),
       registerCommand(
-        'stitch.assets.addInstanceToRoom',
-        this.addInstanceToRoom.bind(this),
+        'stitch.assets.addRoomInstance',
+        this.addRoomInstance.bind(this),
+      ),
+      registerCommand(
+        'stitch.assets.deleteRoomInstance',
+        this.deleteRoomInstance.bind(this),
       ),
       registerCommand('stitch.assets.reveal', this.reveal.bind(this)),
       registerCommand(

@@ -231,11 +231,19 @@ export const commands = {
       },
     ],
   },
-  'stitch.assets.addInstanceToRoom': {
-    command: 'stitch.assets.addInstanceToRoom',
+  'stitch.assets.addRoomInstance': {
+    command: 'stitch.assets.addRoomInstance',
     title: 'Add Instance...',
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsRoom,
+      group: 'navigation@1',
+    },
+  },
+  'stitch.assets.deleteRoomInstance': {
+    command: 'stitch.assets.deleteRoomInstance',
+    title: 'Delete',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsRoomInstance,
       group: 'navigation@1',
     },
   },
