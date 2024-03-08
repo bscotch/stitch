@@ -1,5 +1,14 @@
 # Stitch Changelog
 
+## 1.68.0 (2024-03-08)
+
+### Features
+
+- Added ability to delete room instances and drag-drop reorganize them.
+- Can now add object instances to rooms via the asset tree context menu
+- The asset tree now lists a room's object intances
+- Rooms can now be added via the resource tree context menu.
+
 ## 1.67.0 (2024-03-08)
 
 ### Features

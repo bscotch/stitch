@@ -1,5 +1,16 @@
 # @bscotch/gml-parser Changelog
 
+## 1.9.0 (2024-03-08)
+
+### Features
+
+- Renamed room-asset-management methods for clarity.
+- Can now list a room's object instances
+
+### Fixes
+
+- When deleting a room asset, it is now also removed from the room order list
+
 ## 1.8.0 (2024-03-08)
 
 ### Features
