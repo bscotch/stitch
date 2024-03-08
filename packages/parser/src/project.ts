@@ -15,6 +15,7 @@ import {
   Yyp,
   yyParentSchema,
   yypFolderSchema,
+  yyRoomSchema,
   YySchema,
   yySpriteSchema,
   type YypConfig,
@@ -484,6 +485,39 @@ export class Project {
 
     // Update the yyp file
     const info = await this.addAssetToYyp(soundYy.absolute);
+
+    // Create and add the asset
+    const asset = await Asset.from(this, info);
+    if (asset) {
+      this.registerAsset(asset);
+    }
+    return asset;
+  }
+
+  @sequential
+  async createRoom(path: string) {
+    const parsed = await this.parseNewAssetPath(path);
+    if (!parsed) {
+      return;
+    }
+    const { name, folder } = parsed;
+
+    const roomDir = this.dir.join(`rooms/${name}`);
+    await roomDir.ensureDirectory();
+    const roomYy = roomDir.join(`${name}.yy`);
+
+    const yy = yyRoomSchema.parse({
+      name,
+      parent: {
+        name: folder.name,
+        path: folder.folderPath,
+      },
+    });
+
+    await Yy.write(roomYy.absolute, yy, 'rooms', this.yyp);
+
+    // Update the yyp file
+    const info = await this.addAssetToYyp(roomYy.absolute);
 
     // Create and add the asset
     const asset = await Asset.from(this, info);

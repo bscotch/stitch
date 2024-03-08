@@ -148,12 +148,16 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return this.assetKind === 'objects';
   }
 
-  get isSprite() {
-    return this.assetKind === 'sprites';
-  }
-
   get isSound() {
     return this.assetKind === 'sounds';
+  }
+
+  get isRoom() {
+    return this.assetKind === 'rooms';
+  }
+
+  get isSprite() {
+    return this.assetKind === 'sprites';
   }
 
   get isSpineSprite() {
