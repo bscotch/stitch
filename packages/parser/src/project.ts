@@ -495,7 +495,7 @@ export class Project {
   }
 
   @sequential
-  async createRoom(path: string) {
+  async createRoom(path: string): Promise<Asset<'rooms'> | undefined> {
     const parsed = await this.parseNewAssetPath(path);
     if (!parsed) {
       return;
@@ -512,23 +512,31 @@ export class Project {
         name: folder.name,
         path: folder.folderPath,
       },
+      layers: [{ resourceType: 'GMRBackgroundLayer' }],
+      views: [...Array(8)].map(() => ({})),
     });
+    yy.views[0].visible = true;
 
     await Yy.write(roomYy.absolute, yy, 'rooms', this.yyp);
 
     // Update the yyp file
-    const info = await this.addAssetToYyp(roomYy.absolute);
+    const info = await this.addAssetToYyp(roomYy.absolute, { skipSave: true });
+    this.yyp.RoomOrderNodes.push({ roomId: info.id });
+    await this.saveYyp();
 
     // Create and add the asset
     const asset = await Asset.from(this, info);
     if (asset) {
       this.registerAsset(asset);
     }
-    return asset;
+    return asset as Asset<'rooms'>;
   }
 
   @sequential
-  async createSprite(path: string, fromImageFile: string | Pathy) {
+  async createSprite(
+    path: string,
+    fromImageFile: string | Pathy,
+  ): Promise<Asset<'sprites'> | undefined> {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(path);
     if (!parsed) {
@@ -579,7 +587,7 @@ export class Project {
     if (asset) {
       this.registerAsset(asset);
     }
-    return asset;
+    return asset as Asset<'sprites'>;
   }
 
   /**
@@ -587,7 +595,7 @@ export class Project {
    * in which case folders will be ensured up to the final component.
    */
   @sequential
-  async createObject(path: string) {
+  async createObject(path: string): Promise<Asset<'objects'> | undefined> {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(path);
     if (!parsed) {
@@ -623,11 +631,11 @@ export class Project {
     if (asset) {
       this.registerAsset(asset);
     }
-    return asset;
+    return asset as Asset<'objects'>;
   }
 
   @sequential
-  async createShader(path: string) {
+  async createShader(path: string): Promise<Asset<'shaders'> | undefined> {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(path);
     if (!parsed) {
@@ -664,7 +672,7 @@ export class Project {
     if (asset) {
       this.registerAsset(asset);
     }
-    return asset;
+    return asset as Asset<'shaders'>;
   }
 
   /**
@@ -672,7 +680,7 @@ export class Project {
    * in which case folders will be ensured up to the final component.
    */
   @sequential
-  async createScript(path: string) {
+  async createScript(path: string): Promise<Asset<'scripts'> | undefined> {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(path);
     if (!parsed) {
@@ -708,7 +716,7 @@ export class Project {
     if (asset) {
       this.registerAsset(asset);
     }
-    return asset;
+    return asset as Asset<'scripts'>;
   }
 
   protected async parseNewAssetPath(path: string) {
@@ -756,6 +764,7 @@ export class Project {
     };
     // Insert the resource into a random spot in the list to avoid git conflicts,
     // avoiding the last spot because that's where changes are most likely to be.
+    // (This only matters for older project versions -- the newer version )
     const lastAllowed = Math.max(0, this.yyp.resources.length - 1);
     const insertAt = Math.floor(Math.random() * lastAllowed);
     this.yyp.resources.splice(insertAt, 0, resourceEntry);
