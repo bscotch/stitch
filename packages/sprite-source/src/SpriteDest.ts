@@ -358,12 +358,15 @@ export class SpriteDest extends SpriteCache {
       fallback: { sources: [] },
       ...retryOptions,
     });
+    let wasEmpty = !config.sources?.length;
     if (overrides?.sources) {
       config.sources = overrides.sources;
     }
-    await this.configFile.write(config, {
-      ...retryOptions,
-    });
+    if ((wasEmpty && config.sources?.length) || !wasEmpty) {
+      await this.configFile.write(config, {
+        ...retryOptions,
+      });
+    }
     return config;
   }
 
