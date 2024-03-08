@@ -152,3 +152,16 @@ export function yyIsNewFormat<T>(yyData: T): yyData is T & { '%Name': string } {
   if ('resourceType' in yyData && yyData.resourceType === '2.0') return true;
   return false;
 }
+
+export function isObjectWithField<F extends string>(
+  obj: unknown,
+  field: F,
+): obj is Record<string, unknown> & { [K in F]: unknown } {
+  return (
+    obj !== null &&
+    typeof obj === 'object' &&
+    field in obj &&
+    // @ts-expect-error
+    obj[field] !== undefined
+  );
+}

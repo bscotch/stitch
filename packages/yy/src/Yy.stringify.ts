@@ -277,7 +277,6 @@ function prepareForStringification<T>(
       isNewFormat &&
       'name' in yyData &&
       typeof yyData.name === 'string' &&
-      yyData.name.length &&
       hasResourceType && // Otherwise it's just a different kind of 'name' field
       !('$GMSpriteFramesTrack' in yyData) // Special case
     ) {

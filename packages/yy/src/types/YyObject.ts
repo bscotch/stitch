@@ -120,6 +120,6 @@ export const yyObjectSchema = yyBaseSchema.extend({
    * (Unknown parameter)
    */
   overriddenProperties: z.array(z.unknown()).default([]),
-  managed: z.boolean().optional(),
+  managed: z.boolean().default(true),
   resourceType: z.literal('GMObject').default('GMObject'),
 });
