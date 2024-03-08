@@ -392,6 +392,16 @@ export class GameMakerTreeProvider
     }
   }
 
+  async createRoom(where: GameMakerFolder) {
+    const info = await this.prepareForNewAsset(where);
+    if (!info) {
+      return;
+    }
+    const { folder, path } = info;
+    const asset = await where.project!.createRoom(path);
+    this.afterNewAssetCreated(asset, folder, where);
+  }
+
   async createEvent(objectItem: TreeAsset) {
     const asset = objectItem.asset;
     assertLoudly(
@@ -1052,6 +1062,7 @@ export class GameMakerTreeProvider
         this.replaceSpriteFrames.bind(this),
       ),
       registerCommand('stitch.assets.newShader', this.createShader.bind(this)),
+      registerCommand('stitch.assets.newRoom', this.createRoom.bind(this)),
       registerCommand('stitch.assets.newEvent', this.createEvent.bind(this)),
       registerCommand('stitch.assets.setParent', this.setParent.bind(this)),
       registerCommand('stitch.assets.setSprite', this.setSprite.bind(this)),

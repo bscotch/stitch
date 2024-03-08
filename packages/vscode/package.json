@@ -156,6 +156,10 @@
         "title": "Add/Update Sounds..."
       },
       {
+        "command": "stitch.assets.newRoom",
+        "title": "New Room..."
+      },
+      {
         "command": "stitch.assets.newShader",
         "title": "New Shader..."
       },
@@ -755,9 +759,14 @@
           "group": "navigation@5"
         },
         {
-          "command": "stitch.assets.newShader",
+          "command": "stitch.assets.newRoom",
           "when": "viewItem == folder",
           "group": "navigation@6"
+        },
+        {
+          "command": "stitch.assets.newShader",
+          "when": "viewItem == folder",
+          "group": "navigation@7"
         },
         {
           "command": "stitch.assets.newFolder",

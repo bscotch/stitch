@@ -196,12 +196,20 @@ export const commands = {
       group: 'navigation@5',
     },
   },
+  'stitch.assets.newRoom': {
+    command: 'stitch.assets.newRoom',
+    title: 'New Room...',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsFolder,
+      group: 'navigation@6',
+    },
+  },
   'stitch.assets.newShader': {
     command: 'stitch.assets.newShader',
     title: 'New Shader...',
     [$showInViewItemContextMenu]: {
       when: when.viewItemIsFolder,
-      group: 'navigation@6',
+      group: 'navigation@7',
     },
   },
   'stitch.assets.newFolder': {
