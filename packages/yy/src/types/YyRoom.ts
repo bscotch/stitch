@@ -30,55 +30,44 @@ const yyRoomViewSchema = unstable({
 
 export type YyRoomInstance = z.infer<typeof yyRoomInstanceSchema>;
 export const yyRoomInstanceSchema = unstable({
-  /**
-   * *Unique* instance name. Can be any string. Needed to allow multiple
-   * instances of the same object to be added to a room via the editor.
-   */
-  name: z.string().default(() => randomString()),
-  properties: z.array(z.unknown()).default([]),
-  isDnd: z.boolean().default(false),
-  /** The type of the object being instanced */
-  objectId: yyResourceIdSchemaGenerator('objects'),
-  inheritCode: z.boolean().default(false),
-  hasCreationCode: z.boolean().default(false),
   colour: z.number().default(4294967295),
+  frozen: z.boolean().default(false),
+  hasCreationCode: z.boolean().default(false),
+  ignore: z.boolean().default(false),
+  imageIndex: z.number().default(0),
+  imageSpeed: fixedNumber().default(1),
+  inheritCode: z.boolean().default(false),
+  inheritedItemId: z.unknown().nullable().default(null),
+  inheritItemSettings: z.boolean().default(false),
+  isDnd: z.boolean().default(false),
+  name: z.string().default(() => `inst_${randomString(8)}`),
+  objectId: yyResourceIdSchemaGenerator('objects'),
+  properties: z.array(z.unknown()).default([]),
+  resourceType: z.literal('GMRInstance').default('GMRInstance'),
+  resourceVersion: z.string().default('1.0'),
   rotation: fixedNumber().default(0),
   scaleX: fixedNumber().default(1),
   scaleY: fixedNumber().default(1),
-  imageIndex: z.number().default(0),
-  imageSpeed: fixedNumber().default(1),
-  inheritedItemId: z.unknown().nullable().default(null),
-  frozen: z.boolean().default(false),
-  ignore: z.boolean().default(false),
-  inheritItemSettings: z.boolean().default(false),
-  /**
-   * Initial x-coords of the instance
-   */
-  x: fixedNumber().default(0),
-  /**
-   * Initial y-coords of the instance
-   */
-  y: fixedNumber().default(0),
-  resourceVersion: z.string().default('1.0'),
   tags: z.array(z.string()).optional(),
-  resourceType: z.literal('GMRInstance').default('GMRInstance'),
+  x: fixedNumber().default(0),
+  y: fixedNumber().default(0),
 });
 
 export type YyRoomLayerBase = z.infer<typeof yyRoomLayerBaseSchema>;
-const yyRoomLayerBaseSchema = unstable({
-  visible: z.boolean().default(true),
+export const yyRoomLayerBaseSchema = unstable({
   effectEnabled: z.boolean().optional().default(true),
   effectType: z.unknown().optional().default(null),
-  userdefinedDepth: z.boolean().default(false),
-  inheritLayerDepth: z.boolean().default(false),
-  inheritLayerSettings: z.boolean().default(false),
-  inheritVisibility: z.boolean().default(true),
-  inheritSubLayers: z.boolean().default(true),
   gridX: z.number().default(32),
   gridY: z.number().default(32),
-  layers: z.array(z.unknown()).default([]),
   hierarchyFrozen: z.boolean().default(false),
+  inheritLayerDepth: z.boolean().default(false),
+  inheritLayerSettings: z.boolean().default(false),
+  inheritSubLayers: z.boolean().default(true),
+  inheritVisibility: z.boolean().default(true),
+  layers: z.array(z.unknown()).default([]),
   properties: z.array(z.unknown()).optional().default([]),
+  userdefinedDepth: z.boolean().default(false),
+  visible: z.boolean().default(true),
 });
 
 export type YyRoomPathLayer = z.infer<typeof yyRoomPathLayerSchema>;
@@ -155,7 +144,7 @@ const yyRoomEffectLayer = z
   .passthrough();
 
 export type YyRoomInstanceLayer = z.infer<typeof yyRoomInstanceLayerSchema>;
-const yyRoomInstanceLayerSchema = yyRoomLayerBaseSchema
+export const yyRoomInstanceLayerSchema = yyRoomLayerBaseSchema
   .extend({
     instances: z.array(yyRoomInstanceSchema).default([]),
     depth: z.number().default(0),
@@ -165,7 +154,7 @@ const yyRoomInstanceLayerSchema = yyRoomLayerBaseSchema
      */
     name: z.string().default('Instances'),
     tags: z.array(z.string()).optional(),
-    resourceType: z.literal('GMRInstanceLayer'),
+    resourceType: z.literal('GMRInstanceLayer').default('GMRInstanceLayer'),
   })
   .passthrough();
 
@@ -195,6 +184,16 @@ const yyRoomAssetLayerSchema = z
 
 export type YyRoomBackgroundLayer = z.infer<typeof yyRoomBackgroundLayerSchema>;
 const yyRoomBackgroundLayerSchema = yyRoomLayerBaseSchema.extend({
+  animationFPS: fixedNumber().default(15),
+  animationSpeedType: z.number().default(0),
+  colour: z.number().default(4278190080),
+  depth: z.number().default(100),
+  hspeed: fixedNumber().default(0),
+  htiled: z.boolean().default(false),
+  name: z.string().default('Background'),
+  properties: z.array(z.unknown()).default([]),
+  resourceType: z.literal('GMRBackgroundLayer').default('GMRBackgroundLayer'),
+  resourceVersion: z.string().default('1.0'),
   spriteId: z
     .object({
       name: z.string(),
@@ -203,26 +202,13 @@ const yyRoomBackgroundLayerSchema = yyRoomLayerBaseSchema.extend({
     .passthrough()
     .nullable()
     .default(null),
-  colour: z.number().default(4278190080),
+  stretch: z.boolean().default(false),
+  tags: z.array(z.string()).optional(),
+  userdefinedAnimFPS: z.boolean().default(false),
+  vspeed: fixedNumber().default(0),
+  vtiled: z.boolean().default(false),
   x: z.number().default(0),
   y: z.number().default(0),
-  htiled: z.boolean().default(false),
-  vtiled: z.boolean().default(false),
-  hspeed: fixedNumber().default(0),
-  vspeed: fixedNumber().default(0),
-  stretch: z.boolean().default(false),
-  animationFPS: fixedNumber().default(15),
-  animationSpeedType: z.number().default(0),
-  userdefinedAnimFPS: z.boolean().default(false),
-  depth: z.number().default(100),
-  properties: z.array(z.unknown()).optional(),
-  resourceVersion: z.string().default('1.0'),
-  /**
-   * @default "Background"
-   */
-  name: z.string().default('Background'),
-  tags: z.array(z.string()).optional(),
-  resourceType: z.literal('GMRBackgroundLayer'),
 });
 
 export type YyRoomLayerLayer = z.infer<typeof yyRoomLayerLayerSchema>;
