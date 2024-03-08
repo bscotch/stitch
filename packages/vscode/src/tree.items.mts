@@ -252,8 +252,9 @@ export class TreeRoomInstance extends StitchTreeItemBase<'room-instance'> {
     readonly asset: Asset<'objects'>,
     readonly instanceId: string,
   ) {
-    super(`[${instanceId}] ${asset.name}`);
+    super(asset.name);
     this.contextValue = this.kind;
+    this.description = instanceId;
     this.command = {
       command: 'vscode.open',
       title: 'Open',

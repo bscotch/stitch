@@ -169,6 +169,10 @@
         "icon": "$(new-folder)"
       },
       {
+        "command": "stitch.assets.addInstanceToRoom",
+        "title": "Add Instance..."
+      },
+      {
         "command": "stitch.assets.replaceSpriteFrames",
         "title": "Replace Frames..."
       },
@@ -777,6 +781,11 @@
           "command": "stitch.assets.newFolder",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
           "group": "inline@1"
+        },
+        {
+          "command": "stitch.assets.addInstanceToRoom",
+          "when": "viewItem == asset-rooms",
+          "group": "navigation@1"
         },
         {
           "command": "stitch.assets.replaceSpriteFrames",

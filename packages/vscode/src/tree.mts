@@ -269,6 +269,25 @@ export class GameMakerTreeProvider
     this.view.reveal(treeItem, { focus: true });
   }
 
+  async addInstanceToRoom(roomItem: TreeAsset<'rooms'>) {
+    const asset = roomItem.asset;
+
+    const objectOptions = [...asset.project.assets.values()]
+      .filter((a) => isAssetOfKind(a, 'objects'))
+      .map((p) => ({
+        label: p.name,
+        object: p as Asset<'objects'>,
+      }));
+    const objectChoice = await vscode.window.showQuickPick(objectOptions, {
+      title: 'Choose the object to add to the room',
+    });
+    if (!objectChoice) {
+      return;
+    }
+    await asset.addObjectInstance(objectChoice.object);
+    this.changed(roomItem);
+  }
+
   async setSprite(objectItem: ObjectParentFolder | TreeAsset) {
     const asset = objectItem.asset;
     if (!isAssetOfKind(asset, 'objects')) {
@@ -1077,6 +1096,10 @@ export class GameMakerTreeProvider
       registerCommand('stitch.assets.newEvent', this.createEvent.bind(this)),
       registerCommand('stitch.assets.setParent', this.setParent.bind(this)),
       registerCommand('stitch.assets.setSprite', this.setSprite.bind(this)),
+      registerCommand(
+        'stitch.assets.addInstanceToRoom',
+        this.addInstanceToRoom.bind(this),
+      ),
       registerCommand('stitch.assets.reveal', this.reveal.bind(this)),
       registerCommand(
         'stitch.assets.filters.delete',

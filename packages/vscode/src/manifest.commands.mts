@@ -231,6 +231,14 @@ export const commands = {
       },
     ],
   },
+  'stitch.assets.addInstanceToRoom': {
+    command: 'stitch.assets.addInstanceToRoom',
+    title: 'Add Instance...',
+    [$showInViewItemContextMenu]: {
+      when: when.viewItemIsRoom,
+      group: 'navigation@1',
+    },
+  },
   'stitch.assets.replaceSpriteFrames': {
     command: 'stitch.assets.replaceSpriteFrames',
     title: 'Replace Frames...',
