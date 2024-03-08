@@ -46,6 +46,10 @@
         "title": "Stitch: Open GameMaker Docs"
       },
       {
+        "command": "stitch.newProject",
+        "title": "Stitch: New Project"
+      },
+      {
         "command": "stitch.diagnostics.suppress",
         "title": "Suppress Diagnostics"
       },
@@ -866,6 +870,9 @@
       "commandPalette": [
         {
           "command": "stitch.openDocs"
+        },
+        {
+          "command": "stitch.newProject"
         },
         {
           "command": "stitch.openLocation.gameMaker"

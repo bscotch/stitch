@@ -1,4 +1,5 @@
 import {
+  Project,
   type Asset,
   type Code,
   type DiagnosticsEventPayload,
@@ -7,7 +8,10 @@ import {
   type Reference,
   type ReferenceableType,
 } from '@bscotch/gml-parser';
+import { Yy, yypSchema } from '@bscotch/yy';
+import { randomUUID } from 'node:crypto';
 import vscode from 'vscode';
+import { assertLoudly } from './assert.mjs';
 import { ChangeTracker } from './changes.mjs';
 import { stitchConfig } from './config.mjs';
 import {
@@ -19,7 +23,13 @@ import { activateStitchExtension } from './extension.activate.mjs';
 import { completionTriggerCharacters } from './extension.completions.mjs';
 import { GameMakerSemanticTokenProvider } from './extension.highlighting.mjs';
 import { GameMakerProject } from './extension.project.mjs';
-import { activeTab, isSpriteTab, pathyFromUri } from './lib.mjs';
+import {
+  activeTab,
+  isSpriteTab,
+  openPath,
+  pathyFromUri,
+  showProgress,
+} from './lib.mjs';
 import { info, logger, warn } from './log.mjs';
 
 export class StitchWorkspace implements vscode.SignatureHelpProvider {
@@ -410,6 +420,102 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
     this.processingFiles.set(doc.uri.fsPath, updateWait);
     await updateWait;
     this.processingFiles.delete(doc.uri.fsPath);
+  }
+
+  async createNewProject() {
+    const project = this.getActiveProject();
+    assertLoudly(project, 'Must have an active project to use as a temiplate.');
+
+    // Clone the current yyp file
+    const roomName = 'rm_init';
+    const objName = 'o_init';
+    const resourceFolder = 'Init';
+    let yyp = structuredClone(project.yyp);
+    // Remove its contents
+    yyp.IncludedFiles = [];
+    yyp.resources = [];
+    yyp.LibraryEmitters = [];
+    yyp.Folders = [];
+    yyp.configs.children = [];
+    // @ts-expect-error We'll rely on the yywriter to complete
+    yyp.AudioGroups = [{ name: 'audiogroup_default' }];
+    // @ts-expect-error We'll rely on the yywriter to complete
+    yyp.TextureGroups = [{ name: 'default' }];
+    // @ts-expect-error We'll rely on the yywriter to complete
+    yyp.RoomOrderNodes = [{ roomId: { name: roomName } }];
+
+    // Prompt for the project name
+    const projectName = await vscode.window.showInputBox({
+      prompt: 'Enter a name for the new project',
+      value: 'NewProject',
+    });
+    if (!projectName) return;
+
+    yyp.name = projectName;
+    yyp = yypSchema.parse(yyp);
+
+    const where = await vscode.window.showOpenDialog({
+      canSelectFolders: true,
+      canSelectFiles: false,
+      canSelectMany: false,
+      title: `Choose a parent folder for the "${projectName}" project folder`,
+      openLabel: `Create project in folder`,
+    });
+    if (!where?.length) return;
+
+    await showProgress(async () => {
+      const parentDir = pathyFromUri(where[0]);
+      await parentDir.ensureDir();
+      const dir = parentDir.join(projectName);
+      await dir.ensureDir();
+      const yypPath = dir.join(`${projectName}.yyp`);
+      assertLoudly(!(await yypPath.exists()), `That project already exists!`);
+      await Yy.write(yypPath.absolute, yyp, 'project');
+      if (yyp['%Name']) {
+        // Then this is in the new format. Requires a main options file
+        const optionsDir = dir.join('options/main');
+        await optionsDir.ensureDir();
+        const optionsPath = optionsDir.join('options_main.yy');
+        Yy.write(
+          optionsPath.absolute,
+          {
+            $GMMainOptions: '',
+            '%Name': 'Main',
+            name: 'Main',
+            option_author: '',
+            option_collision_compatibility: false,
+            option_copy_on_write_enabled: false,
+            option_draw_colour: 4294967295,
+            option_gameguid: randomUUID(),
+            option_gameid: '0',
+            option_game_speed: 60,
+            option_mips_for_3d_textures: false,
+            option_sci_usesci: false,
+            option_spine_licence: false,
+            option_steam_app_id: '0',
+            option_template_description: null,
+            option_template_icon: '${base_options_dir}/main/template_icon.png',
+            option_template_image:
+              '${base_options_dir}/main/template_image.png',
+            option_window_colour: 255,
+            resourceType: 'GMMainOptions',
+            resourceVersion: '2.0',
+          },
+          undefined,
+        );
+      }
+
+      // Load as a project
+      const newProject = await Project.initialize(yypPath.absolute);
+      // Add the default object
+      await newProject.createObject(`${resourceFolder}/${objName}`);
+      // Add the default room
+      await newProject.createRoom(`${resourceFolder}/${roomName}`);
+      // Add an object instance to the room
+
+      // TODO: Open the new project folder in a new window
+      await openPath(dir);
+    }, 'Creating new project...');
   }
 
   /**

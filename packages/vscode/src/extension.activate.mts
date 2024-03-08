@@ -289,6 +289,9 @@ export async function activateStitchExtension(
         await project.openInIde();
       },
     ),
+    registerCommand('stitch.newProject', async () => {
+      await workspace.createNewProject();
+    }),
     workspace.semanticHighlightProvider.register(),
     workspace.signatureHelpStatus,
     vscode.window.onDidChangeTextEditorSelection((e) => {
