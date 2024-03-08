@@ -1,5 +1,12 @@
 # Stitch Changelog
 
+## 1.67.0 (2024-03-08)
+
+### Features
+
+- Newly-created projects now ensure that the default object is instanced in the default room.
+- Added a command for creating a basic template project
+
 ## 1.66.2 (2024-03-07)
 
 ### Fixes

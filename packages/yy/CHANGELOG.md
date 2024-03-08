@@ -1,5 +1,15 @@
 # @bscotch/yy Changelog
 
+## 2.2.0 (2024-03-08)
+
+### Features
+
+- Changed defaults to better match our typical use cases
+
+### Fixes
+
+- Improved defaults for new yy files for compatibility with latest GameMaker
+
 ## 2.1.8 (2024-03-06)
 
 ### Fixes

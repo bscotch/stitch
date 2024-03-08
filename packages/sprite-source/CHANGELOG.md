@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 1.2.4 (2024-03-08)
+
+### Fixes
+
+- No longer writing the stitch config file if it has nothing in it
+
 ## 1.2.0 (2024-02-26)
 
 ### Features

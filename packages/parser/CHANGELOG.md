@@ -1,5 +1,13 @@
 # @bscotch/gml-parser Changelog
 
+## 1.8.0 (2024-03-08)
+
+### Features
+
+- Can now add an object to a room
+- New rooms now also include a default background layer and 8 views
+- Can now add rooms to a project
+
 ## 1.7.5 (2024-03-06)
 
 ### Fixes
