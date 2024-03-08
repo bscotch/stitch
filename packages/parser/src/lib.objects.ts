@@ -150,6 +150,13 @@ export const objectEvents = [
     group: 'step',
   },
   {
+    label: 'User Event 0',
+    name: 'Other_10',
+    eventNum: 10,
+    eventType: 7,
+    group: 'other',
+  },  
+  {
     label: 'Animation Update',
     name: 'Other_58',
     eventNum: 58,
@@ -205,6 +212,13 @@ export const objectEvents = [
     eventType: 7,
     group: 'async',
   },
+  {
+    label: 'Broadcast Message',
+    name: 'Other_76',
+    eventNum: 76,
+    eventType: 7,
+    group: 'broadcast message',
+  },   
   ...objectAlarmEvents,
 ] as const;
 Object.freeze(Object.seal(objectEvents));
