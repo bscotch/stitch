@@ -38,6 +38,7 @@ import {
   TreeCode,
   TreeFilter,
   TreeFilterGroup,
+  TreeRoomInstance,
   TreeShaderFile,
   TreeSpriteFrame,
   type Treeable,
@@ -838,18 +839,28 @@ export class GameMakerTreeProvider
     } else if (element instanceof TreeFilterGroup) {
       return element.filters.sort((a, b) => a.query.localeCompare(b.query));
     } else if (element instanceof TreeAsset) {
-      if (element.asset.assetKind === 'objects') {
+      if (isAssetOfKind(element.asset, 'objects')) {
         return element.asset.gmlFilesArray.map((f) => new TreeCode(element, f));
-      } else if (element.asset.assetKind === 'sprites') {
+      } else if (isAssetOfKind(element.asset, 'sprites')) {
         return element.asset.framePaths.map(
           (p, i) => new TreeSpriteFrame(element, p, i),
         );
-      } else if (element.asset.assetKind === 'shaders') {
+      } else if (isAssetOfKind(element.asset, 'shaders')) {
         const paths = element.asset.shaderPaths!;
         return [
           new TreeShaderFile(element, paths.fragment),
           new TreeShaderFile(element, paths.vertex),
         ];
+      } else if (isAssetOfKind(element.asset, 'rooms')) {
+        const instances = element.asset.roomInstances;
+        return instances.map(
+          (i) =>
+            new TreeRoomInstance(
+              element as TreeAsset<'rooms'>,
+              i.object,
+              i.instanceId,
+            ),
+        );
       }
     }
     return;
