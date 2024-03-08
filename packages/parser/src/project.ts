@@ -220,11 +220,17 @@ export class Project {
     if (!asset) return;
     this.assets.delete(name);
     // Remove the asset from the yyp
-    const inYyp = this.yyp.resources.findIndex(
+    const resourceIdx = this.yyp.resources.findIndex(
       (r) => r.id.name.toLocaleLowerCase() === name,
     );
-    if (inYyp) {
-      this.yyp.resources.splice(inYyp, 1);
+    // If it's a room, remove it from the room order list
+    if (isAssetOfKind(asset, 'rooms')) {
+      this.yyp.RoomOrderNodes = this.yyp.RoomOrderNodes.filter((node) => {
+        node.roomId.path.toLowerCase() !== asset.resource.id.path.toLowerCase();
+      });
+    }
+    if (resourceIdx > -1) {
+      this.yyp.resources.splice(resourceIdx, 1);
       await this.saveYyp();
     }
 
