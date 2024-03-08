@@ -6,11 +6,15 @@ import {
   YyExtension,
   YyObject,
   YyResourceType,
+  YyRoom,
+  YyRoomInstanceLayer,
   YySchemas,
   YySound,
   YySprite,
   YypResource,
   yyObjectEventSchema,
+  yyRoomInstanceLayerSchema,
+  yyRoomInstanceSchema,
   yySchemas,
   yySpriteSchema,
 } from '@bscotch/yy';
@@ -322,6 +326,32 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       json: this.dir.join(`${frameId}.json`),
       atlas: this.dir.join(`${frameId}.atlas`),
     };
+  }
+
+  async addObjectInstance(obj: Asset<'objects'>, x = 0, y = 0) {
+    assert(this.isRoom, 'Can only add object instances to rooms');
+    // Ensure we have an instance layer
+    const yy = this.yy as YyRoom;
+    let instanceLayer = yy.layers.find(
+      (x) => x.resourceType === 'GMRInstanceLayer',
+    ) as YyRoomInstanceLayer | undefined;
+    if (!instanceLayer) {
+      instanceLayer = yyRoomInstanceLayerSchema.parse({});
+      yy.layers.unshift(instanceLayer);
+    }
+    // Add a new instance
+    const instance = yyRoomInstanceSchema.parse({
+      objectId: obj.resource.id,
+      x,
+      y,
+    });
+    instanceLayer.instances.push(instance);
+    yy.instanceCreationOrder ||= [];
+    yy.instanceCreationOrder.push({
+      name: instance.name,
+      path: `rooms/${this.name}/${this.name}.yy`,
+    });
+    await this.saveYy();
   }
 
   get folder() {
