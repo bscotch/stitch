@@ -508,10 +508,13 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
       // Load as a project
       const newProject = await Project.initialize(yypPath.absolute);
       // Add the default object
-      await newProject.createObject(`${resourceFolder}/${objName}`);
+      const obj = await newProject.createObject(`${resourceFolder}/${objName}`);
       // Add the default room
-      await newProject.createRoom(`${resourceFolder}/${roomName}`);
+      const room = await newProject.createRoom(`${resourceFolder}/${roomName}`);
       // Add an object instance to the room
+      if (obj && room) {
+        await room?.addObjectInstance(obj);
+      }
 
       // TODO: Open the new project folder in a new window
       await openPath(dir);
