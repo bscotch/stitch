@@ -293,6 +293,31 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     } as any;
   }
 
+  get roomInstances(): { instanceId: string; object: Asset<'objects'> }[] {
+    assertIsAssetOfKind(this, 'rooms');
+    const instances = new Map<string, Asset<'objects'>>();
+    // Loop through each instance layer's instances to get IDs and objects
+    const yy = this.yy as YyRoom;
+    for (const layer of (yy as YyRoom).layers) {
+      if (layer.resourceType !== 'GMRInstanceLayer') {
+        continue;
+      }
+      for (const instance of (layer as YyRoomInstanceLayer).instances || []) {
+        const obj = this.project.getAssetByName(instance.objectId.name);
+        if (isAssetOfKind(obj, 'objects')) {
+          instances.set(instance.name, obj);
+        }
+      }
+    }
+    // Loop through the instance order to get everything in the expected order
+    return yy.instanceCreationOrder
+      .map((x) => ({
+        instanceId: x.name,
+        object: instances.get(x.name)!,
+      }))
+      .filter((x) => !!x.object);
+  }
+
   get frameIds(): string[] {
     if (this.assetKind !== 'sprites') {
       return [];
