@@ -353,10 +353,54 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     };
   }
 
-  async addObjectInstance(obj: Asset<'objects'>, x = 0, y = 0) {
+  @sequential
+  async removeRoomInstance(instanceId: string) {
     assert(this.isRoom, 'Can only add object instances to rooms');
-    // Ensure we have an instance layer
     const yy = this.yy as YyRoom;
+    // Iterate through each instance layer and remove any instances with the given ID
+    for (const layer of yy.layers) {
+      if (layer.resourceType !== 'GMRInstanceLayer') {
+        continue;
+      }
+      layer.instances = (layer.instances || []).filter(
+        (x) => x.name !== instanceId,
+      );
+    }
+    // Remove the instance from the creation order
+    yy.instanceCreationOrder = (yy.instanceCreationOrder || []).filter(
+      (x) => x.name !== instanceId,
+    );
+    await this.saveYy();
+  }
+
+  @sequential
+  async reorganizeRoomInstances(instanceIds: string[]) {
+    assert(this.isRoom, 'Can only add object instances to rooms');
+    const instanceIdsSet = new Set(instanceIds);
+    assert(
+      instanceIds.length === instanceIdsSet.size,
+      'Cannot have duplicate instance IDs',
+    );
+    const yy = this.yy as YyRoom;
+    const currentIds = new Set(yy.instanceCreationOrder.map((x) => x.name));
+    // Ensure that the new order includes all existing instances
+    assert(
+      instanceIdsSet.size === currentIds.size &&
+        [...instanceIdsSet].every((x) => currentIds.has(x)),
+      'New order must include all existing instances',
+    );
+    yy.instanceCreationOrder = instanceIds.map((name) => ({
+      name,
+      path: `rooms/${this.name}/${this.name}.yy`,
+    }));
+    await this.saveYy();
+  }
+
+  @sequential
+  async addRoomInstance(obj: Asset<'objects'>, x = 0, y = 0) {
+    assert(this.isRoom, 'Can only add object instances to rooms');
+    const yy = this.yy as YyRoom;
+    // Ensure we have an instance layer
     let instanceLayer = yy.layers.find(
       (x) => x.resourceType === 'GMRInstanceLayer',
     ) as YyRoomInstanceLayer | undefined;
