@@ -1,5 +1,12 @@
 # @bscotch/gcdata Changelog
 
+## 0.18.0 (2024-03-09)
+
+### Features
+
+- Added glossary terms to autocompletes within free-form parts of storylines
+- Added glossary terms to autocompletes within free-form text parts of quests
+
 ## 0.17.3 (2024-03-07)
 
 ### Fixes
