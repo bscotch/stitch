@@ -121,6 +121,14 @@ export class QuestDocument {
             }
             return item;
           });
+        } else if (c.type === 'glossary') {
+          return [...c.options].map((o) => {
+            const item = new vscode.CompletionItem(o);
+            item.kind = vscode.CompletionItemKind.Text;
+            item.detail = 'Glossary';
+            item.insertText = o;
+            return item;
+          });
         }
         return [];
       })
@@ -149,6 +157,7 @@ export class QuestDocument {
         }),
       );
     }
+
     return completes;
   }
 

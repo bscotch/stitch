@@ -54,7 +54,8 @@ type CompletionsData =
   | {
       type: 'requirementStyles';
       options: string[];
-    };
+    }
+  | { type: 'glossary'; options: string[] };
 
 export interface ParsedClue {
   /** arrayId */

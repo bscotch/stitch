@@ -73,6 +73,11 @@ export function parseStringifiedQuest(
     'Log',
   ]);
 
+  /** Terms from the glossary for use in autocompletes */
+  const glossaryTerms = (packed.glossary?.relevantTerms() || []).map(
+    (t) => t.text,
+  );
+
   const result: QuestUpdateResult = {
     diagnostics: [],
     hovers: [],
@@ -224,6 +229,18 @@ export function parseStringifiedQuest(
         !nonUniqueGlobalLabels.has(parsedLine.label.value)
       ) {
         availableGlobalLabels.delete(parsedLine.label.value);
+      }
+
+      // If this has a text section, provide glossary autocompletes
+      if ('text' in parsedLine) {
+        const start = parsedLine.text!.start;
+        const end = parsedLine.text!.end;
+        result.completions.push({
+          type: 'glossary',
+          start,
+          end,
+          options: glossaryTerms,
+        });
       }
 
       // Track common problems so that we don't need to repeat logic
