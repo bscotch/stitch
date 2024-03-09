@@ -13,6 +13,7 @@ import {
   isStorylineUri,
   parseGameChangerUri,
 } from './quests.util.mjs';
+import { StorylineCompletionProvider } from './storyline.autocompletes.mjs';
 
 export class CrashlandsWorkspace {
   static workspace = undefined as CrashlandsWorkspace | undefined;
@@ -47,6 +48,7 @@ export class CrashlandsWorkspace {
       ...QuestTreeProvider.register(this.workspace),
       ...QuestHoverProvider.register(this.workspace),
       ...QuestCompletionProvider.register(this.workspace),
+      ...StorylineCompletionProvider.register(this.workspace),
       ...QuestWorkspaceSymbolProvider.register(this.workspace),
       vscode.commands.registerCommand('crashlands.open.saveDir', async () => {
         await vscode.commands.executeCommand(

@@ -11,7 +11,7 @@ import vscode from 'vscode';
 import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
 import { crashlandsEvents } from './events.mjs';
-import { parseGameChangerUri, range } from './quests.util.mjs';
+import { filterRanges, parseGameChangerUri, range } from './quests.util.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
 
 /** Representation of an active Quest Document */
@@ -36,6 +36,32 @@ export class StorylineDocument {
 
   get mote(): StorylineMote {
     return this.packed.working.getMote(this.moteId)!;
+  }
+
+  getAutoCompleteItems(position: vscode.Position): vscode.CompletionItem[] {
+    const matchingAutocompletes = filterRanges(
+      this.parseResults?.completions ?? [],
+      {
+        includesPosition: position,
+      },
+    );
+
+    const completes = matchingAutocompletes
+      .map((c) => {
+        if (c.type === 'glossary') {
+          return [...c.options].map((o) => {
+            const item = new vscode.CompletionItem(o);
+            item.kind = vscode.CompletionItemKind.Text;
+            item.detail = 'Glossary';
+            item.insertText = o;
+            return item;
+          });
+        }
+        return [];
+      })
+      .flat();
+
+    return completes;
   }
 
   /** Save the last-parsed content to the changes file */

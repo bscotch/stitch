@@ -4,7 +4,7 @@ import { assert } from './assert.js';
 import type { ParsedLine } from './cl2.quest.types.js';
 import type { Crashlands2 } from './cl2.types.auto.js';
 import type { ParsedBase, ParserResult } from './cl2.types.editor.js';
-import type { Position } from './types.editor.js';
+import type { Position, Range } from './types.editor.js';
 import type { BschemaRoot, Mote } from './types.js';
 
 export const storylineSchemaId = 'cl2_storyline';
@@ -12,10 +12,12 @@ export const storylineSchemaId = 'cl2_storyline';
 export type StorylineData = Crashlands2.Schemas['cl2_storyline'];
 export type StorylineMote = Mote<StorylineData>;
 
+type CompletionsData = { type: 'glossary'; options: string[] };
 export interface StorylineUpdateResult extends ParserResult {
   parsed: ParsedBase & {
     description?: string;
   };
+  completions: (Range & CompletionsData)[];
 }
 
 export function listStorylines(gcData: Gcdata): StorylineMote[] {

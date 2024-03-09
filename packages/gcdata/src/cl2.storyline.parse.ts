@@ -37,6 +37,11 @@ export function parseStringifiedStoryline(
     },
   };
 
+  /** Terms from the glossary for use in autocompletes */
+  const glossaryTerms = (packed.glossary?.relevantTerms() || []).map(
+    (t) => t.text,
+  );
+
   const checkSpelling = (item: ParsedLineItem<any> | undefined) => {
     if (!item || !options.checkSpelling) return;
     result.words.push(...checkWords(item, packed.glossary));
@@ -121,6 +126,18 @@ export function parseStringifiedStoryline(
           end: start,
           value: arrayTag,
         };
+      }
+
+      // If this has a text section, provide glossary autocompletes
+      if ('text' in parsedLine) {
+        const start = parsedLine.text!.start;
+        const end = parsedLine.text!.end;
+        result.completions.push({
+          type: 'glossary',
+          start,
+          end,
+          options: glossaryTerms,
+        });
       }
 
       // Work through each line type to add diagnostics and completions
