@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.68.1 (2024-03-14)
+
+### Fixes
+
+- Running via command now focuses the Runner view, and styling is now properly restored on panel reload
+
 ## 1.68.0 (2024-03-08)
 
 ### Features

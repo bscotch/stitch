@@ -1,6 +1,6 @@
 # @local-vscode/webviews Changelog
 
-## 0.0.1 (2024-03-07)
+## 0.0.1 (2024-03-14)
 
 ### Features
 
@@ -19,6 +19,7 @@
 
 ### Fixes
 
+- Running via command now focuses the Runner view, and styling is now properly restored on panel reload
 - Resolved issues setting the Runner panel font, and removed smooth-scroll from the Runner autoscroll
 - Resolved loading issues for the Igor webview
 - Changes to zoom levels in the Sprite viewer are now saved on a per-sprite basis
