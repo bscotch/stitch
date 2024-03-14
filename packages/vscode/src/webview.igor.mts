@@ -25,6 +25,10 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
 
   constructor(readonly workspace: StitchWorkspace) {}
 
+  async reveal() {
+    await vscode.commands.executeCommand(`${this.viewType}.focus`);
+  }
+
   resolveWebviewView(webviewView: vscode.WebviewView): void | Thenable<void> {
     if (this.container) return;
     this.container = webviewView;
@@ -66,7 +70,11 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
   }
 
   async run(event: StitchEvents.RequestRunInWebview['payload'][0]) {
-    assertLoudly(this.container, 'Runner container not initialized!');
+    await this.reveal(); // So that VSCode creates the container
+    assertLoudly(
+      this.container,
+      'Runner container not initialized! Please try again.',
+    );
     if (this.runner && this.runner.exitCode === null) {
       // Kill the current instance
       this.runner.kill();

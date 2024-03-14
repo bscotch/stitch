@@ -223,6 +223,7 @@
 		running = init.running;
 		logs = init.logs || [];
 		exitCode = init.exitCode ?? null;
+		config = running?.config;
 	}
 </script>
 
