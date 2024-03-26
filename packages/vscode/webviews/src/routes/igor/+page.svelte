@@ -362,6 +362,11 @@
 		padding-left: 0.5em;
 		margin-block: 0.1em;
 	}
+	li.log > pre {
+		font-family: inherit;
+		margin: 0;
+		padding: 0;
+	}
 	li.log:hover {
 		border-color: white;
 	}
