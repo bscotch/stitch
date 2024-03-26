@@ -19,6 +19,7 @@
 
 ### Fixes
 
+- Resolved formatting issues in the Runner logs caused by wrapping entries in the <pre> tag for horizontal spacing support
 - Resolved issue where logged spaces are not shown in the Runner panel
 - Running via command now focuses the Runner view, and styling is now properly restored on panel reload
 - Resolved issues setting the Runner panel font, and removed smooth-scroll from the Runner autoscroll

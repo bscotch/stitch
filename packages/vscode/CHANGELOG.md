@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.68.3 (2024-03-26)
+
+### Fixes
+
+- Resolved formatting issues in the Runner logs caused by wrapping entries in the <pre> tag for horizontal spacing support
+
 ## 1.68.2 (2024-03-26)
 
 ### Fixes
