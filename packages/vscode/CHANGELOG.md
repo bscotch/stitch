@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.68.2 (2024-03-26)
+
+### Fixes
+
+- Resolved issue where logged spaces are not shown in the Runner panel
+
 ## 1.68.1 (2024-03-14)
 
 ### Fixes
