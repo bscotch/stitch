@@ -286,13 +286,8 @@
 					<li class={`log ${log.kind}`}>
 						<!-- svelte-ignore a11y-missing-content -->
 						<a href={`#log-${i}`}></a>
-						<samp>
-							{#if log.asSearchResult}
-								{@html log.asSearchResult}
-							{:else}
-								{@html log.asHtml || log.message}
-							{/if}
-						</samp>
+						<pre>{#if log.asSearchResult}{@html log.asSearchResult}{:else}{@html log.asHtml ||
+									log.message}{/if}</pre>
 					</li>
 				{/each}
 			</ul>
