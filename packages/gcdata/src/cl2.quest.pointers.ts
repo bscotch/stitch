@@ -1,6 +1,8 @@
 export type QuestMoteDataPointer = `data/${QuestMotePointer}`;
 export type QuestMotePointer = ``
+  | `blocked`
   | `clues/${string}/element/phrases/${string}/element/phrase/emoji`
+  | `clues/${string}/element/phrases/${string}/element/phrase/text/skip`
   | `clues/${string}/element/phrases/${string}/element/phrase/text/text`
   | `clues/${string}/element/phrases/${string}/element/phrase/text`
   | `clues/${string}/element/phrases/${string}/element/phrase`
@@ -16,6 +18,7 @@ export type QuestMotePointer = ``
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/comparisons/${string}/order`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/comparisons/${string}`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/comparisons`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/exclusive`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/following`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_requirement)`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/group_requirements`
@@ -56,6 +59,101 @@ export type QuestMotePointer = ``
   | `clues/${string}/order`
   | `clues/${string}`
   | `clues`
+  | `demo_blocked/blocked_moments/${string}/element/area`
+  | `demo_blocked/blocked_moments/${string}/element/artisan`
+  | `demo_blocked/blocked_moments/${string}/element/bonus`
+  | `demo_blocked/blocked_moments/${string}/element/camera_target`
+  | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element/dropper`
+  | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element/items/${string}/element/item_id`
+  | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element/items/${string}/element/quantity`
+  | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element/items/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element/items/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element/items/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element/items`
+  | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/drops/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/drops/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/drops`
+  | `demo_blocked/blocked_moments/${string}/element/emotes/${string}/element/key`
+  | `demo_blocked/blocked_moments/${string}/element/emotes/${string}/element/value`
+  | `demo_blocked/blocked_moments/${string}/element/emotes/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/emotes/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/emotes/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/emotes`
+  | `demo_blocked/blocked_moments/${string}/element/items/${string}/element/key`
+  | `demo_blocked/blocked_moments/${string}/element/items/${string}/element/value`
+  | `demo_blocked/blocked_moments/${string}/element/items/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/items/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/items/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/items`
+  | `demo_blocked/blocked_moments/${string}/element/music`
+  | `demo_blocked/blocked_moments/${string}/element/pause_duration`
+  | `demo_blocked/blocked_moments/${string}/element/pin`
+  | `demo_blocked/blocked_moments/${string}/element/quest_to_close`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/area`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/artisan`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/boss`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/comfort_status`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/comfort`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element/comparison`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element/value0`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element/value1`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/comparisons/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/comparisons/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/comparisons/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/comparisons`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/distance`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/exclusive`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/following`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_moment_requirement)`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/group_requirements`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/infusion_status`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/infusion`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/insight_status`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/insight`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/invert`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/item_id`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/item_ids/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/item_ids/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/item_ids/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/item_ids`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/item`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/items_owned/${string}/element/key`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/items_owned/${string}/element/value`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/items_owned/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/items_owned/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/items_owned/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/items_owned`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/pet`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/quest_status`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/quest`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/require_all`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/same_room`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/stage/comparison`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/stage/stage`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/stage`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/style`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/teleporter_active`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/teleporter_area`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/time`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/requirements`
+  | `demo_blocked/blocked_moments/${string}/element/speech/emotion`
+  | `demo_blocked/blocked_moments/${string}/element/speech/speaker`
+  | `demo_blocked/blocked_moments/${string}/element/speech/text/skip`
+  | `demo_blocked/blocked_moments/${string}/element/speech/text/text`
+  | `demo_blocked/blocked_moments/${string}/element/speech/text`
+  | `demo_blocked/blocked_moments/${string}/element/speech`
+  | `demo_blocked/blocked_moments/${string}/element/style`
+  | `demo_blocked/blocked_moments/${string}/element/zoom_amount`
+  | `demo_blocked/blocked_moments/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/order`
+  | `demo_blocked/blocked_moments/${string}`
+  | `demo_blocked/blocked_moments`
+  | `demo_blocked/blocked`
+  | `demo_blocked`
   | `ignore_in_progression_map`
   | `item_highlights/${string}/element`
   | `item_highlights/${string}/order`
@@ -63,6 +161,7 @@ export type QuestMotePointer = ``
   | `item_highlights`
   | `map_markers/${string}/element/marker`
   | `map_markers/${string}/element/radius`
+  | `map_markers/${string}/element/text/skip`
   | `map_markers/${string}/element/text/text`
   | `map_markers/${string}/element/text`
   | `map_markers/${string}/element`
@@ -77,6 +176,7 @@ export type QuestMotePointer = ``
   | `marker_world_text/${string}/element/proximity`
   | `marker_world_text/${string}/element/sprite`
   | `marker_world_text/${string}/element/text/description`
+  | `marker_world_text/${string}/element/text/skip`
   | `marker_world_text/${string}/element/text/text`
   | `marker_world_text/${string}/element/text`
   | `marker_world_text/${string}/element`
@@ -85,6 +185,7 @@ export type QuestMotePointer = ``
   | `marker_world_text`
   | `name`
   | `order`
+  | `pet_quest/name/skip`
   | `pet_quest/name/text`
   | `pet_quest/name`
   | `pet_quest/pet_stage`
@@ -121,6 +222,7 @@ export type QuestMotePointer = ``
   | `quest_end_moments/${string}/element/items/${string}/order`
   | `quest_end_moments/${string}/element/items/${string}`
   | `quest_end_moments/${string}/element/items`
+  | `quest_end_moments/${string}/element/music`
   | `quest_end_moments/${string}/element/pause_duration`
   | `quest_end_moments/${string}/element/pin`
   | `quest_end_moments/${string}/element/quest_to_close`
@@ -176,6 +278,7 @@ export type QuestMotePointer = ``
   | `quest_end_moments/${string}/element/requirements`
   | `quest_end_moments/${string}/element/speech/emotion`
   | `quest_end_moments/${string}/element/speech/speaker`
+  | `quest_end_moments/${string}/element/speech/text/skip`
   | `quest_end_moments/${string}/element/speech/text/text`
   | `quest_end_moments/${string}/element/speech/text`
   | `quest_end_moments/${string}/element/speech`
@@ -197,6 +300,7 @@ export type QuestMotePointer = ``
   | `quest_end_requirements/${string}/element/comparisons/${string}/order`
   | `quest_end_requirements/${string}/element/comparisons/${string}`
   | `quest_end_requirements/${string}/element/comparisons`
+  | `quest_end_requirements/${string}/element/exclusive`
   | `quest_end_requirements/${string}/element/following`
   | `quest_end_requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_requirement)`
   | `quest_end_requirements/${string}/element/group_requirements`
@@ -228,18 +332,21 @@ export type QuestMotePointer = ``
   | `quest_end_requirements/${string}/order`
   | `quest_end_requirements/${string}`
   | `quest_end_requirements`
+  | `quest_giver/area_requirement`
   | `quest_giver/interaction_target`
   | `quest_giver/item`
   | `quest_giver/proximity`
   | `quest_giver/same_room`
   | `quest_giver/show_on_map`
   | `quest_giver`
+  | `quest_receiver/area_requirement`
   | `quest_receiver/interaction_target`
   | `quest_receiver/item`
   | `quest_receiver/proximity`
   | `quest_receiver/same_room`
   | `quest_receiver/show_on_map`
   | `quest_receiver`
+  | `quest_start_log/skip`
   | `quest_start_log/text`
   | `quest_start_log`
   | `quest_start_moments/${string}/element/area`
@@ -269,6 +376,7 @@ export type QuestMotePointer = ``
   | `quest_start_moments/${string}/element/items/${string}/order`
   | `quest_start_moments/${string}/element/items/${string}`
   | `quest_start_moments/${string}/element/items`
+  | `quest_start_moments/${string}/element/music`
   | `quest_start_moments/${string}/element/pause_duration`
   | `quest_start_moments/${string}/element/pin`
   | `quest_start_moments/${string}/element/quest_to_close`
@@ -324,6 +432,7 @@ export type QuestMotePointer = ``
   | `quest_start_moments/${string}/element/requirements`
   | `quest_start_moments/${string}/element/speech/emotion`
   | `quest_start_moments/${string}/element/speech/speaker`
+  | `quest_start_moments/${string}/element/speech/text/skip`
   | `quest_start_moments/${string}/element/speech/text/text`
   | `quest_start_moments/${string}/element/speech/text`
   | `quest_start_moments/${string}/element/speech`
@@ -345,6 +454,7 @@ export type QuestMotePointer = ``
   | `quest_start_requirements/${string}/element/comparisons/${string}/order`
   | `quest_start_requirements/${string}/element/comparisons/${string}`
   | `quest_start_requirements/${string}/element/comparisons`
+  | `quest_start_requirements/${string}/element/exclusive`
   | `quest_start_requirements/${string}/element/following`
   | `quest_start_requirements/${string}/element/group_requirements/${string}/recursion(cl2_quest_requirement)`
   | `quest_start_requirements/${string}/element/group_requirements`
