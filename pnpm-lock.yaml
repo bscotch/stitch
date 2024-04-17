@@ -276,22 +276,13 @@ importers:
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
-      nspell:
-        specifier: 2.1.5
-        version: 2.1.5
       zod:
         specifier: 3.22.4
         version: 3.22.4
     devDependencies:
-      '@types/nspell':
-        specifier: 2.1.6
-        version: 2.1.6
       chai:
         specifier: ^4.3.10
         version: 4.3.10
-      dictionary-en:
-        specifier: 4.0.0
-        version: 4.0.0
       json-schema-to-typescript:
         specifier: 13.1.1
         version: 13.1.1
@@ -2315,12 +2306,6 @@ packages:
     dependencies:
       undici-types: 5.26.5
 
-  /@types/nspell@2.1.6:
-    resolution: {integrity: sha512-PnWYqrBZhkKAreX2kIZDJcBeigZJzXC8VmSuNiXeILUNreczBZHLxGEv/pRT+zL8rsXLxT5bRbiIF9wuh6cGgg==}
-    dependencies:
-      '@types/node': 20.9.0
-    dev: true
-
   /@types/pako@2.0.3:
     resolution: {integrity: sha512-bq0hMV9opAcrmE0Byyo0fY3Ew4tgOevJmQ9grUhpXQhYfyLJ1Kqg3P33JT5fdbT2AjeAjR51zqqVjAL/HMkx7Q==}
     dev: false
@@ -3596,10 +3581,6 @@ packages:
 
   /devalue@4.3.2:
     resolution: {integrity: sha512-KqFl6pOgOW+Y6wJgu80rHpo2/3H07vr8ntR9rkkFIRETewbf5GaYYcakYfiKz89K+sLsuPkQIZaXDMjUObZwWg==}
-    dev: true
-
-  /dictionary-en@4.0.0:
-    resolution: {integrity: sha512-3NHnE1uq33ZE/CIwaZ6gqxa4BnglHnxeAcTM0GJ7cmtRGcvX9InMK/IqLtYcUMFCUpUNgybH+DzkqdgAo3F1zg==}
     dev: true
 
   /diff-sequences@29.6.3:

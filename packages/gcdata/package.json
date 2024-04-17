@@ -6,7 +6,6 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc --build",
-    "build:dictionary": "node scripts/compile-dict.mjs",
     "build:types": "node scripts/compile-types.mjs",
     "test": "mocha --config ../../config/.mocharc.cjs",
     "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
@@ -17,13 +16,10 @@
     "@bscotch/emitter": "0.2.1",
     "@bscotch/pathy": "^2.12.0",
     "node-fetch": "^3.3.2",
-    "nspell": "2.1.5",
     "zod": "3.22.4"
   },
   "devDependencies": {
-    "@types/nspell": "2.1.6",
     "chai": "^4.3.10",
-    "dictionary-en": "4.0.0",
     "json-schema-to-typescript": "13.1.1",
     "source-map-support": "0.5.21",
     "typescript": "5.2.2"
