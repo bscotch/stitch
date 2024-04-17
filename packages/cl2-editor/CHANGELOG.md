@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.21.0 (2024-04-17)
+
+### Features
+
+- Removed comment features and highlighting from the editor config
+
 ## 0.20.0 (2024-03-09)
 
 ### Features

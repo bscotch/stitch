@@ -1,5 +1,12 @@
 # @bscotch/gcdata Changelog
 
+## 0.19.0 (2024-04-17)
+
+### Features
+
+- Removed comments and WIP content from the Quest/Storyline parser/stringifier
+- Updated CL2 types
+
 ## 0.18.0 (2024-03-09)
 
 ### Features
