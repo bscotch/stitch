@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { Gcdata } from './GameChanger.js';
 import type { Crashlands2 } from './cl2.types.auto.js';
-import { ParsedComment, ParserResult } from './cl2.types.editor.js';
+import { ParserResult } from './cl2.types.editor.js';
 import type { Position, Range } from './types.editor.js';
 import type { Mote } from './types.js';
 
@@ -137,8 +137,6 @@ export interface QuestUpdateResult extends ParserResult {
     quest_receiver?: string;
     clues: ParsedClue[];
     quest_start_log?: string;
-    draft?: boolean;
-    comments: ParsedComment[];
   } & {
     [K in QuestMomentsLabel]: ParsedMoment[];
   } & {
@@ -212,8 +210,6 @@ export const linePatterns = [
   `^(?<indicator>\\t)(${moteNamePattern}${moteTagPattern}?)?\\s*$`,
   /** Dialogue Text */
   `^(?<indicator>>)\\s*?${arrayTagPattern}?(\\s+${emojiGroupPattern}?(\\s*(?<text>.*)))?\\s*$`,
-  /** Comment Line */
-  `^(?<indicator>//)\\s*?${arrayTagPattern}?\\s*(?<text>.*?)\\s*$`,
   /** Emote Declaration */
   `^(?<indicator>:\\))\\s*${arrayTagPattern}?\\s*$`,
   /** Emote */
@@ -269,7 +265,7 @@ export function parseIfMatch(
 export function lineIsArrayItem(line: string): boolean {
   if (
     line.match(
-      /^(\t|name|draft|storyline|(start|end) (moments|requirements)|log|giver|receiver)/i,
+      /^(\t|name|storyline|(start|end) (moments|requirements)|log|giver|receiver)/i,
     )
   ) {
     return false;

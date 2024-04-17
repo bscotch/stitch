@@ -90,7 +90,6 @@ export function parseStringifiedQuest(
       quest_start_moments: [],
       quest_start_requirements: [],
       quest_end_requirements: [],
-      comments: [],
     },
   };
 
@@ -331,8 +330,6 @@ export function parseStringifiedQuest(
             ...lineRange,
           });
         }
-      } else if (labelLower === 'draft') {
-        result.parsed.draft = parsedLine.text?.value?.trim() === 'true';
       } else if (labelLower === 'log') {
         result.parsed.quest_start_log = parsedLine.text?.value?.trim();
         checkSpelling(parsedLine.text);
@@ -515,13 +512,6 @@ export function parseStringifiedQuest(
             ...lineRange,
           });
         }
-      } else if (indicator === '//') {
-        // Then this is a comment/note
-        result.parsed.comments.push({
-          id: parsedLine.arrayTag?.value?.trim(),
-          text: parsedLine.text?.value?.trim(),
-        });
-        checkSpelling(parsedLine.text);
       }
 
       if (requiresEmoji) {
@@ -617,48 +607,9 @@ export async function updateChangesFromParsedQuest(
       updateMote('data/quest_receiver/item', parsed.quest_receiver);
     }
     updateMote('data/quest_start_log/text', parsed.quest_start_log);
-    updateMote('data/wip/draft', parsed.draft);
     updateMote('data/storyline', parsed.storyline);
 
-    const parsedComments = parsed.comments.filter((c) => !!c.text);
     const parsedClues = parsed.clues.filter((c) => !!c.id && !!c.speaker);
-
-    //#region COMMENTS
-    // Add/Update COMMENTS
-    trace(`Updating comments`);
-    for (const comment of parsedComments) {
-      trace(`Updating comment ${comment.id} with text "${comment.text}"`);
-      updateMote(`data/wip/comments/${comment.id}/element`, comment.text);
-    }
-    // Remove deleted comments
-    for (const existingComment of bsArrayToArray(
-      questMoteBase?.data.wip?.comments || {},
-    )) {
-      if (!parsedComments.find((c) => c.id === existingComment.id)) {
-        trace(`Deleting comment ${existingComment.id}`);
-        updateMote(`data/wip/comments/${existingComment.id}`, null);
-      }
-    }
-    // Get the BASE order of the comments (if any) and use those
-    // as the starting point for an up to date order.
-    const comments = parsedComments.map((c) => {
-      // Look up the base comment
-      let comment = questMoteBase?.data.wip?.comments?.[c.id!];
-      if (!comment) {
-        comment = questMoteWorking?.data.wip?.comments?.[c.id!];
-        // @ts-expect-error - order is a required field, but it'll be re-added
-        delete comment?.order;
-      }
-      assert(comment, `Comment ${c.id} not found in base or working mote`);
-      return { ...comment, id: c.id! };
-    });
-    trace('Updating comment order');
-    updateBsArrayOrder(comments);
-    comments.forEach((comment) => {
-      trace(`Updating comment ${comment.id} order to ${comment.order}`);
-      updateMote(`data/wip/comments/${comment.id}/order`, comment.order);
-    });
-    //#endregion
 
     //#region CLUES
     // Add/update clues

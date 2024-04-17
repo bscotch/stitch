@@ -17,21 +17,7 @@ export function stringifyQuest(
       (storyline
         ? `${packed.working.getMoteName(storyline)}${toMoteTag(storyline)}`
         : ''),
-    `Draft: ${mote.data.wip?.draft ? 'true' : 'false'}\n`,
   ];
-
-  // NOTES
-  if (mote.data.wip?.comments) {
-    const comments = bsArrayToArray(mote.data.wip.comments);
-    if (comments.length) {
-      blocks.push(
-        ...bsArrayToArray(mote.data.wip.comments).map(
-          (c) => `//${toArrayTag(c.id)} ${c.element}`,
-        ),
-        '',
-      );
-    }
-  }
 
   if (mote.data.quest_giver || mote.data.quest_receiver) {
     blocks.push('');

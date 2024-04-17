@@ -1,15 +1,7 @@
 import type { Range } from './types.editor.js';
 
-export interface ParsedComment {
-  /** arrayId */
-  id: string | undefined;
-  text: string | undefined;
-}
-
 export interface ParsedBase {
   name?: string;
-  draft?: boolean;
-  comments: ParsedComment[];
 }
 
 export type ParsedWord = Range & {

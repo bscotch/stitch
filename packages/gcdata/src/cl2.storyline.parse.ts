@@ -4,7 +4,6 @@ import type { ParsedLine, ParsedLineItem } from './cl2.quest.types.js';
 import { StorylineMoteDataPointer } from './cl2.storyline.pointers.js';
 import {
   arrayTagPattern,
-  getStorylineMote,
   getStorylineSchema,
   lineIsArrayItem,
   linePatterns,
@@ -12,11 +11,7 @@ import {
   storylineSchemaId,
   type StorylineUpdateResult,
 } from './cl2.storyline.types.js';
-import {
-  bsArrayToArray,
-  createBsArrayKey,
-  updateBsArrayOrder,
-} from './helpers.js';
+import { createBsArrayKey } from './helpers.js';
 import { checkWords } from './util.js';
 
 export function parseStringifiedStoryline(
@@ -32,9 +27,7 @@ export function parseStringifiedStoryline(
     edits: [],
     completions: [],
     words: [],
-    parsed: {
-      comments: [],
-    },
+    parsed: {},
   };
 
   /** Terms from the glossary for use in autocompletes */
@@ -142,15 +135,7 @@ export function parseStringifiedStoryline(
 
       // Work through each line type to add diagnostics and completions
       const labelLower = parsedLine.label?.value?.toLowerCase();
-      const indicator = parsedLine.indicator?.value;
-      if (indicator === '//') {
-        // Then this is a comment/note
-        result.parsed.comments.push({
-          id: parsedLine.arrayTag?.value?.trim(),
-          text: parsedLine.text?.value?.trim(),
-        });
-        checkSpelling(parsedLine.text);
-      } else if (labelLower === 'name') {
+      if (labelLower === 'name') {
         result.parsed.name = parsedLine.text?.value?.trim();
         if (!result.parsed.name) {
           result.diagnostics.push({
@@ -161,8 +146,6 @@ export function parseStringifiedStoryline(
       } else if (labelLower === 'description') {
         result.parsed.description = parsedLine.text?.value?.trim();
         checkSpelling(parsedLine.text);
-      } else if (labelLower === 'draft') {
-        result.parsed.draft = parsedLine.text?.value?.trim() === 'true';
       } else {
         // Then we're in an error state on this line!
         result.diagnostics.push({
@@ -194,8 +177,6 @@ export async function updateChangesFromParsedStoryline(
     // We're always going to be computing ALL changes, so clear whatever
     // we previously had.
     packed.clearMoteChanges(moteId);
-    const storylineMoteBase = getStorylineMote(packed.base, moteId);
-    const storylineMoteWorking = getStorylineMote(packed.working, moteId);
     const schema = getStorylineSchema(packed.working);
     assert(schema, `${storylineSchemaId} schema not found in working copy`);
     assert(schema.name, 'Quest mote must have a name pointer');
@@ -204,46 +185,6 @@ export async function updateChangesFromParsedStoryline(
     };
     updateMote('data/name/text', parsed.name);
     updateMote('data/description/text', parsed.description);
-    updateMote('data/wip/draft', parsed.draft);
-
-    const parsedComments = parsed.comments.filter((c) => !!c.text);
-
-    //#region COMMENTS
-    // Add/Update COMMENTS
-    trace(`Updating comments`);
-    for (const comment of parsedComments) {
-      trace(`Updating comment ${comment.id} with text "${comment.text}"`);
-      updateMote(`data/wip/comments/${comment.id}/element`, comment.text);
-    }
-    // Remove deleted comments
-    for (const existingComment of bsArrayToArray(
-      storylineMoteBase?.data.wip?.comments || {},
-    )) {
-      if (!parsedComments.find((c) => c.id === existingComment.id)) {
-        trace(`Deleting comment ${existingComment.id}`);
-        updateMote(`data/wip/comments/${existingComment.id}`, null);
-      }
-    }
-    // Get the BASE order of the comments (if any) and use those
-    // as the starting point for an up to date order.
-    const comments = parsedComments.map((c) => {
-      // Look up the base comment
-      let comment = storylineMoteBase?.data.wip?.comments?.[c.id!];
-      if (!comment) {
-        comment = storylineMoteWorking?.data.wip?.comments?.[c.id!];
-        // @ts-expect-error - order is a required field, but it'll be re-added
-        delete comment?.order;
-      }
-      assert(comment, `Comment ${c.id} not found in base or working mote`);
-      return { ...comment, id: c.id! };
-    });
-    trace('Updating comment order');
-    updateBsArrayOrder(comments);
-    comments.forEach((comment) => {
-      trace(`Updating comment ${comment.id} order to ${comment.order}`);
-      updateMote(`data/wip/comments/${comment.id}/order`, comment.order);
-    });
-    //#endregion
 
     trace(`Writing changes`);
     await packed.writeChanges();
