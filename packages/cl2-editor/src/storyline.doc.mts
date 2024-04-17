@@ -12,6 +12,7 @@ import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
 import { crashlandsEvents } from './events.mjs';
 import { filterRanges, parseGameChangerUri, range } from './quests.util.mjs';
+import { unknownWordError } from './unknownWordError.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
 
 /** Representation of an active Quest Document */
@@ -116,12 +117,7 @@ export class StorylineDocument {
       );
       for (const word of this.parseResults.words) {
         if (word.valid) continue;
-        const diagnostic = new vscode.Diagnostic(
-          range(word),
-          `Unknown word: ${word.value}`,
-          vscode.DiagnosticSeverity.Error,
-        );
-        issues.push(diagnostic);
+        issues.push(unknownWordError(word));
       }
       diagnostics.set(this.uri, issues);
     } catch (err) {

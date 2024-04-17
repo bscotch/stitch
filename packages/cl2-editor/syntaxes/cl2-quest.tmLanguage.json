@@ -15,21 +15,6 @@
     "general": {
       "patterns": [
         {
-          "name": "comment.line.double-slash.cl2-quest",
-          "match": "^(//)\\s*(?<arrayId>#[a-z_0-9]+)?\\s+(?<text>.*)",
-          "captures": {
-            "1": {
-              "name": "indicator.cl2-quest"
-            },
-            "2": {
-              "name": "id.array.cl2-quest"
-            },
-            "3": {
-              "name": "text.cl2-quest"
-            }
-          }
-        },
-        {
           "name": "requirement.quest.cl2-quest",
           "match": "^(?<indicator>\\?)\\s*(?<arrayId>#[a-z_0-9]+)?\\s+(?<style>Quest (Complete|Started|Not Started))\\s*:s*(?<questName>.*?)\\s*(?<moteId>@[a-z_0-9]+)",
           "captures": {
