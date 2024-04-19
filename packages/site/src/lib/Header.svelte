@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { base } from '$app/paths';
-	import Logo from '$lib/assets/stitch-logo-small.webp';
+	import Logo from '$lib/assets/stitch-logo-small.png';
 	import { faGithub } from '@fortawesome/free-brands-svg-icons';
 	import Fa from 'svelte-fa';
 </script>

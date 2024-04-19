@@ -1,6 +1,6 @@
 <script>
 	import { base } from '$app/paths';
-	import Logo from '$lib/assets/stitch-logo-small.webp';
+	import Logo from '$lib/assets/stitch-logo-small.png';
 </script>
 
 <svelte:head>
