@@ -18,7 +18,7 @@
 		<p>
 			A toolkit for managing <a href="https://gamemaker.io">GameMaker</a> projects
 		</p>
-		<p style="font-style:italic">This site is a work in progress.</p>
+		<p style="font-style:italic">🚧🚧🚧 This site is a work in progress 🚧🚧🚧</p>
 	</div>
 </header>
 
@@ -62,6 +62,9 @@
 			<ul>
 				<li>
 					<a data-sveltekit-reload href={`${base}/steam-tools`}>Steam Tools</a>
+				</li>
+				<li>
+					<a data-sveltekit-reload href={`${base}/yt-captions`}>YouTube Captions</a>
 				</li>
 			</ul>
 		</section>
