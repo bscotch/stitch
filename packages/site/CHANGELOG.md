@@ -1,5 +1,11 @@
 # @bscotch/stitch-site Changelog
 
+## 0.5.0 (2024-04-19)
+
+### Features
+
+- Added a utility page for getting YouTube SBV files from spreadsheets
+
 ## 0.4.0 (2023-10-05)
 
 ### Features
