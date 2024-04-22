@@ -6,9 +6,19 @@
 
 	let tsv = '';
 	let sbvs: { name: string; sbv: string }[] = [];
+	let sbvFile: FileList | null = null;
 	let errors: string[] = [];
 
 	$: {
+		if (sbvFile) {
+			console.log([sbvFile]);
+			const reader = new FileReader();
+			reader.onload = () => {
+				tsv = sbvToTsv(reader.result as string);
+				sbvFile = null;
+			};
+			reader.readAsText(sbvFile[0]);
+		}
 		sbvs = [];
 		tsv = cleanTsv(tsv);
 		tick().then(() => (sbvs = parseTsv(tsv)));
@@ -36,14 +46,18 @@
 					const parts = line.split('\t');
 					const text = parts[col];
 					try {
-						const caption = {
+						return {
 							start: normalizeTime(parts[0]),
 							end: normalizeTime(parts[1]),
 							text: text || ''
 						};
-						return caption;
 					} catch (err: any) {
 						errors.push(`Error parsing line ${i + 1}: ${err.message}`);
+						return {
+							start: '0:00:00.000',
+							end: '0:00:00.000',
+							text: text || ''
+						};
 					}
 				})
 				.filter(Boolean);
@@ -76,61 +90,96 @@
 			'0'
 		)}`;
 	}
+
+	function sbvToTsv(sbv: string): string {
+		const groups = sbv.trim().split(/(?:\r?\n){2,}/g);
+		console.log(groups);
+		const captions = groups.map((group) => {
+			const lines = group.split(/\r?\n/);
+			const times = lines.shift()!.split(',');
+			const start = times[0];
+			const end = times[1];
+			const text = lines.join(' ');
+			return `${start}\t${end}\t${text}`;
+		});
+		return 'Start\tEnd\tCaption\n' + captions.join('\n');
+	}
 </script>
 
 <main>
-	<h1>Captions from TSV (Tab-separated values)</h1>
-	<p>
-		If you've got a Google Sheet or similar file with captions in it, you can paste them here to get
-		a <a
-			href="https://support.google.com/youtube/answer/2734698?hl=en#zippy=%2Cbasic-file-formats%2Csubrip-srt-example%2Csubviewer-sbv-example"
-			>YouTube-compatible SBV file</a
-		>.
-	</p>
-	<p>Data is expected to have a header row, and the following column format</p>
-	<ul>
-		<li>Column 1: Start time (format <code>0:00:00.000</code> (hr:min:sec.millis))</li>
-		<li>Column 2: End time (format <code>0:00:00.000</code>)</li>
-		<li>
-			Column 3-N: Caption text (each subsequent column could be a different language, the headers
-			for these columns wills be used as the download name)
-		</li>
-	</ul>
-	<p style="font-style:italic">
-		The time format must match the regex pattern <code>{timePattern.source}</code>
-	</p>
-	<p>
-		In your spreadsheet, you can use a data validator with the custom formula
-		<code>regexmatch(A2,"{timePattern.source}")</code>
-	</p>
+	<h1>Captions Converter: SBV ↔ TSV</h1>
 
-	{#if sbvs.length}
-		<section class="sbvs">
-			<h2>SBV Files</h2>
-			<ul>
-				{#each sbvs as { name, sbv }}
-					<li>
-						<a download="{name}.sbv" href="data:text/plain;charset=utf-8,{encodeURIComponent(sbv)}"
-							>{name}</a
-						>
-					</li>
-				{/each}
-			</ul>
-		</section>
-	{/if}
+	<section>
+		<h2>SBV to Spreadsheet (TSV)</h2>
+		<p>
+			If you have an SBV file, you can load it here to convert it to a TSV file that you can paste
+			into a spreadsheet.
+		</p>
+		<input
+			bind:files={sbvFile}
+			placeholder="Convert an SBV file to TSV"
+			type="file"
+			accept=".sbv"
+		/>
+	</section>
 
-	{#if errors.length > 0}
-		<section class="errors">
-			<h2>Errors</h2>
-			<ul>
-				{#each errors as error}
-					<li>{error}</li>
-				{/each}
-			</ul>
-		</section>
-	{/if}
+	<section>
+		<h2>Spreadsheet (TSV) to SBV</h2>
+		<p>
+			If you've got a Google Sheet or similar file with captions in it, you can paste them here to
+			get a <a
+				href="https://support.google.com/youtube/answer/2734698?hl=en#zippy=%2Cbasic-file-formats%2Csubrip-srt-example%2Csubviewer-sbv-example"
+				>YouTube-compatible SBV file</a
+			>.
+		</p>
 
-	<textarea placeholder="Paste your TSV content here!" rows="10" bind:value={tsv}></textarea>
+		{#if sbvs.length}
+			<section class="sbvs">
+				<h3>SBV File Downloads</h3>
+				<ul>
+					{#each sbvs as { name, sbv }}
+						<li>
+							<a
+								download="{name}.sbv"
+								href="data:text/plain;charset=utf-8,{encodeURIComponent(sbv)}">{name}</a
+							>
+						</li>
+					{/each}
+				</ul>
+			</section>
+		{/if}
+
+		{#if errors.length > 0}
+			<section class="errors">
+				<h3>Errors</h3>
+				<ul>
+					{#each errors as error}
+						<li>{error}</li>
+					{/each}
+				</ul>
+			</section>
+		{/if}
+
+		<textarea placeholder="Paste your spreadsheet content here (as TSV)" rows="10" bind:value={tsv}
+		></textarea>
+
+		<p>Data is expected to have a header row, and the following column format</p>
+		<ul>
+			<li>Column 1: Start time (format <code>0:00:00.000</code> (hr:min:sec.millis))</li>
+			<li>Column 2: End time (format <code>0:00:00.000</code>)</li>
+			<li>
+				Column 3-N: Caption text (each subsequent column could be a different language, the headers
+				for these columns wills be used as the download name)
+			</li>
+		</ul>
+		<p style="font-style:italic">
+			The time format must match the regex pattern <code>{timePattern.source}</code>
+		</p>
+		<p>
+			In your spreadsheet, you can use a data validator with the custom formula
+			<code>regexmatch(A2,"{timePattern.source}")</code>
+		</p>
+	</section>
 </main>
 
 <style>
@@ -146,6 +195,7 @@
 		display: inline-block;
 	}
 	textarea {
+		margin-block: 0.5rem;
 		width: 100%;
 		field-sizing: content;
 		min-height: 10em;
