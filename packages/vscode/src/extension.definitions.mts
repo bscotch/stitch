@@ -25,8 +25,6 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
     if (item && item.native && item.name !== 'event_inherited') {
       // const helpLink = file?.project.helpLinks[item.name];
       // helpLink && vscode.env.openExternal(vscode.Uri.parse(helpLink));
-    } else if (item && !item.native && item.def?.file) {
-      return locationOf(item.def);
     } else if (ref && item?.name === 'event_inherited') {
       // Then this should take us to the parent event.
       let parent = ref.file.asset.parent;
@@ -45,6 +43,8 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
         }
         parent = parent.parent;
       }
+    } else if (item && !item.native && item.def?.file) {
+      return locationOf(item.def);
     } else if (ref && item && assetName) {
       // Then we can go to the asset's defining file.
       const asset = ref.file.project.getAssetByName(assetName);
@@ -67,6 +67,11 @@ export class StitchDefinitionsProvider implements vscode.DefinitionProvider {
         const fragShad = asset.shaderPaths.fragment;
         if (fragShad) {
           return locationOf(fragShad.absolute);
+        }
+      } else if (isAssetOfKind(asset, 'sounds')) {
+        // Go to the sound file.
+        if (asset.soundFile) {
+          return locationOf(asset.soundFile.absolute);
         }
       }
     }
