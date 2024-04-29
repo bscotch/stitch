@@ -353,6 +353,37 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     };
   }
 
+  /**
+   * During an Object asset rename, we need to ensure that all references to the
+   * old name are updated to the new name. This includes the object's name in rooms.
+   */
+  @sequential
+  async renameRoomInstanceObjects(
+    oldObjectName: string,
+    newObjectName: string,
+  ) {
+    assert(this.isRoom, 'Can only rename object instances in rooms'); // Iterate through each instance layer and remove any instances with the given ID
+    const yy = this.yy as YyRoom;
+    let didUpdate = false;
+    for (const layer of yy.layers) {
+      if (layer.resourceType !== 'GMRInstanceLayer') {
+        continue;
+      }
+      layer.instances.forEach((instance) => {
+        if (
+          instance.objectId.name.toLowerCase() === oldObjectName.toLowerCase()
+        ) {
+          instance.objectId.name = newObjectName;
+          instance.objectId.path = `objects/${newObjectName}/${newObjectName}.yy`;
+          didUpdate = true;
+        }
+      });
+    }
+    if (didUpdate) {
+      await this.saveYy();
+    }
+  }
+
   @sequential
   async removeRoomInstance(instanceId: string) {
     assert(this.isRoom, 'Can only add object instances to rooms');

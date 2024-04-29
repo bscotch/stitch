@@ -370,10 +370,15 @@ export class Project {
     // Update the code from all refs to have the new name
     await this.renameSignifier(asset.signifier, to);
 
-    // Update immediate children to have the new asset as the parent
     if (isAssetOfKind(newAsset, 'objects')) {
+      // Update immediate children to have the new asset as the parent
       for (const child of asset.children) {
         child.parent = newAsset;
+      }
+      // Update any rooms that reference the old object name
+      for (const room of this.assets.values()) {
+        if (!isAssetOfKind(room, 'rooms')) continue;
+        await room.renameRoomInstanceObjects(from, to);
       }
     }
   }
