@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.9.2 (2024-04-29)
+
+### Fixes
+
+- Renaming an object now properly renames its room instances.
+
 ## 1.9.0 (2024-03-08)
 
 ### Features

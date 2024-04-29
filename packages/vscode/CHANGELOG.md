@@ -1,5 +1,16 @@
 # Stitch Changelog
 
+## 1.69.0 (2024-04-29)
+
+### Features
+
+- Go-to-definition on a sound reference now takes you to the sound player instead of the yy file.
+- Updated all deps
+
+### Fixes
+
+- The 'Set Sprite' context menu entry now works again in the Inspector panel for objects
+
 ## 1.68.3 (2024-03-26)
 
 ### Fixes
