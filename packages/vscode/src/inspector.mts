@@ -125,10 +125,13 @@ class ObjectEventItem extends StitchTreeItemBase<'code'> {
   protected setIcon = setEventIcon;
 }
 
-class ObjectSpriteFolder extends StitchTreeItemBase<'inspector-object-sprites'> {
+export class ObjectSpriteFolder extends StitchTreeItemBase<'inspector-object-sprites'> {
   override readonly kind = 'inspector-object-sprites';
   parent = undefined;
-  constructor() {
+  constructor(
+    readonly asset: Asset<'objects'>,
+    readonly provider: GameMakerInspectorProvider,
+  ) {
     super('Sprite');
     this.contextValue = this.kind;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
@@ -198,7 +201,7 @@ export class GameMakerInspectorProvider
       // Then we're at the root.
       return [
         new ObjectParentFolder(this.asset, this),
-        new ObjectSpriteFolder(),
+        new ObjectSpriteFolder(this.asset, this),
         new ObjectEvents(this.asset, this),
         new ObjectChildren(this.asset.children.length),
       ];

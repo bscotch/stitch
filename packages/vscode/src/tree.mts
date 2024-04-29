@@ -18,7 +18,7 @@ import { stitchEvents } from './events.mjs';
 import { GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { getAssetIcon, getBaseIcon } from './icons.mjs';
-import type { ObjectParentFolder } from './inspector.mjs';
+import type { ObjectParentFolder, ObjectSpriteFolder } from './inspector.mjs';
 import {
   getAssetFromRef,
   pathyFromUri,
@@ -294,7 +294,9 @@ export class GameMakerTreeProvider
     this.changed(roomItem);
   }
 
-  async setSprite(objectItem: ObjectParentFolder | TreeAsset) {
+  async setSprite(
+    objectItem: ObjectParentFolder | ObjectSpriteFolder | TreeAsset,
+  ) {
     const asset = objectItem.asset;
     if (!isAssetOfKind(asset, 'objects')) {
       return;
@@ -334,6 +336,8 @@ export class GameMakerTreeProvider
       typeof objectItem.onSetSprite === 'function'
     ) {
       objectItem.onSetSprite(spriteChoice.sprite);
+    } else if ('provider' in objectItem) {
+      objectItem.provider.onUpdate?.(objectItem);
     }
   }
 
