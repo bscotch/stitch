@@ -1,6 +1,7 @@
 import { undent } from '@bscotch/utility';
 import { expect } from 'chai';
 import { existsSync, mkdirSync, readdirSync } from 'fs';
+import fs from 'node:fs/promises';
 import { z } from 'zod';
 import { Yy } from './Yy.js';
 import { yyResourceTypes } from './types/YyBase.js';
@@ -317,6 +318,18 @@ describe('Yy Files', function () {
     for (let i = 0; i < referenceOrder.length; i++) {
       expect(sorted[i].folderPath).to.equal(referenceOrder[i].folderPath);
     }
+  });
+
+  xit('can convert an old-format sprite yy file to the new format', async function () {
+    const project = await Yy.read(
+      './samples/project/Crashlands2.yyp',
+      'project',
+    );
+    const rawSprite = JSON.parse(
+      await fs.readFile('./samples/to-convert.yy', 'utf8'),
+    );
+    const stringified = Yy.stringify(rawSprite, 'sprites', project);
+    console.log(stringified);
   });
 
   for (const resourceType of ['project', ...yyResourceTypes] as const) {

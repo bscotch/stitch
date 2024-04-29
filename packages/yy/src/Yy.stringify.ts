@@ -278,7 +278,7 @@ function prepareForStringification<T>(
       'name' in yyData &&
       typeof yyData.name === 'string' &&
       hasResourceType && // Otherwise it's just a different kind of 'name' field
-      !('$GMSpriteFramesTrack' in yyData) // Special case
+      !('$GMSpriteFramesTrack' in yyDataCopy) // Special case
     ) {
       // Then we need to ensure that the file has the `%Name` key,
       // because we may be converting an old format to the new one.
@@ -292,7 +292,7 @@ function prepareForStringification<T>(
       yyDataCopy['resourceVersion'] = '2.0';
     }
 
-    if ('$GMSpriteFramesTrack' in yyData) {
+    if ('$GMSpriteFramesTrack' in yyDataCopy) {
       // Make sure it doesn't have a '%Name' key, since that causes build failures
       delete yyDataCopy[nameField];
     }
