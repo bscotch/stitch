@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.2.1 (2024-04-29)
+
+### Fixes
+
+- Resolved an issue where the "%Name" field was not always deleted from new sprite tracks
+
 ## 2.2.0 (2024-03-08)
 
 ### Features

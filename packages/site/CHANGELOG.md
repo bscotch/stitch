@@ -1,5 +1,15 @@
 # @bscotch/stitch-site Changelog
 
+## 0.6.0 (2024-04-22)
+
+### Features
+
+- Added SBV to TSV converter
+
+### Fixes
+
+- Resolved issue with missing Stitch logo
+
 ## 0.5.0 (2024-04-19)
 
 ### Features
