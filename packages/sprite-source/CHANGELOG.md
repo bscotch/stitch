@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 1.3.0 (2024-05-14)
+
+### Features
+
+- Added 'collaboratorSources' concept to make art pipeline collaboration easier
+
 ## 1.2.4 (2024-03-08)
 
 ### Fixes
