@@ -2,10 +2,11 @@ import { Pathy, pathy } from '@bscotch/pathy';
 import { sequential } from '@bscotch/utility';
 import { Yy } from '@bscotch/yy';
 import { SpriteCache } from './SpriteCache.js';
-import type {
-  SpineSummary,
-  SpriteSummary,
-  SpritesInfo,
+import {
+  isNewer,
+  type SpineSummary,
+  type SpriteSummary,
+  type SpritesInfo,
 } from './SpriteCache.schemas.js';
 import {
   applySpriteAction,
@@ -45,14 +46,31 @@ export class SpriteDest extends SpriteCache {
     sourceConfig: SpriteDestSource,
     destSpritesCache: SpritesInfo,
   ) {
+    type SpriteInfo = (SpriteSummary | SpineSummary) & {
+      path: string;
+      name: string;
+    };
     const destSpritesInfo = destSpritesCache.info;
     // Get the most up-to-date source and dest info
     const ignorePatterns = (sourceConfig.ignore || []).map(
       (x) => new RegExp(x),
     );
+    const cleanSpriteName = (sourcePath: string) =>
+      `${sourceConfig.prefix || ''}${sourcePath
+        .split('/')
+        .pop()!
+        .replace(/[^a-z0-9_]/gi, '_')}`;
 
     // The source pathy is either absolute or relative to the project root
     const sourceRoot = pathy(sourceConfig.source, this.yypPath.up());
+    const collaboratorSourceRoots = (
+      sourceConfig.collaboratorSources || []
+    ).map((s) => pathy(s, this.yypPath.up()));
+    const collaboratorSourcesWait = Promise.allSettled(
+      collaboratorSourceRoots.map((s) =>
+        SpriteSource.from(s).then((s) => s.update().then((x) => x.info)),
+      ),
+    );
 
     const source = await SpriteSource.from(sourceRoot);
     const sourceSpritesInfo = await source.update().then((x) => {
@@ -61,11 +79,47 @@ export class SpriteDest extends SpriteCache {
       return x.info;
     });
 
-    // Normalize things for direct comparision between source and dest
-    type SpriteInfo = (SpriteSummary | SpineSummary) & {
-      path: string;
-      name: string;
+    const collaboratorSources = (await collaboratorSourcesWait)
+      .map((r) => (r.status === 'fulfilled' ? r.value : undefined))
+      .filter((x) => x) as SpritesInfo['info'][];
+
+    // Get all of the sprite names and last-updated dates from the collaborator
+    // sources, so that we can check against them later.
+    const collaboratorSprites = new Map<string, SpriteInfo>();
+    /**
+     * Returns true if the left sprite is newer than the right sprite.
+     */
+    const isNewerThanCollaboratorSprites = (
+      potentiallyNewer: SpriteInfo,
+      replaceIfNewer: boolean,
+    ): boolean => {
+      const currentNewest = collaboratorSprites.get(
+        potentiallyNewer.name.toLowerCase(),
+      );
+      if (currentNewest && !isNewer(potentiallyNewer, currentNewest)) {
+        return false;
+      }
+      if (replaceIfNewer) {
+        collaboratorSprites.set(
+          potentiallyNewer.name.toLowerCase(),
+          potentiallyNewer,
+        );
+      }
+      return true;
     };
+    for (const collaboratorSource of collaboratorSources) {
+      for (const [path, sprite] of Object.entries(collaboratorSource)) {
+        const name = cleanSpriteName(path);
+        isNewerThanCollaboratorSprites(
+          {
+            ...sprite,
+            path,
+            name,
+          },
+          true,
+        );
+      }
+    }
 
     /** Map of destName.toLower() to the source info */
     const sourceSprites = new Map<string, SpriteInfo>();
@@ -78,10 +132,7 @@ export class SpriteDest extends SpriteCache {
       }
 
       // Get the name it should have in the project
-      const name = `${sourceConfig.prefix || ''}${sourcePath
-        .split('/')
-        .pop()!
-        .replace(/[^a-z0-9_]/gi, '_')}`;
+      const name = cleanSpriteName(sourcePath);
 
       // Check for name collisions. If found, they should be reported as issues.
       if (sourceSprites.get(name.toLowerCase())) {
@@ -117,6 +168,15 @@ export class SpriteDest extends SpriteCache {
       const destDir = this.spritesRoot.join(
         destSprite?.path || sourceSprite.name,
       ).absolute;
+
+      if (!isNewerThanCollaboratorSprites(sourceSprite, false)) {
+        this.logs.push({
+          action: 'skipped-collaborator-owned',
+          path: sourceDir,
+        });
+        continue;
+      }
+
       if (!destSprite || sourceSprite.spine !== destSprite.spine) {
         actions.push({
           kind: 'create',

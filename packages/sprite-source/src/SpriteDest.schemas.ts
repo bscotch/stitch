@@ -20,6 +20,13 @@ const spriteDestSourceSchema = z.object({
     .describe(
       'Path to the SpriteSource directory. Either absolute or relative to the GameMaker project folder.',
     ),
+  collaboratorSources: z
+    .string()
+    .array()
+    .optional()
+    .describe(
+      "Paths to other SpriteSource directories that may overlap with this source. Any sprites that are found in the source *and* one or more collaborator sources must be the latest in 'source' for it to be imported as part of the pipeline.",
+    ),
   ignore: z
     .array(z.string())
     .nullable()

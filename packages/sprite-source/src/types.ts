@@ -1,5 +1,5 @@
 export interface Log {
-  action: 'deleted' | 'moved';
+  action: 'deleted' | 'moved' | 'skipped-collaborator-owned';
   path: string;
   to?: string;
 }

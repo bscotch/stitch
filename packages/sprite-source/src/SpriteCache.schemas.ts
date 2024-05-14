@@ -45,3 +45,19 @@ export const spritesInfoSchema = z.object({
     )
     .default({}),
 });
+
+export function lastChanged(info: SpriteSummary | SpineSummary) {
+  return info.spine
+    ? info.changed
+    : Math.max(...Object.values(info.frames).map((f) => f.changed), 0);
+}
+
+/**
+ * Returns `true` if `a` is newer than `b`.
+ */
+export function isNewer(
+  a: SpriteSummary | SpineSummary,
+  b: SpriteSummary | SpineSummary,
+) {
+  return lastChanged(a) > lastChanged(b);
+}
