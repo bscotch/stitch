@@ -146,12 +146,17 @@ function datesFromSegments(segments) {
 function extractSegments(arrString) {
   /** @type {DataPoint[][]} */
   const array = extractedArrayStringToArray(arrString);
-  return array.map((segment) => {
-    return segment.reduce((acc, [date, value]) => {
-      acc[date] = value;
-      return acc;
-    }, {});
-  });
+  /** @type {AllSegments} */
+  const segments = [];
+  for (const segment of array) {
+    /** @type {Segment} */
+    const segmentData = {};
+    for (const [date, value] of segment) {
+      segmentData[date] = value;
+    }
+    segments.push(segmentData);
+  }
+  return segments;
 }
 
 /**
