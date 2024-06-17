@@ -1,5 +1,5 @@
 /** @typedef {[datestring:string, number]} DataPoint */
-/** @typedef {DataPoint[]} Segment */
+/** @typedef {{[date:string]:number}} Segment */
 /** @typedef {Segment[]} AllSegments */
 
 async function addButtons() {
@@ -15,12 +15,11 @@ async function addButtons() {
   )?.innerHTML;
   assert(scriptText, 'Could not find script tag');
 
-  /** @type {AllSegments} */
-  const viewSegments = extractedArrayStringToArray(
+  const viewSegments = extractSegments(
     defined(scriptText.match(/var dataViews = ([^;]+)/))[1],
   );
-  /** @type {AllSegments} */
-  const impressionSegments = extractedArrayStringToArray(
+
+  const impressionSegments = extractSegments(
     defined(scriptText.match(/var dataImpressions = ([^;]+)/))[1],
   );
 
@@ -60,10 +59,12 @@ async function addButtons() {
     ].join('\t'),
   ];
 
-  for (let rowIdx = 0; rowIdx < viewSegments[0].length; rowIdx++) {
-    const date = viewSegments[0][rowIdx][0];
-    const viewRow = viewSegments.map((s) => s[rowIdx][1]);
-    const impressionRow = impressionSegments.map((s) => s[rowIdx][1]);
+  // Get the range of dates from the segments
+  const allDates = datesFromSegments([...viewSegments, ...impressionSegments]);
+
+  for (const date of allDates) {
+    const viewRow = viewSegments.map((s) => s[date] ?? 0);
+    const impressionRow = impressionSegments.map((s) => s[date] ?? 0);
     rows.push([date, ...viewRow, ...impressionRow].join('\t'));
   }
 
@@ -90,11 +91,6 @@ async function addButtons() {
   hiddenEl.value = asTsv;
   copyEl.appendChild(hiddenEl);
 
-  console.log('As TSV:');
-  console.log(asTsv);
-
-  console.log('Adding buttons to the page');
-
   const existing = document.querySelector('#stitch-copy-container');
   if (existing) {
     existing.remove();
@@ -112,6 +108,50 @@ function assert(claim, msg) {
   if (!claim) {
     throw new Error(msg);
   }
+}
+
+/**
+ * Get the range of valid dates from segments, ensuring all
+ * dates are present (some can be missing in the data).
+ * @param {AllSegments} segments
+ */
+function datesFromSegments(segments) {
+  /** @type {Set<string>} */
+  const dates = new Set();
+  for (const segment of segments) {
+    for (const date of Object.keys(segment)) {
+      dates.add(date);
+    }
+  }
+  const sorted = [...dates].sort(
+    (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+  );
+  const range = [sorted[0], sorted[sorted.length - 1]];
+  // Return an array that starts with the first date in the range and
+  // adds one day at a time until we reach the last date in the range.
+  const allDates = [];
+  let current = new Date(range[0]);
+  const end = new Date(range[1]);
+  while (current <= end) {
+    allDates.push(current.toISOString().split('T')[0]);
+    current.setDate(current.getDate() + 1);
+  }
+  return allDates;
+}
+
+/**
+ * @param {string} arrString
+ * @returns {AllSegments}
+ */
+function extractSegments(arrString) {
+  /** @type {DataPoint[][]} */
+  const array = extractedArrayStringToArray(arrString);
+  return array.map((segment) => {
+    return segment.reduce((acc, [date, value]) => {
+      acc[date] = value;
+      return acc;
+    }, {});
+  });
 }
 
 /**

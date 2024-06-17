@@ -1,5 +1,5 @@
 /** @typedef {[datestring:string, number]} DataPoint */
-/** @typedef {DataPoint[]} Segment */
+/** @typedef {{[date:string]:number}} Segment */
 /** @typedef {Segment[]} AllSegments */
 
 async function addButtons() {
@@ -55,15 +55,17 @@ function assert(claim, msg) {
  */
 function chartToTsvButton(scriptText, segmentTitles, chartId, afterEl) {
   assert(scriptText, 'Could not find script tag');
-  /** @type {Segment[]} */
-  const segments = extractArray(scriptText, chartId);
+
+  const segments = extractSegments(scriptText, chartId);
 
   // Create a TSV download, with each segment as a column
   const rows = [['Date', ...segmentTitles].join('\t')];
+  const allDates = datesFromSegments(segments);
 
-  for (let rowIdx = 0; rowIdx < segments[0].length; rowIdx++) {
-    const date = segments[0][rowIdx][0];
-    const viewRow = segments.map((s) => s[rowIdx][1]);
+  console.log({ segments, allDates });
+
+  for (const date of allDates) {
+    const viewRow = segments.map((s) => s[date] ?? 0);
     rows.push([date, ...viewRow].join('\t'));
   }
 
@@ -99,16 +101,52 @@ function chartToTsvButton(scriptText, segmentTitles, chartId, afterEl) {
 }
 
 /**
+ * Get the range of valid dates from segments, ensuring all
+ * dates are present (some can be missing in the data).
+ * @param {AllSegments} segments
+ */
+function datesFromSegments(segments) {
+  /** @type {Set<string>} */
+  const dates = new Set();
+  for (const segment of segments) {
+    for (const date of Object.keys(segment)) {
+      dates.add(date);
+    }
+  }
+  const sorted = [...dates].sort(
+    (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+  );
+  const range = [sorted[0], sorted[sorted.length - 1]];
+  // Return an array that starts with the first date in the range and
+  // adds one day at a time until we reach the last date in the range.
+  const allDates = [];
+  let current = new Date(range[0]);
+  const end = new Date(range[1]);
+  while (current <= end) {
+    allDates.push(current.toISOString().split('T')[0]);
+    current.setDate(current.getDate() + 1);
+  }
+  return allDates;
+}
+
+/**
  * @param {string} scriptText
  * @param {string} key
- * @returns {any[]}
+ * @returns {AllSegments}
  */
-function extractArray(scriptText, key) {
+function extractSegments(scriptText, key) {
   const pattern = new RegExp(`['"]${key}['"][^[]+([^{]+)`);
   let match = scriptText.match(pattern)?.[1]?.trim();
   assert(match, `Could not find ${key}`);
   if (match.at(-1) === ',') match = match.slice(0, -1);
-  return extractedArrayStringToArray(match);
+  const array = extractedArrayStringToArray(match);
+
+  return array.map((segment) => {
+    return segment.reduce((acc, [date, value]) => {
+      acc[date] = value;
+      return acc;
+    }, {});
+  });
 }
 
 /**
