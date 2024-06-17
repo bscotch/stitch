@@ -62,8 +62,6 @@ function chartToTsvButton(scriptText, segmentTitles, chartId, afterEl) {
   const rows = [['Date', ...segmentTitles].join('\t')];
   const allDates = datesFromSegments(segments);
 
-  console.log({ segments, allDates });
-
   for (const date of allDates) {
     const viewRow = segments.map((s) => s[date] ?? 0);
     rows.push([date, ...viewRow].join('\t'));
@@ -159,7 +157,6 @@ function extractedArrayStringToArray(arrString) {
     .replace(/\s/g, '')
     .replace(/,([}\]])/g, '$1')
     .replace(/(\w+):/g, '"$1":');
-  console.log(cleaned);
   return JSON.parse(cleaned);
 }
 
