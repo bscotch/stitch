@@ -10,10 +10,20 @@
       "js": ["steam-partner-regions.js"],
       "matches": ["https://partner.steampowered.com/region/*"],
       "run_at": "document_idle"
+    },
+    {
+      "js": ["steam-wishlist-actions.js"],
+      "matches": ["https://partner.steampowered.com/app/wishlist/*"],
+      "run_at": "document_idle"
+    },
+    {
+      "js": ["steam-partner-traffic.js"],
+      "matches": ["https://partner.steamgames.com/apps/navtrafficstats/*"],
+      "run_at": "document_idle"
     }
   ],
   "description": "Adds download buttons and other extended functionality to various game stats sites, in particular for publishers of Steam games.",
   "manifest_version": 3,
   "name": "Stitch: Game Stats",
-  "version": "0.1.0"
+  "version": "0.3.0"
 }
