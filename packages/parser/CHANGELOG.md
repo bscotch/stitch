@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.9.3 (2024-06-21)
+
+### Fixes
+
+- Resolved issue where renaming a sound asset would not properly update the sound file reference, causing compiles to fail.
+
 ## 1.9.2 (2024-04-29)
 
 ### Fixes

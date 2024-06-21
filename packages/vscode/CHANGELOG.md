@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.69.2 (2024-06-21)
+
+### Fixes
+
+- Resolved issue where renaming a sound asset would not properly update the sound file reference, causing compiles to fail.
+
 ## 1.69.0 (2024-04-29)
 
 ### Features
