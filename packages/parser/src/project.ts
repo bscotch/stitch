@@ -17,6 +17,7 @@ import {
   yypFolderSchema,
   yyRoomSchema,
   YySchema,
+  YySound,
   yySpriteSchema,
   type YypConfig,
   type YypFolder,
@@ -353,6 +354,11 @@ export class Project {
     // Update the "name" field
     const yy = await Yy.read(newYyFile.absolute, asset.assetKind);
     yy.name = to;
+    if (isAssetOfKind(asset, 'sounds')) {
+      // Then we've renamed the sound file and need to update that in the yy!
+      const yySound = yy as YySound;
+      yySound.soundFile = yySound.soundFile.replace(oldNamePattern, to);
+    }
     await Yy.write(newYyFile.absolute, yy, asset.assetKind, this.yyp);
 
     // Register the new asset
