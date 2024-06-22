@@ -29,6 +29,7 @@ jobs:
           node-version: 18.18.0
       - run: corepack enable
       - run: npm run setup:pnpm
+      - run: rustup default 1.78.0 # latest doesn't work!
 
       - name: Install Dependencies
         run: pnpm install --filter=@bscotch/gamemaker-releases... --filter=@bscotch/stitch-site...
