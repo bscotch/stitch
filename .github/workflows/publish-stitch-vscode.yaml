@@ -25,6 +25,8 @@ jobs:
         with:
           node-version: 18.18.0
       - run: corepack enable
+      - run: rustup default 1.78.0 # latest doesn't work!
+
       - run: pnpm install --filter=bscotch-stitch-vscode... --filter=stitch-monorepo
       - run: pwd
 
