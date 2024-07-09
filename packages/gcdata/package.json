@@ -12,17 +12,17 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/cl2-string-server-shared": "0.5.2",
+    "@bscotch/cl2-string-server-shared": "0.9.0",
     "@bscotch/emitter": "0.2.1",
     "@bscotch/pathy": "^2.12.0",
     "node-fetch": "^3.3.2",
-    "zod": "3.22.4"
+    "zod": "3.23.8"
   },
   "devDependencies": {
-    "chai": "^4.3.10",
-    "json-schema-to-typescript": "13.1.1",
+    "chai": "^5.1.1",
+    "json-schema-to-typescript": "14.1.0",
     "source-map-support": "0.5.21",
-    "typescript": "5.2.2"
+    "typescript": "5.5.3"
   },
   "publishConfig": {
     "access": "public"
