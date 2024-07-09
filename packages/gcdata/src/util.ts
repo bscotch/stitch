@@ -1,8 +1,7 @@
 import type { Glossary } from '@bscotch/cl2-string-server-shared';
 import type { Gcdata } from './GameChanger.js';
 import { assert } from './assert.js';
-import { ParsedLineItem } from './cl2.shared.types.js';
-import { ParsedWord } from './cl2.types.editor.js';
+import type { ParsedLineItem, ParsedWord } from './types.editor.js';
 import {
   BschemaObject,
   getAdditionalProperties,

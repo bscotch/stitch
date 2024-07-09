@@ -1,9 +1,7 @@
 import type { Gcdata } from './GameChanger.js';
 import { assert } from './assert.js';
-import { arrayTagPattern } from './cl2.shared.types.js';
+import { arrayTagPattern, ParserResult } from './cl2.shared.types.js';
 import type { Crashlands2 } from './cl2.types.auto.js';
-import type { ParsedBase, ParserResult } from './cl2.types.editor.js';
-import type { Range } from './types.editor.js';
 import type { BschemaRoot, Mote } from './types.js';
 
 export const storylineSchemaId = 'cl2_storyline';
@@ -11,16 +9,10 @@ export const storylineSchemaId = 'cl2_storyline';
 export type StorylineData = Crashlands2.Schemas['cl2_storyline'];
 export type StorylineMote = Mote<StorylineData>;
 
-type CompletionsData =
-  | { type: 'glossary'; options: string[] }
-  | { type: 'stages'; options: string[] }
-  | { type: 'labels'; options: Set<string> };
-export interface StorylineUpdateResult extends ParserResult {
-  parsed: ParsedBase & {
+export interface StorylineUpdateResult
+  extends ParserResult<{
     description?: string;
-  };
-  completions: (Range & CompletionsData)[];
-}
+  }> {}
 
 export function listStorylines(gcData: Gcdata): StorylineMote[] {
   return gcData.listMotesBySchema<StorylineData>(storylineSchemaId);

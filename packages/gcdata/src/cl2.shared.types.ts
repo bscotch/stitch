@@ -1,7 +1,33 @@
 import { z } from 'zod';
 import type { Crashlands2 } from './cl2.types.auto.js';
-import type { Position } from './types.editor.js';
+import type {
+  ParsedLineItem,
+  ParsedWord,
+  Position,
+  Range,
+} from './types.editor.js';
 import type { Mote } from './types.js';
+
+export interface ParsedComment {
+  /** arrayId */
+  id: string | undefined;
+  text: string | undefined;
+}
+
+export interface ParsedBase {
+  name?: string;
+  stage?: Crashlands2.Staging;
+  comments: ParsedComment[];
+}
+
+export interface ParserResult<P extends Record<string, any>> {
+  diagnostics: (Range & { message: string })[];
+  hovers: (Range & { title?: string; description?: string })[];
+  edits: (Range & { newText: string })[];
+  completions: (Range & CompletionsData)[];
+  words: ParsedWord[];
+  parsed: ParsedBase & P;
+}
 
 export type CompletionsData =
   | {
@@ -29,12 +55,6 @@ export type CompletionsData =
       options: string[];
     }
   | { type: 'glossary'; options: string[] };
-
-export interface ParsedLineItem<V = string> {
-  start: Position;
-  end: Position;
-  value: V;
-}
 
 export type ParsedLine = {
   [K in keyof LineParts]?: ParsedLineItem<LineParts[K]>;

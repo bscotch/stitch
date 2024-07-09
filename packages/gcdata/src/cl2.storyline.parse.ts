@@ -5,7 +5,6 @@ import {
   arrayTagPattern,
   lineIsArrayItem,
   ParsedLine,
-  ParsedLineItem,
   parseIfMatch,
 } from './cl2.shared.types.js';
 import { StorylineMoteDataPointer } from './cl2.storyline.pointers.js';
@@ -21,6 +20,7 @@ import {
   createBsArrayKey,
   updateBsArrayOrder,
 } from './helpers.js';
+import type { ParsedLineItem } from './types.editor.js';
 import { checkWords, includes } from './util.js';
 
 export function parseStringifiedStoryline(

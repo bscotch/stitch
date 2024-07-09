@@ -1,8 +1,6 @@
 import type { Gcdata } from './GameChanger.js';
-import { arrayTagPattern, CompletionsData } from './cl2.shared.types.js';
+import { arrayTagPattern, ParserResult } from './cl2.shared.types.js';
 import type { Crashlands2 } from './cl2.types.auto.js';
-import { ParsedComment, ParserResult } from './cl2.types.editor.js';
-import type { Range } from './types.editor.js';
 import type { Mote } from './types.js';
 
 export const questSchemaId = 'cl2_quest';
@@ -86,26 +84,23 @@ type ParsedRequirement = ParsedRequirementQuest | ParsedRequirementOther;
 export type QuestMomentsLabel = `quest_${'start' | 'end'}_moments`;
 export type QuestRequirementsLabel = `quest_${'start' | 'end'}_requirements`;
 
-export interface QuestUpdateResult extends ParserResult {
-  completions: (Range & CompletionsData)[];
-  parsed: {
-    name?: string;
-    /** The moteId for the storyline */
-    storyline?: string;
-    /** The moteId for the quest giver */
-    quest_giver?: string;
-    /** The moteId for the quest receiver */
-    quest_receiver?: string;
-    clues: ParsedClue[];
-    quest_start_log?: string;
-    stage?: Crashlands2.Staging;
-    comments: ParsedComment[];
-  } & {
-    [K in QuestMomentsLabel]: ParsedMoment[];
-  } & {
-    [K in QuestRequirementsLabel]: ParsedRequirement[];
-  };
-}
+export interface QuestUpdateResult
+  extends ParserResult<
+    {
+      /** The moteId for the storyline */
+      storyline?: string;
+      /** The moteId for the quest giver */
+      quest_giver?: string;
+      /** The moteId for the quest receiver */
+      quest_receiver?: string;
+      clues: ParsedClue[];
+      quest_start_log?: string;
+    } & {
+      [K in QuestMomentsLabel]: ParsedMoment[];
+    } & {
+      [K in QuestRequirementsLabel]: ParsedRequirement[];
+    }
+  > {}
 
 export type Section = (typeof sections)[number];
 export const sections = ['start moments', 'end moments'] as const;

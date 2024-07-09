@@ -26,3 +26,15 @@ export interface Position {
    */
   index: number;
 }
+
+export type ParsedWord = Range & {
+  value: string;
+  suggestions?: string[];
+  valid: boolean;
+};
+
+export interface ParsedLineItem<V = string> {
+  start: Position;
+  end: Position;
+  value: V;
+}

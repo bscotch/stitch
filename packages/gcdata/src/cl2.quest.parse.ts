@@ -22,7 +22,6 @@ import {
   arrayTagPattern,
   lineIsArrayItem,
   ParsedLine,
-  ParsedLineItem,
   parseIfMatch,
 } from './cl2.shared.types.js';
 import { Crashlands2 } from './cl2.types.auto.js';
@@ -32,7 +31,7 @@ import {
   createBsArrayKey,
   updateBsArrayOrder,
 } from './helpers.js';
-import { Position } from './types.editor.js';
+import type { ParsedLineItem, Position } from './types.editor.js';
 import { Mote } from './types.js';
 import { checkWords, includes } from './util.js';
 
@@ -154,25 +153,26 @@ export function parseStringifiedQuest(
       // Is this just a blank line?
       if (!line) {
         // Add global autocompletes
-        result.completions.push({
-          type: 'labels',
+        const pos = {
           start: lineRange.start,
           end: lineRange.end,
+        };
+        result.completions.push({
+          type: 'labels',
           options: availableGlobalLabels,
+          ...pos,
         });
         if (isQuestMomentLabel(lastSectionGroup)) {
           result.completions.push({
             type: 'momentStyles',
             options: momentStyles,
-            start: lineRange.start,
-            end: lineRange.end,
+            ...pos,
           });
         } else if (isQuestRequirementLabel(lastSectionGroup)) {
           result.completions.push({
             type: 'requirementStyles',
             options: requirementCompletions,
-            start: lineRange.start,
-            end: lineRange.end,
+            ...pos,
           });
         }
         continue;
