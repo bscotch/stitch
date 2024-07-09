@@ -18,6 +18,24 @@ export function stringifyQuest(
         ? `${packed.working.getMoteName(storyline)}${toMoteTag(storyline)}`
         : ''),
   ];
+  if (mote.data.wip?.staging) {
+    blocks.push(`Stage: ${mote.data.wip.staging}\n`);
+  } else {
+    blocks.push('');
+  }
+
+  // NOTES
+  if (mote.data.wip?.notes) {
+    const comments = bsArrayToArray(mote.data.wip.notes);
+    if (comments.length) {
+      blocks.push(
+        ...bsArrayToArray(mote.data.wip.notes).map(
+          (c) => `//${toArrayTag(c.id)} ${c.element.text}`,
+        ),
+        '',
+      );
+    }
+  }
 
   if (mote.data.quest_giver || mote.data.quest_receiver) {
     blocks.push('');

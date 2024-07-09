@@ -12,7 +12,10 @@ export const storylineSchemaId = 'cl2_storyline';
 export type StorylineData = Crashlands2.Schemas['cl2_storyline'];
 export type StorylineMote = Mote<StorylineData>;
 
-type CompletionsData = { type: 'glossary'; options: string[] };
+type CompletionsData =
+  | { type: 'glossary'; options: string[] }
+  | { type: 'stages'; options: string[] }
+  | { type: 'labels'; options: Set<string> };
 export interface StorylineUpdateResult extends ParserResult {
   parsed: ParsedBase & {
     description?: string;
@@ -73,7 +76,7 @@ export const arrayTagPattern = '(?:#(?<arrayTag>[a-z0-9]+))';
 
 export const linePatterns = [
   /** Label:Text */
-  `^(?<labelGroup>(?<label>Name|Description|Draft)\\s*:)\\s*(?<text>.*?)\\s*$`,
+  `^(?<labelGroup>(?<label>Name|Description|Stage)\\s*:)\\s*(?<text>.*?)\\s*$`,
   /** Comment Line */
   `^(?<indicator>//)\\s*?${arrayTagPattern}?\\s*(?<text>.*?)\\s*$`,
 ];

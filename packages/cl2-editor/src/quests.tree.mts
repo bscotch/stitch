@@ -13,7 +13,7 @@ import { moteToPath } from './quests.util.mjs';
 import { TreeItemBase } from './tree.base.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
 
-export type QuestTreeItem = MoteItem | FolderItem;
+export type QuestTreeItem = TreeMoteItem | FolderItem;
 type DropMode = 'order' | 'nest';
 
 export class QuestTreeProvider
@@ -74,7 +74,7 @@ export class QuestTreeProvider
         if (!parent && !folder.length) {
           // Then this is a root-level mote
           items.push(
-            new MoteItem(this.packed, mote.id, undefined, {
+            new TreeMoteItem(this.packed, mote.id, undefined, {
               hasChildren: !!hasChildren.get(mote),
             }),
           );
@@ -106,7 +106,7 @@ export class QuestTreeProvider
         // Is this mote *directly* in this folder?
         if (isInFolder && moteFolder.length === item.relativePath.length) {
           items.push(
-            new MoteItem(this.packed, mote.id, undefined, {
+            new TreeMoteItem(this.packed, mote.id, undefined, {
               hasChildren: !!hasChildren.get(mote),
             }),
           );
@@ -123,7 +123,7 @@ export class QuestTreeProvider
           }
         }
       }
-    } else if (item instanceof MoteItem) {
+    } else if (item instanceof TreeMoteItem) {
       // Then find all motes that have this one as their parent. If they have a folder, add the folder base. If they don't, add them directly.
       for (const mote of motes) {
         const parent = getParent(mote);
@@ -139,7 +139,7 @@ export class QuestTreeProvider
           baseFolders.add(moteFolder[0]);
         } else {
           items.push(
-            new MoteItem(this.packed, mote.id, item, {
+            new TreeMoteItem(this.packed, mote.id, item, {
               hasChildren: !!hasChildren.get(mote),
             }),
           );
@@ -189,7 +189,7 @@ export class QuestTreeProvider
     this._onDidChangeTreeData.fire();
   }
 
-  async setFolder(item: MoteItem) {
+  async setFolder(item: TreeMoteItem) {
     if (!item) return;
     // Figure out what the relative path will be to
     const parent = item.parentMote;
@@ -291,8 +291,8 @@ export class QuestTreeProvider
     };
 
     if (
-      onto instanceof MoteItem &&
-      dropping instanceof MoteItem &&
+      onto instanceof TreeMoteItem &&
+      dropping instanceof TreeMoteItem &&
       this.dropMode === 'order'
     ) {
       // Case 1.a
@@ -316,8 +316,8 @@ export class QuestTreeProvider
         onto.mote.folder,
       );
     } else if (
-      onto instanceof MoteItem &&
-      dropping instanceof MoteItem &&
+      onto instanceof TreeMoteItem &&
+      dropping instanceof TreeMoteItem &&
       this.dropMode === 'nest'
     ) {
       // Case 1.b
@@ -335,7 +335,7 @@ export class QuestTreeProvider
         'data/order',
         (targetSiblings.at(-1)?.data.order ?? 0) + ORDER_INCREMENT,
       );
-    } else if (dropping instanceof MoteItem && onto instanceof FolderItem) {
+    } else if (dropping instanceof TreeMoteItem && onto instanceof FolderItem) {
       // Case 2
       // Then we're dropping a mote onto a folder.
       // Put the mote into the folder as the *last* item,
@@ -356,7 +356,7 @@ export class QuestTreeProvider
         'data/order',
         (targetSiblings.at(-1)?.data.order ?? 0) + ORDER_INCREMENT,
       );
-    } else if (dropping instanceof FolderItem && onto instanceof MoteItem) {
+    } else if (dropping instanceof FolderItem && onto instanceof TreeMoteItem) {
       // Case 3
       // Then we're dropping a folder onto a mote.
       // We need to get all motes that are in this folder (no need for recursion since things are all defined relatively)
@@ -413,7 +413,7 @@ export class QuestTreeProvider
 
     crashlandsEvents.on('quest-opened', (uri, info) => {
       // Reveal the quest in the tree
-      const questItem = MoteItem.lookup.get(info.moteId!);
+      const questItem = TreeMoteItem.lookup.get(info.moteId!);
       if (!questItem) {
         console.log("Couldn't find tree item for quest", info.moteId);
         return;
@@ -441,8 +441,8 @@ export class QuestTreeProvider
       ),
       vscode.commands.registerCommand(
         'crashlands.tree.setFolder',
-        (item: MoteItem) => {
-          if (!(item instanceof MoteItem)) return;
+        (item: TreeMoteItem) => {
+          if (!(item instanceof TreeMoteItem)) return;
           provider.setFolder(item);
         },
       ),
@@ -491,17 +491,17 @@ class FolderItem extends TreeItemBase<'folder'> {
   }
 }
 
-type MoteItemData =
+export type MoteItemData =
   | QuestData
   | StorylineData
   | { id: unknown; schema: unknown; order: number };
 
-class MoteItem<
+class TreeMoteItem<
   Data extends MoteItemData = MoteItemData,
 > extends TreeItemBase<'mote'> {
   override readonly kind = 'mote';
   document: vscode.TextDocument | undefined;
-  static lookup = new Map<string, MoteItem>();
+  static lookup = new Map<string, TreeMoteItem>();
 
   constructor(
     readonly packed: GameChanger,
@@ -512,7 +512,7 @@ class MoteItem<
     super(packed.working.getMoteName(moteId)!);
     this.contextValue =
       this.kind + '-' + packed.working.getMote(moteId)!.schema_id;
-    MoteItem.lookup.set(moteId, this);
+    TreeMoteItem.lookup.set(moteId, this);
     this.collapsibleState = options?.hasChildren
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
@@ -555,11 +555,11 @@ class MoteItem<
     return this.packed.working.getMoteName(this.mote)!;
   }
 
-  isStoryline(): this is MoteItem<StorylineData> {
+  isStoryline(): this is TreeMoteItem<StorylineData> {
     return this.mote.schema_id === 'cl2_storyline';
   }
 
-  isQuest(): this is MoteItem<QuestData> {
+  isQuest(): this is TreeMoteItem<QuestData> {
     return this.mote.schema_id === 'cl2_quest';
   }
 

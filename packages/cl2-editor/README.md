@@ -2,7 +2,7 @@
 
 This extension provides a set of tools for creating and editing content for the game [Crashlands 2](https://www.bscotch.net/games/crashlands-2), by Butterscotch Shenanigans.
 
-**⚠️ This extension will not be of any use to anyone outside of the Bscotch team. It is public for convenience and for public interest, but its feature set is built on top of a bunch of internal tools and processes that are *not* public. If you're interested in learning more about the development of Crashlands 2, check out the studio [podcast](https://www.bscotch.net/podcast). ⚠️**
+**⚠️ This extension will not be of any use to anyone outside of the Bscotch team. It is public for convenience and for public interest, but its feature set is built on top of a bunch of internal tools and processes that are _not_ public. If you're interested in learning more about the development of Crashlands 2, check out the studio [podcast](https://www.bscotch.net/podcast). ⚠️**
 
 ## Features
 
@@ -20,7 +20,9 @@ To enable spell check, log into the Bscotch String Server via the command: "Cras
 
 ### Syntax Highlighting
 
-For syntax highlighting, you'll need to add some settings to your User Settings JSON file. For example:
+For syntax highlighting, you'll need to add some settings to your User Settings JSON file. You can identify the scope names in the editor via the command palette with the "Developer: Inspect Editor Tokens and Scopes" command.
+
+Example highlighting settings you'd add to your User Settings file (open in the command palette with the "Preferences: Open User Settings (JSON)" command):
 
 ```json
   "editor.tokenColorCustomizations": {

@@ -1,11 +1,12 @@
-import { Bschema, GameChanger, Mote } from '@bscotch/gcdata';
-import {
-  MoteItemData,
+import type {
+  Bschema,
+  GameChanger,
+  Mote,
   QuestData,
-  QuestTreeItem,
   StorylineData,
-} from 'quests.tree.mjs';
+} from '@bscotch/gcdata';
 import vscode from 'vscode';
+import { MoteItemData, QuestTreeItem } from './quests.tree.mjs';
 import { moteToPath } from './quests.util.mjs';
 import { TreeItemBase } from './tree.base.mjs';
 

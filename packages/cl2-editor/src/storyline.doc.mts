@@ -57,6 +57,23 @@ export class StorylineDocument {
             item.insertText = o;
             return item;
           });
+        } else if (c.type === 'labels') {
+          return [...c.options].map((o) => {
+            const item = new vscode.CompletionItem(o);
+            item.kind = vscode.CompletionItemKind.Property;
+            item.detail = 'Label';
+            item.insertText = `${o}: `;
+            item.keepWhitespace = true;
+            return item;
+          });
+        } else if (c.type === 'stages') {
+          return [...c.options].map((o) => {
+            const item = new vscode.CompletionItem(o);
+            item.kind = vscode.CompletionItemKind.EnumMember;
+            item.detail = 'Stage';
+            item.insertText = o;
+            return item;
+          });
         }
         return [];
       })

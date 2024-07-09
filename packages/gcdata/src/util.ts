@@ -382,3 +382,7 @@ export function checkWords(
   }
   return result;
 }
+
+export function includes<T>(arr: T[], value: any): value is T {
+  return arr.includes(value);
+}

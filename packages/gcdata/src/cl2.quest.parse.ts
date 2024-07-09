@@ -18,8 +18,9 @@ import {
 import {
   getMomentStyleNames,
   getMoteLists,
+  getRequirementQuestStatuses,
   getRequirementStyleNames,
-  getReuirementQuestStatuses,
+  getStagingOptions,
   isEmoteMoment,
 } from './cl2.quest.utils.js';
 import { Crashlands2 } from './cl2.types.auto.js';
@@ -31,7 +32,7 @@ import {
 } from './helpers.js';
 import { Position } from './types.editor.js';
 import { Mote } from './types.js';
-import { checkWords } from './util.js';
+import { checkWords, includes } from './util.js';
 
 export function parseStringifiedQuest(
   text: string,
@@ -47,7 +48,8 @@ export function parseStringifiedQuest(
     momentStyles.splice(momentStyles.indexOf(style), 1);
   }
   const requirementStyles = getRequirementStyleNames(packed.working);
-  const requirementQuestStatuses = getReuirementQuestStatuses(packed.working);
+  const stagingOptions = getStagingOptions(packed.working);
+  const requirementQuestStatuses = getRequirementQuestStatuses(packed.working);
   const requirementCompletions = [...requirementStyles];
   requirementCompletions.splice(requirementCompletions.indexOf('Quest'), 1);
   requirementCompletions.push(
@@ -60,7 +62,7 @@ export function parseStringifiedQuest(
    */
   const nonUniqueGlobalLabels = new Set<string>(['Clue']);
   const availableGlobalLabels = new Set<string>([
-    'Draft',
+    'Stage',
     'Name',
     'Storyline',
     'Giver',
@@ -90,6 +92,7 @@ export function parseStringifiedQuest(
       quest_start_moments: [],
       quest_start_requirements: [],
       quest_end_requirements: [],
+      comments: [],
     },
   };
 
@@ -330,6 +333,23 @@ export function parseStringifiedQuest(
             ...lineRange,
           });
         }
+      } else if (labelLower === 'stage') {
+        const stage = parsedLine.text?.value?.trim();
+        if (includes(stagingOptions, stage)) {
+          result.parsed.stage = stage;
+        } else {
+          result.diagnostics.push({
+            message: `Stage must be one of: ${stagingOptions.join(', ')}`,
+            ...lineRange,
+          });
+          // Provide autocomplete options
+          result.completions.push({
+            type: 'stages',
+            options: stagingOptions,
+            start: parsedLine.labelGroup!.end,
+            end: lineRange.end,
+          });
+        }
       } else if (labelLower === 'log') {
         result.parsed.quest_start_log = parsedLine.text?.value?.trim();
         checkSpelling(parsedLine.text);
@@ -512,6 +532,13 @@ export function parseStringifiedQuest(
             ...lineRange,
           });
         }
+      } else if (indicator === '//') {
+        // Then this is a comment/note
+        result.parsed.comments.push({
+          id: parsedLine.arrayTag?.value?.trim(),
+          text: parsedLine.text?.value?.trim(),
+        });
+        checkSpelling(parsedLine.text);
       }
 
       if (requiresEmoji) {
@@ -607,9 +634,48 @@ export async function updateChangesFromParsedQuest(
       updateMote('data/quest_receiver/item', parsed.quest_receiver);
     }
     updateMote('data/quest_start_log/text', parsed.quest_start_log);
+    updateMote('data/wip/staging', parsed.stage);
     updateMote('data/storyline', parsed.storyline);
 
+    const parsedComments = parsed.comments.filter((c) => !!c.text);
     const parsedClues = parsed.clues.filter((c) => !!c.id && !!c.speaker);
+
+    //#region COMMENTS
+    // Add/Update COMMENTS
+    trace(`Updating comments`);
+    for (const comment of parsedComments) {
+      trace(`Updating comment ${comment.id} with text "${comment.text}"`);
+      updateMote(`data/wip/notes/${comment.id}/element/text`, comment.text);
+    }
+    // Remove deleted comments
+    for (const existingComment of bsArrayToArray(
+      questMoteBase?.data.wip?.notes || {},
+    )) {
+      if (!parsedComments.find((c) => c.id === existingComment.id)) {
+        trace(`Deleting comment ${existingComment.id}`);
+        updateMote(`data/wip/notes/${existingComment.id}`, null);
+      }
+    }
+    // Get the BASE order of the comments (if any) and use those
+    // as the starting point for an up to date order.
+    const comments = parsedComments.map((c) => {
+      // Look up the base comment
+      let comment = questMoteBase?.data.wip?.notes?.[c.id!];
+      if (!comment) {
+        comment = questMoteWorking?.data.wip?.notes?.[c.id!];
+        // @ts-expect-error - order is a required field, but it'll be re-added
+        delete comment?.order;
+      }
+      assert(comment, `Comment ${c.id} not found in base or working mote`);
+      return { ...comment, id: c.id! };
+    });
+    trace('Updating comment order');
+    updateBsArrayOrder(comments);
+    comments.forEach((comment) => {
+      trace(`Updating comment ${comment.id} order to ${comment.order}`);
+      updateMote(`data/wip/notes/${comment.id}/order`, comment.order);
+    });
+    //#endregion
 
     //#region CLUES
     // Add/update clues

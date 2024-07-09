@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { Gcdata } from './GameChanger.js';
 import type { Crashlands2 } from './cl2.types.auto.js';
-import { ParserResult } from './cl2.types.editor.js';
+import { ParsedComment, ParserResult } from './cl2.types.editor.js';
 import type { Position, Range } from './types.editor.js';
 import type { Mote } from './types.js';
 
@@ -42,6 +42,10 @@ type CompletionsData =
   | {
       type: 'labels';
       options: Set<string>;
+    }
+  | {
+      type: 'stages';
+      options: Crashlands2.Staging[];
     }
   | {
       type: 'booleans';
@@ -137,6 +141,8 @@ export interface QuestUpdateResult extends ParserResult {
     quest_receiver?: string;
     clues: ParsedClue[];
     quest_start_log?: string;
+    stage?: Crashlands2.Staging;
+    comments: ParsedComment[];
   } & {
     [K in QuestMomentsLabel]: ParsedMoment[];
   } & {
@@ -203,13 +209,15 @@ const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]*?)\\s*\\))';
 
 export const linePatterns = [
   /** Label:Text */
-  `^(?<labelGroup>(?<label>Name|Log|Draft)\\s*:)\\s*(?<text>.*?)\\s*$`,
+  `^(?<labelGroup>(?<label>Name|Log|Stage)\\s*:)\\s*(?<text>.*?)\\s*$`,
   /** Labeled Mote */
   `^(?<labelGroup>(?<label>[\\w ]+)${arrayTagPattern}?\\s*:)\\s*(${moteNamePattern}${moteTagPattern}?)?\\s*$`,
   /** Dialogue Speaker */
   `^(?<indicator>\\t)(${moteNamePattern}${moteTagPattern}?)?\\s*$`,
   /** Dialogue Text */
   `^(?<indicator>>)\\s*?${arrayTagPattern}?(\\s+${emojiGroupPattern}?(\\s*(?<text>.*)))?\\s*$`,
+  /** Comment Line */
+  `^(?<indicator>//)\\s*?${arrayTagPattern}?\\s*(?<text>.*?)\\s*$`,
   /** Emote Declaration */
   `^(?<indicator>:\\))\\s*${arrayTagPattern}?\\s*$`,
   /** Emote */
@@ -265,7 +273,7 @@ export function parseIfMatch(
 export function lineIsArrayItem(line: string): boolean {
   if (
     line.match(
-      /^(\t|name|storyline|(start|end) (moments|requirements)|log|giver|receiver)/i,
+      /^(\t|name|stage|storyline|(start|end) (moments|requirements)|log|giver|receiver)/i,
     )
   ) {
     return false;

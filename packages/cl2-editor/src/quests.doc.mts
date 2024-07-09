@@ -122,6 +122,14 @@ export class QuestDocument {
             }
             return item;
           });
+        } else if (c.type === 'stages') {
+          return [...c.options].map((o) => {
+            const item = new vscode.CompletionItem(o);
+            item.kind = vscode.CompletionItemKind.EnumMember;
+            item.detail = 'Stage';
+            item.insertText = o;
+            return item;
+          });
         } else if (c.type === 'glossary') {
           return [...c.options].map((o) => {
             const item = new vscode.CompletionItem(o);
