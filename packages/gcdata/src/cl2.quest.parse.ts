@@ -18,17 +18,10 @@ import {
   isEmoteMoment,
 } from './cl2.quest.utils.js';
 import { prepareParserHelpers } from './cl2.shared.parse.js';
-import {
-  arrayTagPattern,
-  lineIsArrayItem,
-  ParsedLine,
-  parseIfMatch,
-} from './cl2.shared.types.js';
 import { Crashlands2 } from './cl2.types.auto.js';
 import {
   bsArrayToArray,
   changedPosition,
-  createBsArrayKey,
   updateBsArrayOrder,
 } from './helpers.js';
 import type { Position } from './types.editor.js';
@@ -56,25 +49,6 @@ export function parseStringifiedQuest(
     ...requirementQuestStatuses.map((s) => `Quest ${s}`),
   );
 
-  /**
-   * Shared list of keywords that can be used at the start of any line,
-   * with required-unique entries removed when found.
-   */
-  const nonUniqueGlobalLabels = new Set<string>(['Clue']);
-  const availableGlobalLabels = new Set<string>([
-    'Stage',
-    'Name',
-    'Storyline',
-    'Giver',
-    'Receiver',
-    'Clue',
-    'Start Requirements',
-    'Start Moments',
-    'End Requirements',
-    'End Moments',
-    'Log',
-  ]);
-
   const result: QuestUpdateResult = {
     diagnostics: [],
     hovers: [],
@@ -91,7 +65,28 @@ export function parseStringifiedQuest(
     },
   };
 
-  const helpers = prepareParserHelpers(text, packed, options, result);
+  const helpers = prepareParserHelpers(
+    text,
+    packed,
+    {
+      ...options,
+      globalNonUniqueLabels: new Set(['Clue']),
+      globalLabels: new Set([
+        'Stage',
+        'Name',
+        'Storyline',
+        'Giver',
+        'Receiver',
+        'Clue',
+        'Start Requirements',
+        'Start Moments',
+        'End Requirements',
+        'End Moments',
+        'Log',
+      ]),
+    },
+    result,
+  );
 
   /** The MoteId for the last speaker we saw. Used to figure out who to assign stuff to */
   let lastSpeaker: undefined | string;
@@ -103,26 +98,7 @@ export function parseStringifiedQuest(
     const trace: any[] = [];
 
     try {
-      // Is this just a newline?
-      if (line.match(/\r?\n/)) {
-        // Then we just need to increment the index
-        helpers.index += line.length;
-        helpers.lineNumber++;
-        continue;
-      }
-
-      const lineRange = {
-        start: {
-          index: helpers.index,
-          line: helpers.lineNumber,
-          character: 0,
-        },
-        end: {
-          index: helpers.index + line.length,
-          line: helpers.lineNumber,
-          character: line.length,
-        },
-      };
+      const lineRange = helpers.currentLineRange;
 
       // Is this just a blank line?
       if (!line) {
@@ -131,11 +107,6 @@ export function parseStringifiedQuest(
           start: lineRange.start,
           end: lineRange.end,
         };
-        result.completions.push({
-          type: 'labels',
-          options: availableGlobalLabels,
-          ...pos,
-        });
         if (isQuestMomentLabel(lastSectionGroup)) {
           result.completions.push({
             type: 'momentStyles',
@@ -153,73 +124,8 @@ export function parseStringifiedQuest(
       }
 
       // Find the first matching pattern and pull the values from it.
-      let parsedLine: null | ParsedLine = null;
-      for (const pattern of linePatterns) {
-        parsedLine = parseIfMatch(pattern, line, lineRange.start);
-        if (parsedLine) break;
-      }
-      if (!parsedLine) {
-        // Then this is likely the result of uncommenting something
-        // that was commented out, resulting in a line that starts with
-        // the comment's array tag. Provide a deletion edit!
-        parsedLine = parseIfMatch(
-          `^${arrayTagPattern} +(?<text>.*)$`,
-          line,
-          lineRange.start,
-        );
-        if (parsedLine) {
-          result.edits.push({
-            start: lineRange.start,
-            end: lineRange.end,
-            newText: parsedLine.text!.value!,
-          });
-        } else {
-          result.diagnostics.push({
-            message: `Unfamiliar syntax: ${line}`,
-            ...lineRange,
-          });
-        }
-
-        helpers.index += line.length;
-        continue;
-      }
-
-      // Ensure the array tag. It goes right after the label or indicator.
-      if (!parsedLine.arrayTag?.value && lineIsArrayItem(line)) {
-        const arrayTag = createBsArrayKey();
-        const start = parsedLine.indicator?.end || parsedLine.label?.end!;
-        result.edits.push({
-          start,
-          end: start,
-          newText: `#${arrayTag}`,
-        });
-        parsedLine.arrayTag = {
-          start,
-          end: start,
-          value: arrayTag,
-        };
-      }
-
-      // If this has a label, remove it from the list of available labels
-      if (
-        parsedLine.label?.value &&
-        availableGlobalLabels.has(parsedLine.label.value) &&
-        !nonUniqueGlobalLabels.has(parsedLine.label.value)
-      ) {
-        availableGlobalLabels.delete(parsedLine.label.value);
-      }
-
-      // If this has a text section, provide glossary autocompletes
-      if ('text' in parsedLine) {
-        const start = parsedLine.text!.start;
-        const end = parsedLine.text!.end;
-        result.completions.push({
-          type: 'glossary',
-          start,
-          end,
-          options: helpers.glossaryTerms,
-        });
-      }
+      const parsedLine = helpers.parseCurrentLine(linePatterns);
+      if (!parsedLine) continue;
 
       // Track common problems so that we don't need to repeat logic
       /** The character where a mote should exist. */

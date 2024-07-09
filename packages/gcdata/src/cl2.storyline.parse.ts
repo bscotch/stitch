@@ -1,12 +1,6 @@
 import type { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
 import { prepareParserHelpers } from './cl2.shared.parse.js';
-import {
-  arrayTagPattern,
-  lineIsArrayItem,
-  ParsedLine,
-  parseIfMatch,
-} from './cl2.shared.types.js';
 import { StorylineMoteDataPointer } from './cl2.storyline.pointers.js';
 import {
   getStorylineMote,
@@ -15,11 +9,7 @@ import {
   storylineSchemaId,
   type StorylineUpdateResult,
 } from './cl2.storyline.types.js';
-import {
-  bsArrayToArray,
-  createBsArrayKey,
-  updateBsArrayOrder,
-} from './helpers.js';
+import { bsArrayToArray, updateBsArrayOrder } from './helpers.js';
 import { includes } from './util.js';
 
 export function parseStringifiedStoryline(
@@ -40,117 +30,27 @@ export function parseStringifiedStoryline(
     },
   };
 
-  const availableGlobalLabels = new Set<string>([
-    'Name',
-    'Description',
-    'Stage',
-  ]);
-
-  const helpers = prepareParserHelpers(text, packed, options, result);
+  const helpers = prepareParserHelpers(
+    text,
+    packed,
+    {
+      ...options,
+      globalLabels: new Set<string>(['Name', 'Description', 'Stage']),
+    },
+    result,
+  );
 
   for (const line of helpers.lines) {
     const trace: any[] = [];
     try {
-      // Is this just a newline?
-      if (line.match(/\r?\n/)) {
-        // Then we just need to increment the index
-        helpers.index += line.length;
-        helpers.lineNumber++;
-        continue;
-      }
-
-      const lineRange = {
-        start: {
-          index: helpers.index,
-          line: helpers.lineNumber,
-          character: 0,
-        },
-        end: {
-          index: helpers.index + line.length,
-          line: helpers.lineNumber,
-          character: line.length,
-        },
-      };
-
-      // Is this just a blank line?
       if (!line) {
-        // Add global autocompletes
-        result.completions.push({
-          type: 'labels',
-          start: lineRange.start,
-          end: lineRange.end,
-          options: availableGlobalLabels,
-        });
         continue;
       }
+      const lineRange = helpers.currentLineRange;
 
       // Find the first matching pattern and pull the values from it.
-      let parsedLine: null | ParsedLine = null;
-      for (const pattern of linePatterns) {
-        parsedLine = parseIfMatch(pattern, line, lineRange.start);
-        if (parsedLine) break;
-      }
-      if (!parsedLine) {
-        // Then this is likely the result of uncommenting something
-        // that was commented out, resulting in a line that starts with
-        // the comment's array tag. Provide a deletion edit!
-        parsedLine = parseIfMatch(
-          `^${arrayTagPattern} +(?<text>.*)$`,
-          line,
-          lineRange.start,
-        );
-        if (parsedLine) {
-          result.edits.push({
-            start: lineRange.start,
-            end: lineRange.end,
-            newText: parsedLine.text!.value!,
-          });
-        } else {
-          result.diagnostics.push({
-            message: `Unfamiliar syntax: ${line}`,
-            ...lineRange,
-          });
-        }
-
-        helpers.index += line.length;
-        continue;
-      }
-
-      // Ensure the array tag. It goes right after the label or indicator.
-      if (!parsedLine.arrayTag?.value && lineIsArrayItem(line)) {
-        const arrayTag = createBsArrayKey();
-        const start = parsedLine.indicator?.end || parsedLine.label?.end!;
-        result.edits.push({
-          start,
-          end: start,
-          newText: `#${arrayTag}`,
-        });
-        parsedLine.arrayTag = {
-          start,
-          end: start,
-          value: arrayTag,
-        };
-      }
-
-      // If this has a label, remove it from the list of available labels
-      if (
-        parsedLine.label?.value &&
-        availableGlobalLabels.has(parsedLine.label.value)
-      ) {
-        availableGlobalLabels.delete(parsedLine.label.value);
-      }
-
-      // If this has a text section, provide glossary autocompletes
-      if ('text' in parsedLine) {
-        const start = parsedLine.text!.start;
-        const end = parsedLine.text!.end;
-        result.completions.push({
-          type: 'glossary',
-          start,
-          end,
-          options: helpers.glossaryTerms,
-        });
-      }
+      const parsedLine = helpers.parseCurrentLine(linePatterns);
+      if (!parsedLine) continue;
 
       // Work through each line type to add diagnostics and completions
       const labelLower = parsedLine.label?.value?.toLowerCase();
