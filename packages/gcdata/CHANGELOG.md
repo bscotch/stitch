@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.20.1 (2024-07-09)
+
+### Fixes
+
+- Resolved issue with absent "Stage" fields preventing saving
+
 ## 0.20.0 (2024-07-09)
 
 ### Features
