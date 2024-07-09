@@ -3,6 +3,7 @@ import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { crashlandsEvents } from './events.mjs';
 import { GameChangerFs } from './gc.fs.mjs';
+import { logger } from './log.mjs';
 import { QuestCompletionProvider } from './quests.autocompletes.mjs';
 import { StoryFoldingRangeProvider } from './quests.folding.mjs';
 import { QuestHoverProvider } from './quests.hover.mjs';
@@ -24,7 +25,10 @@ export class CrashlandsWorkspace {
   static async activate(ctx: vscode.ExtensionContext) {
     // Load the Packed data
     const packed = await GameChanger.from('Crashlands2');
-    assertLoudly(packed, 'Could not load packed file');
+    if (!packed) {
+      logger.error('Could not load packed file');
+      return;
+    }
 
     const stringServerAuthSecretName = 'bscotch.strings.auth';
 
