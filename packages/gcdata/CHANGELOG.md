@@ -1,5 +1,16 @@
 # @bscotch/gcdata Changelog
 
+## 0.20.0 (2024-07-09)
+
+### Features
+
+- Added support for Notes and Stage information
+- Updated CL2 types inferred from GameChanger
+
+### Fixes
+
+- Updated deps
+
 ## 0.19.0 (2024-04-17)
 
 ### Features

@@ -1,5 +1,15 @@
 # Crashlands 2 Editor Changelog
 
+## 0.22.0 (2024-07-09)
+
+### Features
+
+- Added support for Notes and Stage information
+
+### Fixes
+
+- No longer displays an error message if Crashlands 2 is not found on disk
+
 ## 0.21.0 (2024-04-17)
 
 ### Features
