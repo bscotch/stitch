@@ -337,7 +337,7 @@ export class GameChanger {
       );
     } else if (isBschemaEnum(subschema)) {
       assert(
-        subschema.enum.includes(value),
+        value === null || subschema.enum.includes(value),
         `'${value}' is not in enum ${JSON.stringify(subschema.enum)}`,
       );
     } else if (typeof value === 'string') {

@@ -2,18 +2,13 @@ import { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
 import { QuestMoteDataPointer } from './cl2.quest.pointers.js';
 import {
+  linePatterns,
   ParsedClue,
   ParsedDialog,
   ParsedEmoteGroup,
-  ParsedLine,
-  ParsedLineItem,
   QuestMomentsLabel,
   QuestRequirementsLabel,
   QuestUpdateResult,
-  arrayTagPattern,
-  lineIsArrayItem,
-  linePatterns,
-  parseIfMatch,
 } from './cl2.quest.types.js';
 import {
   getMomentStyleNames,
@@ -23,6 +18,13 @@ import {
   getStagingOptions,
   isEmoteMoment,
 } from './cl2.quest.utils.js';
+import {
+  arrayTagPattern,
+  lineIsArrayItem,
+  ParsedLine,
+  ParsedLineItem,
+  parseIfMatch,
+} from './cl2.shared.types.js';
 import { Crashlands2 } from './cl2.types.auto.js';
 import {
   bsArrayToArray,
@@ -634,8 +636,13 @@ export async function updateChangesFromParsedQuest(
       updateMote('data/quest_receiver/item', parsed.quest_receiver);
     }
     updateMote('data/quest_start_log/text', parsed.quest_start_log);
-    updateMote('data/wip/staging', parsed.stage);
     updateMote('data/storyline', parsed.storyline);
+
+    if (parsed.stage) {
+      updateMote('data/wip/staging', parsed.stage);
+    } else if (questMoteWorking?.data.wip) {
+      updateMote('data/wip/staging', null);
+    }
 
     const parsedComments = parsed.comments.filter((c) => !!c.text);
     const parsedClues = parsed.clues.filter((c) => !!c.id && !!c.speaker);

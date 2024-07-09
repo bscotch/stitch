@@ -1,15 +1,18 @@
 import type { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
-import type { ParsedLine, ParsedLineItem } from './cl2.quest.types.js';
 import { getStagingOptions } from './cl2.quest.utils.js';
-import { StorylineMoteDataPointer } from './cl2.storyline.pointers.js';
 import {
   arrayTagPattern,
+  lineIsArrayItem,
+  ParsedLine,
+  ParsedLineItem,
+  parseIfMatch,
+} from './cl2.shared.types.js';
+import { StorylineMoteDataPointer } from './cl2.storyline.pointers.js';
+import {
   getStorylineMote,
   getStorylineSchema,
-  lineIsArrayItem,
   linePatterns,
-  parseIfMatch,
   storylineSchemaId,
   type StorylineUpdateResult,
 } from './cl2.storyline.types.js';
