@@ -59,6 +59,10 @@ export type QuestMotePointer = ``
   | `clues/${string}/order`
   | `clues/${string}`
   | `clues`
+  | `demo_blocked/blocked_moments/${string}/element/actors/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/actors/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/actors/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/actors`
   | `demo_blocked/blocked_moments/${string}/element/area`
   | `demo_blocked/blocked_moments/${string}/element/artisan`
   | `demo_blocked/blocked_moments/${string}/element/bonus`
@@ -86,6 +90,12 @@ export type QuestMotePointer = ``
   | `demo_blocked/blocked_moments/${string}/element/items/${string}/order`
   | `demo_blocked/blocked_moments/${string}/element/items/${string}`
   | `demo_blocked/blocked_moments/${string}/element/items`
+  | `demo_blocked/blocked_moments/${string}/element/look_targets/${string}/element/key`
+  | `demo_blocked/blocked_moments/${string}/element/look_targets/${string}/element/value`
+  | `demo_blocked/blocked_moments/${string}/element/look_targets/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/look_targets/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/look_targets/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/look_targets`
   | `demo_blocked/blocked_moments/${string}/element/music`
   | `demo_blocked/blocked_moments/${string}/element/pause_duration`
   | `demo_blocked/blocked_moments/${string}/element/pin`
@@ -195,6 +205,10 @@ export type QuestMotePointer = ``
   | `priors/${string}/order`
   | `priors/${string}`
   | `priors`
+  | `quest_end_moments/${string}/element/actors/${string}/element`
+  | `quest_end_moments/${string}/element/actors/${string}/order`
+  | `quest_end_moments/${string}/element/actors/${string}`
+  | `quest_end_moments/${string}/element/actors`
   | `quest_end_moments/${string}/element/area`
   | `quest_end_moments/${string}/element/artisan`
   | `quest_end_moments/${string}/element/bonus`
@@ -222,6 +236,12 @@ export type QuestMotePointer = ``
   | `quest_end_moments/${string}/element/items/${string}/order`
   | `quest_end_moments/${string}/element/items/${string}`
   | `quest_end_moments/${string}/element/items`
+  | `quest_end_moments/${string}/element/look_targets/${string}/element/key`
+  | `quest_end_moments/${string}/element/look_targets/${string}/element/value`
+  | `quest_end_moments/${string}/element/look_targets/${string}/element`
+  | `quest_end_moments/${string}/element/look_targets/${string}/order`
+  | `quest_end_moments/${string}/element/look_targets/${string}`
+  | `quest_end_moments/${string}/element/look_targets`
   | `quest_end_moments/${string}/element/music`
   | `quest_end_moments/${string}/element/pause_duration`
   | `quest_end_moments/${string}/element/pin`
@@ -349,6 +369,10 @@ export type QuestMotePointer = ``
   | `quest_start_log/skip`
   | `quest_start_log/text`
   | `quest_start_log`
+  | `quest_start_moments/${string}/element/actors/${string}/element`
+  | `quest_start_moments/${string}/element/actors/${string}/order`
+  | `quest_start_moments/${string}/element/actors/${string}`
+  | `quest_start_moments/${string}/element/actors`
   | `quest_start_moments/${string}/element/area`
   | `quest_start_moments/${string}/element/artisan`
   | `quest_start_moments/${string}/element/bonus`
@@ -376,6 +400,12 @@ export type QuestMotePointer = ``
   | `quest_start_moments/${string}/element/items/${string}/order`
   | `quest_start_moments/${string}/element/items/${string}`
   | `quest_start_moments/${string}/element/items`
+  | `quest_start_moments/${string}/element/look_targets/${string}/element/key`
+  | `quest_start_moments/${string}/element/look_targets/${string}/element/value`
+  | `quest_start_moments/${string}/element/look_targets/${string}/element`
+  | `quest_start_moments/${string}/element/look_targets/${string}/order`
+  | `quest_start_moments/${string}/element/look_targets/${string}`
+  | `quest_start_moments/${string}/element/look_targets`
   | `quest_start_moments/${string}/element/music`
   | `quest_start_moments/${string}/element/pause_duration`
   | `quest_start_moments/${string}/element/pin`
@@ -487,15 +517,12 @@ export type QuestMotePointer = ``
   | `quest_start_requirements/${string}`
   | `quest_start_requirements`
   | `storyline`
-  | `wip/audio`
-  | `wip/balance`
-  | `wip/comments/${string}/element`
-  | `wip/comments/${string}/order`
-  | `wip/comments/${string}`
-  | `wip/comments`
-  | `wip/draft`
-  | `wip/integration`
-  | `wip/mechanics`
-  | `wip/text`
-  | `wip/visuals`
+  | `wip/notes/${string}/element/author`
+  | `wip/notes/${string}/element/text`
+  | `wip/notes/${string}/element/timestamp`
+  | `wip/notes/${string}/element`
+  | `wip/notes/${string}/order`
+  | `wip/notes/${string}`
+  | `wip/notes`
+  | `wip/staging`
   | `wip`;
