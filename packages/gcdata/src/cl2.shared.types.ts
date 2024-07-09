@@ -1,12 +1,15 @@
 import { z } from 'zod';
+import { assert } from './assert.js';
 import type { Crashlands2 } from './cl2.types.auto.js';
+import type { Gcdata } from './GameChanger.js';
 import type {
   ParsedLineItem,
   ParsedWord,
   Position,
   Range,
 } from './types.editor.js';
-import type { Mote } from './types.js';
+import type { BschemaEnum, Mote } from './types.js';
+import { resolvePointerInSchema } from './util.js';
 
 export interface ParsedComment {
   /** arrayId */
@@ -167,4 +170,29 @@ export function lineIsArrayItem(line: string): boolean {
     return false;
   }
   return true;
+}
+
+export function getStagingOptions(packed: Gcdata): Crashlands2.Staging[] {
+  const stagingSubchema = resolvePointerInSchema(
+    ['wip', 'staging'],
+    {
+      schema_id: 'cl2_quest',
+      data: {
+        wip: {
+          staging: 'any',
+        },
+      },
+    } as any,
+    packed,
+  ) as BschemaEnum;
+  return stagingSubchema.enum;
+}
+
+export function getEmojis(
+  packed: Gcdata,
+): Mote<Crashlands2.Schemas['cl2_emoji']>[] {
+  const emojis =
+    packed.listMotesBySchema<Crashlands2.Schemas['cl2_emoji']>('cl2_emoji');
+  assert(emojis.length > 0, 'Should have at least one emoji mote');
+  return emojis;
 }

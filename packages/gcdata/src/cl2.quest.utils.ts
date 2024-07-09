@@ -32,33 +32,12 @@ export function getMoteLists(packed: Gcdata) {
     packed.listMotesBySchema<Crashlands2.Schemas['cl2_quest']>('cl2_quest');
   assert(quests.length > 0, 'Should have at least one quest mote');
 
-  const emojis =
-    packed.listMotesBySchema<Crashlands2.Schemas['cl2_emoji']>('cl2_emoji');
-  assert(emojis.length > 0, 'Should have at least one emoji mote');
-
   return {
     allowedSpeakers,
     allowedGivers,
     storylines,
     quests,
-    emojis,
   };
-}
-
-export function getStagingOptions(packed: Gcdata): Crashlands2.Staging[] {
-  const stagingSubchema = resolvePointerInSchema(
-    ['wip', 'staging'],
-    {
-      schema_id: 'cl2_quest',
-      data: {
-        wip: {
-          staging: 'any',
-        },
-      },
-    } as any,
-    packed,
-  ) as BschemaEnum;
-  return stagingSubchema.enum;
 }
 
 function getAllowedSpeakers(packed: Gcdata) {

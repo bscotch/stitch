@@ -1,6 +1,6 @@
-import { GameChanger } from './GameChanger.js';
+import type { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
-import { QuestMoteDataPointer } from './cl2.quest.pointers.js';
+import type { QuestMoteDataPointer } from './cl2.quest.pointers.js';
 import {
   linePatterns,
   ParsedClue,
@@ -15,9 +15,9 @@ import {
   getMoteLists,
   getRequirementQuestStatuses,
   getRequirementStyleNames,
-  getStagingOptions,
   isEmoteMoment,
 } from './cl2.quest.utils.js';
+import { prepareParserHelpers } from './cl2.shared.parse.js';
 import {
   arrayTagPattern,
   lineIsArrayItem,
@@ -31,9 +31,9 @@ import {
   createBsArrayKey,
   updateBsArrayOrder,
 } from './helpers.js';
-import type { ParsedLineItem, Position } from './types.editor.js';
-import { Mote } from './types.js';
-import { checkWords, includes } from './util.js';
+import type { Position } from './types.editor.js';
+import type { Mote } from './types.js';
+import { includes } from './util.js';
 
 export function parseStringifiedQuest(
   text: string,
@@ -49,7 +49,6 @@ export function parseStringifiedQuest(
     momentStyles.splice(momentStyles.indexOf(style), 1);
   }
   const requirementStyles = getRequirementStyleNames(packed.working);
-  const stagingOptions = getStagingOptions(packed.working);
   const requirementQuestStatuses = getRequirementQuestStatuses(packed.working);
   const requirementCompletions = [...requirementStyles];
   requirementCompletions.splice(requirementCompletions.indexOf('Quest'), 1);
@@ -76,11 +75,6 @@ export function parseStringifiedQuest(
     'Log',
   ]);
 
-  /** Terms from the glossary for use in autocompletes */
-  const glossaryTerms = (packed.glossary?.relevantTerms() || []).map(
-    (t) => t.text,
-  );
-
   const result: QuestUpdateResult = {
     diagnostics: [],
     hovers: [],
@@ -97,27 +91,7 @@ export function parseStringifiedQuest(
     },
   };
 
-  const lines = text.split(/(\r?\n)/g);
-
-  let index = 0;
-  let lineNumber = 0;
-
-  const emojiIdFromName = (name: string | undefined): string | undefined => {
-    if (!name) {
-      return undefined;
-    }
-    const emoji = motes.emojis.find(
-      (e) =>
-        packed.working.getMoteName(e)?.toLowerCase() ===
-          name?.trim().toLowerCase() || e.id === name?.trim(),
-    );
-    return emoji?.id;
-  };
-
-  const checkSpelling = (item: ParsedLineItem<any> | undefined) => {
-    if (!item || !options.checkSpelling || !packed.glossary) return;
-    result.words.push(...checkWords(item, packed.glossary));
-  };
+  const helpers = prepareParserHelpers(text, packed, options, result);
 
   /** The MoteId for the last speaker we saw. Used to figure out who to assign stuff to */
   let lastSpeaker: undefined | string;
@@ -125,27 +99,27 @@ export function parseStringifiedQuest(
   let lastSectionGroup: QuestMomentsLabel | QuestRequirementsLabel | undefined;
   let lastEmojiGroup: undefined | ParsedEmoteGroup;
 
-  for (const line of lines) {
+  for (const line of helpers.lines) {
     const trace: any[] = [];
 
     try {
       // Is this just a newline?
       if (line.match(/\r?\n/)) {
         // Then we just need to increment the index
-        index += line.length;
-        lineNumber++;
+        helpers.index += line.length;
+        helpers.lineNumber++;
         continue;
       }
 
       const lineRange = {
         start: {
-          index,
-          line: lineNumber,
+          index: helpers.index,
+          line: helpers.lineNumber,
           character: 0,
         },
         end: {
-          index: index + line.length,
-          line: lineNumber,
+          index: helpers.index + line.length,
+          line: helpers.lineNumber,
           character: line.length,
         },
       };
@@ -206,7 +180,7 @@ export function parseStringifiedQuest(
           });
         }
 
-        index += line.length;
+        helpers.index += line.length;
         continue;
       }
 
@@ -243,7 +217,7 @@ export function parseStringifiedQuest(
           type: 'glossary',
           start,
           end,
-          options: glossaryTerms,
+          options: helpers.glossaryTerms,
         });
       }
 
@@ -299,16 +273,16 @@ export function parseStringifiedQuest(
         result.parsed.clues.push(lastClue);
       } else if (indicator === '>') {
         // Then this is a dialog line, either within a Clue or a Dialog Moment
-        const emoji = emojiIdFromName(parsedLine.emojiName?.value);
+        const emoji = helpers.emojiIdFromName(parsedLine.emojiName?.value);
         if (parsedLine.emojiGroup) {
           // Emojis are optional. If we see a "group" (parentheses) then
           // that changes to a requirement.
           requiresEmoji = {
             at: changedPosition(parsedLine.emojiGroup.start, { characters: 1 }),
-            options: motes.emojis,
+            options: helpers.emojis,
           };
         }
-        checkSpelling(parsedLine.text);
+        helpers.checkSpelling(parsedLine.text);
         const moment: ParsedDialog = {
           kind: 'dialogue',
           id: parsedLine.arrayTag?.value?.trim(),
@@ -337,24 +311,26 @@ export function parseStringifiedQuest(
         }
       } else if (labelLower === 'stage') {
         const stage = parsedLine.text?.value?.trim();
-        if (includes(stagingOptions, stage)) {
+        if (includes(helpers.stagingOptions, stage)) {
           result.parsed.stage = stage;
         } else {
           result.diagnostics.push({
-            message: `Stage must be one of: ${stagingOptions.join(', ')}`,
+            message: `Stage must be one of: ${helpers.stagingOptions.join(
+              ', ',
+            )}`,
             ...lineRange,
           });
           // Provide autocomplete options
           result.completions.push({
             type: 'stages',
-            options: stagingOptions,
+            options: helpers.stagingOptions,
             start: parsedLine.labelGroup!.end,
             end: lineRange.end,
           });
         }
       } else if (labelLower === 'log') {
         result.parsed.quest_start_log = parsedLine.text?.value?.trim();
-        checkSpelling(parsedLine.text);
+        helpers.checkSpelling(parsedLine.text);
       } else if (labelLower === 'storyline') {
         requiresMote = {
           at: parsedLine.labelGroup!.end,
@@ -411,7 +387,7 @@ export function parseStringifiedQuest(
               at: changedPosition(parsedLine.emojiGroup.start, {
                 characters: 1,
               }),
-              options: motes.emojis,
+              options: helpers.emojis,
             };
           } else {
             result.diagnostics.push({
@@ -422,7 +398,7 @@ export function parseStringifiedQuest(
           lastEmojiGroup.emotes.push({
             id: parsedLine.arrayTag?.value?.trim(),
             speaker: parsedLine.moteTag?.value?.trim(),
-            emoji: emojiIdFromName(parsedLine.emojiName?.value),
+            emoji: helpers.emojiIdFromName(parsedLine.emojiName?.value),
           });
         } else {
           result.diagnostics.push({
@@ -540,7 +516,7 @@ export function parseStringifiedQuest(
           id: parsedLine.arrayTag?.value?.trim(),
           text: parsedLine.text?.value?.trim(),
         });
-        checkSpelling(parsedLine.text);
+        helpers.checkSpelling(parsedLine.text);
       }
 
       if (requiresEmoji) {
@@ -554,7 +530,7 @@ export function parseStringifiedQuest(
             options: requiresEmoji.options,
             ...where,
           });
-        } else if (!emojiIdFromName(parsedLine.emojiName?.value)) {
+        } else if (!helpers.emojiIdFromName(parsedLine.emojiName?.value)) {
           result.diagnostics.push({
             message: `Emoji "${parsedLine.emojiName?.value}" not found!`,
             ...where,
@@ -592,7 +568,7 @@ export function parseStringifiedQuest(
       throw err;
     }
 
-    index += line.length;
+    helpers.index += line.length;
   }
 
   return result;

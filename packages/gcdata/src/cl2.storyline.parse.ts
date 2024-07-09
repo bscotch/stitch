@@ -1,6 +1,6 @@
 import type { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
-import { getStagingOptions } from './cl2.quest.utils.js';
+import { prepareParserHelpers } from './cl2.shared.parse.js';
 import {
   arrayTagPattern,
   lineIsArrayItem,
@@ -20,8 +20,7 @@ import {
   createBsArrayKey,
   updateBsArrayOrder,
 } from './helpers.js';
-import type { ParsedLineItem } from './types.editor.js';
-import { checkWords, includes } from './util.js';
+import { includes } from './util.js';
 
 export function parseStringifiedStoryline(
   text: string,
@@ -47,43 +46,28 @@ export function parseStringifiedStoryline(
     'Stage',
   ]);
 
-  const stagingOptions = getStagingOptions(packed.working);
+  const helpers = prepareParserHelpers(text, packed, options, result);
 
-  /** Terms from the glossary for use in autocompletes */
-  const glossaryTerms = (packed.glossary?.relevantTerms() || []).map(
-    (t) => t.text,
-  );
-
-  const checkSpelling = (item: ParsedLineItem<any> | undefined) => {
-    if (!item || !options.checkSpelling) return;
-    result.words.push(...checkWords(item, packed.glossary));
-  };
-
-  const lines = text.split(/(\r?\n)/g);
-
-  let index = 0;
-  let lineNumber = 0;
-
-  for (const line of lines) {
+  for (const line of helpers.lines) {
     const trace: any[] = [];
     try {
       // Is this just a newline?
       if (line.match(/\r?\n/)) {
         // Then we just need to increment the index
-        index += line.length;
-        lineNumber++;
+        helpers.index += line.length;
+        helpers.lineNumber++;
         continue;
       }
 
       const lineRange = {
         start: {
-          index,
-          line: lineNumber,
+          index: helpers.index,
+          line: helpers.lineNumber,
           character: 0,
         },
         end: {
-          index: index + line.length,
-          line: lineNumber,
+          index: helpers.index + line.length,
+          line: helpers.lineNumber,
           character: line.length,
         },
       };
@@ -128,7 +112,7 @@ export function parseStringifiedStoryline(
           });
         }
 
-        index += line.length;
+        helpers.index += line.length;
         continue;
       }
 
@@ -164,7 +148,7 @@ export function parseStringifiedStoryline(
           type: 'glossary',
           start,
           end,
-          options: glossaryTerms,
+          options: helpers.glossaryTerms,
         });
       }
 
@@ -177,7 +161,7 @@ export function parseStringifiedStoryline(
           id: parsedLine.arrayTag?.value?.trim(),
           text: parsedLine.text?.value?.trim(),
         });
-        checkSpelling(parsedLine.text);
+        helpers.checkSpelling(parsedLine.text);
       } else if (labelLower === 'name') {
         result.parsed.name = parsedLine.text?.value?.trim();
         if (!result.parsed.name) {
@@ -188,20 +172,22 @@ export function parseStringifiedStoryline(
         }
       } else if (labelLower === 'description') {
         result.parsed.description = parsedLine.text?.value?.trim();
-        checkSpelling(parsedLine.text);
+        helpers.checkSpelling(parsedLine.text);
       } else if (labelLower === 'stage') {
         const stage = parsedLine.text?.value?.trim();
-        if (includes(stagingOptions, stage)) {
+        if (includes(helpers.stagingOptions, stage)) {
           result.parsed.stage = stage;
         } else {
           result.diagnostics.push({
-            message: `Stage must be one of: ${stagingOptions.join(', ')}`,
+            message: `Stage must be one of: ${helpers.stagingOptions.join(
+              ', ',
+            )}`,
             ...lineRange,
           });
           // Provide autocomplete options
           result.completions.push({
             type: 'stages',
-            options: stagingOptions,
+            options: helpers.stagingOptions,
             start: parsedLine.labelGroup!.end,
             end: lineRange.end,
           });
@@ -219,7 +205,7 @@ export function parseStringifiedStoryline(
       }
       throw err;
     }
-    index += line.length;
+    helpers.index += line.length;
   }
 
   return result;
