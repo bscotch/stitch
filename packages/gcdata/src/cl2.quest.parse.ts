@@ -17,7 +17,12 @@ import {
   getRequirementStyleNames,
   isEmoteMoment,
 } from './cl2.quest.utils.js';
-import { prepareParserHelpers } from './cl2.shared.parse.js';
+import {
+  isCommentLine,
+  isStageLine,
+  prepareParserHelpers,
+  updateWipChangesFromParsed,
+} from './cl2.shared.parse.js';
 import { Crashlands2 } from './cl2.types.auto.js';
 import {
   bsArrayToArray,
@@ -26,7 +31,6 @@ import {
 } from './helpers.js';
 import type { Position } from './types.editor.js';
 import type { Mote } from './types.js';
-import { includes } from './util.js';
 
 export function parseStringifiedQuest(
   text: string,
@@ -215,25 +219,8 @@ export function parseStringifiedQuest(
             ...lineRange,
           });
         }
-      } else if (labelLower === 'stage') {
-        const stage = parsedLine.text?.value?.trim();
-        if (includes(helpers.stagingOptions, stage)) {
-          result.parsed.stage = stage;
-        } else {
-          result.diagnostics.push({
-            message: `Stage must be one of: ${helpers.stagingOptions.join(
-              ', ',
-            )}`,
-            ...lineRange,
-          });
-          // Provide autocomplete options
-          result.completions.push({
-            type: 'stages',
-            options: helpers.stagingOptions,
-            start: parsedLine.labelGroup!.end,
-            end: lineRange.end,
-          });
-        }
+      } else if (isStageLine(parsedLine)) {
+        helpers.addStage(parsedLine);
       } else if (labelLower === 'log') {
         result.parsed.quest_start_log = parsedLine.text?.value?.trim();
         helpers.checkSpelling(parsedLine.text);
@@ -416,13 +403,8 @@ export function parseStringifiedQuest(
             ...lineRange,
           });
         }
-      } else if (indicator === '//') {
-        // Then this is a comment/note
-        result.parsed.comments.push({
-          id: parsedLine.arrayTag?.value?.trim(),
-          text: parsedLine.text?.value?.trim(),
-        });
-        helpers.checkSpelling(parsedLine.text);
+      } else if (isCommentLine(parsedLine)) {
+        helpers.addComment(parsedLine);
       }
 
       if (requiresEmoji) {
@@ -520,51 +502,9 @@ export async function updateChangesFromParsedQuest(
     updateMote('data/quest_start_log/text', parsed.quest_start_log);
     updateMote('data/storyline', parsed.storyline);
 
-    if (parsed.stage) {
-      updateMote('data/wip/staging', parsed.stage);
-    } else if (questMoteWorking?.data.wip) {
-      updateMote('data/wip/staging', null);
-    }
+    updateWipChangesFromParsed(parsed, moteId, packed, trace);
 
-    const parsedComments = parsed.comments.filter((c) => !!c.text);
     const parsedClues = parsed.clues.filter((c) => !!c.id && !!c.speaker);
-
-    //#region COMMENTS
-    // Add/Update COMMENTS
-    trace(`Updating comments`);
-    for (const comment of parsedComments) {
-      trace(`Updating comment ${comment.id} with text "${comment.text}"`);
-      updateMote(`data/wip/notes/${comment.id}/element/text`, comment.text);
-    }
-    // Remove deleted comments
-    for (const existingComment of bsArrayToArray(
-      questMoteBase?.data.wip?.notes || {},
-    )) {
-      if (!parsedComments.find((c) => c.id === existingComment.id)) {
-        trace(`Deleting comment ${existingComment.id}`);
-        updateMote(`data/wip/notes/${existingComment.id}`, null);
-      }
-    }
-    // Get the BASE order of the comments (if any) and use those
-    // as the starting point for an up to date order.
-    const comments = parsedComments.map((c) => {
-      // Look up the base comment
-      let comment = questMoteBase?.data.wip?.notes?.[c.id!];
-      if (!comment) {
-        comment = questMoteWorking?.data.wip?.notes?.[c.id!];
-        // @ts-expect-error - order is a required field, but it'll be re-added
-        delete comment?.order;
-      }
-      assert(comment, `Comment ${c.id} not found in base or working mote`);
-      return { ...comment, id: c.id! };
-    });
-    trace('Updating comment order');
-    updateBsArrayOrder(comments);
-    comments.forEach((comment) => {
-      trace(`Updating comment ${comment.id} order to ${comment.order}`);
-      updateMote(`data/wip/notes/${comment.id}/order`, comment.order);
-    });
-    //#endregion
 
     //#region CLUES
     // Add/update clues

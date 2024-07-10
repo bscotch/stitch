@@ -1,16 +1,23 @@
+import { assert } from './assert.js';
 import {
   arrayTagPattern,
   getEmojis,
   getStagingOptions,
   lineIsArrayItem,
+  ParsedBase,
   ParsedLine,
   parseIfMatch,
   ParserResult,
 } from './cl2.shared.types.js';
+import { StorylineMoteDataPointer } from './cl2.storyline.pointers.js';
 import type { GameChanger } from './GameChanger.js';
-import { createBsArrayKey } from './helpers.js';
+import {
+  bsArrayToArray,
+  createBsArrayKey,
+  updateBsArrayOrder,
+} from './helpers.js';
 import { ParsedLineItem } from './types.editor.js';
-import { checkWords } from './util.js';
+import { checkWords, includes } from './util.js';
 
 export function prepareParserHelpers(
   text: string,
@@ -147,6 +154,32 @@ export function prepareParserHelpers(
     emojiIdFromName,
     checkSpelling,
     parseCurrentLine,
+    addComment: (line: ParsedLine) => {
+      result.parsed.comments.push({
+        id: line.arrayTag?.value?.trim(),
+        text: line.text?.value?.trim(),
+      });
+      checkSpelling(line.text);
+    },
+    addStage: (line: ParsedLine) => {
+      const stage = line.text?.value?.trim();
+      if (includes(stagingOptions, stage)) {
+        result.parsed.stage = stage;
+      } else {
+        const range = currentLineRange();
+        result.diagnostics.push({
+          message: `Stage must be one of: ${stagingOptions.join(', ')}`,
+          ...range,
+        });
+        // Provide autocomplete options
+        result.completions.push({
+          type: 'stages',
+          options: stagingOptions,
+          start: line.labelGroup!.end,
+          end: range.end,
+        });
+      }
+    },
     get currentLineRange() {
       return currentLineRange();
     },
@@ -179,4 +212,68 @@ export function prepareParserHelpers(
     index,
     lineNumber,
   };
+}
+
+export function isCommentLine(line: ParsedLine): boolean {
+  return line.indicator?.value === '//';
+}
+
+export function isStageLine(line: ParsedLine): boolean {
+  return line.label?.value?.toLowerCase() === 'stage';
+}
+
+export function updateWipChangesFromParsed(
+  parsed: ParsedBase,
+  moteId: string,
+  packed: GameChanger,
+  trace: (msg: any) => void,
+) {
+  const baseMote = packed.base.getMote(moteId);
+  const workingMote = packed.working.getMote(moteId);
+
+  // Could use pretty much any pointer, since all motes have WIP
+  const updateMote = (path: StorylineMoteDataPointer, value: any) => {
+    packed.updateMoteData(moteId, path, value);
+  };
+
+  if (parsed.stage) {
+    updateMote('data/wip/staging', parsed.stage);
+  } else if (workingMote?.data.wip) {
+    updateMote('data/wip/staging', null);
+  }
+
+  // Add/Update COMMENTS
+  trace(`Updating comments`);
+  const parsedComments = parsed.comments.filter((c) => !!c.text);
+  for (const comment of parsedComments) {
+    trace(`Updating comment ${comment.id} with text "${comment.text}"`);
+    updateMote(`data/wip/notes/${comment.id}/element/text`, comment.text);
+  }
+  // Remove deleted comments
+  for (const existingComment of bsArrayToArray(
+    baseMote?.data.wip?.notes || {},
+  )) {
+    if (!parsedComments.find((c) => c.id === existingComment.id)) {
+      trace(`Deleting comment ${existingComment.id}`);
+      updateMote(`data/wip/notes/${existingComment.id}`, null);
+    }
+  }
+  // Get the BASE order of the comments (if any) and use those
+  // as the starting point for an up to date order.
+  const comments = parsedComments.map((c) => {
+    // Look up the base comment
+    let comment = baseMote?.data.wip?.notes?.[c.id!];
+    if (!comment) {
+      comment = workingMote?.data.wip?.notes?.[c.id!];
+      delete comment?.order;
+    }
+    assert(comment, `Comment ${c.id} not found in base or working mote`);
+    return { ...comment, id: c.id! };
+  });
+  trace('Updating comment order');
+  updateBsArrayOrder(comments);
+  comments.forEach((comment) => {
+    trace(`Updating comment ${comment.id} order to ${comment.order}`);
+    updateMote(`data/wip/notes/${comment.id}/order`, comment.order);
+  });
 }
