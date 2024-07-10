@@ -1,0 +1,32 @@
+export type ComfortMoteDataPointer = `data/${ComfortMotePointer}`;
+export type ComfortMotePointer = ``
+  | `artisan_id`
+  | `description/description`
+  | `description/skip`
+  | `description/text`
+  | `description`
+  | `ignore_in_progression_map`
+  | `name/description`
+  | `name/skip`
+  | `name/text`
+  | `name`
+  | `order`
+  | `priors/${string}/element`
+  | `priors/${string}/order`
+  | `priors/${string}`
+  | `priors`
+  | `uicon`
+  | `unlocked_by`
+  | `unlocked_description/description`
+  | `unlocked_description/skip`
+  | `unlocked_description/text`
+  | `unlocked_description`
+  | `wip/notes/${string}/element/author`
+  | `wip/notes/${string}/element/text`
+  | `wip/notes/${string}/element/timestamp`
+  | `wip/notes/${string}/element`
+  | `wip/notes/${string}/order`
+  | `wip/notes/${string}`
+  | `wip/notes`
+  | `wip/staging`
+  | `wip`;

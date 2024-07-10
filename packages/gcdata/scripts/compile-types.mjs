@@ -49,43 +49,76 @@ const rootSchema = {
 // const questSchema = packed.getSchema('cl2_quest');
 // ok(questSchema);
 
-const storylineTypes = await compile(rootSchema, 'Schemas', {
+const schemaTypes = await compile(rootSchema, 'Schemas', {
   additionalProperties: false,
 });
 await pathy('src/cl2.types.auto.ts').write(
-  `export namespace Crashlands2 {\n\t${storylineTypes.replace(
+  `export namespace Crashlands2 {\n\t${schemaTypes.replace(
     /\n/g,
     '\n\t',
   )}\n}\n`,
 );
 
-// Create types for Quest Mote paths
-const questMoteSchema = packed.base.getSchema('cl2_quest');
-ok(questMoteSchema);
-const questPointers = [
-  ...computeMotePointersFromSchema(packed.base, questMoteSchema),
-]
-  .filter((p) => !p.startsWith('objectives'))
-  .map((p) => `\`${p.replace(/\*/g, '${string}')}\``)
-  .sort();
-await pathy('src/cl2.quest.pointers.ts').write(
-  `export type QuestMoteDataPointer = \`data/\${QuestMotePointer}\`;\nexport type QuestMotePointer = ${questPointers.join(
-    '\n  | ',
-  )};\n`,
+await createPointerTypesFromSchema(
+  'cl2_quest',
+  'QuestMote',
+  'quest',
+  (pointer) => !pointer.startsWith('objectives'),
 );
-const storylinePointers = [
-  ...computeMotePointersFromSchema(
-    packed.base,
-    exists(packed.base.getSchema('cl2_storyline')),
-  ),
-]
-  .map((p) => `\`${p.replace(/\*/g, '${string}')}\``)
-  .sort();
-await pathy('src/cl2.storyline.pointers.ts').write(
-  `export type StorylineMoteDataPointer = \`data/\${StorylineMotePointer}\`;\nexport type StorylineMotePointer = ${storylinePointers.join(
-    '\n  | ',
-  )};\n`,
+await createPointerTypesFromSchema(
+  'cl2_storyline',
+  'StorylineMote',
+  'storyline',
 );
+await createPointerTypesFromSchema(
+  'cl2_artisan_glads',
+  'ComfortMote',
+  'comfort',
+  (pointer) => !pointer.startsWith('glads'),
+);
+await createPointerTypesFromSchema(
+  'cl2_chat',
+  'ChatMote',
+  'chat',
+  (pointer) => !pointer.startsWith('requirements'),
+);
+// Artisans & NPCs have similar schemas, but for our
+// current case we only care about Idle Text, which both have,
+// so we can just use one schema for types/pointers.
+await createPointerTypesFromSchema(
+  'cl2_npc',
+  'CharacterMote',
+  'character',
+  (pointer) => !pointer.startsWith('spine'),
+);
+
+/**
+ * @param {string} schemaId
+ * @param {string} typeRootName
+ * @param {string} outfileInfix
+ * @param {(pointer:string)=>boolean} [pointerFilter]
+ */
+async function createPointerTypesFromSchema(
+  schemaId,
+  typeRootName,
+  outfileInfix,
+  pointerFilter,
+) {
+  // Create types for Quest Mote paths
+  const schema = exists(packed).base.getSchema(schemaId);
+  ok(schema, 'Could not find schema for ' + schemaId);
+  const pointers = [
+    ...computeMotePointersFromSchema(exists(packed).base, schema),
+  ]
+    .filter((p) => !pointerFilter || pointerFilter(p))
+    .map((p) => `\`${p.replace(/\*/g, '${string}')}\``)
+    .sort();
+  await pathy(`src/cl2.${outfileInfix}.pointers.ts`).write(
+    `export type ${typeRootName}DataPointer = \`data/\${${typeRootName}Pointer}\`;\nexport type ${typeRootName}Pointer = ${pointers.join(
+      '\n  | ',
+    )};\n`,
+  );
+}
 
 /**
  * @param {import('../dist/types.js').Bschema} schema
