@@ -1,5 +1,12 @@
 # @bscotch/gcdata Changelog
 
+## 0.21.0 (2024-07-10)
+
+### Features
+
+- The CL2 editor now shows all motes and allows editing Comforts
+- Added support for Buddy Comforts
+
 ## 0.20.1 (2024-07-09)
 
 ### Fixes

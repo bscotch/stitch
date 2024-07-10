@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.23.0 (2024-07-10)
+
+### Features
+
+- The CL2 editor now shows all motes and allows editing Comforts
+
 ## 0.22.0 (2024-07-09)
 
 ### Features
