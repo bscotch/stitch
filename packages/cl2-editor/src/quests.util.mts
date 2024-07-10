@@ -1,4 +1,5 @@
 import {
+  comfortSchemaId,
   questSchemaId,
   storylineSchemaId,
   type Mote,
@@ -15,12 +16,22 @@ export function moteToUri(mote: Mote): vscode.Uri {
   return vscode.Uri.parse(moteToPath(mote));
 }
 
+export function hasEditor(mote: Mote): boolean {
+  return [questSchemaId, storylineSchemaId, comfortSchemaId].includes(
+    mote.schema_id,
+  );
+}
+
 export function isQuestUri(uri: vscode.Uri) {
   return uri.scheme === 'bschema' && uri.path.endsWith(`.${questSchemaId}`);
 }
 
 export function isStorylineUri(uri: vscode.Uri) {
   return uri.scheme === 'bschema' && uri.path.endsWith(`.${storylineSchemaId}`);
+}
+
+export function isComfortUri(uri: vscode.Uri) {
+  return uri.scheme === 'bschema' && uri.path.endsWith(`.${comfortSchemaId}`);
 }
 
 export interface ParsedGameChangerUri {

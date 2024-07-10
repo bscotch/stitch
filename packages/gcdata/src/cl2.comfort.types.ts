@@ -1,13 +1,13 @@
 import type { Gcdata } from './GameChanger.js';
 import { assert } from './assert.js';
-import { arrayTagPattern, ParserResult } from './cl2.shared.types.js';
-import type { Crashlands2 } from './cl2.types.auto.js';
-import type { BschemaRoot, Mote } from './types.js';
-
-export const comfortSchemaId = 'cl2_artisan_glads';
-
-export type ComfortData = Crashlands2.Schemas['cl2_artisan_glads'];
-export type ComfortMote = Mote<ComfortData>;
+import {
+  arrayTagPattern,
+  ComfortData,
+  ComfortMote,
+  comfortSchemaId,
+  ParserResult,
+} from './cl2.shared.types.js';
+import type { BschemaRoot } from './types.js';
 
 export interface ComfortUpdateResult
   extends ParserResult<{

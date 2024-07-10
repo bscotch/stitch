@@ -1,5 +1,5 @@
+import { StorylineMote } from './cl2.shared.types.js';
 import type { GameChanger } from './GameChanger.js';
-import { type StorylineMote } from './cl2.storyline.types.js';
 import { bsArrayToArray, toArrayTag } from './helpers.js';
 
 export function stringifyStoryline(

@@ -6,11 +6,11 @@ import {
   prepareParserHelpers,
   updateWipChangesFromParsed,
 } from './cl2.shared.parse.js';
+import { storylineSchemaId } from './cl2.shared.types.js';
 import { StorylineMoteDataPointer } from './cl2.storyline.pointers.js';
 import {
   getStorylineSchema,
   linePatterns,
-  storylineSchemaId,
   type StorylineUpdateResult,
 } from './cl2.storyline.types.js';
 

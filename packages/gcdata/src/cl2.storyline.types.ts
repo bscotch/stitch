@@ -1,13 +1,13 @@
 import type { Gcdata } from './GameChanger.js';
 import { assert } from './assert.js';
-import { arrayTagPattern, ParserResult } from './cl2.shared.types.js';
-import type { Crashlands2 } from './cl2.types.auto.js';
-import type { BschemaRoot, Mote } from './types.js';
-
-export const storylineSchemaId = 'cl2_storyline';
-
-export type StorylineData = Crashlands2.Schemas['cl2_storyline'];
-export type StorylineMote = Mote<StorylineData>;
+import {
+  arrayTagPattern,
+  ParserResult,
+  StorylineData,
+  StorylineMote,
+  storylineSchemaId,
+} from './cl2.shared.types.js';
+import type { BschemaRoot } from './types.js';
 
 export interface StorylineUpdateResult
   extends ParserResult<{

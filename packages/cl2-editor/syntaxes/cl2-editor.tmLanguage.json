@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "CL2 Quest",
+  "name": "CL2 Editor",
   "scopeName": "source.cl2-quest",
-  "fileTypes": ["cl2_quest"],
+  "fileTypes": ["cl2_quest", "cl2_storyline", "cl2_artisan_glads"],
   "patterns": [
     {
       "include": "#general"

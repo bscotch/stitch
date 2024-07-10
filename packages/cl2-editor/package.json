@@ -108,12 +108,17 @@
       {
         "language": "cl2-quest",
         "scopeName": "source.cl2-quest",
-        "path": "./syntaxes/cl2-quest.tmLanguage.json"
+        "path": "./syntaxes/cl2-editor.tmLanguage.json"
       },
       {
         "language": "cl2-storyline",
         "scopeName": "source.cl2-quest",
-        "path": "./syntaxes/cl2-storyline.tmLanguage.json"
+        "path": "./syntaxes/cl2-editor.tmLanguage.json"
+      },
+      {
+        "language": "cl2-comfort",
+        "scopeName": "source.cl2-quest",
+        "path": "./syntaxes/cl2-editor.tmLanguage.json"
       }
     ],
     "keybindings": [
@@ -137,7 +142,7 @@
         "aliases": [
           "Cl2 Quest"
         ],
-        "configuration": "./languages/cl2-quest.language-configuration.json",
+        "configuration": "./languages/cl2-editor.language-configuration.json",
         "extensions": [
           ".cl2_quest"
         ]
@@ -147,9 +152,19 @@
         "aliases": [
           "Cl2 Storyline"
         ],
-        "configuration": "./languages/cl2-storyline.language-configuration.json",
+        "configuration": "./languages/cl2-editor.language-configuration.json",
         "extensions": [
           ".cl2_storyline"
+        ]
+      },
+      {
+        "id": "cl2-comfort",
+        "aliases": [
+          "Cl2 Comfort"
+        ],
+        "configuration": "./languages/cl2-editor.language-configuration.json",
+        "extensions": [
+          ".cl2_artisan_glads"
         ]
       }
     ],

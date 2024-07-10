@@ -1,5 +1,5 @@
+import { ComfortMote } from './cl2.shared.types.js';
 import type { GameChanger } from './GameChanger.js';
-import { type ComfortMote } from './cl2.comfort.types.js';
 import { bsArrayToArray, toArrayTag } from './helpers.js';
 import { cleanGameChangerString } from './util.js';
 

@@ -1,20 +1,17 @@
 import { GameChanger } from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
+import { ComfortCompletionProvider } from './comfort.autocompletes.mjs';
 import { crashlandsEvents } from './events.mjs';
 import { GameChangerFs } from './gc.fs.mjs';
 import { logger } from './log.mjs';
 import { QuestCompletionProvider } from './quests.autocompletes.mjs';
 import { StoryFoldingRangeProvider } from './quests.folding.mjs';
 import { QuestHoverProvider } from './quests.hover.mjs';
-import { QuestWorkspaceSymbolProvider } from './quests.symbols.mjs';
-import { QuestTreeProvider } from './quests.tree.mjs';
-import {
-  isQuestUri,
-  isStorylineUri,
-  parseGameChangerUri,
-} from './quests.util.mjs';
+import { parseGameChangerUri } from './quests.util.mjs';
 import { StorylineCompletionProvider } from './storyline.autocompletes.mjs';
+import { SymbolProvider } from './symbols.mjs';
+import { TreeProvider } from './tree.mjs';
 
 export class CrashlandsWorkspace {
   static workspace = undefined as CrashlandsWorkspace | undefined;
@@ -49,11 +46,12 @@ export class CrashlandsWorkspace {
     ctx.subscriptions.push(
       ...GameChangerFs.register(this.workspace),
       ...StoryFoldingRangeProvider.register(this.workspace),
-      ...QuestTreeProvider.register(this.workspace),
+      ...TreeProvider.register(this.workspace),
       ...QuestHoverProvider.register(this.workspace),
       ...QuestCompletionProvider.register(this.workspace),
       ...StorylineCompletionProvider.register(this.workspace),
-      ...QuestWorkspaceSymbolProvider.register(this.workspace),
+      ...ComfortCompletionProvider.register(this.workspace),
+      ...SymbolProvider.register(this.workspace),
       vscode.commands.registerCommand('crashlands.open.saveDir', async () => {
         await vscode.commands.executeCommand(
           'vscode.openFolder',
@@ -88,16 +86,14 @@ export class CrashlandsWorkspace {
         await loadGlossary();
       }),
       vscode.workspace.onDidChangeTextDocument((event) => {
-        if (isQuestUri(event.document.uri)) {
-          crashlandsEvents.emit('quest-updated', event.document.uri);
-        } else if (isStorylineUri(event.document.uri)) {
-          crashlandsEvents.emit('storyline-updated', event.document.uri);
+        if (event.document.uri.scheme === 'bschema') {
+          crashlandsEvents.emit('mote-updated', event.document.uri);
         }
       }),
       vscode.window.onDidChangeActiveTextEditor((editor) => {
         const uri = editor?.document.uri;
-        if (uri && isQuestUri(uri)) {
-          crashlandsEvents.emit('quest-opened', uri, parseGameChangerUri(uri));
+        if (uri && uri.scheme === 'bschema') {
+          crashlandsEvents.emit('mote-opened', uri, parseGameChangerUri(uri));
         }
       }),
     );

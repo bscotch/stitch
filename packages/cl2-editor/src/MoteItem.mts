@@ -6,9 +6,9 @@ import type {
   StorylineData,
 } from '@bscotch/gcdata';
 import vscode from 'vscode';
-import { MoteItemData, QuestTreeItem } from './quests.tree.mjs';
 import { moteToPath } from './quests.util.mjs';
 import { TreeItemBase } from './tree.base.mjs';
+import { MoteItemData, TreeItem } from './tree.mjs';
 
 export class MoteItem<
   Data extends MoteItemData = MoteItemData,
@@ -19,7 +19,7 @@ export class MoteItem<
   constructor(
     readonly packed: GameChanger,
     readonly moteId: string,
-    readonly parentItem?: QuestTreeItem,
+    readonly parentItem?: TreeItem,
     options?: { hasChildren?: boolean },
   ) {
     super(packed.working.getMoteName(moteId)!);

@@ -2,7 +2,8 @@ import { pathy } from '@bscotch/pathy';
 import { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
 import { parseStringifiedComfort, stringifyComfort } from './cl2.comfort.js';
-import { comfortSchemaId, listComforts } from './cl2.comfort.types.js';
+import { listComforts } from './cl2.comfort.types.js';
+import { comfortSchemaId } from './cl2.shared.types.js';
 
 describe('Cl2 Comforts', function () {
   it('can convert a comfort mote to a text format', async function () {

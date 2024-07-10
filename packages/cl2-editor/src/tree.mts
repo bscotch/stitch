@@ -1,5 +1,15 @@
 import {
+  BuddyData,
+  buddySchemaId,
+  ChatData,
+  chatSchemaId,
+  ComfortData,
+  comfortSchemaId,
+  NpcData,
+  npcSchemaId,
   ORDER_INCREMENT,
+  questSchemaId,
+  storylineSchemaId,
   type Bschema,
   type GameChanger,
   type Mote,
@@ -9,17 +19,22 @@ import {
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { crashlandsEvents } from './events.mjs';
-import { moteToPath } from './quests.util.mjs';
+import { hasEditor, moteToPath } from './quests.util.mjs';
 import { TreeItemBase } from './tree.base.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
 
-export type QuestTreeItem = TreeMoteItem | FolderItem;
+type MoteData =
+  | StorylineData
+  | QuestData
+  | ComfortData
+  | NpcData
+  | ChatData
+  | BuddyData;
+export type TreeItem = TreeMoteItem | FolderItem;
 type DropMode = 'order' | 'nest';
 
-export class QuestTreeProvider
-  implements vscode.TreeDataProvider<QuestTreeItem>
-{
-  view!: vscode.TreeView<QuestTreeItem>;
+export class TreeProvider implements vscode.TreeDataProvider<TreeItem> {
+  view!: vscode.TreeView<TreeItem>;
   protected readonly treeMimeType = 'application/vnd.code.tree.cl2-stories';
   readonly dragMimeTypes = [this.treeMimeType];
   readonly dropMimeTypes = [this.treeMimeType];
@@ -30,26 +45,26 @@ export class QuestTreeProvider
   }
 
   private _onDidChangeTreeData: vscode.EventEmitter<
-    QuestTreeItem | undefined | null | void
-  > = new vscode.EventEmitter<QuestTreeItem | undefined | null | void>();
+    TreeItem | undefined | null | void
+  > = new vscode.EventEmitter<TreeItem | undefined | null | void>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
   private _onDidCollapseElement: vscode.EventEmitter<
-    QuestTreeItem | undefined | null | void
-  > = new vscode.EventEmitter<QuestTreeItem | undefined | null | void>();
+    TreeItem | undefined | null | void
+  > = new vscode.EventEmitter<TreeItem | undefined | null | void>();
   readonly onDidCollapseElement = this._onDidCollapseElement.event;
 
   protected constructor(readonly workspace: CrashlandsWorkspace) {}
 
-  getTreeItem(element: QuestTreeItem): QuestTreeItem {
+  getTreeItem(element: TreeItem): TreeItem {
     return element;
   }
-  getParent(element: QuestTreeItem): vscode.ProviderResult<QuestTreeItem> {
+  getParent(element: TreeItem): vscode.ProviderResult<TreeItem> {
     return element.parentItem;
   }
-  getChildren(item?: QuestTreeItem): vscode.ProviderResult<QuestTreeItem[]> {
-    const motes = this.storylineAndQuestMotes;
-    const items: QuestTreeItem[] = [];
+  getChildren(item?: TreeItem): vscode.ProviderResult<TreeItem[]> {
+    const motes = this.allMotes;
+    const items: TreeItem[] = [];
     const baseFolders = new Set<string>();
     const getParent = (mote: Mote) =>
       mote.parent ? this.packed.working.getMote(mote.parent)! : undefined;
@@ -66,6 +81,8 @@ export class QuestTreeProvider
       }
     }
 
+    const comfortMotes = motes.filter((m) => m.schema_id === comfortSchemaId);
+
     if (!item) {
       // For each mote, add it (if no folder OR parent) or its root folder (if folder but no parent)
       for (const mote of motes) {
@@ -79,9 +96,7 @@ export class QuestTreeProvider
             }),
           );
         } else if (!parent && folder.length && !baseFolders.has(folder[0])) {
-          items.push(
-            new FolderItem(undefined, undefined, [folder[0]], { open: true }),
-          );
+          items.push(new FolderItem(undefined, undefined, [folder[0]]));
           baseFolders.add(folder[0]);
         }
       }
@@ -173,13 +188,6 @@ export class QuestTreeProvider
     });
   }
 
-  get storylineAndQuestMotes() {
-    return this.packed.working.listMotesBySchema<StorylineData | QuestData>(
-      'cl2_storyline',
-      'cl2_quest',
-    );
-  }
-
   get allMotes() {
     return this.packed.working.listMotes();
   }
@@ -237,19 +245,19 @@ export class QuestTreeProvider
     this.dropMode = mode;
   }
   handleDrag(
-    source: readonly QuestTreeItem[],
+    source: readonly TreeItem[],
     dataTransfer: vscode.DataTransfer,
   ): void | Thenable<void> {
     const item = new vscode.DataTransferItem(source);
     dataTransfer.set(this.treeMimeType, item);
   }
   async handleDrop(
-    onto: QuestTreeItem | undefined,
+    onto: TreeItem | undefined,
     dataTransfer: vscode.DataTransfer,
   ) {
     if (!onto) return;
-    const dropping: QuestTreeItem = (dataTransfer.get(this.treeMimeType)
-      ?.value || [])[0];
+    const dropping: TreeItem = (dataTransfer.get(this.treeMimeType)?.value ||
+      [])[0];
     if (!dropping || dropping === onto) return;
 
     // Need different outcomes for every combination of target and dropping (each can be a mote or a folder)
@@ -262,21 +270,19 @@ export class QuestTreeProvider
     //    - Move all motes in the folder (recursively) by setting their parent to the target mote and updating their folder to slice the path items up to the dropped folder
     // 4. Dropping a folder onto a folder
     //    - Move all motes in the folder (recursively) by setting their parent to the mote containing the target folder
-    const storyAndQuestMotes = this.storylineAndQuestMotes;
     const allMotes = this.allMotes;
     const getChildren = (
       moteId: string | undefined,
       folder: string | undefined,
-      includeAllMotes?: boolean,
     ) => {
-      const children = (includeAllMotes ? allMotes : storyAndQuestMotes).filter(
+      const children = allMotes.filter(
         (otherMote) =>
           otherMote.parent === moteId && otherMote.folder === folder,
       );
       return children.sort((a, b) => a.data.order - b.data.order);
     };
-    const getSiblings = (mote: Mote | undefined, includeAllMotes?: boolean) =>
-      getChildren(mote?.parent, mote?.folder, includeAllMotes);
+    const getSiblings = (mote: Mote | undefined) =>
+      getChildren(mote?.parent, mote?.folder);
     const assertIsNotInParents = (
       ofMote: Mote | undefined,
       hopefullyNonParent: Mote,
@@ -300,15 +306,23 @@ export class QuestTreeProvider
       // have the same parent & folder as the target, and be placed immediately after it.
       // To properly place, we need to know the order of the target and its next sibling
       const targetSiblings = getSiblings(onto.mote);
+
+      // Some motes don't have an order field -- they are NOT sortable (they just appear alphabetically in the list). For simplicity, we'll just prevent dropping if any of the motes involved are unsortable.
+      const ontoOrder =
+        'order' in onto.mote.data ? onto.mote.data.order : undefined;
+      if (ontoOrder === undefined) {
+        return;
+      }
+
       const priorSibling = targetSiblings.findLast(
         (sib) =>
-          sib.data.order <= onto.mote.data.order &&
+          sib.data.order <= ontoOrder &&
           sib.id !== onto.mote.id &&
           sib.id !== dropping.mote.id,
       );
       const newOrder = priorSibling
-        ? (priorSibling.data.order + onto.mote.data.order) / 2
-        : onto.mote.data.order - ORDER_INCREMENT;
+        ? (priorSibling.data.order + ontoOrder) / 2
+        : ontoOrder - ORDER_INCREMENT;
       this.packed.updateMoteData(dropping.moteId, 'data/order', newOrder);
       this.packed.updateMoteLocation(
         dropping.moteId,
@@ -364,7 +378,6 @@ export class QuestTreeProvider
       const motesToMove = getChildren(
         dropping.parentMote?.id,
         dropping.relativePathString,
-        true,
       );
       for (const mote of motesToMove) {
         assertIsNotInParents(onto.mote, mote);
@@ -382,7 +395,6 @@ export class QuestTreeProvider
       const motesToMove = getChildren(
         dropping.parentMote?.id,
         dropping.relativePathString,
-        true,
       );
       for (const mote of motesToMove) {
         assertIsNotInParents(onto.parentMote, mote);
@@ -402,7 +414,7 @@ export class QuestTreeProvider
   }
 
   static register(workspace: CrashlandsWorkspace) {
-    const provider = new QuestTreeProvider(workspace);
+    const provider = new TreeProvider(workspace);
     provider.view = vscode.window.createTreeView('cl2-stories', {
       treeDataProvider: provider,
       dragAndDropController: provider,
@@ -411,11 +423,11 @@ export class QuestTreeProvider
       void provider.rebuild();
     });
 
-    crashlandsEvents.on('quest-opened', (uri, info) => {
+    crashlandsEvents.on('mote-opened', (uri, info) => {
       // Reveal the quest in the tree
       const questItem = TreeMoteItem.lookup.get(info.moteId!);
       if (!questItem) {
-        console.log("Couldn't find tree item for quest", info.moteId);
+        console.error("Couldn't find tree item for quest", info.moteId);
         return;
       }
       provider.view.reveal(questItem, {
@@ -448,7 +460,7 @@ export class QuestTreeProvider
       ),
       vscode.commands.registerCommand(
         'crashlands.tree.copyFolderPath',
-        (item: QuestTreeItem) => {
+        (item: TreeItem) => {
           if (!(item instanceof FolderItem)) return;
           vscode.env.clipboard.writeText(item.relativePathString);
         },
@@ -470,7 +482,7 @@ class FolderItem extends TreeItemBase<'folder'> {
      * or relative to the root if there is no parent.
      */
     readonly parentMote: Mote | undefined,
-    readonly parentItem: QuestTreeItem | undefined,
+    readonly parentItem: TreeItem | undefined,
     /**
      * Path to this folder relative to its parent Mote
      * (or the root if there is no parent)
@@ -492,8 +504,7 @@ class FolderItem extends TreeItemBase<'folder'> {
 }
 
 export type MoteItemData =
-  | QuestData
-  | StorylineData
+  | MoteData
   | { id: unknown; schema: unknown; order: number };
 
 class TreeMoteItem<
@@ -506,7 +517,7 @@ class TreeMoteItem<
   constructor(
     readonly packed: GameChanger,
     readonly moteId: string,
-    readonly parentItem?: QuestTreeItem,
+    readonly parentItem?: TreeItem,
     options?: { hasChildren?: boolean },
   ) {
     super(packed.working.getMoteName(moteId)!);
@@ -518,15 +529,28 @@ class TreeMoteItem<
       : vscode.TreeItemCollapsibleState.None;
 
     this.iconPath = new vscode.ThemeIcon(
-      this.isStoryline() ? 'book' : this.isQuest() ? 'note' : 'question',
+      this.isStoryline()
+        ? 'book'
+        : this.isQuest()
+          ? 'note'
+          : this.isComfort()
+            ? 'heart'
+            : this.isChat()
+              ? 'comment-discussion'
+              : this.isCharacter()
+                ? 'account'
+                : 'question',
     );
     // Make it openable in the editor
     this.resourceUri = vscode.Uri.parse(moteToPath(this.mote));
-    this.command = {
-      command: 'vscode.open',
-      title: 'Open',
-      arguments: [this.resourceUri],
-    };
+
+    if (hasEditor(this.mote)) {
+      this.command = {
+        command: 'vscode.open',
+        title: 'Open',
+        arguments: [this.resourceUri],
+      };
+    }
   }
 
   get parentMote(): Mote | undefined {
@@ -556,11 +580,26 @@ class TreeMoteItem<
   }
 
   isStoryline(): this is TreeMoteItem<StorylineData> {
-    return this.mote.schema_id === 'cl2_storyline';
+    return this.mote.schema_id === storylineSchemaId;
   }
 
   isQuest(): this is TreeMoteItem<QuestData> {
-    return this.mote.schema_id === 'cl2_quest';
+    return this.mote.schema_id === questSchemaId;
+  }
+
+  isComfort(): this is TreeMoteItem<ComfortData> {
+    return this.mote.schema_id === comfortSchemaId;
+  }
+
+  isCharacter(): this is TreeMoteItem<NpcData | ComfortData> {
+    return (
+      this.mote.schema_id === npcSchemaId ||
+      this.mote.schema_id === buddySchemaId
+    );
+  }
+
+  isChat(): this is TreeMoteItem<ChatData> {
+    return this.mote.schema_id === chatSchemaId;
   }
 
   get schemaId(): string {

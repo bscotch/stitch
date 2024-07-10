@@ -11,6 +11,30 @@ import type {
 import type { BschemaEnum, Mote } from './types.js';
 import { resolvePointerInSchema } from './util.js';
 
+export const questSchemaId = 'cl2_quest';
+export type QuestData = Crashlands2.Schemas['cl2_quest'];
+export type QuestMote = Mote<QuestData>;
+
+export const chatSchemaId = 'cl2_chat';
+export type ChatData = Crashlands2.Schemas['cl2_chat'];
+export type ChatMote = Mote<ChatData>;
+
+export const buddySchemaId = 'artisan';
+export type BuddyData = Crashlands2.Schemas['artisan'];
+export type BuddyMote = Mote<BuddyData>;
+
+export const npcSchemaId = 'cl2_npc';
+export type NpcData = Crashlands2.Schemas['cl2_npc'];
+export type NpcMote = Mote<NpcData>;
+
+export const comfortSchemaId = 'cl2_artisan_glads';
+export type ComfortData = Crashlands2.Schemas['cl2_artisan_glads'];
+export type ComfortMote = Mote<ComfortData>;
+
+export const storylineSchemaId = 'cl2_storyline';
+export type StorylineData = Crashlands2.Schemas['cl2_storyline'];
+export type StorylineMote = Mote<StorylineData>;
+
 export interface ParsedComment {
   /** arrayId */
   id: string | undefined;
@@ -164,7 +188,7 @@ export function parseIfMatch(
 export function lineIsArrayItem(line: string): boolean {
   if (
     line.match(
-      /^(\t|name|stage|storyline|(start|end) (moments|requirements)|log|giver|receiver|description)/i,
+      /^(\t|name|stage|storyline|(start|end) (moments|requirements)|log|giver|receiver|description|unlocked description)/i,
     )
   ) {
     return false;

@@ -2,7 +2,6 @@ import type { GameChanger } from './GameChanger.js';
 import { assert } from './assert.js';
 import type { ComfortMoteDataPointer } from './cl2.comfort.pointers.js';
 import {
-  comfortSchemaId,
   getComfortSchema,
   linePatterns,
   type ComfortUpdateResult,
@@ -13,6 +12,7 @@ import {
   prepareParserHelpers,
   updateWipChangesFromParsed,
 } from './cl2.shared.parse.js';
+import { comfortSchemaId } from './cl2.shared.types.js';
 
 export function parseStringifiedComfort(
   text: string,
@@ -118,7 +118,7 @@ export async function updateChangesFromParsedComfort(
     };
     updateMote('data/name/text', parsed.name);
     updateMote('data/description/text', parsed.description);
-    updateMote('data/unlocked_description/text', parsed.description);
+    updateMote('data/unlocked_description/text', parsed.unlockedDescription);
 
     updateWipChangesFromParsed(parsed, moteId, packed, trace);
 
