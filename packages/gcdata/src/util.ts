@@ -385,3 +385,7 @@ export function checkWords(
 export function includes<T>(arr: T[], value: any): value is T {
   return arr.includes(value);
 }
+
+export function cleanGameChangerString(str: string | undefined): string {
+  return (str || '').replace(/\r?\n/g, ' / ').trim();
+}

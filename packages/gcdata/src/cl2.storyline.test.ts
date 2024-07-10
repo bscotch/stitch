@@ -5,11 +5,7 @@ import {
   parseStringifiedStoryline,
   stringifyStoryline,
 } from './cl2.storyline.js';
-import {
-  getStorylineMotes,
-  listStorylines,
-  storylineSchemaId,
-} from './cl2.storyline.types.js';
+import { listStorylines, storylineSchemaId } from './cl2.storyline.types.js';
 
 describe('Cl2 Storylines', function () {
   it('can convert a storyline mote to a text format', async function () {
@@ -27,7 +23,7 @@ describe('Cl2 Storylines', function () {
   it('can convert storylines to text and back without error', async function () {
     const packed = await GameChanger.from('Crashlands2');
     assert(packed, 'Packed data should be loaded');
-    const storylines = getStorylineMotes(packed.working);
+    const storylines = listStorylines(packed.working);
     for (const storyline of storylines) {
       const asText = stringifyStoryline(storyline, packed);
       const results = parseStringifiedStoryline(asText, packed);

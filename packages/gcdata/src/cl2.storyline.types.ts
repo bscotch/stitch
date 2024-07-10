@@ -31,11 +31,6 @@ export function getStorylineMote(
   return mote;
 }
 
-export function getStorylineMotes(gcData: Gcdata): StorylineMote[] {
-  const motes = gcData.listMotesBySchema<StorylineData>(storylineSchemaId);
-  return motes;
-}
-
 export function getStorylineSchema(gcData: Gcdata): BschemaRoot | undefined {
   return gcData.getSchema(storylineSchemaId) as BschemaRoot;
 }
