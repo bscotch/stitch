@@ -1,6 +1,6 @@
 # @local-vscode/webviews Changelog
 
-## 0.0.1 (2024-03-26)
+## 0.0.1 (2024-07-15)
 
 ### Features
 
@@ -19,6 +19,7 @@
 
 ### Fixes
 
+- Error traces are now clickable in the runner view.
 - Resolved formatting issues in the Runner logs caused by wrapping entries in the <pre> tag for horizontal spacing support
 - Resolved issue where logged spaces are not shown in the Runner panel
 - Running via command now focuses the Runner view, and styling is now properly restored on panel reload

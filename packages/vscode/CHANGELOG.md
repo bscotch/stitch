@@ -1,5 +1,15 @@
 # Stitch Changelog
 
+## 1.69.4 (2024-07-15)
+
+### Docs
+
+- Added description of the Stitch Runner to the docs
+
+### Fixes
+
+- Error traces are now clickable in the runner view.
+
 ## 1.69.3 (2024-07-15)
 
 ### Fixes

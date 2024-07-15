@@ -1,6 +1,6 @@
 # @local-vscode/shared Changelog
 
-## 0.0.1 (2024-03-07)
+## 0.0.1 (2024-07-15)
 
 ### Features
 
@@ -11,5 +11,6 @@
 
 ### Fixes
 
+- Error traces are now clickable in the runner view.
 - Added a refresh button to the new Runner panel, so that changes to the styling config can be observed without re-running.
 - Resolved loading issues for the Igor webview
