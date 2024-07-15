@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.21.1 (2024-07-15)
+
+### Fixes
+
+- Resolved issue where an empty Quest log could stringify as 'undefined'
+
 ## 0.21.0 (2024-07-10)
 
 ### Features
