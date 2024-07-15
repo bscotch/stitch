@@ -253,6 +253,83 @@ Check out Stitch settings to configure how your project is run. In particular:
 
 - `stitch.run.defaultConfig`: Choose a run configuration to use as the default (defaults to "Default")
 - `stitch.run.defaultCompiler`: Choose whether to use the VM or YYC compiler (defaults to "VM")
+- `stitch.run.inTerminal`: By default Stitch opens a terminal in VSCode and runs your project there, using your default terminal settings. Set this to `false` to use the Stitch Runner Panel instead.
+
+#### ⚡ Stitch Runner Panel
+
+If you enable the Stitch Runner Panel (setting `stitch.run.inTerminal` to `false`), Stitch will run your project behind the scenes and output logs to the "Runner" panel in the Stitch sidebar. The advantages to doing this are that you can: (1) avoid some edge cases with the VSCode terminal, and (2) get color highlighting and other features.
+
+The main reasons _not_ to use the Stitch runner are: (1) it does a lot of extra processing, so it's slow if you have a lot of logs; (2) it applies styling to logs, so it might not show you the _exact_ contents of your logs.
+
+![Sample of color-highlighted logs in the Stitch Runner.](https://raw.githubusercontent.com/bscotch/stitch/44cbc24acf6c7686611de7ef3619b00b71cba09b/packages/vscode/images/stitch-log-colors.jpg)
+
+GameMaker doesn't have a standard logger format, so if you want color coding of your log messages you'll have to know some regex and CSS, and do a little configuration.
+
+To add color-coding in the Stitch Runner Panel you'll be adding CSS styles and patterns to the Stitch Config file:
+
+1. Create `stitch.config.json` as a sibling of your project's `.yyp` file, if it doesn't already exist.
+2. Open `stitch.config.json` in VSCode. If you have this extension running you'll get Intellisense for configuration values!
+3. Add the `"gameConsoleStyle"` field if it doesn't already exist.
+4. Inside the `"gameConsoleStyle"` object:
+
+- Optionally add a `"base"` style, which will serve as your base styling. For example, `"base": "color:#808080;font-weight:bold;"` would make all text bold and gray by default.
+- Optionally add a collection of line-matchers via the `"line"` field. Each log line will be tested against each of these patterns, and the first pattern to match will get used for styling.
+
+<details>
+
+<summary>See the settings that provided the color highlighting shown in the screenshot above:</summary>
+
+```jsonc
+  // in `stitch.config.json`
+  "gameConsoleStyle": {
+    "base": "color:#808080;",
+    "lines": [
+      {
+        "pattern" : "^Warning : reference to extension macro",
+        "base" : "color:#808080;"
+      },
+      {
+        "pattern" : "^WARNING: Could not find any events",
+        "base" : "color:#808080;"
+      },
+      {
+        "pattern" : "^WARNING: Could not find animation",
+        "base" : "color:#808080;"
+      },
+      {
+        "pattern" : "^Pause event has been",
+        "base" : "color:#4A4A4A;"
+      },
+      {
+        "pattern" : "is cropped, sprites used by Spine must be uncropped$",
+        "base" : "color:#808080;"
+      },
+      {
+        "pattern": "\\berror\\b",
+        "base": "color: #FF0000; font-weight: bold;"
+      },
+      {
+        "pattern": "\\bwarn(ing)?\\b",
+        "base": "color: #FFD900"
+      },
+      {
+        "base": "color: #808080;",
+        "description": "Bscotch Echo",
+        "pattern": "^(?<entity>(?<struct>struct)|(?<constructor>Struct\\.(?<constructorName>[^|]+))|(?<rumpus>o_rumpus[^|]+)|(?<http>o_http_controller)|(?<object>o_[^|]+))\\|(?<time>[^|]+)\\| (?<message>.*)",
+        "styles": {
+          "message": "color:white;",
+          "constructor" : "color: #4FE2C2",
+          "object" : "color: #FF9D00",
+          "struct" : "color:cyan",
+          "rumpus" : "color:#0095FF",
+          "http" : "color:#0095FF"
+        }
+      }
+    ]
+  }
+```
+
+</details>
 
 ### 📝 Opening the correct GameMaker version
 
