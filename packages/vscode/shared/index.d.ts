@@ -32,6 +32,13 @@ export interface IgorWebviewExtensionPostLogs {
 export interface WebviewReadyMessage {
   kind: 'ready';
 }
+export interface WebviewOpenAssetMessage {
+  kind: 'open';
+  type: 'scripts' | 'objects';
+  asset: string;
+  event?: string;
+  line?: number;
+}
 export interface WebviewResetMessage {
   kind: 'reset';
 }
@@ -48,7 +55,8 @@ export type IgorWebviewExtensionPosts =
   | IgorExitedMessage
   | IgorWebviewExtensionPostConfig
   | WebviewReadyMessage
+  | WebviewOpenAssetMessage
   | IgorWebviewExtensionPostRun
   | IgorWebviewExtensionPostLogs
   | ToggleSearchMessage;
-export type IgorWebviewPosts = WebviewReadyMessage;
+export type IgorWebviewPosts = WebviewReadyMessage | WebviewOpenAssetMessage;

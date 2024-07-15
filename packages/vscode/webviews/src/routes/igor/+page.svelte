@@ -14,6 +14,7 @@
 	} from '@local-vscode/shared';
 	import MagicString from 'magic-string';
 	import { tick } from 'svelte';
+	import { extractTraceLocations } from '../../lib/util.gml.js';
 
 	const vscode = new Vscode<
 		{
@@ -92,7 +93,13 @@
 	const stylePatterns = new Map<string, RegExp | null>();
 	function styleLog(log: Log): Log {
 		log.asHtml = undefined; // reset
-		const source = new MagicString(log.message);
+		// Extract any linkable traces
+		const locationsExtracted = running
+			? extractTraceLocations(running.projectDir, log.message)
+			: { traces: [], messageWithoutLocations: log.message };
+
+		// Style the message after the links have been extracted
+		const source = new MagicString(locationsExtracted.messageWithoutLocations);
 		// Find the first matching line, if any
 		for (const line of config?.lines || []) {
 			let pattern = stylePatterns.get(line.pattern);
@@ -111,7 +118,7 @@
 					continue;
 				}
 			}
-			const match = log.message.match(pattern);
+			const match = locationsExtracted.messageWithoutLocations.match(pattern);
 			if (match) {
 				// If this has a base style, apply it!
 				if (line.base) {
@@ -121,34 +128,32 @@
 
 				// We're using the 'd' flag, so we have index positions of groups
 				const groupPositions = match.indices?.groups;
-				const groupValues = match.groups;
 				const groupNames = Object.keys(groupPositions || {});
-
-				// // If the _GMFILE_ group is present, we need to parse it
-				// // as a file path so it can be linked.
-				// let gmlFileUri: string | undefined;
-				// if (groupValues?._GMFILE_) {
-				// 	const lineNumber = +(groupValues?._GMLINE_ || '0');
-				// 	gmlFileUri = gmlFileMacroToUri(run.projectDir, groupValues!._GMFILE_!, lineNumber);
-				// }
 
 				for (const groupName of groupNames) {
 					const position = groupPositions?.[groupName] as [number, number] | undefined;
 					if (!position) continue; // The key can exist without the indices, for conditional groups
-					// if (gmlFileUri && ['_GMFILE_', line.gmlAnchor].includes(groupName)) {
-					// 	// Then we want to link the file
-					// 	source.prependRight(position[0], `<a href="${gmlFileUri}" title="Open in editor">`);
-					// 	source.appendLeft(position[1], '</a>');
-					// }
 					if (line.styles?.[groupName]) {
 						source.prependRight(position[0], `<span style="${line.styles[groupName]}">`);
 						source.appendLeft(position[1], '</span>');
 					}
 				}
-				log.asHtml = source.toString();
 				break; // Only use the first match!
 			}
 		}
+
+		// Add the links back
+		let offset = 0;
+		for (const trace of locationsExtracted.traces) {
+			source.appendLeft(
+				trace.start - offset,
+				`<span role="button" class="asset-link hoverable" data-type="${trace.kind}" data-asset="${trace.asset}" data-event="${trace.event || ''}" data-line="${trace.line}" title="Open in editor">${trace.text}</span>`
+			);
+			// The locations are from the *original* source, so their
+			// locations in the extracted source are offset by the accumulated length
+			offset += trace.text.length;
+		}
+		log.asHtml = source.toString();
 		return log;
 	}
 
@@ -281,7 +286,18 @@
 		{#if logs.length === 0}
 			<p><i>No logs yet...</i></p>
 		{:else}
-			<ul class="logs reset">
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+			<ul
+				class="logs reset"
+				on:click={(e)=>{
+				if (e.target instanceof HTMLElement && e.target.classList.contains('asset-link')) {
+					const { type, asset, event, line } = e.target.dataset as Record<string,string>;
+					// @ts-expect-error
+					vscode.postMessage({ kind: 'open', type, asset, event, line: parseInt(line) || 0 });
+				}
+			}}
+			>
 				{#each logs as log, i (i)}
 					<li class={`log ${log.kind}`}>
 						<!-- svelte-ignore a11y-missing-content -->
@@ -369,6 +385,10 @@
 	}
 	li.log:hover {
 		border-color: white;
+	}
+	:global(.hoverable:hover) {
+		cursor: pointer;
+		text-decoration: underline;
 	}
 	aside.sticky-footer-actions {
 		/* Should be absolutely positioned in the bottom-right corner */

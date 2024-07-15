@@ -5,6 +5,7 @@ import type {
   IgorWebviewExtensionPostLogs,
   IgorWebviewExtensionPostRun,
   IgorWebviewLog,
+  IgorWebviewPosts,
 } from '@local-vscode/shared';
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import vscode from 'vscode';
@@ -13,7 +14,7 @@ import { assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
 import { StitchEvents, stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
-import { registerCommand } from './lib.mjs';
+import { registerCommand, uriFromCodeFile } from './lib.mjs';
 
 export class StitchIgorView implements vscode.WebviewViewProvider {
   readonly viewType = 'bscotch-stitch-igor';
@@ -35,6 +36,29 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
     const webview = webviewView.webview;
     webview.options = { enableScripts: true, enableCommandUris: true };
     webview.html = this.getWebviewContent(webview);
+    webview.onDidReceiveMessage(async (e: IgorWebviewPosts) => {
+      if (e.kind === 'open') {
+        // Go to the asset in the editor
+        const asset = this.workspace
+          .getActiveProject()
+          ?.getAssetByName(e.asset);
+        assertLoudly(asset, `Asset not found: ${e.asset}`);
+        const file =
+          e.type === 'objects' && e.event
+            ? asset.getEventByName(e.event as any) ?? asset.gmlFile
+            : asset.gmlFile;
+        const editor = await vscode.window.showTextDocument(
+          uriFromCodeFile(file),
+        );
+        // Go to the line
+        if (e.line) {
+          const line = e.line - 1;
+          const range = editor.document.lineAt(line).range;
+          editor.selection = new vscode.Selection(range.start, range.start);
+          editor.revealRange(range);
+        }
+      }
+    });
   }
 
   protected getWebviewContent(webview: vscode.Webview) {

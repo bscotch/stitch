@@ -1,50 +1,64 @@
 import { createFileUri } from './Vscode.js';
 
-interface ParsedGmFileMacroScript {
-	kind: 'scripts';
-	assetName: string;
+interface ParsedTraceLocation {
+	start: number;
+	end: number;
+	text: string;
+	kind: 'scripts' | 'objects';
+	asset: string;
+	event?: string;
+	line: number;
+	uri: string;
 }
-interface ParsedGmFileMacroObject {
-	kind: 'objects';
-	assetName: string;
-	eventName: `${string}_${number}`;
-}
-type ParsedGmFileMacro = ParsedGmFileMacroScript | ParsedGmFileMacroObject;
 
-export function gmlFileMacroToUri(
-	projectRoot: string,
-	macroValue: string,
-	lineNumber = 0
-): string | undefined {
-	const parsed = parseGmFileMacroString(macroValue);
-	if (!parsed) return;
-	if (parsed.kind === 'scripts') {
-		return createFileUri(`${projectRoot}/scripts/${parsed.assetName}/${parsed.assetName}.gml`);
-	} else if (parsed.kind === 'objects') {
-		return createFileUri(`${projectRoot}/objects/${parsed.assetName}/${parsed.eventName}.gml`);
+const tracePattern = /\bgml_(?<type>Object|Script)_(?<name>[a-zA-Z0-9_]+) \(line (?<line>\d+)\)/d;
+const tracePatterns = new RegExp(tracePattern, 'dg');
+
+export function extractTraceLocations(projectRoot: string, message: string) {
+	const locations: ParsedTraceLocation[] = [];
+	const extractedTraces = [...message.matchAll(tracePatterns)];
+	// Iterate backwards, updating the string to excise the extracted part as we go (extracted stuff can be re-inserted later)
+	for (let i = extractedTraces.length - 1; i >= 0; i--) {
+		const trace = extractedTraces[i];
+		let { type, name, line } = trace.groups!;
+		let event: string | undefined;
+		if (type === 'Object') {
+			const parts = name.match(/^(?<name>.+)_(?<event>[A-Za-z]+_[0-9]+)$/);
+			if (!parts) {
+				console.error(`Failed to parse object name: ${name}`);
+				continue;
+			}
+			name = parts.groups!.name;
+			event = parts.groups!.event;
+		}
+		const start = trace.index!;
+		const end = start + trace[0].length;
+		const text = trace[0];
+
+		let uri = `${projectRoot}/`;
+		if (type === 'Object') {
+			uri += `objects/${name}/${event}.gml`;
+		} else {
+			uri += `scripts/${name}/${name}.gml`;
+		}
+		uri += `:${line}`;
+		uri = createFileUri(uri);
+
+		locations.push({
+			start,
+			end,
+			text,
+			kind: type as 'scripts' | 'objects',
+			asset: name,
+			event,
+			line: Number(line) || 0,
+			uri
+		});
+		message = message.slice(0, start) + message.slice(end);
 	}
-}
 
-/**
- * In stack traces and via the GameMaker macro `_GMFILE_`,
- * GameMaker produces a string that represents a particular
- * object or script file. This function parses that string
- * into its constituent parts.
- */
-function parseGmFileMacroString(macroValue: string): ParsedGmFileMacro | undefined {
-	// Sample from a script: `gml_Script_packed_file_get_load_path`
-	// Samples from objects:
-	// - gml_Object_o_rumpus_item_searcher_Step_0:11
-	// - gml_Object_o_http_controller_Other_62:105
-
-	const [, type, fullName] = macroValue.match(/^gml_(Object|Script)_(.+)$/) || [];
-	console.log('MACROVALUE', macroValue, type, fullName);
-	if (!type || !fullName) return;
-	if (type === 'Script') {
-		return { kind: 'scripts', assetName: fullName };
-	} else {
-		const [, assetName, fileName] = fullName.match(/^(.+)_([A-Za-z]+_[0-9]+)$/) || [];
-		if (!assetName || !fileName) return;
-		return { kind: 'objects', assetName, eventName: fileName as `${string}_${number}` };
-	}
+	return {
+		traces: locations,
+		messageWithoutLocations: message
+	};
 }
