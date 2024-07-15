@@ -3,7 +3,7 @@ import { assert } from './assert.js';
 import type { Crashlands2 } from './cl2.types.auto.js';
 import { bsArrayToArray, toArrayTag, toMoteTag } from './helpers.js';
 import type { Mote } from './types.js';
-import { capitalize } from './util.js';
+import { capitalize, cleanGameChangerString } from './util.js';
 
 export function stringifyQuest(
   mote: Mote<Crashlands2.Quest>,
@@ -136,7 +136,10 @@ export function stringifyQuest(
     if (momentType === 'start') {
       // Start Log
       if (mote.data.quest_start_log) {
-        blocks.push(`Log: ${mote.data.quest_start_log.text}`, '');
+        blocks.push(
+          `Log: ${cleanGameChangerString(mote.data.quest_start_log.text)}`,
+          '',
+        );
       }
       // Clues
       if (mote.data.clues) {
