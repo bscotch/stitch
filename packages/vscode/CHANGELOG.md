@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.69.3 (2024-07-15)
+
+### Fixes
+
+- Symbol search now only shows Function results for Functions that have the same name as their parent Script.
+
 ## 1.69.2 (2024-06-21)
 
 ### Fixes
