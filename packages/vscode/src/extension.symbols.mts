@@ -49,9 +49,16 @@ export class StitchWorkspaceSymbolProvider
     const start = new vscode.Position(0, 0);
 
     if (resource.assetKind === 'scripts') {
-      // Add the script itself
+      // Add the script itself if it doesn't already include
+      // a global function within it by the same name.
       const canAdd = isMatch(resource.name) && !symbols.has(resource);
-      if (canAdd) {
+      const globalVarWithSameName = resource.project.self.getMember(
+        resource.name,
+      );
+      const containsGlobalFunctionWithSameName =
+        !!globalVarWithSameName &&
+        globalVarWithSameName.def?.file === resource.gmlFile;
+      if (canAdd && !containsGlobalFunctionWithSameName) {
         symbols.set(
           resource,
           new vscode.SymbolInformation(
@@ -119,6 +126,9 @@ export class StitchWorkspaceSymbolProvider
     return symbols;
   }
 
+  /**
+   * Mutates the `symbols` map to include all global symbols in the project.
+   */
   protected globalsToSymbols(
     project: GameMakerProject,
     symbols: SymbolResults,
