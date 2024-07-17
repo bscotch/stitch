@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.9.4 (2024-07-17)
+
+### Fixes
+
+- JSDoc descriptions no longer remove inferred types
+
 ## 1.9.3 (2024-06-21)
 
 ### Fixes

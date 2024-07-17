@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.69.5 (2024-07-17)
+
+### Fixes
+
+- JSDoc descriptions no longer remove inferred types
+
 ## 1.69.4 (2024-07-15)
 
 ### Docs
