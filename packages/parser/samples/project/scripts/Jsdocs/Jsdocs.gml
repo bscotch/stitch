@@ -38,3 +38,7 @@ function JsdocsJsStyle(first, second){
 /// @localvar {String} a_local_var With a description!
 /// @globalvar {Any} a_global OH NOOO
 /// @globalvar {Real} another_global_var With a description!
+
+var a_string = "Hello, world!";
+/// Described variable without a type annotation
+var another_string = "Hello, world!";

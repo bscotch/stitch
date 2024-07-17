@@ -560,7 +560,7 @@ function validateFunctionContexts(project: Project) {
 function validateJsdocs(project: Project) {
   const jsdocsFile = project.getAssetByName('Jsdocs')!.gmlFile;
   const jsdocs = jsdocsFile.jsdocs;
-  expect(jsdocs).to.have.lengthOf(7);
+  expect(jsdocs).to.have.lengthOf(8);
 
   // Check positions
   let jsdoc = jsdocs[0];
@@ -610,6 +610,16 @@ function validateJsdocs(project: Project) {
   expect(lastJsdoc.params![0].type!.end.line).to.equal(55);
   expect(lastJsdoc.params![0].type!.start.column).to.equal(11);
   expect(lastJsdoc.params![0].type!.end.column).to.equal(34);
+
+  // Make sure that a JSDoc description without a type annotation
+  // doesn't cause the type to be forced to `Any`
+  const undescribedVar = jsdocsFile.getReferenceAt(42, 11)!.item;
+  ok(undescribedVar);
+  expect(undescribedVar.type.kind).to.equal('String');
+
+  const describedVar = jsdocsFile.getReferenceAt(44, 11)!.item;
+  ok(describedVar);
+  expect(describedVar.type.kind).to.equal('String');
 }
 
 function validateWithContexts(project: Project) {

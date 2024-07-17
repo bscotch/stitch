@@ -103,10 +103,8 @@ export function assignVariable(
   const assignedToFunction = functionFromRhs(rhs);
   const assignedToStructLiteral = structLiteralFromRhs(rhs);
   const assignedToArrayLiteral = arrayLiteralFromRhs(rhs);
-  const ctx = { ...info.ctx };
+  const ctx = { ...info.ctx, docs: info.docs, signifier };
   if (assignedToFunction || assignedToStructLiteral || assignedToArrayLiteral) {
-    ctx.signifier = signifier;
-    ctx.docs = info.docs;
     if (assignedToFunction) {
       ctx.self = variable.container;
       visitor.functionExpression(assignedToFunction, ctx);
@@ -124,7 +122,9 @@ export function assignVariable(
     if (signifier && (!signifier.isTyped || wasUndeclared || forceOverride)) {
       if (info.docs) {
         signifier.describe(info.docs.jsdoc.description);
-        signifier.setType(info.docs.type);
+        signifier.setType(
+          info.docs.type.length ? info.docs.type : inferredType,
+        );
       } else if (inferredType) {
         signifier.setType(inferredType);
       }

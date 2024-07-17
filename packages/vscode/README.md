@@ -257,7 +257,7 @@ Check out Stitch settings to configure how your project is run. In particular:
 
 #### ⚡ Stitch Runner Panel
 
-If you enable the Stitch Runner Panel (setting `stitch.run.inTerminal` to `false`), Stitch will run your project behind the scenes and output logs to the "Runner" panel in the Stitch sidebar. The advantages to doing this are that you can: (1) avoid some edge cases with the VSCode terminal, and (2) get color highlighting and other features.
+If you enable the Stitch Runner Panel (setting `stitch.run.inTerminal` to `false`), Stitch will run your project behind the scenes and output logs to the "Runner" panel in the Stitch sidebar. The advantages to doing this are that you can: (1) avoid some edge cases with the VSCode terminal, (2) get color highlighting, (3) enable clicking stack trace locations to open them in the code.
 
 The main reasons _not_ to use the Stitch runner are: (1) it does a lot of extra processing, so it's slow if you have a lot of logs; (2) it applies styling to logs, so it might not show you the _exact_ contents of your logs.
 
