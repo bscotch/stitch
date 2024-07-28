@@ -44,13 +44,15 @@ await $`cp -r ../parser/assets/GmlSpec.xml ./assets/`;
 // binary cannot be overwritten when the extension is running in
 // the debugger!)
 const destPath = pathy('./dist/pixel-checksum.node');
-const srcPath = pathy('../pixel-checksum/pixel-checksum.node');
+const srcPath = pathy(
+  '../sprite-source/node_modules/@bscotch/pixel-checksum/pixel-checksum.node',
+);
 const destChecksum = (await destPath.exists())
   ? await computeFileChecksum(destPath)
   : null;
 const srcChecksum = destChecksum ? await computeFileChecksum(srcPath) : null;
 if (!srcChecksum || destChecksum !== srcChecksum) {
-  await $`cp ../pixel-checksum/pixel-checksum.node ./dist`;
+  await $`cp ../sprite-source/node_modules/@bscotch/pixel-checksum/pixel-checksum.node ./dist`;
 }
 
 // Update the icon theme file

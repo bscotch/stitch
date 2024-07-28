@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@bscotch/pathy": "^2.12.0",
-    "@bscotch/pixel-checksum": "workspace:*",
+    "@bscotch/pixel-checksum": "^0.1.2",
     "@bscotch/utility": "^7.2.0",
     "@bscotch/yy": "workspace:*",
     "image-js": "0.35.5",
