@@ -58,6 +58,15 @@ export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
   const or = /(\bOR\b|\bor\b|\||,)/y;
   const identifier = /[a-zA-Z_][a-zA-Z0-9_.]*/y;
   let offset = 0;
+  // Handle case where a type is incorrectly wrapped in brackets
+  // (e.g. Array<String|Undefined> is fine, but just <String|Undefined> is not)
+  if (typeString.match(/^\s*[<[]/)) {
+    const parts = typeString.match(/^(\s*[<[])(.*)([>\]]\s*)$/);
+    if (parts) {
+      typeString =
+        ' '.repeat(parts[1].length) + parts[2] + ' '.repeat(parts[3].length);
+    }
+  }
 
   const lex = (pattern: RegExp) => {
     pattern.lastIndex = offset;
