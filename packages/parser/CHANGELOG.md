@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.10.0 (2024-07-29)
+
+### Features
+
+- The parser can now handle the case where a type is improperly wrapped in brackets.
+
 ## 1.9.4 (2024-07-17)
 
 ### Fixes
