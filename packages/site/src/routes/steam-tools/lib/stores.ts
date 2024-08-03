@@ -27,6 +27,7 @@ export interface ConfigStore {
 	fromDate?: Date;
 	periods?: number;
 	periodDirection?: PeriodDirection;
+	language?: string;
 }
 
 export interface UrlStore {
@@ -43,7 +44,7 @@ export interface UrlStore {
 	steamTrafficDownloadComparisonLink?: string;
 	steamRegionsLink?: string;
 	steamRegionsComparisonLink?: string;
-	
+
 	utmLink?: string;
 }
 
@@ -55,8 +56,7 @@ function createUrlStore() {
 		try {
 			const url = new URL(window.location.href);
 			hash = url.hash.slice(1);
-		}
-		catch(err) {
+		} catch (err) {
 			console.error(err);
 		}
 		if (hash) {
@@ -133,11 +133,7 @@ export const links = derived(
 				nextPeriod[1]
 			),
 			steamRegionsLink: steamRegionsLink(source.steamId, source.fromDate, source.toDate),
-			steamRegionsComparisonLink: steamRegionsLink(
-				source.steamId,
-				nextPeriod[0],
-				nextPeriod[1]
-			)
+			steamRegionsComparisonLink: steamRegionsLink(source.steamId, nextPeriod[0], nextPeriod[1])
 		};
 		return store;
 	},
@@ -150,8 +146,7 @@ function updateUrl(store: ConfigStore) {
 		const hash = btoa(JSON.stringify(store));
 		url.hash = hash;
 		window.history.replaceState({}, '', url.href);
-	}
-	catch (err) {
+	} catch (err) {
 		console.error(err);
 	}
 }
@@ -171,8 +166,8 @@ function cleanStore(values: ConfigStore): Required<ConfigStore> {
 		typeof values.toDate === 'string'
 			? new Date(values.toDate)
 			: values.toDate instanceof Date
-			? values.toDate
-			: new Date();
+				? values.toDate
+				: new Date();
 	if (isInvalidDate(values.toDate)) {
 		values.toDate = new Date();
 	}
@@ -180,8 +175,8 @@ function cleanStore(values: ConfigStore): Required<ConfigStore> {
 		typeof values.fromDate === 'string'
 			? new Date(values.fromDate)
 			: values.fromDate instanceof Date
-			? values.fromDate
-			: daysAgo(14, values.toDate);
+				? values.fromDate
+				: daysAgo(14, values.toDate);
 	if (isInvalidDate(values.fromDate)) {
 		values.fromDate = daysAgo(14, values.toDate);
 	}

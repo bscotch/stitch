@@ -2,6 +2,7 @@
 	// Keep a query parameter "steamid" in sync with the steamId variable
 	import { config } from '../lib/stores.js';
 	import DateInput from './DateInput.svelte';
+	import SteamLanguageSelect from './SteamLanguageSelect.svelte';
 
 	config.init();
 </script>
@@ -14,21 +15,21 @@
 		name="steamid"
 		type="number"
 		value={$config.steamId}
-		on:change={(e) => config.setField('steamId', +e.currentTarget.value)}
+		on:keyup={(e) => config.setField('steamId', +e.currentTarget.value)}
 	/>
 
 	<label for="fromDate"> From </label>
 	<DateInput
 		name="fromDate"
 		date={$config.fromDate}
-		on:change={(e) => config.setField('fromDate', e.detail)}
+		on:keyup={(e) => config.setField('fromDate', e.detail)}
 	/>
 
 	<label for="toDate"> To </label>
 	<DateInput
 		name="toDate"
 		date={$config.toDate}
-		on:change={(e) => config.setField('toDate', e.detail)}
+		on:keyup={(e) => config.setField('toDate', e.detail)}
 	/>
 
 	<h3>Comparison Period</h3>
@@ -38,7 +39,7 @@
 			type="number"
 			min="1"
 			value={$config.periods}
-			on:change={(e) => config.setField('periods', +e.currentTarget.value)}
+			on:keyup={(e) => config.setField('periods', +e.currentTarget.value)}
 		/>
 		periods
 		<select
@@ -49,6 +50,22 @@
 			<option>after</option>
 		</select>
 		the given date range.
+	</p>
+
+	<h3>Store Page Link</h3>
+	<p>
+		<a
+			href={`https://store.steampowered.com/app/${$config.steamId}${$config.language ? `?l=${$config.language}` : ''}`}
+			target="_blank"
+		>
+			https://store.steampowered.com/app/{$config.steamId}{$config.language
+				? `?l=${$config.language}`
+				: ''}
+		</a>
+		<SteamLanguageSelect
+			initial={$config.language}
+			onselect={(lang) => config.setField('language', lang?.code)}
+		/>
 	</p>
 </form>
 
@@ -71,6 +88,9 @@
 		max-width: 3rem;
 		margin: 0 0.25rem;
 		padding: 0;
+	}
+	h3 {
+		text-align: right;
 	}
 	/* Below 600px width we need to stack labels over inputs */
 	@media (max-width: 600px) {
