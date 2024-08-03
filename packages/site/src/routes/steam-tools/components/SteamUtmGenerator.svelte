@@ -26,7 +26,7 @@
 			<input
 				name={field}
 				value={$config[field] || ''}
-				on:change={(e) => config.setField(field, e.currentTarget.value)}
+				on:keyup={(e) => config.setField(field, e.currentTarget.value)}
 				type="text"
 			/>
 		{/each}
