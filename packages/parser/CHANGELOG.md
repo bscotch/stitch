@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.11.0 (2024-08-15)
+
+### Features
+
+- Added slot names to the Spine Sprite viewer
+
 ## 1.10.0 (2024-07-29)
 
 ### Features

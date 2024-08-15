@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.70.0 (2024-08-15)
+
+### Features
+
+- Added slot names to the Spine Sprite viewer
+
 ## 1.69.5 (2024-07-17)
 
 ### Fixes

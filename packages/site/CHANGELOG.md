@@ -1,5 +1,11 @@
 # @bscotch/stitch-site Changelog
 
+## 0.8.0 (2024-08-03)
+
+### Features
+
+- Added language-specific store page links
+
 ## 0.6.0 (2024-04-22)
 
 ### Features
