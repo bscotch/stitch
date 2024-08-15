@@ -40,6 +40,9 @@ const elements = {
   animationsList: /** @type {HTMLUListElement} */ (
     document.querySelector('ul.animations')
   ),
+  slotsList: /** @type {HTMLUListElement} */ (
+    document.querySelector('ul.slots')
+  ),
 };
 
 // Initial & static data
@@ -73,6 +76,16 @@ for (const animation of sprite.summary.animations) {
   li.innerHTML = content;
   elements.animationsList.appendChild(li);
 
+  // Add an inner list of events and their timings
+}
+// Add the list of slots
+for (const slotName of sprite.summary.slotNames.sort((a, b) =>
+  a.toLowerCase().localeCompare(b.toLowerCase()),
+)) {
+  const li = document.createElement('li');
+  li.classList.add('slot');
+  li.innerHTML = `<span class="name">${slotName}</span>`;
+  elements.slotsList.appendChild(li);
   // Add an inner list of events and their timings
 }
 

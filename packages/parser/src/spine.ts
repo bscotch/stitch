@@ -8,6 +8,7 @@ export interface SpineSummary<
 > {
   skinNames: string[];
   eventNames: EventName[];
+  slotNames: string[];
   animations: {
     name: AnimationName;
     duration: number;
@@ -51,6 +52,7 @@ export class Spine<
     return {
       skinNames: content.skins?.map((skin) => skin.name) || [],
       eventNames: Object.keys(content.events || {}) as EventName[],
+      slotNames: content.slots?.map((slot) => slot.name) || [],
       animations: Object.keys(content.animations || {}).map((animationName) => {
         const animation: SpineAnimation =
           content.animations![animationName as AnimationName];
