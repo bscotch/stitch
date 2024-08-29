@@ -22,14 +22,16 @@
 	<DateInput
 		name="fromDate"
 		date={$config.fromDate}
-		on:keyup={(e) => config.setField('fromDate', e.detail)}
+		on:change={(e) => {
+			config.setField('fromDate', e.detail);
+		}}
 	/>
 
 	<label for="toDate"> To </label>
 	<DateInput
 		name="toDate"
 		date={$config.toDate}
-		on:keyup={(e) => config.setField('toDate', e.detail)}
+		on:change={(e) => config.setField('toDate', e.detail)}
 	/>
 
 	<h3>Comparison Period</h3>

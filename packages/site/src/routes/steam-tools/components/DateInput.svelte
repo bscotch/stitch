@@ -7,8 +7,6 @@
 
 	const dispatch = createEventDispatcher<{ change: Date | undefined }>();
 
-	let internalDate: string | undefined = dateToDateInputString(date);
-
 	// Convert a YYYY-MM-DD string to a Date object in the local timezone
 	function inputDateToDate(dateString: string | undefined) {
 		if (!dateString) return undefined;
@@ -20,13 +18,13 @@
 		}${offsetHours}:${offsetMinutes}`;
 		return new Date(asIsoString);
 	}
-
-	$: date = internalDate ? inputDateToDate(internalDate) : undefined;
 </script>
 
 <input
 	{name}
 	type="date"
-	bind:value={internalDate}
-	on:change={(e) => dispatch('change', inputDateToDate(e.currentTarget.value))}
+	value={dateToDateInputString(date)}
+	on:change={(e) => {
+		dispatch('change', inputDateToDate(e.currentTarget.value));
+	}}
 />
