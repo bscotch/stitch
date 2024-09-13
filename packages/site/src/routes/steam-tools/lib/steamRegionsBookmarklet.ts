@@ -14,7 +14,7 @@ const steamRegionsIife = /* js */ `(async function(){
    * @prop {{total:number, steam:number, ingame:number}} revenue
    * @prop {{total:number, steam:number, retail:number}} units
    * @prop {{total:number}} wishlists
-   * 
+   *
    * @typedef SteamTable
    * @prop {string} name
    * @prop {SteamRegion[]} regions
@@ -39,7 +39,7 @@ const steamRegionsIife = /* js */ `(async function(){
     if(!currentTable) continue;
 
     // If there's an EXPAND image in the first <td>,
-    // this this is a new region/country section.
+    // then this is a new region/country section.
     const hasExpand = row.querySelector('td:first-child img');
     if(hasExpand){
       const regionName = row.querySelector('td:nth-child(2) a').innerHTML;
@@ -53,20 +53,32 @@ const steamRegionsIife = /* js */ `(async function(){
     }
 
     // The 4th <td> contains the tally category/type
-    const tallyRowName = row.querySelector('td:nth-child(4)').innerHTML.toLowerCase().replace(/&nbsp;/g,'').replace(/<a.*/, '');
+    const tallyRowName = row.querySelector('td:nth-child(4)').innerHTML.toLowerCase().replace(/&nbsp;/g,' ').replace(/<a.*/, '').trim();
     if(!tallyRowName) continue;
+    let tallyCategory, tallyType;
 
-    const tallyCategory = tallyRowName.match(/unit|activation/) ? 'units' : tallyRowName.match(/revenue|sales/) ? 'revenue' : tallyRowName.match(/wishlist/) ? 'wishlists' : null;
-
-    if(!tallyCategory){
-      console.error('Unknown tally type', tallyRowName);
-      continue;
-    }
-
-    const tallyType = ['revenue', 'units', 'wishlist balance'].includes(tallyRowName) ? 'total' : tallyRowName.match(/steam/) ? 'steam' : tallyRowName.match(/in-game/) ? 'ingame' : tallyRowName.match(/retail/) ? 'retail' : null;
-
-    if(!tallyType){
-      console.error('Unknown tally type', tallyRowName);
+    if(['wishlists', 'wishlist balance'].includes(tallyRowName)){
+      tallyCategory = 'wishlists';
+      tallyType = 'total';
+    } else if(['revenue'].includes(tallyRowName)){
+      tallyCategory = 'revenue';
+      tallyType = 'total';
+    } else if(tallyRowName === 'steam revenue'){
+      tallyCategory = 'revenue';
+      tallyType = 'steam';
+    } else if(tallyRowName === 'in-game sales'){
+      tallyCategory = 'revenue';
+      tallyType = 'ingame';
+    } else if(['units'].includes(tallyRowName)){
+      tallyCategory = 'units';
+      tallyType = 'total';
+    } else if(tallyRowName === 'steam units'){
+      tallyCategory = 'units';
+      tallyType = 'steam';
+    } else if(tallyRowName === 'retail activations'){
+      tallyCategory = 'units';
+      tallyType = 'retail';
+    } else {
       continue;
     }
 
@@ -76,7 +88,7 @@ const steamRegionsIife = /* js */ `(async function(){
     }
     const value = +valueString;
     if(isNaN(value)){
-      console.error('Unknown value', row.querySelector('td:nth-child(5)').innerHTML);
+      console.error('Unknown value', row.querySelector('td:nth-child(5)').innerHTML, {tallyRowName,tallyCategory,tallyType, value});
       continue;
     }
 
@@ -101,10 +113,12 @@ const steamRegionsIife = /* js */ `(async function(){
   ].join('\\\\n');
 
   const asJson = JSON.stringify(tables).replace(/^"(.*)"$/,"$1").replace(/"/g, '&quot;');
+  const asTsv = csv.replace(/,/g, '\\t');
+  
 
   // Insert buttons above the table to copy as CSV and as JSON
-  const copyAsCsv = "navigator.clipboard.writeText('"+csv+"')";
-  const copyAsTsv = "navigator.clipboard.writeText('"+csv.replace(/,/g, '\\t')+"')";
+  const copyAsCsv = "navigator.clipboard.writeText('"+csv.replaceAll("'"," ")+"')";
+  const copyAsTsv = "navigator.clipboard.writeText('"+csv.replaceAll("'"," ").replaceAll(",", '\\t')+"')";
   const copyAsJson = "navigator.clipboard.writeText('"+asJson+"')";
 
   const copyEl = document.createElement('div');
