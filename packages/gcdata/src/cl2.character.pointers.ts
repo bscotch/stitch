@@ -18,6 +18,7 @@ export type CharacterMotePointer = ``
   | `fallback_actors`
   | `front_horn`
   | `head_scale`
+  | `horn_scale`
   | `idle_text/${string}/element/name`
   | `idle_text/${string}/element/phrase_groups/${string}/element/name`
   | `idle_text/${string}/element/phrase_groups/${string}/element/phrases/${string}/element/emoji`

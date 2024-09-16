@@ -81,8 +81,6 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeItem> {
       }
     }
 
-    const comfortMotes = motes.filter((m) => m.schema_id === comfortSchemaId);
-
     if (!item) {
       // For each mote, add it (if no folder OR parent) or its root folder (if folder but no parent)
       for (const mote of motes) {
@@ -102,6 +100,7 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeItem> {
       }
     } else if (item instanceof FolderItem) {
       // For all motes that have the same parent as this folder, add them or their folder base
+
       for (const mote of motes) {
         const parent = getParent(mote);
         if (parent !== item.parentMote) {
@@ -132,7 +131,7 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeItem> {
           const subfolder = moteFolder.slice(0, item.relativePath.length + 1);
           if (!baseFolders.has(subfolder.at(-1)!)) {
             items.push(
-              new FolderItem(undefined, item, subfolder, { open: false }),
+              new FolderItem(item.parentMote, item, subfolder, { open: false }),
             );
             baseFolders.add(subfolder.at(-1)!);
           }
@@ -152,6 +151,9 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeItem> {
             new FolderItem(parent, item, [moteFolder[0]], { open: false }),
           );
           baseFolders.add(moteFolder[0]);
+        } else if (moteFolder.length) {
+          // Then we already have this folder. Skip!
+          continue;
         } else {
           items.push(
             new TreeMoteItem(this.packed, mote.id, item, {

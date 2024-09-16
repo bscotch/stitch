@@ -200,6 +200,7 @@ export type QuestMotePointer = ``
   | `pet_quest/name`
   | `pet_quest/pet_stage`
   | `pet_quest/pet`
+  | `pet_quest/requires_following`
   | `pet_quest`
   | `priors/${string}/element`
   | `priors/${string}/order`
