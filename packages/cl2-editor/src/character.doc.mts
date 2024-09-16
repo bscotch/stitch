@@ -11,7 +11,12 @@ import vscode from 'vscode';
 import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
 import { crashlandsEvents } from './events.mjs';
-import { filterRanges, parseGameChangerUri, range } from './quests.util.mjs';
+import {
+  filterRanges,
+  getCursorPosition,
+  parseGameChangerUri,
+  range,
+} from './quests.util.mjs';
 import { unknownWordError } from './unknownWordError.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
 
@@ -51,7 +56,30 @@ export class CharacterDocument {
 
     const completes = matchingAutocompletes
       .map((c) => {
-        if (c.type === 'glossary') {
+        if (c.type === 'motes') {
+          return c.options.map((o) => {
+            const name = this.packed.working.getMoteName(o)!;
+            const item = new vscode.CompletionItem(name);
+            item.detail = this.packed.working.getSchema(o.schema_id)?.title;
+            item.insertText =
+              o.schema_id === 'cl2_emoji' ? name : `${name}@${o.id}`;
+            item.kind =
+              o.schema_id === 'cl2_emoji'
+                ? vscode.CompletionItemKind.User
+                : vscode.CompletionItemKind.Class;
+            // If this was an emoji autocomplete, we'll want to +1 the cursor
+            // position to the right so that the cursor ends up after the ')'
+            // character.
+            if (o.schema_id === 'cl2_emoji') {
+              item.command = {
+                title: 'Move the cursor',
+                command: 'cursorMove',
+                arguments: [{ to: 'right' }],
+              };
+            }
+            return item;
+          });
+        } else if (c.type === 'glossary') {
           return [...c.options].map((o) => {
             const item = new vscode.CompletionItem(o);
             item.kind = vscode.CompletionItemKind.Text;
@@ -74,6 +102,40 @@ export class CharacterDocument {
       .flat();
 
     return completes;
+  }
+
+  onEnter(shifted?: boolean) {
+    const cursor = getCursorPosition();
+    if (!cursor) return;
+
+    const newEdit = new vscode.WorkspaceEdit();
+
+    // Get the line at this position
+    const line = this.document!.lineAt(cursor.line);
+    if (line.text.match(/^\/\//)) {
+      // Then default to adding another comment line
+      newEdit.insert(this.uri, cursor, '\n// ');
+    } else if (line.text.match(/^.(#\w+)?\s*$/)) {
+      // Then we have an empty array item that we're probably wanting to delete
+      newEdit.delete(this.uri, line.range);
+    } else if (line.text.match(/^\t(?<name>.*?)\s*(?<label>#[a-z_0-9]+)/)) {
+      // Then we're at the end of a phrase group name
+      // and probably want to add some dialog
+      newEdit.insert(this.uri, cursor, '\n> ');
+    } else if (line.text.match(/^>/)) {
+      // If shifted, we want to add another dialog line
+      // Otherwise we want to create a new phrase group
+      if (shifted) {
+        newEdit.insert(this.uri, cursor, `\n${line.text[0]} `);
+      } else {
+        newEdit.insert(this.uri, cursor, '\n\n\t');
+      }
+    } else {
+      // Then we just want to add a newline
+      newEdit.insert(this.uri, cursor, '\n');
+    }
+    vscode.workspace.applyEdit(newEdit);
+    this.parse(this.document?.getText());
   }
 
   /** Save the last-parsed content to the changes file */

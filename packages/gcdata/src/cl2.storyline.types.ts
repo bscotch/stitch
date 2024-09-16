@@ -1,7 +1,7 @@
 import type { Gcdata } from './GameChanger.js';
 import { assert } from './assert.js';
 import {
-  arrayTagPattern,
+  commentLinePattern,
   ParserResult,
   StorylineData,
   StorylineMote,
@@ -39,5 +39,5 @@ export const linePatterns = [
   /** Label:Text */
   `^(?<labelGroup>(?<label>Name|Description|Stage)\\s*:)\\s*(?<text>.*?)\\s*$`,
   /** Comment Line */
-  `^(?<indicator>//)\\s*?${arrayTagPattern}?\\s*(?<text>.*?)\\s*$`,
+  commentLinePattern,
 ];

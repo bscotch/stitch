@@ -97,6 +97,12 @@ export type ParsedLine = {
 };
 
 export const arrayTagPattern = '(?:#(?<arrayTag>[a-z0-9]+))';
+export const emojiGroupPattern =
+  '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]*?)\\s*\\))';
+export const moteTagPattern = '(?:@(?<moteTag>[a-z0-9_]+))';
+export const moteNamePattern = "(?<moteName>[A-Za-z0-9:&?! ',()/-]+)";
+export const dialogPattern = `^(?<indicator>>)\\s*?${arrayTagPattern}?(\\s+${emojiGroupPattern}?(\\s*(?<text>.*)))?\\s*$`;
+export const commentLinePattern = `^(?<indicator>//)\\s*?${arrayTagPattern}?\\s*(?<text>.*?)\\s*$`;
 
 // PATTERNS
 // Note: These patterns are defined so that they'll work on partial lines
@@ -191,7 +197,7 @@ export function parseIfMatch(
 export function lineIsArrayItem(line: string): boolean {
   if (
     line.match(
-      /^(\t|name|stage|storyline|(start|end) (moments|requirements)|log|giver|receiver|description|unlocked description)/i,
+      /^(\t|name|stage|storyline|(start|end) (moments|requirements)|log|giver|receiver|description|unlocked description|idle dialogue)/i,
     )
   ) {
     return false;

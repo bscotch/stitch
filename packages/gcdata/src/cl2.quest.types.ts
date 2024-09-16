@@ -1,6 +1,11 @@
 import type { Gcdata } from './GameChanger.js';
 import {
   arrayTagPattern,
+  commentLinePattern,
+  dialogPattern,
+  emojiGroupPattern,
+  moteNamePattern,
+  moteTagPattern,
   ParserResult,
   QuestData,
   QuestMote,
@@ -106,10 +111,6 @@ export interface QuestUpdateResult
 export type Section = (typeof sections)[number];
 export const sections = ['start moments', 'end moments'] as const;
 
-const moteTagPattern = '(?:@(?<moteTag>[a-z0-9_]+))';
-const moteNamePattern = "(?<moteName>[A-Za-z0-9:&?! ',()/-]+)";
-const emojiGroupPattern = '(?<emojiGroup>\\(\\s*(?<emojiName>[^)]*?)\\s*\\))';
-
 export const linePatterns = [
   /** Label:Text */
   `^(?<labelGroup>(?<label>Name|Log|Stage)\\s*:)\\s*(?<text>.*?)\\s*$`,
@@ -118,9 +119,9 @@ export const linePatterns = [
   /** Dialogue Speaker */
   `^(?<indicator>\\t)(${moteNamePattern}${moteTagPattern}?)?\\s*$`,
   /** Dialogue Text */
-  `^(?<indicator>>)\\s*?${arrayTagPattern}?(\\s+${emojiGroupPattern}?(\\s*(?<text>.*)))?\\s*$`,
+  dialogPattern,
   /** Comment Line */
-  `^(?<indicator>//)\\s*?${arrayTagPattern}?\\s*(?<text>.*?)\\s*$`,
+  commentLinePattern,
   /** Emote Declaration */
   `^(?<indicator>:\\))\\s*${arrayTagPattern}?\\s*$`,
   /** Emote */
