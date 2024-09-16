@@ -1,5 +1,15 @@
 # Crashlands 2 Editor Changelog
 
+## 0.24.0 (2024-09-16)
+
+### Features
+
+- Can now add glossary terms to the String Server via the context menu and command palette.
+
+### Fixes
+
+- Resolved issue where folders inside Motes would not nest properly
+
 ## 0.23.0 (2024-07-10)
 
 ### Features

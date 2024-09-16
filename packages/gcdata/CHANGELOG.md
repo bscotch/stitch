@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.21.2 (2024-09-16)
+
+### Fixes
+
+- Resolved issue where folders inside Motes would not nest properly
+
 ## 0.21.1 (2024-07-15)
 
 ### Fixes

@@ -1,5 +1,11 @@
 # @bscotch/stitch-site Changelog
 
+## 0.8.1 (2024-08-29)
+
+### Fixes
+
+- Resolved issues with the date pickers for Steam URL date ranges
+
 ## 0.8.0 (2024-08-03)
 
 ### Features
