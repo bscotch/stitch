@@ -11,6 +11,9 @@ import type {
 import type { BschemaEnum, Mote } from './types.js';
 import { resolvePointerInSchema } from './util.js';
 
+export type CharacterData = BuddyData | NpcData;
+export type CharacterMote = BuddyMote | NpcMote;
+
 export const questSchemaId = 'cl2_quest';
 export type QuestData = Crashlands2.Schemas['cl2_quest'];
 export type QuestMote = Mote<QuestData>;
