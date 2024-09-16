@@ -2,7 +2,13 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "CL2 Editor",
   "scopeName": "source.cl2-quest",
-  "fileTypes": ["cl2_quest", "cl2_storyline", "cl2_artisan_glads"],
+  "fileTypes": [
+    "cl2_quest",
+    "cl2_storyline",
+    "cl2_artisan_glads",
+    "artisan",
+    "cl2_npc"
+  ],
   "patterns": [
     {
       "include": "#general"
@@ -68,7 +74,7 @@
         },
         {
           "name": "moment.dialog.speaker.cl2-quest",
-          "match": "^\\t(?<name>.*?)\\s*(?<moteId>@[a-z_0-9]+)",
+          "match": "^\\t(?<name>.*?)\\s*(?<moteId>[@#][a-z_0-9]+)",
           "captures": {
             "1": {
               "name": "name.mote.cl2-quest"

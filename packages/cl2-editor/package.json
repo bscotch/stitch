@@ -124,6 +124,11 @@
         "language": "cl2-comfort",
         "scopeName": "source.cl2-quest",
         "path": "./syntaxes/cl2-editor.tmLanguage.json"
+      },
+      {
+        "language": "cl2-character",
+        "scopeName": "source.cl2-quest",
+        "path": "./syntaxes/cl2-editor.tmLanguage.json"
       }
     ],
     "keybindings": [
@@ -170,6 +175,17 @@
         "configuration": "./languages/cl2-editor.language-configuration.json",
         "extensions": [
           ".cl2_artisan_glads"
+        ]
+      },
+      {
+        "id": "cl2-character",
+        "aliases": [
+          "CL2 Character"
+        ],
+        "configuration": "./languages/cl2-editor.language-configuration.json",
+        "extensions": [
+          ".artisan",
+          ".cl2_npc"
         ]
       }
     ],

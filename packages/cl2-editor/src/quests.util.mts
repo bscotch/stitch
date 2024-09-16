@@ -1,5 +1,7 @@
 import {
+  buddySchemaId,
   comfortSchemaId,
+  npcSchemaId,
   questSchemaId,
   storylineSchemaId,
   type Mote,
@@ -17,9 +19,13 @@ export function moteToUri(mote: Mote): vscode.Uri {
 }
 
 export function hasEditor(mote: Mote): boolean {
-  return [questSchemaId, storylineSchemaId, comfortSchemaId].includes(
-    mote.schema_id,
-  );
+  return [
+    questSchemaId,
+    storylineSchemaId,
+    comfortSchemaId,
+    buddySchemaId,
+    npcSchemaId,
+  ].includes(mote.schema_id);
 }
 
 export function isQuestUri(uri: vscode.Uri) {
@@ -32,6 +38,14 @@ export function isStorylineUri(uri: vscode.Uri) {
 
 export function isComfortUri(uri: vscode.Uri) {
   return uri.scheme === 'bschema' && uri.path.endsWith(`.${comfortSchemaId}`);
+}
+
+export function isBuddyUri(uri: vscode.Uri) {
+  return uri.scheme === 'bschema' && uri.path.endsWith(`.${buddySchemaId}`);
+}
+
+export function isNpcUri(uri: vscode.Uri) {
+  return uri.scheme === 'bschema' && uri.path.endsWith(`.${npcSchemaId}`);
 }
 
 export interface ParsedGameChangerUri {

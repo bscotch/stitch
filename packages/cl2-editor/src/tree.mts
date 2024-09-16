@@ -536,12 +536,14 @@ class TreeMoteItem<
         : this.isQuest()
           ? 'note'
           : this.isComfort()
-            ? 'heart'
+            ? 'home'
             : this.isChat()
               ? 'comment-discussion'
-              : this.isCharacter()
-                ? 'account'
-                : 'question',
+              : this.isBuddy()
+                ? 'heart'
+                : this.isNpc()
+                  ? 'account'
+                  : 'question',
     );
     // Make it openable in the editor
     this.resourceUri = vscode.Uri.parse(moteToPath(this.mote));
@@ -593,11 +595,16 @@ class TreeMoteItem<
     return this.mote.schema_id === comfortSchemaId;
   }
 
-  isCharacter(): this is TreeMoteItem<NpcData | ComfortData> {
-    return (
-      this.mote.schema_id === npcSchemaId ||
-      this.mote.schema_id === buddySchemaId
-    );
+  isBuddy(): this is TreeMoteItem<BuddyData> {
+    return this.mote.schema_id === buddySchemaId;
+  }
+
+  isNpc(): this is TreeMoteItem<NpcData> {
+    return this.mote.schema_id === npcSchemaId;
+  }
+
+  isCharacter(): this is TreeMoteItem<BuddyData> {
+    return this.isBuddy() || this.isNpc();
   }
 
   isChat(): this is TreeMoteItem<ChatData> {

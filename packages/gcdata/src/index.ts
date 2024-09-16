@@ -1,3 +1,4 @@
+export * from './cl2.character.js';
 export * from './cl2.comfort.js';
 export * from './cl2.quest.js';
 export * from './cl2.shared.types.js';
