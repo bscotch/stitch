@@ -62,6 +62,37 @@ export class CrashlandsWorkspace {
         const loaded = await loadGlossary();
         assertLoudly(loaded, 'You need to activate the glossary first!');
       }),
+      vscode.commands.registerCommand(
+        'bscotch.strings.addGlossaryEntry',
+        async () => {
+          assertLoudly(
+            this.workspace?.packed.glossary,
+            'You need to activate the glossary first!',
+          );
+          // Find the active document, and the word under the cursor
+          const editor = vscode.window.activeTextEditor;
+          if (!editor) return;
+          // If there is a selection, use that
+          const selection = editor.selection;
+          let word = editor.document.getText(selection);
+          // If there is no selection, use the word under the cursor
+          if (!word) {
+            const position = editor.selection.active;
+            const range = editor.document.getWordRangeAtPosition(position);
+            if (!range) return;
+            word = editor.document.getText(range);
+          }
+          if (!word) return;
+          // Now add it to the glossary!
+          await this.workspace.packed.glossary.addTerm(word);
+          // Update the local glossary!
+          await loadGlossary();
+          // Reprocess the active document
+          if (editor.document.uri.scheme === 'bschema') {
+            crashlandsEvents.emit('mote-updated', editor.document.uri);
+          }
+        },
+      ),
       vscode.commands.registerCommand('bscotch.strings.logIn', async () => {
         // Get the host, username, and password
         const host = await vscode.window.showInputBox({

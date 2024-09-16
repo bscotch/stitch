@@ -46,6 +46,11 @@
         "title": "Restore Backup"
       },
       {
+        "command": "bscotch.strings.addGlossaryEntry",
+        "category": "Crashlands",
+        "title": "Add Glossary Entry"
+      },
+      {
         "command": "crashlands.open.saveDir",
         "category": "Crashlands",
         "title": "Open Save Folder"
@@ -173,6 +178,15 @@
         {
           "command": "crashlands.editor.backup.restore",
           "when": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-storyline'"
+        },
+        {
+          "command": "bscotch.strings.addGlossaryEntry"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "bscotch.strings.addGlossaryEntry",
+          "group": "1_modification"
         }
       ],
       "view/title": [
