@@ -8,6 +8,7 @@ describe('Spine', function () {
   it('can summarize a Spine JSON file', async function () {
     const spine = new Spine(sampleFile);
     const summary = await spine.summarize();
+    console.dir(summary, { depth: null });
 
     const expectedSummary = {
       skinNames: ['default'],
@@ -388,6 +389,32 @@ describe('Spine', function () {
           duration: 1,
           events: [],
         },
+      ],
+      slotNames: [
+        'holster',
+        'arm_left',
+        'arm_left_armor',
+        'leg_left',
+        'leg_left_armor',
+        'leg_right',
+        'leg_right_armor',
+        'foot_right',
+        'foot_right_armor',
+        'foot_left',
+        'foot_left_armor',
+        'chest',
+        'chest_armor',
+        'head',
+        'eyes',
+        'head_armor',
+        'equippables',
+        'arm_right',
+        'arm_right_armor',
+        'smears',
+        'discordicon',
+        'discordicon2',
+        'discordicon3',
+        'discordicon4',
       ],
     };
     expect(summary).to.eql(expectedSummary);
