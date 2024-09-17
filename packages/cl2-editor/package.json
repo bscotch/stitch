@@ -41,7 +41,7 @@
       },
       {
         "command": "crashlands.editor.backup.restore",
-        "enablement": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-storyline'",
+        "enablement": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-storyline' || editorLangId == 'cl2-character'",
         "category": "Crashlands",
         "title": "Restore Backup"
       },
@@ -193,7 +193,7 @@
       "commandPalette": [
         {
           "command": "crashlands.editor.backup.restore",
-          "when": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-storyline'"
+          "when": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-storyline' || editorLangId == 'cl2-character'"
         },
         {
           "command": "bscotch.strings.addGlossaryEntry"

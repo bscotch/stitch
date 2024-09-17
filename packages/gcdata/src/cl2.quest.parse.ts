@@ -751,7 +751,6 @@ export async function updateChangesFromParsedQuest(
           delete moment?.order;
         }
         assert(moment, `Moment ${m.id} not found in base or working mote`);
-        moment.element.style;
         const element = moment.element;
         if (element.style === 'Emote') {
           assert(m.kind === 'emote', `Expected moment ${m.id} to be an emote`);

@@ -125,9 +125,10 @@ export class CharacterDocument {
       // a new Phrase Group
       newEdit.insert(this.uri, cursor, '\n\n\t');
     } else if (line.text.match(/^>/)) {
-      // If shifted, we want to add another dialog line
-      // Otherwise we want to create a new phrase group
-      if (shifted) {
+      // Inverse of Quest text behavior, since the common
+      // use case is to add a new line of dialogue (rather
+      // than create a new group)
+      if (!shifted) {
         newEdit.insert(this.uri, cursor, `\n${line.text[0]} `);
       } else {
         newEdit.insert(this.uri, cursor, '\n\n\t');

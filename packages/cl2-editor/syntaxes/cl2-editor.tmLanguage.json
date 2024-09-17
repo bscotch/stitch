@@ -73,8 +73,20 @@
           }
         },
         {
+          "name": "moment.dialog.speaker.cl2-character",
+          "match": "^\\t(?<arrayId>#[a-z_0-9]+)(?:\\s+(?<name>.*)?)?",
+          "captures": {
+            "1": {
+              "name": "id.array.cl2-quest"
+            },
+            "2": {
+              "name": "name.mote.cl2-quest"
+            }
+          }
+        },
+        {
           "name": "moment.dialog.speaker.cl2-quest",
-          "match": "^\\t(?<name>.*?)\\s*(?<moteId>[@#][a-z_0-9]+)",
+          "match": "^\\t(?<name>.*?)\\s*(?<moteId>@[a-z_0-9]+)",
           "captures": {
             "1": {
               "name": "name.mote.cl2-quest"
