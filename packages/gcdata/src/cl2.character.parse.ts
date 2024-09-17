@@ -9,6 +9,7 @@ import {
   isStageLine,
   prepareParserHelpers,
 } from './cl2.shared.parse.js';
+import { npcSchemaId } from './cl2.shared.types.js';
 import type { GameChanger } from './GameChanger.js';
 import { changedPosition } from './helpers.js';
 import { Position } from './types.editor.js';
@@ -38,6 +39,7 @@ export function parseStringifiedCharacter(
     packed,
     {
       ...options,
+      schemaId: npcSchemaId,
       globalLabels: new Set(['Stage', 'Name', 'Idle Dialologue']),
     },
     result,

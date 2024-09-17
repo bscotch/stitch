@@ -52,8 +52,6 @@ export class CharacterDocument {
       },
     );
 
-    console.log('matchingAutocompletes', matchingAutocompletes);
-
     const completes = matchingAutocompletes
       .map((c) => {
         if (c.type === 'motes') {
@@ -118,10 +116,14 @@ export class CharacterDocument {
     } else if (line.text.match(/^.(#\w+)?\s*$/)) {
       // Then we have an empty array item that we're probably wanting to delete
       newEdit.delete(this.uri, line.range);
-    } else if (line.text.match(/^\t(?<name>.*?)\s*(?<label>#[a-z_0-9]+)/)) {
+    } else if (line.text.match(/^\t/)) {
       // Then we're at the end of a phrase group name
       // and probably want to add some dialog
       newEdit.insert(this.uri, cursor, '\n> ');
+    } else if (line.text.match(/^Topic/)) {
+      // Then we probably want to skip a line and create
+      // a new Phrase Group
+      newEdit.insert(this.uri, cursor, '\n\n\t');
     } else if (line.text.match(/^>/)) {
       // If shifted, we want to add another dialog line
       // Otherwise we want to create a new phrase group

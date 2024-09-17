@@ -23,6 +23,7 @@ import {
   prepareParserHelpers,
   updateWipChangesFromParsed,
 } from './cl2.shared.parse.js';
+import { questSchemaId } from './cl2.shared.types.js';
 import { Crashlands2 } from './cl2.types.auto.js';
 import {
   bsArrayToArray,
@@ -74,6 +75,7 @@ export function parseStringifiedQuest(
     packed,
     {
       ...options,
+      schemaId: questSchemaId,
       globalNonUniqueLabels: new Set(['Clue']),
       globalLabels: new Set([
         'Stage',

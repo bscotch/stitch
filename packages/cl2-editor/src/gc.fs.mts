@@ -264,7 +264,7 @@ export class GameChangerFs implements vscode.FileSystemProvider {
         'crashlands.quests.enter',
         (mods?: { shift?: boolean }) => {
           const doc = provider.getActiveMoteDoc();
-          if (doc instanceof QuestDocument) {
+          if (doc && 'onEnter' in doc && typeof doc.onEnter === 'function') {
             doc?.onEnter(mods?.shift);
           }
         },

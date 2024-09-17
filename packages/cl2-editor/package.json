@@ -35,7 +35,7 @@
     "commands": [
       {
         "command": "crashlands.quests.enter",
-        "enablement": "editorLangId == 'cl2-quest'",
+        "enablement": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-character'",
         "category": "Crashlands",
         "title": "On Enter"
       },
@@ -135,12 +135,12 @@
       {
         "command": "crashlands.quests.enter",
         "key": "enter",
-        "when": "editorLangId == 'cl2-quest' && editorTextFocus && !suggestWidgetVisible"
+        "when": "editorTextFocus && !suggestWidgetVisible"
       },
       {
         "command": "crashlands.quests.enter",
         "key": "shift+enter",
-        "when": "editorLangId == 'cl2-quest' && editorTextFocus && !suggestWidgetVisible",
+        "when": "editorTextFocus && !suggestWidgetVisible",
         "args": {
           "shift": true
         }

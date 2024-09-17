@@ -44,7 +44,7 @@ export function stringifyCharacter(
         // phrases. Treat it like Quest dialog, where the "speaker"
         // line is instead the name of the phrase group.
         blocks.push(
-          `\n\t${phraseGroup.element.name}${toArrayTag(phraseGroup)}`,
+          `\n\t${toArrayTag(phraseGroup)} ${phraseGroup.element.name}`,
         );
         for (const phrase of bsArrayToArray(phraseGroup.element.phrases)) {
           // Each phrase has an optional emoji and the text of the phrase.

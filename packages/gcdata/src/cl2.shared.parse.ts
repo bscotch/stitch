@@ -23,10 +23,11 @@ export function prepareParserHelpers(
   text: string,
   packed: GameChanger,
   options: {
+    schemaId: string;
     checkSpelling?: boolean;
     globalLabels?: Set<string>;
     globalNonUniqueLabels?: Set<string>;
-  } = {},
+  },
   result: ParserResult<any>,
 ) {
   /** Terms from the glossary for use in autocompletes */
@@ -94,9 +95,20 @@ export function prepareParserHelpers(
     }
 
     // Ensure the array tag. It goes right after the label or indicator.
-    if (!parsedLine.arrayTag?.value && lineIsArrayItem(currentLine)) {
+    if (
+      !parsedLine.arrayTag?.value &&
+      lineIsArrayItem(currentLine, options.schemaId) &&
+      // Prevent infinite loops, which can happen if the line
+      // claims to be an arrayItem but doesn't have a pattern
+      // that yields and arrayTag. In that case, there could BE
+      // an arrayTag in the string despite the parsedLine saying there isn't
+      !currentLine.match(new RegExp(arrayTagPattern))
+    ) {
       const arrayTag = createBsArrayKey();
-      const start = parsedLine.indicator?.end || parsedLine.label?.end!;
+      const start =
+        parsedLine.indicator?.end ||
+        parsedLine.label?.end! ||
+        parsedLine.labelGroup?.end!;
       result.edits.push({
         start,
         end: start,

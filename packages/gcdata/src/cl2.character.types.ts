@@ -5,11 +5,11 @@ import {
   commentLinePattern,
   dialogPattern,
   npcSchemaId,
-  ParserResult,
   type BuddyData,
   type BuddyMote,
   type NpcData,
   type NpcMote,
+  type ParserResult,
 } from './cl2.shared.types.js';
 import type { Mote } from './types.js';
 
@@ -67,7 +67,7 @@ export const linePatterns = [
   // Topics (Topic#xxxx: The Topic!)
   `^(?<labelGroup>(?<label>Topic)${arrayTagPattern}?\\s*:)\\s*(?<text>.*?)\\s*$`,
   // Phrase Group Names
-  `^(?<indicator>\\t)((?<label>.*?)\\s*${arrayTagPattern}?)?\\s*$`,
+  `^(?<indicator>\\t)(?:${arrayTagPattern}\\s+)?(?<text>.*?)\\s*$`,
   dialogPattern,
   commentLinePattern,
 ];

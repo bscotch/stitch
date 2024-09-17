@@ -194,13 +194,18 @@ export function parseIfMatch(
   return result;
 }
 
-export function lineIsArrayItem(line: string): boolean {
-  if (
-    line.match(
-      /^(\t|name|stage|storyline|(start|end) (moments|requirements)|log|giver|receiver|description|unlocked description|idle dialogue)/i,
-    )
-  ) {
+export function lineIsArrayItem(line: string, schemaId: string): boolean {
+  // Shared non-array types:
+  if (line.match(/^(name|stage|description)/i)) {
     return false;
+  }
+  // Quest & Story specific non-array types:
+  else if ([questSchemaId, storylineSchemaId].includes(schemaId)) {
+    return !line.match(
+      /^(\t|storyline|(start|end) (moments|requirements)|log|giver|receiver|unlocked description)/i,
+    );
+  } else if ([buddySchemaId, npcSchemaId].includes(schemaId)) {
+    return !line.match(/^(idle dialogue)/i);
   }
   return true;
 }

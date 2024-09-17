@@ -37,6 +37,7 @@ export function parseStringifiedComfort(
     packed,
     {
       ...options,
+      schemaId: comfortSchemaId,
       globalLabels: new Set<string>([
         'Name',
         'Description',

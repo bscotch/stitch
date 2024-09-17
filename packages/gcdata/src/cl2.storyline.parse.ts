@@ -37,6 +37,7 @@ export function parseStringifiedStoryline(
     packed,
     {
       ...options,
+      schemaId: storylineSchemaId,
       globalLabels: new Set<string>(['Name', 'Description', 'Stage']),
     },
     result,
