@@ -1,5 +1,13 @@
 # Crashlands 2 Editor Changelog
 
+## 0.25.0 (2024-09-17)
+
+### Features
+
+- Stringified character data can now be used to update GameChanger data
+- Can now parse stringified character motes
+- Can now stringify character motes
+
 ## 0.24.0 (2024-09-16)
 
 ### Features
