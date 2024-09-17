@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/gcdata",
-  "version": "0.21.2",
+  "version": "0.22.0",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
