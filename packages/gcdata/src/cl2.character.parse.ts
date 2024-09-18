@@ -47,7 +47,7 @@ export function parseStringifiedCharacter(
     {
       ...options,
       schemaId: npcSchemaId,
-      globalLabels: new Set(['Stage', 'Name', 'Idle Dialologue']),
+      globalLabels: new Set(['Stage', 'Name', 'Idle Dialogue']),
     },
     result,
   );
