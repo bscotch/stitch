@@ -538,7 +538,7 @@ class TreeMoteItem<
           : this.isComfort()
             ? 'home'
             : this.isChat()
-              ? 'comment-discussion'
+              ? 'ellipsis'
               : this.isBuddy()
                 ? 'heart'
                 : this.isNpc()

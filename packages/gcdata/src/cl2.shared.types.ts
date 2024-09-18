@@ -13,6 +13,10 @@ import { resolvePointerInSchema } from './util.js';
 
 export type CharacterData = BuddyData | NpcData;
 export type CharacterMote = BuddyMote | NpcMote;
+export type JuiceboxData = Crashlands2.Schemas['cl2_juicebox'];
+export type JuiceboxMote = Mote<JuiceboxData>;
+export type FluxData = Crashlands2.Schemas['cl2_player'];
+export type FluxMote = Mote<FluxData>;
 
 export const questSchemaId = 'cl2_quest';
 export type QuestData = Crashlands2.Schemas['cl2_quest'];
@@ -121,6 +125,13 @@ export const linePartsSchema = z.object({
     .regex(/^[a-z0-9]+$/)
     .optional()
     .describe("BsArrayElement identifier (without the '#' prefix)"),
+  arrayTag2: z
+    .string()
+    .regex(/^[a-z0-9]+$/)
+    .optional()
+    .describe(
+      "BsArrayElement identifier (without the '#' prefix), in the case that there are >1 in a line",
+    ),
   moteTag: z
     .string()
     .regex(/^[\w_-]+$/)
@@ -207,6 +218,9 @@ export function lineIsArrayItem(line: string, schemaId: string): boolean {
     );
   } else if ([buddySchemaId, npcSchemaId].includes(schemaId)) {
     return !line.match(/^(idle dialogue)/i);
+  } else if (schemaId === chatSchemaId) {
+    // These are weird, so should be handled outside the automated systems
+    return false;
   }
   return true;
 }
@@ -234,4 +248,18 @@ export function getEmojis(
     packed.listMotesBySchema<Crashlands2.Schemas['cl2_emoji']>('cl2_emoji');
   assert(emojis.length > 0, 'Should have at least one emoji mote');
   return emojis;
+}
+
+/**
+ * List all character motes in the game, including Flux and Juicebox.
+ */
+export function listAllCharacters(
+  gcData: Gcdata,
+): (CharacterMote | FluxMote | JuiceboxMote)[] {
+  return gcData.listMotesBySchema(
+    npcSchemaId,
+    buddySchemaId,
+    'cl2_player',
+    'cl2_juicebox',
+  ) as any;
 }

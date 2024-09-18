@@ -2,6 +2,7 @@ import { GameChanger } from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { CharacterCompletionProvider } from './character.autocompletes.mjs';
+import { ChatCompletionProvider } from './chat.autocompletes.mjs';
 import { ComfortCompletionProvider } from './comfort.autocompletes.mjs';
 import { crashlandsEvents } from './events.mjs';
 import { GameChangerFs } from './gc.fs.mjs';
@@ -53,6 +54,7 @@ export class CrashlandsWorkspace {
       ...StorylineCompletionProvider.register(this.workspace),
       ...ComfortCompletionProvider.register(this.workspace),
       ...CharacterCompletionProvider.register(this.workspace),
+      ...ChatCompletionProvider.register(this.workspace),
       ...SymbolProvider.register(this.workspace),
       vscode.commands.registerCommand('crashlands.open.saveDir', async () => {
         await vscode.commands.executeCommand(

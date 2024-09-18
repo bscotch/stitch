@@ -3,6 +3,7 @@ import { homedir } from 'os';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { CharacterDocument } from './character.doc.mjs';
+import { ChatDocument } from './chat.doc.mjs';
 import { ComfortDocument } from './comfort.doc.mjs';
 import { crashlandsConfig } from './config.mjs';
 import { crashlandsEvents } from './events.mjs';
@@ -10,6 +11,7 @@ import type { Backup, BackupsIndex } from './gc.fs.types.mjs';
 import { QuestDocument } from './quests.doc.mjs';
 import {
   isBuddyUri,
+  isChatUri,
   isComfortUri,
   isNpcUri,
   isQuestUri,
@@ -23,7 +25,8 @@ type DocumentType =
   | QuestDocument
   | StorylineDocument
   | ComfortDocument
-  | CharacterDocument;
+  | CharacterDocument
+  | ChatDocument;
 
 export class GameChangerFs implements vscode.FileSystemProvider {
   static get backupsDir() {
@@ -43,6 +46,8 @@ export class GameChangerFs implements vscode.FileSystemProvider {
       return CharacterDocument.from(uri, this.workspace);
     } else if (isNpcUri(uri)) {
       return CharacterDocument.from(uri, this.workspace);
+    } else if (isChatUri(uri)) {
+      return ChatDocument.from(uri, this.workspace);
     }
     throw new Error('Unknown uri type: ' + uri.toString());
   }
