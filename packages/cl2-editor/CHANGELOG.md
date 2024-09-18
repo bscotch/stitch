@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.25.1 (2024-09-18)
+
+### Fixes
+
+- Resolved issue with Idle Topics not generating new IDs
+
 ## 0.25.0 (2024-09-17)
 
 ### Features

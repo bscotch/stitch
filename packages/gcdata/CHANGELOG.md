@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.22.1 (2024-09-18)
+
+### Fixes
+
+- Resolved issue with Idle Topics not generating new IDs
+
 ## 0.22.0 (2024-09-17)
 
 ### Features
