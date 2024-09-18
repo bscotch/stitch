@@ -94,15 +94,16 @@ export function prepareParserHelpers(
       return null;
     }
 
+    parsedLine._hadArrayTag =
+      !!parsedLine.arrayTag?.value ||
+      // Might have one even if it wasn't in the pattern.'
+      // This safety prevent loops and other surprises
+      !!currentLine.match(new RegExp(arrayTagPattern));
+
     // Ensure the array tag. It goes right after the label or indicator.
     if (
-      !parsedLine.arrayTag?.value &&
       lineIsArrayItem(currentLine, options.schemaId) &&
-      // Prevent infinite loops, which can happen if the line
-      // claims to be an arrayItem but doesn't have a pattern
-      // that yields and arrayTag. In that case, there could BE
-      // an arrayTag in the string despite the parsedLine saying there isn't
-      !currentLine.match(new RegExp(arrayTagPattern))
+      !parsedLine._hadArrayTag
     ) {
       const arrayTag = createBsArrayKey();
       const start =

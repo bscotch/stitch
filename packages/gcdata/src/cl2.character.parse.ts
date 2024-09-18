@@ -118,6 +118,19 @@ export function parseStringifiedCharacter(
             groups: [],
           };
           result.parsed.idles.push(lastIdleTopic);
+          // If we don't have a ':' separator, add it as an insert to help
+          if (
+            !parsedLine.sep &&
+            parsedLine._hadArrayTag &&
+            parsedLine.arrayTag?.value
+          ) {
+            // Put it right after the array tag
+            result.edits.push({
+              newText: ': ',
+              start: parsedLine.arrayTag!.end,
+              end: parsedLine.arrayTag!.end,
+            });
+          }
         }
       } else if (indicator === '\t') {
         // Then we're starting a phrase group within a topic
@@ -138,6 +151,19 @@ export function parseStringifiedCharacter(
             phrases: [],
           };
           lastIdleTopic.groups.push(lastPhraseGroup);
+          // If we don't have a ' ' separator, add it as an insert to help
+          if (
+            !parsedLine.sep &&
+            parsedLine._hadArrayTag &&
+            parsedLine.arrayTag?.value
+          ) {
+            // Put it right after the array tag
+            result.edits.push({
+              newText: ' ',
+              start: parsedLine.arrayTag!.end,
+              end: parsedLine.arrayTag!.end,
+            });
+          }
         }
       } else if (indicator === '>') {
         // Then we're adding a phrase to the current phrase group

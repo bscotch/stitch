@@ -65,9 +65,9 @@ export const linePatterns = [
   // Label: Text
   `^(?<labelGroup>(?<label>Name|Stage|Idle Dialogue)\\s*:)\\s*(?<text>.*?)\\s*$`,
   // Topics (Topic#xxxx: The Topic!)
-  `^(?<labelGroup>(?<label>Topic)${arrayTagPattern}?\\s*:)\\s*(?<text>.*?)\\s*$`,
+  `^(?<label>Topic)${arrayTagPattern}?(?:\\s*(?<sep>:)\\s*(?<text>.*?)\\s*)?$`,
   // Phrase Group Names
-  `^(?<indicator>\\t)(?:${arrayTagPattern}\\s+)?(?<text>.*?)\\s*$`,
+  `^(?<indicator>\\t)(?:${arrayTagPattern}(?<sep>\\s+))?(?<text>.*?)\\s*$`,
   dialogPattern,
   commentLinePattern,
 ];

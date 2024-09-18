@@ -94,6 +94,7 @@ export type ParsedLine = {
     end: Position;
     value: string;
   };
+  _hadArrayTag?: boolean;
 };
 
 export const arrayTagPattern = '(?:#(?<arrayTag>[a-z0-9]+))';
