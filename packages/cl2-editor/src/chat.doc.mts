@@ -113,23 +113,18 @@ export class ChatDocument {
     if (line.text.match(/^\/\//)) {
       // Then default to adding another comment line
       newEdit.insert(this.uri, cursor, '\n// ');
-    } else if (line.text.match(/^.(#\w+)?\s*$/)) {
+    } else if (line.text.match(/^.(#\w+)?(#\w+)?\s*$/)) {
       // Then we have an empty array item that we're probably wanting to delete
       newEdit.delete(this.uri, line.range);
     } else if (line.text.match(/^\t/)) {
       // Then we're at the end of a phrase group name
       // and probably want to add some dialog
       newEdit.insert(this.uri, cursor, '\n> ');
-    } else if (line.text.match(/^Topic/)) {
-      // Then we probably want to skip a line and create
-      // a new Phrase Group
-      newEdit.insert(this.uri, cursor, '\n\n\t');
     } else if (line.text.match(/^>/)) {
-      // Inverse of Quest text behavior, since the common
-      // use case is to add a new line of dialogue (rather
-      // than create a new group)
-      if (!shifted) {
-        newEdit.insert(this.uri, cursor, `\n${line.text[0]} `);
+      // Usually want to create a new Moment, so default should
+      // do that and shifted should add new dialog line
+      if (shifted) {
+        newEdit.insert(this.uri, cursor, `\n\t`);
       } else {
         newEdit.insert(this.uri, cursor, '\n\n\t');
       }

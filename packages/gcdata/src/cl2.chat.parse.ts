@@ -18,7 +18,12 @@ import {
   listAllCharacters,
 } from './cl2.shared.types.js';
 import type { GameChanger } from './GameChanger.js';
-import { changedPosition, createBsArrayKey } from './helpers.js';
+import {
+  bsArrayToArray,
+  changedPosition,
+  createBsArrayKey,
+  updateBsArrayOrder,
+} from './helpers.js';
 import { Position } from './types.editor.js';
 import { Mote } from './types.js';
 
@@ -180,6 +185,11 @@ export function parseStringifiedChat(
             message: `Dialogue requires a speaker header!`,
             ...lineRange,
           });
+        } else if ('text' in currentPhrase) {
+          result.diagnostics.push({
+            message: `Phrase already has text!`,
+            ...lineRange,
+          });
         } else {
           const emoji = helpers.emojiIdFromName(parsedLine.emojiName?.value);
           currentPhrase.text = parsedLine.text?.value;
@@ -263,6 +273,92 @@ export async function updateChangesFromParsedChat(
 
     // Add/Update IDLES
     trace(`Updating idles`);
+    const parsedMomentIds: Map<string, Set<string>> = new Map();
+    for (const moment of parsed.moments) {
+      assert(moment.id, `Moment ID required`);
+      parsedMomentIds.set(
+        moment.id,
+        parsedMomentIds.get(moment.id) || new Set(),
+      );
+      for (const phrase of moment.phrases) {
+        assert(phrase.id, `Phrase ID required`);
+        parsedMomentIds.get(moment.id)!.add(phrase.id);
+        // update emoji, speaker, and text
+        updateMote(
+          `data/moments/${moment.id}/element/${phrase.id}/element/emoji`,
+          phrase.emoji,
+        );
+        updateMote(
+          `data/moments/${moment.id}/element/${phrase.id}/element/speaker`,
+          phrase.speaker,
+        );
+        updateMote(
+          `data/moments/${moment.id}/element/${phrase.id}/element/text/text`,
+          phrase.text,
+        );
+      }
+    }
+    // Delete any moments/phrases that are no longer in the parsed data
+    for (const existingMoment of bsArrayToArray(moteBase?.data.moments || {})) {
+      const isInParsed = parsedMomentIds.has(existingMoment.id);
+      if (!isInParsed) {
+        packed.updateMoteData(
+          moteId,
+          `data/moments/${existingMoment.id}`,
+          null,
+        );
+        continue;
+      } else {
+        const parsedPhraseIds = parsedMomentIds.get(existingMoment.id)!;
+        for (const existingPhrase of bsArrayToArray(existingMoment.element)) {
+          if (!parsedPhraseIds.has(existingPhrase.id)) {
+            packed.updateMoteData(
+              moteId,
+              `data/moments/${existingMoment.id}/element/${existingPhrase.id}`,
+              null,
+            );
+          }
+        }
+      }
+    }
+    // Update moment and phrase order
+    trace(`Updating moment order`);
+    const orderedMoments = parsed.moments.map((m) => {
+      assert(m.id, `Moment ID required`);
+      let moment = moteBase?.data.moments?.[m.id];
+      if (!moment) {
+        moment = moteWorking.data.moments?.[m.id];
+        assert(moment, `Moment ${m.id} not found in base or working mote`);
+        // @ts-expect-error - order is a required field, but it'll be re-added
+        delete moment.order;
+      }
+      const orderedPhrases = m.phrases.map((p) => {
+        assert(p.id, `Phrase ID required`);
+        let phrase = moment?.element?.[p.id];
+        if (!phrase) {
+          phrase = moteWorking.data.moments?.[m.id!]?.element?.[p.id!];
+          assert(phrase, `Phrase ${p.id} not found in moment ${m.id}`);
+          // @ts-expect-error - order is a required field, but it'll be re-added
+          delete phrase.order;
+        }
+        return { ...phrase, id: p.id };
+      });
+      updateBsArrayOrder(orderedPhrases);
+      return { ...moment, phrases: orderedPhrases, id: m.id };
+    });
+    updateBsArrayOrder(orderedMoments);
+    // Turn those updates into actual changes
+    for (const moment of orderedMoments) {
+      trace(`Updating moment ${moment.id} order to ${moment.order}`);
+      updateMote(`data/moments/${moment.id}/order`, moment.order);
+      for (const phrase of moment.phrases) {
+        trace(`Updating phrase ${phrase.id} order to ${phrase.order}`);
+        updateMote(
+          `data/moments/${moment.id}/element/${phrase.id}/order`,
+          phrase.order,
+        );
+      }
+    }
 
     trace(`Writing changes`);
     await packed.writeChanges();

@@ -520,13 +520,11 @@ export async function updateChangesFromParsedQuest(
           `data/clues/${clue.id}/element/phrases/${phrase.id}/element/phrase/text/text`,
           phrase.text || '',
         );
-        if (phrase.emoji) {
-          trace(`Setting phrase ${phrase.id} emoji to "${phrase.emoji}"`);
-          updateMote(
-            `data/clues/${clue.id}/element/phrases/${phrase.id}/element/phrase/emoji`,
-            phrase.emoji,
-          );
-        }
+        trace(`Setting phrase ${phrase.id} emoji to "${phrase.emoji}"`);
+        updateMote(
+          `data/clues/${clue.id}/element/phrases/${phrase.id}/element/phrase/emoji`,
+          phrase.emoji,
+        );
       }
     }
     // Delete clues that were removed

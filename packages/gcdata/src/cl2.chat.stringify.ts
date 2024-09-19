@@ -34,8 +34,15 @@ export function stringifyChat(mote: ChatMote, packed: GameChanger): string {
     // With a blank line between moments (but no blank line between phrases
     // in the same moment).
     blocks.push('');
-    for (const phrase of bsArrayToArray(moment.element)) {
-      const character = characterString(phrase.element.speaker, packed);
+    const phrases = bsArrayToArray(moment.element);
+    if (!phrases.length) {
+      // Then we still need to write the momentId so it doesn't get lost!
+      blocks.push(`\t${toArrayTag(moment)}`);
+    }
+    for (const phrase of phrases) {
+      const character = phrase.element.speaker
+        ? characterString(phrase.element.speaker, packed)
+        : '';
       const emoji = emojiString(phrase.element.emoji, packed);
       let asText = `\t${toArrayTag(moment)}${toArrayTag(phrase)} ${character}\n> `;
       if (emoji) {

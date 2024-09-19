@@ -340,7 +340,7 @@ export async function updateChangesFromParsedCharacter(
         idle = moteWorking.data.idle_text?.[parsedIdle.id];
         assert(idle, `Idle ${parsedIdle.id} not found in base or working`);
         // @ts-expect-error - order is a required field, but it'll be re-added
-        delete idle?.order;
+        delete idle.order;
       }
       const orderedGroups = parsedIdle.groups.map((parsedGroup) => {
         assert(parsedGroup.id, `Group must have an ID`);
