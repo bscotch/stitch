@@ -257,6 +257,11 @@ export class GameChanger {
     }
     // Remove the working version, then recreate it from the diffs
     delete this.working.data.motes[moteId];
+    if (this.base.data.motes[moteId]) {
+      this.working.data.motes[moteId] = structuredClone(
+        this.base.data.motes[moteId],
+      );
+    }
     this.applyChanges();
   }
 
