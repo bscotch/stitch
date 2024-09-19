@@ -475,7 +475,20 @@ export async function updateChangesFromParsedQuest(
   try {
     // We're always going to be computing ALL changes, so clear whatever
     // we previously had.
-    packed.clearMoteChanges(moteId);
+    packed.clearMoteChanges(moteId, [
+      'data/wip/staging',
+      'data/wip/notes/*',
+      'data/name',
+      'data/quest_giver',
+      'data/quest_receiver',
+      'data/quest_start_log',
+      'data/storyline',
+      'data/clues/*',
+      'data/quest_start_requirements',
+      'data/quest_end_requirements',
+      'data/quest_start_moments',
+      'data/quest_end_moments',
+    ]);
     const questMoteBase = packed.base.getMote(moteId) as
       | Mote<Crashlands2.Schemas['cl2_quest']>
       | undefined;

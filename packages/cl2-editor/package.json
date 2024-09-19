@@ -66,6 +66,11 @@
         "title": "Copy Path"
       },
       {
+        "command": "crashlands.tree.newChat",
+        "category": "Crashlands",
+        "title": "New Chat"
+      },
+      {
         "command": "crashlands.tree.dropMode.order.enable",
         "title": "Enable Order Mode (Drag/Drop)",
         "category": "Crashlands",
@@ -234,9 +239,14 @@
       ],
       "view/item/context": [
         {
+          "command": "crashlands.tree.newChat",
+          "when": "view == cl2-stories",
+          "group": "navigation@1"
+        },
+        {
           "command": "crashlands.tree.setFolder",
           "when": "view == cl2-stories && viewItem =~ /^mote-/",
-          "group": "navigation@1"
+          "group": "navigation@2"
         },
         {
           "command": "crashlands.tree.copyFolderPath",

@@ -5,6 +5,7 @@ import {
   chatSchemaId,
   ComfortData,
   comfortSchemaId,
+  createChatMote,
   NpcData,
   npcSchemaId,
   ORDER_INCREMENT,
@@ -465,6 +466,18 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeItem> {
         (item: TreeItem) => {
           if (!(item instanceof FolderItem)) return;
           vscode.env.clipboard.writeText(item.relativePathString);
+        },
+      ),
+      vscode.commands.registerCommand(
+        'crashlands.tree.newChat',
+        async (item: TreeItem) => {
+          // TODO: Add a new chat to the GameChanger data!
+          const parentMote =
+            item instanceof TreeMoteItem ? item.mote : item.parentMote;
+          const folder =
+            item instanceof FolderItem ? item.relativePathString : undefined;
+          await createChatMote(provider.packed, parentMote, folder);
+          provider.rebuild();
         },
       ),
       provider.view,

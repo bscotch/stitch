@@ -252,7 +252,12 @@ export async function updateChangesFromParsedCharacter(
   try {
     // We're always going to be computing ALL changes, so clear whatever
     // we previously had.
-    packed.clearMoteChanges(moteId);
+    packed.clearMoteChanges(moteId, [
+      'data/wip/staging',
+      'data/wip/notes/*',
+      'data/name/text',
+      'data/idle_text/*',
+    ]);
     const moteWorking = packed.working.getMote(moteId);
     const moteBase = packed.base.getMote(moteId) as CharacterMote | undefined;
     assert(moteWorking, `Mote ${moteId} not found in working copy`);

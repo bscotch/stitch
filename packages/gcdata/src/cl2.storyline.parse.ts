@@ -102,7 +102,12 @@ export async function updateChangesFromParsedStoryline(
   try {
     // We're always going to be computing ALL changes, so clear whatever
     // we previously had.
-    packed.clearMoteChanges(moteId);
+    packed.clearMoteChanges(moteId, [
+      'data/wip/staging',
+      'data/wip/notes/*',
+      'data/name/text',
+      'data/description/text',
+    ]);
     const schema = getStorylineSchema(packed.working);
     assert(schema, `${storylineSchemaId} schema not found in working copy`);
     assert(schema.name, 'Quest mote must have a name pointer');
