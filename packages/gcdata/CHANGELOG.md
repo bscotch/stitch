@@ -1,5 +1,17 @@
 # @bscotch/gcdata Changelog
 
+## 0.23.0 (2024-09-19)
+
+### Features
+
+- Can now create new Chats from the Quest Editor. Also less likely to delete changes not representable by the Editor.
+- Can now edit CL2 Chat motes
+- Can now parse stringified Chats
+
+### Fixes
+
+- Resolved issue causing errors upon multiple edits
+
 ## 0.22.1 (2024-09-18)
 
 ### Fixes

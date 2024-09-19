@@ -1,5 +1,13 @@
 # Crashlands 2 Editor Changelog
 
+## 0.26.0 (2024-09-19)
+
+### Features
+
+- Can now create new Chats from the Quest Editor. Also less likely to delete changes not representable by the Editor.
+- Can now edit CL2 Chat motes
+- Can now parse stringified Chats
+
 ## 0.25.1 (2024-09-18)
 
 ### Fixes
