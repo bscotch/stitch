@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.24.0 (2024-09-25)
+
+### Features
+
+- GameChanger data can now optionally have all refs and overrides resolved on load, for cases where that's useful.
+
 ## 0.23.0 (2024-09-19)
 
 ### Features
