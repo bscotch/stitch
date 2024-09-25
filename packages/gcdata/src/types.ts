@@ -87,6 +87,10 @@ export function getAdditionalProperties(
   return;
 }
 
+export function isBschemaRef(schema: any): schema is BschemaRef {
+  return isObject(schema) && '$ref' in schema && !!schema['$ref'];
+}
+
 export function isBschemaObject(schema: any): schema is BschemaObject {
   return (
     typeof schema === 'object' &&
@@ -131,7 +135,7 @@ interface BschemaBase {
   /**
    * A partial schema that will overwrite fields of the current one
    */
-  overrides?: string;
+  overrides?: any;
 
   /**
    * Internal pointer to the field that holds the mote's name
@@ -324,3 +328,9 @@ export const changesSchema = z
     }),
   })
   .passthrough();
+
+export function isObject<T extends object>(
+  value: unknown,
+): value is Exclude<T, null> {
+  return typeof value === 'object' && value !== null;
+}

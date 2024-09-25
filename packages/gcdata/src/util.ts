@@ -154,6 +154,7 @@ export function normalizeSchema(
   /** For resolving oneOfs */
   data: any,
 ): Bschema {
+  let overrides: Bschema | undefined;
   if ('$ref' in schema) {
     const refParts = schema.$ref.split('/');
     schema = gcData.getSchema(refParts[0])!;
@@ -161,6 +162,9 @@ export function normalizeSchema(
     if (refParts.length > 1) {
       schema = resolvePointer(refParts.slice(1), schema)!;
       assert(schema, `Could not resolve subpointer $ref ${refParts.join('/')}`);
+    }
+    if ('overrides' in schema) {
+      overrides = schema.overrides;
     }
   }
   const oneOf = 'oneOf' in schema ? resolveOneOf(schema, data) : undefined;
@@ -184,6 +188,7 @@ export function normalizeSchema(
     // @ts-ignore
     additionalProperties,
     oneOf: undefined,
+    ...overrides,
   };
 }
 

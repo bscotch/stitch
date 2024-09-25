@@ -9,6 +9,7 @@ import {
 } from './types.cl2.rumpus.js';
 import {
   Bschema,
+  BschemaObject,
   ChangeType,
   Changes,
   changeSchema,
@@ -17,7 +18,9 @@ import {
   isBschemaConst,
   isBschemaEnum,
   isBschemaNumeric,
+  isBschemaRef,
   isBschemaString,
+  isObject,
   type Mote,
   type MoteId,
   type PackedData,
@@ -51,7 +54,15 @@ export interface MoteVisitorCtx<T = undefined> {
 }
 
 export class Gcdata {
-  constructor(public data: PackedData) {}
+  constructor(
+    public data: PackedData,
+    options?: { resolveRefsAndOverrides?: boolean },
+  ) {
+    // Resolve all refs and overrides in the schemas
+    if (options?.resolveRefsAndOverrides) {
+      Gcdata.resolveRefsAndOverrides(data);
+    }
+  }
   get motes(): PackedData['motes'] {
     return {
       ...this.data.motes,
@@ -201,9 +212,60 @@ export class Gcdata {
     ) as Mote<D>[];
   }
 
-  static async from(gcdataFile: Pathy) {
+  static async from(
+    gcdataFile: Pathy,
+    options?: { resolveRefsAndOverrides?: boolean },
+  ) {
     const data = JSON.parse(await gcdataFile.read({ parse: false }));
-    return new Gcdata(data);
+    return new Gcdata(data, options);
+  }
+
+  /**
+   * Given a raw packed data object, recurse through to resolve
+   * all references and overrides.
+   */
+  protected static resolveRefsAndOverrides(data: PackedData): void {
+    const recursivelyResolve = (subschema: Bschema) => {
+      while (isBschemaRef(subschema)) {
+        const ref = data.schemas[subschema.$ref];
+        assert(ref, `Could not resolve reference ${subschema.$ref}`);
+        // Mutate in place
+        Object.assign(subschema, ref);
+        //@ts-expect-error We've changed the type from a ref
+        delete subschema.$ref;
+      }
+      if (isObject(subschema)) {
+        if ('overrides' in subschema && isObject(subschema.overrides)) {
+          Object.assign(subschema, subschema.overrides);
+          delete subschema.overrides;
+        }
+        // If this was an object, need to recurse through properties
+        // and additionalProperties
+        if (
+          'additionalProperties' in subschema &&
+          isObject(subschema.additionalProperties)
+        ) {
+          recursivelyResolve(subschema.additionalProperties as BschemaObject);
+        }
+        if ('properties' in subschema && isObject(subschema.properties)) {
+          for (const prop of Object.values(
+            subschema.properties as Record<string, Bschema>,
+          )) {
+            recursivelyResolve(prop);
+          }
+        }
+        // // This gives us a max callstack error,
+        // // so there must be circularity somewhere
+        // if ('oneOf' in subschema && Array.isArray(subschema.oneOf)) {
+        //   for (const oneOf of subschema.oneOf) {
+        //     recursivelyResolve(oneOf);
+        //   }
+        // }
+      }
+    };
+    for (const schema of Object.values(data.schemas)) {
+      recursivelyResolve(schema);
+    }
   }
 }
 
