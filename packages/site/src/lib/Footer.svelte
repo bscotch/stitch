@@ -1,5 +1,8 @@
 <footer>
 	<p>
+		🐛 Found an issue? <a href="https://github.com/bscotch/stitch/issues">Report it on GitHub!</a>
+	</p>
+	<p>
 		🚀 Created by <a href="https://www.bscotch.net/">Butterscotch Shenanigans</a>
 	</p>
 	<p>

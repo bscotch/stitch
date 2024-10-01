@@ -17,11 +17,13 @@
 	<h1>Markdown to Steam BBCode Converter</h1>
 	<p>
 		Steam has been around for a while, and many part of its content management system still use
-		legacy BBCode formats. This tool generates BBCode from Markdown.
+		legacy BBCode formats. This tool generates <a
+			href="https://steamcommunity.com/comment/ForumTopic/formattinghelp">Steam-compatible BBCode</a
+		> from Markdown. Further editing might be required, but this should get you most of the way there!
 	</p>
 
 	<h2>Source</h2>
-	<p>Paste your Markdown or HTML source content below.</p>
+	<p>Paste your Markdown source content below.</p>
 
 	<textarea id="source" bind:value={source}></textarea>
 
@@ -40,10 +42,16 @@
 </section>
 
 <style>
+	section {
+		max-width: var(--content-standard-width);
+	}
 	textarea {
 		width: 100%;
-		min-height: 5lh;
+		min-height: 3lh;
+		max-height: 20lh;
+		resize: vertical;
 		field-sizing: content;
+		overflow-y: auto;
 	}
 
 	output {

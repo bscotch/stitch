@@ -184,7 +184,7 @@
 
 <style>
 	main {
-		max-width: 800px;
+		max-width: var(--content-standard-width);
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;

@@ -1,347 +1,334 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link
+			rel="apple-touch-icon"
+			sizes="180x180"
+			href="%sveltekit.assets%/icons/apple-touch-icon.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="32x32"
+			href="%sveltekit.assets%/icons/favicon-32x32.png"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="16x16"
+			href="%sveltekit.assets%/icons/favicon-16x16.png"
+		/>
+		<link rel="manifest" href="%sveltekit.assets%/site.webmanifest" />
+		<title>Stitch | Butterscotch Shenanigans</title>
+		<meta
+			name="description"
+			content="Stitch is a toolkit for managing GameMaker projects, created by Butterscotch Shenanigans."
+		/>
+		<meta name="theme-color" content="#340b3b" />
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width" />
-  <link rel="apple-touch-icon" sizes="180x180" href="%sveltekit.assets%/icons/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="%sveltekit.assets%/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="%sveltekit.assets%/icons/favicon-16x16.png">
-  <link rel="manifest" href="%sveltekit.assets%/site.webmanifest">
-  <title>Stitch | Butterscotch Shenanigans</title>
-  <meta name="description"
-    content="Stitch is a toolkit for managing GameMaker projects, created by Butterscotch Shenanigans.">
-  <meta name="theme-color" content="#340b3b">
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
-
-    @layer reset,
+			@layer reset,
     global,
     basic;
 
-    /* Global variables */
-    :root {
-      /* FONT */
-      --font-family: 'Ubuntu', sans-serif;
-      --font-family-mono: 'Ubuntu Mono', monospace;
+			/* Global variables */
+			:root {
+				/* FONT */
+				--font-family: 'Ubuntu', sans-serif;
+				--font-family-mono: 'Ubuntu Mono', monospace;
 
-      /* Colors */
-      --color-text: white;
-      --color-text-subtle: rgb(169, 169, 169);
-      --color-text-danger: rgb(255, 44, 101);
-      --color-background: #0e0e0e;
-      --color-link: rgb(57 156 199);
-      --color-link-hover: rgb(83 207 207);
-      --color-link-underline: var(--color-link);
-      --color-gold: rgb(255, 215, 0);
-      --color-logo-purple: #9c61ce;
-      --color-logo-yellow: #dbc596;
-      --color-logo-background: #081f2e;
+				/* Colors */
+				--color-text: white;
+				--color-text-subtle: rgb(169, 169, 169);
+				--color-text-danger: rgb(255, 44, 101);
+				--color-background: #0e0e0e;
+				--color-link: rgb(57 156 199);
+				--color-link-hover: rgb(83 207 207);
+				--color-link-underline: var(--color-link);
+				--color-gold: rgb(255, 215, 0);
+				--color-logo-purple: #9c61ce;
+				--color-logo-yellow: #dbc596;
+				--color-logo-background: #081f2e;
 
-      --color-channel-lts: #ff8652;
-      --color-channel-stable: #ae89ff;
-      --color-channel-beta: #569cff;
-      --color-channel-unstable: var(--color-text-subtle);
-      --content-max-width: 1920px;
-      --header-max-width: 50rem;
-    }
+				--color-channel-lts: #ff8652;
+				--color-channel-stable: #ae89ff;
+				--color-channel-beta: #569cff;
+				--color-channel-unstable: var(--color-text-subtle);
+				--content-max-width: 1920px;
+				--content-standard-width: 800px;
+				--header-max-width: 50rem;
+			}
 
-    @layer reset {
-
-      /*
+			@layer reset {
+				/*
   Modified from Josh's Custom CSS Reset
   https://www.joshwcomeau.com/css/custom-css-reset/
   */
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
+				*,
+				*::before,
+				*::after {
+					box-sizing: border-box;
+				}
 
-      * {
-        margin: 0;
-      }
+				* {
+					margin: 0;
+				}
 
-      html,
-      body {
-        line-height: 1.5;
-        background-color: var(--color-background);
-      }
+				html,
+				body {
+					line-height: 1.5;
+					background-color: var(--color-background);
+				}
 
-      img,
-      picture,
-      video,
-      canvas {
-        display: block;
-        max-width: 100%;
-      }
+				img,
+				picture,
+				video,
+				canvas {
+					display: block;
+					max-width: 100%;
+				}
 
-      svg {
-        display: inline-block;
-      }
+				svg {
+					display: inline-block;
+				}
 
-      input,
-      button,
-      textarea,
-      select {
-        font: inherit;
-      }
+				input,
+				button,
+				textarea,
+				select {
+					font: inherit;
+				}
 
-      p,
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        overflow-wrap: break-word;
-      }
+				p,
+				h1,
+				h2,
+				h3,
+				h4,
+				h5,
+				h6 {
+					overflow-wrap: break-word;
+				}
 
-      #root,
-      #__next {
-        isolation: isolate;
-      }
-    }
+				#root,
+				#__next {
+					isolation: isolate;
+				}
+			}
 
-    @layer global {
-      /* Essential global styles */
+			@layer global {
+				/* Essential global styles */
 
-      body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        max-width: var(--content-max-width);
-        font-family: var(--font-family);
-        overflow-wrap: break-word;
-        color: var(--color-text);
-        padding-inline: 1rem;
-        padding-block: 0.8rem;
-        min-height: 100vh;
-      }
+				body {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					max-width: var(--content-max-width);
+					font-family: var(--font-family);
+					overflow-wrap: break-word;
+					color: var(--color-text);
+					padding-inline: 1rem;
+					padding-block: 0.8rem;
+					min-height: 100vh;
+				}
 
-      p {
-        font-size: 1.1rem;
-      }
-    }
+				p {
+					font-size: 1.1rem;
+				}
+			}
 
-    @layer basic {
+			@layer basic {
+				/* Some sensible defaults for easy overriding in specific components */
+				h1,
+				h2,
+				h3,
+				h4,
+				h5,
+				h6 {
+					font-weight: bold;
+				}
 
-      /* Some sensible defaults for easy overriding in specific components */
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        font-weight: bold;
-      }
+				a {
+					color: var(--color-link);
+					text-decoration: none;
+				}
 
-      a {
-        color: var(--color-link);
-        text-decoration: none;
-      }
+				a:hover,
+				a:focus {
+					color: var(--color-link-hover);
+				}
 
-      a:hover,
-      a:focus {
-        color: var(--color-link-hover);
-      }
+				a,
+				a:hover,
+				a:focus {
+					text-decoration: underline;
+					cursor: pointer;
+					text-decoration-color: var(--color-link-underline);
+					text-decoration-thickness: 0.1rem;
+					text-underline-offset: 0.25rem;
+				}
 
-      a,
-      a:hover,
-      a:focus {
-        text-decoration: underline;
-        cursor: pointer;
-        text-decoration-color: var(--color-link-underline);
-        text-decoration-thickness: 0.1rem;
-        text-underline-offset: 0.25rem;
-      }
+				a:hover {
+					text-decoration-thickness: 0.2rem;
+				}
 
-      a:hover {
-        text-decoration-thickness: 0.2rem;
-      }
+				pre,
+				code {
+					font-family: var(--font-family-mono);
+				}
 
-      pre,
-      code {
-        font-family: var(--font-family-mono);
-      }
+				[role='button'] {
+					cursor: pointer;
+					user-select: none;
+				}
 
-      [role='button'] {
-        cursor: pointer;
-        user-select: none;
-      }
+				/* Add some default margin between common semantic flow items */
+				:where(p, img, h1, h2, h3, h4, h5, h6, ul, ol, header, table, nav, section)
+					+ :where(p, img, h1, h2, h3, h4, h5, h6, ul, ol, table, nav, section) {
+					margin-top: 0.5em;
+				}
+			}
 
-      /* Add some default margin between common semantic flow items */
-      :where(p,
-        img,
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-        ul,
-        ol,
-        header,
-        table,
-        nav,
-        section)+ :where(p,
-        img,
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-        ul,
-        ol,
-        table,
-        nav,
-        section) {
-        margin-top: 0.5em;
-      }
-    }
+			/* UTILITY CLASSES */
+			.reset:where(ul, ol, menu) {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+			}
 
-    /* UTILITY CLASSES */
-    .reset:where(ul, ol, menu) {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
+			.reset:where(a) {
+				text-decoration: none;
+			}
 
-    .reset:where(a) {
-      text-decoration: none;
-    }
+			:where(button) {
+				font-size: 1em;
+				font-style: bold;
+				color: var(--color, inherit);
+				text-align: center;
+				border-style: solid;
+				border-radius: 0.5em;
+				border-color: currentColor;
+				border-width: 0;
+				margin: 0;
+				padding: 0;
+				background: none;
+				user-select: none;
+				cursor: pointer;
+			}
 
-    :where(button) {
-      font-size: 1em;
-      font-style: bold;
-      color: var(--color, inherit);
-      text-align: center;
-      border-style: solid;
-      border-radius: 0.5em;
-      border-color: currentColor;
-      border-width: 0;
-      margin: 0;
-      padding: 0;
-      background: none;
-      user-select: none;
-      cursor: pointer;
-    }
+			:where(button):hover {
+				color: var(--color-highlight, var(--color-text-highlight, var(--color-link-hover)));
+			}
 
-    :where(button):hover {
-      color: var(--color-highlight,
-          var(--color-text-highlight, var(--color-link-hover)));
-    }
+			.pad-tight {
+				padding: 0.1em 0.7em 0.2em 0.7em;
+			}
 
-    .pad-tight {
-      padding: 0.1em 0.7em 0.2em 0.7em;
-    }
+			.select-none {
+				user-select: none;
+			}
 
-    .select-none {
-      user-select: none;
-    }
+			.select-all {
+				user-select: all;
+			}
 
-    .select-all {
-      user-select: all;
-    }
+			.select-this {
+				user-select: contain;
+			}
 
-    .select-this {
-      user-select: contain;
-    }
+			.monospace {
+				font-family: var(--font-family-mono);
+			}
 
-    .monospace {
-      font-family: var(--font-family-mono);
-    }
+			.sr-only:not(:focus):not(:active) {
+				clip: rect(0 0 0 0);
+				clip-path: inset(50%);
+				height: 1px;
+				overflow: hidden;
+				position: absolute;
+				white-space: nowrap;
+				width: 1px;
+			}
 
-    .sr-only:not(:focus):not(:active) {
-      clip: rect(0 0 0 0);
-      clip-path: inset(50%);
-      height: 1px;
-      overflow: hidden;
-      position: absolute;
-      white-space: nowrap;
-      width: 1px;
-    }
+			.no-scroll {
+				overflow: hidden;
+			}
 
-    .no-scroll {
-      overflow: hidden;
-    }
+			.scroller {
+				overflow-y: auto;
+				--scrollbar-width: 0.4em;
+				--scrollbar-radius: calc(var(--scrollbar-width) * 0.5);
+			}
 
-    .scroller {
-      overflow-y: auto;
-      --scrollbar-width: 0.4em;
-      --scrollbar-radius: calc(var(--scrollbar-width) * 0.5);
-    }
+			/* Scrolling */
+			.scroller::-webkit-scrollbar {
+				width: var(--scrollbar-width);
+				height: var(--scrollbar-width);
+			}
 
-    /* Scrolling */
-    .scroller::-webkit-scrollbar {
-      width: var(--scrollbar-width);
-      height: var(--scrollbar-width);
-    }
+			.scroller::-webkit-scrollbar-thumb {
+				/* foreground color */
+				background: var(--color-text-subtle);
+				border-radius: var(--scrollbar-radius);
+			}
 
-    .scroller::-webkit-scrollbar-thumb {
-      /* foreground color */
-      background: var(--color-text-subtle);
-      border-radius: var(--scrollbar-radius);
-    }
+			.scroller::-webkit-scrollbar-track {
+				/* background color */
+				background: var(--color-background);
+				border-radius: var(--scrollbar-radius);
+			}
 
-    .scroller::-webkit-scrollbar-track {
-      /* background color */
-      background: var(--color-background);
-      border-radius: var(--scrollbar-radius);
-    }
+			.scroller.boxed {
+				--color-border: var(--color-border, var(--color-text-subtle));
+				border-radius: 0.75em var(--scrollbar-radius) var(--scrollbar-radius)
+					var(--scrollbar-radius);
+				border: 0.1em solid var(--color-border);
+				box-shadow: inset 0 0 0.2em var(--color-border);
+				padding-top: 0.3em;
+			}
 
-    .scroller.boxed {
-      --color-border: var(--color-border, var(--color-text-subtle));
-      border-radius: 0.75em var(--scrollbar-radius) var(--scrollbar-radius) var(--scrollbar-radius);
-      border: 0.1em solid var(--color-border);
-      box-shadow: inset 0 0 0.2em var(--color-border);
-      padding-top: 0.3em;
-    }
+			.append-animated-ellipsis:after {
+				overflow: hidden;
+				display: inline-block;
+				vertical-align: bottom;
+				animation: ellipsis steps(1, end) 2s infinite;
+				content: '';
+				width: 1em;
+			}
 
-    .append-animated-ellipsis:after {
-      overflow: hidden;
-      display: inline-block;
-      vertical-align: bottom;
-      animation: ellipsis steps(1, end) 2s infinite;
-      content: '';
-      width: 1em;
-    }
+			.warning {
+				color: var(--color-text-danger);
+			}
 
-    .warning {
-      color: var(--color-text-danger);
-    }
+			@keyframes ellipsis {
+				0% {
+					content: '';
+				}
 
-    @keyframes ellipsis {
-      0% {
-        content: '';
-      }
+				25% {
+					content: '.';
+				}
 
-      25% {
-        content: '.';
-      }
+				50% {
+					content: '..';
+				}
 
-      50% {
-        content: '..';
-      }
+				75% {
+					content: '...';
+				}
 
-      75% {
-        content: '...';
-      }
+				100% {
+					content: '';
+				}
+			}
+		</style>
+		%sveltekit.head%
+	</head>
 
-      100% {
-        content: '';
-      }
-    }
-  </style>
-  %sveltekit.head%
-</head>
-
-<body>
-  <div style="display: contents">
-    %sveltekit.body%
-  </div>
-</body>
-
+	<body>
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
 </html>
