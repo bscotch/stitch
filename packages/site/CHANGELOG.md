@@ -1,5 +1,11 @@
 # @bscotch/stitch-site Changelog
 
+## 0.9.0 (2024-10-01)
+
+### Features
+
+- Added a page for converting Markdown to Steam BBCode
+
 ## 0.8.1 (2024-08-29)
 
 ### Fixes
