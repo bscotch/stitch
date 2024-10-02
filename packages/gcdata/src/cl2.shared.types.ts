@@ -208,7 +208,7 @@ export function parseIfMatch(
 
 export function lineIsArrayItem(line: string, schemaId: string): boolean {
   // Shared non-array types:
-  if (line.match(/^(name|stage|description)/i)) {
+  if (line.match(/^(name|stage|description|unlocked description)/i)) {
     return false;
   }
   // Quest & Story specific non-array types:
