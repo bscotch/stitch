@@ -13,6 +13,14 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Markdown to BBCode for Steam | Stitch | Butterscotch Shenanigans</title>
+	<meta
+		name="description"
+		content="Convert Markdown to Steam-compatible BBCode for use in Steam announcements and more."
+	/>
+</svelte:head>
+
 <section>
 	<h1>Markdown to Steam BBCode Converter</h1>
 	<p>

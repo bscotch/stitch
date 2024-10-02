@@ -106,6 +106,14 @@
 	}
 </script>
 
+<svelte:head>
+	<title>TSV ↔ SBV Converter | Stitch | Butterscotch Shenanigans</title>
+	<meta
+		name="description"
+		content="Convert YouTube captions files (SBV) to tab-separated values (TSV) and back: a YouTube to Spreadsheet captions converter."
+	/>
+</svelte:head>
+
 <main>
 	<h1>Captions Converter: SBV ↔ TSV</h1>
 

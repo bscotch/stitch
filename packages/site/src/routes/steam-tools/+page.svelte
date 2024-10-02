@@ -11,10 +11,10 @@
 </script>
 
 <svelte:head>
-	<title>Steam Stats Portal</title>
+	<title>Steam Tools Portal | Stitch | Butterscotch Shenanigans</title>
 	<meta
 		name="description"
-		content="Get useful tools and links to stats pages for your Steam game."
+		content="Plug in your game's Steam App ID to get easy links to stats, UTM link generation, bookmarklets, and more."
 	/>
 </svelte:head>
 
