@@ -1,5 +1,12 @@
 # @bscotch/stitch-site Changelog
 
+## 0.9.1 (2024-10-02)
+
+### Fixes
+
+- Added head content to all site pages
+- Improved styling on the new BBCode generator page
+
 ## 0.9.0 (2024-10-01)
 
 ### Features

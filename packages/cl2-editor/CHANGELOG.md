@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.26.2 (2024-10-02)
+
+### Fixes
+
+- Resolved issue causing errors when editing Buddy Comforts
+
 ## 0.26.0 (2024-09-19)
 
 ### Features

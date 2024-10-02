@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.24.1 (2024-10-02)
+
+### Fixes
+
+- Resolved issue causing errors when editing Buddy Comforts
+
 ## 0.24.0 (2024-09-25)
 
 ### Features
