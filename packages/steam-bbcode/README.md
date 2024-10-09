@@ -22,11 +22,29 @@ Note: currently only supports _pure_ Markdown (embedded HTML is left as-is).
 
 ## Usage
 
+For a typical use case:
+
 ```ts
 import { md2bbcode } from '@bscotch/steam-bbcode';
 
 const converted = md2bbcode('# Hello, world!');
 const bbcode = converted.bbcode;
+```
+
+This package uses [marked](https://www.npmjs.com/package/marked) for rendering. If you want to use your own version of the marked dependency, or want to further modify rendering with your own marked extensions, you can import the BBCode marked extension from this package to use directly:
+
+```ts
+import { markedBbcodeExtension } from '@bscotch/steam-bbcode/lib';
+import { Marked } from 'marked';
+
+const marked = new Marked(
+  markedBbcodeExtension /* ... optional other extensions */,
+);
+function toBbcode(md: string): string {
+  // (Marked replaces single-quotes with &#39;, which Steam doesn't know what to do with.)
+  return (marked.parse(source) as string).replaceAll('&#39;', "'");
+}
+const converted = toBbcode('# Hello, world!');
 ```
 
 ## Example
