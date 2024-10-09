@@ -1,5 +1,11 @@
 # @bscotch/steam-bbcode Changelog
 
+## 0.3.0 (2024-10-09)
+
+### Features
+
+- Split out the BBCode extension so it can be independently imported
+
 ## 0.2.0 (2024-10-09)
 
 ### Features
