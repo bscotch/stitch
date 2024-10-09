@@ -1,7 +1,9 @@
 {
   "name": "@bscotch/steam-bbcode",
   "version": "0.1.1",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Generate Steam-compatible BBCode from Markdown.",
   "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/steam-bbcode#readme",
   "repository": {
