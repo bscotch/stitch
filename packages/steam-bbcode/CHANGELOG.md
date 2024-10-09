@@ -1,5 +1,11 @@
 # @bscotch/steam-bbcode Changelog
 
+## 0.2.0 (2024-10-09)
+
+### Features
+
+- Flagged the BBCode package to be publishable.
+
 ## 0.1.1 (2024-10-01)
 
 ### Docs
