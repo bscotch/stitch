@@ -1,24 +1,24 @@
 #!/usr/bin/env node
-import { Gms2MergeCliOptions, stitchCliMerge } from './lib/merge.js';
+import { cli, chain } from 'cli-forge';
+import { stitchCliMerge } from './lib/merge.js';
 import {
-  globalParams,
-  mergeOptionsParams,
-  mergeSourceParams,
-  parseStitchArgs,
-  targetParams,
+  withGlobalParams,
+  withMergeOptionsParams,
+  withMergeSourceParams,
+  withTargetParams,
 } from './lib/params.js';
 
-export const args = parseStitchArgs<Gms2MergeCliOptions>(
-  {
-    ...globalParams,
-    ...targetParams,
-    ...mergeSourceParams,
-    ...mergeOptionsParams,
+export const mergeCommand = cli('merge', {
+  description: 'Merge two GameMaker Studio 2 projects together.',
+  builder: (cli) =>
+    chain(
+      cli,
+      withGlobalParams,
+      withTargetParams,
+      withMergeSourceParams,
+      withMergeOptionsParams,
+    ),
+  handler: async (args) => {
+    await stitchCliMerge(args);
   },
-  {
-    title: 'Stitch Merge',
-    description: 'Merge assets from one GameMaker project into another.',
-  },
-);
-
-await stitchCliMerge(args);
+});

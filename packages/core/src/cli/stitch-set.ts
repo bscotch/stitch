@@ -1,9 +1,12 @@
 #!/usr/bin/env node
-import { program as cli } from 'commander';
+import { cli } from 'cli-forge';
 
-cli
-  .description('Modify metadata in GameMaker Studio 2 projects.')
-  .command('version', 'Modify the versions for all export platforms.')
-  .command('texture-group', 'Modify texture group assignments.')
-  .command('audio-group', 'Modify audio group assignments.')
-  .parse(process.argv);
+import { audioGroupCommand } from './stitch-set-audio-group.js';
+import { textureGroupCommand } from './stitch-set-texture-group.js';
+import { versionCommand } from './stitch-set-version.js';
+
+export const setCommand = cli('set', {
+  description: 'Modify metadata in GameMaker Studio 2 projects.',
+  builder: (cli) =>
+    cli.commands(audioGroupCommand, textureGroupCommand, versionCommand),
+});

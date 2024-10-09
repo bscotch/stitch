@@ -1,15 +1,13 @@
 #!/usr/bin/env node
-import { program as cli } from 'commander';
+import { cli } from 'cli-forge';
 
-cli
-  .description('Create GameMaker Studio 2 resources.')
-  .command(
-    'sounds',
-    'Create sound assets from a file or a path to a target project.',
-  )
-  .command('sprites', 'Create sprite assets from a collection of images.')
-  .command(
-    'files',
-    'Create included files assets from a file or a path to a target project.',
-  )
-  .parse(process.argv);
+import { addFilesCommand } from './stitch-add-files.js';
+import { addSoundsCommand } from './stitch-add-sounds.js';
+import { addSpritesCommand } from './stitch-add-sprites.js';
+
+export const addCommand = cli('add', {
+  description:
+    'Create assets (e.g. sprites) using external resources (e.g. images).',
+  builder: (cli) =>
+    cli.commands(addFilesCommand, addSoundsCommand, addSpritesCommand),
+});

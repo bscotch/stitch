@@ -47,7 +47,7 @@
   "types": "dist/index.d.ts",
   "bin": "./stitch.mjs",
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --build tsconfig.json",
     "clean": "rimraf build dist *.tsbuildinfo **/*.tsbuildinfo",
     "test": "mocha --config ../../config/.mocharc.cjs --parallel=false --timeout=30000",
     "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
@@ -68,6 +68,7 @@
     "archiver": "6.0.1",
     "chalk": "5.3.0",
     "change-case": "5.1.2",
+    "cli-forge": "0.8.0",
     "commander": "11.1.0",
     "debug": "4.3.4",
     "fs-extra": "11.1.1",

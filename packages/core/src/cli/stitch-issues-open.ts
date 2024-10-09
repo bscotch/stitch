@@ -6,43 +6,51 @@ import {
   openGameMakerIssue,
   openPaths,
 } from './lib/issuesLib.js';
+import { cli } from 'cli-forge';
 
-const answers = await inquirer.prompt<{
-  targetProject?: string;
-}>([
-  {
-    type: 'list',
-    name: 'targetProject',
-    message: 'Which Issue do you want to open?',
-    async choices() {
-      return [
-        {
-          name: '📁 Issues Folder',
-          value: GameMakerIssue.issuesDirectory.toString({ format: 'win32' }),
+export const openCommand = cli('open', {
+  description: 'Open a GameMaker issue.',
+  handler: async () => {
+    const answers = await inquirer.prompt<{
+      targetProject?: string;
+    }>([
+      {
+        type: 'list',
+        name: 'targetProject',
+        message: 'Which Issue do you want to open?',
+        async choices() {
+          return [
+            {
+              name: '📁 Issues Folder',
+              value: GameMakerIssue.issuesDirectory.toString({
+                format: 'win32',
+              }),
+            },
+            ...(await listIssueProjectChoices()),
+          ];
         },
-        ...(await listIssueProjectChoices()),
-      ];
-    },
+      },
+    ]);
+
+    if (!answers.targetProject) {
+      process.exit(0);
+    }
+
+    if (answers.targetProject.endsWith('.yyp')) {
+      const issueProject = await StitchProject.load({
+        projectPath: answers.targetProject,
+        dangerouslyAllowDirtyWorkingDir: true,
+        readOnly: true,
+      });
+
+      await openGameMakerIssue(issueProject);
+    } else {
+      await openPaths([
+        {
+          path: answers.targetProject,
+          app: { name: 'explorer' },
+        },
+      ]);
+    }
   },
-]);
-
-if (!answers.targetProject) {
-  process.exit(0);
-}
-
-if (answers.targetProject.endsWith('.yyp')) {
-  const issueProject = await StitchProject.load({
-    projectPath: answers.targetProject,
-    dangerouslyAllowDirtyWorkingDir: true,
-    readOnly: true,
-  });
-
-  await openGameMakerIssue(issueProject);
-} else {
-  await openPaths([
-    {
-      path: answers.targetProject,
-      app: { name: 'explorer' },
-    },
-  ]);
-}
+});

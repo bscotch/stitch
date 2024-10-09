@@ -1,19 +1,13 @@
 #!/usr/bin/env node
 import { prettifyErrorTracing, replaceFilePaths } from '@bscotch/validation';
-import { program as cli } from 'commander';
+import { cli } from 'cli-forge';
+import { createCommand } from './stitch-issues-create.js';
+import { openCommand } from './stitch-issues-open.js';
+import { submitCommand } from './stitch-issues-submit.js';
 
 prettifyErrorTracing({ replaceFilePaths });
 
-// Kick it off
-cli
-  .description('Stitch Issues')
-  .command(
-    'create',
-    'Create an issue template for a bug report to submit to GameMaker.',
-  )
-  .command('open', 'Open files and folders from an existing issue project.')
-  .command(
-    'submit',
-    'For a completed issue project, collect logs and compile a report for submission to GameMaker. (Only works with GameMaker Enterprise.)',
-  )
-  .parse();
+export const issuesCommand = cli('issues', {
+  description: 'Create and manage issues to report to GameMaker.',
+  builder: (cli) => cli.commands(createCommand, openCommand, submitCommand),
+});
