@@ -1,3 +1,4 @@
+import { GameMakerVersionString } from './types/GameMakerVersionString.js';
 import type { Yyp, YypResource } from './types/Yyp.js';
 import { FixedNumber, nameField, yyIsNewFormat } from './types/utility.js';
 
@@ -225,6 +226,9 @@ function prepareForStringification<T>(
   yyp?: Yyp,
   __meta: StringifyPrepMeta = { root: yyData, isNewFormat: false, path: [] },
 ): T {
+  const ideVersion = yyp?.MetaData?.IDEVersion
+    ? new GameMakerVersionString(yyp.MetaData.IDEVersion)
+    : null;
   const isNewFormat =
     __meta.isNewFormat || yyIsNewFormat(yyData) || yyIsNewFormat(yyp);
   __meta = {
@@ -272,6 +276,16 @@ function prepareForStringification<T>(
       // Then we need to ensure that the file has the `${resourceType}` key,
       // because we may be converting an old format to the new one.
       yyDataCopy[`$${yyData.resourceType}`] ||= '';
+      if (
+        yyDataCopy[`$${yyData.resourceType}`] === '' &&
+        ['GMScript', 'GMRoom', 'GMRInstance', 'GMEvent'].includes(
+          yyData.resourceType as string,
+        ) &&
+        ideVersion?.gte('2024.800.0.618')
+      ) {
+        // Then we need to set this to "v1" instead of ""
+        yyDataCopy[`$${yyData.resourceType}`] = 'v1';
+      }
     }
     if (
       isNewFormat &&
