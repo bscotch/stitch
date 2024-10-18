@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.71.0 (2024-10-18)
+
+### Features
+
+- Added 'stop' command and button to the runner, which kills igor and any running game instances.
+
 ## 1.70.0 (2024-08-15)
 
 ### Features

@@ -1,5 +1,15 @@
 # @bscotch/yy Changelog
 
+## 2.3.0 (2024-10-18)
+
+### Features
+
+- Added utility class for working with GameMaker version strings
+
+### Fixes
+
+- Updated YY-writing to add set file versions to 'v1' for some fields, to resolve issue with recent GameMaker format changes
+
 ## 2.2.1 (2024-04-29)
 
 ### Fixes
