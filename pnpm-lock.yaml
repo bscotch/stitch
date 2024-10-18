@@ -167,6 +167,9 @@ importers:
       change-case:
         specifier: 5.1.2
         version: 5.1.2
+      cli-forge:
+        specifier: 0.8.0
+        version: 0.8.0
       commander:
         specifier: 11.1.0
         version: 11.1.0
@@ -1234,6 +1237,12 @@ packages:
 
   /@chevrotain/utils@11.0.3:
     resolution: {integrity: sha512-YslZMgtJUyuMbZ+aKvfF3x1f5liK4mWNxghFRv7jqRR9C3R3fAOGTTKvxXDa2Y1s9zSbcpuO0cAxDYsc9SrXoQ==}
+    dev: false
+
+  /@cli-forge/parser@0.8.0:
+    resolution: {integrity: sha512-+MWoele6Yjm60smxkCvQXxMSWQpec2rLhZLwaURefX6oTKVyisP53SD14CdRMI3muy8v1OjwzMcXt7Rei35chw==}
+    dependencies:
+      tslib: 2.6.3
     dev: false
 
   /@effect/data@0.17.1:
@@ -4130,6 +4139,22 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       restore-cursor: 3.1.0
+
+  /cli-forge@0.8.0:
+    resolution: {integrity: sha512-lJa0JmtiWFFUxNFzHJvqozX1xzz4fIScmyLESKEBaK1+QsxVHRQUpQwCgzGS+gWvdup1WEfrSwuDhEIkWdb/ew==}
+    hasBin: true
+    peerDependencies:
+      markdown-factory: 0.2.0
+      tsx: 4.19.0
+    peerDependenciesMeta:
+      markdown-factory:
+        optional: true
+      tsx:
+        optional: true
+    dependencies:
+      '@cli-forge/parser': 0.8.0
+      tslib: 2.6.3
+    dev: false
 
   /cli-spinners@2.9.2:
     resolution: {integrity: sha512-ywqV+5MmyL4E7ybXgKys4DugZbX0FC6LnwrhjuykIjnK9k8OQacQ7axGKnjDXWNhns0xot3bZI5h55H8yo9cJg==}

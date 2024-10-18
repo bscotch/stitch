@@ -1,54 +1,50 @@
 import { oneline } from '@bscotch/utility';
-import type { ArgumentConfig } from 'ts-command-line-args';
-import type {
-  StitchCliGlobalParams,
-  StitchCliTargetParams,
-} from './params.types.js';
+import { makeComposableBuilder } from 'cli-forge';
 
 const globalParamsGroup = 'General Options';
 
-export const targetProjectParam: ArgumentConfig<{ targetProject?: string }> = {
-  targetProject: {
-    alias: 't',
-    type: String,
-    optional: true,
-    defaultValue: process.cwd(),
+export const withTargetProjectParam = makeComposableBuilder((args) =>
+  args.option('targetProject', {
+    alias: ['t'],
+    type: 'string',
+    default: {
+      value: process.cwd(),
+      description: 'Current directory',
+    },
     description: oneline`
-      Path to the target GameMaker Studio 2 project.
-      If not set, will auto-search the current directory.
-    `,
+        Path to the target GameMaker Studio 2 project.
+        If not set, will auto-search the current directory.
+      `,
     group: globalParamsGroup,
-  },
-};
+  }),
+);
 
-export const targetParams: ArgumentConfig<StitchCliTargetParams> = {
-  ...targetProjectParam,
-  force: {
-    alias: 'f',
-    type: Boolean,
-    optional: true,
-    description: oneline`
-      Bypass safety checks, including the normal requirement that the project be
-      in a clean git state. Only use this option if you know what you're doing.
-    `,
-    group: globalParamsGroup,
-  },
-  readOnly: {
-    type: Boolean,
-    optional: true,
-    description: oneline`
-      Prevent any file-writes from occurring. Useful to prevent
-      automatic fixes from being applied and for testing purposes.
-      Commands may behave unexpectedly when this option is enabled.
-    `,
-    group: globalParamsGroup,
-  },
-};
+export const withTargetParams = makeComposableBuilder((args) =>
+  withTargetProjectParam(args)
+    .option('force', {
+      alias: ['f'],
+      type: 'boolean',
+      description: oneline`
+        Bypass safety checks, including the normal requirement that the project be
+        in a clean git state. Only use this option if you know what you're doing.
+      `,
+      group: globalParamsGroup,
+    })
+    .option('readOnly', {
+      type: 'boolean',
+      description: oneline`
+        Prevent any file-writes from occurring. Useful to prevent
+        automatic fixes from being applied and for testing purposes.
+        Commands may behave unexpectedly when this option is enabled.
+      `,
+      group: globalParamsGroup,
+    }),
+);
 
-export const watchParam: ArgumentConfig<{ watch?: boolean }> = {
-  watch: {
-    alias: 'w',
-    type: Boolean,
+export const withWatchParam = makeComposableBuilder((args) =>
+  args.option('watch', {
+    alias: ['w'],
+    type: 'boolean',
     optional: true,
     description: oneline`
       Run the command with a watcher, so that it will re-run
@@ -56,21 +52,21 @@ export const watchParam: ArgumentConfig<{ watch?: boolean }> = {
       warrant a re-run.
     `,
     group: globalParamsGroup,
-  },
-};
+  }),
+);
 
-export const globalParams: ArgumentConfig<StitchCliGlobalParams> = {
-  help: {
-    alias: 'h',
-    type: Boolean,
-    optional: true,
-    group: globalParamsGroup,
-  },
-  debug: {
-    alias: 'd',
-    type: Boolean,
-    optional: true,
-    defaultValue: !!process.env.DEBUG,
-    group: globalParamsGroup,
-  },
-};
+export const withGlobalParams = makeComposableBuilder((args) =>
+  args
+    .option('help', {
+      alias: ['h'],
+      type: 'boolean',
+      description: 'Show help',
+      group: globalParamsGroup,
+    })
+    .option('debug', {
+      alias: ['d'],
+      type: 'boolean',
+      description: 'Run in debug mode',
+      group: globalParamsGroup,
+    }),
+);
