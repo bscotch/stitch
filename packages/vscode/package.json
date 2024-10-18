@@ -220,6 +220,13 @@
         "enablement": "stitch.projectCount > 0"
       },
       {
+        "command": "stitch.stop",
+        "title": "Stitch: Stop Runner",
+        "shortTitle": "Stop",
+        "icon": "$(debug-stop)",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.run",
         "title": "Stitch: Run Project",
         "shortTitle": "Run",
@@ -650,6 +657,11 @@
           "group": "navigation@2"
         },
         {
+          "command": "stitch.stop",
+          "when": "view == bscotch-stitch-igor || (view == bscotch-stitch-resources && config.stitch.run.inTerminal)",
+          "group": "navigation@3"
+        },
+        {
           "command": "stitch.run",
           "when": "view == bscotch-stitch-igor || (view == bscotch-stitch-resources && config.stitch.run.inTerminal)",
           "group": "navigation@5"
@@ -832,6 +844,11 @@
           "group": "inline@3"
         },
         {
+          "command": "stitch.stop",
+          "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
+          "group": "inline@3"
+        },
+        {
           "command": "stitch.run",
           "when": "view == bscotch-stitch-resources && stitch.projectCount > 0 && viewItem == project",
           "group": "inline@5"
@@ -921,6 +938,9 @@
         },
         {
           "command": "stitch.openIde"
+        },
+        {
+          "command": "stitch.stop"
         },
         {
           "command": "stitch.run"

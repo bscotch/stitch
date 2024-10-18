@@ -16,6 +16,7 @@ export namespace StitchEvents {
     ProjectChanged,
     DatafilesChanged,
     RequestRunInWebview,
+    RequestStopInWebview,
   ];
   export interface RequestRunInWebview {
     name: 'request-run-project-in-webview';
@@ -28,6 +29,10 @@ export namespace StitchEvents {
         clean?: boolean;
       },
     ];
+  }
+  export interface RequestStopInWebview {
+    name: 'request-kill-project-in-webview';
+    payload: [];
   }
   export interface DatafilesChanged {
     name: 'datafiles-changed';

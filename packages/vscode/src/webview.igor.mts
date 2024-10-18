@@ -45,7 +45,7 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
         assertLoudly(asset, `Asset not found: ${e.asset}`);
         const file =
           e.type === 'objects' && e.event
-            ? asset.getEventByName(e.event as any) ?? asset.gmlFile
+            ? (asset.getEventByName(e.event as any) ?? asset.gmlFile)
             : asset.gmlFile;
         const editor = await vscode.window.showTextDocument(
           uriFromCodeFile(file),
@@ -93,16 +93,28 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
     });
   }
 
+  kill() {
+    const pid = this.runner?.pid;
+    if (typeof pid !== 'number') return;
+    if (this.runner?.exitCode !== null) {
+      // Then it's already dead
+      return;
+    }
+    // Doesn't terminate on Windows...
+    if (process.platform === 'win32') {
+      spawn('taskkill', ['/pid', `${pid}`, '/f', '/t']);
+    } else {
+      this.runner.kill();
+    }
+  }
+
   async run(event: StitchEvents.RequestRunInWebview['payload'][0]) {
     await this.reveal(); // So that VSCode creates the container
     assertLoudly(
       this.container,
       'Runner container not initialized! Please try again.',
     );
-    if (this.runner && this.runner.exitCode === null) {
-      // Kill the current instance
-      this.runner.kill();
-    }
+    this.kill();
     // Make sure our config is up to date for styling
     this.lastRequest = event;
     const runMessage: IgorWebviewExtensionPostRun = {
@@ -145,6 +157,10 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
     const igorView = new StitchIgorView(workspace);
     stitchEvents.on('request-run-project-in-webview', (payload) => {
       igorView.run(payload);
+    });
+    stitchEvents.on('request-kill-project-in-webview', () => {
+      console.log('Killing runner', !!igorView.runner);
+      igorView.kill();
     });
     return [
       vscode.window.registerWebviewViewProvider(igorView.viewType, igorView),

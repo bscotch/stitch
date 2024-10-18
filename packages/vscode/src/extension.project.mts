@@ -75,18 +75,26 @@ export class GameMakerProject extends Project {
     );
   }
 
+  async kill() {
+    const windowTitle = await this.getWindowsName();
+    if (windowTitle) {
+      logger.info(`Attempting to kill running "${windowTitle} instances...`);
+      await killProjectRunner(windowTitle);
+      logger.info('Finished killing running instances!');
+    }
+    // Send a signal to the terminal to abort the current command
+    this.runnerTerminal?.sendText('\x03');
+    // Emit a signal to the webview to stop the current command
+    stitchEvents.emit('request-kill-project-in-webview');
+  }
+
   async run(options?: {
     config?: string | null;
     compiler?: 'yyc' | 'vm';
     clean?: boolean;
   }) {
     if (stitchConfig.killOthersOnRun && !options?.clean) {
-      const windowTitle = await this.getWindowsName();
-      if (windowTitle) {
-        logger.info(`Attempting to kill running "${windowTitle} instances...`);
-        await killProjectRunner(windowTitle);
-        logger.info('Finished killing running instances!');
-      }
+      await this.kill();
     }
 
     stitchEvents.emit(
@@ -132,9 +140,11 @@ export class GameMakerProject extends Project {
         igorPath: runtime.executablePath,
       });
 
-      const cmd = await (options?.clean
-        ? stringifyGameMakerCleanCommand
-        : stringifyGameMakerBuildCommand)(runtime, {
+      const cmd = await (
+        options?.clean
+          ? stringifyGameMakerCleanCommand
+          : stringifyGameMakerBuildCommand
+      )(runtime, {
         project: this.yypPath.absolute,
         config: config || undefined,
         yyc: compiler === 'yyc',
@@ -158,9 +168,11 @@ export class GameMakerProject extends Project {
       this.runnerTerminal.sendText(cmd);
       this.runnerTerminal.show();
     } else {
-      let { cmd, args } = await (options?.clean
-        ? computeGameMakerCleanCommand
-        : computeGameMakerBuildCommand)(runtime, {
+      let { cmd, args } = await (
+        options?.clean
+          ? computeGameMakerCleanCommand
+          : computeGameMakerBuildCommand
+      )(runtime, {
         project: this.yypPath.absolute,
         config: config || undefined,
         yyc: compiler === 'yyc',

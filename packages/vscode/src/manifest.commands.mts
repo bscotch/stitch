@@ -331,6 +331,22 @@ export const commands = {
       group: 'navigation@2',
     },
   },
+  'stitch.stop': {
+    command: 'stitch.stop',
+    title: 'Stitch: Stop Runner',
+    shortTitle: 'Stop',
+    icon: '$(debug-stop)',
+    enablement: when.hasProjects,
+    [$showInPalette]: true,
+    [$showInViewTitle]: {
+      when: `${when.runnerViewFocused} || (${when.assetTreeFocused} && ${when.runningInTerminal})`,
+      group: 'navigation@3',
+    },
+    [$showInViewItemContextMenu]: {
+      when: when.isInlineProject,
+      group: 'inline@3',
+    },
+  },
   'stitch.run': {
     command: 'stitch.run',
     title: 'Stitch: Run Project',
