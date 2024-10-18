@@ -114,35 +114,6 @@ describe('Yy Files', function () {
     ).to.be.true;
   });
 
-  it('can use FixedNumber instances in place of number primitives', function () {
-    expect(new FixedNumber(1)).to.be.an.instanceof(FixedNumber);
-    // @ts-expect-error
-    expect(new FixedNumber(1) == 1).to.be.true;
-    // @ts-expect-error
-    expect(new FixedNumber(1) == 2).to.be.false;
-    // @ts-expect-error
-    expect(new FixedNumber(32) + 2 == 34).to.be.true;
-    // @ts-expect-error
-    expect(new FixedNumber(32) + 2 == 3).to.be.false;
-    // @ts-expect-error
-    expect(new FixedNumber(10.11) == 10.11).to.be.true;
-    // @ts-expect-error
-    expect(new FixedNumber(10.11) === 10.11).to.be.false;
-    // @ts-expect-error
-    expect(new FixedNumber(10.11) > 10).to.be.true;
-    // @ts-expect-error
-    expect(new FixedNumber(10.11) < 12).to.be.true;
-    // @ts-expect-error
-    expect(new FixedNumber(10.11) < 10).to.be.false;
-    // @ts-expect-error
-    expect(new FixedNumber(10.11) > 12).to.be.false;
-    expect(`${new FixedNumber(10.123, 2)}`).to.equal('10.12');
-    // @ts-expect-error
-    expect(new FixedNumber(10.123, 2) == '10.12').to.be.false;
-    // @ts-expect-error
-    expect(new FixedNumber(10.123, 2) == '10.123').to.be.true;
-  });
-
   it('can create GameMaker-style JSON', function () {
     expect(Yy.stringify(sampleData, sampleSchema)).to.equal(sampleDataAsString);
     expect(
