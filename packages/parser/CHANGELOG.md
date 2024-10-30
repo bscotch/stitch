@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.12.0 (2024-10-30)
+
+### Features
+
+- Added Object Event definitions for user events
+
 ## 1.11.0 (2024-08-15)
 
 ### Features
