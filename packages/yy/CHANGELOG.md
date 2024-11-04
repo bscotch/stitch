@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.3.1 (2024-11-04)
+
+### Fixes
+
+- Added the Spine Collision Mesh enum option for Sprite Collisions
+
 ## 2.3.0 (2024-10-18)
 
 ### Features
