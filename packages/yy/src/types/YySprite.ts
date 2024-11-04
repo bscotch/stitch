@@ -31,6 +31,7 @@ export enum SpriteCollisionKind {
   Diamond,
   PrecisePerFrame,
   RectangleWithRotation,
+  SpineCollisionMesh,
 }
 
 export enum SpriteBoundingBoxMode {
