@@ -78,7 +78,10 @@ export type GameMakerIdeErrorCode =
   | 'UNKNOWN';
 
 export class GameMakerIdeError extends Error {
-  constructor(message: string, readonly code: GameMakerIdeErrorCode) {
+  constructor(
+    message: string,
+    readonly code: GameMakerIdeErrorCode,
+  ) {
     super(message);
     this.name = 'GameMakerIdeError';
     Error.captureStackTrace(this, this.constructor);
@@ -280,9 +283,8 @@ export class GameMakerIde extends GameMakerComponent {
     version: string,
     programFiles?: string,
   ) {
-    const installedIdeVersions = await GameMakerIde.listDirectlyInstalled(
-      programFiles,
-    );
+    const installedIdeVersions =
+      await GameMakerIde.listDirectlyInstalled(programFiles);
     return installedIdeVersions.find((v) => v.version === version);
   }
 

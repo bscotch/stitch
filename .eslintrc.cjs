@@ -33,6 +33,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'warn',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
+    '@typescript-eslint/no-unsafe-declaration-merging': 'warn',
     camelcase: 'off',
     eqeqeq: 'off',
     'getter-return': 'off',

@@ -40,10 +40,10 @@ export const currentOs =
   os.platform() === 'win32'
     ? 'windows'
     : os.platform() === 'darwin'
-    ? 'osx'
-    : os.platform() === 'linux'
-    ? 'linux'
-    : undefined;
+      ? 'osx'
+      : os.platform() === 'linux'
+        ? 'linux'
+        : undefined;
 
 export const currentArchitecture = os.arch();
 
