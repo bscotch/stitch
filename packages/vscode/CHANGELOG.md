@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.72.0 (2024-11-07)
+
+### Features
+
+- Changed runner configuration to behave more like GameMaker, allowing setting the target in a durable way.
+
 ## 1.71.0 (2024-10-18)
 
 ### Features

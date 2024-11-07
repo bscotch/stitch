@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.13.0 (2024-11-07)
+
+### Features
+
+- Added all 16 User Event definitions (previously just had the first 6).
+
 ## 1.12.0 (2024-10-30)
 
 ### Features

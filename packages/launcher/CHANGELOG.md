@@ -1,5 +1,11 @@
 # @bscotch/stitch-launcher Changelog
 
+## 1.5.2 (2024-11-07)
+
+### Fixes
+
+- Prevented access errors during IDE discovery from fully throwing.
+
 ## 1.5.0 (2023-09-20)
 
 ### Features
