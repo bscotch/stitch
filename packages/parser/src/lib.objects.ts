@@ -62,7 +62,7 @@ export const objectEvents = [
     name: 'Other_4',
     eventNum: 4,
     eventType: 7,
-    group: 'cleanup'
+    group: 'cleanup',
   },
   {
     label: 'Room End',
@@ -149,48 +149,13 @@ export const objectEvents = [
     eventType: 3,
     group: 'step',
   },
-  {
-    label: 'User Event 0',
-    name: 'Other_10',
-    eventNum: 10,
+  ...[Array(16)].map((_, i) => ({
+    label: `User Event ${i}`,
+    name: `Other_${i + 10}`,
+    eventNum: i + 10,
     eventType: 7,
-    group: 'other',
-  },
-  {
-    label: 'User Event 1',
-    name: 'Other_11',
-    eventNum: 11,
-    eventType: 7,
-    group: 'other',
-  },
-  {
-    label: 'User Event 2',
-    name: 'Other_12',
-    eventNum: 12,
-    eventType: 7,
-    group: 'other',
-  },
-  {
-    label: 'User Event 3',
-    name: 'Other_13',
-    eventNum: 13,
-    eventType: 7,
-    group: 'other',
-  },
-  {
-    label: 'User Event 4',
-    name: 'Other_14',
-    eventNum: 14,
-    eventType: 7,
-    group: 'other',
-  },
-  {
-    label: 'User Event 5',
-    name: 'Other_15',
-    eventNum: 15,
-    eventType: 7,
-    group: 'other',
-  },
+    group: 'user',
+  })),
   {
     label: 'Animation Update',
     name: 'Other_58',
@@ -253,7 +218,7 @@ export const objectEvents = [
     eventNum: 76,
     eventType: 7,
     group: 'broadcast message',
-  },   
+  },
   ...objectAlarmEvents,
 ] as const;
 Object.freeze(Object.seal(objectEvents));
