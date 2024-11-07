@@ -348,8 +348,8 @@ importers:
         specifier: workspace:*
         version: link:../releases
       '@bscotch/pathy':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       '@bscotch/stitch-config':
         specifier: workspace:*
         version: link:../config
@@ -366,36 +366,36 @@ importers:
         specifier: 11.0.3
         version: 11.0.3
       magic-string:
-        specifier: 0.30.5
-        version: 0.30.5
+        specifier: 0.30.12
+        version: 0.30.12
       tslib:
-        specifier: ^2.6.2
-        version: 2.6.3
+        specifier: ^2.8.1
+        version: 2.8.1
       xml2js:
         specifier: 0.6.2
         version: 0.6.2
       zod:
-        specifier: ^3.22.4
+        specifier: ^3.23.8
         version: 3.23.8
     devDependencies:
       '@types/xml2js':
         specifier: 0.4.14
         version: 0.4.14
       chai:
-        specifier: ^4.3.10
-        version: 4.5.0
+        specifier: ^5.1.2
+        version: 5.1.2
       dotenv:
-        specifier: 16.3.1
-        version: 16.3.1
+        specifier: 16.4.5
+        version: 16.4.5
       mocha:
-        specifier: ^10.2.0
-        version: 10.7.0
+        specifier: ^10.8.2
+        version: 10.8.2
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.3.3
         version: 3.3.3
       typescript:
-        specifier: 5.2.2
-        version: 5.2.2
+        specifier: 5.6.3
+        version: 5.6.3
 
   packages/releases:
     dependencies:
@@ -2852,7 +2852,7 @@ packages:
       devalue: 4.3.3
       esm-env: 1.0.0
       kleur: 4.1.5
-      magic-string: 0.30.5
+      magic-string: 0.30.12
       mrmime: 1.0.1
       sade: 1.8.1
       set-cookie-parser: 2.6.0
@@ -2882,7 +2882,7 @@ packages:
       esm-env: 1.0.0
       import-meta-resolve: 4.1.0
       kleur: 4.1.5
-      magic-string: 0.30.5
+      magic-string: 0.30.12
       mrmime: 2.0.0
       sade: 1.8.1
       set-cookie-parser: 2.6.0
@@ -2935,7 +2935,7 @@ packages:
       debug: 4.3.4(supports-color@5.5.0)
       deepmerge: 4.3.1
       kleur: 4.1.5
-      magic-string: 0.30.5
+      magic-string: 0.30.12
       svelte: 4.2.18
       svelte-hmr: 0.15.3(svelte@4.2.18)
       vite: 4.5.3(@types/node@20.14.13)
@@ -2955,7 +2955,7 @@ packages:
       debug: 4.3.4(supports-color@5.5.0)
       deepmerge: 4.3.1
       kleur: 4.1.5
-      magic-string: 0.30.10
+      magic-string: 0.30.12
       svelte: 5.0.0-next.200
       svelte-hmr: 0.16.0(svelte@5.0.0-next.200)
       vite: 5.3.5(@types/node@20.14.13)
@@ -3624,7 +3624,7 @@ packages:
   /@vitest/snapshot@0.34.6:
     resolution: {integrity: sha512-B3OZqYn6k4VaN011D+ve+AA4whM4QkcwcrwaKwAbyyvS/NB1hCWjFIBQxAQQSQir9/RtyAAGuq+4RJmbn2dH4w==}
     dependencies:
-      magic-string: 0.30.5
+      magic-string: 0.30.12
       pathe: 1.1.2
       pretty-format: 29.7.0
     dev: true
@@ -4777,11 +4777,6 @@ packages:
     dependencies:
       no-case: 3.0.4
       tslib: 2.8.1
-
-  /dotenv@16.3.1:
-    resolution: {integrity: sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==}
-    engines: {node: '>=12'}
-    dev: true
 
   /dotenv@16.4.5:
     resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
@@ -6379,17 +6374,17 @@ packages:
       es5-ext: 0.10.64
     dev: true
 
-  /magic-string@0.30.10:
-    resolution: {integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==}
+  /magic-string@0.30.12:
+    resolution: {integrity: sha512-Ea8I3sQMVXr8JhN4z+H/d8zwo+tYDgHE9+5G4Wnrwhs0gaK9fXTKx0Tw5Xwsd/bCPTTZNRAdpyzvoeORe9LYpw==}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
-    dev: true
 
   /magic-string@0.30.5:
     resolution: {integrity: sha512-7xlpfBaQaP/T6Vh8MO/EqXSW5En6INHEvEXQiuff7Gku0PWjU3uf6w/j9o7O+SpB5fOAkrI5HeoNgwjEO0pFsA==}
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
+    dev: true
 
   /map-stream@0.1.0:
     resolution: {integrity: sha512-CkYQrPYZfWnu/DAmVCpTSX/xHpKZ80eKh2lAkyA6AJTef6bW+6JpbQZN5rofum7da+SyN1bi5ctTm+lTfcCW3g==}
@@ -8177,7 +8172,7 @@ packages:
     dependencies:
       '@types/pug': 2.0.10
       detect-indent: 6.1.0
-      magic-string: 0.30.5
+      magic-string: 0.30.12
       postcss: 8.4.40
       sorcery: 0.11.1
       strip-indent: 3.0.0
@@ -8225,7 +8220,7 @@ packages:
     dependencies:
       '@types/pug': 2.0.10
       detect-indent: 6.1.0
-      magic-string: 0.30.5
+      magic-string: 0.30.12
       postcss: 8.4.40
       sorcery: 0.11.1
       strip-indent: 3.0.0
@@ -8249,7 +8244,7 @@ packages:
       estree-walker: 3.0.3
       is-reference: 3.0.2
       locate-character: 3.0.0
-      magic-string: 0.30.5
+      magic-string: 0.30.12
       periscopic: 3.1.0
     dev: true
 
@@ -8268,7 +8263,7 @@ packages:
       esrap: 1.2.2
       is-reference: 3.0.2
       locate-character: 3.0.0
-      magic-string: 0.30.5
+      magic-string: 0.30.12
       zimmerframe: 1.1.2
     dev: true
 
@@ -8941,7 +8936,7 @@ packages:
       chai: 4.5.0
       debug: 4.3.4(supports-color@5.5.0)
       local-pkg: 0.4.3
-      magic-string: 0.30.5
+      magic-string: 0.30.12
       pathe: 1.1.2
       picocolors: 1.0.0
       std-env: 3.7.0
