@@ -249,10 +249,12 @@ To use it, use <kbd><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd></kbd> to open 
 
 Hit <kbd>F5</kbd> to run your project, just like you would in the GameMaker IDE. Stitch uses the Runtime version that matches the IDE version your project uses. A terminal will pop up with the output from the GameMaker runtime.
 
+You can choose whether to run via VM or YYC, and which config to use.
+
 Check out Stitch settings to configure how your project is run. In particular:
 
-- `stitch.run.defaultConfig`: Choose a run configuration to use as the default (defaults to "Default")
-- `stitch.run.defaultCompiler`: Choose whether to use the VM or YYC compiler (defaults to "VM")
+- `stitch.run.defaultConfig`: Choose a run configuration to use as the default (defaults to "Default"). This will remain the default until you update your Target.
+- `stitch.run.defaultCompiler`: Choose whether to use the VM or YYC compiler (defaults to "VM"). This will remain the default until you update your Target.
 - `stitch.run.inTerminal`: By default Stitch opens a terminal in VSCode and runs your project there, using your default terminal settings. Set this to `false` to use the Stitch Runner Panel instead.
 
 #### ⚡ Stitch Runner Panel

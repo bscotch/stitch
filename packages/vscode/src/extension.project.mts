@@ -102,7 +102,10 @@ export class GameMakerProject extends Project {
       this,
     );
     const config = options?.config ?? stitchConfig.runConfigDefault;
-    const compiler = options?.compiler ?? stitchConfig.runCompilerDefault;
+    let compiler = options?.compiler ?? stitchConfig.runCompilerDefault;
+    if (['yyc', 'vm'].indexOf(compiler) === -1) {
+      compiler = stitchConfig.runCompilerDefault;
+    }
 
     logger.info(`Looking for GameMaker v${this.ideVersion}...`);
     const release = await GameMakerRuntime.findRelease({

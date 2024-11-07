@@ -231,6 +231,16 @@ export async function activateStitchExtension(
         void showErrorMessage('No project found to run!');
         return;
       }
+      const lastConfig = ctx.workspaceState.get('lastRunConfig');
+      if (
+        lastConfig &&
+        typeof lastConfig === 'object' &&
+        'compiler' in lastConfig &&
+        'config' in lastConfig
+      ) {
+        project.run(lastConfig as any);
+        return;
+      }
       project.run();
     }),
     registerCommand(
@@ -272,10 +282,31 @@ export async function activateStitchExtension(
         });
         if (!chosenCompiler) return;
 
-        await project.run({
+        ctx.workspaceState.update('lastRunConfig', {
           compiler: chosenCompiler as any,
           config: chosenConfig,
         });
+
+        const when = await vscode.window.showQuickPick(
+          [
+            { label: 'Run Now', now: true, picked: true },
+            {
+              label: 'Run Later',
+              now: false,
+              detail:
+                'All future runs will use the new target until you change it again.',
+            },
+          ],
+          {
+            title: 'Target Updated! Run now?',
+          },
+        );
+        if (when?.now) {
+          await project.run({
+            compiler: chosenCompiler as any,
+            config: chosenConfig,
+          });
+        }
       },
     ),
     registerCommand(

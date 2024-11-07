@@ -365,9 +365,9 @@ export const commands = {
   },
   'stitch.run.noDefaults': {
     command: 'stitch.run.noDefaults',
-    title: 'Stitch: Run Project (No Defaults)',
-    shortTitle: 'RunExt',
-    icon: '$(run-all)',
+    title: 'Stitch: Set Runner Target',
+    shortTitle: 'Set Target',
+    icon: '$(target)',
     enablement: when.hasProjects,
     [$showInPalette]: true,
     [$showInViewTitle]: {
