@@ -424,7 +424,7 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
 
   async createNewProject() {
     const project = this.getActiveProject();
-    assertLoudly(project, 'Must have an active project to use as a temiplate.');
+    assertLoudly(project, 'Must have an active project to use as a template.');
 
     // Clone the current yyp file
     const roomName = 'rm_init';
