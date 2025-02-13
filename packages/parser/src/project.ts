@@ -122,7 +122,7 @@ export class Project {
   protected dirtyFiles = new Set<Code>();
 
   protected constructor(
-    readonly yypPath: Pathy,
+    readonly yypPath: Pathy<any>,
     readonly options?: ProjectOptions,
   ) {}
 

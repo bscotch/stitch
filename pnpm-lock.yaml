@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@bscotch/pathy':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       '@bscotch/trebuchet':
         specifier: 2.9.3
         version: 2.9.3
@@ -74,8 +74,8 @@ importers:
         specifier: 0.2.1
         version: 0.2.1
       '@bscotch/pathy':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       '@bscotch/trebuchet':
         specifier: 2.9.4
         version: 2.9.4
@@ -132,8 +132,8 @@ importers:
         specifier: 0.2.2
         version: 0.2.2
       '@bscotch/pathy':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       '@bscotch/spritely':
         specifier: workspace:*
         version: link:../spritely
@@ -271,8 +271,8 @@ importers:
         specifier: 0.2.1
         version: 0.2.1
       '@bscotch/pathy':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
@@ -400,8 +400,8 @@ importers:
   packages/releases:
     dependencies:
       '@bscotch/pathy':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       '@bscotch/utility':
         specifier: ^7.2.0
         version: 7.2.0
@@ -462,8 +462,8 @@ importers:
         specifier: workspace:*
         version: link:../releases
       '@bscotch/pathy':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       '@bscotch/steam-bbcode':
         specifier: workspace:*
         version: link:../steam-bbcode
@@ -519,8 +519,8 @@ importers:
   packages/sprite-source:
     dependencies:
       '@bscotch/pathy':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       '@bscotch/pixel-checksum':
         specifier: ^0.1.2
         version: 0.1.2
@@ -553,8 +553,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
       '@bscotch/pathy':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       '@bscotch/utility':
         specifier: ^7.2.0
         version: 7.2.0
@@ -634,8 +634,8 @@ importers:
         specifier: workspace:*
         version: link:../parser
       '@bscotch/pathy':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       '@bscotch/sprite-source':
         specifier: workspace:*
         version: link:../sprite-source
@@ -1078,10 +1078,11 @@ packages:
       '@bscotch/utility': 7.2.0
       fs-extra: 11.1.1
       json5: 2.2.3
-      tslib: 2.6.3
+      tslib: 2.8.1
       yaml: 2.3.2
     transitivePeerDependencies:
       - supports-color
+    dev: true
 
   /@bscotch/pathy@2.12.1:
     resolution: {integrity: sha512-pp2gzFlVsplONjDxsHXfADQlZ4sdEKsud7asgKSMLd2wq830Zo/BXWx2MGsJxnIMs/gKX+R96kc4YnDWHJF7Kg==}
@@ -1093,7 +1094,6 @@ packages:
       yaml: 2.3.2
     transitivePeerDependencies:
       - supports-color
-    dev: false
 
   /@bscotch/pixel-checksum@0.1.2:
     resolution: {integrity: sha512-BxhS7EhhRXX1oEEriS8IREBVnIXwFYzh1exYL+II67MRD5bXEudzs/VzA9Hso46wR2ZKbg8PmxAjBpd6YZRqfw==}

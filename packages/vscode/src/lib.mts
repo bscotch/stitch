@@ -47,7 +47,9 @@ export function getRelativeWorkspacePath(
   return normalizedPath.relativeFrom(getWorkspaceRoot());
 }
 
-export function pathyFromUri(uri: vscode.TextDocument | vscode.Uri): Pathy {
+export function pathyFromUri(
+  uri: vscode.TextDocument | vscode.Uri,
+): Pathy<any> {
   return new Pathy(uri instanceof vscode.Uri ? uri.fsPath : uri.uri.fsPath);
 }
 

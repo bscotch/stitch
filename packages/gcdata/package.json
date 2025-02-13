@@ -14,7 +14,7 @@
   "dependencies": {
     "@bscotch/cl2-string-server-shared": "0.9.0",
     "@bscotch/emitter": "0.2.1",
-    "@bscotch/pathy": "^2.12.0",
+    "@bscotch/pathy": "^2.12.1",
     "node-fetch": "^3.3.2",
     "zod": "3.23.8"
   },
