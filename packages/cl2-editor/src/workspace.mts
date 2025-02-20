@@ -46,7 +46,7 @@ export class CrashlandsWorkspace {
     this.workspace = new CrashlandsWorkspace(ctx, packed);
 
     ctx.subscriptions.push(
-      ...GameChangerFs.register(this.workspace),
+      ...(await GameChangerFs.register(this.workspace)),
       ...StoryFoldingRangeProvider.register(this.workspace),
       ...TreeProvider.register(this.workspace),
       ...QuestHoverProvider.register(this.workspace),

@@ -8,6 +8,7 @@ import { ComfortDocument } from './comfort.doc.mjs';
 import { crashlandsConfig } from './config.mjs';
 import { crashlandsEvents } from './events.mjs';
 import type { Backup, BackupsIndex } from './gc.fs.types.mjs';
+import { logger, warn } from './log.mjs';
 import { QuestDocument } from './quests.doc.mjs';
 import {
   isBuddyUri,
@@ -79,7 +80,7 @@ export class GameChangerFs implements vscode.FileSystemProvider {
   readDirectory(
     uri: vscode.Uri,
   ): [string, vscode.FileType][] | Thenable<[string, vscode.FileType][]> {
-    console.log('readDirectory', uri);
+    logger.log('readDirectory', uri);
     throw new Error('Readdir not implemented.');
   }
   createDirectory(uri: vscode.Uri): void | Thenable<void> {
@@ -157,25 +158,48 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     await GameChangerFs.backupsDir.ensureDir();
     const indexFile = GameChangerFs.backupsDir.join<BackupsIndex>('index.json');
     this.backups = await indexFile.read({ fallback: { motes: {} } });
+    if (!this.backups) {
+      // SHOULD NOT HAPPEN!
+      logger.error(
+        '(Impossible outcome.) Could not load backups index. Using empty index.',
+      );
+      this.backups = { motes: {} };
+      return;
+    }
     // TODO: prune old backups
-    // TODO: merge backups that have the same checksum
     const backupsByChecksum = new Map<string, Backup>();
     const backedUpMoteIds = Object.keys(this.backups?.motes || {});
     for (const moteId of backedUpMoteIds) {
-      const backups = this.backups!.motes[moteId] || [];
-      for (let i = backups.length - 1; i >= 0; i--) {
-        const backup = backups[i];
+      if (!this.backups?.motes[moteId]) {
+        continue;
+      }
+      const uniqueBackups: Backup[] = [];
+      for (let backup of this.backups.motes[moteId]) {
+        console.dir(backup);
         const checksum = `${backup.schema}.${backup.checksum}`;
         const existing = backupsByChecksum.get(checksum);
         if (!existing) {
           backupsByChecksum.set(checksum, backup);
+          uniqueBackups.push(backup);
           continue;
         }
         if (existing.lastOpened < backup.lastOpened) {
           existing.lastOpened = backup.lastOpened;
         }
-        backups.splice(i, 1);
       }
+      // Sort them by date, descending
+      uniqueBackups.sort((a, b) => b.date - a.date);
+      // Only keep the most recent
+      const deleted = uniqueBackups.splice(20);
+      // Remove the backup files
+      for (const backup of deleted) {
+        logger.log('Deleting old backup', backup);
+        await GameChangerFs.backupsDir
+          .join(moteId, `${backup.checksum}.${backup.schema}`)
+          .delete();
+      }
+
+      this.backups.motes[moteId] = uniqueBackups;
     }
     await this.saveBackupsIndex();
   }
@@ -228,8 +252,9 @@ export class GameChangerFs implements vscode.FileSystemProvider {
 
   protected constructor(readonly workspace: CrashlandsWorkspace) {}
 
-  static register(workspace: CrashlandsWorkspace) {
+  static async register(workspace: CrashlandsWorkspace) {
     const provider = new GameChangerFs(workspace);
+    await provider.loadBackupsIndex();
 
     crashlandsEvents.on('mote-updated', (uri) => {
       const doc = vscode.workspace.textDocuments.find(
@@ -237,7 +262,7 @@ export class GameChangerFs implements vscode.FileSystemProvider {
       );
       const moteDoc = provider.getMoteDoc(uri);
       if (!moteDoc) {
-        console.warn("Couldn't find mote doc for", uri.toString());
+        warn("Couldn't find mote doc for", uri.toString());
       } else if (doc) {
         clearTimeout(provider.debouncedParses.get(uri.toString()));
         provider.debouncedParses.set(
@@ -256,10 +281,9 @@ export class GameChangerFs implements vscode.FileSystemProvider {
           }, crashlandsConfig.parseDelay),
         );
       } else {
-        console.warn("Couldn't find doc for", uri.toString());
+        logger.warn("Couldn't find doc for", uri.toString());
       }
     });
-    provider.loadBackupsIndex();
     return [
       vscode.workspace.registerFileSystemProvider('bschema', provider, {
         isCaseSensitive: true,
