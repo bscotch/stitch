@@ -20,6 +20,7 @@ import {
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { crashlandsEvents } from './events.mjs';
+import { logger } from './log.mjs';
 import { hasEditor, moteToPath } from './quests.util.mjs';
 import { TreeItemBase } from './tree.base.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
@@ -430,7 +431,7 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeItem> {
       // Reveal the quest in the tree
       const questItem = TreeMoteItem.lookup.get(info.moteId!);
       if (!questItem) {
-        console.error("Couldn't find tree item for quest", info.moteId);
+        logger.error("Couldn't find tree item for quest", info.moteId);
         return;
       }
       provider.view.reveal(questItem, {

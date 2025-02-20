@@ -11,6 +11,7 @@ import vscode from 'vscode';
 import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
 import { crashlandsEvents } from './events.mjs';
+import { logger } from './log.mjs';
 import { filterRanges, parseGameChangerUri, range } from './quests.util.mjs';
 import { unknownWordError } from './unknownWordError.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
@@ -138,7 +139,7 @@ export class StorylineDocument {
       }
       diagnostics.set(this.uri, issues);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
     }
   }
 

@@ -25,7 +25,7 @@ export class Logger {
     if (!Logger.outputChannels.has(channel)) {
       Logger.outputChannels.set(
         channel,
-        vscode.window.createOutputChannel(channel, 'stitch-logs'),
+        vscode.window.createOutputChannel(channel, 'cl2-editor-logs'),
       );
     }
   }
@@ -102,7 +102,7 @@ export class Logger {
   }
 }
 
-export const logger = new Logger('Stitch');
+export const logger = new Logger('CL2 Editor');
 
 export function info(...args: any[]) {
   logger.info(...args);

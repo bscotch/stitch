@@ -11,6 +11,7 @@ import vscode from 'vscode';
 import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
 import { crashlandsEvents } from './events.mjs';
+import { logger } from './log.mjs';
 import { filterRanges, parseGameChangerUri, range } from './quests.util.mjs';
 import { unknownWordError } from './unknownWordError.mjs';
 import type { CrashlandsWorkspace } from './workspace.mjs';
@@ -47,7 +48,7 @@ export class ComfortDocument {
       },
     );
 
-    console.log('matchingAutocompletes', matchingAutocompletes);
+    logger.log('matchingAutocompletes', matchingAutocompletes);
 
     const completes = matchingAutocompletes
       .map((c) => {
@@ -140,7 +141,7 @@ export class ComfortDocument {
       }
       diagnostics.set(this.uri, issues);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
     }
   }
 

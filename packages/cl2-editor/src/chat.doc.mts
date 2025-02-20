@@ -11,6 +11,7 @@ import vscode from 'vscode';
 import { assertInternalClaim, assertLoudly } from './assert.mjs';
 import { diagnostics } from './diagnostics.mjs';
 import { crashlandsEvents } from './events.mjs';
+import { logger } from './log.mjs';
 import {
   filterRanges,
   getCursorPosition,
@@ -192,7 +193,7 @@ export class ChatDocument {
       }
       diagnostics.set(this.uri, issues);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
     }
   }
 
