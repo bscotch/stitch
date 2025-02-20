@@ -1,5 +1,12 @@
 # Crashlands 2 Editor Changelog
 
+## 0.26.3 (2025-02-20)
+
+### Fixes
+
+- Resolved some jank with CL2 editor backups. Now keeping only the latest 20 backups for each Mote.
+- CL2 editor logs are now properly routing to the VSCode output tab
+
 ## 0.26.2 (2024-10-02)
 
 ### Fixes
