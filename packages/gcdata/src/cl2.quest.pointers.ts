@@ -67,6 +67,7 @@ export type QuestMotePointer = ``
   | `demo_blocked/blocked_moments/${string}/element/artisan`
   | `demo_blocked/blocked_moments/${string}/element/bonus`
   | `demo_blocked/blocked_moments/${string}/element/camera_target`
+  | `demo_blocked/blocked_moments/${string}/element/dialogue_sound_override`
   | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element/dropper`
   | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element/items/${string}/element/item_id`
   | `demo_blocked/blocked_moments/${string}/element/drops/${string}/element/items/${string}/element/quantity`
@@ -84,6 +85,7 @@ export type QuestMotePointer = ``
   | `demo_blocked/blocked_moments/${string}/element/emotes/${string}/order`
   | `demo_blocked/blocked_moments/${string}/element/emotes/${string}`
   | `demo_blocked/blocked_moments/${string}/element/emotes`
+  | `demo_blocked/blocked_moments/${string}/element/fixed_duration`
   | `demo_blocked/blocked_moments/${string}/element/items/${string}/element/key`
   | `demo_blocked/blocked_moments/${string}/element/items/${string}/element/value`
   | `demo_blocked/blocked_moments/${string}/element/items/${string}/element`
@@ -214,6 +216,7 @@ export type QuestMotePointer = ``
   | `quest_end_moments/${string}/element/artisan`
   | `quest_end_moments/${string}/element/bonus`
   | `quest_end_moments/${string}/element/camera_target`
+  | `quest_end_moments/${string}/element/dialogue_sound_override`
   | `quest_end_moments/${string}/element/drops/${string}/element/dropper`
   | `quest_end_moments/${string}/element/drops/${string}/element/items/${string}/element/item_id`
   | `quest_end_moments/${string}/element/drops/${string}/element/items/${string}/element/quantity`
@@ -231,6 +234,7 @@ export type QuestMotePointer = ``
   | `quest_end_moments/${string}/element/emotes/${string}/order`
   | `quest_end_moments/${string}/element/emotes/${string}`
   | `quest_end_moments/${string}/element/emotes`
+  | `quest_end_moments/${string}/element/fixed_duration`
   | `quest_end_moments/${string}/element/items/${string}/element/key`
   | `quest_end_moments/${string}/element/items/${string}/element/value`
   | `quest_end_moments/${string}/element/items/${string}/element`
@@ -378,6 +382,7 @@ export type QuestMotePointer = ``
   | `quest_start_moments/${string}/element/artisan`
   | `quest_start_moments/${string}/element/bonus`
   | `quest_start_moments/${string}/element/camera_target`
+  | `quest_start_moments/${string}/element/dialogue_sound_override`
   | `quest_start_moments/${string}/element/drops/${string}/element/dropper`
   | `quest_start_moments/${string}/element/drops/${string}/element/items/${string}/element/item_id`
   | `quest_start_moments/${string}/element/drops/${string}/element/items/${string}/element/quantity`
@@ -395,6 +400,7 @@ export type QuestMotePointer = ``
   | `quest_start_moments/${string}/element/emotes/${string}/order`
   | `quest_start_moments/${string}/element/emotes/${string}`
   | `quest_start_moments/${string}/element/emotes`
+  | `quest_start_moments/${string}/element/fixed_duration`
   | `quest_start_moments/${string}/element/items/${string}/element/key`
   | `quest_start_moments/${string}/element/items/${string}/element/value`
   | `quest_start_moments/${string}/element/items/${string}/element`

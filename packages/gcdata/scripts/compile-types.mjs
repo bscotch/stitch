@@ -82,6 +82,8 @@ await createPointerTypesFromSchema(
   'chat',
   (pointer) => !pointer.startsWith('requirements'),
 );
+await createPointerTypesFromSchema('cl2_credits', 'CreditsMote', 'credits');
+
 // Artisans & NPCs have similar schemas, but for our
 // current case we only care about Idle Text, which both have,
 // so we can just use one schema for types/pointers.

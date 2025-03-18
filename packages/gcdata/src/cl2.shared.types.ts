@@ -42,6 +42,10 @@ export const storylineSchemaId = 'cl2_storyline';
 export type StorylineData = Crashlands2.Schemas['cl2_storyline'];
 export type StorylineMote = Mote<StorylineData>;
 
+export const creditsSchemaId = 'cl2_credits';
+export type CreditsData = Crashlands2.Schemas['cl2_credits'];
+export type CreditsMote = Mote<CreditsData>;
+
 export interface ParsedComment {
   /** arrayId */
   id: string | undefined;

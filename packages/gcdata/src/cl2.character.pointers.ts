@@ -9,6 +9,7 @@ export type CharacterMotePointer = ``
   | `background_info/personality`
   | `background_info/pronouns`
   | `background_info`
+  | `chat_cooldown_override`
   | `editor_excluded`
   | `editor_group`
   | `face`
@@ -131,6 +132,24 @@ export type CharacterMotePointer = ``
   | `idle_text/${string}/order`
   | `idle_text/${string}`
   | `idle_text`
+  | `light_emitter/alpha`
+  | `light_emitter/color/b`
+  | `light_emitter/color/g`
+  | `light_emitter/color/r`
+  | `light_emitter/color`
+  | `light_emitter/datafield_evaluation/comparison`
+  | `light_emitter/datafield_evaluation/value0`
+  | `light_emitter/datafield_evaluation/value1`
+  | `light_emitter/datafield_evaluation`
+  | `light_emitter/grid_range`
+  | `light_emitter/sine_waves/${string}/element/affects`
+  | `light_emitter/sine_waves/${string}/element/amplitude`
+  | `light_emitter/sine_waves/${string}/element/speed`
+  | `light_emitter/sine_waves/${string}/element`
+  | `light_emitter/sine_waves/${string}/order`
+  | `light_emitter/sine_waves/${string}`
+  | `light_emitter/sine_waves`
+  | `light_emitter`
   | `name/description`
   | `name/skip`
   | `name/text`

@@ -1,6 +1,7 @@
 export * from './cl2.character.js';
 export * from './cl2.chat.js';
 export * from './cl2.comfort.js';
+export * from './cl2.credits.js';
 export * from './cl2.quest.js';
 export * from './cl2.shared.types.js';
 export * from './cl2.storyline.js';
