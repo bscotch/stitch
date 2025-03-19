@@ -2,6 +2,7 @@ import {
   buddySchemaId,
   chatSchemaId,
   comfortSchemaId,
+  creditsSchemaId,
   npcSchemaId,
   questSchemaId,
   storylineSchemaId,
@@ -27,6 +28,7 @@ export function hasEditor(mote: Mote): boolean {
     buddySchemaId,
     npcSchemaId,
     chatSchemaId,
+    creditsSchemaId,
   ].includes(mote.schema_id);
 }
 
@@ -52,6 +54,10 @@ export function isNpcUri(uri: vscode.Uri) {
 
 export function isChatUri(uri: vscode.Uri) {
   return uri.scheme === 'bschema' && uri.path.endsWith(`.${chatSchemaId}`);
+}
+
+export function isCreditsUri(uri: vscode.Uri) {
+  return uri.scheme === 'bschema' && uri.path.endsWith(`.${creditsSchemaId}`);
 }
 
 export interface ParsedGameChangerUri {

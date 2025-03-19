@@ -211,6 +211,9 @@ export function parseIfMatch(
 }
 
 export function lineIsArrayItem(line: string, schemaId: string): boolean {
+  if (schemaId === 'cl2_credits') {
+    return false;
+  }
   // Shared non-array types:
   if (line.match(/^(name|stage|description|unlocked description)/i)) {
     return false;

@@ -6,6 +6,7 @@ import { CharacterDocument } from './character.doc.mjs';
 import { ChatDocument } from './chat.doc.mjs';
 import { ComfortDocument } from './comfort.doc.mjs';
 import { crashlandsConfig } from './config.mjs';
+import { CreditsDocument } from './credits.doc.mjs';
 import { crashlandsEvents } from './events.mjs';
 import type { Backup, BackupsIndex } from './gc.fs.types.mjs';
 import { logger, warn } from './log.mjs';
@@ -14,6 +15,7 @@ import {
   isBuddyUri,
   isChatUri,
   isComfortUri,
+  isCreditsUri,
   isNpcUri,
   isQuestUri,
   isStorylineUri,
@@ -27,7 +29,8 @@ type DocumentType =
   | StorylineDocument
   | ComfortDocument
   | CharacterDocument
-  | ChatDocument;
+  | ChatDocument
+  | CreditsDocument;
 
 export class GameChangerFs implements vscode.FileSystemProvider {
   static get backupsDir() {
@@ -49,6 +52,8 @@ export class GameChangerFs implements vscode.FileSystemProvider {
       return CharacterDocument.from(uri, this.workspace);
     } else if (isChatUri(uri)) {
       return ChatDocument.from(uri, this.workspace);
+    } else if (isCreditsUri(uri)) {
+      return CreditsDocument.from(uri, this.workspace);
     }
     throw new Error('Unknown uri type: ' + uri.toString());
   }
@@ -175,7 +180,6 @@ export class GameChangerFs implements vscode.FileSystemProvider {
       }
       const uniqueBackups: Backup[] = [];
       for (let backup of this.backups.motes[moteId]) {
-        console.dir(backup);
         const checksum = `${backup.schema}.${backup.checksum}`;
         const existing = backupsByChecksum.get(checksum);
         if (!existing) {

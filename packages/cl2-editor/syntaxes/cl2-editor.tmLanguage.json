@@ -7,7 +7,8 @@
     "cl2_storyline",
     "cl2_artisan_glads",
     "artisan",
-    "cl2_npc"
+    "cl2_npc",
+    "cl2_credits"
   ],
   "patterns": [
     {
@@ -35,7 +36,6 @@
             }
           }
         },
-
         {
           "name": "requirement.quest.cl2-quest",
           "match": "^(?<indicator>\\?)\\s*(?<arrayId>#[a-z_0-9]+)?\\s+(?<style>Quest (Complete|Started|Not Started))\\s*:s*(?<questName>.*?)\\s*(?<moteId>@[a-z_0-9]+)",
@@ -226,6 +226,18 @@
             },
             "2": {
               "name": "id.mote.cl2-quest"
+            }
+          }
+        },
+        {
+          "name": "person.cl2-credits",
+          "match": "^(\t-\\s*)(.*)",
+          "captures": {
+            "1": {
+              "name": "indicator.cl2-credits"
+            },
+            "2": {
+              "name": "text.cl2-credits"
             }
           }
         }

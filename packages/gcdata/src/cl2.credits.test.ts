@@ -26,6 +26,7 @@ describe.only('Cl2 Credits', function () {
     const asText = stringifyCredits(credits, packed);
     console.log(asText);
     const results = parseStringifiedCredits(asText, packed);
+    console.dir(results, { depth: null });
     if (results.diagnostics.length > 0) {
       console.error('Credits not parsed');
     }

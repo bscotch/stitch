@@ -6,6 +6,8 @@ import {
   ComfortData,
   comfortSchemaId,
   createChatMote,
+  CreditsData,
+  creditsSchemaId,
   NpcData,
   npcSchemaId,
   ORDER_INCREMENT,
@@ -31,6 +33,7 @@ type MoteData =
   | ComfortData
   | NpcData
   | ChatData
+  | CreditsData
   | BuddyData;
 export type TreeItem = TreeMoteItem | FolderItem;
 type DropMode = 'order' | 'nest';
@@ -557,7 +560,9 @@ class TreeMoteItem<
                 ? 'heart'
                 : this.isNpc()
                   ? 'account'
-                  : 'question',
+                  : this.isCredits()
+                    ? 'credit-card'
+                    : 'question',
     );
     // Make it openable in the editor
     this.resourceUri = vscode.Uri.parse(moteToPath(this.mote));
@@ -623,6 +628,10 @@ class TreeMoteItem<
 
   isChat(): this is TreeMoteItem<ChatData> {
     return this.mote.schema_id === chatSchemaId;
+  }
+
+  isCredits(): this is TreeMoteItem<CreditsData> {
+    return this.mote.schema_id === creditsSchemaId;
   }
 
   get schemaId(): string {

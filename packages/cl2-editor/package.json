@@ -35,13 +35,13 @@
     "commands": [
       {
         "command": "crashlands.quests.enter",
-        "enablement": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-character' || editorLangId == 'cl2-chat'",
+        "enablement": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-character' || editorLangId == 'cl2-chat' || editorLangId == 'cl2-credits'",
         "category": "Crashlands",
         "title": "On Enter"
       },
       {
         "command": "crashlands.editor.backup.restore",
-        "enablement": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-storyline' || editorLangId == 'cl2-character' || editorLangId == 'cl2-chat'",
+        "enablement": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-storyline' || editorLangId == 'cl2-character' || editorLangId == 'cl2-chat' || editorLangId == 'cl2-credits'",
         "category": "Crashlands",
         "title": "Restore Backup"
       },
@@ -139,6 +139,11 @@
         "language": "cl2-chat",
         "scopeName": "source.cl2-quest",
         "path": "./syntaxes/cl2-editor.tmLanguage.json"
+      },
+      {
+        "language": "cl2-credits",
+        "scopeName": "source.cl2-quest",
+        "path": "./syntaxes/cl2-editor.tmLanguage.json"
       }
     ],
     "keybindings": [
@@ -178,6 +183,16 @@
         ]
       },
       {
+        "id": "cl2-credits",
+        "aliases": [
+          "Cl2 Credits"
+        ],
+        "configuration": "./languages/cl2-editor.language-configuration.json",
+        "extensions": [
+          ".cl2_credits"
+        ]
+      },
+      {
         "id": "cl2-comfort",
         "aliases": [
           "Cl2 Comfort"
@@ -213,7 +228,7 @@
       "commandPalette": [
         {
           "command": "crashlands.editor.backup.restore",
-          "when": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-storyline' || editorLangId == 'cl2-character' || editorLangId == 'cl2-chat'"
+          "when": "editorLangId == 'cl2-quest' || editorLangId == 'cl2-storyline' || editorLangId == 'cl2-character' || editorLangId == 'cl2-chat' || editorLangId == 'cl2-credits'"
         },
         {
           "command": "bscotch.strings.addGlossaryEntry"

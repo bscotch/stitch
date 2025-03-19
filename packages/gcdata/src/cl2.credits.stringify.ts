@@ -26,7 +26,7 @@ export function stringifyCredits(
         const entryId = entry.id;
         const element = entry.element;
         if (element.type === 'Gap') {
-          blocks.push('===\n');
+          // Gaps are not supported
           continue;
         }
         // Roles aren't strictly required (e.g. in cases where the section and role are the same)
