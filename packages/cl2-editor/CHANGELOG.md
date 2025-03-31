@@ -1,5 +1,11 @@
 # Crashlands 2 Editor Changelog
 
+## 0.27.0 (2025-03-19)
+
+### Features
+
+- Added (janky) support for editing Crashlands 2 Credits via the CL2 Editor extension
+
 ## 0.26.3 (2025-02-20)
 
 ### Fixes

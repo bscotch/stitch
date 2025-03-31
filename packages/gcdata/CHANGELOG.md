@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.25.0 (2025-03-19)
+
+### Features
+
+- Added (janky) support for editing Crashlands 2 Credits via the CL2 Editor extension
+
 ## 0.24.1 (2024-10-02)
 
 ### Fixes

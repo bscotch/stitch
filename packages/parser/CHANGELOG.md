@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.13.1 (2025-03-31)
+
+### Fixes
+
+- Resolved issues related to sprite renames not completely updating project file references.
+
 ## 1.13.0 (2024-11-07)
 
 ### Features
