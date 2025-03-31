@@ -1,6 +1,6 @@
 # Crashlands 2 Editor Changelog
 
-## 0.27.0 (2025-03-19)
+## 0.28.0 (2025-03-19)
 
 ### Features
 

@@ -1,6 +1,6 @@
 # @bscotch/gml-parser Changelog
 
-## 1.13.1 (2025-03-31)
+## 1.13.2 (2025-03-31)
 
 ### Fixes
 
