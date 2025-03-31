@@ -20,6 +20,14 @@ interface ObjectAlarmEvent<N extends number> extends ObjectEvent {
   group: 'alarm';
 }
 
+interface ObjectCollisionEvent<O extends string> extends ObjectEvent {
+  label: `Collision (${O})`;
+  name: `Collision_${O}`;
+  eventNum: 0;
+  eventType: 4;
+  group: 'collision';
+}
+
 const objectAlarmEvents: ObjectAlarmEvent<number>[] = [];
 for (let i = 0; i < 10; i++) {
   objectAlarmEvents.push({
@@ -229,6 +237,17 @@ export function getEventFromFilename(
   filename: string,
 ): ObjectEvent | undefined {
   const name = path.basename(filename, '.gml');
+  const collisionParts = name.match(/^Collision_(?<name>.+)$/);
+  if (collisionParts) {
+    // These are named per object they collide with
+    return {
+      eventNum: 0,
+      eventType: 4,
+      label: `Collision (${collisionParts.groups!.name})`,
+      name: name as `Collision_${string}`,
+      group: 'collision',
+    } satisfies ObjectCollisionEvent<string>;
+  }
   const event = objectEvents.find((x) => x.name === name);
   if (!event) {
     logger.warn(`Could not find event for filename: ${filename}`);
@@ -237,6 +256,17 @@ export function getEventFromFilename(
 }
 
 export function getEventFromLabel(label: string): ObjectEvent | undefined {
+  const collisionParts = label.match(/^Collision \((?<name>.+)\)$/);
+  if (collisionParts) {
+    // These are named per object they collide with
+    return {
+      eventNum: 0,
+      eventType: 4,
+      label: `Collision (${collisionParts.groups!.name})`,
+      name: `Collision_${collisionParts.groups!.name}` as `Collision_${string}`,
+      group: 'collision',
+    } satisfies ObjectCollisionEvent<string>;
+  }
   return objectEvents.find((x) => x.label === label);
 }
 

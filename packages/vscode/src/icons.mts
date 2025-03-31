@@ -97,6 +97,8 @@ export function getObjectEventIcon(eventName: string) {
     icon = 'destroy';
   } else if (eventName === 'CleanUp_0') {
     icon = 'cleanup';
+  } else if (eventName.startsWith('Collision_')) {
+    icon = 'collision';
   } else if (eventName.match(/^Other_(7[250]|6[239])$/i)) {
     icon = 'asynchronous';
   }
