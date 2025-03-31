@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.73.0 (2025-03-31)
+
+### Features
+
+- Added collision events to detectable Object event types
+
 ## 1.72.0 (2024-11-07)
 
 ### Features

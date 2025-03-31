@@ -1,5 +1,15 @@
 # @bscotch/gml-parser Changelog
 
+## 1.14.0 (2025-03-31)
+
+### Features
+
+- Added collision events to detectable Object event types
+
+### Fixes
+
+- Deleting an object now ensures it is removed from collisions, and unset as a parent to other objects. Deleting a sprite now ensures any objects using that sprite are set to using no sprite.
+
 ## 1.13.2 (2025-03-31)
 
 ### Fixes
