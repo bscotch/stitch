@@ -16,6 +16,7 @@ import {
   yypFolderSchema,
   yyRoomSchema,
   yySpriteSchema,
+  type YyObjectEvent,
   type Yyp,
   type YypConfig,
   type YypFolder,
@@ -220,7 +221,6 @@ export class Project {
     name = name.toLocaleLowerCase();
     const asset = this.assets.get(name);
     if (!asset) return;
-    this.assets.delete(name);
     // Remove the asset from the yyp
     const resourceIdx = this.yyp.resources.findIndex(
       (r) => r.id.name.toLocaleLowerCase() === name,
@@ -231,6 +231,56 @@ export class Project {
         node.roomId.path.toLowerCase() !== asset.resource.id.path.toLowerCase();
       });
     }
+    // If it'll be referenced in other assets, remove those references
+    else if (
+      isAssetOfKind(asset, 'objects') ||
+      isAssetOfKind(asset, 'sprites')
+    ) {
+      for (const other of this.assets.values()) {
+        if (
+          isAssetOfKind(asset, 'sprites') &&
+          isAssetOfKind(other, 'objects')
+        ) {
+          // If this object has this sprite, unset it!
+          if (other.sprite?.name === asset.name) {
+            other.sprite = undefined;
+          }
+        } else if (
+          isAssetOfKind(asset, 'objects') &&
+          isAssetOfKind(other, 'objects')
+        ) {
+          // Then this object might be referenced in a collision event
+          // with the other object.
+          const yy = other.yy;
+          const [keepEvents, removeEvents] = yy.eventList.reduce(
+            (acc, event) => {
+              if (event.collisionObjectId?.name === asset.name) {
+                acc[1].push(event);
+              } else {
+                acc[0].push(event);
+              }
+              return acc;
+            },
+            [[], []] as [keep: YyObjectEvent[], discard: YyObjectEvent[]],
+          );
+          if (removeEvents.length) {
+            // Remove the collision events
+            other.yy.eventList = keepEvents;
+            await other.saveYy();
+            // Remove the leftover collision event file
+            const eventFile = other.dir.join(`Collision_${asset.name}.gml`);
+            await eventFile.delete({ recursive: true });
+            await other.reload();
+          }
+          // It could also be listed as the parent
+          if (other.parent?.name === asset.name) {
+            other.parent = undefined;
+          }
+        }
+      }
+    }
+
+    this.assets.delete(name);
     if (resourceIdx > -1) {
       this.yyp.resources.splice(resourceIdx, 1);
       await this.saveYyp();

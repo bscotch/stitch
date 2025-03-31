@@ -725,6 +725,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     if (this.assetKind === 'scripts') {
       this.addScriptFile(children as Pathy<string>[]);
     } else if (this.assetKind === 'objects') {
+      this.gmlFiles.clear();
       this.addObjectFile(children as Pathy<string>[]);
     } else if (this.assetKind === 'extensions') {
       const diagnostics: Diagnostic[] = [];
