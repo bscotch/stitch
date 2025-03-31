@@ -12,16 +12,17 @@ import {
   SoundChannel,
   SpriteType,
   Yy,
-  Yyp,
   yyParentSchema,
   yypFolderSchema,
   yyRoomSchema,
-  YySchema,
-  YySound,
   yySpriteSchema,
+  type Yyp,
   type YypConfig,
   type YypFolder,
   type YypResource,
+  type YySchema,
+  type YySound,
+  type YySprite,
 } from '@bscotch/yy';
 import { EventEmitter } from 'events';
 import { logger } from './logger.js';
@@ -358,7 +359,22 @@ export class Project {
       // Then we've renamed the sound file and need to update that in the yy!
       const yySound = yy as YySound;
       yySound.soundFile = yySound.soundFile.replace(oldNamePattern, to);
+    } else if (isAssetOfKind(asset, 'sprites')) {
+      const yySprite = yy as YySprite;
+      // Update the sequence track references.
+      // They're in an absurd, deeply nested structure that changes
+      // periodically. So the easiest thing is to stringify it, replace all,
+      // and reparse it.
+      if (yySprite.sequence?.tracks?.length) {
+        for (let i = 0; i < yySprite.sequence.tracks.length; i++) {
+          const track = yySprite.sequence.tracks[i];
+          let stringified = Yy.stringify(track);
+          stringified = stringified.replaceAll(oldNamePattern, to);
+          yySprite.sequence.tracks[i] = Yy.parse(stringified);
+        }
+      }
     }
+
     await Yy.write(newYyFile.absolute, yy, asset.assetKind, this.yyp);
 
     // Register the new asset
@@ -366,6 +382,25 @@ export class Project {
     const newAsset = await Asset.from(this, info);
     assert(newAsset, `Could not create new asset ${to}`);
     this.registerAsset(newAsset);
+
+    if (isAssetOfKind(newAsset, 'sprites')) {
+      // Then find any object that had its sprite set to the old one,
+      // and set it to the new one
+      for (const obj of this.assets.values()) {
+        if (!isAssetOfKind(obj, 'objects')) continue;
+        if (!obj.sprite) continue;
+        console.log(
+          'Checking old sprite name',
+          obj.sprite.name,
+          asset.name,
+          newAsset.name,
+        );
+        if (obj.sprite?.name === asset.name) {
+          console.log('UPDATING SPRITE');
+          obj.sprite = newAsset;
+        }
+      }
+    }
 
     // Remove the old asset
     await this.removeAssetByName(from);
