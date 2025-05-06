@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.3.2 (2025-05-06)
+
+### Fixes
+
+- Writing Script yy files for GM versions > 2024.8 now sets the version to v1 to avoid errors in recent GameMaker runtimes
+
 ## 2.3.1 (2024-11-04)
 
 ### Fixes
