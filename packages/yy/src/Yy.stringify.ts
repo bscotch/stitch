@@ -1,6 +1,11 @@
 import { GameMakerVersionString } from './types/GameMakerVersionString.js';
 import type { Yyp, YypResource } from './types/Yyp.js';
-import { FixedNumber, nameField, yyIsNewFormat } from './types/utility.js';
+import {
+  FixedNumber,
+  isObjectWithField,
+  nameField,
+  yyIsNewFormat,
+} from './types/utility.js';
 
 const escapable =
   // eslint-disable-next-line no-control-regex, no-misleading-character-class
@@ -236,6 +241,12 @@ function prepareForStringification<T>(
     isNewFormat,
     path: [...__meta.path],
   };
+  if (isObjectWithField(yyData, '$GMScript')) {
+    if (ideVersion?.gte('2024.800.0.618')) {
+      // Then we need to set this to "v1" instead of ""
+      yyData[`$GMScript`] = 'v1';
+    }
+  }
   if (Array.isArray(yyData)) {
     const prepared = yyData.map((item, i) => {
       const meta = { ...__meta, path: [...__meta.path, i] };
