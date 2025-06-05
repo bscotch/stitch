@@ -63,10 +63,6 @@ export type OnDiagnostics = (diagnostics: DiagnosticsEventPayload) => void;
 
 export interface ProjectOptions {
   /**
-   * If true, a file watcher will be set up to reprocess
-   * files when they change on disk. */
-  watch?: boolean;
-  /**
    * Register a callback to run when diagnostics are emitted.
    * If not provided, a callback can be registered after
    * initialization, but will not receive any diagnostics
@@ -81,7 +77,9 @@ export interface ProjectOptions {
   settings?: {
     /**
      * Symbols starting with these prefixes that are not declared
-     * in the coded will be treated as global symbols.
+     * in the coded will be treated as global symbols. This is
+     * useful for ensuring globals created by extensions will not
+     * show up as being undeclared.
      */
     autoDeclareGlobalsPrefixes?: string[];
   };
@@ -128,10 +126,16 @@ export class Project {
     readonly options?: ProjectOptions,
   ) {}
 
+  /**
+   * @internal For tracking changed code files that will need to be re-parsed.
+   */
   queueDirtyFileUpdate(code: Code): void {
     this.dirtyFiles.add(code);
   }
 
+  /**
+   * @internal Drain the queue of dirty files, updating their diagnostics
+   */
   drainDirtyFileUpdateQueue() {
     for (const code of this.dirtyFiles) {
       code.updateDiagnostics();
@@ -140,26 +144,46 @@ export class Project {
     this.dirtyFiles.clear();
   }
 
+  /**
+   * Update the YYP file to list a specific GameMaker IDE version.
+   * Note that the GameMaker IDE will overwrite this with whatever
+   * its own version is -- this feature is useful for external tools
+   * like Stitch that can manage multiple GameMaker IDE versions.
+   */
   async setIdeVersion(version: string) {
     assert(version.match(/^\d+\.\d+\.\d+\.\d+$/), 'Invalid version string');
     this.yyp.MetaData.IDEVersion = version;
     await this.saveYyp();
   }
 
+  /**
+   * The current version of the GameMaker IDE listed in
+   * this project's YYP file. This is the GameMaker version that
+   * the project was last opened with.
+   */
   get ideVersion(): string {
     return this.yyp.MetaData.IDEVersion;
   }
 
+  /**
+   * The directory in which the project lives.
+   */
   get dir(): Pathy {
     return pathy(this.yypPath).up();
   }
 
+  /**
+   * Get the Stitch config for this project, which defines
+   * various settings that may impact rule around adding
+   * assets, parsing logs, etc.
+   */
   get stitchConfig() {
     return this.dir
       .join(stitchConfigFilename)
       .withValidator(stitchConfigSchema);
   }
 
+  /** List the names of the GameMaker configs defined by this project. */
   get configs(): string[] {
     const configs: string[] = [];
     let configTree: YypConfig[] = [this.yyp.configs];
@@ -174,10 +198,14 @@ export class Project {
     return configs;
   }
 
+  /** List the project's "datafiles" (a.k.a. "Included Files"), in the same format as they appear in the YYP file. */
   get datafiles() {
     return this.yyp.IncludedFiles;
   }
 
+  /** List the Folders in this project, normalized to regular POSIX paths
+   * @example ['my/folder', 'my/other/folder']
+   */
   get folders() {
     return this.yyp.Folders.map((f) => groupPathToPosix(f.folderPath));
   }
@@ -189,6 +217,7 @@ export class Project {
     return () => this.emitter.off('diagnostics', callback);
   }
 
+  /** @internal Method that can be called after some code has been parsed to report diagnostics to listeners. */
   emitDiagnostics(code: Code | string, diagnostics: Diagnostic[]): void {
     // Ensure they are valid diagnostics
     for (const diagnostic of diagnostics) {
@@ -202,6 +231,10 @@ export class Project {
     });
   }
 
+  /**
+   * Since GameMaker assets are global they must have unique names independent of their type. Find an asset give it's name. Note that this is case-insensitive!
+   * @param name The name of the asset to find, case-insensitive.
+   */
   getAssetByName<Assert extends boolean>(
     name: string | undefined,
     options?: { assertExists: Assert },
@@ -215,6 +248,9 @@ export class Project {
     return asset as Assert extends true ? Asset : Asset | undefined;
   }
 
+  /**
+   * @param name The name of the asset to find and remove, case-insensitive.
+   */
   @sequential
   async removeAssetByName(name: string | undefined) {
     if (!name) return;
@@ -302,6 +338,7 @@ export class Project {
     return resource.getGmlFile(path);
   }
 
+  /** Normalize path information for a datafile ("Included File") */
   parseIncludedFilePath(
     filePath: string,
     name?: string,
@@ -356,12 +393,17 @@ export class Project {
     await this.saveYyp();
   }
 
+  /** @internal Load an Asset instance into the project's data model. For use by methods that load the project, add assets, etc. */
   registerAsset(resource: Asset): void {
     const name = this.assetNameFromPath(resource.dir);
     ok(!this.assets.has(name), `Resource ${name} already exists`);
     this.assets.set(name, resource);
   }
 
+  /**
+   * @param from The name of the asset to rename, case-insensitive.
+   * @param to The new name for the asset, which must be a valid identifier that doesn't already have an associated asset. The name will be set in the provided casing, but must be unique case-insensitively.
+   */
   @sequential
   async renameAsset(from: string, to: string) {
     const asset = this.getAssetByName(from, { assertExists: true });
@@ -547,10 +589,16 @@ export class Project {
     return newAsset;
   }
 
+  /**
+   * Create a new sound asset. Will not do anything if the asset by this name already exists (but will log an error).
+   * @param newSoundPath The POSIX-style path within the asset tree where you want this sound to be created, where the last component is the name of the sound asset.
+   * @param fromFile The path to the source sound file to copy into the new asset's directory.
+   * @example project.createSound('folder/of/sounds/snd_my_new_sound', 'path/to/sound.mp3');
+   */
   @sequential
-  async createSound(path: string, fromFile: string | Pathy) {
+  async createSound(newSoundPath: string, fromFile: string | Pathy) {
     // Create the yy file
-    const parsed = await this.parseNewAssetPath(path);
+    const parsed = await this.parseNewAssetPath(newSoundPath);
     if (!parsed) {
       return;
     }
@@ -596,9 +644,14 @@ export class Project {
     return asset;
   }
 
+  /**
+   * Create a new room asset. Will not do anything if the asset by this name already exists (but will log an error).
+   * @param newRoomPath The POSIX-style path within the asset tree where you want this asset to be created, where the last component is the name of the asset.
+   * @example project.createRoom('folder/of/rooms/rm_my_room');
+   */
   @sequential
-  async createRoom(path: string): Promise<Asset<'rooms'> | undefined> {
-    const parsed = await this.parseNewAssetPath(path);
+  async createRoom(newRoomPath: string): Promise<Asset<'rooms'> | undefined> {
+    const parsed = await this.parseNewAssetPath(newRoomPath);
     if (!parsed) {
       return;
     }
@@ -634,13 +687,19 @@ export class Project {
     return asset as Asset<'rooms'>;
   }
 
+  /**
+   * Create a new sprite asset. Will not do anything if the asset by this name already exists (but will log an error).
+   * @param newSpritePath The POSIX-style path within the asset tree where you want this asset to be created, where the last component is the name of the asset.
+   * @param fromImageFile Path to a source PNG image to use as the first frame of the sprite.
+   * @example project.createSprite('folder/of/sprites/sp_my_sprite', 'path/to/sprite.png');
+   */
   @sequential
   async createSprite(
-    path: string,
+    newSpritePath: string,
     fromImageFile: string | Pathy,
   ): Promise<Asset<'sprites'> | undefined> {
     // Create the yy file
-    const parsed = await this.parseNewAssetPath(path);
+    const parsed = await this.parseNewAssetPath(newSpritePath);
     if (!parsed) {
       return;
     }
@@ -695,11 +754,14 @@ export class Project {
   /**
    * Add an object to the yyp file. The string can include separators,
    * in which case folders will be ensured up to the final component.
+   * @param newObjectName The POSIX-style path within the asset tree where you want this asset to be created, where the last component is the name of the asset.
    */
   @sequential
-  async createObject(path: string): Promise<Asset<'objects'> | undefined> {
+  async createObject(
+    newObjectName: string,
+  ): Promise<Asset<'objects'> | undefined> {
     // Create the yy file
-    const parsed = await this.parseNewAssetPath(path);
+    const parsed = await this.parseNewAssetPath(newObjectName);
     if (!parsed) {
       return;
     }
@@ -778,7 +840,7 @@ export class Project {
   }
 
   /**
-   * Add a script to the yyp file. The string can include separators,
+   * Add a script to the yyp file. The path string can include separators,
    * in which case folders will be ensured up to the final component.
    */
   @sequential
@@ -1224,7 +1286,9 @@ export class Project {
     this.drainDirtyFileUpdateQueue();
   }
 
-  /** Initialize a collection of new assets by parsing their GML */
+  /**
+   * @internal
+   * Initialize a collection of new assets by parsing their GML */
   initiallyParseAssetCode(assets: Asset[]) {
     // Do scripts before objects
     assets = [...assets.values()].sort((a, b) => {
@@ -1277,7 +1341,7 @@ export class Project {
     }
   }
 
-  async initialize(options?: ProjectOptions): Promise<void> {
+  protected async initialize(options?: ProjectOptions): Promise<void> {
     logger.info('Initializing project...');
     if (options?.onDiagnostics) {
       this.onDiagnostics(options.onDiagnostics);
@@ -1320,6 +1384,9 @@ export class Project {
     await this.initiallyParseAssetCode(assets);
   }
 
+  /**
+   * Create a new project instance and initialize it.
+   */
   static async initialize(
     yypPath: string,
     options?: ProjectOptions,
