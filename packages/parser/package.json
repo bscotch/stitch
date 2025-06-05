@@ -1,7 +1,22 @@
 {
   "name": "@bscotch/gml-parser",
+  "description": "A parser for GML (GameMaker Language) files for programmatic manipulation and analysis of GameMaker projects.",
+  "keywords": [
+    "gml",
+    "parser",
+    "gamemaker",
+    "game maker",
+    "game maker language",
+    "gml parser",
+    "gamemaker parser",
+    "stitch"
+  ],
   "version": "1.14.1",
-  "private": true,
+  "license": "MIT",
+  "author": "Adam Coster (https://www.bscotch.net/about#adam-coster)",
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/parser#readme",
   "repository": {
     "type": "git",
