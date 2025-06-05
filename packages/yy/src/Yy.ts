@@ -10,6 +10,7 @@ import { YyResourceType } from './types/YyBase.js';
 import { yyExtensionSchema } from './types/YyExtension.js';
 import { yyObjectSchema } from './types/YyObject.js';
 import { yyRoomSchema } from './types/YyRoom.js';
+import { yyRoomUISchema } from './types/YyRoomUI.js';
 import { yyScriptSchema } from './types/YyScript.js';
 import { yyShaderSchema } from './types/YyShader.js';
 import { yySoundSchema } from './types/YySound.js';
@@ -47,6 +48,7 @@ export const yySchemas = {
   particles: anyObject,
   paths: anyObject,
   rooms: yyRoomSchema,
+  roomui: yyRoomUISchema,
   scripts: yyScriptSchema,
   sequences: anyObject,
   shaders: yyShaderSchema,
@@ -285,8 +287,8 @@ export class Yy {
         typeof secondYy === 'object'
       ) {
         // If both have primitive versions, compare those
-        const asPrimitives = [firstYy, secondYy].map(
-          (obj: any) => obj[Symbol.toPrimitive]?.('default'),
+        const asPrimitives = [firstYy, secondYy].map((obj: any) =>
+          obj[Symbol.toPrimitive]?.('default'),
         );
         if (
           asPrimitives[0] !== undefined &&

@@ -33,6 +33,7 @@ export const yyResourceTypes = [
   'particles',
   'paths',
   'rooms',
+  'roomui',
   'extensions',
   'scripts',
   'sequences',
