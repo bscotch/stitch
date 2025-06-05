@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.4.0 (2025-06-05)
+
+### Features
+
+- Added basic support for parsing RoomUI yy files
+
 ## 2.3.2 (2025-05-06)
 
 ### Fixes
