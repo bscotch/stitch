@@ -1,5 +1,12 @@
 # @bscotch/gml-parser Changelog
 
+## 1.14.2 (2025-06-05)
+
+### Fixes
+
+- Updated README and manifest in preparation for publishing.
+- Added descriptions to a bunch of Project methods
+
 ## 1.14.0 (2025-03-31)
 
 ### Features
