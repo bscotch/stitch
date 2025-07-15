@@ -15,8 +15,8 @@ export function findMax<T>(
     propOrFunc === undefined
       ? item
       : typeof propOrFunc === 'function'
-      ? propOrFunc(item, idx, items)
-      : item[propOrFunc];
+        ? propOrFunc(item, idx, items)
+        : item[propOrFunc];
   let maxScore = score(items[0], 0);
   let maxIdx = 0;
   for (let i = 1; i < items.length; i++) {

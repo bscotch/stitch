@@ -1,11 +1,11 @@
 import { pathy } from '@bscotch/pathy';
 import { expect } from 'chai';
-import { cleanNote } from './notes.js';
 import {
   computeReleasesSummary,
   computeReleasesSummaryWithNotes,
 } from './feeds.js';
 import { rawReleaseNotesCacheSchema } from './feeds.types.js';
+import { cleanNote } from './notes.js';
 
 const notesCache = pathy('release-notes-cache.json').withValidator(
   rawReleaseNotesCacheSchema,
@@ -49,8 +49,9 @@ describe('Release Feeds', function () {
       expect(withNotes.every((r) => r[type].notes.groups)).to.exist;
     }
     const sampleRelease = withNotes.find(
-      (r) => r.runtime.version === '2022.1100.0.259',
+      (r) => r.runtime.version === '2022.0.1.30',
     )!;
+    expect(sampleRelease).to.exist;
     expect(sampleRelease.runtime.notes.groups).to.exist;
     expect(sampleRelease.runtime.notes.groups.length).to.be.greaterThan(0);
   });
