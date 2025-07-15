@@ -25,6 +25,9 @@ export type CreditsMotePointer = ``
   | `sections/${string}/element/name/skip`
   | `sections/${string}/element/name/text`
   | `sections/${string}/element/name`
+  | `sections/${string}/element/subtext/skip`
+  | `sections/${string}/element/subtext/text`
+  | `sections/${string}/element/subtext`
   | `sections/${string}/element`
   | `sections/${string}/order`
   | `sections/${string}`

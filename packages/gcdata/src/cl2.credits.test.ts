@@ -6,7 +6,7 @@ import { stringifyCredits } from './cl2.credits.stringify.js';
 import { listCredits } from './cl2.credits.types.js';
 import { creditsSchemaId } from './cl2.shared.types.js';
 
-describe.only('Cl2 Credits', function () {
+describe('Cl2 Credits', function () {
   it('can convert a credits mote to a text format', async function () {
     const packed = await GameChanger.from('Crashlands2');
     assert(packed, 'Packed data should be loaded');

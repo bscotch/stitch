@@ -59,9 +59,16 @@ export type CharacterMotePointer = ``
   | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/items_owned/${string}/order`
   | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/items_owned/${string}`
   | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/items_owned`
+  | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator_active`
+  | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator`
+  | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/mutators/${string}/element`
+  | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/mutators/${string}/order`
+  | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/mutators/${string}`
+  | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/mutators`
   | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/pet`
   | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/quest_status`
   | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/quest`
+  | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/require_all_mutators`
   | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/require_all`
   | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/stage/comparison`
   | `idle_text/${string}/element/phrase_groups/${string}/element/requirements/${string}/element/stage/stage`
@@ -112,9 +119,16 @@ export type CharacterMotePointer = ``
   | `idle_text/${string}/element/requirements/${string}/element/items_owned/${string}/order`
   | `idle_text/${string}/element/requirements/${string}/element/items_owned/${string}`
   | `idle_text/${string}/element/requirements/${string}/element/items_owned`
+  | `idle_text/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator_active`
+  | `idle_text/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator`
+  | `idle_text/${string}/element/requirements/${string}/element/mutators/${string}/element`
+  | `idle_text/${string}/element/requirements/${string}/element/mutators/${string}/order`
+  | `idle_text/${string}/element/requirements/${string}/element/mutators/${string}`
+  | `idle_text/${string}/element/requirements/${string}/element/mutators`
   | `idle_text/${string}/element/requirements/${string}/element/pet`
   | `idle_text/${string}/element/requirements/${string}/element/quest_status`
   | `idle_text/${string}/element/requirements/${string}/element/quest`
+  | `idle_text/${string}/element/requirements/${string}/element/require_all_mutators`
   | `idle_text/${string}/element/requirements/${string}/element/require_all`
   | `idle_text/${string}/element/requirements/${string}/element/same_room`
   | `idle_text/${string}/element/requirements/${string}/element/stage/comparison`

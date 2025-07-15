@@ -10,6 +10,11 @@ export type StorylineMotePointer = ``
   | `name/text`
   | `name`
   | `order`
+  | `scramble_description/description`
+  | `scramble_description/skip`
+  | `scramble_description/text`
+  | `scramble_description`
+  | `scramble_icon`
   | `wip/notes/${string}/element/author`
   | `wip/notes/${string}/element/text`
   | `wip/notes/${string}/element/timestamp`

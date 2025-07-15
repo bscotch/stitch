@@ -35,9 +35,16 @@ export type QuestMotePointer = ``
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/items_owned/${string}/order`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/items_owned/${string}`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/items_owned`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator_active`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/mutators/${string}/element`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/mutators/${string}/order`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/mutators/${string}`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/mutators`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/pet`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/quest_status`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/quest`
+  | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/require_all_mutators`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/require_all`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/stage/comparison`
   | `clues/${string}/element/phrases/${string}/element/requirements/${string}/element/stage/stage`
@@ -63,6 +70,7 @@ export type QuestMotePointer = ``
   | `demo_blocked/blocked_moments/${string}/element/actors/${string}/order`
   | `demo_blocked/blocked_moments/${string}/element/actors/${string}`
   | `demo_blocked/blocked_moments/${string}/element/actors`
+  | `demo_blocked/blocked_moments/${string}/element/area_id`
   | `demo_blocked/blocked_moments/${string}/element/area`
   | `demo_blocked/blocked_moments/${string}/element/artisan`
   | `demo_blocked/blocked_moments/${string}/element/bonus`
@@ -102,6 +110,7 @@ export type QuestMotePointer = ``
   | `demo_blocked/blocked_moments/${string}/element/pause_duration`
   | `demo_blocked/blocked_moments/${string}/element/pin`
   | `demo_blocked/blocked_moments/${string}/element/quest_to_close`
+  | `demo_blocked/blocked_moments/${string}/element/recipe_to_archive`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/area`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/artisan`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/boss`
@@ -136,9 +145,16 @@ export type QuestMotePointer = ``
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/items_owned/${string}/order`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/items_owned/${string}`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/items_owned`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator_active`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/mutators/${string}/element`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/mutators/${string}/order`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/mutators/${string}`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/mutators`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/pet`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/quest_status`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/quest`
+  | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/require_all_mutators`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/require_all`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/same_room`
   | `demo_blocked/blocked_moments/${string}/element/requirements/${string}/element/stage/comparison`
@@ -203,6 +219,7 @@ export type QuestMotePointer = ``
   | `pet_quest/pet_stage`
   | `pet_quest/pet`
   | `pet_quest/requires_following`
+  | `pet_quest/scramble_excluded`
   | `pet_quest`
   | `priors/${string}/element`
   | `priors/${string}/order`
@@ -212,6 +229,7 @@ export type QuestMotePointer = ``
   | `quest_end_moments/${string}/element/actors/${string}/order`
   | `quest_end_moments/${string}/element/actors/${string}`
   | `quest_end_moments/${string}/element/actors`
+  | `quest_end_moments/${string}/element/area_id`
   | `quest_end_moments/${string}/element/area`
   | `quest_end_moments/${string}/element/artisan`
   | `quest_end_moments/${string}/element/bonus`
@@ -251,6 +269,7 @@ export type QuestMotePointer = ``
   | `quest_end_moments/${string}/element/pause_duration`
   | `quest_end_moments/${string}/element/pin`
   | `quest_end_moments/${string}/element/quest_to_close`
+  | `quest_end_moments/${string}/element/recipe_to_archive`
   | `quest_end_moments/${string}/element/requirements/${string}/element/area`
   | `quest_end_moments/${string}/element/requirements/${string}/element/artisan`
   | `quest_end_moments/${string}/element/requirements/${string}/element/boss`
@@ -285,9 +304,16 @@ export type QuestMotePointer = ``
   | `quest_end_moments/${string}/element/requirements/${string}/element/items_owned/${string}/order`
   | `quest_end_moments/${string}/element/requirements/${string}/element/items_owned/${string}`
   | `quest_end_moments/${string}/element/requirements/${string}/element/items_owned`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator_active`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/mutators/${string}/element`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/mutators/${string}/order`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/mutators/${string}`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/mutators`
   | `quest_end_moments/${string}/element/requirements/${string}/element/pet`
   | `quest_end_moments/${string}/element/requirements/${string}/element/quest_status`
   | `quest_end_moments/${string}/element/requirements/${string}/element/quest`
+  | `quest_end_moments/${string}/element/requirements/${string}/element/require_all_mutators`
   | `quest_end_moments/${string}/element/requirements/${string}/element/require_all`
   | `quest_end_moments/${string}/element/requirements/${string}/element/same_room`
   | `quest_end_moments/${string}/element/requirements/${string}/element/stage/comparison`
@@ -342,9 +368,16 @@ export type QuestMotePointer = ``
   | `quest_end_requirements/${string}/element/items_owned/${string}/order`
   | `quest_end_requirements/${string}/element/items_owned/${string}`
   | `quest_end_requirements/${string}/element/items_owned`
+  | `quest_end_requirements/${string}/element/mutators/${string}/element/mutator_active`
+  | `quest_end_requirements/${string}/element/mutators/${string}/element/mutator`
+  | `quest_end_requirements/${string}/element/mutators/${string}/element`
+  | `quest_end_requirements/${string}/element/mutators/${string}/order`
+  | `quest_end_requirements/${string}/element/mutators/${string}`
+  | `quest_end_requirements/${string}/element/mutators`
   | `quest_end_requirements/${string}/element/pet`
   | `quest_end_requirements/${string}/element/quest_status`
   | `quest_end_requirements/${string}/element/quest`
+  | `quest_end_requirements/${string}/element/require_all_mutators`
   | `quest_end_requirements/${string}/element/require_all`
   | `quest_end_requirements/${string}/element/stage/comparison`
   | `quest_end_requirements/${string}/element/stage/stage`
@@ -371,6 +404,9 @@ export type QuestMotePointer = ``
   | `quest_receiver/same_room`
   | `quest_receiver/show_on_map`
   | `quest_receiver`
+  | `quest_scrambled_log/skip`
+  | `quest_scrambled_log/text`
+  | `quest_scrambled_log`
   | `quest_start_log/skip`
   | `quest_start_log/text`
   | `quest_start_log`
@@ -378,6 +414,7 @@ export type QuestMotePointer = ``
   | `quest_start_moments/${string}/element/actors/${string}/order`
   | `quest_start_moments/${string}/element/actors/${string}`
   | `quest_start_moments/${string}/element/actors`
+  | `quest_start_moments/${string}/element/area_id`
   | `quest_start_moments/${string}/element/area`
   | `quest_start_moments/${string}/element/artisan`
   | `quest_start_moments/${string}/element/bonus`
@@ -417,6 +454,7 @@ export type QuestMotePointer = ``
   | `quest_start_moments/${string}/element/pause_duration`
   | `quest_start_moments/${string}/element/pin`
   | `quest_start_moments/${string}/element/quest_to_close`
+  | `quest_start_moments/${string}/element/recipe_to_archive`
   | `quest_start_moments/${string}/element/requirements/${string}/element/area`
   | `quest_start_moments/${string}/element/requirements/${string}/element/artisan`
   | `quest_start_moments/${string}/element/requirements/${string}/element/boss`
@@ -451,9 +489,16 @@ export type QuestMotePointer = ``
   | `quest_start_moments/${string}/element/requirements/${string}/element/items_owned/${string}/order`
   | `quest_start_moments/${string}/element/requirements/${string}/element/items_owned/${string}`
   | `quest_start_moments/${string}/element/requirements/${string}/element/items_owned`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator_active`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/mutators/${string}/element/mutator`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/mutators/${string}/element`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/mutators/${string}/order`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/mutators/${string}`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/mutators`
   | `quest_start_moments/${string}/element/requirements/${string}/element/pet`
   | `quest_start_moments/${string}/element/requirements/${string}/element/quest_status`
   | `quest_start_moments/${string}/element/requirements/${string}/element/quest`
+  | `quest_start_moments/${string}/element/requirements/${string}/element/require_all_mutators`
   | `quest_start_moments/${string}/element/requirements/${string}/element/require_all`
   | `quest_start_moments/${string}/element/requirements/${string}/element/same_room`
   | `quest_start_moments/${string}/element/requirements/${string}/element/stage/comparison`
@@ -508,9 +553,16 @@ export type QuestMotePointer = ``
   | `quest_start_requirements/${string}/element/items_owned/${string}/order`
   | `quest_start_requirements/${string}/element/items_owned/${string}`
   | `quest_start_requirements/${string}/element/items_owned`
+  | `quest_start_requirements/${string}/element/mutators/${string}/element/mutator_active`
+  | `quest_start_requirements/${string}/element/mutators/${string}/element/mutator`
+  | `quest_start_requirements/${string}/element/mutators/${string}/element`
+  | `quest_start_requirements/${string}/element/mutators/${string}/order`
+  | `quest_start_requirements/${string}/element/mutators/${string}`
+  | `quest_start_requirements/${string}/element/mutators`
   | `quest_start_requirements/${string}/element/pet`
   | `quest_start_requirements/${string}/element/quest_status`
   | `quest_start_requirements/${string}/element/quest`
+  | `quest_start_requirements/${string}/element/require_all_mutators`
   | `quest_start_requirements/${string}/element/require_all`
   | `quest_start_requirements/${string}/element/stage/comparison`
   | `quest_start_requirements/${string}/element/stage/stage`
