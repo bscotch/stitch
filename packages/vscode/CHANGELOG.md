@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.73.4 (2025-07-15)
+
+### Fixes
+
+- While GameMaker release notes are still fetched for compatibility purposes, they are no longer displayed anywhere since they've been moved out of the official feeds.
+
 ## 1.73.0 (2025-03-31)
 
 ### Features

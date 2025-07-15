@@ -1,5 +1,11 @@
 # @bscotch/gcdata Changelog
 
+## 0.25.1 (2025-07-15)
+
+### Fixes
+
+- Updated GameChanger data inferred types
+
 ## 0.25.0 (2025-03-19)
 
 ### Features

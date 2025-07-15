@@ -1,5 +1,12 @@
 # @bscotch/gamemaker-releases Changelog
 
+## 0.7.1 (2025-07-15)
+
+### Fixes
+
+- While GameMaker release notes are still fetched for compatibility purposes, they are no longer displayed anywhere since they've been moved out of the official feeds.
+- Duplicate GameMaker versions are now allowed in source feeds instead of throwing.
+
 ## 0.7.0 (2023-12-07)
 
 ### Features
