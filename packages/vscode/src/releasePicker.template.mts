@@ -182,50 +182,6 @@ function compileRelease(
       </a>`
     : '';
 
-  const runtimeChanges = release.runtime.notes.groups.length
-    ? html`
-        <section class="changes runtime">
-          <details>
-            <summary><h4>Runtime Changes</h4></summary>
-            ${release.runtime.notes.groups.map(
-              (group) => html`
-                <details class="change-group">
-                  <summary>${group.title}</summary>
-                  <ul class="changes">
-                    ${group.changes.map(
-                      (change) => html`<li class="change">${change}</li>`,
-                    )}
-                  </ul>
-                </details>
-              `,
-            )}
-          </details>
-        </section>
-      `
-    : '';
-
-  const ideChanges = release.ide.notes.groups.length
-    ? html`
-        <section class="changes ide">
-          <details>
-            <summary><h4>IDE Changes</h4></summary>
-            ${release.ide.notes.groups.map(
-              (group) => html`
-                <details class="change-group">
-                  <summary>${group.title}</summary>
-                  <ul class="changes">
-                    ${group.changes.map(
-                      (change) => html`<li class="change">${change}</li>`,
-                    )}
-                  </ul>
-                </details>
-              `,
-            )}
-          </details>
-        </section>
-      `
-    : '';
-
   return html`
     <article class="release ${release.channel}">
       <header>
@@ -239,15 +195,6 @@ function compileRelease(
         <time datetime="${releaseDateIso}"> ${releaseDate} </time>
       </header>
       ${usedBy} ${useButton}
-      ${release.summary
-        ? html`<section class="release-summary">
-            <details>
-              <summary><h4>Summary</h4></summary>
-              ${release.summary}
-            </details>
-          </section>`
-        : ''}
-      ${runtimeChanges} ${ideChanges}
     </article>
   `;
 }

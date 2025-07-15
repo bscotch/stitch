@@ -5,15 +5,7 @@
 	import Fa from 'svelte-fa';
 	import { loadProperty, saveProperty, toDateIso, toDateLocal } from '../util.js';
 	import FilteredReleases from './FilteredReleases.svelte';
-	import NoteGroup from './NoteGroup.svelte';
-	import ReleaseVersion from './ReleaseVersion.svelte';
-	import {
-		channels,
-		ideAnchorId,
-		releaseAnchorId,
-		runtimeAnchorId,
-		type Channel
-	} from './constants.js';
+	import { channels, releaseAnchorId, type Channel } from './constants.js';
 
 	export let showChannels: Channel[] = loadChannelPreference();
 	export let releases: GameMakerReleaseWithNotes[];
@@ -80,38 +72,6 @@
 					{toDateLocal(release.publishedAt)}
 				</time>
 			</header>
-			<details>
-				<summary><h3>Summary</h3></summary>
-				<section class="release-summary">
-					{@html release.summary}
-				</section>
-			</details>
-			{#if release.runtime.notes.groups.length}
-				<details>
-					<summary>
-						<h3 id={runtimeAnchorId(release)}>Runtime Changes</h3>
-					</summary>
-					<section>
-						<ReleaseVersion artifact={release.runtime} />
-						{#each release.runtime.notes.groups as group}
-							<NoteGroup {group} />
-						{/each}
-					</section>
-				</details>
-			{/if}
-			{#if release.ide.notes.groups.length}
-				<details>
-					<summary>
-						<h3 id={ideAnchorId(release)}>IDE Changes</h3>
-					</summary>
-					<section>
-						<ReleaseVersion artifact={release.ide} />
-						{#each release.ide.notes.groups as group}
-							<NoteGroup {group} />
-						{/each}
-					</section>
-				</details>
-			{/if}
 		</article>
 	{/each}
 </section>
