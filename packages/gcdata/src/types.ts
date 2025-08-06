@@ -263,71 +263,65 @@ const changeTypeSchema = z
   );
 
 export type Change = z.infer<typeof changeSchema>;
-export const changeSchema = z
-  .object({
-    mote_id: z
-      .string()
-      .optional()
-      .describe('If this was a mote change, the ID of that mote.'),
-    schema_id: z
-      .string()
-      .describe(
-        `If this was a mote change, the mote's schema. Otherwise, the schema that changed.`,
-      ),
-    type: changeTypeSchema,
-    schema_title: z
-      .string()
-      .optional()
-      .describe('Stored for posterity in case the name changes.'),
-    mote_name: z
-      .string()
-      .optional()
-      .describe(
-        `If this was a mote change, the mote's name. Stored for posterity in case the name changes.`,
-      ),
-    allowed: z
-      .union([z.boolean(), z.number()])
-      .default(true)
-      .describe(
-        'Whether or not the current user is allowed to make this change.',
-      ),
-    staged: z
-      .union([z.boolean(), z.number()])
-      .default(false)
-      .describe('Whether or not the change is staged.'),
-    diffs: z
-      .record(z.tuple([z.any(), z.any()]))
-      .optional()
-      .describe(
-        'Changes, keyed by the JSON Pointer-ish (e.g. "data/quest_end_moments/g803/order") path to the field. Values are [before,after], where "null" is used to represent added/deleted values.',
-      ),
-  })
-  .passthrough();
+export const changeSchema = z.looseObject({
+  mote_id: z
+    .string()
+    .optional()
+    .describe('If this was a mote change, the ID of that mote.'),
+  schema_id: z
+    .string()
+    .describe(
+      `If this was a mote change, the mote's schema. Otherwise, the schema that changed.`,
+    ),
+  type: changeTypeSchema,
+  schema_title: z
+    .string()
+    .optional()
+    .describe('Stored for posterity in case the name changes.'),
+  mote_name: z
+    .string()
+    .optional()
+    .describe(
+      `If this was a mote change, the mote's name. Stored for posterity in case the name changes.`,
+    ),
+  allowed: z
+    .union([z.boolean(), z.number()])
+    .default(true)
+    .describe(
+      'Whether or not the current user is allowed to make this change.',
+    ),
+  staged: z
+    .union([z.boolean(), z.number()])
+    .default(false)
+    .describe('Whether or not the change is staged.'),
+  diffs: z
+    .record(z.string(), z.tuple([z.any(), z.any()]))
+    .optional()
+    .describe(
+      'Changes, keyed by the JSON Pointer-ish (e.g. "data/quest_end_moments/g803/order") path to the field. Values are [before,after], where "null" is used to represent added/deleted values.',
+    ),
+});
 
 export type Changes = z.infer<typeof changesSchema>;
-export const changesSchema = z
-  .object({
-    commitId: z
+export const changesSchema = z.looseObject({
+  commitId: z
+    .string()
+    .regex(/^c\d+$/)
+    .describe('The base GameChanger commit these changes are relative to'),
+  changes: z.object({
+    message: z
       .string()
-      .regex(/^c\d+$/)
-      .describe('The base GameChanger commit these changes are relative to'),
-    changes: z.object({
-      message: z
-        .string()
-        .describe('The commit message for the changes. Can be a null string.'),
-      motes: z.record(changeSchema).default({}),
-      /** Schema changes. */
-      schemas: z.record(changeSchema).default({}),
-      /** Cache of known conflicts */
-      conflicts: z
-        .object({
-          motes: z.record(z.any()).default({}),
-          schemas: z.record(z.any()).default({}),
-        })
-        .passthrough(),
+      .describe('The commit message for the changes. Can be a null string.'),
+    motes: z.record(z.string(), changeSchema).default({}),
+    /** Schema changes. */
+    schemas: z.record(z.string(), changeSchema).default({}),
+    /** Cache of known conflicts */
+    conflicts: z.looseObject({
+      motes: z.record(z.string(), z.any()).default({}),
+      schemas: z.record(z.string(), z.any()).default({}),
     }),
-  })
-  .passthrough();
+  }),
+});
 
 export function isObject<T extends object>(
   value: unknown,

@@ -16,7 +16,7 @@
     "@bscotch/emitter": "0.2.1",
     "@bscotch/pathy": "^2.12.1",
     "node-fetch": "^3.3.2",
-    "zod": "3.23.8"
+    "zod": "4.0.15"
   },
   "devDependencies": {
     "chai": "^5.1.1",
