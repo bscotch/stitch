@@ -99,13 +99,14 @@ export const gameMakerReleaseSchema = gameMakerReleaseBaseSchema.extend({
 });
 
 export type RawReleaseNote = z.infer<typeof rawReleaseNoteSchema>;
-export const rawReleaseNoteSchema = z
-  .object({
-    type: z.enum(artifactTypes).optional(),
-    version: z.string(),
-    release_notes: z.array(z.string()),
-  })
-  .strict();
+export const rawReleaseNoteSchema = z.strictObject({
+  type: z.enum(artifactTypes).optional(),
+  version: z.string(),
+  release_notes: z.array(z.string()),
+});
 
 export type RawReleaseNotesCache = Record<string, RawReleaseNote>;
-export const rawReleaseNotesCacheSchema = z.record(rawReleaseNoteSchema);
+export const rawReleaseNotesCacheSchema = z.record(
+  z.string(),
+  rawReleaseNoteSchema,
+);
