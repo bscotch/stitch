@@ -20,11 +20,11 @@ export enum SoundCompression {
   CompressedStreamed,
 }
 
-const soundChannelSchema = z.nativeEnum(SoundChannel);
+const soundChannelSchema = z.enum(SoundChannel);
 
-const soundCompressionSchema = z.nativeEnum(SoundCompression);
+const soundCompressionSchema = z.enum(SoundCompression);
 
-const soundBitDepthSchema = z.nativeEnum(SoundBitDepth);
+const soundBitDepthSchema = z.enum(SoundBitDepth);
 
 export type SoundChannelAsString = keyof typeof SoundChannel;
 export type SoundCompressionAsString = keyof typeof SoundCompression;
@@ -104,7 +104,9 @@ export const yySoundSchemaV2 = unstable({
   '%Name': z.string(),
   audioGroupId: audioGroupIdSchema,
   bitDepth: soundBitDepthSchema.default(1),
-  channelFormat: z.number().default(0),
+  channelFormat: soundChannelSchema
+    .default(1)
+    .describe("Previously called 'type'"),
   compression: soundCompressionSchema.default(0),
   compressionQuality: z.number().default(4),
   ConfigValues: configValuesSchema,

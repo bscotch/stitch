@@ -2,6 +2,7 @@ import { ok } from 'assert';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
+import type { PartialDeep } from 'type-fest';
 import { z, ZodType } from 'zod';
 import { parseYy } from './Yy.parse.js';
 import { stringifyYy } from './Yy.stringify.js';
@@ -23,12 +24,9 @@ export type YySchema<T extends YySchemaRef> = T extends YySchemaName
   : T extends ZodType
     ? T
     : unknown;
-export type YyDataStrict<T extends YySchemaRef> = T extends undefined
+export type YyData<T extends YySchemaRef> = T extends undefined
   ? unknown
-  : z.output<YySchema<Exclude<T, undefined>>>;
-export type YyDataLoose<T extends YySchemaRef> = T extends undefined
-  ? unknown
-  : z.input<YySchema<Exclude<T, undefined>>>;
+  : z.infer<YySchema<Exclude<T, undefined>>>;
 
 const anyObject = z.looseObject({
   ['%Name']: z.string().optional(),
@@ -85,22 +83,19 @@ export class Yy {
     return stringifyYy(schema ? schema.parse(yyObject) : yyObject, yyp);
   }
 
-  static parse<T extends YySchemaRef>(
-    yyString: string,
-    schema?: T,
-  ): YyDataStrict<T> {
+  static parse<T extends YySchemaRef>(yyString: string, schema?: T): YyData<T> {
     return parseYy(yyString, schema && Yy.getSchema(schema)) as any;
   }
 
   static async read<T extends YySchemaRef>(
     filePath: string,
     schema: T,
-  ): Promise<YyDataStrict<T>>;
+  ): Promise<YyData<T>>;
   static async read(filePath: string): Promise<unknown>;
   static async read<T extends YySchemaRef>(
     filePath: string,
     schema?: T,
-  ): Promise<YyDataStrict<T>> {
+  ): Promise<YyData<T>> {
     try {
       return Yy.parse(await fsp.readFile(filePath, 'utf8'), schema);
     } catch (err) {
@@ -121,12 +116,12 @@ export class Yy {
   static readSync<T extends YySchemaRef>(
     filePath: string,
     schema: T,
-  ): YyDataStrict<T>;
+  ): YyData<T>;
   static readSync(filePath: string): unknown;
   static readSync<T extends YySchemaRef>(
     filePath: string,
     schema?: T,
-  ): YyDataStrict<T> {
+  ): YyData<T> {
     return Yy.parse(fs.readFileSync(filePath, 'utf8'), schema);
   }
 
@@ -150,7 +145,7 @@ export class Yy {
    */
   static async write<T extends YySchemaRef>(
     filePath: string,
-    yyData: YyDataLoose<T>,
+    yyData: YyData<T>,
     schema: T,
     yyp?: Yyp,
   ): Promise<boolean> {
@@ -178,7 +173,7 @@ export class Yy {
    */
   static writeSync<T extends YySchemaRef>(
     filePath: string,
-    yyData: YyDataLoose<T>,
+    yyData: YyData<T>,
     schema: T,
     yyp?: Yyp,
   ): boolean {
@@ -196,9 +191,9 @@ export class Yy {
   }
 
   static populate<T extends Exclude<YySchemaRef, undefined>>(
-    yyData: YyDataLoose<T>,
+    yyData: PartialDeep<YyData<T>>,
     schema: T,
-  ): YyDataStrict<T> {
+  ): YyData<T> {
     const foundSchema = Yy.getSchema(schema);
     const populated = foundSchema.parse(yyData);
     return populated as any;

@@ -86,7 +86,7 @@ describe('YySprite', function () {
     let sprite = Yy.populate(
       {
         name: 'my_sprite',
-        frames: initialFrames,
+        frames: initialFrames as any,
       },
       'sprites',
     );
