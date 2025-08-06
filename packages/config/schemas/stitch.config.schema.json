@@ -1,115 +1,136 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Stitch configuration schema. Stitch utilities may support subsets of this configuration.",
   "type": "object",
   "properties": {
     "textureGroupAssignments": {
+      "description": "A map of resource tree paths to texture groups name. Supported Stitch utilities will use this to assign sprites in those paths (recursively) to the specified texture group.",
+      "default": {},
       "type": "object",
-      "additionalProperties": {
+      "propertyNames": {
         "type": "string"
       },
-      "default": {},
-      "description": "A map of resource tree paths to texture groups name. Supported Stitch utilities will use this to assign sprites in those paths (recursively) to the specified texture group."
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "audioGroupAssignments": {
+      "description": "A map of resource tree paths to audio groups name. Supported Stitch utilities will use this to assign sounds in those paths (recursively) to the specified audio group.",
+      "default": {},
       "type": "object",
-      "additionalProperties": {
+      "propertyNames": {
         "type": "string"
       },
-      "default": {},
-      "description": "A map of resource tree paths to audio groups name. Supported Stitch utilities will use this to assign sounds in those paths (recursively) to the specified audio group."
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "runtimeVersion": {
-      "type": "string",
-      "description": "When set, supported Stitch utilities will preferentially use this GameMaker runtime version."
+      "description": "When set, supported Stitch utilities will preferentially use this GameMaker runtime version.",
+      "type": "string"
     },
     "newSpriteRules": {
+      "description": "Rules for creating new sprite resources, followed by supported Stitch utilities.",
       "type": "object",
       "properties": {
         "allowedNames": {
+          "description": "A list of regex patterns that new assets must match. Enforced by supported Stitch utilities.",
           "type": "array",
           "items": {
             "type": "string"
-          },
-          "description": "A list of regex patterns that new assets must match. Enforced by supported Stitch utilities."
+          }
         }
       },
-      "additionalProperties": true,
-      "description": "Rules for creating new sprite resources, followed by supported Stitch utilities."
+      "additionalProperties": {}
     },
     "newSoundRules": {
+      "description": "Rules for creating new sound resources, followed by supported Stitch utilities.",
       "type": "object",
       "properties": {
         "allowedNames": {
-          "$ref": "#/properties/newSpriteRules/properties/allowedNames"
+          "description": "A list of regex patterns that new assets must match. Enforced by supported Stitch utilities.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "defaults": {
+          "description": "Default properties for new sound assets, by name pattern. E.g. `{\".*\":{ mono: true}}` defaults all new sounds to mono. The first matching pattern is used.",
           "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
           "additionalProperties": {
             "type": "object",
             "properties": {
               "mono": {
-                "type": "boolean",
-                "description": "Whether to default new sounds to mono. When not set, the default is stereo."
+                "description": "Whether to default new sounds to mono. When not set, the default is stereo.",
+                "type": "boolean"
               }
             },
             "additionalProperties": false
-          },
-          "description": "Default properties for new sound assets, by name pattern. E.g. `{\".*\":{ mono: true}}` defaults all new sounds to mono. The first matching pattern is used."
+          }
         }
       },
-      "additionalProperties": true,
-      "description": "Rules for creating new sound resources, followed by supported Stitch utilities."
+      "additionalProperties": {}
     },
     "gameConsoleStyle": {
+      "description": "Styling rules for the game's STDOUT/STDERR for compatible runners",
       "type": "object",
       "properties": {
         "base": {
-          "type": "string",
-          "description": "Base style to apply to all lines, as a CSS string (e.g. 'color: #808080')"
+          "description": "Base style to apply to all lines, as a CSS string (e.g. 'color: #808080')",
+          "type": "string"
         },
         "lines": {
+          "description": "An array of style rules to apply to lines of the game's STDOUT/STDERR. The first matching rule is used for a given line.",
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
               "base": {
-                "type": "string",
-                "description": "Base style to apply to the matching line (e.g. 'color: #808080; font-weight: bold;')"
+                "description": "Base style to apply to the matching line (e.g. 'color: #808080; font-weight: bold;')",
+                "type": "string"
               },
               "description": {
-                "type": "string",
-                "description": "A description of the rule, for debugging purposes."
+                "description": "A description of the rule, for debugging purposes.",
+                "type": "string"
               },
               "pattern": {
-                "type": "string",
-                "description": "A regex pattern to match against the line. Named capture groups can be referenced in styles. Special names `_GMFILE_` and `_GMLINE_` may be used to enable linking to that part of the project code."
+                "description": "A regex pattern to match against the line. Named capture groups can be referenced in styles. Special names `_GMFILE_` and `_GMLINE_` may be used to enable linking to that part of the project code.",
+                "type": "string"
               },
               "caseSensitive": {
-                "type": "boolean",
-                "description": "If true, the pattern will be treated as case-sensitive. Default is false."
+                "description": "If true, the pattern will be treated as case-sensitive. Default is false.",
+                "type": "boolean"
               },
               "styles": {
+                "description": "A map of CSS styles to apply to named capture groups in the line, as a CSS string (e.g. 'color: #808080').",
                 "type": "object",
-                "additionalProperties": {
-                  "type": "string",
-                  "description": "CSS string to apply to this capture group."
+                "propertyNames": {
+                  "type": "string"
                 },
-                "description": "A map of CSS styles to apply to named capture groups in the line, as a CSS string (e.g. 'color: #808080')."
+                "additionalProperties": {
+                  "description": "CSS string to apply to this capture group.",
+                  "type": "string"
+                }
               }
             },
             "required": [
               "pattern"
             ],
-            "additionalProperties": true
-          },
-          "description": "An array of style rules to apply to lines of the game's STDOUT/STDERR. The first matching rule is used for a given line."
+            "additionalProperties": {}
+          }
         }
       },
-      "additionalProperties": true,
-      "description": "Styling rules for the game's STDOUT/STDERR for compatible runners"
+      "additionalProperties": {}
     }
   },
-  "additionalProperties": true,
-  "description": "Stitch configuration schema. Stitch utilities may support subsets of this configuration.",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "required": [
+    "$schema",
+    "textureGroupAssignments",
+    "audioGroupAssignments"
+  ],
+  "additionalProperties": {},
   "$id": "https://raw.githubusercontent.com/bscotch/stitch/develop/packages/config/schemas/stitch.config.schema.json"
 }
