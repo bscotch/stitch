@@ -4,7 +4,7 @@ import {
   spriteSourceConfigSchema,
   spritesInfoSchema,
 } from '@bscotch/sprite-source';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 
 const schemas = [
   {
@@ -28,6 +28,6 @@ const dir = pathy('schemas');
 await dir.ensureDirectory();
 
 for (const { schema, name, filename } of schemas) {
-  const jsonSchema = zodToJsonSchema(schema);
+  const jsonSchema = z.toJSONSchema(schema, { target: 'draft-7' });
   await pathy(filename, dir).write(jsonSchema);
 }

@@ -1,7 +1,9 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "staging": {
+      "description": "List of folders and associated configs for raw images that should be preprocessed.",
       "anyOf": [
         {
           "type": "array",
@@ -9,42 +11,44 @@
             "type": "object",
             "properties": {
               "dir": {
-                "type": "string",
-                "description": "Path to the folder containing the raw images. Either relative to the SpriteSource root or absolute."
+                "description": "Path to the folder containing the raw images. Either relative to the SpriteSource root or absolute.",
+                "type": "string"
               },
               "transforms": {
+                "description": "Transformations to apply to the raw images while moving them to the SpriteSource directory. Images are removed after a matching transform, and any images not matching any transforms are left alone.",
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
                     "include": {
-                      "type": "string",
-                      "description": "Pattern to match against the folder path (relative to the staging root, using POSIX seps) for it to be included. If omitted, all sprites are included. Converted to a regex with `new RegExp(include)`."
+                      "description": "Pattern to match against the folder path (relative to the staging root, using POSIX seps) for it to be included. If omitted, all sprites are included. Converted to a regex with `new RegExp(include)`.",
+                      "type": "string"
                     },
                     "bleed": {
-                      "type": "boolean",
-                      "description": "Whether to bleed the image."
+                      "description": "Whether to bleed the image.",
+                      "type": "boolean"
                     },
                     "crop": {
-                      "type": "boolean",
-                      "description": "Whether to crop the image."
+                      "description": "Whether to crop the image.",
+                      "type": "boolean"
                     },
                     "synced": {
-                      "type": "boolean",
-                      "description": "Whether to sync the target folder to the staging folder, by deleting any files in the target folder that are not in the staging folder."
+                      "description": "Whether to sync the target folder to the staging folder, by deleting any files in the target folder that are not in the staging folder.",
+                      "type": "boolean"
                     },
                     "renames": {
+                      "description": "Rules for renaming when moving to the SpriteSource directory.",
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
                           "from": {
-                            "type": "string",
-                            "description": "Regex pattern to match against the filename, for use as the 1st arg in the JavaScript `String.replace` function."
+                            "description": "Regex pattern to match against the filename, for use as the 1st arg in the JavaScript `String.replace` function.",
+                            "type": "string"
                           },
                           "to": {
-                            "type": "string",
-                            "description": "Replacement string for the filename, for use as the 2nd arg in the JavaScript `String.replace` function."
+                            "description": "Replacement string for the filename, for use as the 2nd arg in the JavaScript `String.replace` function.",
+                            "type": "string"
                           }
                         },
                         "required": [
@@ -52,13 +56,11 @@
                           "to"
                         ],
                         "additionalProperties": false
-                      },
-                      "description": "Rules for renaming when moving to the SpriteSource directory."
+                      }
                     }
                   },
                   "additionalProperties": false
-                },
-                "description": "Transformations to apply to the raw images while moving them to the SpriteSource directory. Images are removed after a matching transform, and any images not matching any transforms are left alone."
+                }
               }
             },
             "required": [
@@ -71,10 +73,10 @@
         {
           "type": "null"
         }
-      ],
-      "description": "List of folders and associated configs for raw images that should be preprocessed."
+      ]
     },
     "ignore": {
+      "description": "List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp(ignore)` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps).",
       "anyOf": [
         {
           "type": "array",
@@ -85,10 +87,8 @@
         {
           "type": "null"
         }
-      ],
-      "description": "List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp(ignore)` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps)."
+      ]
     }
   },
-  "additionalProperties": false,
-  "$schema": "http://json-schema.org/draft-07/schema#"
+  "additionalProperties": false
 }

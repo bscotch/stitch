@@ -1,13 +1,13 @@
 import { pathy } from '@bscotch/pathy';
 import { Yy } from '@bscotch/yy';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 
 // UPDATE THE JSON SCHEMAS
 
 const schemasDir = pathy('./schemas');
 await schemasDir.ensureDirectory();
 for (const [name, schema] of Object.entries(Yy.schemas)) {
-  const jsonSchema = zodToJsonSchema(schema);
+  const jsonSchema = z.toJSONSchema(schema, { target: 'draft-7' });
   const jsonSchemaString = JSON.stringify(
     jsonSchema,
     (key, value) => {

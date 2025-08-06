@@ -1,23 +1,26 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "sources": {
+      "default": [],
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "source": {
-            "type": "string",
-            "description": "Path to the SpriteSource directory. Either absolute or relative to the GameMaker project folder."
+            "description": "Path to the SpriteSource directory. Either absolute or relative to the GameMaker project folder.",
+            "type": "string"
           },
           "collaboratorSources": {
+            "description": "Paths to other SpriteSource directories that may overlap with this source. Any sprites that are found in the source *and* one or more collaborator sources must be the latest in 'source' for it to be imported as part of the pipeline.",
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "description": "Paths to other SpriteSource directories that may overlap with this source. Any sprites that are found in the source *and* one or more collaborator sources must be the latest in 'source' for it to be imported as part of the pipeline."
+            }
           },
           "ignore": {
+            "description": "Pattern to match against the folder path (relative to the SpriteSource root, using POSIX seps) for it to be skipped during import. If omitted, all sprites are included. Converted to a regex with `new RegExp(ignore)`.",
             "anyOf": [
               {
                 "type": "array",
@@ -28,22 +31,19 @@
               {
                 "type": "null"
               }
-            ],
-            "description": "Pattern to match against the folder path (relative to the SpriteSource root, using POSIX seps) for it to be skipped during import. If omitted, all sprites are included. Converted to a regex with `new RegExp(ignore)`."
+            ]
           },
           "prefix": {
-            "type": "string",
-            "description": "Prefix to add to the sprite name when adding to the project as a sprite asset."
+            "description": "Prefix to add to the sprite name when adding to the project as a sprite asset.",
+            "type": "string"
           }
         },
         "required": [
           "source"
         ],
         "additionalProperties": false
-      },
-      "default": []
+      }
     }
   },
-  "additionalProperties": false,
-  "$schema": "http://json-schema.org/draft-07/schema#"
+  "additionalProperties": false
 }
