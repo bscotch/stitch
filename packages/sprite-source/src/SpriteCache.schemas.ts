@@ -18,7 +18,7 @@ const spriteSummarySchema = z.object({
     .describe(
       'A checksum combining the pixel-based checksums of all of the frame checksums.',
     ),
-  frames: z.record(imageSummarySchema),
+  frames: z.record(z.string(), imageSummarySchema),
 });
 
 export type SpineSummary = z.infer<typeof spineSummarySchema>;
@@ -41,6 +41,7 @@ export const spritesInfoSchema = z.object({
   version: z.number().default(1),
   info: z
     .record(
+      z.string(),
       z.discriminatedUnion('spine', [spriteSummarySchema, spineSummarySchema]),
     )
     .default({}),
