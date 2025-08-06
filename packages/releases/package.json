@@ -60,7 +60,7 @@
     "chai": "^4.3.10",
     "mocha": "^10.2.0",
     "rimraf": "^5.0.5",
-    "typescript": "5.2.2"
+    "typescript": "5.9.2"
   },
   "publishConfig": {
     "access": "public"
