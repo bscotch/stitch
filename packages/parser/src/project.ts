@@ -462,7 +462,7 @@ export class Project {
           const track = yySprite.sequence.tracks[i];
           let stringified = Yy.stringify(track);
           stringified = stringified.replaceAll(oldNamePattern, to);
-          yySprite.sequence.tracks[i] = Yy.parse(stringified);
+          yySprite.sequence.tracks[i] = Yy.parse(stringified) as any;
         }
       }
     }
@@ -627,8 +627,8 @@ export class Project {
         },
         type: defaults?.mono ? SoundChannel.Mono : SoundChannel.Stereo,
         soundFile: soundFileName,
-        duration: 0,
-      },
+        duration: 0 as any,
+      } as any,
       'sounds',
       this.yyp,
     );
@@ -781,8 +781,8 @@ export class Project {
           path: folder.folderPath,
         },
         // Include the Create event by default
-        eventList: [{ eventNum: 0, eventType: 0 }],
-      },
+        eventList: [{ eventNum: 0, eventType: 0 } as any],
+      } as any,
       'objects',
       this.yyp,
     );
@@ -817,7 +817,7 @@ export class Project {
           name: folder.name,
           path: folder.folderPath,
         },
-      },
+      } as any,
       'shaders',
       this.yyp,
     );
@@ -863,7 +863,7 @@ export class Project {
           name: folder.name,
           path: folder.folderPath,
         },
-      },
+      } as any,
       'scripts',
       this.yyp,
     );

@@ -1,4 +1,4 @@
-import { ZodTypeAny, z } from 'zod';
+import { z } from 'zod';
 import { normalizeTypeString } from './util.js';
 export type GmlSpec = z.output<typeof gmlSpecSchema>;
 export type GmlSpecFunction = GmlSpec['functions'][number];
@@ -13,7 +13,7 @@ const typeStringSchema = z.string().transform((v) => normalizeTypeString(v));
 const localeSchema = z.enum(['GB', 'US']);
 const numberSchema = z
   .string()
-  .refine((v) => /[\d.-]+/)
+  .refine((v) => /[\d.-]+/.test(v))
   .transform((v) => +v);
 /**
  * There appear to be a very small number of allowed strings, but
@@ -22,46 +22,31 @@ const numberSchema = z
  */
 const featureFlagSchema = z.string();
 
-const optionalTuple = (types: [ZodTypeAny, ...ZodTypeAny[]]) => {
-  return z.preprocess((d) => {
-    if (!Array.isArray(d) || d.length === 0) {
-      return undefined;
-    }
-  }, z.tuple(types).optional());
-};
-
 const gmlSpecFunctionSchema = z
-  .object({
-    $: z
-      .object({
-        Name: z.string(),
-        Deprecated: booleanStringSchema,
-        ReturnType: typeStringSchema,
-        Pure: booleanStringSchema,
-        Locale: localeSchema.optional(),
-        FeatureFlag: featureFlagSchema.optional(),
-      })
-      .strict(),
-    Description: optionalTuple([z.string()]),
+  .strictObject({
+    $: z.strictObject({
+      Name: z.string(),
+      Deprecated: booleanStringSchema,
+      ReturnType: typeStringSchema,
+      Pure: booleanStringSchema,
+      Locale: localeSchema.optional(),
+      FeatureFlag: featureFlagSchema.optional(),
+    }),
+    Description: z.array(z.string()).optional(),
     Parameter: z
       .array(
-        z
-          .object({
-            _: z.string().optional(),
-            $: z
-              .object({
-                Name: z.string(),
-                Type: typeStringSchema,
-                Optional: booleanStringSchema,
-                Coerce: booleanStringSchema.optional(),
-              })
-              .strict(),
-          })
-          .strict(),
+        z.strictObject({
+          _: z.string().optional(),
+          $: z.strictObject({
+            Name: z.string(),
+            Type: typeStringSchema,
+            Optional: booleanStringSchema,
+            Coerce: booleanStringSchema.optional(),
+          }),
+        }),
       )
       .default([]),
   })
-  .strict()
   .transform((v) => ({
     module: '',
     name: v.$.Name,
@@ -81,22 +66,19 @@ const gmlSpecFunctionSchema = z
   }));
 
 const gmlSpecVariableSchema = z
-  .object({
+  .strictObject({
     _: z.string().optional(),
-    $: z
-      .object({
-        Name: z.string(),
-        Type: typeStringSchema,
-        Deprecated: booleanStringSchema,
-        Get: booleanStringSchema,
-        Set: booleanStringSchema,
-        Instance: booleanStringSchema,
-        FeatureFlag: featureFlagSchema.optional(),
-        Locale: localeSchema.optional(),
-      })
-      .strict(),
+    $: z.strictObject({
+      Name: z.string(),
+      Type: typeStringSchema,
+      Deprecated: booleanStringSchema,
+      Get: booleanStringSchema,
+      Set: booleanStringSchema,
+      Instance: booleanStringSchema,
+      FeatureFlag: featureFlagSchema.optional(),
+      Locale: localeSchema.optional(),
+    }),
   })
-  .strict()
   .transform((v) => ({
     module: '',
     name: v.$.Name,
@@ -111,20 +93,17 @@ const gmlSpecVariableSchema = z
   }));
 
 const gmlSpecConstantSchema = z
-  .object({
+  .strictObject({
     _: z.string().optional(),
-    $: z
-      .object({
-        Name: z.string(),
-        Class: z.string().optional(),
-        Type: typeStringSchema,
-        Deprecated: booleanStringSchema.optional(),
-        FeatureFlag: featureFlagSchema.optional(),
-        Locale: localeSchema.optional(),
-      })
-      .strict(),
+    $: z.strictObject({
+      Name: z.string(),
+      Class: z.string().optional(),
+      Type: typeStringSchema,
+      Deprecated: booleanStringSchema.optional(),
+      FeatureFlag: featureFlagSchema.optional(),
+      Locale: localeSchema.optional(),
+    }),
   })
-  .strict()
   .transform((v) => ({
     module: '',
     name: v.$.Name,
@@ -137,28 +116,23 @@ const gmlSpecConstantSchema = z
   }));
 
 const gmlSpecStructureSchema = z
-  .object({
-    $: z
-      .object({
-        Name: z.string(),
-        FeatureFlag: featureFlagSchema.optional(),
-      })
-      .strict(),
+  .strictObject({
+    $: z.strictObject({
+      Name: z.string(),
+      FeatureFlag: featureFlagSchema.optional(),
+    }),
     Field: z.array(
       z
-        .object({
+        .strictObject({
           _: z.string().optional(),
-          $: z
-            .object({
-              Name: z.string(),
-              Type: typeStringSchema,
-              Get: booleanStringSchema,
-              Set: booleanStringSchema,
-              Locale: localeSchema.optional(),
-            })
-            .strict(),
+          $: z.strictObject({
+            Name: z.string(),
+            Type: typeStringSchema,
+            Get: booleanStringSchema,
+            Set: booleanStringSchema,
+            Locale: localeSchema.optional(),
+          }),
         })
-        .strict()
         .transform((v) => ({
           name: v.$.Name,
           description: v._,
@@ -169,7 +143,6 @@ const gmlSpecStructureSchema = z
         })),
     ),
   })
-  .strict()
   .transform((v) => ({
     module: '',
     name: v.$.Name,
@@ -178,25 +151,20 @@ const gmlSpecStructureSchema = z
   }));
 
 const gmlSpecEnumerationSchema = z
-  .object({
-    $: z
-      .object({
-        Name: z.string(),
-      })
-      .strict(),
+  .strictObject({
+    $: z.strictObject({
+      Name: z.string(),
+    }),
     Member: z.array(
       z
-        .object({
+        .strictObject({
           _: z.string().optional(),
-          $: z
-            .object({
-              Name: z.string(),
-              Value: numberSchema,
-              Deprecated: booleanStringSchema,
-            })
-            .strict(),
+          $: z.strictObject({
+            Name: z.string(),
+            Value: numberSchema,
+            Deprecated: booleanStringSchema,
+          }),
         })
-        .strict()
         .transform((v) => ({
           name: v.$.Name,
           description: v._,
@@ -205,7 +173,6 @@ const gmlSpecEnumerationSchema = z
         })),
     ),
   })
-  .strict()
   .transform((v) => ({
     module: '',
     name: v.$.Name,
@@ -213,9 +180,9 @@ const gmlSpecEnumerationSchema = z
   }));
 
 export const gmlSpecSchema = z
-  .object({
+  .strictObject({
     GameMakerLanguageSpec: z
-      .object({
+      .strictObject({
         $: z.object({
           RuntimeVersion: z.string(),
           Module: z.string().default('Unknown'),
@@ -261,7 +228,6 @@ export const gmlSpecSchema = z
           )
           .optional(),
       })
-      .strict()
       .transform((v) => {
         const out = {
           runtime: v.$.RuntimeVersion,
@@ -287,5 +253,4 @@ export const gmlSpecSchema = z
         return out;
       }),
   })
-  .strict()
   .transform((v) => v.GameMakerLanguageSpec);

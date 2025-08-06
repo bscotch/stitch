@@ -2,7 +2,7 @@ import { Pathy, pathy } from '@bscotch/pathy';
 import { sequential } from '@bscotch/utility';
 import {
   Yy,
-  YyDataStrict,
+  YyData,
   YyExtension,
   YyObject,
   YyResourceType,
@@ -47,7 +47,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
   readonly $tag = 'Asset';
   readonly assetKind: T;
   readonly gmlFiles: Map<string, Code> = new Map();
-  yy!: YyDataStrict<T>;
+  yy!: YyData<T>;
   readonly yyPath: Pathy<YySchemas[T]>;
   readonly signifier: Signifier;
   /** For objects, their instance type. */
@@ -618,7 +618,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return this.addGmlFile(path);
   }
 
-  async readYy(): Promise<YyDataStrict<T>> {
+  async readYy(): Promise<YyData<T>> {
     let asPath: Pathy | undefined = pathy(this.yyPath);
     if (!(await asPath.exists())) {
       const filePattern = new RegExp(`${this.name}\\.yy$`, 'i');
