@@ -44,23 +44,19 @@ const yyExtensionFunctionSchema = z.object({
 });
 
 export type YyExtensionFile = z.infer<typeof yyExtensionFileSchema>;
-const yyExtensionFileSchema = z
-  .object({
-    resourceType: z.literal('GMExtensionFile'),
-    resourceVersion: z.string().default('1.0'),
-    constants: z.array(yyExtensionConstantSchema).default([]),
-    functions: z.array(yyExtensionFunctionSchema).default([]),
-  })
-  .passthrough();
+const yyExtensionFileSchema = z.looseObject({
+  resourceType: z.literal('GMExtensionFile'),
+  resourceVersion: z.string().default('1.0'),
+  constants: z.array(yyExtensionConstantSchema).default([]),
+  functions: z.array(yyExtensionFunctionSchema).default([]),
+});
 
 export type YyExtension = z.infer<typeof yyExtensionSchema>;
-export const yyExtensionSchema = z
-  .object({
-    [nameField]: z.string().optional(),
-    resourceType: z.literal('GMExtension').default('GMExtension'),
-    resourceVersion: z.string().default('1.2'),
-    name: z.string(),
-    files: z.array(yyExtensionFileSchema).default([]),
-    parent: yyParentSchema,
-  })
-  .passthrough();
+export const yyExtensionSchema = z.looseObject({
+  [nameField]: z.string().optional(),
+  resourceType: z.literal('GMExtension').default('GMExtension'),
+  resourceVersion: z.string().default('1.2'),
+  name: z.string(),
+  files: z.array(yyExtensionFileSchema).default([]),
+  parent: yyParentSchema,
+});

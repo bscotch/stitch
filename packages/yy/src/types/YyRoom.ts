@@ -2,6 +2,9 @@
 import { z } from 'zod';
 import { yyBaseSchema } from './YyBase.js';
 import {
+  FixedNumber,
+  fixed0,
+  fixed1,
   fixedNumber,
   randomString,
   unstable,
@@ -35,7 +38,7 @@ export const yyRoomInstanceSchema = unstable({
   hasCreationCode: z.boolean().default(false),
   ignore: z.boolean().default(false),
   imageIndex: z.number().default(0),
-  imageSpeed: fixedNumber().default(1),
+  imageSpeed: fixedNumber().default(fixed1),
   inheritCode: z.boolean().default(false),
   inheritedItemId: z.unknown().nullable().default(null),
   inheritItemSettings: z.boolean().default(false),
@@ -45,12 +48,12 @@ export const yyRoomInstanceSchema = unstable({
   properties: z.array(z.unknown()).default([]),
   resourceType: z.literal('GMRInstance').default('GMRInstance'),
   resourceVersion: z.string().default('1.0'),
-  rotation: fixedNumber().default(0),
-  scaleX: fixedNumber().default(1),
-  scaleY: fixedNumber().default(1),
+  rotation: fixedNumber().default(fixed0),
+  scaleX: fixedNumber().default(fixed1),
+  scaleY: fixedNumber().default(fixed1),
   tags: z.array(z.string()).optional(),
-  x: fixedNumber().default(0),
-  y: fixedNumber().default(0),
+  x: fixedNumber().default(fixed0),
+  y: fixedNumber().default(fixed0),
 });
 
 export type YyRoomLayerBase = z.infer<typeof yyRoomLayerBaseSchema>;
@@ -71,77 +74,66 @@ export const yyRoomLayerBaseSchema = unstable({
 });
 
 export type YyRoomPathLayer = z.infer<typeof yyRoomPathLayerSchema>;
-const yyRoomPathLayerSchema = z
-  .object({
-    resourceType: z.literal('GMRPathLayer'),
-    resourceVersion: z.string().default('1.0'),
-    name: z.string(),
-    depth: z.number().default(0),
-    effectEnabled: z.boolean().default(true),
-    effectType: z.unknown().nullable().default(null),
-    gridX: z.number().default(32),
-    gridY: z.number().default(32),
-    hierarchyFrozen: z.boolean().default(false),
-    inheritLayerDepth: z.boolean().default(false),
-    inheritLayerSettings: z.boolean().default(false),
-    inheritSubLayers: z.boolean().default(true),
-    inheritVisibility: z.boolean().default(true),
-    layers: z.array(z.unknown()).nullable().default([]),
-    pathId: z
-      .object({
-        name: z.string(),
-        path: z.string(),
-      })
-      .nullable()
-      .default(null),
-    userdefinedDepth: z.boolean().default(false),
-    visible: z.boolean().default(true),
-  })
-  .passthrough();
+const yyRoomPathLayerSchema = z.looseObject({
+  resourceType: z.literal('GMRPathLayer'),
+  resourceVersion: z.string().default('1.0'),
+  name: z.string(),
+  depth: z.number().default(0),
+  effectEnabled: z.boolean().default(true),
+  effectType: z.unknown().nullable().default(null),
+  gridX: z.number().default(32),
+  gridY: z.number().default(32),
+  hierarchyFrozen: z.boolean().default(false),
+  inheritLayerDepth: z.boolean().default(false),
+  inheritLayerSettings: z.boolean().default(false),
+  inheritSubLayers: z.boolean().default(true),
+  inheritVisibility: z.boolean().default(true),
+  layers: z.array(z.unknown()).nullable().default([]),
+  pathId: z
+    .object({
+      name: z.string(),
+      path: z.string(),
+    })
+    .nullable()
+    .default(null),
+  userdefinedDepth: z.boolean().default(false),
+  visible: z.boolean().default(true),
+});
 
 export type YyRoomTileLayer = z.infer<typeof yyRoomTileLayerSchema>;
-const yyRoomTileLayerSchema = z
-  .object({
-    resourceType: z.literal('GMRTileLayer'),
-    resourceVersion: z.string().default('1.1'),
-    name: z.string().default('Tiles'),
-    depth: z.number().default(0),
-    effectEnabled: z.boolean().default(true),
-    effectType: z.unknown().optional().nullable().default(null),
-    gridX: z.number().default(32),
-    gridY: z.number().default(32),
-    hierarchyFrozen: z.boolean().default(false),
-    inheritLayerDepth: z.boolean().default(false),
-    inheritLayerSettings: z.boolean().default(false),
-    inheritSubLayers: z.boolean().default(true),
-    inheritVisibility: z.boolean().default(true),
-    layers: z.array(z.unknown()).default([]),
-    properties: z.array(z.unknown()).default([]),
-    tiles: z
-      .object({
-        SerialiseHeight: z.number().default(32),
-        SerialiseWidth: z.number().default(32),
-        TileCompressedData: z.unknown().optional(),
-        TileDataFormat: z.number().default(1),
-      })
-      .passthrough(),
-    tilesetId: z
-      .object({ name: z.string(), path: z.string() })
-      .passthrough()
-      .nullable(),
-    userdefinedDepth: z.boolean().default(false),
-    visible: z.boolean().default(true),
-    x: z.number().default(0),
-    y: z.number().default(0),
-  })
-  .passthrough();
+const yyRoomTileLayerSchema = z.looseObject({
+  resourceType: z.literal('GMRTileLayer'),
+  resourceVersion: z.string().default('1.1'),
+  name: z.string().default('Tiles'),
+  depth: z.number().default(0),
+  effectEnabled: z.boolean().default(true),
+  effectType: z.unknown().optional().nullable().default(null),
+  gridX: z.number().default(32),
+  gridY: z.number().default(32),
+  hierarchyFrozen: z.boolean().default(false),
+  inheritLayerDepth: z.boolean().default(false),
+  inheritLayerSettings: z.boolean().default(false),
+  inheritSubLayers: z.boolean().default(true),
+  inheritVisibility: z.boolean().default(true),
+  layers: z.array(z.unknown()).default([]),
+  properties: z.array(z.unknown()).default([]),
+  tiles: z.looseObject({
+    SerialiseHeight: z.number().default(32),
+    SerialiseWidth: z.number().default(32),
+    TileCompressedData: z.unknown().optional(),
+    TileDataFormat: z.number().default(1),
+  }),
+  tilesetId: z.looseObject({ name: z.string(), path: z.string() }).nullable(),
+  userdefinedDepth: z.boolean().default(false),
+  visible: z.boolean().default(true),
+  x: z.number().default(0),
+  y: z.number().default(0),
+});
 
 export type YyRoomEffectLayer = z.infer<typeof yyRoomEffectLayer>;
-const yyRoomEffectLayer = z
-  .object({
-    resourceType: z.literal('GMREffectLayer'),
-  })
-  .passthrough();
+const yyRoomEffectLayer = z.looseObject({
+  resourceType: z.literal('GMREffectLayer'),
+});
 
 export type YyRoomInstanceLayer = z.infer<typeof yyRoomInstanceLayerSchema>;
 export const yyRoomInstanceLayerSchema = yyRoomLayerBaseSchema
@@ -159,53 +151,50 @@ export const yyRoomInstanceLayerSchema = yyRoomLayerBaseSchema
   .passthrough();
 
 export type YyRoomAssetLayer = z.infer<typeof yyRoomAssetLayerSchema>;
-const yyRoomAssetLayerSchema = z
-  .object({
-    resourceType: z.literal('GMRAssetLayer'),
-    resourceVersion: z.string().default('1.0'),
-    name: z.string(),
-    assets: z.array(z.unknown()).default([]),
-    depth: z.number().default(0),
-    effectEnabled: z.boolean().default(true),
-    effectType: z.unknown().nullable().default(null),
-    gridX: z.number().default(32),
-    gridY: z.number().default(32),
-    hierarchyFrozen: z.boolean().default(false),
-    inheritLayerDepth: z.boolean().default(false),
-    inheritLayerSettings: z.boolean().default(false),
-    inheritSubLayers: z.boolean().default(true),
-    inheritVisibility: z.boolean().default(true),
-    layers: z.array(z.unknown()).default([]),
-    properties: z.array(z.unknown()).default([]),
-    userdefinedDepth: z.boolean().default(true),
-    visible: z.boolean().default(true),
-  })
-  .passthrough();
+const yyRoomAssetLayerSchema = z.looseObject({
+  resourceType: z.literal('GMRAssetLayer'),
+  resourceVersion: z.string().default('1.0'),
+  name: z.string(),
+  assets: z.array(z.unknown()).default([]),
+  depth: z.number().default(0),
+  effectEnabled: z.boolean().default(true),
+  effectType: z.unknown().nullable().default(null),
+  gridX: z.number().default(32),
+  gridY: z.number().default(32),
+  hierarchyFrozen: z.boolean().default(false),
+  inheritLayerDepth: z.boolean().default(false),
+  inheritLayerSettings: z.boolean().default(false),
+  inheritSubLayers: z.boolean().default(true),
+  inheritVisibility: z.boolean().default(true),
+  layers: z.array(z.unknown()).default([]),
+  properties: z.array(z.unknown()).default([]),
+  userdefinedDepth: z.boolean().default(true),
+  visible: z.boolean().default(true),
+});
 
 export type YyRoomBackgroundLayer = z.infer<typeof yyRoomBackgroundLayerSchema>;
 const yyRoomBackgroundLayerSchema = yyRoomLayerBaseSchema.extend({
-  animationFPS: fixedNumber().default(15),
+  animationFPS: fixedNumber().default(new FixedNumber(15)),
   animationSpeedType: z.number().default(0),
   colour: z.number().default(4278190080),
   depth: z.number().default(100),
-  hspeed: fixedNumber().default(0),
+  hspeed: fixedNumber().default(fixed0),
   htiled: z.boolean().default(false),
   name: z.string().default('Background'),
   properties: z.array(z.unknown()).default([]),
   resourceType: z.literal('GMRBackgroundLayer').default('GMRBackgroundLayer'),
   resourceVersion: z.string().default('1.0'),
   spriteId: z
-    .object({
+    .looseObject({
       name: z.string(),
       path: z.string(),
     })
-    .passthrough()
     .nullable()
     .default(null),
   stretch: z.boolean().default(false),
   tags: z.array(z.string()).optional(),
   userdefinedAnimFPS: z.boolean().default(false),
-  vspeed: fixedNumber().default(0),
+  vspeed: fixedNumber().default(fixed0),
   vtiled: z.boolean().default(false),
   x: z.number().default(0),
   y: z.number().default(0),
@@ -268,22 +257,38 @@ export const yyRoomSchema = yyBaseSchema.extend({
     Width: z.number().default(5000),
     Height: z.number().default(5000),
     persistent: z.boolean().default(false),
-  }).default({}),
+  }).default({
+    inheritRoomSettings: false,
+    Width: 5000,
+    Height: 5000,
+    persistent: false,
+  }),
   viewSettings: unstable({
     inheritViewSettings: z.boolean().default(false),
     enableViews: z.boolean().default(true),
     clearViewBackground: z.boolean().default(true),
     clearDisplayBuffer: z.boolean().default(true),
-  }).default({}),
+  }).default({
+    inheritViewSettings: false,
+    enableViews: true,
+    clearViewBackground: true,
+    clearDisplayBuffer: true,
+  }),
   physicsSettings: unstable({
     inheritPhysicsSettings: z.boolean().default(false),
     PhysicsWorld: z.boolean().default(false),
-    PhysicsWorldGravityX: fixedNumber().default(0),
-    PhysicsWorldGravityY: fixedNumber().default(10),
-    PhysicsWorldPixToMetres: fixedNumber().default(0),
-  }).default({}),
+    PhysicsWorldGravityX: fixedNumber().default(fixed0),
+    PhysicsWorldGravityY: fixedNumber().default(new FixedNumber(10)),
+    PhysicsWorldPixToMetres: fixedNumber().default(fixed0),
+  }).default({
+    inheritPhysicsSettings: false,
+    PhysicsWorld: false,
+    PhysicsWorldGravityX: fixed0,
+    PhysicsWorldGravityY: new FixedNumber(10),
+    PhysicsWorldPixToMetres: fixed0,
+  }),
   isDnd: z.boolean().default(false),
-  volume: fixedNumber().default(10),
+  volume: fixedNumber().default(new FixedNumber(10)),
   parentRoom: z.unknown().nullable().default(null),
   /**
    * 8 identical 'views' are created by default.

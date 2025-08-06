@@ -5,8 +5,8 @@ import { yyBaseSchema } from './YyBase.js';
 import { ensureTrackKeyFrames } from './YySprite.lib.js';
 import {
   FixedNumber,
-  ensureObject,
-  ensureObjects,
+  fixed0,
+  fixed1,
   fixedNumber,
   unstable,
   yyResourceIdSchemaGenerator,
@@ -148,7 +148,9 @@ const spriteImageLayerSchema = unstable({
   visible: z.boolean().default(true),
   isLocked: z.boolean().default(false),
   blendMode: spriteLayerBlendModeSchema.default(0),
-  opacity: fixedNumber(z.number().min(0).max(100)).default(100),
+  opacity: fixedNumber(z.number().min(0).max(100)).default(
+    new FixedNumber(100),
+  ),
   displayName: z.string().default('default'),
   resourceVersion: z.string().default('1.0'),
   /**
@@ -168,7 +170,9 @@ const spriteFolderLayerSchema = unstable({
   blendMode: spriteLayerBlendModeSchema.default(0),
   displayName: z.string().default('Layer Group'),
   isLocked: z.boolean().default(false),
-  opacity: fixedNumber(z.number().min(0).max(100)).default(100),
+  opacity: fixedNumber(z.number().min(0).max(100)).default(
+    new FixedNumber(100),
+  ),
   visible: z.boolean().default(true),
   layers: z.array(spriteImageLayerSchema).default([]),
 });
@@ -195,14 +199,15 @@ const spriteSequenceTrackKeyframeBaseSchema = z.object({
   /**
    * Appears to be the index position within the keyframes array
    */
-  Key: fixedNumber(z.number().min(0)).default(0),
+  Key: fixedNumber(z.number().min(0)).default(fixed0),
   /** Seems to always be 1? */
-  Length: fixedNumber().default(1),
+  Length: fixedNumber().default(fixed1),
   Stretch: z.boolean().default(false),
   Disabled: z.boolean().default(false),
   IsCreationKey: z.boolean().default(false),
-  Channels: ensureObject(
-    z.record(
+  Channels: z
+    .record(
+      z.string(),
       z.object({
         Id: z
           .object({
@@ -217,8 +222,14 @@ const spriteSequenceTrackKeyframeBaseSchema = z.object({
           .literal('SpriteFrameKeyframe')
           .default('SpriteFrameKeyframe'),
       }),
-    ),
-  ).default({ '0': {} }),
+    )
+    .default({
+      '0': {
+        Id: { name: '', path: '' },
+        resourceVersion: '1.0',
+        resourceType: 'SpriteFrameKeyframe',
+      },
+    }),
   resourceVersion: z.string().default('1.0'),
 });
 
@@ -346,17 +357,17 @@ const spriteSequenceSchema = unstable({
   /**
    * FPS (probably 30, 45, or 60), set via the editor
    */
-  playbackSpeed: fixedNumber(z.number().min(0)).default(60),
+  playbackSpeed: fixedNumber(z.number().min(0)).default(new FixedNumber(60)),
   /**
    * FPS type, set via the editor
    */
   playbackSpeedType: spritePlaybackSpeedTypeSchema.default(0),
   autoRecord: z.boolean().default(true),
-  volume: fixedNumber().default(1),
+  volume: fixedNumber().default(fixed1),
   /**
    * Number of frames
    */
-  length: fixedNumber().default(0),
+  length: fixedNumber().default(fixed0),
   visibleRange: z
     .object({
       x: fixedNumber(),
@@ -368,11 +379,11 @@ const spriteSequenceSchema = unstable({
   showBackdrop: z.boolean().default(true),
   showBackdropImage: z.boolean().default(false),
   backdropImagePath: z.string().default(''),
-  backdropImageOpacity: fixedNumber().default(0),
+  backdropImageOpacity: fixedNumber().default(fixed0),
   backdropWidth: z.number().default(1366),
   backdropHeight: z.number().default(768),
-  backdropXOffset: fixedNumber().default(0),
-  backdropYOffset: fixedNumber().default(0),
+  backdropXOffset: fixedNumber().default(fixed0),
+  backdropYOffset: fixedNumber().default(fixed0),
   xorigin: z.number().default(0),
   yorigin: z.number().default(0),
   eventToFunction: z.unknown().default({}),
@@ -381,23 +392,33 @@ const spriteSequenceSchema = unstable({
   tags: z.array(z.string()).optional(),
   resourceType: z.literal('GMSequence').default('GMSequence'),
   resourceVersion: z.string().default('1.4'),
-  events: ensureObject(
-    z
-      .object({
+  events: z
+    .intersection(
+      z.object({
         Keyframes: z.array(z.unknown()).default([]),
         resourceVersion: z.string().default('1.0'),
-      })
-      .and(spriteSequenceEventTypeSchema),
-  ).default({ resourceType: 'KeyframeStore<MessageEventKeyframe>' }),
-  moments: ensureObject(
-    z
-      .object({
+      }),
+      spriteSequenceEventTypeSchema,
+    )
+    .default({
+      Keyframes: [],
+      resourceVersion: '1.0',
+      resourceType: 'KeyframeStore<MessageEventKeyframe>',
+    }),
+  moments: z
+    .intersection(
+      z.object({
         Keyframes: z.array(z.unknown()).default([]),
         resourceVersion: z.string().default('1.0'),
-      })
-      .and(spriteSequenceMomentTypeSchema),
-  ).default({ resourceType: 'KeyframeStore<MomentsEventKeyframe>' }),
-  tracks: ensureObjects(spriteSequenceTrackSchema),
+      }),
+      spriteSequenceMomentTypeSchema,
+    )
+    .default({
+      resourceType: 'KeyframeStore<MomentsEventKeyframe>',
+      Keyframes: [],
+      resourceVersion: '1.0',
+    }),
+  tracks: z.array(spriteSequenceTrackSchema).prefault([{}] as any),
   /**
    * Matches the YYP resource's 'id' value.
    */
@@ -466,8 +487,8 @@ const yySpriteSchemaStrict = yyBaseSchema
     gridX: z.number().default(0),
     gridY: z.number().default(0),
     frames: z.array(spriteFrameSchema).default([]),
-    sequence: ensureObject(spriteSequenceSchema),
-    layers: ensureObjects(spriteLayerSchema),
+    sequence: spriteSequenceSchema.prefault({} as any),
+    layers: z.array(spriteLayerSchema).prefault([{}] as any),
     resourceType: z.literal('GMSprite').default('GMSprite'),
     nineSlice: z.unknown().optional().default(null),
   })

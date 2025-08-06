@@ -2,7 +2,7 @@
  * @file Modified from public domain code: https://github.com/sidorares/json-bigint/blob/master/lib/parse.js
  */
 
-import { Schema, z } from 'zod';
+import { z } from 'zod';
 
 const suspectProtoRx =
   /(?:_|\\u005[Ff])(?:_|\\u005[Ff])(?:p|\\u0070)(?:r|\\u0072)(?:o|\\u006[Ff])(?:t|\\u0074)(?:o|\\u006[Ff])(?:_|\\u005[Ff])(?:_|\\u005[Ff])/;
@@ -20,10 +20,10 @@ const escapee = {
   t: '\t',
 };
 
-export function parseYy<T extends Schema | undefined>(
+export function parseYy<T extends z.ZodType | undefined>(
   source: string,
   schema?: T,
-): T extends Schema ? z.infer<T> : unknown {
+): T extends z.ZodType ? z.infer<T> : unknown {
   // Clear trailing commas
   source = source.replace(/,(\s*[}\]])/g, '$1');
 
@@ -280,5 +280,5 @@ export function parseYy<T extends Schema | undefined>(
     error('Syntax error');
   }
 
-  return schema ? schema.parse(result) : result;
+  return schema ? (schema.parse(result) as any) : result;
 }

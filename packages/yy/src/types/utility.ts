@@ -48,12 +48,15 @@ export function hint<T extends z.ZodTypeAny>(schema: T) {
   return schema.optional().transform(() => undefined);
 }
 
+export const fixed0 = new FixedNumber(0);
+export const fixed1 = new FixedNumber(1);
+
 export function fixedNumber(schema = z.number(), digits = 1) {
   const coercedToNumber = z.preprocess(
     (arg) =>
       arg instanceof FixedNumber || typeof arg === 'number' ? +arg : arg,
     schema,
-  ) as z.ZodEffects<z.ZodNumber, number, number | FixedNumber>;
+  );
   return coercedToNumber.transform((value) => new FixedNumber(value, digits));
 }
 
@@ -67,21 +70,11 @@ export function bigNumber() {
 }
 
 /**
- * Ensure that an object is initialized to an empty
- * object, allowing for default fields to be populated.
- */
-export function ensureObject<T extends z.ZodTypeAny>(obj: T) {
-  return z.preprocess((arg) => arg || {}, obj);
-}
-
-/**
  * Ensure that an array is initialized to an array with
  * at least one element, allowing for defaults to be
  * populated in each element.
  */
-export function ensureObjects<
-  T extends z.AnyZodObject | z.ZodEffects<any, any>,
->(obj: T, minItems = 1) {
+export function ensureObjects<T extends z.ZodObject>(obj: T, minItems = 1) {
   return z.preprocess((arg) => {
     arg = typeof arg === 'undefined' ? [] : arg;
     if (Array.isArray(arg) && arg.length < minItems) {
@@ -100,15 +93,18 @@ export function ensureObjects<
  * the console.
  */
 export function unstable<T extends z.ZodRawShape>(shape: T): z.ZodObject<T> {
-  return z.object(shape).catchall(
-    z.unknown().superRefine((_arg, ctx) => {
-      // The new format for name/resourcetype keys should be ignore, since those are handled in other ways.
-      const isNewKey = `${ctx.path.at(-1)}`.match(/^[$%]/);
-      if (!isNewKey) {
-        console.log(`WARNING: Unexpected Key "${ctx.path.join('/')}"`);
-      }
-    }),
-  );
+  return z.looseObject(shape);
+  // return z.object(shape).catchall(
+  //   z.unknown().superRefine((_arg, ctx) => {
+  //     // The new format for name/resourcetype keys should be ignore, since those are handled in other ways.
+  //     ctx.issues.every((iss) => {
+  //       const isNewKey = `${String(iss.path?.at(-1))}`.match(/^[$%]/);
+  //       if (!isNewKey) {
+  //         console.log(`WARNING: Unexpected Key "${iss.path?.join('/')}"`);
+  //       }
+  //     });
+  //   }),
+  // );
 }
 
 export function getYyResourceId(

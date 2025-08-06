@@ -24,7 +24,9 @@ const yypResourceSchema = z.object({
 
 export type YypOption = z.infer<typeof yypOptionSchema>;
 const yypOptionSchema = z.object({
-  ConfigValues: z.record(z.record(z.string())).optional(),
+  ConfigValues: z
+    .record(z.string(), z.record(z.string(), z.string()))
+    .optional(),
   name: z.string(),
   path: z.string(),
 });
@@ -83,7 +85,9 @@ export const yypFolderSchema = z.preprocess(
 export type YypAudioGroup = z.infer<typeof yypAudioGroupSchema>;
 export type YypAudioGroupLoose = z.input<typeof yypAudioGroupSchema>;
 export const yypAudioGroupSchema = z.object({
-  ConfigValues: z.record(z.record(z.string())).optional(),
+  ConfigValues: z
+    .record(z.string(), z.record(z.string(), z.string()))
+    .optional(),
   name: z.string(),
   targets: bigNumber().default(-1n),
   resourceType: z.literal('GMAudioGroup').default('GMAudioGroup'),
@@ -91,35 +95,36 @@ export const yypAudioGroupSchema = z.object({
 });
 
 export type YypTextureGroup = z.infer<typeof yypTextureGroupSchema>;
-export const yypTextureGroupSchema = z
-  .object({
-    ConfigValues: z.record(z.record(z.string())).optional(),
-    name: z.string(),
-    groupParent: z
-      .object({
-        name: z.string(),
-        path: z.string(),
-      })
-      .nullable()
-      .default(null),
-    isScaled: z.boolean().default(true),
-    customOptions: z.string().default(''),
-    compressFormat: z.string().default('bz2'),
-    autocrop: z.boolean().default(true),
-    border: z.number().default(2),
-    mipsToGenerate: z.number().default(0),
-    targets: bigNumber().default(-1n),
-    loadType: z.enum(['default', 'dynamicpages']).default('default'),
-    directory: z.string().default(''),
-    resourceType: z.literal('GMTextureGroup').default('GMTextureGroup'),
-    resourceVersion: z.string().default('1.3'),
-  })
-  .passthrough();
+export const yypTextureGroupSchema = z.looseObject({
+  ConfigValues: z
+    .record(z.string(), z.record(z.string(), z.string()))
+    .optional(),
+  name: z.string(),
+  groupParent: z
+    .object({
+      name: z.string(),
+      path: z.string(),
+    })
+    .nullable()
+    .default(null),
+  isScaled: z.boolean().default(true),
+  customOptions: z.string().default(''),
+  compressFormat: z.string().default('bz2'),
+  autocrop: z.boolean().default(true),
+  border: z.number().default(2),
+  mipsToGenerate: z.number().default(0),
+  targets: bigNumber().default(-1n),
+  loadType: z.enum(['default', 'dynamicpages']).default('default'),
+  directory: z.string().default(''),
+  resourceType: z.literal('GMTextureGroup').default('GMTextureGroup'),
+  resourceVersion: z.string().default('1.3'),
+});
 
 export type YypIncludedFile = z.infer<typeof yypIncludedFileSchema>;
 const yypIncludedFileSchema = z.object({
   ConfigValues: z
     .record(
+      z.string(),
       z.object({
         CopyToMask: z.string(),
       }),
@@ -127,7 +132,7 @@ const yypIncludedFileSchema = z.object({
     .optional(),
   /** The name of the file, including extension, without the path */
   name: z.string(),
-  CopyToMask: bigNumber().default(-1),
+  CopyToMask: bigNumber().default(-1n),
   /** `datafiles/${subdir}` */
   filePath: z.string(),
   resourceType: z.literal('GMIncludedFile').default('GMIncludedFile'),
@@ -151,32 +156,30 @@ export const yypSchema = z.preprocess(
     }
     return input;
   },
-  z
-    .object({
-      [nameField]: z.string().optional(),
-      name: z.string(),
-      resourceType: z.literal('GMProject').default('GMProject'),
-      resources: z.array(yypResourceSchema).default([]),
-      RoomOrderNodes: z.array(yypRoomOrderNodeSchema).default([]),
-      Options: z.array(yypOptionSchema).optional(),
-      isDnDProject: z.boolean().optional(),
-      defaultScriptType: z.number().default(1),
-      isEcma: z.boolean().default(false),
-      tutorialPath: z.string().optional(),
-      configs: z.object({
-        name: z.literal('Default').default('Default'),
-        children: z.array(yypConfigSchema).default([]),
-      }),
-      Folders: z.array(yypFolderSchema).default([]),
-      AudioGroups: z.array(yypAudioGroupSchema).default([]),
-      TextureGroups: z.array(yypTextureGroupSchema).default([]),
-      IncludedFiles: z.array(yypIncludedFileSchema).default([]),
-      MetaData: z.object({
-        IDEVersion: z.string(),
-      }),
-      LibraryEmitters: z.array(z.any()).optional(),
-      resourceVersion: z.string(),
-      tags: z.array(z.string()).optional(),
-    })
-    .passthrough(),
+  z.looseObject({
+    [nameField]: z.string().optional(),
+    name: z.string(),
+    resourceType: z.literal('GMProject').default('GMProject'),
+    resources: z.array(yypResourceSchema).default([]),
+    RoomOrderNodes: z.array(yypRoomOrderNodeSchema).default([]),
+    Options: z.array(yypOptionSchema).optional(),
+    isDnDProject: z.boolean().optional(),
+    defaultScriptType: z.number().default(1),
+    isEcma: z.boolean().default(false),
+    tutorialPath: z.string().optional(),
+    configs: z.object({
+      name: z.literal('Default').default('Default'),
+      children: z.array(yypConfigSchema).default([]),
+    }),
+    Folders: z.array(yypFolderSchema).default([]),
+    AudioGroups: z.array(yypAudioGroupSchema).default([]),
+    TextureGroups: z.array(yypTextureGroupSchema).default([]),
+    IncludedFiles: z.array(yypIncludedFileSchema).default([]),
+    MetaData: z.object({
+      IDEVersion: z.string(),
+    }),
+    LibraryEmitters: z.array(z.any()).optional(),
+    resourceVersion: z.string(),
+    tags: z.array(z.string()).optional(),
+  }),
 );

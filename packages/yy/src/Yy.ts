@@ -2,8 +2,7 @@ import { ok } from 'assert';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
-import { PartialDeep } from 'type-fest';
-import { Schema, z } from 'zod';
+import { z, ZodType } from 'zod';
 import { parseYy } from './Yy.parse.js';
 import { stringifyYy } from './Yy.stringify.js';
 import { YyResourceType } from './types/YyBase.js';
@@ -17,11 +16,11 @@ import { yySoundSchema } from './types/YySound.js';
 import { yySpriteSchema } from './types/YySprite.js';
 import { Yyp, yypSchema } from './types/Yyp.js';
 
-export type YySchemaRef = YyResourceType | 'project' | Schema | undefined;
+export type YySchemaRef = YyResourceType | 'project' | ZodType | undefined;
 export type YySchemaName = keyof YySchemas;
 export type YySchema<T extends YySchemaRef> = T extends YySchemaName
   ? YySchemas[T]
-  : T extends Schema
+  : T extends ZodType
     ? T
     : unknown;
 export type YyDataStrict<T extends YySchemaRef> = T extends undefined
@@ -31,11 +30,9 @@ export type YyDataLoose<T extends YySchemaRef> = T extends undefined
   ? unknown
   : z.input<YySchema<Exclude<T, undefined>>>;
 
-const anyObject = z
-  .object({
-    ['%Name']: z.string().optional(),
-  })
-  .passthrough();
+const anyObject = z.looseObject({
+  ['%Name']: z.string().optional(),
+});
 
 export type YySchemas = typeof yySchemas;
 export const yySchemas = {
@@ -56,7 +53,7 @@ export const yySchemas = {
   sprites: yySpriteSchema,
   tilesets: anyObject,
   timelines: anyObject,
-} as const satisfies { [K in YyResourceType | 'project']: Schema };
+} as const satisfies { [K in YyResourceType | 'project']: ZodType };
 Object.freeze(yySchemas);
 Object.seal(yySchemas);
 
@@ -199,12 +196,12 @@ export class Yy {
   }
 
   static populate<T extends Exclude<YySchemaRef, undefined>>(
-    yyData: PartialDeep<YyDataLoose<T>>,
+    yyData: YyDataLoose<T>,
     schema: T,
   ): YyDataStrict<T> {
     const foundSchema = Yy.getSchema(schema);
     const populated = foundSchema.parse(yyData);
-    return populated;
+    return populated as any;
   }
 
   static diff(firstYy: unknown, secondYy: unknown): YyDiff {
