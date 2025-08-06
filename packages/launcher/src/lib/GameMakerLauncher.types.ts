@@ -88,29 +88,25 @@ export interface GameMakerLogOptions {
   excludeLogFileTimestamps?: boolean;
 }
 
-export const gameMakerUserTokenPayloadSchema = z
-  .object({
-    exp: z.number(),
-  })
-  .passthrough();
+export const gameMakerUserTokenPayloadSchema = z.looseObject({
+  exp: z.number(),
+});
 
-export const gameMakerUserDataSchema = z
-  .object({
-    deviceID: z.string().optional(),
-    login: z
-      .string()
-      .describe(
-        "The user's email address. The 'name' part is used as the local username",
-      )
-      .optional(),
-    userID: z
-      .string()
-      .describe('Local user identifier, used to construct the user directory')
-      .optional(),
-    accessToken: z.string().optional(),
-    refreshToken: z.string().optional(),
-  })
-  .passthrough();
+export const gameMakerUserDataSchema = z.looseObject({
+  deviceID: z.string().optional(),
+  login: z
+    .string()
+    .describe(
+      "The user's email address. The 'name' part is used as the local username",
+    )
+    .optional(),
+  userID: z
+    .string()
+    .describe('Local user identifier, used to construct the user directory')
+    .optional(),
+  accessToken: z.string().optional(),
+  refreshToken: z.string().optional(),
+});
 export type GameMakerUserData = z.output<typeof gameMakerUserDataSchema>;
 
 export interface GameMakerDefaultMacros {
