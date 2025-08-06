@@ -1,0 +1,31 @@
+{
+  "$GMSound":"v2",
+  "%Name":"grc_snd_silence",
+  "audioGroupId":{
+    "name":"audiogroup_default",
+    "path":"audiogroups/audiogroup_default",
+  },
+  "bitDepth":1,
+  "channelFormat":0,
+  "compression":0,
+  "compressionQuality":4,
+  "ConfigValues":{
+    "dev":{
+      "audioGroupId":"{\"name\":\"a_group_test\",\"path\":\"audiogroups/a_group_test\"}",
+    },
+  },
+  "conversionMode":0,
+  "duration":1.614125,
+  "exportDir":"",
+  "name":"grc_snd_silence",
+  "parent":{
+    "name":"misc_resources",
+    "path":"folders/Ganary/misc_resources.yy",
+  },
+  "preload":false,
+  "resourceType":"GMSound",
+  "resourceVersion":"2.0",
+  "sampleRate":44100,
+  "soundFile":"grc_snd_silence",
+  "volume":1.0,
+}

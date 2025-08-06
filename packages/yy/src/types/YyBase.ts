@@ -9,10 +9,12 @@ export const yyParentSchema = z
   })
   .default({ name: 'NEW', path: 'folders/NEW.yy' });
 
+export const configValuesSchema = z.record(z.record(z.string())).optional();
+
 export type YyBase = z.infer<typeof yyBaseSchema>;
 export const yyBaseSchema = unstable({
   [nameField]: z.string().optional(),
-  ConfigValues: z.record(z.record(z.string())).optional(),
+  ConfigValues: configValuesSchema,
   name: z.string(),
   resourceType: z.string(),
   tags: z.array(z.string()).optional(),
