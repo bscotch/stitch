@@ -7,3 +7,6 @@ export const retryOptions: FileRetryOptions = {
   maxRetries: MAX_FIO_RETRIES,
   retryDelayMillis: FIO_RETRY_DELAY,
 };
+
+export const jsonSchemaRemoteDir =
+  'https://raw.githubusercontent.com/bscotch/stitch/develop/packages/sprite-source/schemas';

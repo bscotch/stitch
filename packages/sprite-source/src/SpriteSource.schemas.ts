@@ -65,3 +65,9 @@ export const spriteSourceConfigSchema = z.object({
       'List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp(ignore)` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps).',
     ),
 });
+
+export const spriteSourceConfigInfo = {
+  schema: spriteSourceConfigSchema,
+  name: 'Sprite Source Configuration',
+  filename: 'stitch.sprite-source.schema.json',
+};

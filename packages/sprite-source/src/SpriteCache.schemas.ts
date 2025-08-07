@@ -47,6 +47,12 @@ export const spritesInfoSchema = z.object({
     .default({}),
 });
 
+export const spritesInfoInfo = {
+  schema: spritesInfoSchema,
+  name: 'Sprite Cache',
+  filename: 'stitch.sprite-cache.schema.json',
+};
+
 export function lastChanged(info: SpriteSummary | SpineSummary) {
   return info.spine
     ? info.changed

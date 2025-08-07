@@ -45,5 +45,6 @@
       }
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://raw.githubusercontent.com/bscotch/stitch/develop/packages/sprite-source/schemas/stitch.sprite-imports.schema.json"
 }

@@ -46,3 +46,9 @@ export type SpriteDestConfig = z.infer<typeof spriteDestConfigSchema>;
 export const spriteDestConfigSchema = z.object({
   sources: z.array(spriteDestSourceSchema).default([]).optional(),
 });
+
+export const spriteDestConfigInfo = {
+  schema: spriteDestConfigSchema,
+  name: 'Sprite Import Configuration',
+  filename: 'stitch.sprite-imports.schema.json',
+};
