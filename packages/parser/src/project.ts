@@ -627,7 +627,7 @@ export class Project {
         },
         type: defaults?.mono ? SoundChannel.Mono : SoundChannel.Stereo,
         soundFile: soundFileName,
-        duration: 0 as any,
+        resourceVersion: '2.0',
       } as any,
       'sounds',
       this.yyp,

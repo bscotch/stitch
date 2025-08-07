@@ -113,6 +113,9 @@ importers:
         specifier: 4.0.15
         version: 4.0.15
     devDependencies:
+      '@bscotch/pathy':
+        specifier: ^2.12.1
+        version: 2.12.1
       source-map-support:
         specifier: 0.5.21
         version: 0.5.21
