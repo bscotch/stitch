@@ -246,6 +246,19 @@ function prepareForStringification<T>(
       // Then we need to set this to "v1" instead of ""
       yyData[`$GMScript`] = 'v1';
     }
+  } else if (isObjectWithField(yyData, '$GMSound')) {
+    if (ideVersion?.gte('2024.1400.0.815')) {
+      yyData['$GMSound'] = 'v2';
+      // The 'type' field has been replaced with 'channelFormat'
+      // @ts-expect-error Type isn't known here
+      yyData['channelFormat'] ||= yyData['type'] || 1;
+      // @ts-expect-error Type isn't known here
+      yyData['compressionQuality'] ||= 4;
+      // @ts-expect-error Type isn't known here
+      yyData['exportDir'] ||= '';
+      delete yyData.type;
+      delete yyData.bitRate;
+    }
   }
   if (Array.isArray(yyData)) {
     const prepared = yyData.map((item, i) => {
