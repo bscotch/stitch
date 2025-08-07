@@ -3,8 +3,8 @@ import {
   Yy,
   YySprite,
   yySpriteSchema,
-  type YypResourceId,
   type Yyp,
+  type YypResourceId,
 } from '@bscotch/yy';
 import path from 'path';
 import type { SpriteDestAction } from './SpriteDest.schemas.js';
@@ -86,8 +86,8 @@ export async function applySpriteAction({
           type: action.spine ? 2 : 0,
           width,
           height,
-          sequence: { xorigin, yorigin },
-        },
+          sequence: { xorigin, yorigin } as any,
+        } as any,
         'sprites',
         yyp,
       );
