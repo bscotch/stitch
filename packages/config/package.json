@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/stitch-config",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Schemas and utilities for the stitch.config.json file.",
   "keywords": [
     "stitch",
@@ -17,8 +17,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc --build && node scripts/update-schemas.mjs",
-    "watch": "tsc --build --watch",
-    "test": "node --test src/**/*.test.ts"
+    "test": "node --test src/**/*.test.ts",
+    "watch": "tsc --build --watch"
   },
   "dependencies": {
     "zod": "4.0.15"
