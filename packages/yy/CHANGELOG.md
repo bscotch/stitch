@@ -1,5 +1,18 @@
 # @bscotch/yy Changelog
 
+## 2.5.0 (2025-08-07)
+
+### Features
+
+- Added support for the Sound yy format update in GameMaker 2024.1400.0.815
+
+### Fixes
+
+- Added support for converting Sound yy files to the 2024.1400+ version during stringification.
+- Improved handling of sparse Sound yy data
+- Updated all yy package deps
+- Updated the Yy project to use Zod4, which required tuning up many schemas.
+
 ## 2.4.0 (2025-06-05)
 
 ### Features

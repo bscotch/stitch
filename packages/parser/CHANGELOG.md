@@ -1,5 +1,12 @@
 # @bscotch/gml-parser Changelog
 
+## 1.14.5 (2025-08-07)
+
+### Fixes
+
+- Improved support for GameMaker 2024.1400+
+- Updated all parser deps
+
 ## 1.14.2 (2025-06-05)
 
 ### Fixes

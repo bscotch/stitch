@@ -1,5 +1,12 @@
 # @bscotch/gamemaker-releases Changelog
 
+## 0.7.2 (2025-08-06)
+
+### Fixes
+
+- Updated Zod to v4
+- Made fetching GameMaker release notes fail gracefully since it is not a dependable source of data.
+
 ## 0.7.1 (2025-07-15)
 
 ### Fixes

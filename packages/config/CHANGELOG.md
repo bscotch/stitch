@@ -1,5 +1,12 @@
 # @bscotch/stitch-config Changelog
 
+## 0.4.1 (2025-08-07)
+
+### Fixes
+
+- Resolved issue caused by regression in Zod4, causing configs to error out if they have the key "constructor" in them.
+- Bumped config's dependencies and replaced external zod-to-json-schema with native one in Zod4
+
 ## 0.4.0 (2024-03-07)
 
 ### Features

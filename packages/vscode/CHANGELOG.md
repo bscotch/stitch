@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.73.5 (2025-08-06)
+
+### Fixes
+
+- Updated Stitch VSCode deps
+
 ## 1.73.4 (2025-07-15)
 
 ### Fixes

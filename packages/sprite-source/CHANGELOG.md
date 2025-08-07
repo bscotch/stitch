@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 1.3.5 (2025-08-06)
+
+### Fixes
+
+- Updated Zod to v4
+
 ## 1.3.0 (2024-05-14)
 
 ### Features
