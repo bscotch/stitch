@@ -1,0 +1,113 @@
+{
+  "textureGroupAssignments": {
+    "Sprites/Effects/Postprocessing": "Postprocessing",
+    "Sprites/Effects/Shadows": "Shadows",
+    "Sprites/Effects/Water": "Water",
+    "Sprites/Effects/WeatherOverlays": "WeatherOverlays",
+    "Sprites/Interface": "Interface",
+    "Sprites/Interface/ArtisanMenu": "ArtisanMenu",
+    "Sprites/Interface/Emoji": "Emojis",
+    "Sprites/Interface/Icons": "Icons",
+    "Sprites/Interface/MainMenu": "MainMenu",
+    "Sprites/Interface/MainMenu/Compressible": "MainMenuCompress",
+    "Sprites/Interface/Fishing": "Fishing",
+    "Sprites/Interface/JuiceInfusion": "JuiceInfusion",
+    "Sprites/Interface/Icons/Gamepad": "Gamepad",
+    "Sprites/Interface/Icons/KeyboardIcons": "KeyboardIcons",
+    "Sprites/Interface/Splash": "Splash",
+    "Sprites/World": "World",
+    "Sprites/Effects": "World",
+    "Sprites/World/Gardening": "Gardening",
+    "Sprites/World/Bureau": "Bureau",
+    "Sprites/World/Corroded": "Corroded",
+    "Sprites/World/Husk": "Husk",
+    "Sprites/World/Husk/Icons": "HuskIcons",
+    "Sprites/World/Husk/Components": "HuskIcons",
+    "Sprites/World/Husk/Terrain": "HuskTerrain",
+    "Sprites/World/Mantle": "Mantle",
+    "Sprites/World/Mantle/Icons": "MantleIcons",
+    "Sprites/World/Mantle/Components": "MantleIcons",
+    "Sprites/World/Mantle/Withered": "MantleWithered",
+    "Sprites/World/Mantle/Terrain": "MantleTerrain",
+    "Sprites/World/Aquadunes": "Aquadunes",
+    "Sprites/World/Aquadunes/Icons": "AquadunesIcons",
+    "Sprites/World/Aquadunes/Terrain": "AquadunesTerrain",
+    "Sprites/World/Tiles": "GroundTiles",
+    "Sprites/World/Tiles/Floors": "FloorTiles",
+    "Sprites/World/Tiles/Water": "WaterTiles",
+    "Sprites/Placeholders": "Placeholders",
+    "Modules/Rumpus": "Rumpus",
+    "Modules/BscotchPack": "BscotchPack",
+    "GameChanger": "GameChangerTex",
+    "Sprites/Obsolete": "Obsolete",
+    "Sprites/SpinesForDynamicLoading": "SpinesForDynamicLoading"
+  },
+  "audioGroupAssignments": {
+    "GameChanger": "GameChangerTex",
+    "Sprites/Obsolete": "Obsolete",
+    "Sprites/SpinesForDynamicLoading": "SpinesForDynamicLoading"
+  },
+  "newSpriteRules": {
+    "allowedNames": ["^sp_"]
+  },
+  "newSoundRules": {
+    "allowedNames": ["^mus_", "^amb_", "^sfx_"],
+    "defaults": {
+      "^(mus|amb)_": {
+        "mono": false
+      },
+      "^sfx_ui_": {
+        "mono": false
+      },
+      "^sfx_": {
+        "mono": true
+      }
+    }
+  },
+  "gameConsoleStyle": {
+    "base": "color:#808080;",
+    "lines": [
+      {
+        "pattern": "^Warning : reference to extension macro",
+        "base": "color:#808080;"
+      },
+      {
+        "pattern": "^WARNING: Could not find any events",
+        "base": "color:#808080;"
+      },
+      {
+        "pattern": "^WARNING: Could not find animation",
+        "base": "color:#808080;"
+      },
+      {
+        "pattern": "^Pause event has been",
+        "base": "color:#4A4A4A;"
+      },
+      {
+        "pattern": "is cropped, sprites used by Spine must be uncropped$",
+        "base": "color:#808080;"
+      },
+      {
+        "pattern": "\\berror\\b",
+        "base": "color: #FF0000; font-weight: bold;"
+      },
+      {
+        "pattern": "\\bwarn(ing)?\\b",
+        "base": "color: #FFD900"
+      },
+      {
+        "base": "color: #808080;",
+        "description": "Bscotch Echo",
+        "pattern": "^(?<entity>(?<struct>struct)|(?<constructor>Struct\\.(?<constructorName>[^|]+))|(?<rumpus>o_rumpus[^|]+)|(?<http>o_http_controller)|(?<object>o_[^|]+))\\|(?<time>[^|]+)\\| (?<message>.*)",
+        "styles": {
+          "message": "color:white;",
+          "constructor": "color: #4FE2C2",
+          "object": "color: #FF9D00",
+          "struct": "color:cyan",
+          "rumpus": "color:#0095FF",
+          "http": "color:#0095FF"
+        }
+      }
+    ]
+  }
+}

@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+/**
+ * Workaround for Zod4 Record<string,string> failing
+ * when a field name matches "constructor"
+ * (See https://github.com/colinhacks/zod/issues/5066)
+ */
+export type PermissiveStringRecord = z.infer<typeof permissiveStringRecord>;
+export const permissiveStringRecord = z.object({}).catchall(z.string());
+
 const allowedNames = z
   .array(z.string())
   .optional()
@@ -42,11 +50,7 @@ export const gameConsoleLineStyleSchema = z.looseObject({
     .describe(
       'If true, the pattern will be treated as case-sensitive. Default is false.',
     ),
-  styles: z
-    .record(
-      z.string(),
-      z.string().describe('CSS string to apply to this capture group.'),
-    )
+  styles: permissiveStringRecord
     .optional()
     .describe(
       "A map of CSS styles to apply to named capture groups in the line, as a CSS string (e.g. 'color: #808080').",
@@ -76,16 +80,16 @@ export const gameConsoleStyleSchema = z
 export type StitchConfig = z.infer<typeof stitchConfigSchema>;
 export const stitchConfigSchema = z
   .looseObject({
-    $schema: z.literal(jsonSchemaUrl).default(jsonSchemaUrl),
+    $schema: z.literal(jsonSchemaUrl).optional().default(jsonSchemaUrl),
     textureGroupAssignments: z
       .record(z.string(), z.string())
-      .default({})
+      .optional()
       .describe(
         'A map of resource tree paths to texture groups name. Supported Stitch utilities will use this to assign sprites in those paths (recursively) to the specified texture group.',
       ),
     audioGroupAssignments: z
       .record(z.string(), z.string())
-      .default({})
+      .optional()
       .describe(
         'A map of resource tree paths to audio groups name. Supported Stitch utilities will use this to assign sounds in those paths (recursively) to the specified audio group.',
       ),
@@ -97,7 +101,6 @@ export const stitchConfigSchema = z
       ),
     newSpriteRules: z
       .looseObject({ allowedNames })
-
       .optional()
       .describe(
         'Rules for creating new sprite resources, followed by supported Stitch utilities.',

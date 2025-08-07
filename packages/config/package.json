@@ -17,12 +17,14 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc --build && node scripts/update-schemas.mjs",
-    "watch": "tsc --build --watch"
+    "watch": "tsc --build --watch",
+    "test": "node --test src/**/*.test.ts"
   },
   "dependencies": {
     "zod": "4.0.15"
   },
   "devDependencies": {
+    "@bscotch/pathy": "^2.12.1",
     "source-map-support": "0.5.21",
     "typescript": "5.9.2"
   },

@@ -4,7 +4,9 @@
     "types": ["node", "mocha", "chai"],
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl": "src"
+    "baseUrl": "src",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
   },
   "extends": "../tsconfig.base.json"
 }

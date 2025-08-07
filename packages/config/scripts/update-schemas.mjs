@@ -8,6 +8,7 @@ await schemasDir.ensureDirectory();
 
 const asSchema = z.toJSONSchema(stitchConfigSchema, {
   target: 'draft-7',
+  unrepresentable: 'any',
 }); //zodToJsonSchema(stitchConfigSchema);
 // Remove the '$schema' property, since it's only needed for the literals,
 // and add the $id property

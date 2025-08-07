@@ -1,0 +1,19 @@
+{
+  "gameConsoleStyle": {
+    "lines": [
+      {
+        "base": "color: #808080;",
+        "description": "Bscotch Echo",
+        "pattern": "^(?<entity>(?<struct>struct)|(?<constructor>Struct\\.(?<constructorName>[^|]+))|(?<rumpus>o_rumpus[^|]+)|(?<http>o_http_controller)|(?<object>o_[^|]+))\\|(?<time>[^|]+)\\| (?<message>.*)",
+        "styles": {
+          "message": "color:white;",
+          "constructor": "color: #4FE2C2",
+          "object": "color: #FF9D00",
+          "struct": "color:cyan",
+          "rumpus": "color:#0095FF",
+          "http": "color:#0095FF"
+        }
+      }
+    ]
+  }
+}

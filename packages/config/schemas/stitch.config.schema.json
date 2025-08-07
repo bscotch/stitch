@@ -5,7 +5,6 @@
   "properties": {
     "textureGroupAssignments": {
       "description": "A map of resource tree paths to texture groups name. Supported Stitch utilities will use this to assign sprites in those paths (recursively) to the specified texture group.",
-      "default": {},
       "type": "object",
       "propertyNames": {
         "type": "string"
@@ -16,7 +15,6 @@
     },
     "audioGroupAssignments": {
       "description": "A map of resource tree paths to audio groups name. Supported Stitch utilities will use this to assign sounds in those paths (recursively) to the specified audio group.",
-      "default": {},
       "type": "object",
       "propertyNames": {
         "type": "string"
@@ -107,11 +105,8 @@
               "styles": {
                 "description": "A map of CSS styles to apply to named capture groups in the line, as a CSS string (e.g. 'color: #808080').",
                 "type": "object",
-                "propertyNames": {
-                  "type": "string"
-                },
+                "properties": {},
                 "additionalProperties": {
-                  "description": "CSS string to apply to this capture group.",
                   "type": "string"
                 }
               }
@@ -127,9 +122,7 @@
     }
   },
   "required": [
-    "$schema",
-    "textureGroupAssignments",
-    "audioGroupAssignments"
+    "$schema"
   ],
   "additionalProperties": {},
   "$id": "https://raw.githubusercontent.com/bscotch/stitch/develop/packages/config/schemas/stitch.config.schema.json"
