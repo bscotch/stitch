@@ -1,6 +1,7 @@
 import { z } from 'zod';
+import { jsonSchemaRemoteDir } from './constants.js';
 
-const spriteSourceTransformSchema = z.object({
+const spriteSourceTransformSchema = z.looseObject({
   include: z
     .string()
     .optional()
@@ -17,7 +18,7 @@ const spriteSourceTransformSchema = z.object({
     ),
   renames: z
     .array(
-      z.object({
+      z.looseObject({
         from: z
           .string()
           .describe(
@@ -35,7 +36,7 @@ const spriteSourceTransformSchema = z.object({
 });
 
 export type SpriteSourceStage = z.infer<typeof spriteStagingSchema>;
-const spriteStagingSchema = z.object({
+const spriteStagingSchema = z.looseObject({
   dir: z
     .string()
     .describe(
@@ -48,8 +49,11 @@ const spriteStagingSchema = z.object({
     ),
 });
 
+const schemaFilename = 'stitch.sprite-source.schema.json';
+const remoteFilename = `${jsonSchemaRemoteDir}/${schemaFilename}`;
 export type SpriteSourceConfig = z.infer<typeof spriteSourceConfigSchema>;
-export const spriteSourceConfigSchema = z.object({
+export const spriteSourceConfigSchema = z.looseObject({
+  $schema: z.literal(remoteFilename).default(remoteFilename).optional(),
   staging: z
     .array(spriteStagingSchema)
     .nullable()
@@ -69,5 +73,5 @@ export const spriteSourceConfigSchema = z.object({
 export const spriteSourceConfigInfo = {
   schema: spriteSourceConfigSchema,
   name: 'Sprite Source Configuration',
-  filename: 'stitch.sprite-source.schema.json',
+  filename: schemaFilename,
 };

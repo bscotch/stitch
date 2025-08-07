@@ -55,11 +55,11 @@
                           "from",
                           "to"
                         ],
-                        "additionalProperties": false
+                        "additionalProperties": {}
                       }
                     }
                   },
-                  "additionalProperties": false
+                  "additionalProperties": {}
                 }
               }
             },
@@ -67,7 +67,7 @@
               "dir",
               "transforms"
             ],
-            "additionalProperties": false
+            "additionalProperties": {}
           }
         },
         {
@@ -90,6 +90,6 @@
       ]
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": {},
   "$id": "https://raw.githubusercontent.com/bscotch/stitch/develop/packages/sprite-source/schemas/stitch.sprite-source.schema.json"
 }

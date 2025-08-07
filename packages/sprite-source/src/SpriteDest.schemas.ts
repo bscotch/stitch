@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { jsonSchemaRemoteDir } from './constants.js';
 
 export interface SpriteDestAction {
   kind: 'update' | 'create';
@@ -14,7 +15,7 @@ export interface SpriteDestAction {
 }
 
 export type SpriteDestSource = z.infer<typeof spriteDestSourceSchema>;
-const spriteDestSourceSchema = z.object({
+const spriteDestSourceSchema = z.looseObject({
   source: z
     .string()
     .describe(
@@ -42,13 +43,16 @@ const spriteDestSourceSchema = z.object({
     ),
 });
 
+const schemaFilename = 'stitch.sprite-imports.schema.json';
+const remoteFilename = `${jsonSchemaRemoteDir}/${schemaFilename}`;
 export type SpriteDestConfig = z.infer<typeof spriteDestConfigSchema>;
 export const spriteDestConfigSchema = z.object({
+  $schema: z.literal(remoteFilename).default(remoteFilename).optional(),
   sources: z.array(spriteDestSourceSchema).default([]).optional(),
 });
 
 export const spriteDestConfigInfo = {
   schema: spriteDestConfigSchema,
   name: 'Sprite Import Configuration',
-  filename: 'stitch.sprite-imports.schema.json',
+  filename: schemaFilename,
 };

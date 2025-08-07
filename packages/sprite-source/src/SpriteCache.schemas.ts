@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { jsonSchemaRemoteDir } from './constants.js';
 
 export const cacheVersion = 2;
 
@@ -11,7 +12,7 @@ const imageSummarySchema = z.object({
 });
 
 export type SpriteSummary = z.infer<typeof spriteSummarySchema>;
-const spriteSummarySchema = z.object({
+const spriteSummarySchema = z.looseObject({
   spine: z.literal(false),
   checksum: z
     .string()
@@ -22,7 +23,7 @@ const spriteSummarySchema = z.object({
 });
 
 export type SpineSummary = z.infer<typeof spineSummarySchema>;
-const spineSummarySchema = z.object({
+const spineSummarySchema = z.looseObject({
   spine: z.literal(true),
   checksum: z
     .string()
@@ -36,8 +37,11 @@ const spineSummarySchema = z.object({
     ),
 });
 
+const schemaFilename = 'stitch.sprite-cache.schema.json';
+const remoteFilename = `${jsonSchemaRemoteDir}/${schemaFilename}`;
 export type SpritesInfo = z.infer<typeof spritesInfoSchema>;
-export const spritesInfoSchema = z.object({
+export const spritesInfoSchema = z.looseObject({
+  $schema: z.literal(remoteFilename).default(remoteFilename).optional(),
   version: z.number().default(1),
   info: z
     .record(
@@ -50,7 +54,7 @@ export const spritesInfoSchema = z.object({
 export const spritesInfoInfo = {
   schema: spritesInfoSchema,
   name: 'Sprite Cache',
-  filename: 'stitch.sprite-cache.schema.json',
+  filename: schemaFilename,
 };
 
 export function lastChanged(info: SpriteSummary | SpineSummary) {

@@ -12,6 +12,10 @@ await dir.ensureDirectory();
 
 for (const { schema, name, filename } of schemas) {
   const jsonSchema = z.toJSONSchema(schema, { target: 'draft-7' });
+  // Remove the '$schema' property, since it's only needed for the literals,
+  // and add the $id property
+  // @ts-expect-error
+  delete jsonSchema.properties.$schema;
   jsonSchema.$id = `${jsonSchemaRemoteDir}/${filename}`;
   await pathy(filename, dir).write(jsonSchema);
 }

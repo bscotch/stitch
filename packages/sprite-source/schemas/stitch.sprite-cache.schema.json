@@ -63,7 +63,7 @@
               "checksum",
               "frames"
             ],
-            "additionalProperties": false
+            "additionalProperties": {}
           },
           {
             "type": "object",
@@ -86,7 +86,7 @@
               "checksum",
               "changed"
             ],
-            "additionalProperties": false
+            "additionalProperties": {}
           }
         ]
       }
@@ -96,6 +96,6 @@
     "version",
     "info"
   ],
-  "additionalProperties": false,
+  "additionalProperties": {},
   "$id": "https://raw.githubusercontent.com/bscotch/stitch/develop/packages/sprite-source/schemas/stitch.sprite-cache.schema.json"
 }
