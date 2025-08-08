@@ -2,6 +2,7 @@
 
 import { pathy } from '@bscotch/pathy';
 import { defineCommand, runMain } from 'citty';
+import { pathToFileURL } from 'node:url';
 import meta from '../package.json' with { type: 'json' };
 import { SpriteDest } from './SpriteDest.js';
 import { SpriteSource } from './SpriteSource.js';
@@ -16,8 +17,7 @@ const main = defineCommand({
     'add-source': defineCommand({
       meta: {
         name: 'add-source',
-        description:
-          'ensure that a sprite source directory is initialized and use it in a destination GameMaker project',
+        description: `ensure that a sprite source directory is initialized and use it in a destination GameMaker project (doesn't overwrite your configs if they're already set up)`,
       },
       args: {
         source: {
@@ -41,6 +41,9 @@ const main = defineCommand({
           srcConfig.staging = [{ dir: '.', transforms: [] }];
           await src.loadConfig(srcConfig);
         }
+        console.log('Edit your source config at');
+        console.log(pathToFileURL(src.configFile.relative).toString());
+        console.log();
         // Ensure a dest config that imports it
         let projectYypPath = pathy(context.args.project as string);
         if (!projectYypPath.hasExtension('yyp')) {
@@ -70,6 +73,9 @@ const main = defineCommand({
           // Reload with this new config as an override
           await dest.loadConfig(destConfig);
         }
+        console.log('Edit your project config at');
+        console.log(pathToFileURL(dest.configFile.relative).toString());
+        console.log();
       },
     }),
     import: defineCommand({

@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "staging": {
-      "description": "List of folders and associated configs for raw images that should be preprocessed.",
+      "description": "List of folders containing raw images to be imported into a GameMaker project, along with transformation options for those images to apply during import.",
       "anyOf": [
         {
           "type": "array",
@@ -76,7 +76,7 @@
       ]
     },
     "ignore": {
-      "description": "List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp(ignore)` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps).",
+      "description": "List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp()` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps).",
       "anyOf": [
         {
           "type": "array",
@@ -91,5 +91,5 @@
     }
   },
   "additionalProperties": {},
-  "$id": "https://raw.githubusercontent.com/bscotch/stitch/refs/heads/develop/packages/sprite-source/schemas//stitch.sprite-source.schema.json"
+  "$id": "https://raw.githubusercontent.com/bscotch/stitch/refs/heads/develop/packages/sprite-source/schemas/stitch.sprite-source.schema.json"
 }

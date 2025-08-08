@@ -9,7 +9,7 @@
         "type": "object",
         "properties": {
           "source": {
-            "description": "Path to the SpriteSource directory. Either absolute or relative to the GameMaker project folder.",
+            "description": "Path to a configured Sprite Source directory. Either absolute or relative to the GameMaker project folder.",
             "type": "string"
           },
           "collaboratorSources": {
@@ -46,5 +46,5 @@
     }
   },
   "additionalProperties": false,
-  "$id": "https://raw.githubusercontent.com/bscotch/stitch/refs/heads/develop/packages/sprite-source/schemas//stitch.sprite-imports.schema.json"
+  "$id": "https://raw.githubusercontent.com/bscotch/stitch/refs/heads/develop/packages/sprite-source/schemas/stitch.sprite-imports.schema.json"
 }
