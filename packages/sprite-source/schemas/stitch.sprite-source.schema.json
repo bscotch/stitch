@@ -91,5 +91,5 @@
     }
   },
   "additionalProperties": {},
-  "$id": "https://raw.githubusercontent.com/bscotch/stitch/develop/packages/sprite-source/schemas/stitch.sprite-source.schema.json"
+  "$id": "https://raw.githubusercontent.com/bscotch/stitch/refs/heads/develop/packages/sprite-source/schemas//stitch.sprite-source.schema.json"
 }

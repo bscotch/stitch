@@ -19,8 +19,11 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "spsrc": "./dist/cli.mjs"
+  },
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --build && node scripts/build-schemas.mjs",
     "test": "mocha --config ../../config/.mocharc.cjs",
     "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
     "watch": "tsc --build --watch"
@@ -30,6 +33,7 @@
     "@bscotch/pixel-checksum": "^0.1.2",
     "@bscotch/utility": "^7.2.0",
     "@bscotch/yy": "workspace:*",
+    "citty": "0.1.6",
     "image-js": "0.37.0",
     "tslib": "^2.8.1",
     "zod": "^4.0.15"

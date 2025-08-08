@@ -1,7 +1,6 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 *.resource_order
-sprites.import.json
 stitch-import.log.yaml
 
 
@@ -72,3 +71,6 @@ Thumbs.db
 !.env.vault
 .flaskenv*
 packages/vscode/.npmrc
+
+sprites.import.json
+sprites.info.json

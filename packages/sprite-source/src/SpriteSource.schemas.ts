@@ -53,12 +53,12 @@ const schemaFilename = 'stitch.sprite-source.schema.json';
 const remoteFilename = `${jsonSchemaRemoteDir}/${schemaFilename}`;
 export type SpriteSourceConfig = z.infer<typeof spriteSourceConfigSchema>;
 export const spriteSourceConfigSchema = z.looseObject({
-  $schema: z.literal(remoteFilename).default(remoteFilename).optional(),
+  $schema: z.string().default(remoteFilename).optional(),
   staging: z
     .array(spriteStagingSchema)
     .nullable()
     .describe(
-      'List of folders and associated configs for raw images that should be preprocessed.',
+      'List of folders containing raw images to be imported into a GameMaker project, along with transformation options for those images to apply during import.',
     )
     .optional(),
   ignore: z
@@ -66,7 +66,7 @@ export const spriteSourceConfigSchema = z.looseObject({
     .nullable()
     .optional()
     .describe(
-      'List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp(ignore)` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps).',
+      'List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp()` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps).',
     ),
 });
 

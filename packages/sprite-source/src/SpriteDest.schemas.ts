@@ -19,7 +19,7 @@ const spriteDestSourceSchema = z.looseObject({
   source: z
     .string()
     .describe(
-      'Path to the SpriteSource directory. Either absolute or relative to the GameMaker project folder.',
+      'Path to a configured Sprite Source directory. Either absolute or relative to the GameMaker project folder.',
     ),
   collaboratorSources: z
     .string()
@@ -47,7 +47,7 @@ const schemaFilename = 'stitch.sprite-imports.schema.json';
 const remoteFilename = `${jsonSchemaRemoteDir}/${schemaFilename}`;
 export type SpriteDestConfig = z.infer<typeof spriteDestConfigSchema>;
 export const spriteDestConfigSchema = z.object({
-  $schema: z.literal(remoteFilename).default(remoteFilename).optional(),
+  $schema: z.string().default(remoteFilename).optional(),
   sources: z.array(spriteDestSourceSchema).default([]).optional(),
 });
 

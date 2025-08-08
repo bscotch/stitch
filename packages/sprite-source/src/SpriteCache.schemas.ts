@@ -41,7 +41,7 @@ const schemaFilename = 'stitch.sprite-cache.schema.json';
 const remoteFilename = `${jsonSchemaRemoteDir}/${schemaFilename}`;
 export type SpritesInfo = z.infer<typeof spritesInfoSchema>;
 export const spritesInfoSchema = z.looseObject({
-  $schema: z.literal(remoteFilename).default(remoteFilename).optional(),
+  $schema: z.string().default(remoteFilename).optional(),
   version: z.number().default(1),
   info: z
     .record(

@@ -7,7 +7,7 @@ import {
 } from './SpriteCache.schemas.js';
 import { SpriteDir } from './SpriteDir.js';
 import { computeStringChecksum } from './checksum.js';
-import { retryOptions } from './constants.js';
+import { retryOptions, spriteCacheFilename } from './constants.js';
 import type { Log } from './types.js';
 import { SpriteSourceError, getDirs } from './utility.js';
 
@@ -36,7 +36,7 @@ export class SpriteCache {
 
   get cacheFile() {
     return this.stitchDir
-      .join('sprites.info.json')
+      .join(spriteCacheFilename)
       .withValidator(spritesInfoSchema);
   }
 
