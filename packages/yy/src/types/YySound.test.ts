@@ -17,6 +17,5 @@ describe('YySound', function () {
       yySoundSchema,
       { MetaData: { IDEVersion: '2024.1400.0.849' } } as any,
     );
-    console.log(asString);
   });
 });

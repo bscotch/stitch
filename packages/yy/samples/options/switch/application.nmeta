@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<NintendoSdkMeta>
+  <Core>
+    <Name>Application</Name>
+    <Is64BitInstruction>True</Is64BitInstruction>
+    <ApplicationId>0x01009a200be42000</ApplicationId>
+    <ProgramIndex>0</ProgramIndex>
+    <MainThreadStackSize>0x00200000</MainThreadStackSize>
+    <ProcessAddressSpace>AddressSpace64Bit</ProcessAddressSpace>
+  </Core>
+  <Application>
+    <Title>
+      <Language>AmericanEnglish</Language>
+      <Name>Levelhead</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>LatinAmericanSpanish</Language>
+      <Name>Levelhead</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>Japanese</Language>
+      <Name>レベルヘッド</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>Portuguese</Language>
+      <Name>Levelhead</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>SimplifiedChinese</Language>
+      <Name>崩溃制造</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>Korean</Language>
+      <Name>Levelhead</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>Russian</Language>
+      <Name>Levelhead</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>French</Language>
+      <Name>Levelhead</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>German</Language>
+      <Name>Levelhead</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>Spanish</Language>
+      <Name>Levelhead</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>Italian</Language>
+      <Name>Levelhead</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Title>
+      <Language>TraditionalChinese</Language>
+      <Name>崩潰製造</Name>
+      <Publisher>Butterscotch Shenanigans, Inc</Publisher>
+    </Title>
+    <Icon>
+      <Language>AmericanEnglish</Language>
+      <IconPath UseEnvironmentVariable="true">AmericanEnglish.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>LatinAmericanSpanish</Language>
+      <IconPath UseEnvironmentVariable="true">LatinAmericanSpanish.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>Japanese</Language>
+      <IconPath UseEnvironmentVariable="true">Japanese.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>Portuguese</Language>
+      <IconPath UseEnvironmentVariable="true">Portuguese.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>SimplifiedChinese</Language>
+      <IconPath UseEnvironmentVariable="true">SimplifiedChinese.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>Korean</Language>
+      <IconPath UseEnvironmentVariable="true">Korean.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>Russian</Language>
+      <IconPath UseEnvironmentVariable="true">Russian.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>French</Language>
+      <IconPath UseEnvironmentVariable="true">French.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>German</Language>
+      <IconPath UseEnvironmentVariable="true">German.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>Spanish</Language>
+      <IconPath UseEnvironmentVariable="true">Spanish.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>Italian</Language>
+      <IconPath UseEnvironmentVariable="true">Italian.bmp</IconPath>
+    </Icon>
+    <Icon>
+      <Language>TraditionalChinese</Language>
+      <IconPath UseEnvironmentVariable="true">TraditionalChinese.bmp</IconPath>
+    </Icon>
+    <ReleaseVersion>9</ReleaseVersion>
+    <DisplayVersion>100.0.64.0</DisplayVersion>
+    <StartupUserAccount>None</StartupUserAccount>
+    <UserAccountSwitchLock>Disable</UserAccountSwitchLock>
+    <ParentalControl>FreeCommunication</ParentalControl>
+    <SupportedLanguage>AmericanEnglish</SupportedLanguage>
+    <SupportedLanguage>LatinAmericanSpanish</SupportedLanguage>
+    <SupportedLanguage>Japanese</SupportedLanguage>
+    <SupportedLanguage>SimplifiedChinese</SupportedLanguage>
+    <SupportedLanguage>TraditionalChinese</SupportedLanguage>
+    <SupportedLanguage>Korean</SupportedLanguage>
+    <SupportedLanguage>French</SupportedLanguage>
+    <SupportedLanguage>German</SupportedLanguage>
+    <SupportedLanguage>Spanish</SupportedLanguage>
+    <SupportedLanguage>Italian</SupportedLanguage>
+    <SupportedLanguage>Portuguese</SupportedLanguage>
+    <SupportedLanguage>Russian</SupportedLanguage>
+    <Screenshot>Allow</Screenshot>
+    <DataLossConfirmation>None</DataLossConfirmation>
+    <UserAccountSaveDataSize>0x00000000036b0000</UserAccountSaveDataSize>
+    <UserAccountSaveDataJournalSize>0x00000000007d0000</UserAccountSaveDataJournalSize>
+    <ApplicationErrorCodeCategory>ARDZA</ApplicationErrorCodeCategory>
+    <LogoType>LicensedByNintendo</LogoType>
+    <LogoHandling>Auto</LogoHandling>
+    <Rating>
+      <Organization>ACB</Organization>
+      <Age>0</Age>
+    </Rating>
+    <Rating>
+      <Organization>CERO</Organization>
+      <Age>0</Age>
+    </Rating>
+    <Rating>
+      <Organization>ClassInd</Organization>
+      <Age>0</Age>
+    </Rating>
+    <Rating>
+      <Organization>ESRB</Organization>
+      <Age>6</Age>
+    </Rating>
+    <Rating>
+      <Organization>GRACGCRB</Organization>
+      <Age>0</Age>
+    </Rating>
+    <Rating>
+      <Organization>GSRMR</Organization>
+      <Age>0</Age>
+    </Rating>
+    <Rating>
+      <Organization>OFLC</Organization>
+      <Age>0</Age>
+    </Rating>
+    <Rating>
+      <Organization>PEGI</Organization>
+      <Age>3</Age>
+    </Rating>
+    <Rating>
+      <Organization>PEGIBBFC</Organization>
+      <Age>3</Age>
+    </Rating>
+    <Rating>
+      <Organization>PEGIPortugal</Organization>
+      <Age>3</Age>
+    </Rating>
+    <Rating>
+      <Organization>Russian</Organization>
+      <Age>12</Age>
+    </Rating>
+    <Rating>
+      <Organization>USK</Organization>
+      <Age>6</Age>
+    </Rating>
+    <LegalInformationFilePath UseEnvironmentVariable="true">legal_info_01009a200be42000_89a8.zip</LegalInformationFilePath>
+    <VideoCapture>Enable</VideoCapture>
+    <RuntimeAddOnContentInstall>Deny</RuntimeAddOnContentInstall>
+    <CrashReport>Deny</CrashReport>
+    <PlayLogQueryCapability>None</PlayLogQueryCapability>
+  </Application>
+</NintendoSdkMeta>

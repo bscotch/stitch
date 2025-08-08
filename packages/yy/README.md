@@ -50,7 +50,16 @@ const reStringified = Yy.stringify(parsedFile);
 
 ### CLI
 
-Currently this package provides one CLI command, which generates a diff between two `.yy`/`.yyp`-like files:
+This package provides a few CLI commands, available with the command `yy` if globally installed (e.g. by `npm i -g @bscotch/yy`) or by `npx yy` for a local install.
 
-- If globally installed: `yy diff file1.yy file2.yy`
-- If locally installed: `npx yy diff file1.yy file2.yy` (or similar, depending on your Node package manager)
+### `yy diff`
+
+Get a diff between two `.yy`/`.yyp`-like files:
+
+`yy diff file1.yy file2.yy`
+
+### `yy version`
+
+Set the projects version via all of its Options files, so that all platforms will be synced to a particular version:
+
+`yy version path/to/project.yyp 1.2.3.4`

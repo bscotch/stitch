@@ -1,8 +1,33 @@
 import { expect } from 'chai';
 import { GameMakerVersionString } from './GameMakerVersionString.js';
-import { FixedNumber } from './utility.js';
+import { FixedNumber, joinPaths, parsePath, toPosixPath } from './utility.js';
 
 describe('Utilities', function () {
+  it('can join path parts', function () {
+    expect(joinPaths('/hello/', '/world/')).to.equal('/hello/world/');
+    expect(joinPaths('hello', 'world', '/and', '/another/', '/thing')).to.equal(
+      'hello/world/and/another/thing',
+    );
+  });
+
+  it('can ensure posix path separators', function () {
+    expect(toPosixPath('hello\\world\\and\\another\\thing')).to.equal(
+      'hello/world/and/another/thing',
+    );
+    expect(toPosixPath('C:\\Okay\\Now/We Have\\/Got_IT\\')).to.equal(
+      'C:/Okay/Now/We Have//Got_IT/',
+    );
+  });
+
+  it('can parse path parts', function () {
+    expect(parsePath('hello\\world/file.png')).to.eql({
+      filename: 'file.png',
+      fullpath: 'hello/world/file.png',
+      parent: 'hello/world/',
+      ext: '.png',
+    });
+  });
+
   it('can parse and compare GameMaker version strings', function () {
     const versions = GameMakerVersionString.from([
       '2023.3.1.401',

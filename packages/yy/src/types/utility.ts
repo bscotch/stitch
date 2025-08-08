@@ -161,3 +161,39 @@ export function isObjectWithField<F extends string>(
     obj[field] !== undefined
   );
 }
+
+export function assert(claim: any, message: string): asserts claim {
+  if (!claim) throw new Error(message);
+}
+
+export function toPosixPath(path: string): string {
+  return path.replace(/\\/g, '/');
+}
+
+export function parsePath(path: string): {
+  filename: string;
+  fullpath: string;
+  parent: string;
+  ext: `.${string}`;
+} {
+  path = toPosixPath(path);
+  const parts = path.match(
+    /^(?<parent>.*\/)?(?<filename>[^/]+?(?<ext>\.[^.]*)?)$/,
+  );
+  assert(parts, `Could not identify path parts of "${path}"`);
+  return { ...parts.groups, fullpath: path } as any;
+}
+
+/**
+ * Join path parts, ensuring exactly one POSIX separator is between
+ * each part. Maintains initial and final seps.
+ */
+export function joinPaths(...parts: string[]): string {
+  return parts
+    .map((part, i) => {
+      if (i === 0) return part.replace(/\/+$/, ''); // First part: trim end only
+      if (i === parts.length - 1) return part.replace(/^\/+/, ''); // Last part: trim start only
+      return part.replace(/^\/+|\/+$/g, ''); // Middle parts: trim both ends
+    })
+    .join('/');
+}

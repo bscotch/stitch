@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Yy } from './Yy.js';
 import { yyResourceTypes } from './types/YyBase.js';
 import { FixedNumber, fixedNumber, nameField } from './types/utility.js';
+import { setProjectVersion } from './versioning.js';
 
 const sampleOutDir = './samples-out';
 mkdirSync(sampleOutDir, { recursive: true });
@@ -337,4 +338,13 @@ describe('Yy Files', function () {
       });
     }
   }
+
+  it('can set the version in project options files', async function () {
+    const yypPath = 'samples-out/project.yyp';
+    await fs.copyFile('samples-out/project/Crashlands2.yyp', yypPath);
+    mkdirSync('samples-out/options', { recursive: true });
+    await fs.cp('samples/options/', 'samples-out/options', { recursive: true });
+
+    await setProjectVersion(yypPath, '10.9.8.7');
+  });
 });
