@@ -35,7 +35,7 @@ In your project root:
 
 ### Programmatic
 
-In your Node code:
+Main entrypoint for reading and writing Yy files:
 
 ```ts
 // In Typescript, or in an ES6 module:
@@ -46,6 +46,20 @@ let parsedFile = Yy.readSync('./my-project.yyp');
 parsedFile = await Yy.read('./my-project.yyp');
 
 const reStringified = Yy.stringify(parsedFile);
+```
+
+Update the version of a GameMaker project by setting the per-target version fields in all options files:
+
+```ts
+import { setProjectVersion } from '@bscotch/yy';
+await setProjectVersion('my/project.yyp', '1.2.3.4');
+```
+
+Ensure a script exists, for example to update a script containing version information as part of a build pipeline (note that the [`@bscotch/gml-parser](https://www.npmjs.com/package/@bscotch/gml-parser) project is more full-featured for managing assets):
+
+```ts
+import { addScript } from '@bscotch/yy';
+await addScript('my/project.yyp', 'versioning', 'global.VERSION = 1.2.3.4');
 ```
 
 ### CLI
