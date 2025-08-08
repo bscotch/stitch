@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.74.0 (2025-08-08)
+
+### Features
+
+- Added icons for mouse and keypress events
+
 ## 1.73.5 (2025-08-06)
 
 ### Fixes

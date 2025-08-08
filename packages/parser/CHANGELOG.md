@@ -1,5 +1,12 @@
 # @bscotch/gml-parser Changelog
 
+## 1.15.0 (2025-08-08)
+
+### Features
+
+- Add ObjectKeyPressEvent interface
+- Added new event names to objectEvents
+
 ## 1.14.5 (2025-08-07)
 
 ### Fixes
