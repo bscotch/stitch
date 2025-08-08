@@ -1,5 +1,18 @@
 # @bscotch/sprite-source Changelog
 
+## 1.4.0 (2025-08-08)
+
+### Features
+
+- Prepared sprite-source for publishing
+- Added an import CLI command for sprite-source
+- Added a CLI command to add a sprite source to a project
+- When a SpriteDest is instanced it now checks for a git repo, and adds the config and cache file to .gitignore
+
+### Fixes
+
+- Made sprite-source config schemas "loose" so that extra keys won't get nuked when loaded.
+
 ## 1.3.5 (2025-08-06)
 
 ### Fixes
