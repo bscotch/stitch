@@ -101,6 +101,10 @@ export function getObjectEventIcon(eventName: string) {
     icon = 'collision';
   } else if (eventName.match(/^Other_(7[250]|6[239])$/i)) {
     icon = 'asynchronous';
+  } else if (eventName.match(/^Mouse_/)) {
+    icon = 'mouse';
+  } else if (eventName.match(/^KeyPress_/)) {
+    icon = 'keyboard';
   }
   if (icon) {
     return vscode.Uri.file(
