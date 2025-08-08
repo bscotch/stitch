@@ -1,5 +1,17 @@
 # @bscotch/yy Changelog
 
+## 2.6.0 (2025-08-08)
+
+### Features
+
+- Added a function to create audio and texture groups in a GameMaker yyp file.
+- Added a function for upserting scripts in a GameMaker project.
+- Added GameMaker project version-setting via the Yy package, including a CLI command.
+
+### Fixes
+
+- Fixed the yy CLI to ensure it behaves as an ESM file
+
 ## 2.5.0 (2025-08-07)
 
 ### Features

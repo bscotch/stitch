@@ -1,5 +1,15 @@
 # @bscotch/stitch-config Changelog
 
+## 0.5.0 (2025-08-08)
+
+### Features
+
+- Added functions for loading/saving/init-ing config files, and for syncing audio and texture group assignments with the config
+
+### Fixes
+
+- Updated JSON Schema for Stitch Configs
+
 ## 0.4.1 (2025-08-07)
 
 ### Fixes
