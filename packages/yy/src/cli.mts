@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { ok } from 'assert';
 import { Yy } from './Yy.js';
 import { setProjectVersion } from './versioning.js';

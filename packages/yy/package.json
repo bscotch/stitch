@@ -31,7 +31,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "yy": "./dist/cli.js"
+    "yy": "./dist/cli.mjs"
   },
   "scripts": {
     "build": "tsc --build",
