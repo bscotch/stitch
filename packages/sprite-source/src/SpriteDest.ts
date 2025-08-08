@@ -19,7 +19,11 @@ import {
   type SpriteDestSource,
 } from './SpriteDest.schemas.js';
 import { SpriteSource } from './SpriteSource.js';
-import { retryOptions } from './constants.js';
+import {
+  retryOptions,
+  spriteCacheFilename,
+  spriteDestConfigFilename,
+} from './constants.js';
 import { Reporter } from './types.js';
 import { SpriteSourceError, assert, rethrow } from './utility.js';
 
@@ -37,7 +41,7 @@ export class SpriteDest extends SpriteCache {
 
   get configFile() {
     return this.stitchDir
-      .join('sprites.import.json')
+      .join(spriteDestConfigFilename)
       .withValidator(spriteDestConfigSchema);
   }
 
@@ -450,6 +454,43 @@ export class SpriteDest extends SpriteCache {
     // Create the cache in the sprites folder
     const cache = new SpriteDest(spritesRoot, projectYyp);
     await cache.loadConfig(); // Ensure a config file exists
+
+    // Keep the config and cache out of gitignore
+    const gitDb = await cache.stitchDir.findInParents('.git');
+    if (!gitDb) {
+      console.warn(
+        "WARNING: Your GameMaker projects is not in a Git repo! It's dangerous to use this tool without protecting your files with version control.",
+      );
+    } else {
+      const gitIgnorePath = gitDb.up().join('.gitignore');
+      let gitignoreContent = (await gitIgnorePath.read({
+        fallback: '',
+        encoding: 'utf8',
+      })) as string;
+      const lines = gitignoreContent.split(/[\r\n+]/g);
+      for (const toIgnore of [
+        {
+          name: cache.configFile.basename,
+          comment:
+            'If all of your sprite sources are in this repo you can stick a "!" in front of this to track this file. Otherwise this file is machine-specific and should be ignored.',
+        },
+        {
+          name: spriteCacheFilename,
+          comment:
+            'This is a cache file for speeding up subsequent pipeline operations. It should not be tracked in git.',
+        },
+      ]) {
+        if (
+          !lines.includes(toIgnore.name) &&
+          !lines.includes('!' + toIgnore.name)
+        ) {
+          gitignoreContent += `\n# ${toIgnore.comment}\n${toIgnore.name}`;
+          console.log('  added', toIgnore, 'to .gitignore');
+        }
+      }
+      await gitIgnorePath.write(gitignoreContent);
+    }
+
     return cache;
   }
 }

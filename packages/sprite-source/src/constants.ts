@@ -8,5 +8,9 @@ export const retryOptions: FileRetryOptions = {
   retryDelayMillis: FIO_RETRY_DELAY,
 };
 
+export const spriteDestConfigFilename = 'sprites.import.json';
+
+export const spriteCacheFilename = 'sprites.info.json';
+
 export const jsonSchemaRemoteDir =
-  'https://raw.githubusercontent.com/bscotch/stitch/develop/packages/sprite-source/schemas';
+  'https://raw.githubusercontent.com/bscotch/stitch/refs/heads/develop/packages/sprite-source/schemas/';
