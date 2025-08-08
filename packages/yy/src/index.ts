@@ -1,5 +1,7 @@
+export * from './groups.js';
 export * from './scripts.js';
 export * from './types/GameMakerVersionString.js';
+export * from './types/utility.js';
 export * from './types/YyBase.js';
 export * from './types/YyExtension.js';
 export * from './types/YyObject.js';

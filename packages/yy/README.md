@@ -62,6 +62,20 @@ import { addScript } from '@bscotch/yy';
 await addScript('my/project.yyp', 'versioning', 'global.VERSION = 1.2.3.4');
 ```
 
+Ensure a collection of audio or texture groups exist, for example as part of an automatic group-assignment pipeline:
+
+```ts
+import { ensureGroups } from '@bscotch/yy';
+await ensureGroups('my/project.yyp', 'audio', [
+  'MyAudioGroup',
+  'MyOtherAudioGroup',
+]);
+await ensureGroups('my/project.yyp', 'texture', [
+  'MyTextureGroup',
+  'MyOtherTextureGroup',
+]);
+```
+
 ### CLI
 
 This package provides a few CLI commands, available with the command `yy` if globally installed (e.g. by `npm i -g @bscotch/yy`) or by `npx yy` for a local install.
