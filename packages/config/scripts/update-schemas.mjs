@@ -1,5 +1,4 @@
 import { pathy } from '@bscotch/pathy';
-// import { zodToJsonSchema } from 'zod-to-json-schema';
 import { z } from 'zod';
 import { jsonSchemaUrl, stitchConfigSchema } from '../dist/schema.js';
 
@@ -9,7 +8,7 @@ await schemasDir.ensureDirectory();
 const asSchema = z.toJSONSchema(stitchConfigSchema, {
   target: 'draft-7',
   unrepresentable: 'any',
-}); //zodToJsonSchema(stitchConfigSchema);
+});
 // Remove the '$schema' property, since it's only needed for the literals,
 // and add the $id property
 // @ts-expect-error

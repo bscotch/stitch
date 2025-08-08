@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const stitchConfigFilename = 'stitch.config.json';
+
 /**
  * Workaround for Zod4 Record<string,string> failing
  * when a field name matches "constructor"
@@ -85,13 +87,13 @@ export const stitchConfigSchema = z
       .record(z.string(), z.string())
       .optional()
       .describe(
-        'A map of resource tree paths to texture groups name. Supported Stitch utilities will use this to assign sprites in those paths (recursively) to the specified texture group.',
+        'A map of resource tree paths to texture group names. Supported Stitch utilities will use this to assign sprites in those paths (recursively) to the specified texture group. The most specific match is the on that gets applied.',
       ),
     audioGroupAssignments: z
       .record(z.string(), z.string())
       .optional()
       .describe(
-        'A map of resource tree paths to audio groups name. Supported Stitch utilities will use this to assign sounds in those paths (recursively) to the specified audio group.',
+        'A map of resource tree paths to audio group names. Supported Stitch utilities will use this to assign sounds in those paths (recursively) to the specified audio group. The most specific match is the on that gets applied.',
       ),
     runtimeVersion: z
       .string()

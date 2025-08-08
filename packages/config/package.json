@@ -15,12 +15,26 @@
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./project": {
+      "types": "./dist/project.d.ts",
+      "import": "./dist/project.js"
+    }
+  },
+  "bin": {
+    "stitch-config": "./dist/cli.mjs"
+  },
   "scripts": {
     "build": "tsc --build && node scripts/update-schemas.mjs",
     "test": "node --test src/**/*.test.ts",
     "watch": "tsc --build --watch"
   },
   "dependencies": {
+    "@bscotch/yy": "workspace:*",
     "zod": "4.0.15"
   },
   "devDependencies": {
