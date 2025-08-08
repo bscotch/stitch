@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "textureGroupAssignments": {
-      "description": "A map of resource tree paths to texture groups name. Supported Stitch utilities will use this to assign sprites in those paths (recursively) to the specified texture group.",
+      "description": "A map of resource tree paths to texture group names. Supported Stitch utilities will use this to assign sprites in those paths (recursively) to the specified texture group. The most specific match is the on that gets applied.",
       "type": "object",
       "propertyNames": {
         "type": "string"
@@ -14,7 +14,7 @@
       }
     },
     "audioGroupAssignments": {
-      "description": "A map of resource tree paths to audio groups name. Supported Stitch utilities will use this to assign sounds in those paths (recursively) to the specified audio group.",
+      "description": "A map of resource tree paths to audio group names. Supported Stitch utilities will use this to assign sounds in those paths (recursively) to the specified audio group. The most specific match is the on that gets applied.",
       "type": "object",
       "propertyNames": {
         "type": "string"
