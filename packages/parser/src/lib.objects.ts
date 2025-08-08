@@ -20,6 +20,14 @@ interface ObjectAlarmEvent<N extends number> extends ObjectEvent {
   group: 'alarm';
 }
 
+interface ObjectKeyPressEvent<KeyName extends string, KeyNumber extends number> extends ObjectEvent {
+    label: `Key Pressed (${KeyName})`;
+    name: `KeyPress_${KeyNumber}`;
+    eventNum: KeyNumber;
+    eventType: 9;
+    group: 'key-press';
+}
+
 interface ObjectCollisionEvent<O extends string> extends ObjectEvent {
   label: `Collision (${O})`;
   name: `Collision_${O}`;
