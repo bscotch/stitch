@@ -423,7 +423,7 @@ export class SpriteDest extends SpriteCache {
       ...retryOptions,
     });
     let wasEmpty = !config.sources?.length;
-    if (overrides?.sources) {
+    if (overrides?.sources?.length) {
       config.sources = overrides.sources;
     }
     if ((wasEmpty && config.sources?.length) || !wasEmpty) {

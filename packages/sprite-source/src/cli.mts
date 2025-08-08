@@ -29,7 +29,7 @@ const main = defineCommand({
         project: {
           type: 'positional',
           description:
-            'path to the .yyp file for the target GameMaker project from which the sprites should be imported',
+            'path to the .yyp file for the target GameMaker project (or folder containing that file) into which the sprites should be imported',
           valueHint: 'path/to/project.yyp',
         },
       },
@@ -42,7 +42,18 @@ const main = defineCommand({
           await src.loadConfig(srcConfig);
         }
         // Ensure a dest config that imports it
-        const dest = await SpriteDest.from(context.args.project as string);
+        let projectYypPath = pathy(context.args.project as string);
+        if (!projectYypPath.hasExtension('yyp')) {
+          // Assume it's a directory containing a yyp file and find it
+          projectYypPath = (await pathy(projectYypPath).findChild(/\.yyp$/))!;
+          if (!projectYypPath) {
+            console.error(
+              'Provided project path was neither a yyp file nor a folder containing one.',
+            );
+            process.exit(1);
+          }
+        }
+        const dest = await SpriteDest.from(projectYypPath);
         const destConfig = await dest.loadConfig();
         destConfig.sources ||= [];
         const relativeSourcePath = dest.yypPath
@@ -58,6 +69,47 @@ const main = defineCommand({
           });
           // Reload with this new config as an override
           await dest.loadConfig(destConfig);
+        }
+      },
+    }),
+    import: defineCommand({
+      meta: {
+        name: 'import',
+        description:
+          'import new/updated sprites from any configured sprite sources into a GameMaker project',
+      },
+      args: {
+        project: {
+          type: 'positional',
+          default: '.',
+          description:
+            'path to the GameMaker project, either the yyp file or the folder containing it',
+          required: false,
+        },
+      },
+      async run(context) {
+        // Find the project
+        let projectYypPath = pathy((context.args.project as string) || '.');
+        if (!projectYypPath.hasExtension('yyp')) {
+          // Assume it's a directory containing a yyp file and find it
+          projectYypPath = (await pathy(projectYypPath).findChild(/\.yyp$/))!;
+          if (!projectYypPath) {
+            console.error(
+              'Provided project path was neither a yyp file nor a folder containing one.',
+            );
+            process.exit(1);
+          }
+        }
+        const dest = await SpriteDest.from(projectYypPath);
+        console.log('Importing new and updated sprites...');
+        const results = await dest.import();
+        for (const result of results || []) {
+          console.log('  ✅', result.resource.name);
+        }
+        if (!results?.length) {
+          console.log('  No changes found.');
+        } else {
+          console.log('Import complete!');
         }
       },
     }),
