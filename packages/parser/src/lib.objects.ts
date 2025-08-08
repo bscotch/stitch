@@ -20,6 +20,14 @@ interface ObjectAlarmEvent<N extends number> extends ObjectEvent {
   group: 'alarm';
 }
 
+interface ObjectKeyPressEvent<KeyName extends string, KeyNumber extends number> extends ObjectEvent {
+    label: `Key Pressed (${KeyName})`;
+    name: `KeyPress_${KeyNumber}`;
+    eventNum: KeyNumber;
+    eventType: 9;
+    group: 'key-press';
+}
+
 interface ObjectCollisionEvent<O extends string> extends ObjectEvent {
   label: `Collision (${O})`;
   name: `Collision_${O}`;
@@ -109,8 +117,8 @@ export const objectEvents = [
   },
   {
     label: 'Draw End',
-    name: 'Draw_63',
-    eventNum: 63,
+    name: 'Draw_73',
+    eventNum: 73,
     eventType: 8,
     group: 'draw',
   },
@@ -179,6 +187,13 @@ export const objectEvents = [
     group: 'animation',
   },
   {
+    label: 'Async - Image Loaded',
+    name: 'Other_60',
+    eventNum: 60,
+    eventType: 7,
+    group: 'async',
+  },
+  {
     label: 'Async - HTTP',
     name: 'Other_62',
     eventNum: 62,
@@ -226,6 +241,27 @@ export const objectEvents = [
     eventNum: 76,
     eventType: 7,
     group: 'broadcast message',
+  },
+  {
+    label: 'Global Left Released',
+    name: 'Mouse_56',
+    eventNum: 56,
+    eventType: 6,
+    group: 'mouse',
+  },
+  {
+    label: 'Global Right Released',
+    name: 'Mouse_57',
+    eventNum: 57,
+    eventType: 6,
+    group: 'mouse'
+  },
+  {
+    label: 'Global Middle Released',
+    name: 'Mouse_58',
+    eventNum: 58,
+    eventType: 6,
+    group: 'mouse',
   },
   ...objectAlarmEvents,
 ] as const;
