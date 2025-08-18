@@ -2,6 +2,10 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "$schema": {
+      "default": "https://raw.githubusercontent.com/bscotch/stitch/refs/heads/develop/packages/sprite-source/schemas/stitch.sprite-imports.schema.json",
+      "type": "string"
+    },
     "sources": {
       "default": [],
       "type": "array",
@@ -9,7 +13,7 @@
         "type": "object",
         "properties": {
           "source": {
-            "description": "Path to the SpriteSource directory. Either absolute or relative to the GameMaker project folder.",
+            "description": "Path to a configured Sprite Source directory. Either absolute or relative to the GameMaker project folder.",
             "type": "string"
           },
           "collaboratorSources": {
@@ -41,7 +45,7 @@
         "required": [
           "source"
         ],
-        "additionalProperties": false
+        "additionalProperties": {}
       }
     }
   },

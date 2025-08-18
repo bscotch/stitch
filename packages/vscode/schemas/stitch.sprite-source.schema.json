@@ -2,8 +2,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "$schema": {
+      "default": "https://raw.githubusercontent.com/bscotch/stitch/refs/heads/develop/packages/sprite-source/schemas/stitch.sprite-source.schema.json",
+      "type": "string"
+    },
     "staging": {
-      "description": "List of folders and associated configs for raw images that should be preprocessed.",
+      "description": "List of folders containing raw images to be imported into a GameMaker project, along with transformation options for those images to apply during import.",
       "anyOf": [
         {
           "type": "array",
@@ -55,11 +59,11 @@
                           "from",
                           "to"
                         ],
-                        "additionalProperties": false
+                        "additionalProperties": {}
                       }
                     }
                   },
-                  "additionalProperties": false
+                  "additionalProperties": {}
                 }
               }
             },
@@ -67,7 +71,7 @@
               "dir",
               "transforms"
             ],
-            "additionalProperties": false
+            "additionalProperties": {}
           }
         },
         {
@@ -76,7 +80,7 @@
       ]
     },
     "ignore": {
-      "description": "List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp(ignore)` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps).",
+      "description": "List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp()` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps).",
       "anyOf": [
         {
           "type": "array",
@@ -90,5 +94,5 @@
       ]
     }
   },
-  "additionalProperties": false
+  "additionalProperties": {}
 }
