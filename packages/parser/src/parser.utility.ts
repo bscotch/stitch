@@ -77,7 +77,10 @@ export type SortedAccessorSuffix<
   T extends AccessorSuffixName = AccessorSuffixName,
 > = Required<AccessorSuffixesCstChildren>[T][0];
 
-export function isEmpty(obj: {}) {
+export function isEmpty(obj: unknown) {
+  if (!obj) return true;
+  if (typeof obj !== 'object')
+    throw new Error('Can only check objects for emptiness.');
   return Object.keys(obj).length === 0;
 }
 
@@ -106,14 +109,14 @@ export function stringLiteralAsString(
     'StringStart' in children
       ? children.StringStart[0].image
       : 'MultilineSingleStringStart' in children
-      ? children.MultilineSingleStringStart[0].image
-      : children.MultilineDoubleStringStart[0].image;
+        ? children.MultilineSingleStringStart[0].image
+        : children.MultilineDoubleStringStart[0].image;
   const end =
     'StringEnd' in children
       ? children.StringEnd[0].image
       : 'MultilineSingleStringEnd' in children
-      ? children.MultilineSingleStringEnd[0].image
-      : children.MultilineDoubleStringEnd[0].image;
+        ? children.MultilineSingleStringEnd[0].image
+        : children.MultilineDoubleStringEnd[0].image;
   return `${start}${(children.Substring || [])
     .map((s) => s.image)
     .join('')}${end}`;

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isEmpty } from './parser.utility.js';
 import { normalizeTypeString } from './util.js';
 export type GmlSpec = z.output<typeof gmlSpecSchema>;
 export type GmlSpecFunction = GmlSpec['functions'][number];
@@ -32,7 +33,23 @@ const gmlSpecFunctionSchema = z
       Locale: localeSchema.optional(),
       FeatureFlag: featureFlagSchema.optional(),
     }),
-    Description: z.array(z.string()).optional(),
+    Description: z
+      .array(
+        z.preprocess((i) => {
+          if (typeof i === 'string') {
+            return i;
+          } else if (i && typeof i === 'object' && isEmpty(i)) {
+            // Self-closing <Description/> tags are parsed as arrays
+            // of empty objects rather than arrays of strings. So far
+            // this has only shown up in specs for console modules.
+            return '';
+          }
+          // Haven't seen other cases, but should error out if we do
+          // so we know that something new is happening!
+          return i;
+        }, z.string()),
+      )
+      .optional(),
     Parameter: z
       .array(
         z.strictObject({

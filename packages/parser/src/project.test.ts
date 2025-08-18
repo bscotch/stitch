@@ -63,15 +63,12 @@ describe('Project', function () {
     expect(scriptExecuteType.listParameters()).to.have.lengthOf(2);
     expect(scriptExecuteType.listParameters()![0]!.name).to.equal('scr');
     expect(scriptExecuteType.listParameters()![0]!.type.type).to.have.lengthOf(
-      3,
+      2,
     );
     expect(scriptExecuteType.listParameters()![0]!.type.type[0].kind).to.equal(
-      'String',
-    );
-    expect(scriptExecuteType.listParameters()![0]!.type.type[1].kind).to.equal(
       'Function',
     );
-    expect(scriptExecuteType.listParameters()![0]!.type.type[2].kind).to.equal(
+    expect(scriptExecuteType.listParameters()![0]!.type.type[1].kind).to.equal(
       'Asset.GMScript',
     );
     expect(scriptExecuteType.listParameters()![1]!.name).to.equal('...');
