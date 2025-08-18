@@ -14,7 +14,12 @@ import {
 
 export enum SpriteType {
   Default = 0,
+  UNKNOWN1 = 1,
   Spine = 2,
+  Svg = 3,
+  UNKNOWN4 = 4,
+  UNKNOWN5 = 5,
+  UNKNOWN6 = 6,
 }
 
 export enum SpriteLayerBlendMode {
@@ -329,7 +334,7 @@ const spriteKeyframesSchema = z.preprocess(
     }),
 );
 
-const spriteTypeSchema = z.nativeEnum(SpriteType);
+const spriteTypeSchema = z.enum(SpriteType);
 
 export type SpriteSequenceTrack = z.infer<typeof spriteSequenceTrackSchema>;
 const spriteSequenceTrackSchema = unstable({
