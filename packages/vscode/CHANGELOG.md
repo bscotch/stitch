@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.74.2 (2025-08-18)
+
+### Fixes
+
+- Updated VSCode extension's JSON schemas
+
 ## 1.74.0 (2025-08-08)
 
 ### Features

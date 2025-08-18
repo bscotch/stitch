@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.6.1 (2025-08-18)
+
+### Fixes
+
+- SVG sprite types will no longer error on load
+
 ## 2.6.0 (2025-08-08)
 
 ### Features

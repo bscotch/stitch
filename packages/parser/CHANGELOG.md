@@ -1,5 +1,12 @@
 # @bscotch/gml-parser Changelog
 
+## 1.15.2 (2025-08-18)
+
+### Fixes
+
+- Self-closing Description tags in GmlSpec files should no longer cause parser errors.
+- Updated fallback GmlSpec to match runtime 2024.1400.0.842
+
 ## 1.15.0 (2025-08-08)
 
 ### Features
