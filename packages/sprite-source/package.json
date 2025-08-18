@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/sprite-source",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Art pipeline scripting module for GameMaker sprites.",
   "keywords": [
     "sprite",
