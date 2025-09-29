@@ -47,6 +47,19 @@ export const currentOs =
 
 export const currentArchitecture = os.arch();
 
+/**
+ * Maps the current OS to the corresponding GameMaker CLI target platform.
+ * This provides a cleaner mapping than using currentOs directly.
+ */
+export const defaultTargetPlatform: StitchSupportedBuilder =
+  os.platform() === 'win32'
+    ? 'windows'
+    : os.platform() === 'darwin'
+      ? 'mac'
+      : os.platform() === 'linux'
+        ? 'linux'
+        : 'windows'; // fallback
+
 export function artifactExtensionForPlatform(platform: StitchSupportedBuilder) {
   const extensions: {
     [P in StitchSupportedBuilder]: string;
