@@ -318,20 +318,37 @@ export function assertThrows(
 }
 
 export function killProjectRunner(title: string) {
-  if (os.platform() !== 'win32') {
-    console.warn('killProjectRunner is only supported on Windows');
-    return;
-  }
   assertInternalClaim(title, 'Title must be provided');
-  return new Promise<void>((resolve, reject) => {
-    exec(
-      `taskkill /FI "WINDOWTITLE eq ${title}" /FI "IMAGENAME eq Runner.exe"`,
-      (err) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve();
-      },
-    );
-  });
+  
+  if (os.platform() === 'win32') {
+    // Windows: use taskkill
+    return new Promise<void>((resolve, reject) => {
+      exec(
+        `taskkill /FI "WINDOWTITLE eq ${title}" /FI "IMAGENAME eq Runner.exe"`,
+        (err) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        },
+      );
+    });
+  } else if (os.platform() === 'darwin') {
+    // macOS: use pkill to search by process name
+    return new Promise<void>((resolve, reject) => {
+      exec(
+        `pkill -f "${title}"`,
+        (err) => {
+          // pkill returns code 1 if no processes found, but that's OK
+          if (err && err.code !== 1) {
+            return reject(err);
+          }
+          resolve();
+        },
+      );
+    });
+  } else {
+    console.warn('killProjectRunner not supported on this platform');
+    return Promise.resolve();
+  }
 }

@@ -206,13 +206,33 @@ export class GameMakerComponent {
   public static get userDirectories(): {
     [Channel in GameMakerChannel]: string;
   } {
-    const prefix = `${process.env.APPDATA}/GameMakerStudio2`;
-    return {
-      lts: `${prefix}-LTS`,
-      stable: prefix,
-      beta: `${prefix}-Beta`,
-      unstable: `${prefix}-Beta`,
-    };
+    if (process.platform === 'win32') {
+      const prefix = `${process.env.APPDATA}/GameMakerStudio2`;
+      return {
+        lts: `${prefix}-LTS`,
+        stable: prefix,
+        beta: `${prefix}-Beta`,
+        unstable: `${prefix}-Beta`,
+      };
+    } else if (process.platform === 'darwin') {
+      // On macOS, data is stored in GameMakerStudio2, not GameMaker
+      const prefix = `${process.env.HOME}/Library/Application Support/GameMakerStudio2`;
+      return {
+        lts: `${prefix}`, // On macOS there doesn't seem to be channel separation
+        stable: prefix,
+        beta: prefix,
+        unstable: prefix,
+      };
+    } else {
+      // Fallback for other platforms
+      const prefix = `${process.env.HOME}/.gamemaker`;
+      return {
+        lts: `${prefix}/lts`,
+        stable: prefix,
+        beta: `${prefix}/beta`,
+        unstable: `${prefix}/beta`,
+      };
+    }
   }
 
   public static get cacheDir(): Pathy {
