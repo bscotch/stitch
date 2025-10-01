@@ -224,14 +224,7 @@ export class GameMakerComponent {
         unstable: prefix,
       };
     } else {
-      // Fallback for other platforms
-      const prefix = `${process.env.HOME}/.gamemaker`;
-      return {
-        lts: `${prefix}/lts`,
-        stable: prefix,
-        beta: `${prefix}/beta`,
-        unstable: `${prefix}/beta`,
-      };
+      throw new Error(`Unsupported platform: ${process.platform}`);
     }
   }
 

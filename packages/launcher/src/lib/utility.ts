@@ -215,12 +215,9 @@ export async function runIdeInstaller(idePath: Pathy) {
       installer.on('exit', resolve);
     });
   } else if (process.platform === 'darwin') {
-    // For now, display a helpful message to the user
-    console.log('Mac GameMaker installation not yet supported.');
-    // Skip automatic installation on macOS for now
-    return Promise.resolve();
+    throw new Error('Automatic GameMaker installation is not yet supported on macOS. Please install GameMaker manually from the official website.');
   } else {
-    throw new Error('IDE installation only supported on Windows and macOS');
+    throw new Error(`IDE installation not supported on platform: ${process.platform}`);
   }
 }
 
@@ -444,10 +441,9 @@ export async function listGameMakerDataDirs(): Promise<Pathy[]> {
 }
 
 export async function listInstalledIdes(
-  parentDir?: string | Pathy,
+  parentDir: string | Pathy = process.platform === 'win32' ? process.env.PROGRAMFILES! : '/Applications',
 ) {
   if (process.platform === 'win32') {
-    parentDir = parentDir || process.env.PROGRAMFILES!;
     assert(parentDir, 'No program files directory provided');
 
     const ideExecutables = await new Pathy(parentDir).listChildrenRecursively({
@@ -456,7 +452,6 @@ export async function listInstalledIdes(
     });
     return ideExecutables;
   } else if (process.platform === 'darwin') {
-    parentDir = parentDir || '/Applications';
     const ideApps = await new Pathy(parentDir).listChildrenRecursively({
       maxDepth: 2,
       includePatterns: [/^GameMaker(Studio2?)?(-(Beta|LTS))?\.app$/],
