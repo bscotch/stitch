@@ -205,7 +205,7 @@ export async function download(
 // Make async so we don't block any threads
 export async function runIdeInstaller(idePath: Pathy) {
   console.log('Running installer', idePath.basename, '...');
-  
+
   if (process.platform === 'win32') {
     const command = `start /wait "" "${idePath.absolute}" /S`;
     debug(`Running command: ${command}`);
@@ -215,9 +215,13 @@ export async function runIdeInstaller(idePath: Pathy) {
       installer.on('exit', resolve);
     });
   } else if (process.platform === 'darwin') {
-    throw new Error('Automatic GameMaker installation is not yet supported on macOS. Please install GameMaker manually from the official website.');
+    throw new Error(
+      'Automatic GameMaker installation is not yet supported on macOS. Please install GameMaker manually from the official website.',
+    );
   } else {
-    throw new Error(`IDE installation not supported on platform: ${process.platform}`);
+    throw new Error(
+      `IDE installation not supported on platform: ${process.platform}`,
+    );
   }
 }
 
@@ -276,12 +280,14 @@ export async function listInstalledRuntimes(): Promise<
     }
   } else if (process.platform === 'darwin') {
     // macOS: Search for runtimes in /Users/Shared/GameMakerStudio2/Cache/runtimes/
-    const sharedRuntimesDir = new Pathy('/Users/Shared/GameMakerStudio2/Cache/runtimes');
+    const sharedRuntimesDir = new Pathy(
+      '/Users/Shared/GameMakerStudio2/Cache/runtimes',
+    );
     if (await sharedRuntimesDir.exists()) {
       const runtimeDirs = (await sharedRuntimesDir.listChildren()).filter((p) =>
-        p.basename.match(/^runtime-/)
+        p.basename.match(/^runtime-/),
       );
-      
+
       for (const runtimeDir of runtimeDirs) {
         const version = runtimeDir.basename.replace(/^runtime-/, '');
         if (!version.match(/^\d+\.\d+\.\d+\.\d+$/)) {
@@ -290,14 +296,14 @@ export async function listInstalledRuntimes(): Promise<
           );
           continue;
         }
-        
+
         // Look for Igor executable on macOS
         const executablePaths = [
           runtimeDir.join('bin/igor/osx/arm64/Igor'),
           runtimeDir.join('bin/igor/osx/x64/Igor'),
-          runtimeDir.join('bin/Igor')
+          runtimeDir.join('bin/Igor'),
         ];
-        
+
         let executablePath: Pathy | undefined;
         for (const path of executablePaths) {
           if (await path.exists()) {
@@ -305,7 +311,7 @@ export async function listInstalledRuntimes(): Promise<
             break;
           }
         }
-        
+
         if (executablePath) {
           runtimes.push({
             version,
@@ -316,13 +322,13 @@ export async function listInstalledRuntimes(): Promise<
       }
     }
   }
-  
+
   return runtimes;
 }
 
 async function listGameMakerRuntimeDirs(): Promise<Pathy[]> {
   const runtimesDirs: Pathy[] = [];
-  
+
   if (process.platform === 'win32') {
     // Existing Windows runtime discovery logic
     const channelFolders = await listGameMakerDataDirs();
@@ -339,7 +345,9 @@ async function listGameMakerRuntimeDirs(): Promise<Pathy[]> {
     }
   } else if (process.platform === 'darwin') {
     // macOS: Search in /Users/Shared/GameMakerStudio2/Cache/runtimes
-    const sharedRuntimesDir = new Pathy('/Users/Shared/GameMakerStudio2/Cache/runtimes');
+    const sharedRuntimesDir = new Pathy(
+      '/Users/Shared/GameMakerStudio2/Cache/runtimes',
+    );
     if (await sharedRuntimesDir.exists()) {
       runtimesDirs.push(
         ...(await sharedRuntimesDir.listChildren()).filter((p) =>
@@ -348,7 +356,7 @@ async function listGameMakerRuntimeDirs(): Promise<Pathy[]> {
       );
     }
   }
-  
+
   return runtimesDirs;
 }
 
@@ -403,7 +411,7 @@ export async function listRuntimeFeedsConfigPaths(): Promise<
  */
 export async function listGameMakerDataDirs(): Promise<Pathy[]> {
   const dataDirs: Pathy[] = [];
-  
+
   if (process.platform === 'win32') {
     // Windows: Currently the caches are stored in
     // $PROGRAMDATA/GameMakerStudio2(-(Beta|LTS))?/Cache
@@ -420,13 +428,15 @@ export async function listGameMakerDataDirs(): Promise<Pathy[]> {
     }
   } else if (process.platform === 'darwin') {
     // macOS: GameMaker uses multiple locations
-    
+
     // 1. User data in ~/Library/Application Support/GameMakerStudio2
-    const userDataDir = new Pathy(`${os.homedir()}/Library/Application Support/GameMakerStudio2`);
+    const userDataDir = new Pathy(
+      `${os.homedir()}/Library/Application Support/GameMakerStudio2`,
+    );
     if (await userDataDir.exists()) {
       dataDirs.push(userDataDir);
     }
-    
+
     // 2. Shared runtimes in /Users/Shared/GameMakerStudio2
     const sharedDir = new Pathy('/Users/Shared/GameMakerStudio2');
     if (await sharedDir.exists()) {
@@ -436,7 +446,7 @@ export async function listGameMakerDataDirs(): Promise<Pathy[]> {
       }
     }
   }
-  
+
   return dataDirs;
 }
 
