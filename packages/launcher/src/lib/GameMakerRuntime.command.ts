@@ -16,6 +16,7 @@ import {
 import {
   artifactExtensionForPlatform,
   currentOs,
+  defaultTargetPlatform,
   projectLogDirectory,
 } from './utility.js';
 
@@ -40,7 +41,8 @@ export async function computeOptions(
   runtime: GameMakerRuntime,
   options: GameMakerBuildOptions & { compile?: boolean },
 ) {
-  const target = options?.targetPlatform || 'windows';
+  // Auto-detect target platform based on current OS
+  const target = options?.targetPlatform || defaultTargetPlatform;
   const projectPath = new Pathy(options.project);
   const projectDir = projectPath.up();
   const outputDir = new Pathy(options?.outDir || projectDir);
@@ -75,7 +77,8 @@ export async function computeGameMakerCleanOptions(
   command: 'Clean';
   options: GameMakerExecuteOptions;
 }> {
-  const target = options?.targetPlatform || 'windows';
+  // Auto-detect target platform based on current OS
+  const target = options?.targetPlatform || defaultTargetPlatform;
   const buildOptions = await computeOptions(runtime, options);
   return {
     target,
@@ -92,7 +95,8 @@ export async function computeGameMakerBuildOptions(
   command: 'Run' | 'PackageZip' | 'Package';
   options: GameMakerExecuteOptions;
 }> {
-  const target = options?.targetPlatform || 'windows';
+  // Auto-detect target platform based on current OS
+  const target = options?.targetPlatform || defaultTargetPlatform;
   const command = options?.compile
     ? target === 'windows'
       ? 'PackageZip'
