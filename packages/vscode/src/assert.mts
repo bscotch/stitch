@@ -48,6 +48,24 @@ export function logThrown<A extends any[], T extends (...args: A) => any>(
   }
 }
 
+/**
+ * Call a function with its arguments. If
+ * it throws an error, log it with console.log
+ * and rethrow. Useful for debugging since
+ * VSCode swallows error messages.
+ */
+export async function logThrownAsync<
+  A extends any[],
+  T extends (...args: A) => Promise<any>,
+>(fn: T, ...args: A): Promise<ReturnType<T>> {
+  try {
+    return await fn(...args);
+  } catch (err) {
+    warn(err);
+    throw err;
+  }
+}
+
 export function swallowThrown<A extends any[], T extends (...args: A) => any>(
   fn: T,
   ...args: A
@@ -95,5 +113,17 @@ export function assertLoudly(
   if (!condition) {
     showErrorMessage(message);
     throw new Error(message);
+  }
+}
+
+export async function loudlyLogThrownAsync<
+  A extends any[],
+  T extends (...args: A) => Promise<any>,
+>(fn: T, ...args: A): Promise<ReturnType<T>> {
+  try {
+    return await fn(...args);
+  } catch (err) {
+    showErrorMessage(err as Error);
+    throw err;
   }
 }

@@ -20,6 +20,7 @@ import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
 import { killProjectRunner } from './lib.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
+import { loudlyLogThrownAsync } from './assert.mjs';
 
 setLogger(logger.withPrefix('PARSER'));
 
@@ -143,17 +144,20 @@ export class GameMakerProject extends Project {
         igorPath: runtime.executablePath,
       });
 
-      const cmd = await (
-        options?.clean
-          ? stringifyGameMakerCleanCommand
-          : stringifyGameMakerBuildCommand
-      )(runtime, {
-        project: this.yypPath.absolute,
-        config: config || undefined,
-        yyc: compiler === 'yyc',
-        noCache: false,
-        quiet: true,
-      });
+      const cmd = await loudlyLogThrownAsync(
+        async () =>
+          await (
+            options?.clean
+              ? stringifyGameMakerCleanCommand
+              : stringifyGameMakerBuildCommand
+          )(runtime, {
+            project: this.yypPath.absolute,
+            config: config || undefined,
+            yyc: compiler === 'yyc',
+            noCache: false,
+            quiet: true,
+          }),
+      );
 
       logger.info(`Igor command:`, JSON.stringify(cmd));
 
@@ -171,18 +175,24 @@ export class GameMakerProject extends Project {
       this.runnerTerminal.sendText(cmd);
       this.runnerTerminal.show();
     } else {
-      let { cmd, args } = await (
-        options?.clean
-          ? computeGameMakerCleanCommand
-          : computeGameMakerBuildCommand
-      )(runtime, {
-        project: this.yypPath.absolute,
-        config: config || undefined,
-        yyc: compiler === 'yyc',
-        noCache: false,
-        quiet: true,
-      });
+      logger.info('Computing Igor command...');
+      let { cmd, args } = await loudlyLogThrownAsync(
+        async () =>
+          await (
+            options?.clean
+              ? computeGameMakerCleanCommand
+              : computeGameMakerBuildCommand
+          )(runtime, {
+            project: this.yypPath.absolute,
+            config: config || undefined,
+            yyc: compiler === 'yyc',
+            noCache: false,
+            quiet: true,
+          }),
+      );
       cmd = cmd.replace(/[/\\]/g, '/').replace(/ /g, '\\ ');
+      logger.info('Running command:');
+      logger.info(cmd);
       stitchEvents.emit('request-run-project-in-webview', {
         cmd,
         args,
@@ -220,7 +230,6 @@ export class GameMakerProject extends Project {
     onProgress: (increment: number, message?: string) => void,
   ) {
     const options: ProjectOptions = {
-      watch: true,
       onDiagnostics,
       onLoadProgress: onProgress,
       settings: {
