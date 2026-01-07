@@ -323,6 +323,17 @@
     "configuration": {
       "title": "Stitch",
       "properties": {
+        "stitch.assets.filters.allowedProjects": {
+          "title": "Allowed Projects",
+          "description": "If your VSCode Workspace includes multiple GameMaker projects you'll see a selector on load to pick which project you want to load. Optionally limit the list to GameMaker project folder names listed here. If only one matches you it will load without a selector. If none match, all projects will be listed.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "A GameMaker project folder name.",
+            "uniqueItems": true
+          },
+          "default": []
+        },
         "stitch.assets.filters.openAllFolders": {
           "title": "Open all folders when filtering",
           "description": "When filtering assets, you may want all folders to be auto-opened in the sidebar to reveal filtered results. This is disabled by default since there can be a very large number of filter results!",

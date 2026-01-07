@@ -8,6 +8,10 @@ class StitchConfig {
     return vscode.workspace.getConfiguration('stitch');
   }
 
+  get allowedProjects() {
+    return this.config.get<string[]>('assets.filters.allowedProjects') || [];
+  }
+
   get killOthersOnRun() {
     return this.config.get<boolean>('run.killOthers') ?? true;
   }

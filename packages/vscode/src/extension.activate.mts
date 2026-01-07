@@ -1,7 +1,7 @@
 import { Asset, Code } from '@bscotch/gml-parser';
 import { literal } from '@bscotch/utility';
 import os from 'node:os';
-import { GameMakerFolder } from 'tree.folder.mjs';
+import { GameMakerFolder } from './tree.folder.mjs';
 import vscode from 'vscode';
 import { swallowThrown } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
@@ -68,6 +68,22 @@ export async function activateStitchExtension(
   if (!yypFiles.length) {
     warn('No .yyp files found in workspace!');
   }
+
+  // Pre-filter based on allowed project config
+  const allowed = stitchConfig.allowedProjects.map((p) => p.toLowerCase());
+  let prefiltered = [...yypFiles];
+  if (allowed.length) {
+    prefiltered = prefiltered.filter((projectUri) => {
+      const path = pathyFromUri(projectUri);
+      const yypName = path.name;
+      const folderName = path.up().name;
+      return (
+        allowed.includes(yypName.toLowerCase()) ||
+        allowed.includes(folderName.toLowerCase())
+      );
+    });
+  }
+  yypFiles = prefiltered.length ? prefiltered : yypFiles;
 
   // Only allow loading one project at a time to reduce complexity
   if (yypFiles.length > 1) {
