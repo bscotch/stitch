@@ -1,5 +1,12 @@
 # Stitch Changelog
 
+## 1.77.0 (2026-01-07)
+
+### Features
+
+- Improved error message when Stitch can't load a project due to incompatible YYP file contents.
+- Updated all dependencies.
+
 ## 1.76.0 (2026-01-07)
 
 ### Features

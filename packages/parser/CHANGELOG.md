@@ -1,5 +1,15 @@
 # @bscotch/gml-parser Changelog
 
+## 1.16.0 (2026-01-07)
+
+### Features
+
+- Updated all dependencies.
+
+### Fixes
+
+- Fixed issue where deleting a Room via Stitch removes all `RoomOrderNodes` in the YYP file.
+
 ## 1.15.4 (2026-01-07)
 
 ### Fixes

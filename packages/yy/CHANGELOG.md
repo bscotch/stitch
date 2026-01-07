@@ -1,5 +1,11 @@
 # @bscotch/yy Changelog
 
+## 2.7.0 (2026-01-07)
+
+### Features
+
+- Updated all dependencies.
+
 ## 2.6.1 (2025-08-18)
 
 ### Fixes

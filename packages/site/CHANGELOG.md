@@ -1,5 +1,11 @@
 # @bscotch/stitch-site Changelog
 
+## 0.10.0 (2026-01-07)
+
+### Features
+
+- Updated all dependencies.
+
 ## 0.9.1 (2024-10-02)
 
 ### Fixes

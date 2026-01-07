@@ -1,5 +1,11 @@
 # @bscotch/sprite-source Changelog
 
+## 1.5.0 (2026-01-07)
+
+### Features
+
+- Updated all dependencies.
+
 ## 1.4.0 (2025-08-08)
 
 ### Features

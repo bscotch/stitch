@@ -1,5 +1,11 @@
 # @bscotch/gamemaker-releases Changelog
 
+## 0.8.0 (2026-01-07)
+
+### Features
+
+- Updated all dependencies.
+
 ## 0.7.2 (2025-08-06)
 
 ### Fixes

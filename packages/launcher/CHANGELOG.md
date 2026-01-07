@@ -1,5 +1,11 @@
 # @bscotch/stitch-launcher Changelog
 
+## 1.6.0 (2026-01-07)
+
+### Features
+
+- Updated all dependencies.
+
 ## 1.5.6 (2026-01-07)
 
 ### Fixes

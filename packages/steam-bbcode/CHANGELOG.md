@@ -1,5 +1,11 @@
 # @bscotch/steam-bbcode Changelog
 
+## 0.4.0 (2026-01-07)
+
+### Features
+
+- Updated all dependencies.
+
 ## 0.3.0 (2024-10-09)
 
 ### Features
