@@ -47,7 +47,10 @@ export class GameMakerUser {
    * Igor commands.
    */
   get directoryBasename() {
-    assert(this.userName && this.userId, 'No user is logged in');
+    assert(
+      this.userName && this.userId,
+      'You must log into the GameMaker IDE in order for Stitch to find your user profile.',
+    );
     return `${this.userName}_${this.userId}`;
   }
 
