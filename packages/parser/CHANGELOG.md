@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 1.15.4 (2026-01-07)
+
+### Fixes
+
+- Added some more logging during loading to help triangulate slow-load and other issues.
+
 ## 1.15.2 (2025-08-18)
 
 ### Fixes

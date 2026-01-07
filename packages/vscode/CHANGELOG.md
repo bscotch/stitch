@@ -1,6 +1,6 @@
 # Stitch Changelog
 
-## 1.75.0 (2026-01-07)
+## 1.76.0 (2026-01-07)
 
 ### Features
 
@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- Added some more logging during loading to help triangulate slow-load and other issues.
 - When the user is not logged into the GameMaker IDE, the Stitch runner now shows an error message instead of silently failing.
 
 ## 1.74.2 (2025-08-18)

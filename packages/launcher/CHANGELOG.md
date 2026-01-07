@@ -1,5 +1,11 @@
 # @bscotch/stitch-launcher Changelog
 
+## 1.5.6 (2026-01-07)
+
+### Fixes
+
+- Added some more logging during loading to help triangulate slow-load and other issues.
+
 ## 1.5.5 (2026-01-07)
 
 ### Fixes
