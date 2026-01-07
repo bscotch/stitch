@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/gml-parser",
-  "version": "1.15.2",
+  "version": "1.15.3",
   "description": "A parser for GML (GameMaker Language) files for programmatic manipulation and analysis of GameMaker projects.",
   "keywords": [
     "gml",
