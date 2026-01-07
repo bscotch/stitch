@@ -1,5 +1,11 @@
 # @bscotch/stitch-launcher Changelog
 
+## 1.5.5 (2026-01-07)
+
+### Fixes
+
+- Updated error message for case when user is not logged in to clarify that they need to log into the GameMaker IDE.
+
 ## 1.5.2 (2024-11-07)
 
 ### Fixes

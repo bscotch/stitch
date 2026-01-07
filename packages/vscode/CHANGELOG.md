@@ -1,5 +1,15 @@
 # Stitch Changelog
 
+## 1.75.0 (2026-01-07)
+
+### Features
+
+- Added a setting to limit which GameMaker projects are listed when launching Stitch VSCode.
+
+### Fixes
+
+- When the user is not logged into the GameMaker IDE, the Stitch runner now shows an error message instead of silently failing.
+
 ## 1.74.2 (2025-08-18)
 
 ### Fixes
