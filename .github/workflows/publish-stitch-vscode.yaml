@@ -32,7 +32,7 @@ jobs:
 
       # BUILD DEPS
       - name: Build
-        run: pnpm turbo run build --only --filter=bscotch-stitch-vscode...
+        run: pnpm run -r --filter=bscotch-stitch-vscode... build
 
       # PUBLISH
       - name: Publish

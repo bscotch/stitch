@@ -68,7 +68,7 @@ This provides a few benefits:
 
 ### Developing Stitch
 
-This repo uses [Turborepo](https://turbo.build/) and [pnpm](https://pnpm.io/) for handling builds, both of which accept "filters" to limit operations to a subset of projects, and both of which understand the relationships between projects so that things happen in the right order.
+This repo uses [pnpm](https://pnpm.io/) for handling builds, both of which accept "filters" to limit operations to a subset of projects, and both of which understand the relationships between projects so that things happen in the right order.
 
 > 📝 While you *can* open the repo root in your IDE to work on Stitch projects, you'll tend to get better tooling results by opening project folders in separate IDE windows!
 
@@ -76,12 +76,12 @@ To get *all* Stitch projects ready for development, from the repo root run:
 
 - `npm run setup:pnpm` (if you have Node 16+ installed and don't already have pnpm installed)
 - `pnpm install` (install all external dependencies for all projects)
-- `pnpm turbo run build` (build all projects)
+- `pnpm build:all` (build all projects)
 
 To work on a specific project, you can find its name in its `package.json` file and then run:
 
 - `pnpm install --filter=the-package-name...` (installs all dependencies, including those for the other Stitch projects this one depends on)
-- `pnpm turbo run build --only --filter=the-package-name...` (runs the `build` script from the `package.json>scripts` for the package, including the other Stitch projects it depends on)
+- `pnpm run -r build --only --filter=the-package-name...` (runs the `build` script from the `package.json>scripts` for the package, including the other Stitch projects it depends on)
 
 For a given project, open up its `package.json` and look at the `"scripts"` section to see the kinds of tasks you'll likely want to run (you'll do this via `pnpm the-script-name`). Common scripts include:
 

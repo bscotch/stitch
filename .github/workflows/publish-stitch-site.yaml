@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     # https://crontab.guru/#0_6_*_*_1-5
-    - cron: '0 6 * * 1-5'
+    - cron: "0 6 * * 1-5"
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ jobs:
           lfs: true
       - uses: actions/setup-node@v3
         with:
-          node-version: 18.18.0
+          node-version: 24.12.0
       - run: corepack enable
       - run: npm run setup:pnpm
       - run: rustup default 1.78.0 # latest doesn't work!
@@ -35,7 +35,7 @@ jobs:
         run: pnpm install --filter=@bscotch/gamemaker-releases... --filter=@bscotch/stitch-site...
 
       - name: Build Deps
-        run: pnpm turbo run build --filter=@bscotch/stitch-site^...
+        run: pnpm run -r --filter=@bscotch/stitch-site^... build
 
       - name: Update Unified Feed
         run: pnpm node scripts/update-unified-feed.mjs
@@ -62,9 +62,8 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
+
     steps:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-        

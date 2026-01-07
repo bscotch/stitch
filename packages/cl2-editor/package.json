@@ -24,7 +24,7 @@
   "main": "./dist/activate.js",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "build:deps": "pnpm turbo run build --filter=bscotch-cl2-editor...",
+    "build:deps": "pnpm run -r --filter=crashlands-editor... build",
     "bump": "cd ../.. && pnpm bump",
     "package": "vsce package --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
@@ -306,7 +306,6 @@
     "esbuild": "^0.27.2",
     "glob": "13.0.0",
     "nodemon": "^3.1.11",
-    "turbo": "^2.7.3",
     "typescript": "5.9.3",
     "zx": "^8.8.5"
   },

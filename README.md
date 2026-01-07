@@ -38,5 +38,3 @@ Some of the projects listed here are available as compiled packages via [npm](ht
 - You can use [pnpm filters](https://pnpm.io/filtering) to only install the dependencies for a specific package.
 
 3. Run `pnpm build:all` to build all packages.
-
-- This project uses [turborepo](https://turbo.build/). You can use [its filters](https://turbo.build/repo/docs/reference/command-line-reference/run#--filter) to build only specific packages.

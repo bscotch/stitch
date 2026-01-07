@@ -28,7 +28,7 @@
   "main": "./dist/extension.js",
   "scripts": {
     "build": "pnpm build:grammar && node scripts/build-schemas.mjs && pnpm build:webviews && node scripts/build.mjs && pnpm build:manifest",
-    "build:deps": "pnpm turbo run build --filter=bscotch-stitch-vscode...",
+    "build:deps": "pnpm run -r --filter=bscotch-stitch-vscode... --stream build",
     "build:grammar": "node scripts/yaml-to-json.mjs syntaxes/gml.tmLanguage.yaml syntaxes/gml.tmLanguage.json",
     "build:manifest": "node dist/manifest.update.js && prettier -w package.json",
     "build:webviews": "cd webviews && pnpm build",
@@ -1111,7 +1111,6 @@
     "glob": "13.0.0",
     "nodemon": "^3.1.11",
     "plist": "3.1.0",
-    "turbo": "^2.7.3",
     "typescript": "5.9.3",
     "xml2js": "0.6.2",
     "yaml": "2.8.2",

@@ -1,10 +1,6 @@
 {
-  "files.associations": {
-    "turbo.json": "jsonc"
-  },
   "search.exclude": {
     "tmp/": true,
-    "**/.turbo": true,
     "**/package-lock.json": true,
     "**/pnpm-lock.yaml": true,
     "**/node_modules": true,
@@ -19,7 +15,7 @@
     "*.mjs": "$(capture).*",
     "*.cjs": "$(capture).*",
     "*rc": "$(capture)ignore",
-    "package.json": "workspace.json, lerna.*, readme.md, executors.json, generators.json, nx.json, package-lock.json,.gitignore, .*, tsconfig.*, turbo.json, pnpm-lock.yaml, pnpm-workspace.yaml, *.config.js, *.config.ts",
+    "package.json": "workspace.json, lerna.*, readme.md, executors.json, generators.json, nx.json, package-lock.json,.gitignore, .*, tsconfig.*, pnpm-lock.yaml, pnpm-workspace.yaml, *.config.js, *.config.ts",
     "tsconfig.json": "tsconfig.*.json",
     "readme.md": "todo*, changelog*, license*, contributing*"
   },
