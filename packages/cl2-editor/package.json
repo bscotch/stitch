@@ -299,16 +299,16 @@
   "devDependencies": {
     "@bscotch/emitter": "0.2.1",
     "@bscotch/pathy": "^2.12.1",
-    "@bscotch/trebuchet": "2.9.4",
+    "@bscotch/trebuchet": "2.9.5",
     "@bscotch/utility": "^7.2.0",
-    "@types/vscode": "1.91.0",
-    "@vscode/vsce": "2.29.0",
-    "esbuild": "^0.23.0",
-    "glob": "11.0.0",
-    "nodemon": "^3.1.4",
-    "turbo": "^2.0.6",
-    "typescript": "5.9.2",
-    "zx": "^8.1.4"
+    "@types/vscode": "1.107.0",
+    "@vscode/vsce": "3.7.1",
+    "esbuild": "^0.27.2",
+    "glob": "13.0.0",
+    "nodemon": "^3.1.11",
+    "turbo": "^2.7.3",
+    "typescript": "5.9.3",
+    "zx": "^8.8.5"
   },
   "engines": {
     "vscode": "^1.91.0"

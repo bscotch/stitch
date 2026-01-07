@@ -35,12 +35,12 @@
   },
   "dependencies": {
     "@bscotch/yy": "workspace:*",
-    "zod": "4.0.15"
+    "zod": "4.3.5"
   },
   "devDependencies": {
     "@bscotch/pathy": "^2.12.1",
     "source-map-support": "0.5.21",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   },
   "publishConfig": {
     "access": "public"

@@ -2,14 +2,6 @@ import { z } from 'zod';
 
 export const stitchConfigFilename = 'stitch.config.json';
 
-/**
- * Workaround for Zod4 Record<string,string> failing
- * when a field name matches "constructor"
- * (See https://github.com/colinhacks/zod/issues/5066)
- */
-export type PermissiveStringRecord = z.infer<typeof permissiveStringRecord>;
-export const permissiveStringRecord = z.object({}).catchall(z.string());
-
 const allowedNames = z
   .array(z.string())
   .optional()
@@ -52,7 +44,8 @@ export const gameConsoleLineStyleSchema = z.looseObject({
     .describe(
       'If true, the pattern will be treated as case-sensitive. Default is false.',
     ),
-  styles: permissiveStringRecord
+  styles: z
+    .record(z.string(), z.string())
     .optional()
     .describe(
       "A map of CSS styles to apply to named capture groups in the line, as a CSS string (e.g. 'color: #808080').",

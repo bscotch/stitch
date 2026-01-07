@@ -7,7 +7,6 @@
       "type": "string"
     },
     "staging": {
-      "description": "List of folders containing raw images to be imported into a GameMaker project, along with transformation options for those images to apply during import.",
       "anyOf": [
         {
           "type": "array",
@@ -15,11 +14,10 @@
             "type": "object",
             "properties": {
               "dir": {
-                "description": "Path to the folder containing the raw images. Either relative to the SpriteSource root or absolute.",
-                "type": "string"
+                "type": "string",
+                "description": "Path to the folder containing the raw images. Either relative to the SpriteSource root or absolute."
               },
               "transforms": {
-                "description": "Transformations to apply to the raw images while moving them to the SpriteSource directory. Images are removed after a matching transform, and any images not matching any transforms are left alone.",
                 "type": "array",
                 "items": {
                   "type": "object",
@@ -47,12 +45,12 @@
                         "type": "object",
                         "properties": {
                           "from": {
-                            "description": "Regex pattern to match against the filename, for use as the 1st arg in the JavaScript `String.replace` function.",
-                            "type": "string"
+                            "type": "string",
+                            "description": "Regex pattern to match against the filename, for use as the 1st arg in the JavaScript `String.replace` function."
                           },
                           "to": {
-                            "description": "Replacement string for the filename, for use as the 2nd arg in the JavaScript `String.replace` function.",
-                            "type": "string"
+                            "type": "string",
+                            "description": "Replacement string for the filename, for use as the 2nd arg in the JavaScript `String.replace` function."
                           }
                         },
                         "required": [
@@ -64,7 +62,8 @@
                     }
                   },
                   "additionalProperties": {}
-                }
+                },
+                "description": "Transformations to apply to the raw images while moving them to the SpriteSource directory. Images are removed after a matching transform, and any images not matching any transforms are left alone."
               }
             },
             "required": [
@@ -77,7 +76,8 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "List of folders containing raw images to be imported into a GameMaker project, along with transformation options for those images to apply during import."
     },
     "ignore": {
       "description": "List of ignore patterns for sprites that should be excluded from caching and importing. Will be converted to a regex with `new RegExp()` and checked against the spritefolder path (relative to the SpritSource root, using POSIX seps).",

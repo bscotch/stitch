@@ -17,7 +17,7 @@
         "type": "string"
       },
       "additionalProperties": {
-        "anyOf": [
+        "oneOf": [
           {
             "type": "object",
             "properties": {
@@ -26,8 +26,8 @@
                 "const": false
               },
               "checksum": {
-                "description": "A checksum combining the pixel-based checksums of all of the frame checksums.",
-                "type": "string"
+                "type": "string",
+                "description": "A checksum combining the pixel-based checksums of all of the frame checksums."
               },
               "frames": {
                 "type": "object",
@@ -44,12 +44,12 @@
                       "type": "number"
                     },
                     "checksum": {
-                      "description": "Pixel-based checksum of the image.",
-                      "type": "string"
+                      "type": "string",
+                      "description": "Pixel-based checksum of the image."
                     },
                     "changed": {
-                      "description": "Unix timestamp of last modification date.",
-                      "type": "number"
+                      "type": "number",
+                      "description": "Unix timestamp of last modification date."
                     }
                   },
                   "required": [
@@ -77,12 +77,12 @@
                 "const": true
               },
               "checksum": {
-                "description": "A checksum combining the pixel-based checksum of the atlas file with the contets of the atlas and json files.",
-                "type": "string"
+                "type": "string",
+                "description": "A checksum combining the pixel-based checksum of the atlas file with the contets of the atlas and json files."
               },
               "changed": {
-                "description": "Unix timestamp of the most recent modified date for all associate files (atlas, json, png).",
-                "type": "number"
+                "type": "number",
+                "description": "Unix timestamp of the most recent modified date for all associate files (atlas, json, png)."
               }
             },
             "required": [

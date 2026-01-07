@@ -46,11 +46,11 @@
     "citty": "0.1.6",
     "image-js": "0.37.0",
     "tslib": "^2.8.1",
-    "zod": "^4.0.15"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
-    "chai": "^5.2.1",
-    "typescript": "5.9.2"
+    "chai": "^6.2.2",
+    "typescript": "5.9.3"
   },
   "publishConfig": {
     "access": "public"

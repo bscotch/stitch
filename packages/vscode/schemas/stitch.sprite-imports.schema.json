@@ -13,8 +13,8 @@
         "type": "object",
         "properties": {
           "source": {
-            "description": "Path to a configured Sprite Source directory. Either absolute or relative to the GameMaker project folder.",
-            "type": "string"
+            "type": "string",
+            "description": "Path to a configured Sprite Source directory. Either absolute or relative to the GameMaker project folder."
           },
           "collaboratorSources": {
             "description": "Paths to other SpriteSource directories that may overlap with this source. Any sprites that are found in the source *and* one or more collaborator sources must be the latest in 'source' for it to be imported as part of the pipeline.",

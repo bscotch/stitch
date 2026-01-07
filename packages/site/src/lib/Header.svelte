@@ -9,10 +9,7 @@
 	<span class="heart outer">💖</span> Support this project by
 	<span style="display:inline-block;">
 		<span class="heart inner">💖</span>
-		<a
-			href="https://store.steampowered.com/app/1401730?utm_source=stitch-site&utm_term=tools&utm_content=support-cta"
-			>wishlisting Crashlands 2</a
-		> <span class="heart">💖</span></span
+		<a href="https://www.bscotch.net/games">buying our games</a> <span class="heart">💖</span></span
 	>
 </aside>
 

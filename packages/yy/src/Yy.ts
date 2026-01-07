@@ -149,7 +149,7 @@ export class Yy {
     schema: T,
     yyp?: Yyp,
   ): Promise<boolean> {
-    let populated = schema ? Yy.populate(yyData, schema) : yyData;
+    let populated = schema ? Yy.populate(yyData as any, schema) : yyData;
     const stringified = Yy.stringify(populated, schema, yyp);
     await fsp.mkdir(path.dirname(filePath), { recursive: true });
 
@@ -177,7 +177,7 @@ export class Yy {
     schema: T,
     yyp?: Yyp,
   ): boolean {
-    let populated = schema ? Yy.populate(yyData, schema) : yyData;
+    let populated = schema ? Yy.populate(yyData as any, schema) : yyData;
     const stringified = Yy.stringify(populated, schema, yyp);
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     if (existsSync(filePath)) {

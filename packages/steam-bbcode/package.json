@@ -28,13 +28,13 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "marked": "14.1.2"
+    "marked": "17.0.1"
   },
   "devDependencies": {
-    "chai": "^4.3.10",
-    "mocha": "^10.2.0",
-    "prettier": "^3.1.0",
-    "typescript": "5.9.2"
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
+    "prettier": "^3.7.4",
+    "typescript": "5.9.3"
   },
   "publishConfig": {
     "access": "public"

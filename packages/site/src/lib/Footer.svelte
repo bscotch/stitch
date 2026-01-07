@@ -6,10 +6,7 @@
 		🚀 Created by <a href="https://www.bscotch.net/">Butterscotch Shenanigans</a>
 	</p>
 	<p>
-		💖 Support this project by <a
-			href="https://store.steampowered.com/app/1401730?utm_source=stitch-site&utm_term=tools&utm_content=support-cta"
-			>wishlisting Crashlands 2</a
-		>
+		💖 Support this project by <a href="https://www.bscotch.net/games">buying our games</a>
 	</p>
 	<p>🔒 Private by design: no data is sent to any remote servers.</p>
 	<p>💀 We guarantee nothing about the availability or accuracy of content on this site.</p>
