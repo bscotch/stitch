@@ -5,7 +5,12 @@ import { GameMakerIde } from './GameMakerIde.js';
 import { GameMakerSearch } from './GameMakerLauncher.types.js';
 import { GameMakerRuntime } from './GameMakerRuntime.js';
 import { GameMakerRunOptions } from './GameMakerRuntime.types.js';
-import { bootstrapRuntimeVersion, setActiveRuntime, trace } from './utility.js';
+import {
+  bootstrapRuntimeVersion,
+  type Logger,
+  setActiveRuntime,
+  trace,
+} from './utility.js';
 
 export * from './GameMakerLauncher.types.js';
 
@@ -74,14 +79,19 @@ export class GameMakerLauncher {
    * channels). Each Runtime comes with its own
    * GameMaker CLI artifact ("Igor").
    */
-  static async listInstalledRuntimes(): Promise<GameMakerRuntime[]> {
-    return await GameMakerRuntime.listInstalled();
+  static async listInstalledRuntimes(options?: {
+    logger?: Logger;
+  }): Promise<GameMakerRuntime[]> {
+    return await GameMakerRuntime.listInstalled(options);
   }
 
   static async findInstalledRuntime(
     searchParams?: GameMakerSearch,
+    logger?: Logger,
   ): Promise<GameMakerRuntime | undefined> {
-    const installedRuntimes = await GameMakerLauncher.listInstalledRuntimes();
+    const installedRuntimes = await GameMakerLauncher.listInstalledRuntimes({
+      logger,
+    });
     const { version, channel } = searchParams || {};
     return installedRuntimes.find(
       (v) =>

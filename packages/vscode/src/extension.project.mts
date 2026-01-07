@@ -16,11 +16,11 @@ import {
 } from '@bscotch/stitch-launcher';
 import path from 'path';
 import vscode from 'vscode';
+import { loudlyLogThrownAsync } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
 import { killProjectRunner } from './lib.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
-import { loudlyLogThrownAsync } from './assert.mjs';
 
 setLogger(logger.withPrefix('PARSER'));
 
@@ -235,6 +235,7 @@ export class GameMakerProject extends Project {
       settings: {
         autoDeclareGlobalsPrefixes: stitchConfig.autoDeclaredGlobalsPrefixes,
       },
+      logger,
     };
     const project = new GameMakerProject(yypPath, options);
     await project.initialize(options);

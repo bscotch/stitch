@@ -8,7 +8,11 @@ import type {
   GameMakerBuildOptions,
   GameMakerRunOptions,
 } from './GameMakerRuntime.types.js';
-import { listInstalledRuntimes, sortByDateField } from './utility.js';
+import {
+  listInstalledRuntimes,
+  type Logger,
+  sortByDateField,
+} from './utility.js';
 export * from './GameMakerRuntime.command.js';
 
 export class GameMakerRuntime extends GameMakerComponent {
@@ -31,12 +35,18 @@ export class GameMakerRuntime extends GameMakerComponent {
     return await executeGameMakerRuntimeInstallCommand(this, newVersion);
   }
 
-  static async listInstalled(): Promise<GameMakerRuntime[]> {
+  static async listInstalled(options?: {
+    logger?: Logger;
+  }): Promise<GameMakerRuntime[]> {
     // Get the runtime versions that SHOULD be installable
     // for cross-checking and for identifying which channel
     // a runtime is from.
-    const releases = await GameMakerComponent.listReleases();
-    const installedRuntimes = await listInstalledRuntimes();
+    const releases = await GameMakerComponent.listReleases({
+      logger: options?.logger,
+    });
+    const installedRuntimes = await listInstalledRuntimes({
+      logger: options?.logger,
+    });
     const runtimes: GameMakerRuntime[] = [];
     for (const runtime of installedRuntimes) {
       const version = releases.find(

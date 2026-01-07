@@ -15,12 +15,13 @@ import {
 } from './GameMakerLauncher.types.js';
 import { GameMakerUser } from './GameMakerUser.js';
 import {
-  RuntimeFeedsFile,
   cleanVersionString,
   downloadIfCacheExpired,
   listGameMakerDataDirs,
   listInstalledIdes,
   listRuntimeFeedsConfigPaths,
+  type Logger,
+  type RuntimeFeedsFile,
   stitchConfigDir,
 } from './utility.js';
 
@@ -170,11 +171,13 @@ export class GameMakerComponent {
   public static async listReleases(options?: {
     /** Max age of the cached releases list */
     maxAgeSeconds?: number;
+    logger?: Logger;
   }) {
     await downloadIfCacheExpired(
       releasesUrl,
       GameMakerComponent.releasesCachePath,
       options?.maxAgeSeconds || 1800,
+      options?.logger,
     );
     return await GameMakerComponent.releasesCachePath.read();
   }
@@ -183,10 +186,14 @@ export class GameMakerComponent {
     ideVersion?: string;
     runtimeVersion?: string;
     maxAgeSeconds?: number;
+    logger?: Logger;
   }) {
+    searchOptions?.logger?.log('Fetching list of GameMaker releases...');
     const releases = await GameMakerComponent.listReleases({
       maxAgeSeconds: searchOptions.maxAgeSeconds,
+      logger: searchOptions.logger,
     });
+    searchOptions?.logger?.log(`Found ${releases.length} releases...`);
     const release = releases.find((release) => {
       if (searchOptions.ideVersion) {
         return (

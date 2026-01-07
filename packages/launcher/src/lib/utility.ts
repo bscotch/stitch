@@ -118,8 +118,10 @@ export async function downloadIfCacheExpired<T>(
   url: string,
   filePath: Pathy<T>,
   maxAgeInSeconds: number,
+  logger?: Logger,
 ) {
   if (await cachedFileIsExpired(filePath, maxAgeInSeconds)) {
+    logger?.log('Cache expired. Refreshing...');
     let data!: T;
     try {
       data = (await axios(url)).data as T;
@@ -127,7 +129,7 @@ export async function downloadIfCacheExpired<T>(
     } catch (err) {
       const fileExists = filePath.existsSync();
       if (fileExists) {
-        console.warn('Download error for', url);
+        (logger?.warn || console.warn)('Download error for', url);
         // Fail gracefully, since the caller can fall back on the cached file.
         return;
       }
@@ -210,10 +212,12 @@ export async function runIdeInstaller(idePath: Pathy) {
  *
  * These are stored in `$PROGRAMDATA/GameMakerStudio2(-(Beta|LTS))?/Cache/runtimes/*`
  */
-export async function listInstalledRuntimes(): Promise<
+export async function listInstalledRuntimes(options?: {
+  logger?: Logger;
+}): Promise<
   Omit<GameMakerInstalledVersion, 'channel' | 'publishedAt' | 'feedUrl'>[]
 > {
-  const runtimeDirs = await listGameMakerRuntimeDirs();
+  const runtimeDirs = await listGameMakerRuntimeDirs(options);
   const runtimes: Omit<
     GameMakerInstalledVersion,
     'channel' | 'publishedAt' | 'feedUrl'
@@ -253,11 +257,16 @@ export async function listInstalledRuntimes(): Promise<
       executablePath,
     });
   }
+  options?.logger?.log('Found', runtimes.length, 'runtimes');
   return runtimes;
 }
 
-async function listGameMakerRuntimeDirs(): Promise<Pathy[]> {
+async function listGameMakerRuntimeDirs(options?: {
+  logger?: Logger;
+}): Promise<Pathy[]> {
+  options?.logger?.log('Finding local GameMaker data directories...');
   const channelFolders = await listGameMakerDataDirs();
+  options?.logger?.log('Found', channelFolders.length, 'data directories');
   const runtimesDirs: Pathy[] = [];
   for (const channelFolder of channelFolders) {
     const cacheDir = channelFolder.join('Cache/runtimes');
@@ -270,6 +279,7 @@ async function listGameMakerRuntimeDirs(): Promise<Pathy[]> {
       ),
     );
   }
+  options?.logger?.log('Found', runtimesDirs.length, 'runtime directories');
   return runtimesDirs;
 }
 
@@ -352,3 +362,8 @@ export async function listInstalledIdes(
 
   return ideExecutables;
 }
+
+export type Logger = {
+  warn: (...args: any[]) => void;
+  log: (...args: any[]) => void;
+};

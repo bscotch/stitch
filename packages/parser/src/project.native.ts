@@ -375,14 +375,18 @@ export class Native {
       // Look up the runtime version that matches the project's IDE version.
       const usingRelease = await GameMakerIde.findRelease({
         ideVersion: options.ideVersion,
+        logger,
       });
+      logger.info('Done looking, found:', usingRelease?.runtime.version);
       options.runtimeVersion = usingRelease?.runtime.version;
     }
     if (options.runtimeVersion) {
       // Find the locally installed runtime folder
-      const installedRuntime = await GameMakerLauncher.findInstalledRuntime({
-        version: options.runtimeVersion,
-      });
+      logger.info('Looking for runtime', options.runtimeVersion);
+      const installedRuntime = await GameMakerLauncher.findInstalledRuntime(
+        { version: options.runtimeVersion },
+        logger,
+      );
       if (installedRuntime) {
         logger.info(
           `Looking for spec files in "${installedRuntime.directory?.absolute}"`,

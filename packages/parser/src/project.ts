@@ -83,6 +83,11 @@ export interface ProjectOptions {
      */
     autoDeclareGlobalsPrefixes?: string[];
   };
+  logger?: {
+    log: (...args: any[]) => void;
+    warn: (...args: any[]) => void;
+    error: (...args: any[]) => void;
+  };
 }
 
 export class Project {
@@ -1342,7 +1347,8 @@ export class Project {
   }
 
   protected async initialize(options?: ProjectOptions): Promise<void> {
-    logger.info('Initializing project...');
+    const log = options?.logger || logger;
+    log.log('Initializing project...');
     if (options?.onDiagnostics) {
       this.onDiagnostics(options.onDiagnostics);
     }
@@ -1352,13 +1358,13 @@ export class Project {
     this.yypWaiter = Yy.read(this.yypPath.absolute, 'project').then((yyp) => {
       this.yyp = yyp;
       options?.onLoadProgress?.(5, 'Loaded project file');
-      logger.info('Loaded yyp file!');
+      log.log('Loaded yyp file!');
     });
     this.nativeWaiter = this.loadGmlSpec();
     void this.nativeWaiter.then(() => {
       options?.onLoadProgress?.(5, 'Loaded GML spec');
     });
-    logger.info('Loading asset files...');
+    log.log('Loading asset files...');
     await Promise.all([
       this.nativeWaiter,
       this.yypWaiter,
@@ -1366,7 +1372,7 @@ export class Project {
     ]);
 
     const assets = await this.loadAssets(options);
-    logger.log(
+    log.log(
       'Resources',
       this.assets.size,
       'loaded files in',
