@@ -269,7 +269,10 @@ export class Project {
     // If it's a room, remove it from the room order list
     if (isAssetOfKind(asset, 'rooms')) {
       this.yyp.RoomOrderNodes = this.yyp.RoomOrderNodes.filter((node) => {
-        node.roomId.path.toLowerCase() !== asset.resource.id.path.toLowerCase();
+        return (
+          node.roomId.path.toLowerCase() !==
+          asset.resource.id.path.toLowerCase()
+        );
       });
     }
     // If it'll be referenced in other assets, remove those references
