@@ -1,7 +1,6 @@
 import { Asset, Code } from '@bscotch/gml-parser';
 import { literal } from '@bscotch/utility';
 import os from 'node:os';
-import { GameMakerFolder } from './tree.folder.mjs';
 import vscode from 'vscode';
 import { swallowThrown } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
@@ -32,15 +31,9 @@ import {
   pathyFromUri,
   registerCommand,
 } from './lib.mjs';
-import {
-  Timer,
-  getErrorMessage,
-  info,
-  logger,
-  showErrorMessage,
-  warn,
-} from './log.mjs';
+import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
 import type { SpriteSourcesTree as SpriteSourcesTreeType } from './spriteSources.mjs';
+import { GameMakerFolder } from './tree.folder.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 import { StitchIgorView } from './webview.igor.mjs';
 import { StitchSpriteEditorProvider } from './webviews.spriteEditor.mjs';
@@ -125,11 +118,7 @@ export async function activateStitchExtension(
     } catch (error) {
       logger.error(error);
       logger.error('Error loading project', yypFile);
-      let message = `Could not load project ${pathyFromUri(yypFile).basename}`;
-      const rootCause = getErrorMessage(error);
-      if (rootCause) {
-        message += ` ← ${rootCause}`;
-      }
+      let message = `Could not load project ${pathyFromUri(yypFile).basename}. This is likely because Stitch does not support the version of GameMaker that was last used with your project. [Submit a GitHub issue](https://github.com/bscotch/stitch/issues/new) with your \`.yyp\` file attached to see if this can be resolved in future versions of Stitch. See your Output panel for Stitch for a full error message.`;
       showErrorMessage(message);
     }
   }
