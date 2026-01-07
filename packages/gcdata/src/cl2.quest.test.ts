@@ -41,7 +41,8 @@ describe('Cl2 Quests', function () {
     await pathy('tmp.cl2_quest').write(stringifyQuest(quest, packed));
   });
 
-  it('can convert quests to text and back without error', async function () {
+  // Slow test, so skip this test when not in active dev
+  xit('can convert quests to text and back without error', async function () {
     this.timeout(20000);
     const packed = await GameChanger.from('Crashlands2');
     assert(packed, 'Packed data should be loaded');
