@@ -72,6 +72,14 @@ export function registerSignifiers(file: Code) {
     const processor = new SignifierProcessor(file);
     const visitor = new GmlSignifierVisitor(processor);
     visitor.UPDATE_SIGNIFIERS(file.cst);
+    // Clean up any unreferenced members of things referenced here
+    for (const ref of file.refs) {
+      for (const type of ref.item.type.type) {
+        for (const member of type.listMembers() || []) {
+          if (!member.refs.size) type.removeMember(member.name);
+        }
+      }
+    }
   } catch (parseErr) {
     const err = new StitchParserError(
       `Error identifying locals in ${file.path}`,
@@ -260,8 +268,9 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
 
     // Add references to types where appropriate
     for (const loc of jsdoc.typeRanges) {
-      const signifier = this.PROCESSOR.project.types.get(loc.content)
-        ?.signifier;
+      const signifier = this.PROCESSOR.project.types.get(
+        loc.content,
+      )?.signifier;
       if (!signifier) continue;
       signifier.addRef(Range.from(this.PROCESSOR.file, loc));
     }
