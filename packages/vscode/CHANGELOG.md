@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.78.0 (2026-01-07)
+
+### Features
+
+- Removed "delete" command from Object-attached Sprites in the Inspector since it deletes the sprite rather than unsetting it (which can be a surprise).
+
 ## 1.77.0 (2026-01-07)
 
 ### Features
