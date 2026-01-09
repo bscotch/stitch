@@ -39,6 +39,7 @@ export class GameMakerLauncher {
       ideVersion: string;
       runtimeVersion?: string;
       programFiles?: string;
+      disableUpdatePrompt?: boolean;
     },
   ) {
     console.log(
@@ -47,7 +48,9 @@ export class GameMakerLauncher {
     const ide = await GameMakerIde.install(openProjectOptions.ideVersion, {
       programFiles: openProjectOptions.programFiles,
     });
-    return ide.openProject(projectYypPath, openProjectOptions?.runtimeVersion);
+    return ide.openProject(projectYypPath, openProjectOptions?.runtimeVersion, {
+      disableUpdatePrompt: openProjectOptions?.disableUpdatePrompt,
+    });
   }
 
   static async runProject(

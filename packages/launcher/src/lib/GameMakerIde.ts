@@ -106,7 +106,11 @@ export class GameMakerIde extends GameMakerComponent {
     super(info);
   }
 
-  async openProject(projectYypPath: string | Pathy, runtimeVersion?: string) {
+  async openProject(
+    projectYypPath: string | Pathy,
+    runtimeVersion?: string,
+    options?: { disableUpdatePrompt?: boolean },
+  ) {
     const projectPath = Pathy.asInstance(projectYypPath);
     const user = await this.activeUser();
     assert(user, 'No active user', 'LOGIN_REQUIRED');
@@ -150,7 +154,9 @@ export class GameMakerIde extends GameMakerComponent {
 
     // Prevent the IDE from annoying the user with
     // suggestions to update.
-    await GameMakerIde.disableUpdatePrompt();
+    if (options?.disableUpdatePrompt) {
+      await GameMakerIde.disableUpdatePrompt();
+    }
     await GameMakerComponent.ensureOfficialRuntimeFeeds();
 
     return new GameMakerRunningIde(

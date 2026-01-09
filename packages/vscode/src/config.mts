@@ -40,6 +40,13 @@ class StitchConfig {
       this.config.get<Channel[]>('gameMaker.releases.notes.channels') || []
     );
   }
+  get disableGameMakerUpdatePrompt() {
+    return (
+      this.config.get<boolean>('gameMaker.disableGameMakerUpdatePrompt') ||
+      false
+    );
+  }
+
   get enableFunctionSignatureStatus() {
     return this.config.get<boolean>('editing.signatureStatus.enable');
   }

@@ -65,6 +65,7 @@ export class GameMakerProject extends Project {
           this.yypPath.absolute,
           {
             ideVersion: this.yyp.MetaData.IDEVersion,
+            disableUpdatePrompt: stitchConfig.disableGameMakerUpdatePrompt,
           },
         );
         progress.report({

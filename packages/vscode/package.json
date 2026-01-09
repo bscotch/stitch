@@ -396,6 +396,12 @@
           "default": false,
           "description": "Changes to spine sprites typically require a cache-clean. Setting this to `true` will automatically clean the cache when a spine sprite is changed."
         },
+        "stitch.gameMaker.disableGameMakerUpdatePrompt": {
+          "title": "Disable GameMaker IDE Update Prompt",
+          "description": "The GameMaker IDE will always prompt you if there is an updated version available, but most of the time you'll want to stay on your current version. If you enable this setting, when you boot the GameMaker IDE through Stitch it'll force-disable that prompt. ⚠️ Only enable this if you intend to only use Stitch to update your GameMaker IDE versions, or if you plan to do manual updates!",
+          "type": "boolean",
+          "default": false
+        },
         "stitch.gameMaker.releases.notes.channels": {
           "title": "GameMaker Release Channels",
           "type": "array",
