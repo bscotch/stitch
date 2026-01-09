@@ -756,12 +756,12 @@
         },
         {
           "command": "stitch.assets.delete",
-          "when": "viewItem =~ /^asset-/ && !(viewItem == asset-sprites && view == bscotch-stitch-inspector)",
+          "when": "viewItem =~ /^asset-/",
           "group": "7_modification@9"
         },
         {
           "command": "stitch.assets.duplicate",
-          "when": "viewItem =~ /^asset-/ && !(viewItem == asset-sprites && view == bscotch-stitch-inspector)",
+          "when": "viewItem =~ /^asset-/",
           "group": "7_modification@1"
         },
         {

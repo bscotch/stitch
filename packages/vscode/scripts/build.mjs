@@ -9,7 +9,7 @@ config();
 
 await $`mkdir -p ./dist`;
 
-const builder = esbuild.build({
+const builder = await esbuild.build({
   entryPoints: ['./src/extension.ts', './src/manifest.update.mts'],
   bundle: true,
   outdir: './dist/',
@@ -39,20 +39,23 @@ await $`rm -rf ./assets/templates`;
 await $`mkdir -p ./assets/templates`;
 await $`cp -r ../parser/assets/GmlSpec.xml ./assets/`;
 
-// Copy the pixel-checksum binary from current pixel-checksum,
+// Copy the pixel-checksum binaries from current pixel-checksum,
 // if we don't already have the same file. (This is because the
 // binary cannot be overwritten when the extension is running in
 // the debugger!)
-const destPath = pathy('./dist/pixel-checksum.node');
-const srcPath = pathy(
-  '../sprite-source/node_modules/@bscotch/pixel-checksum/pixel-checksum.node',
-);
-const destChecksum = (await destPath.exists())
-  ? await computeFileChecksum(destPath)
-  : null;
-const srcChecksum = destChecksum ? await computeFileChecksum(srcPath) : null;
-if (!srcChecksum || destChecksum !== srcChecksum) {
-  await $`cp ../sprite-source/node_modules/@bscotch/pixel-checksum/pixel-checksum.node ./dist`;
+for (const platform of ['linux', 'win32', 'darwin']) {
+  const exeName = `pixel-checksum.${platform}.node`;
+  const destPath = pathy(`./dist/${exeName}`);
+  const srcPath = pathy(
+    `../sprite-source/node_modules/@bscotch/pixel-checksum/${exeName}`,
+  );
+  const destChecksum = (await destPath.exists())
+    ? await computeFileChecksum(destPath)
+    : null;
+  const srcChecksum = destChecksum ? await computeFileChecksum(srcPath) : null;
+  if (!srcChecksum || destChecksum !== srcChecksum) {
+    await $`cp ../sprite-source/node_modules/@bscotch/pixel-checksum/${exeName} ./dist`;
+  }
 }
 
 // Update the icon theme file

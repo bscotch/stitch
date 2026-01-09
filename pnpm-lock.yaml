@@ -380,8 +380,8 @@ importers:
         specifier: ^2.12.1
         version: 2.12.1
       '@bscotch/pixel-checksum':
-        specifier: ^0.1.2
-        version: 0.1.2
+        specifier: ^1.0.0
+        version: 1.0.0
       '@bscotch/utility':
         specifier: ^7.2.0
         version: 7.2.0
@@ -700,8 +700,8 @@ packages:
   '@bscotch/pathy@2.12.1':
     resolution: {integrity: sha512-pp2gzFlVsplONjDxsHXfADQlZ4sdEKsud7asgKSMLd2wq830Zo/BXWx2MGsJxnIMs/gKX+R96kc4YnDWHJF7Kg==}
 
-  '@bscotch/pixel-checksum@0.1.2':
-    resolution: {integrity: sha512-BxhS7EhhRXX1oEEriS8IREBVnIXwFYzh1exYL+II67MRD5bXEudzs/VzA9Hso46wR2ZKbg8PmxAjBpd6YZRqfw==}
+  '@bscotch/pixel-checksum@1.0.0':
+    resolution: {integrity: sha512-Yokt5Z9s/ZucUQqSTe75ZyAJ7Vz+i62th+ivDfEfJVBDX65Ib5D3C4v18KWVZfyy+vKaKRMWkgAG8ptAob+Qbg==}
 
   '@bscotch/project@2.4.5':
     resolution: {integrity: sha512-CMyMo4torc++2zOdeIxZIvtGcC2wQb5qo9N2jVeij/vJsqh4jifxr+fMsAzbrAt0BUGFHT9V61opL9eO7WXcJA==}
@@ -4377,7 +4377,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@bscotch/pixel-checksum@0.1.2': {}
+  '@bscotch/pixel-checksum@1.0.0': {}
 
   '@bscotch/project@2.4.5':
     dependencies:

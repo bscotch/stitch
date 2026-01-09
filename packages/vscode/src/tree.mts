@@ -1,16 +1,16 @@
 import {
+  assertIsAssetOfKind,
   Asset,
   Code,
   ImportModuleOptions,
-  ObjectEvent,
-  Project,
-  assertIsAssetOfKind,
   isAssetOfKind,
+  ObjectEvent,
   objectEvents,
+  Project,
 } from '@bscotch/gml-parser';
 import { pathy } from '@bscotch/pathy';
+import { applySpriteAction, SpriteDir } from '@bscotch/sprite-source';
 import { isValidSpriteName } from '@bscotch/stitch-config';
-import os from 'node:os';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
@@ -485,10 +485,6 @@ export class GameMakerTreeProvider
   }
 
   async replaceSpriteFrames(item: TreeAsset) {
-    assertLoudly(os.platform() === 'win32', 'This feature is Windows-only.');
-
-    const { applySpriteAction } = await import('@bscotch/sprite-source');
-
     const asset = item.asset;
     assertIsAssetOfKind(asset, 'sprites');
     const project = item.parent.project!;
@@ -531,9 +527,6 @@ export class GameMakerTreeProvider
   }
 
   private async getSpriteSource() {
-    assertLoudly(os.platform() === 'win32', 'This feature is Windows-only.');
-    const { SpriteDir } = await import('@bscotch/sprite-source');
-
     // Prompt for the source folder
     const sourceFolder = await vscode.window.showOpenDialog({
       canSelectFiles: false,
@@ -609,9 +602,6 @@ export class GameMakerTreeProvider
   }
 
   async createSprite(where: GameMakerFolder) {
-    assertLoudly(os.platform() === 'win32', 'This feature is Windows-only.');
-    const { applySpriteAction } = await import('@bscotch/sprite-source');
-
     const project = where.project!;
     assertLoudly(project, 'Cannot create sprite without a project.');
     await project.reloadConfig();

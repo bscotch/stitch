@@ -1,6 +1,5 @@
 import { Asset, Code } from '@bscotch/gml-parser';
 import { literal } from '@bscotch/utility';
-import os from 'node:os';
 import vscode from 'vscode';
 import { swallowThrown } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
@@ -32,7 +31,7 @@ import {
   registerCommand,
 } from './lib.mjs';
 import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
-import type { SpriteSourcesTree as SpriteSourcesTreeType } from './spriteSources.mjs';
+import { SpriteSourcesTree } from './spriteSources.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 import { StitchIgorView } from './webview.igor.mjs';
@@ -129,13 +128,6 @@ export async function activateStitchExtension(
   const treeProvider = new GameMakerTreeProvider(workspace);
   const inspectorProvider = new GameMakerInspectorProvider(workspace);
   const definitionsProvider = new StitchDefinitionsProvider(workspace);
-
-  // SpriteSources currently only work on Windows, and will cause errors on
-  // other platforms. So we'll only register it if we're on Windows.
-  let SpriteSourcesTree: typeof SpriteSourcesTreeType | undefined;
-  if (os.platform() === 'win32') {
-    ({ SpriteSourcesTree } = await import('./spriteSources.mjs'));
-  }
 
   ctx.subscriptions.push(
     // vscode.window.onDidChangeActiveTextEditor((editor) => {
