@@ -1,5 +1,15 @@
 # @bscotch/gml-parser Changelog
 
+## 1.17.0 (2026-01-09)
+
+### Features
+
+- Updated the fallback GmlSpec to a more recent version.
+
+### Fixes
+
+- Resolved a bunch of issues where Stitch would lose track of identifiers. This was caused by the prior attempted fix to prevent non-existent variables from being tracked, which is now resolved correctly.
+
 ## 1.16.0 (2026-01-07)
 
 ### Features

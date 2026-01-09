@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.79.0 (2026-01-09)
+
+### Features
+
+- Sprite-related features now work on Linux and MacOS
+
 ## 1.78.0 (2026-01-07)
 
 ### Features

@@ -1,5 +1,15 @@
 # @bscotch/sprite-source Changelog
 
+## 1.6.0 (2026-01-09)
+
+### Features
+
+- Sprite-related features now work on Linux and MacOS
+
+### Fixes
+
+- Resolved incorrect dependency version for pixel-checksum
+
 ## 1.5.0 (2026-01-07)
 
 ### Features

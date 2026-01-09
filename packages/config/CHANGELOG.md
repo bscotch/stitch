@@ -1,5 +1,11 @@
 # @bscotch/stitch-config Changelog
 
+## 0.7.0 (2026-01-09)
+
+### Features
+
+- Sprite-related features now work on Linux and MacOS
+
 ## 0.6.0 (2026-01-07)
 
 ### Features
