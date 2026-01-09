@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.80.0 (2026-01-09)
+
+### Features
+
+- The Stitch launcher no longer disables GameMaker's update-available messages by default. You can opt into having it do this via a new setting when running the launcher, also available as a setting in Stitch for VSCode.
+
 ## 1.79.0 (2026-01-09)
 
 ### Features
