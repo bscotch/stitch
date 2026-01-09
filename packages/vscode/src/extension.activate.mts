@@ -53,6 +53,37 @@ export async function activateStitchExtension(
 
   workspace.clearProjects();
 
+  // Dev-only watcher: reload window when files in dist/ or assets/ change,
+  // debounced so rapid changes only trigger one reload.
+  if (ctx.extensionMode === vscode.ExtensionMode.Development) {
+    const patterns = [
+      new vscode.RelativePattern(ctx.extensionPath, 'dist/**'),
+      new vscode.RelativePattern(ctx.extensionPath, 'assets/**'),
+    ];
+
+    let timer: NodeJS.Timeout | undefined;
+    const DEBOUNCE_MS = 100; // adjust delay as needed
+
+    const scheduleReload = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        console.log('Extension source updated. Reloading!');
+        vscode.commands.executeCommand('workbench.action.reloadWindow');
+      }, DEBOUNCE_MS);
+    };
+
+    const extWatchers = patterns.map((p) =>
+      vscode.workspace.createFileSystemWatcher(p, false, false, false),
+    );
+
+    extWatchers.forEach((w) => {
+      w.onDidCreate(scheduleReload);
+      w.onDidChange(scheduleReload);
+      w.onDidDelete(scheduleReload);
+      ctx.subscriptions.push(w);
+    });
+  }
+
   info('Loading projects...');
   const toWatch: vscode.RelativePattern[] = [];
 
