@@ -276,6 +276,10 @@ export class GameMakerIde extends GameMakerComponent {
       const macros: GameMakerDefaultMacros = (await path.exists())
         ? await path.read()
         : {};
+      const backupPath = path.changeExtension('.bk.json');
+      if (Object.keys(macros).length > 0 && !(await backupPath.exists())) {
+        await path.copy(backupPath);
+      }
       // Set it to a syntactically correct, but
       // non-existent RSS feed.
       macros.updateURI =
