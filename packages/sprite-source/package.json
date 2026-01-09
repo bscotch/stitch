@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@bscotch/pathy": "^2.12.1",
-    "@bscotch/pixel-checksum": "^0.1.2",
+    "@bscotch/pixel-checksum": "^1.0.0",
     "@bscotch/utility": "^7.2.0",
     "@bscotch/yy": "workspace:*",
     "citty": "0.1.6",
