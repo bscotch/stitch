@@ -1,5 +1,11 @@
 # @bscotch/stitch-launcher Changelog
 
+## 1.7.1 (2026-01-09)
+
+### Fixes
+
+- Stitch now creates a backup of the current `default_macros.json` file before changing its contents, for manual recovery.
+
 ## 1.7.0 (2026-01-09)
 
 ### Features
