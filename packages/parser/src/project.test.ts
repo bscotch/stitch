@@ -356,6 +356,31 @@ describe('Project', function () {
     await complexScriptFile.reload();
     logger.log('Re-running after reload...');
     validateBschemaConstructor(project);
+
+    // Mock reload a file during editing and ensure that
+    // no extraneous identifiers are created
+    let code = complexScriptFile.content;
+    await complexScriptFile.reload(
+      code + `\n\nfunction Tmp () constructor {a}`,
+      { reloadDirty: true },
+    );
+    await complexScriptFile.reload(
+      code + `\n\nfunction Tmp () constructor {ab}`,
+      { reloadDirty: true },
+    );
+    // A should no longer exist!
+    assert(complexScriptFile.refs.find((r) => r.item.name === 'ab'));
+    assert(!complexScriptFile.refs.find((r) => r.item.name === 'a'));
+    assert(
+      complexScriptFile.refs
+        .find((r) => r.item.name === 'Tmp')!
+        .item.type.type[0].self!.getMember('ab'),
+    );
+    assert(
+      !complexScriptFile.refs
+        .find((r) => r.item.name === 'Tmp')!
+        .item.type.type[0].self!.getMember('a'),
+    );
   });
 
   it('can sync datafiles', async function () {

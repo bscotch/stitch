@@ -446,7 +446,7 @@ export class Code {
 
   protected reset() {
     this.initializeScopeRanges();
-    // Remove each reference in *this file* from its symbol.
+    // Remove each reference in *this file* from its symbol. If that was the only reference to its signifier, and it was a defining reference, also remove the signifier
     const cleared = new Set<ReferenceableType>();
     for (const ref of this._refs) {
       const signifier = ref.item;
@@ -467,6 +467,10 @@ export class Code {
         } else {
           symbolRef.file.dirty = true;
         }
+      }
+      // If no refs remain and was defined here, delete the signifier as well
+      if (isDefinedInThisFile && !signifier.refs.size) {
+        signifier.parent.removeMember(signifier.name);
       }
       cleared.add(signifier);
     }

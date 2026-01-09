@@ -72,14 +72,6 @@ export function registerSignifiers(file: Code) {
     const processor = new SignifierProcessor(file);
     const visitor = new GmlSignifierVisitor(processor);
     visitor.UPDATE_SIGNIFIERS(file.cst);
-    // Clean up any unreferenced members of things referenced here
-    for (const ref of file.refs) {
-      for (const type of ref.item.type.type) {
-        for (const member of type.listMembers() || []) {
-          if (!member.refs.size) type.removeMember(member.name);
-        }
-      }
-    }
   } catch (parseErr) {
     const err = new StitchParserError(
       `Error identifying locals in ${file.path}`,
