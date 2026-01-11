@@ -4,6 +4,7 @@
 
 ### Features
 
+- The Stitch Runner now includes a "Wrap Lines" toggle
 - Updated all dependencies.
 - Added support for styling runner logs
 - Completed draft of the new project Runner view

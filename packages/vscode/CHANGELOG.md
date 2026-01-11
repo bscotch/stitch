@@ -1,5 +1,11 @@
 # Stitch Changelog
 
+## 1.81.0 (2026-01-11)
+
+### Features
+
+- The Stitch Runner now includes a "Wrap Lines" toggle
+
 ## 1.80.2 (2026-01-11)
 
 ### Fixes
