@@ -253,24 +253,29 @@ export async function activateStitchExtension(
       'stitch.types.copyAsJsdocType',
       createCopyAsJsdocTypeCallback(workspace),
     ),
-    registerCommand('stitch.run', (uriOrFolder: string[] | GameMakerFolder) => {
-      const project = findProject(workspace, uriOrFolder);
-      if (!project) {
-        void showErrorMessage('No project found to run!');
-        return;
-      }
-      const lastConfig = ctx.workspaceState.get('lastRunConfig');
-      if (
-        lastConfig &&
-        typeof lastConfig === 'object' &&
-        'compiler' in lastConfig &&
-        'config' in lastConfig
-      ) {
-        project.run(lastConfig as any);
-        return;
-      }
-      project.run();
-    }),
+    registerCommand(
+      'stitch.run',
+      async (uriOrFolder: string[] | GameMakerFolder) => {
+        const project = findProject(workspace, uriOrFolder);
+        if (!project) {
+          void showErrorMessage('No project found to run!');
+          return;
+        }
+        let lastConfig: any = ctx.workspaceState.get('lastRunConfig');
+        const isValidConfig =
+          typeof lastConfig === 'object' &&
+          'compiler' in lastConfig &&
+          'config' in lastConfig;
+        if (!isValidConfig) {
+          lastConfig = undefined;
+        }
+        try {
+          await project.run(lastConfig);
+        } catch (err) {
+          void showErrorMessage(err as Error);
+        }
+      },
+    ),
     registerCommand(
       'stitch.stop',
       (uriOrFolder: string[] | GameMakerFolder) => {
