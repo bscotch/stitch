@@ -217,6 +217,12 @@
         "enablement": "stitch.projectCount > 0"
       },
       {
+        "command": "stitch.runner.toggleLineWrap",
+        "title": "Toggle Line Wrap",
+        "icon": "$(word-wrap)",
+        "enablement": "stitch.projectCount > 0"
+      },
+      {
         "command": "stitch.runner.refresh",
         "title": "Refresh",
         "icon": "$(sync)",
@@ -672,14 +678,19 @@
           "group": "navigation@1"
         },
         {
-          "command": "stitch.runner.refresh",
+          "command": "stitch.runner.toggleLineWrap",
           "when": "view == bscotch-stitch-igor",
           "group": "navigation@2"
         },
         {
+          "command": "stitch.runner.refresh",
+          "when": "view == bscotch-stitch-igor",
+          "group": "navigation@3"
+        },
+        {
           "command": "stitch.stop",
           "when": "view == bscotch-stitch-igor || (view == bscotch-stitch-resources && config.stitch.run.inTerminal)",
-          "group": "navigation@3"
+          "group": "navigation@4"
         },
         {
           "command": "stitch.run",

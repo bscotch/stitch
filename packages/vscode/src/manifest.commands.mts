@@ -321,6 +321,16 @@ export const commands = {
       group: 'navigation@1',
     },
   },
+  'stitch.runner.toggleLineWrap': {
+    command: 'stitch.runner.toggleLineWrap',
+    title: 'Toggle Line Wrap',
+    icon: '$(word-wrap)',
+    enablement: when.hasProjects,
+    [$showInViewTitle]: {
+      when: when.runnerViewFocused,
+      group: 'navigation@2',
+    },
+  },
   'stitch.runner.refresh': {
     command: 'stitch.runner.refresh',
     title: 'Refresh',
@@ -328,7 +338,7 @@ export const commands = {
     enablement: when.hasProjects,
     [$showInViewTitle]: {
       when: when.runnerViewFocused,
-      group: 'navigation@2',
+      group: 'navigation@3',
     },
   },
   'stitch.stop': {
@@ -340,7 +350,7 @@ export const commands = {
     [$showInPalette]: true,
     [$showInViewTitle]: {
       when: `${when.runnerViewFocused} || (${when.assetTreeFocused} && ${when.runningInTerminal})`,
-      group: 'navigation@3',
+      group: 'navigation@4',
     },
     [$showInViewItemContextMenu]: {
       when: when.isInlineProject,

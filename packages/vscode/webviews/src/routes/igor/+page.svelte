@@ -35,6 +35,7 @@
 	let exitCode = $state(null as number | null);
 	let logs = $state<Log[]>([]);
 	let config = $state(undefined as IgorWebviewConfig | undefined);
+	let wrapLines = $state(false);
 	let mainStyle = $derived.by(() => {
 		let style = '';
 		if (config?.fontFamily) {
@@ -87,6 +88,8 @@
 			exitCode = message.code;
 		} else if (message.kind === 'toggle-search') {
 			toggleSearch();
+		} else if (message.kind === 'toggle-line-wrap') {
+			wrapLines = !wrapLines;
 		}
 	});
 
@@ -291,6 +294,7 @@
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<ul
 				class="logs reset"
+				class:wrap={wrapLines}
 				onclick={(e) => {
 					if (e.target instanceof HTMLElement && e.target.classList.contains('asset-link')) {
 						const { type, asset, event, line } = e.target.dataset as Record<string, string>;
@@ -341,9 +345,7 @@
 
 <style>
 	main,
-	samp,
-	input,
-	code {
+	samp {
 		font-family: var(--font-family);
 		font-size: var(--font-size);
 	}
@@ -368,9 +370,7 @@
 	.log.stderr {
 		color: var(--color-text-error);
 	}
-	section,
-	li,
-	code {
+	li {
 		/* word-break: break-all; */
 		overflow-wrap: break-word;
 	}
@@ -383,6 +383,9 @@
 		font-family: inherit;
 		margin: 0;
 		padding: 0;
+	}
+	ul.logs.wrap pre {
+		white-space: pre-wrap;
 	}
 	li.log:hover {
 		border-color: white;

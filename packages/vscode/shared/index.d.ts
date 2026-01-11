@@ -49,6 +49,9 @@ export interface IgorExitedMessage {
 export interface ToggleSearchMessage {
   kind: 'toggle-search';
 }
+export interface ToggleLineWrap {
+  kind: 'toggle-line-wrap';
+}
 
 export type IgorWebviewExtensionPosts =
   | WebviewResetMessage
@@ -58,5 +61,6 @@ export type IgorWebviewExtensionPosts =
   | WebviewOpenAssetMessage
   | IgorWebviewExtensionPostRun
   | IgorWebviewExtensionPostLogs
+  | ToggleLineWrap
   | ToggleSearchMessage;
 export type IgorWebviewPosts = WebviewReadyMessage | WebviewOpenAssetMessage;

@@ -167,6 +167,9 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
       registerCommand('stitch.runner.toggleSearchWidget', () => {
         igorView.container?.webview.postMessage({ kind: 'toggle-search' });
       }),
+      registerCommand('stitch.runner.toggleLineWrap', () => {
+        igorView.container?.webview.postMessage({ kind: 'toggle-line-wrap' });
+      }),
       registerCommand('stitch.runner.refresh', () => {
         igorView.refreshConfig();
       }),
