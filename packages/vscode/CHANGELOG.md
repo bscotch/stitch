@@ -1,5 +1,12 @@
 # Stitch Changelog
 
+## 1.80.2 (2026-01-11)
+
+### Fixes
+
+- Resolved a build-order issue causing the Stitch VSCode runner view to not update with logs when running a project from it.
+- Fixed issue where the user was not visibly alerted when Stitch couldn't run the GameMaker runner because they needed to log into the IDE first.
+
 ## 1.80.0 (2026-01-09)
 
 ### Features

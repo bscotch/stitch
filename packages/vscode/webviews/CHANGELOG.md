@@ -1,6 +1,6 @@
 # @local-vscode/webviews Changelog
 
-## 0.0.1 (2026-01-07)
+## 0.0.1 (2026-01-11)
 
 ### Features
 
@@ -20,6 +20,7 @@
 
 ### Fixes
 
+- Resolved a build-order issue causing the Stitch VSCode runner view to not update with logs when running a project from it.
 - Error traces are now clickable in the runner view.
 - Resolved formatting issues in the Runner logs caused by wrapping entries in the <pre> tag for horizontal spacing support
 - Resolved issue where logged spaces are not shown in the Runner panel
