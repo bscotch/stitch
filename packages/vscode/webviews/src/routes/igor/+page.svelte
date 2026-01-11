@@ -285,22 +285,23 @@
 
 		{#if logs.length === 0}
 			<p><i>No logs yet...</i></p>
+			<!-- svelte-ignore legacy_code -->
 		{:else}
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<ul
 				class="logs reset"
-				on:click={(e)=>{
-				if (e.target instanceof HTMLElement && e.target.classList.contains('asset-link')) {
-					const { type, asset, event, line } = e.target.dataset as Record<string,string>;
-					// @ts-expect-error
-					vscode.postMessage({ kind: 'open', type, asset, event, line: parseInt(line) || 0 });
-				}
-			}}
+				onclick={(e) => {
+					if (e.target instanceof HTMLElement && e.target.classList.contains('asset-link')) {
+						const { type, asset, event, line } = e.target.dataset as Record<string, string>;
+						// @ts-expect-error
+						vscode.postMessage({ kind: 'open', type, asset, event, line: parseInt(line) || 0 });
+					}
+				}}
 			>
 				{#each logs as log, i (i)}
 					<li class={`log ${log.kind}`}>
-						<!-- svelte-ignore a11y-missing-content -->
+						<!-- svelte-ignore a11y_consider_explicit_label -->
 						<a href={`#log-${i}`}></a>
 						<pre>{#if log.asSearchResult}{@html log.asSearchResult}{:else}{@html log.asHtml ||
 									log.message}{/if}</pre>
@@ -313,7 +314,7 @@
 						type="button"
 						class={showSearch ? 'primary' : 'secondary'}
 						title={showSearch ? 'Close search' : 'Open search'}
-						on:click={() => toggleSearch()}
+						onclick={() => toggleSearch()}
 					>
 						<SearchIcon />
 					</button>
@@ -322,7 +323,7 @@
 					type="button"
 					class={autoScroll ? 'primary' : 'secondary'}
 					title={autoScroll ? 'Disable auto-scroll' : 'Enable auto-scroll'}
-					on:click={() => (autoScroll = !autoScroll)}
+					onclick={() => (autoScroll = !autoScroll)}
 				>
 					<AnglesDownIcon />
 				</button>

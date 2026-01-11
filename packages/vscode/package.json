@@ -27,7 +27,7 @@
   "publisher": "bscotch",
   "main": "./dist/extension.js",
   "scripts": {
-    "build": "pnpm build:extension && pnpm build:webviews",
+    "build": "pnpm build:webviews && pnpm build:extension",
     "build:deps": "pnpm run -r --filter=bscotch-stitch-vscode... --stream build",
     "build:extension": "pnpm build:grammar && node scripts/build-schemas.mjs && node scripts/build.mjs && pnpm build:manifest",
     "build:grammar": "node scripts/yaml-to-json.mjs syntaxes/gml.tmLanguage.yaml syntaxes/gml.tmLanguage.json",
