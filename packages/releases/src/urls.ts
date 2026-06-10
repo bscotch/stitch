@@ -4,6 +4,7 @@ import type { Channel } from './feeds.types.js';
 export function ideFeedUrls() {
   const prefix = `https://gms.yoyogames.com/update-win`;
   return literal({
+    lts_2026: `${prefix}-LTS2026.rss`,
     lts: `${prefix}-LTS.rss`,
     stable: `${prefix}.rss`,
     beta: `${prefix}-NuBeta.rss`,
@@ -14,6 +15,7 @@ export function ideFeedUrls() {
 export function runtimeFeedUrls() {
   const prefix = `https://gms.yoyogames.com/Zeus-Runtime`;
   return literal({
+    lts_2026: `${prefix}-LTS2026.rss`,
     lts: `${prefix}-LTS.rss`,
     stable: `${prefix}.rss`,
     beta: `${prefix}-NuBeta.rss`,
