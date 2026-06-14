@@ -236,6 +236,13 @@ export const objectEvents = [
     group: 'async',
   },
   {
+    label: 'Async - Networking',
+    name: 'Other_68',
+    eventNum: 68,
+    eventType: 7,
+    group: 'async',
+  },
+  {
     label: 'Broadcast Message',
     name: 'Other_76',
     eventNum: 76,
