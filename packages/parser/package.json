@@ -42,19 +42,20 @@
     "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/utility": "^7.2.0",
     "@bscotch/yy": "workspace:*",
-    "chevrotain": "11.1.0",
-    "magic-string": "0.30.21",
-    "tslib": "^2.8.1",
-    "xml2js": "0.6.2",
-    "zod": "^4.3.5"
+    "chevrotain": "13.2.0",
+    "fast-xml-parser": "^5.12.1",
+    "magic-string": "1.4.5",
+    "tslib": "^2.9.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/xml2js": "0.4.14",
-    "dotenv": "17.2.3",
-    "prettier": "^3.7.4",
+    "prettier": "^3.10.1",
     "typescript": "6.0.3"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

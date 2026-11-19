@@ -268,7 +268,7 @@ export function gmlLinesByGroup(gmlLines: IToken[]): JsdocLine[][] {
     if (!line) {
       continue;
     }
-    let match: RegExpMatchArray | null = null;
+    let match: RegExpMatchArray | null;
     for (const tagName of names) {
       match = line.content.match(regexes[tagName]) as RegExpMatchArray;
       if (!match) {

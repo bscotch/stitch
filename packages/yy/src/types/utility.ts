@@ -4,6 +4,22 @@ import type { YypResourceId } from './Yyp.ts';
 
 export const nameField = '%Name';
 
+type Primitive = string | number | bigint | boolean | symbol | null | undefined;
+
+/**
+ * Recursively make all properties of `T` optional,
+ * including those of objects within arrays.
+ */
+export type PartialDeep<T> = T extends Primitive | ((...args: any[]) => unknown)
+  ? T
+  : T extends (infer U)[]
+    ? PartialDeep<U>[]
+    : T extends readonly (infer U)[]
+      ? readonly PartialDeep<U>[]
+      : T extends object
+        ? { [K in keyof T]?: PartialDeep<T[K]> }
+        : T;
+
 export function randomString(length = 32) {
   let a = '';
   for (let i = 0; i < length; i++) {

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { pathy } from '@bscotch/pathy';
-import { default as inquirer } from 'inquirer';
+import { createInterface } from 'node:readline/promises';
 import { GameMakerComponent } from './GameMakerComponent.ts';
 import { GameMakerIde } from './GameMakerIde.ts';
 import { GameMakerLauncher } from './GameMakerLauncher.ts';
@@ -146,13 +146,9 @@ describe.skip('GameMakerLauncher', function () {
       });
       assert.equal(typeof opener.runtimeVersion, 'string');
 
-      const { hasCorrectVersions } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          message: `Is the IDE version ${sampleProjectCompatibleIde} and the Runtime version ${opener.runtimeVersion}?`,
-          name: 'hasCorrectVersions',
-        },
-      ]);
+      const hasCorrectVersions = await confirm(
+        `Is the IDE version ${sampleProjectCompatibleIde} and the Runtime version ${opener.runtimeVersion}?`,
+      );
       assert.equal(
         hasCorrectVersions,
         true,
@@ -175,13 +171,9 @@ describe.skip('GameMakerLauncher', function () {
         ideVersion: sampleProjectCompatibleIde,
         runtimeVersion: sampleProjectCompatibleRuntime,
       });
-      const { hasCorrectVersions } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          message: `Is the IDE version ${sampleProjectCompatibleIde} and the Runtime version ${sampleProjectCompatibleRuntime}?`,
-          name: 'hasCorrectVersions',
-        },
-      ]);
+      const hasCorrectVersions = await confirm(
+        `Is the IDE version ${sampleProjectCompatibleIde} and the Runtime version ${sampleProjectCompatibleRuntime}?`,
+      );
       assert.equal(
         hasCorrectVersions,
         true,
@@ -191,3 +183,14 @@ describe.skip('GameMakerLauncher', function () {
     },
   );
 });
+
+/** Ask a yes/no question on the terminal (defaults to yes). */
+async function confirm(message: string): Promise<boolean> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    const answer = await rl.question(`${message} (Y/n) `);
+    return !/^n/i.test(answer.trim());
+  } finally {
+    rl.close();
+  }
+}

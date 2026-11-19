@@ -153,7 +153,7 @@ function getAllowedGivers(packed: Gcdata) {
   );
 }
 
-export function isEmoteMoment<T extends Crashlands2.QuestMoment>(
+export function isEmoteMoment<T extends { style: string }>(
   moment: T,
 ): moment is T & { style: 'Emote' } {
   return moment.style === 'Emote';

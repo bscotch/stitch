@@ -1,8 +1,10 @@
 import { Pathy } from '@bscotch/pathy';
 import { ok } from 'assert';
-import { default as axios } from 'axios';
 import { exec } from 'child_process';
 import { createWriteStream } from 'fs';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+import type { ReadableStream as WebReadableStream } from 'node:stream/web';
 import os from 'os';
 import type {
   GameMakerDefaultMacros,
@@ -129,7 +131,7 @@ export async function downloadIfCacheExpired<T>(
     logger?.log('Cache expired. Refreshing...');
     let data!: T;
     try {
-      data = (await axios(url)).data as T;
+      data = await fetchData<T>(url);
       await filePath.write(data);
     } catch (err) {
       const fileExists = filePath.existsSync();
@@ -180,20 +182,37 @@ export async function download(
   }
   await to.up().ensureDirectory();
   console.log(`Downloading ${url} to ${to.absolute}`);
-  const response = await axios({
-    method: 'get',
-    url,
-    responseType: 'stream',
-  });
-  const writeStream = createWriteStream(to.absolute);
-  response.data.pipe(writeStream);
+  const response = await fetchOk(url);
+  if (!response.body) {
+    throw new Error(`No response body when downloading "${url}"`);
+  }
+  await pipeline(
+    Readable.fromWeb(response.body as WebReadableStream<Uint8Array>),
+    createWriteStream(to.absolute),
+  );
+}
 
-  return new Promise((resolve) => {
-    writeStream.on('finish', () => {
-      writeStream.close();
-      resolve(undefined);
-    });
-  });
+async function fetchOk(url: string): Promise<Response> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `Error fetching "${url}": ${response.status} ${response.statusText}`,
+    );
+  }
+  return response;
+}
+
+/**
+ * Fetch a URL's content, parsed as JSON if possible
+ * and otherwise returned as text.
+ */
+async function fetchData<T>(url: string): Promise<T> {
+  const text = await (await fetchOk(url)).text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return text as T;
+  }
 }
 
 // Make async so we don't block any threads

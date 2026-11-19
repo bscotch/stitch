@@ -1,3 +1,3 @@
-import { deleteAsync } from 'del';
+import { removeGlobs } from './clean.mjs';
 
-await deleteAsync(['node_modules', '*/*/node_modules']);
+await removeGlobs(['node_modules', '*/*/node_modules']);

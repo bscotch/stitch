@@ -1,4 +1,4 @@
-import { deleteAsync } from 'del';
+import { removeGlobs } from './clean.mjs';
 
 const toDelete = ['node_modules/.cache', 'dist'];
 const projectFolders = ['packages'];
@@ -20,4 +20,4 @@ for (const projectFolder of projectFolders) {
   }
 }
 
-await deleteAsync(toDelete);
+await removeGlobs(toDelete);

@@ -1,6 +1,5 @@
 import { Client, Glossary } from '@bscotch/cl2-string-server-shared';
 import { type Pathy, pathy } from '@bscotch/pathy';
-import fetch from 'node-fetch';
 import { gameChangerEvents } from './GameChanger.events.ts';
 import { GcdataError, assert } from './assert.ts';
 import {
@@ -773,8 +772,7 @@ export class GameChanger {
       baseUrl: access.host,
       password: access.password,
       user: access.username,
-      // @ts-expect-error A type mismatch, but this is the correct thing!
-      fetch,
+      fetch: globalThis.fetch,
     });
     this.glossary = await Glossary.create(client);
     return this.glossary;

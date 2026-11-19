@@ -1,7 +1,6 @@
 // Convert the World Handbook into a list of languages and their proportional languages
 
 import fs from 'fs/promises';
-import fetch from 'node-fetch';
 import { steamLanguages } from './steam-languages.mjs';
 
 let download = false;
@@ -72,7 +71,7 @@ const steamCountries = [
 ];
 
 /** @type {import('./WorldHandbook.js').WorldDataCountry[]} */
-let countries = [];
+let countries;
 if (download) {
   
   const handbookRaw = /** @type {import('./WorldHandbook.js').WorldData} */(await fetch('https://www.cia.gov/the-world-factbook/page-data/field/languages/page-data.json').then(res => res.json()));

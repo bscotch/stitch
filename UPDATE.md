@@ -47,6 +47,13 @@ Before updating external dependencies:
 
 After these are complete, update the remaining dependencies and ensure all tests continue to pass.
 
+- [x] Audit all external dependencies: replace with native Node/local code where possible, else swap for a better package, else update.
+  - **Replaced with native/local code:** `node-fetch`, `axios` (global `fetch`), `uuid` (`crypto.randomUUID()`), `type-fest` (local `PartialDeep` exported from `@bscotch/yy`), `dotenv` (`process.loadEnvFile()`), `inquirer` (`node:readline/promises`), `citty` (`node:util` `parseArgs`), `zx`/`del`/`rimraf` (`node:fs/promises`, via `scripts/clean.mjs`), `concurrently` (pnpm's regex script selector). Unused `glob` and `tslib` (in packages not using `__decorate`) were removed.
+  - **Swapped:** `xml2js` → `fast-xml-parser` (output verified identical across 34 GmlSpec files); `image-js` → `fast-png` + a small local `Raster` (output verified pixel-identical across all PNG formats). ⚠️ Behavior change: sprite-source now treats images without alpha as fully opaque when cropping (image-js used the last color channel as if it were alpha).
+  - **Updated** everything else to latest, except: TypeScript stays at 6.0.3 (typescript-eslint, svelte-check, and Kit don't support 7 yet), `@types/vscode` matches `engines.vscode` (1.107), and `spine-player` stays on 4.2.x to match the Spine editor version.
+  - **Node 22 is the baseline** (VSCode's embedded runtime): `@types/node` ^22, CI and `.npmrc`'s `use-node-version` on 22.x, and `engines.node: ">=22"` on published libraries. Under Node 22 `node --test` defaults to the TAP reporter when not in a TTY.
+  - `gcdata`'s `build:types` output changes shape under `json-schema-to-typescript` 16 (`oneOf` branches are intersected with shared properties). The code supports both shapes, but the generated `cl2.types.auto.ts` was not regenerated, since doing so also pulls in unrelated Crashlands2 data changes.
+
 ## Phase 4: Ensure Compatibility with new GameMaker
 
 We need support for GameMaker IDE 2026.100.0.1199 and runtime 2026.100.0.1133:

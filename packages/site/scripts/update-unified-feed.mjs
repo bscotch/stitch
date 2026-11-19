@@ -1,6 +1,5 @@
 import { computeReleasesSummaryWithNotes } from '@bscotch/gamemaker-releases';
 import { pathy } from '@bscotch/pathy';
-import fetch from 'node-fetch';
 
 // UPDATE GAMEMAKER RELEASES SUMMARY
 const artifactsDir = pathy('static/artifacts/gamemaker');

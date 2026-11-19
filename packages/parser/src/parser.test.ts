@@ -3,14 +3,17 @@ import assert from 'node:assert/strict';
 import { pathy } from '@bscotch/pathy';
 import { undent } from '@bscotch/utility';
 import type { IRecognitionException } from 'chevrotain';
-import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { logger } from './logger.ts';
 import { GmlParser } from './parser.ts';
 import { Type } from './types.ts';
 import { ok } from './util.ts';
 
-dotenv.config();
+try {
+  process.loadEnvFile();
+} catch {
+  // No .env file, which is fine (e.g. in CI)
+}
 
 function showErrors(
   parser: GmlParser | IRecognitionException[],

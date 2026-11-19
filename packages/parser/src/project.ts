@@ -1371,7 +1371,6 @@ export class Project {
       'ms',
     );
 
-    t = Date.now();
     // Discover all globals
     // Sort assets by type, with objects 2nd to last and scripts last
     // to minimize the number of things that need to be updated after

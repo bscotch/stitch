@@ -104,6 +104,11 @@ export default tseslint.config(
         extraFileExtensions: ['.svelte'],
       },
     },
+    rules: {
+      // Can't see reads from the component's template, so it
+      // flags state initializers that are later reassigned.
+      'no-useless-assignment': 'off',
+    },
   },
   {
     // Type-aware rules for TypeScript source
@@ -128,15 +133,7 @@ export default tseslint.config(
             {
               from: 'package',
               package: 'node:test',
-              name: [
-                'describe',
-                'it',
-                'test',
-                'suite',
-                'skip',
-                'todo',
-                'only',
-              ],
+              name: ['describe', 'it', 'test', 'suite', 'skip', 'todo', 'only'],
             },
           ],
         },

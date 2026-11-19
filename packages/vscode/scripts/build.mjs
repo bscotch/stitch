@@ -1,13 +1,15 @@
 import { pathy } from '@bscotch/pathy';
-import { config } from 'dotenv';
 import esbuild from 'esbuild';
 import crypto from 'node:crypto';
 import fsp from 'node:fs/promises';
-import { $ } from 'zx';
 
-config();
+try {
+  process.loadEnvFile();
+} catch {
+  // No .env file, which is fine (e.g. in CI)
+}
 
-await $`mkdir -p ./dist`;
+await fsp.mkdir('./dist', { recursive: true });
 
 await esbuild.build({
   entryPoints: ['./src/extension.ts', './src/manifest.update.mts'],
@@ -35,9 +37,9 @@ await esbuild.build({
 });
 
 // Copy the template project from current stitch-core
-await $`rm -rf ./assets/templates`;
-await $`mkdir -p ./assets/templates`;
-await $`cp -r ../parser/assets/GmlSpec.xml ./assets/`;
+await fsp.rm('./assets/templates', { recursive: true, force: true });
+await fsp.mkdir('./assets/templates', { recursive: true });
+await fsp.cp('../parser/assets/GmlSpec.xml', './assets/GmlSpec.xml');
 
 // Copy the pixel-checksum binaries from current pixel-checksum,
 // if we don't already have the same file. (This is because the
@@ -54,7 +56,7 @@ for (const platform of ['linux', 'win32', 'darwin']) {
     : null;
   const srcChecksum = destChecksum ? await computeFileChecksum(srcPath) : null;
   if (!srcChecksum || destChecksum !== srcChecksum) {
-    await $`cp ../sprite-source/node_modules/@bscotch/pixel-checksum/${exeName} ./dist`;
+    await fsp.copyFile(srcPath.absolute, destPath.absolute);
   }
 }
 

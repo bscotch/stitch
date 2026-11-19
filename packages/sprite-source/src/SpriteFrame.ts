@@ -1,17 +1,18 @@
 import { __decorate } from 'tslib';
 import { type Pathy, statSafe } from '@bscotch/pathy';
 import { sequential } from '@bscotch/utility';
-import { Image } from 'image-js';
+import { readFile, writeFile } from 'node:fs/promises';
 import type { SpriteSummary } from './SpriteCache.schemas.ts';
 import { retryOptions } from './constants.ts';
 import type { BBox } from './types.ts';
+import { type Mask, Raster } from './raster.ts';
 import { getPngSize } from './utility.ts';
 
 export class SpriteFrame {
   protected _size: undefined | { width: number; height: number };
   protected _bbox: undefined | BBox;
-  protected _image: undefined | Image;
-  protected _masks: { [minAlpha: string]: Image } = {};
+  protected _image: undefined | Raster;
+  protected _masks: { [minAlpha: string]: Mask } = {};
   protected _checksum: undefined | string;
 
   readonly path: Pathy;
@@ -49,7 +50,7 @@ export class SpriteFrame {
     if (this._image) {
       return this._image;
     }
-    this._image = await Image.load(this.path.absolute);
+    this._image = Raster.fromPng(await readFile(this.path.absolute));
     return this._image;
   }
 
@@ -69,9 +70,7 @@ export class SpriteFrame {
     const image = await this.getImage();
     const threshold =
       foregroundMinAlphaFraction || 1 / Math.pow(2, image.bitDepth);
-    this._masks[alphaKey] = image
-      .getChannel(image.channels - 1)
-      .mask({ threshold });
+    this._masks[alphaKey] = image.alphaMask(threshold);
     return this._masks[alphaKey];
   }
 
@@ -86,7 +85,7 @@ export class SpriteFrame {
     let bottom = -Infinity;
     for (let x = 0; x < foreground.width; x++) {
       for (let y = 0; y < foreground.height; y++) {
-        if (foreground.getBitXY(x, y)) {
+        if (foreground.get(x, y)) {
           left = Math.min(left, x);
           right = Math.max(right, x);
           top = Math.min(top, y);
@@ -124,7 +123,7 @@ export class SpriteFrame {
 
   async bleed() {
     const img = await this.getImage();
-    if (!img.alpha) {
+    if (!img.hasAlpha) {
       return;
     }
     const maxPixelValue = Math.pow(2, img.bitDepth);
@@ -138,22 +137,14 @@ export class SpriteFrame {
     const foreground = await this.getForegroundMask(
       (bleedMaxAlpha + 1) / maxPixelValue,
     );
-    const expandedForeground = foreground.dilate({
-      kernel: [
-        [1, 1, 1],
-        [1, 1, 1],
-        [1, 1, 1],
-      ],
-    });
+    const expandedForeground = foreground.dilate();
 
-    const isInForeground = (x: number, y: number) => foreground.getBitXY(x, y);
+    const isInForeground = (x: number, y: number) => foreground.get(x, y);
     const isInExpandedForeground = (x: number, y: number) =>
-      expandedForeground.getBitXY(x, y);
+      expandedForeground.get(x, y);
     const isInOutline = (x: number, y: number) =>
       isInExpandedForeground(x, y) && !isInForeground(x, y);
 
-    // There does not seem to be a way to combine masks in image-js,
-    // but we don't really need to for the desired outcome.
     // Iterate over all pixels. Those in the expanded foreground but not in the foreground
     // should be set in the original image based on nearby non-background pixels
     for (let x = 0; x < img.width; x++) {
@@ -166,7 +157,7 @@ export class SpriteFrame {
                 continue;
               }
               if (isInForeground(ax, ay)) {
-                neighbors.push(img.getPixelXY(ax, ay));
+                neighbors.push(img.getPixel(ax, ay));
               }
             }
           }
@@ -195,7 +186,7 @@ export class SpriteFrame {
                 );
               }
             });
-            img.setPixelXY(x, y, newColor);
+            img.setPixel(x, y, newColor);
           }
         }
       }
@@ -206,7 +197,7 @@ export class SpriteFrame {
 
   async saveTo(path: Pathy) {
     const image = await this.getImage();
-    await image.save(path.absolute);
+    await writeFile(path.absolute, image.toPng());
   }
 }
 

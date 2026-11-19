@@ -35,22 +35,21 @@
   },
   "scripts": {
     "build": "tsc --build",
-    "clean": "rimraf build dist *.tsbuildinfo **/*.tsbuildinfo",
+    "clean": "node ../../scripts/clean.mjs build dist \"*.tsbuildinfo\" \"**/*.tsbuildinfo\"",
     "test": "node --test --test-timeout=10000 \"src/**/*.test.ts\"",
     "watch": "tsc --build --watch"
   },
   "dependencies": {
     "@bscotch/utility": "^7.2.0",
-    "tslib": "^2.8.1",
-    "type-fest": "^5.3.1",
-    "uuid": "^13.0.0",
-    "zod": "^4.3.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "rimraf": "^6.1.2",
     "typescript": "6.0.3"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

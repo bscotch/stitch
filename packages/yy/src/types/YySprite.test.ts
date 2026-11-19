@@ -1,6 +1,5 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { v4 as uuid4 } from 'uuid';
 import { Yy } from '../Yy.ts';
 import type { FixedNumber } from './utility.ts';
 import type { YySprite } from './YySprite.ts';
@@ -69,7 +68,7 @@ describe('YySprite', function () {
       {},
       // One with a frameGuid
       {
-        name: uuid4(),
+        name: crypto.randomUUID(),
       },
     ];
     // Add some frames

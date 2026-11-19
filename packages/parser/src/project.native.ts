@@ -2,13 +2,13 @@ import { type Pathy, pathy } from '@bscotch/pathy';
 import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
-import { parseStringPromise } from 'xml2js';
 import { parseJsdoc } from './jsdoc.ts';
 import { logger } from './logger.ts';
 import {
   type GmlSpec,
   type GmlSpecConstant,
   gmlSpecSchema,
+  parseGmlSpecXml,
 } from './project.spec.ts';
 import { Signifier } from './signifiers.ts';
 import { typeFromParsedJsdocs } from './types.feather.ts';
@@ -340,17 +340,8 @@ export class Native {
 
   static async parse(specFilePath: string): Promise<GmlSpec> {
     const specRaw = await readFile(specFilePath, 'utf8');
-    const asJson = await parseStringPromise(specRaw.replace('\ufeff', ''), {
-      trim: true,
-      normalize: true,
-      emptyTag() {
-        return {};
-      },
-      // Prevent surprises if modules provide single entries
-      explicitArray: true,
-    }); // Prevent possible errors: "Non-white space before first tag"
     try {
-      return gmlSpecSchema.parse(asJson);
+      return gmlSpecSchema.parse(parseGmlSpecXml(specRaw));
     } catch (zodError) {
       const err = new StitchParserError(
         `Error parsing spec file "${specFilePath}"`,

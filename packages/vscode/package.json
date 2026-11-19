@@ -37,7 +37,7 @@
     "package": "vsce package --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
     "vscode:publish": "vsce publish --no-dependencies --githubBranch develop",
-    "watch": "concurrently \"pnpm watch:extension\" \"pnpm watch:webviews\" \"pnpm watch:grammar\"",
+    "watch": "pnpm run --parallel \"/^watch:/\"",
     "watch:extension": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css,svelte --watch src --watch syntaxes --watch ../parser/dist --watch ../sprite-source/dist --watch ../launcher/dist --ignore src/icons.types.mts --exec \"pnpm build:extension\"",
     "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"pnpm build:grammar\"",
     "watch:webviews": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css,svelte --watch webviews/src --watch webviews-legacy --exec \"pnpm build:webviews\""
@@ -1105,9 +1105,6 @@
     "onCommand:stitch.openIde",
     "workspaceContains:**/*.{yyp,yy,gml}"
   ],
-  "dependencies": {
-    "tslib": "^2.8.1"
-  },
   "devDependencies": {
     "@bscotch/emitter": "0.2.1",
     "@bscotch/gamemaker-releases": "workspace:*",
@@ -1118,24 +1115,17 @@
     "@bscotch/stitch-launcher": "workspace:*",
     "@bscotch/utility": "^7.2.0",
     "@bscotch/yy": "workspace:*",
-    "@esotericsoftware/spine-player": "4.2.96",
+    "@esotericsoftware/spine-player": "4.2.120",
     "@local-vscode/shared": "workspace:*",
     "@local-vscode/webviews": "workspace:*",
-    "@types/plist": "3.0.5",
     "@types/vscode": "1.107.0",
-    "@types/xml2js": "0.4.14",
-    "@vscode/vsce": "3.7.1",
-    "concurrently": "9.2.1",
-    "dotenv": "17.2.3",
-    "esbuild": "^0.27.2",
-    "glob": "13.0.0",
-    "nodemon": "^3.1.11",
-    "plist": "3.1.0",
+    "@vscode/vsce": "4.1.1",
+    "esbuild": "^0.28.2",
+    "nodemon": "^3.1.14",
+    "plist": "5.1.2",
     "typescript": "6.0.3",
-    "xml2js": "0.6.2",
-    "yaml": "2.8.2",
-    "zod": "^4.3.5",
-    "zx": "^8.8.5"
+    "yaml": "2.9.1",
+    "zod": "^4.6.7"
   },
   "engines": {
     "vscode": "^1.107.0"

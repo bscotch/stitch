@@ -1,3 +1,4 @@
+import { XMLParser } from 'fast-xml-parser';
 import { z } from 'zod';
 import { isEmpty } from './parser.utility.ts';
 import { normalizeTypeString } from './util.ts';
@@ -271,3 +272,54 @@ export const gmlSpecSchema = z
       }),
   })
   .transform((v) => v.GameMakerLanguageSpec);
+
+const specXmlParser = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: '',
+  attributesGroupName: '$',
+  textNodeName: '_',
+  parseTagValue: false,
+  parseAttributeValue: false,
+  trimValues: true,
+  ignoreDeclaration: true,
+  ignorePiTags: true,
+  // Every element except the root is an array, to prevent
+  // surprises when modules provide single entries.
+  isArray: (tagName, jPath, _isLeafNode, isAttribute) =>
+    !isAttribute && tagName !== '$' && String(jPath).includes('.'),
+  // Collapse whitespace runs within text content
+  tagValueProcessor: (_tagName, value) => value.replace(/\s{2,}/g, ' ').trim(),
+});
+
+/**
+ * Parse the raw XML content of a GmlSpec file into a
+ * plain object, prior to schema validation.
+ *
+ * Attributes are grouped under `$` and text content
+ * (for elements that also have attributes) under `_`.
+ * Empty elements are parsed as empty objects.
+ */
+export function parseGmlSpecXml(xml: string): unknown {
+  return emptyElementsToObjects(
+    specXmlParser.parse(xml.replace(/^\uFEFF/, '')),
+  );
+}
+
+function emptyElementsToObjects(value: unknown): unknown {
+  if (value === '') {
+    return {};
+  }
+  if (Array.isArray(value)) {
+    return value.map(emptyElementsToObjects);
+  }
+  if (value && typeof value === 'object') {
+    const obj = value as Record<string, unknown>;
+    for (const key of Object.keys(obj)) {
+      // Attribute values are kept as-is
+      if (key !== '$') {
+        obj[key] = emptyElementsToObjects(obj[key]);
+      }
+    }
+  }
+  return value;
+}

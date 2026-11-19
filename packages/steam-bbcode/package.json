@@ -27,13 +27,16 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "marked": "17.0.1"
+    "marked": "18.2.1"
   },
   "devDependencies": {
-    "prettier": "^3.7.4",
+    "prettier": "^3.10.1",
     "typescript": "6.0.3"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

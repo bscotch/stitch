@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import { XMLParser } from 'fast-xml-parser';
 import { isError } from './utils.ts';
 
@@ -18,6 +17,7 @@ export async function fetchXml<T = unknown>(
       `Error parsing XML from ${url}: ${
         isError(err) ? err.message : 'UNKNOWN'
       }`,
+      { cause: err },
     );
   }
 }
@@ -35,6 +35,7 @@ export async function fetchJson<T = unknown>(
       `Error parsing JSON from ${url}: ${
         isError(err) ? err.message : 'UNKNOWN'
       }`,
+      { cause: err },
     );
   }
 }
@@ -51,6 +52,7 @@ async function fetchUrl(url: string) {
   } catch (err) {
     throw new Error(
       `Error fetching "${url}": ${isError(err) ? err.message : 'UNKNOWN'}`,
+      { cause: err },
     );
   }
 }
