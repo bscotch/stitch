@@ -6,6 +6,12 @@
 
 - Updated all dependencies.
 
+## 0.9.2 (2025-07-15)
+
+### Fixes
+
+- While GameMaker release notes are still fetched for compatibility purposes, they are no longer displayed anywhere since they've been moved out of the official feeds.
+
 ## 0.9.1 (2024-10-02)
 
 ### Fixes
@@ -19,10 +25,11 @@
 
 - Added a page for converting Markdown to Steam BBCode
 
-## 0.8.1 (2024-08-29)
+## 0.8.1 (2024-09-13)
 
 ### Fixes
 
+- Resolved a bunch of issues with the SteamRegions bookmarklet
 - Resolved issues with the date pickers for Steam URL date ranges
 
 ## 0.8.0 (2024-08-03)
@@ -30,6 +37,16 @@
 ### Features
 
 - Added language-specific store page links
+
+### Fixes
+
+- Made UTM links update on keyup so they're more dynamic
+
+## 0.7.0 (2024-06-17)
+
+### Features
+
+- Added the new Chrome extension features as bookmarklets
 
 ## 0.6.0 (2024-04-22)
 
@@ -51,6 +68,7 @@
 
 ### Features
 
+- Added bookmarklet for Steam Regions
 - Added links for Steam Regions & Countries pages
 
 ## 0.3.0 (2023-10-05)

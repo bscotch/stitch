@@ -204,6 +204,7 @@
 
 ### Features
 
+- Symbol search for shaders now takes you to the fragment file rather than the yy file
 - Can now add shader assets
 - Can now duplicate assets.
 
@@ -298,6 +299,12 @@
 
 - Resolved issue where JSDocs were being skipped in function arguments
 - Resolved conflicts when switching from shorthand to full struct literal syntax
+
+## 0.57.1 (2023-09-25)
+
+### Fixes
+
+- Added missing Room Start event
 
 ## 0.57.0 (2023-09-20)
 
@@ -936,6 +943,10 @@
 
 - Added improved hover details for functions and structs
 
+### Fixes
+
+- Removed debouncing on document edit so that autocomplete triggers work as expected
+
 ## 0.10.0 (2023-06-14)
 
 ### Features
@@ -1050,7 +1061,6 @@
 - GML parser now working on all sample files
 - Added categories to tokens to simplify parsing logic
 - Drafted lexer tokens using Chevrotain. Erroring on a sample file
-- Implemented semantic highlighting for globals.
 
 ### Fixes
 
@@ -1072,6 +1082,12 @@
 - Got parser working for basic expressions
 - Resolved lexer issue in multi-line comments.
 - Resolved lexer issue in multi-line comments.
+
+## 0.3.0 (2023-05-02)
+
+### Features
+
+- Implemented semantic highlighting for globals.
 
 ## 0.2.2 (2023-04-12)
 

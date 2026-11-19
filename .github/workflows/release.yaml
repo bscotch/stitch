@@ -1,0 +1,142 @@
+# Publishes packages versioned by `pnpm bump`.
+#
+# `pnpm bump` pushes a single "bumped: ..." commit to develop, along with a
+# `<name>@<version>` tag for every bumped project, in one atomic push. This
+# workflow triggers on that branch push (not on the tags: GitHub creates no
+# tag events when more than 3 tags are pushed at once), finds the tags, and:
+# - builds, tests, and publishes public packages to npm (Trusted Publishing)
+# - triggers other publishing workflows for tagged private projects
+#
+# To re-run a release (e.g. after fixing a CI problem), use "Run workflow"
+# with the bumped commit's SHA (or one of its tags) as the ref. Versions
+# that are already published are skipped.
+name: Release
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit (or tag) created by `pnpm bump` to release
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  plan:
+    name: Plan
+    # Pushes that aren't from `pnpm bump` have nothing to release
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'bumped:')
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.plan.outputs.ref }}
+      tagged: ${{ steps.plan.outputs.tagged }}
+      publish: ${{ steps.plan.outputs.publish }}
+      filters: ${{ steps.plan.outputs.filters }}
+      test_filters: ${{ steps.plan.outputs.test_filters }}
+      has_publish: ${{ steps.plan.outputs.has_publish }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.12.0
+      - name: Plan release
+        id: plan
+        env:
+          INPUT_REF: ${{ inputs.ref }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            node scripts/release-plan.mts --ref "$INPUT_REF"
+          else
+            node scripts/release-plan.mts --before "$BEFORE" --after "$AFTER"
+          fi
+
+  publish-npm:
+    name: Publish to npm
+    needs: plan
+    if: needs.plan.outputs.has_publish == 'true'
+    runs-on: windows-latest
+    # Serialize publishing (without cancelling queued releases)
+    concurrency:
+      group: release-npm
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write # npm Trusted Publishing (OIDC) + provenance
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.ref }}
+          lfs: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.12.0
+          registry-url: https://registry.npmjs.org
+      - run: corepack enable
+
+      - name: Install
+        run: pnpm install --frozen-lockfile --filter=@local/stitch-monorepo ${{ needs.plan.outputs.filters }}
+
+      - name: Build
+        run: pnpm run -r ${{ needs.plan.outputs.filters }} build
+
+      - name: Test
+        run: pnpm run -r --if-present ${{ needs.plan.outputs.test_filters }} test
+
+      - name: Publish
+        env:
+          PUBLISH: ${{ needs.plan.outputs.publish }}
+        run: node scripts/publish.mts --json "$PUBLISH"
+
+  publish-vscode:
+    name: Publish Stitch for VSCode
+    needs: [plan, publish-npm]
+    # Run even if there was nothing to publish to npm, but not if npm publishing failed
+    if: >-
+      !cancelled() && needs.plan.result == 'success'
+      && needs.publish-npm.result != 'failure'
+      && contains(fromJSON(needs.plan.outputs.tagged), 'bscotch-stitch-vscode')
+    uses: ./.github/workflows/publish-stitch-vscode.yaml
+    with:
+      ref: ${{ needs.plan.outputs.ref }}
+    secrets: inherit
+
+  # The following workflows are in stasis (they live outside of
+  # `.github/workflows/`). To re-enable one, move it into `.github/workflows/`
+  # and uncomment its job below.
+
+  # publish-cl2-editor:
+  #   name: Publish Crashlands Editor
+  #   needs: [plan, publish-npm]
+  #   if: >-
+  #     !cancelled() && needs.plan.result == 'success'
+  #     && needs.publish-npm.result != 'failure'
+  #     && contains(fromJSON(needs.plan.outputs.tagged), 'crashlands-editor')
+  #   uses: ./.github/workflows/publish-cl2-editor.yaml
+  #   with:
+  #     ref: ${{ needs.plan.outputs.ref }}
+  #   secrets: inherit
+
+  # update-releases-summary:
+  #   name: Update GameMaker Releases Summary
+  #   needs: [plan, publish-npm]
+  #   if: >-
+  #     !cancelled() && needs.plan.result == 'success'
+  #     && needs.publish-npm.result != 'failure'
+  #     && contains(fromJSON(needs.plan.outputs.tagged), '@bscotch/gamemaker-releases')
+  #   permissions:
+  #     contents: write
+  #   uses: ./.github/workflows/update-releases-summary.yaml
+  #   secrets: inherit

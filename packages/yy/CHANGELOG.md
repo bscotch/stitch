@@ -265,6 +265,11 @@
 
 - Added ability to create scripts via the sidebar
 - Added the ability to add folders via the Stitch sidebar
+
+## 0.9.0 (2023-05-16)
+
+### Features
+
 - Added new Room fields
 
 ### Fixes

@@ -299,7 +299,6 @@
   "devDependencies": {
     "@bscotch/emitter": "0.2.1",
     "@bscotch/pathy": "^2.12.1",
-    "@bscotch/trebuchet": "2.9.5",
     "@bscotch/utility": "^7.2.0",
     "@types/vscode": "1.107.0",
     "@vscode/vsce": "3.7.1",

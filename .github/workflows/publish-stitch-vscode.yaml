@@ -1,13 +1,23 @@
 name: Stitch for VSCode
 
+# Called by the Release workflow when `bscotch-stitch-vscode` is tagged by
+# `pnpm bump`. Can also be run manually.
 on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit (or tag) to publish
+        required: true
+        type: string
   workflow_dispatch:
-  push:
-    tags:
-      - "bscotch-stitch-vscode@*"
+    inputs:
+      ref:
+        description: Commit (or tag) to publish (defaults to the selected branch)
+        required: false
+        type: string
 
 permissions:
-  contents: write
+  contents: read
 
 defaults:
   run:
@@ -18,17 +28,16 @@ jobs:
     runs-on: windows-latest
     steps:
       # SETUP
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           lfs: true
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 24.12.0
       - run: corepack enable
-      - run: rustup default 1.78.0 # latest doesn't work!
 
-      - run: pnpm install --filter=bscotch-stitch-vscode... --filter=stitch-monorepo
-      - run: pwd
+      - run: pnpm install --frozen-lockfile --filter=bscotch-stitch-vscode... --filter=@local/stitch-monorepo
 
       # BUILD DEPS
       - name: Build

@@ -1116,7 +1116,6 @@
     "@bscotch/sprite-source": "workspace:*",
     "@bscotch/stitch-config": "workspace:*",
     "@bscotch/stitch-launcher": "workspace:*",
-    "@bscotch/trebuchet": "2.9.5",
     "@bscotch/utility": "^7.2.0",
     "@bscotch/yy": "workspace:*",
     "@esotericsoftware/spine-player": "4.2.96",

@@ -176,6 +176,12 @@
 
 - Added a refresh button to the new Runner panel, so that changes to the styling config can be observed without re-running.
 
+## 1.66.1 (2024-03-07)
+
+### Fixes
+
+- Resolved some styling issues in the runner panel, and added state management
+
 ## 1.66.0 (2024-03-07)
 
 ### Features
@@ -1172,6 +1178,12 @@
 
 ## 0.22.1 (2023-06-03)
 
+### Fixes
+
+- Updated vscode engine requirement
+
+## 0.22.0 (2023-06-03)
+
 ### Docs
 
 - Updated VSCode README
@@ -1183,7 +1195,6 @@
 
 ### Fixes
 
-- Updated vscode engine requirement
 - Resolved go-to-def for params and local vars
 - Resolved a bunch of global reference issues
 - Resolved issue where function params may be unknown when parsing call site
@@ -1351,6 +1362,12 @@
 - Removed '.' as trigger character until autocompletes are not just global
 - globalvar and self are now syntax-highlighted
 
+## 0.7.1 (2023-03-12)
+
+### Features
+
+- Support select channel manually.
+
 ## 0.7.0 (2023-03-11)
 
 ### Features
@@ -1378,6 +1395,10 @@
 - Added better popup messages and error handling when trying to open a project via GameMaker
 
 ## 0.5.1 (2023-03-11)
+
+### Features
+
+- Get GmlSpec.xml directly from the locally installed runtime and some changes.
 
 ### Fixes
 

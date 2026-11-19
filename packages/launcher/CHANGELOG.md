@@ -54,7 +54,13 @@
 
 - Updated all deps
 
-## 1.3.3 (2023-05-15)
+## 1.4.0 (2023-07-10)
+
+### Features
+
+- Implemented calling the Igor Clean command
+
+## 1.3.2 (2023-05-15)
 
 ### Fixes
 
@@ -65,6 +71,12 @@
 ### Fixes
 
 - Removed the quotes around the Igor command since that breaks the command on PowerShell.
+
+## 1.3.0 (2023-05-02)
+
+### Features
+
+- Added a run command for GameMaker projects
 
 ## 1.2.2 (2023-04-12)
 

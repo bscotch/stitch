@@ -6,7 +6,7 @@ The projects in the Stitch monorepo are all designed to solve problems we face a
 
 We already have an infinite list of features and fixes for our own use cases, so we don't have the bandwidth to build (or maintain) stuff that we don't need.
 
-That said, sometimes things are surprisingly easy to address, and other times people suggest features that we hadn't even realized we *also* wanted! So if there is a feature or fix that you'd like to see in one of the Stitch projects, please [submit an Issue](https://github.com/bscotch/stitch/issues). Just be ready for us to say, "Sorry, we don't have the bandwidth for that!"
+That said, sometimes things are surprisingly easy to address, and other times people suggest features that we hadn't even realized we _also_ wanted! So if there is a feature or fix that you'd like to see in one of the Stitch projects, please [submit an Issue](https://github.com/bscotch/stitch/issues). Just be ready for us to say, "Sorry, we don't have the bandwidth for that!"
 
 ## Contributing your own features and fixes
 
@@ -70,9 +70,9 @@ This provides a few benefits:
 
 This repo uses [pnpm](https://pnpm.io/) for handling builds, both of which accept "filters" to limit operations to a subset of projects, and both of which understand the relationships between projects so that things happen in the right order.
 
-> 📝 While you *can* open the repo root in your IDE to work on Stitch projects, you'll tend to get better tooling results by opening project folders in separate IDE windows!
+> 📝 While you _can_ open the repo root in your IDE to work on Stitch projects, you'll tend to get better tooling results by opening project folders in separate IDE windows!
 
-To get *all* Stitch projects ready for development, from the repo root run:
+To get _all_ Stitch projects ready for development, from the repo root run:
 
 - `npm run setup:pnpm` (if you have Node 16+ installed and don't already have pnpm installed)
 - `pnpm install` (install all external dependencies for all projects)
@@ -105,3 +105,48 @@ Once everything has been installed and built:
 
 - Run `pnpm watch` (rebuilds whenever you make a change)
 - Hit `F5` (or otherwise launch the debugger) to run the extension in a debug environment
+
+## Releasing (maintainers)
+
+Versioning happens locally and publishing happens in CI.
+
+### Commit messages
+
+Version bumps and changelogs are generated from [conventional-commit](https://www.conventionalcommits.org/)-style messages, like `fix: Fixed the thing`. Each paragraph of a commit message that starts with `type: description` (or `type(scope): description`) counts as a separate change. Types determine the bump:
+
+| Types                                          | Bump  | Changelog section |
+| ---------------------------------------------- | ----- | ----------------- |
+| `feat`, `feature`                              | minor | Features          |
+| `fix`, `bug`, `bugfix`, `issue`                | patch | Fixes             |
+| `docs`, `doc`, `documentation`                 | patch | Docs (`docs`)     |
+| `perf`, `performance`, `security`              | patch |                   |
+| `change`, `breaking`, `alt`, or any type + `!` | major |                   |
+| anything else (`chore`, `test`, `refactor`…)   | none  |                   |
+
+A project is affected by a commit if the commit changes files in its `packages/*` folder. If a project's workspace dependencies get bumped, it gets at least a patch bump.
+
+### Bumping versions
+
+On `develop`, with a clean working tree:
+
+```sh
+pnpm bump --dry-run # Preview bumps and new changelog entries (works on any branch)
+pnpm bump           # Bump, update changelogs, commit, tag, and push
+```
+
+`pnpm bump` creates a single `bumped: ...` commit containing the new versions and regenerated changelogs, tags it with `<package>@<version>` for each bumped package, and pushes the commit and tags together. It refuses to run if any `package.json` version is lower than that package's latest tag (e.g. after a merge clobbered a version).
+
+Run `pnpm changelogs` to regenerate changelogs without bumping anything.
+
+### Publishing
+
+Pushing a bump triggers the [Release workflow](.github/workflows/release.yaml), which:
+
+1. Finds the version tags on the pushed commit.
+2. Checks each public package's version against `package.json` and npm (it must be newer than npm's `latest`; already-published versions are skipped).
+3. Builds and tests the packages to be published, then publishes them to npm (in dependency order) using npm Trusted Publishing.
+4. Triggers the Stitch for VSCode publishing workflow if that extension was bumped.
+
+To retry a failed release, run the Release workflow manually with the bump commit's SHA.
+
+Release-script tests: `pnpm test:scripts` and `pnpm typecheck:scripts`.

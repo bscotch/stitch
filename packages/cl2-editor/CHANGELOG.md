@@ -242,6 +242,7 @@
 ### Features
 
 - Added emoji autocompletes
+- Implemented 'comments' as notes
 
 ## 0.4.0 (2023-10-25)
 

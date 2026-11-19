@@ -42,6 +42,8 @@ package-lock.json
 .settings/
 *.sublime-workspace
 .eslintcache
+CLAUDE.md
+AGENTS.md
 
 # IDE - VSCode
 .vscode/*

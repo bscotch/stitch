@@ -210,5 +210,6 @@
 
 ### Fixes
 
+- Added size and origin setting for new sprites
 - Resolved some issues with reading/writing yyp files
 - Resolved issue with config-loading being too stringent

@@ -5,18 +5,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "bump": "treb version && node scripts/changelogs.mjs && git add . && git commit -m \"chore: updated changelogs\" && treb publish",
+    "bump": "node scripts/bump.mts",
+    "changelogs": "node scripts/changelogs.mts",
     "build:all": "pnpm run -r --if-present build",
     "test:all": "pnpm run -r --if-present test",
     "clean:artifacts": "node ./scripts/nuke-builds.mjs",
     "clean:deps": "node ./scripts/nuke-deps.mjs",
     "fix:deps": "syncpack fix-mismatches",
     "watch": "pnpm run -r --if-present --parallel --stream watch",
-    "setup:pnpm": "corepack prepare $npm_package_packageManager --activate"
+    "setup:pnpm": "corepack prepare $npm_package_packageManager --activate",
+    "test:scripts": "node --test \"scripts/**/*.test.mts\"",
+    "typecheck:scripts": "tsc -p scripts"
   },
   "dependencies": {
     "@bscotch/pathy": "^2.12.1",
-    "@bscotch/trebuchet": "2.9.5",
     "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.0.3",
@@ -38,16 +40,11 @@
       "packages/*/package.json"
     ]
   },
-  "trebuchet": {
-    "npmScope": "@bscotch",
-    "vscodeWorkspaceConfigPath": false
-  },
   "packageManager": "pnpm@10.27.0+sha512.72d699da16b1179c14ba9e64dc71c9a40988cbdc65c264cb0e489db7de917f20dcf4d64d8723625f2969ba52d4b7e2a1170682d9ac2a5dcaeaab732b7e16f04a",
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
-    "@bscotch/workspaces": "0.3.0",
     "typescript": "5.9.3"
   }
 }
