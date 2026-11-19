@@ -1,8 +1,9 @@
+import { describe, it } from 'node:test';
 import { undent } from '@bscotch/utility';
-import { ILexingResult } from 'chevrotain';
+import type { ILexingResult } from 'chevrotain';
 import fs from 'fs/promises';
-import { GmlLexer } from './lexer.js';
-import { logger } from './logger.js';
+import { GmlLexer } from './lexer.ts';
+import { logger } from './logger.ts';
 
 describe('Lexer', function () {
   it('can lex strings', function () {

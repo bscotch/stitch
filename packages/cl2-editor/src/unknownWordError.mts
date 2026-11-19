@@ -1,4 +1,4 @@
-import type { ParsedWord } from '@bscotch/gcdata/dist/cl2.types.editor.js';
+import type { ParsedWord } from '@bscotch/gcdata';
 import vscode from 'vscode';
 import { range } from './quests.util.mjs';
 

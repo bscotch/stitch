@@ -1,10 +1,11 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { pathy, type Pathy } from '@bscotch/pathy';
 import { Yy } from '@bscotch/yy';
-import { expect } from 'chai';
-import { SpriteDest } from './SpriteDest.js';
-import { SpriteSource } from './SpriteSource.js';
-import { SpriteSourceConfig } from './SpriteSource.schemas.js';
-import { assert, getDirs, getPngSize } from './utility.js';
+import { SpriteDest } from './SpriteDest.ts';
+import { SpriteSource } from './SpriteSource.ts';
+import type { SpriteSourceConfig } from './SpriteSource.schemas.ts';
+import { getDirs, getPngSize } from './utility.ts';
 
 const samples = pathy('samples');
 const sampleProject = samples.join('project');
@@ -180,7 +181,7 @@ function endTimer(start: number, message?: string) {
 }
 
 describe('Sprite Sources', function () {
-  xit('can list all subdirs', async function () {
+  it.skip('can list all subdirs', async function () {
     // Use the root of the monorepo, since that represents a large
     // number of subdirs.
     const root = '../../..';
@@ -211,7 +212,7 @@ describe('Sprite Sources', function () {
       .filter((s) => !s.invalid && !s.ignored)
       .map((s) => `sp_${(s.expect?.renamed || s.path).split('/').pop()!}`)
       .sort();
-    expect(spriteNames).to.deep.equal(expectedSpriteNames);
+    assert.deepEqual(spriteNames, expectedSpriteNames);
   });
 
   it('can update a sprite source', async function () {
@@ -277,7 +278,7 @@ describe('Sprite Sources', function () {
     }
   });
 
-  xit('can quickly update a sprite source', async function () {
+  it.skip('can quickly update a sprite source', async function () {
     // WARN: What is going on with this next line? It throws on a fresh install, which is expected since it makes no sense -- why was it not throwing previously?
     const source = new SpriteSource('sprite-src');
     const start = startTimer();

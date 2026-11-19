@@ -23,18 +23,15 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --build",
-    "test": "mocha --config ../../config/.mocharc.cjs --parallel=false --timeout=30000",
-    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999 --bail=false",
+    "test": "node --test --test-concurrency=1 --test-timeout=30000 \"src/**/*.test.ts\"",
     "watch": "tsc --build --watch"
   },
   "dependencies": {
     "marked": "17.0.1"
   },
   "devDependencies": {
-    "chai": "^6.2.2",
-    "mocha": "^11.7.5",
     "prettier": "^3.7.4",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "publishConfig": {
     "access": "public"

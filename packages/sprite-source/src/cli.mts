@@ -4,8 +4,8 @@ import { pathy } from '@bscotch/pathy';
 import { defineCommand, runMain } from 'citty';
 import { pathToFileURL } from 'node:url';
 import meta from '../package.json' with { type: 'json' };
-import { SpriteDest } from './SpriteDest.js';
-import { SpriteSource } from './SpriteSource.js';
+import { SpriteDest } from './SpriteDest.ts';
+import { SpriteSource } from './SpriteSource.ts';
 
 const main = defineCommand({
   meta: {

@@ -1,20 +1,22 @@
-import { Pathy, pathy } from '@bscotch/pathy';
+import { type Pathy, pathy } from '@bscotch/pathy';
 import { computePngChecksums } from '@bscotch/pixel-checksum';
 import {
-  SpritesInfo,
+  type SpritesInfo,
   cacheVersion,
   spritesInfoSchema,
-} from './SpriteCache.schemas.js';
-import { SpriteDir } from './SpriteDir.js';
-import { computeStringChecksum } from './checksum.js';
-import { retryOptions, spriteCacheFilename } from './constants.js';
-import type { Log } from './types.js';
-import { SpriteSourceError, getDirs } from './utility.js';
+} from './SpriteCache.schemas.ts';
+import { SpriteDir } from './SpriteDir.ts';
+import { computeStringChecksum } from './checksum.ts';
+import { retryOptions, spriteCacheFilename } from './constants.ts';
+import type { Log } from './types.ts';
+import { SpriteSourceError, getDirs } from './utility.ts';
 
 export class SpriteCache {
   readonly issues: Error[] = [];
   readonly logs: Log[] = [];
   readonly spritesRoot: Pathy;
+
+  readonly maxDepth: number;
 
   /**
    * @param spritesRoot The path to the root directory containing
@@ -23,10 +25,8 @@ export class SpriteCache {
    * this is the `{project}/sprites` folder.
    * @param maxDepth The maximum depth to search for sprites. For a SpriteSource this is probably Infinity. For a SpriteDest, this should be 1.
    */
-  constructor(
-    spritesRoot: string | Pathy,
-    readonly maxDepth = Infinity,
-  ) {
+  constructor(spritesRoot: string | Pathy, maxDepth = Infinity) {
+    this.maxDepth = maxDepth;
     this.spritesRoot = pathy(spritesRoot);
   }
 

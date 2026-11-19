@@ -1,7 +1,7 @@
-import { Pathy } from '@bscotch/pathy';
+import type { Pathy } from '@bscotch/pathy';
 import fs from 'node:fs/promises';
-import { logger } from './logger.js';
-import type { IRange, LinePosition } from './project.location.js';
+import { logger } from './logger.ts';
+import type { IRange, LinePosition } from './project.location.ts';
 
 export class StitchParserError extends Error {
   constructor(message?: string, assertion?: Function) {

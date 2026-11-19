@@ -1,6 +1,6 @@
 // CST Visitor for creating an AST etc
 import type { CstNode, CstNodeLocation, IToken } from 'chevrotain';
-import {
+import type {
   EnumStatementCstChildren,
   FunctionExpressionCstChildren,
   GlobalVarDeclarationCstChildren,
@@ -9,17 +9,17 @@ import {
   JsdocJsCstChildren,
   MacroStatementCstChildren,
 } from '../gml-cst.js';
-import { JsdocSummary, parseJsdoc } from './jsdoc.js';
-import { logger } from './logger.js';
-import { GmlVisitorBase } from './parser.js';
-import { identifierFrom } from './parser.utility.js';
-import type { Code } from './project.code.js';
-import { Diagnostic } from './project.diagnostics.js';
-import { Position, Range } from './project.location.js';
-import { Signifier } from './signifiers.js';
-import { typeFromParsedJsdocs } from './types.feather.js';
-import { FunctionType, StructType, Type } from './types.js';
-import { StitchParserError, assert } from './util.js';
+import { type JsdocSummary, parseJsdoc } from './jsdoc.ts';
+import { logger } from './logger.ts';
+import { GmlVisitorBase } from './parser.ts';
+import { identifierFrom } from './parser.utility.ts';
+import type { Code } from './project.code.ts';
+import { Diagnostic } from './project.diagnostics.ts';
+import { type Position, Range } from './project.location.ts';
+import { Signifier } from './signifiers.ts';
+import { typeFromParsedJsdocs } from './types.feather.ts';
+import { type FunctionType, type StructType, Type } from './types.ts';
+import { StitchParserError, assert } from './util.ts';
 
 export function registerGlobals(file: Code) {
   try {
@@ -37,7 +37,10 @@ class GlobalDeclarationsProcessor {
   protected readonly localScopeStack: StructType[] = [];
   readonly start: Position;
 
-  constructor(readonly file: Code) {
+  readonly file: Code;
+
+  constructor(file: Code) {
+    this.file = file;
     this.localScopeStack.push(file.scopes[0].local);
     assert(file.scopes[0], 'File must have a global scope');
     this.start = file.scopes[0].start;
@@ -322,8 +325,11 @@ export class GmlGlobalDeclarationsVisitor extends GmlVisitorBase {
     }
   }
 
-  constructor(readonly PROCESSOR: GlobalDeclarationsProcessor) {
+  readonly PROCESSOR: GlobalDeclarationsProcessor;
+
+  constructor(PROCESSOR: GlobalDeclarationsProcessor) {
     super();
+    this.PROCESSOR = PROCESSOR;
     if (!GmlGlobalDeclarationsVisitor.validated) {
       // Validator logic only needs to run once, since
       // new instances will be the same.

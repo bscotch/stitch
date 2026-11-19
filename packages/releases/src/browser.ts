@@ -1,12 +1,12 @@
 /**
  * @file Browser-compatible exports
  */
-export { ideFeedUrls, runtimeFeedUrls } from './urls.js';
-export { gameMakerReleaseWithNotesSchema } from './feeds.types.js';
+export { ideFeedUrls, runtimeFeedUrls } from './urls.ts';
+export { gameMakerReleaseWithNotesSchema } from './feeds.types.ts';
 export type {
   ArtifactType,
   Channel,
   GameMakerRelease,
   GameMakerReleaseWithNotes,
-} from './feeds.types.js';
-export { releasesUrl } from './releases.js';
+} from './feeds.types.ts';
+export { releasesUrl } from './releases.ts';

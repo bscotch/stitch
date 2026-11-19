@@ -1,10 +1,11 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { pathy } from '@bscotch/pathy';
-import { expect } from 'chai';
 import { default as inquirer } from 'inquirer';
-import { GameMakerComponent } from './GameMakerComponent.js';
-import { GameMakerIde } from './GameMakerIde.js';
-import { GameMakerLauncher } from './GameMakerLauncher.js';
-import { bootstrapRuntimeVersion, RuntimeFeedsFile } from './utility.js';
+import { GameMakerComponent } from './GameMakerComponent.ts';
+import { GameMakerIde } from './GameMakerIde.ts';
+import { GameMakerLauncher } from './GameMakerLauncher.ts';
+import { bootstrapRuntimeVersion, type RuntimeFeedsFile } from './utility.ts';
 
 // 2022.300.0.476 runtime version *SHOULD* be able to install other runtimes without requiring an Enterprise license
 
@@ -12,10 +13,10 @@ const sampleProjectPath = 'samples/project/project.yyp';
 const sampleProjectCompatibleIde = '2022.600.0.147'; //'2022.500.0.97'; //'2022.500.0.88'; //'2022.600.0.147';
 const sampleProjectCompatibleRuntime = '2022.600.0.121';
 
-xdescribe('GameMakerLauncher', function () {
+describe.skip('GameMakerLauncher', function () {
   it('can list known filepaths', async function () {
     const paths = await GameMakerComponent.listWellKnownPaths();
-    expect(paths.length).to.be.greaterThan(0);
+    assert.ok(paths.length > 0);
   });
 
   it('can ensure runtime feeds are available to the IDE', async function () {
@@ -25,14 +26,14 @@ xdescribe('GameMakerLauncher', function () {
     );
     for (const configInfo of feedConfigs) {
       const feedConfig = await pathy(configInfo.path).read<RuntimeFeedsFile>();
-      expect(feedConfig.length).to.be.at.least(2);
+      assert.ok(feedConfig.length >= 2);
     }
   });
 
   it('can list available releases', async function () {
     const releases = await GameMakerComponent.listReleases();
-    expect(releases).to.be.an('array');
-    expect(releases).to.have.length.greaterThan(0);
+    assert.ok(Array.isArray(releases));
+    assert.ok(releases.length > 0);
     const counts = {
       lts: 0,
       stable: 0,
@@ -41,123 +42,152 @@ xdescribe('GameMakerLauncher', function () {
     };
     for (const version of releases) {
       counts[version.channel]++;
-      expect(version.ide.version).to.match(/^\d+\.\d+\.\d+\.\d+$/);
-      expect(version.runtime.version).to.match(/^\d+\.\d+\.\d+\.\d+$/);
+      assert.match(version.ide.version, /^\d+\.\d+\.\d+\.\d+$/);
+      assert.match(version.runtime.version, /^\d+\.\d+\.\d+\.\d+$/);
     }
-    expect(counts.lts).to.be.greaterThan(0);
-    expect(counts.stable).to.be.greaterThan(0);
-    expect(counts.beta).to.be.greaterThan(0);
-    expect(counts.unstable).to.be.greaterThan(0);
+    assert.ok(counts.lts > 0);
+    assert.ok(counts.stable > 0);
+    assert.ok(counts.beta > 0);
+    assert.ok(counts.unstable > 0);
   });
 
   it('has the bootstrap runtime available', async function () {
     const runtime = await GameMakerLauncher.findInstalledRuntime({
       version: bootstrapRuntimeVersion,
     });
-    expect(
-      runtime,
+    assert.ok(
+      typeof runtime === 'object' && runtime !== null,
       `You must manually install runtime version ${bootstrapRuntimeVersion} in order to use Stitch Launcher. It is required to bootstrap installs of other runtimes.`,
-    ).to.be.an('object');
+    );
   });
 
-  it('can install an IDE version', async function () {
-    // (Downloads and installs can take a while)
-    this.timeout(1000 * 60 * 10);
-    console.log('Installing IDE', sampleProjectCompatibleIde, '...');
-    const installedVersion = await GameMakerIde.install(
-      sampleProjectCompatibleIde,
-    );
-    expect(installedVersion.version).to.equal(sampleProjectCompatibleIde);
-    expect(
-      await GameMakerIde.cachedIdeDirectory(
+  it(
+    'can install an IDE version',
+    { timeout: 1000 * 60 * 10 },
+    async function () {
+      // (Downloads and installs can take a while)
+      console.log('Installing IDE', sampleProjectCompatibleIde, '...');
+      const installedVersion = await GameMakerIde.install(
         sampleProjectCompatibleIde,
-      ).exists(),
-    ).to.be.true;
-  });
+      );
+      assert.equal(installedVersion.version, sampleProjectCompatibleIde);
+      assert.equal(
+        await GameMakerIde.cachedIdeDirectory(
+          sampleProjectCompatibleIde,
+        ).exists(),
+        true,
+      );
+    },
+  );
 
-  it('can install a Runtime version', async function () {
-    this.timeout(1000 * 60 * 10);
-    console.log('Installing', sampleProjectCompatibleRuntime, '...');
-    const installedVersion = await GameMakerLauncher.installRuntime(
-      sampleProjectCompatibleRuntime,
-      bootstrapRuntimeVersion,
-    );
-    expect(installedVersion.version).to.equal(sampleProjectCompatibleRuntime);
-  });
+  it(
+    'can install a Runtime version',
+    { timeout: 1000 * 60 * 10 },
+    async function () {
+      console.log('Installing', sampleProjectCompatibleRuntime, '...');
+      const installedVersion = await GameMakerLauncher.installRuntime(
+        sampleProjectCompatibleRuntime,
+        bootstrapRuntimeVersion,
+      );
+      assert.equal(installedVersion.version, sampleProjectCompatibleRuntime);
+    },
+  );
 
   it('can list installed IDE versions', async function () {
     const installed = await GameMakerIde.listInstalled();
-    expect(installed).to.be.an('array');
-    expect(installed).to.have.length.greaterThan(0);
+    assert.ok(Array.isArray(installed));
+    assert.ok(installed.length > 0);
   });
 
   it('can list installed Runtimes', async function () {
     const installed = await GameMakerLauncher.listInstalledRuntimes();
-    expect(installed).to.be.an('array');
-    expect(installed).to.have.length.greaterThan(0);
+    assert.ok(Array.isArray(installed));
+    assert.ok(installed.length > 0);
   });
 
-  it('can run a project with a given Runtime', async function () {
-    // Requires running a project, which could take a little time
-    this.timeout(1000 * 60 * 2);
-    console.log(
-      'Running project with runtime version',
-      sampleProjectCompatibleRuntime,
-      '...',
-    );
-    const runnerResults = await GameMakerLauncher.runProject(
-      {
-        project: sampleProjectPath,
-      },
-      sampleProjectCompatibleRuntime,
-    );
-    expect(runnerResults.compileSucceeded, 'Should have compiled').to.be.true;
-    expect(runnerResults.runnerSucceeded, 'Should have run without error').to.be
-      .true;
-  });
+  it(
+    'can run a project with a given Runtime',
+    { timeout: 1000 * 60 * 2 },
+    async function () {
+      // Requires running a project, which could take a little time
+      console.log(
+        'Running project with runtime version',
+        sampleProjectCompatibleRuntime,
+        '...',
+      );
+      const runnerResults = await GameMakerLauncher.runProject(
+        {
+          project: sampleProjectPath,
+        },
+        sampleProjectCompatibleRuntime,
+      );
+      assert.equal(
+        runnerResults.compileSucceeded,
+        true,
+        'Should have compiled',
+      );
+      assert.equal(
+        runnerResults.runnerSucceeded,
+        true,
+        'Should have run without error',
+      );
+    },
+  );
 
-  it('can open a project with a given IDE and inferred Runtime version', async function () {
-    // Requires manual checking and booting up the IDE,
-    // all of that could take a bit!
-    this.timeout(1000 * 60 * 10);
-    console.log(`Opening IDE v${sampleProjectCompatibleIde}`);
-    const opener = await GameMakerLauncher.openProject(sampleProjectPath, {
-      ideVersion: sampleProjectCompatibleIde,
-    });
-    expect(opener.runtimeVersion).to.be.a('string');
+  it(
+    'can open a project with a given IDE and inferred Runtime version',
+    { timeout: 1000 * 60 * 10 },
+    async function () {
+      // Requires manual checking and booting up the IDE,
+      // all of that could take a bit!
+      console.log(`Opening IDE v${sampleProjectCompatibleIde}`);
+      const opener = await GameMakerLauncher.openProject(sampleProjectPath, {
+        ideVersion: sampleProjectCompatibleIde,
+      });
+      assert.equal(typeof opener.runtimeVersion, 'string');
 
-    const { hasCorrectVersions } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        message: `Is the IDE version ${sampleProjectCompatibleIde} and the Runtime version ${opener.runtimeVersion}?`,
-        name: 'hasCorrectVersions',
-      },
-    ]);
-    expect(hasCorrectVersions, 'Opened IDE should have used correct versions')
-      .to.be.true;
-    opener.close();
-  });
+      const { hasCorrectVersions } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          message: `Is the IDE version ${sampleProjectCompatibleIde} and the Runtime version ${opener.runtimeVersion}?`,
+          name: 'hasCorrectVersions',
+        },
+      ]);
+      assert.equal(
+        hasCorrectVersions,
+        true,
+        'Opened IDE should have used correct versions',
+      );
+      opener.close();
+    },
+  );
 
-  it('can open a project with a given IDE and Runtime version', async function () {
-    // Requires manual checking and booting up the IDE,
-    // all of that could take a bit!
-    this.timeout(1000 * 60 * 10);
-    console.log(
-      `Opening IDE v${sampleProjectCompatibleIde} with Runtime v${sampleProjectCompatibleRuntime}`,
-    );
-    const opener = await GameMakerLauncher.openProject(sampleProjectPath, {
-      ideVersion: sampleProjectCompatibleIde,
-      runtimeVersion: sampleProjectCompatibleRuntime,
-    });
-    const { hasCorrectVersions } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        message: `Is the IDE version ${sampleProjectCompatibleIde} and the Runtime version ${sampleProjectCompatibleRuntime}?`,
-        name: 'hasCorrectVersions',
-      },
-    ]);
-    expect(hasCorrectVersions, 'Opened IDE should have used correct versions')
-      .to.be.true;
-    opener.close();
-  });
+  it(
+    'can open a project with a given IDE and Runtime version',
+    { timeout: 1000 * 60 * 10 },
+    async function () {
+      // Requires manual checking and booting up the IDE,
+      // all of that could take a bit!
+      console.log(
+        `Opening IDE v${sampleProjectCompatibleIde} with Runtime v${sampleProjectCompatibleRuntime}`,
+      );
+      const opener = await GameMakerLauncher.openProject(sampleProjectPath, {
+        ideVersion: sampleProjectCompatibleIde,
+        runtimeVersion: sampleProjectCompatibleRuntime,
+      });
+      const { hasCorrectVersions } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          message: `Is the IDE version ${sampleProjectCompatibleIde} and the Runtime version ${sampleProjectCompatibleRuntime}?`,
+          name: 'hasCorrectVersions',
+        },
+      ]);
+      assert.equal(
+        hasCorrectVersions,
+        true,
+        'Opened IDE should have used correct versions',
+      );
+      opener.close();
+    },
+  );
 });

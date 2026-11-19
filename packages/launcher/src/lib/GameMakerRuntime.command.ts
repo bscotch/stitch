@@ -1,23 +1,23 @@
 import { Pathy } from '@bscotch/pathy';
 import { arrayWrapped, formatTimestamp } from '@bscotch/utility/browser';
 import { spawn } from 'child_process';
-import type { GameMakerLogOptions } from './GameMakerLauncher.types.js';
+import type { GameMakerLogOptions } from './GameMakerLauncher.types.ts';
 import type {
   GameMakerCliCommand,
   GameMakerCliWorker,
-} from './GameMakerRuntime.cliTypes.js';
-import type { GameMakerRuntime } from './GameMakerRuntime.js';
-import {
+} from './GameMakerRuntime.cliTypes.ts';
+import type { GameMakerRuntime } from './GameMakerRuntime.ts';
+import type {
   GameMakerBuildOptions,
   GameMakerExecuteOptions,
   GameMakerExecutionResults,
   StitchSupportedBuilder,
-} from './GameMakerRuntime.types.js';
+} from './GameMakerRuntime.types.ts';
 import {
   artifactExtensionForPlatform,
   currentOs,
   projectLogDirectory,
-} from './utility.js';
+} from './utility.ts';
 
 export async function executeGameMakerRuntimeInstallCommand(
   runtime: GameMakerRuntime,

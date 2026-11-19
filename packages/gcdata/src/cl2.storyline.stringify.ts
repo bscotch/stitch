@@ -1,6 +1,6 @@
-import { StorylineMote } from './cl2.shared.types.js';
-import type { GameChanger } from './GameChanger.js';
-import { bsArrayToArray, toArrayTag } from './helpers.js';
+import type { StorylineMote } from './cl2.shared.types.ts';
+import type { GameChanger } from './GameChanger.ts';
+import { bsArrayToArray, toArrayTag } from './helpers.ts';
 
 export function stringifyStoryline(
   mote: StorylineMote,

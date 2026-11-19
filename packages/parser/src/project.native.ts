@@ -1,25 +1,32 @@
-import { Pathy, pathy } from '@bscotch/pathy';
+import { type Pathy, pathy } from '@bscotch/pathy';
 import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { parseStringPromise } from 'xml2js';
-import { parseJsdoc } from './jsdoc.js';
-import { logger } from './logger.js';
-import { GmlSpec, GmlSpecConstant, gmlSpecSchema } from './project.spec.js';
-import { Signifier } from './signifiers.js';
-import { typeFromParsedJsdocs } from './types.feather.js';
-import { Type, type StructType } from './types.js';
-import { addSpriteInfoStruct } from './types.sprites.js';
-import { StitchParserError, assert } from './util.js';
+import { parseJsdoc } from './jsdoc.ts';
+import { logger } from './logger.ts';
+import {
+  type GmlSpec,
+  type GmlSpecConstant,
+  gmlSpecSchema,
+} from './project.spec.ts';
+import { Signifier } from './signifiers.ts';
+import { typeFromParsedJsdocs } from './types.feather.ts';
+import { Type, type StructType } from './types.ts';
+import { addSpriteInfoStruct } from './types.sprites.ts';
+import { StitchParserError, assert } from './util.ts';
 
 export class Native {
   protected specs!: GmlSpec[];
   objectInstanceBase!: StructType;
 
-  protected constructor(
-    readonly globalSelf: StructType,
-    readonly types: Map<string, Type>,
-  ) {}
+  readonly globalSelf: StructType;
+  readonly types: Map<string, Type>;
+
+  protected constructor(globalSelf: StructType, types: Map<string, Type>) {
+    this.globalSelf = globalSelf;
+    this.types = types;
+  }
 
   protected load() {
     assert(this.specs.length, 'No specs to load!');

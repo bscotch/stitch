@@ -1,5 +1,5 @@
-import { assert } from './assert.js';
-import { Position } from './types.editor.js';
+import { assert } from './assert.ts';
+import type { Position } from './types.editor.ts';
 
 export const ORDER_INCREMENT = 5;
 

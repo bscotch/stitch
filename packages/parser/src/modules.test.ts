@@ -1,9 +1,9 @@
-import { expect } from 'chai';
-import { computeAssetDeps, importAssets } from './modules.js';
-import { Project } from './project.js';
-import { resetSandbox } from './test.lib.js';
-import { assert } from './util.js';
-import { assertThrowsAsync } from './util.test.js';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { computeAssetDeps, importAssets } from './modules.ts';
+import { Project } from './project.ts';
+import { resetSandbox } from './test.lib.ts';
+import { assertThrowsAsync } from './util.test.ts';
 
 describe('Modules', function () {
   it('can compute intra-project dependencies', async function () {
@@ -41,7 +41,7 @@ describe('Modules', function () {
       sourceAsset: 'o_child1_child',
       onMissingDependency: 'skip',
     });
-    expect(targetProject.getAssetByName('o_child1_child')).to.exist;
+    assert.ok(targetProject.getAssetByName('o_child1_child') != null);
   });
 
   it('can perform a deep import', async function () {
@@ -53,16 +53,16 @@ describe('Modules', function () {
       sourceAsset: 'o_child1_child',
       onMissingDependency: 'include',
     });
-    expect(results.errors).to.be.empty;
-    expect(results.skipped).to.be.empty;
-    expect(results.updated).to.be.empty;
-    expect(results.created).to.have.lengthOf(3);
-    expect(targetProject.getAssetByName('o_child1_child')).to.exist;
-    expect(targetProject.getAssetByName('o_child1')).to.exist;
-    expect(targetProject.getAssetByName('o_parent')).to.exist;
+    assert.equal(results.errors.length, 0);
+    assert.equal(results.skipped.length, 0);
+    assert.equal(results.updated.length, 0);
+    assert.equal(results.created.length, 3);
+    assert.ok(targetProject.getAssetByName('o_child1_child') != null);
+    assert.ok(targetProject.getAssetByName('o_child1') != null);
+    assert.ok(targetProject.getAssetByName('o_parent') != null);
   });
 
-  xit('can identify import conflicts', async function () {
+  it.skip('can identify import conflicts', async function () {
     // TODO: Add a "conflicted-target" project that has the various sorts of conflicts we can test against.
   });
 });

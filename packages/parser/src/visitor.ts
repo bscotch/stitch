@@ -27,41 +27,41 @@ import type {
   VariableAssignmentCstChildren,
   WithStatementCstChildren,
 } from '../gml-cst.js';
-import { JsdocSummary, gmlLinesByGroup, parseJsdoc } from './jsdoc.js';
-import { logger } from './logger.js';
-import { GmlVisitorBase, VisitorContext, withCtxKind } from './parser.js';
+import { type JsdocSummary, gmlLinesByGroup, parseJsdoc } from './jsdoc.ts';
+import { logger } from './logger.ts';
+import { GmlVisitorBase, type VisitorContext, withCtxKind } from './parser.ts';
 import {
   functionFromRhs,
   identifierFrom,
   sortChildren,
   stringLiteralAsString,
-} from './parser.utility.js';
-import type { Code } from './project.code.js';
+} from './parser.utility.ts';
+import type { Code } from './project.code.ts';
 import {
   Position,
   Range,
-  Reference,
+  type Reference,
   StructNewMemberRange,
-} from './project.location.js';
-import { Signifier } from './signifiers.js';
-import { getTypeOfKind, getTypes, normalizeType } from './types.checks.js';
-import { typeFromParsedJsdocs } from './types.feather.js';
+} from './project.location.ts';
+import { Signifier } from './signifiers.ts';
+import { getTypeOfKind, getTypes, normalizeType } from './types.checks.ts';
+import { typeFromParsedJsdocs } from './types.feather.ts';
 import {
-  EnumType,
+  type EnumType,
   Type,
-  TypeStore,
-  WithableType,
+  type TypeStore,
+  type WithableType,
   type StructType,
-} from './types.js';
-import { withableTypes } from './types.primitives.js';
-import { StitchParserError, assert } from './util.js';
-import { assignVariable, ensureDefinitive } from './visitor.assign.js';
-import { visitFunctionExpression } from './visitor.functionExpression.js';
-import { visitIdentifierAccessor } from './visitor.identifierAccessor.js';
+} from './types.ts';
+import { withableTypes } from './types.primitives.ts';
+import { StitchParserError, assert } from './util.ts';
+import { assignVariable, ensureDefinitive } from './visitor.assign.ts';
+import { visitFunctionExpression } from './visitor.functionExpression.ts';
+import { visitIdentifierAccessor } from './visitor.identifierAccessor.ts';
 import {
   SignifierProcessor,
   diagnosticCollections,
-} from './visitor.processor.js';
+} from './visitor.processor.ts';
 
 export function registerSignifiers(file: Code) {
   try {
@@ -88,8 +88,11 @@ export interface FindSignifierOptions {
 
 export class GmlSignifierVisitor extends GmlVisitorBase {
   static validated = false;
-  constructor(readonly PROCESSOR: SignifierProcessor) {
+  readonly PROCESSOR: SignifierProcessor;
+
+  constructor(PROCESSOR: SignifierProcessor) {
     super();
+    this.PROCESSOR = PROCESSOR;
     this.validateVisitor();
   }
 

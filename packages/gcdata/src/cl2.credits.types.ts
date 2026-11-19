@@ -1,19 +1,18 @@
-import type { Gcdata } from './GameChanger.js';
-import { assert } from './assert.js';
+import type { Gcdata } from './GameChanger.ts';
+import { assert } from './assert.ts';
 import {
   arrayTagPattern,
   commentLinePattern,
-  CreditsData,
-  CreditsMote,
+  type CreditsData,
+  type CreditsMote,
   creditsSchemaId,
-  ParserResult,
-} from './cl2.shared.types.js';
-import type { BschemaRoot } from './types.js';
+  type ParserResult,
+} from './cl2.shared.types.ts';
+import type { BschemaRoot } from './types.ts';
 
-export interface CreditsUpdateResult
-  extends ParserResult<{
-    sections: CreditsUpdateResultSection[];
-  }> {}
+export interface CreditsUpdateResult extends ParserResult<{
+  sections: CreditsUpdateResultSection[];
+}> {}
 
 export interface CreditsUpdateResultSection {
   id: string;

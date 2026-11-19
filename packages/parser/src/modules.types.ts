@@ -1,4 +1,4 @@
-import { type YyResourceType } from '@bscotch/yy';
+import type { YyResourceType } from '@bscotch/yy';
 
 export interface ImportAction {
   action: 'create' | 'replace';

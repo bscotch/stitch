@@ -1,31 +1,32 @@
-import { Pathy, pathy } from '@bscotch/pathy';
+import { __decorate } from 'tslib';
+import { type Pathy, pathy } from '@bscotch/pathy';
 import { sequential } from '@bscotch/utility';
 import {
   Yy,
-  YyData,
-  YyExtension,
-  YyObject,
-  YyResourceType,
-  YyRoom,
-  YyRoomInstanceLayer,
-  YySchemas,
-  YySound,
-  YySprite,
-  YypResource,
+  type YyData,
+  type YyExtension,
+  type YyObject,
+  type YyResourceType,
+  type YyRoom,
+  type YyRoomInstanceLayer,
+  type YySchemas,
+  type YySound,
+  type YySprite,
+  type YypResource,
   yyObjectEventSchema,
   yyRoomInstanceLayerSchema,
   yyRoomInstanceSchema,
   yySchemas,
   yySpriteSchema,
 } from '@bscotch/yy';
-import type { ObjectEvent, ObjectEventName } from './lib.objects.js';
-import { logger } from './logger.js';
-import { Code } from './project.code.js';
-import { Diagnostic } from './project.diagnostics.js';
-import { Project } from './project.js';
-import { Signifier } from './signifiers.js';
-import { StructType, Type } from './types.js';
-import { assert, getPngSize, groupPathToPosix, ok } from './util.js';
+import type { ObjectEvent, ObjectEventName } from './lib.objects.ts';
+import { logger } from './logger.ts';
+import { Code } from './project.code.ts';
+import { Diagnostic } from './project.diagnostics.ts';
+import type { Project } from './project.ts';
+import { Signifier } from './signifiers.ts';
+import { type StructType, Type } from './types.ts';
+import { assert, getPngSize, groupPathToPosix, ok } from './util.ts';
 
 export function isAssetOfKind<T extends YyResourceType>(
   asset: any,
@@ -64,11 +65,16 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     locals: false,
   };
 
+  readonly project: Project;
+  readonly resource: YypResource;
+
   protected constructor(
-    readonly project: Project,
-    readonly resource: YypResource,
+    project: Project,
+    resource: YypResource,
     yyPath: Pathy,
   ) {
+    this.project = project;
+    this.resource = resource;
     assert(yyPath, 'Must provide a YY path');
     this.assetKind = resource.id.path.split(/[/\\]/)[0] as T;
     this.yyPath = yyPath.withValidator(yySchemas[this.assetKind]) as any;
@@ -133,7 +139,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return `Id.Instance.${this.name}`;
   }
 
-  @sequential
   async saveYy() {
     assert(this.yyPath, 'Cannot save YY without a path');
     await Yy.write(
@@ -357,7 +362,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
    * During an Object asset rename, we need to ensure that all references to the
    * old name are updated to the new name. This includes the object's name in rooms.
    */
-  @sequential
   async renameRoomInstanceObjects(
     oldObjectName: string,
     newObjectName: string,
@@ -384,7 +388,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     }
   }
 
-  @sequential
   async removeRoomInstance(instanceId: string) {
     assert(this.isRoom, 'Can only add object instances to rooms');
     const yy = this.yy as YyRoom;
@@ -404,7 +407,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     await this.saveYy();
   }
 
-  @sequential
   async reorganizeRoomInstances(instanceIds: string[]) {
     assert(this.isRoom, 'Can only add object instances to rooms');
     const instanceIdsSet = new Set(instanceIds);
@@ -427,7 +429,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     await this.saveYy();
   }
 
-  @sequential
   async addRoomInstance(obj: Asset<'objects'>, x = 0, y = 0) {
     assert(this.isRoom, 'Can only add object instances to rooms');
     const yy = this.yy as YyRoom;
@@ -496,7 +497,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
    * Re-order the existing frames of a sprite.
    * Any frames not included in the new order will be deleted.
    */
-  @sequential
   async reorganizeFrames(newFrameIdOrder: string[]) {
     assert(this.isSprite, 'Can only delete frames from a sprite');
     assert(!this.isSpineSprite, 'Cannot delete frames from a Spine sprite');
@@ -524,7 +524,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     );
   }
 
-  @sequential
   async deleteFrames(frameIds: string[]) {
     assert(this.isSprite, 'Can only delete frames from a sprite');
     assert(!this.isSpineSprite, 'Cannot delete frames from a Spine sprite');
@@ -542,7 +541,6 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     );
   }
 
-  @sequential
   async addFrames(sourceImages: Pathy[]) {
     assert(this.isSprite, 'Can only add frames to a sprite');
     assert(!this.isSpineSprite, 'Cannot add frames to a Spine sprite');
@@ -931,3 +929,13 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     return item;
   }
 }
+
+// Node can't run decorator syntax, so apply them explicitly
+__decorate([sequential], Asset.prototype, 'saveYy', null);
+__decorate([sequential], Asset.prototype, 'renameRoomInstanceObjects', null);
+__decorate([sequential], Asset.prototype, 'removeRoomInstance', null);
+__decorate([sequential], Asset.prototype, 'reorganizeRoomInstances', null);
+__decorate([sequential], Asset.prototype, 'addRoomInstance', null);
+__decorate([sequential], Asset.prototype, 'reorganizeFrames', null);
+__decorate([sequential], Asset.prototype, 'deleteFrames', null);
+__decorate([sequential], Asset.prototype, 'addFrames', null);

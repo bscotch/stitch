@@ -1,8 +1,8 @@
-import { Pathy } from '@bscotch/pathy';
+import type { Pathy } from '@bscotch/pathy';
 import type { Dirent } from 'node:fs';
 import fsp from 'node:fs/promises';
-import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
-import { SpriteSourceError } from './utility.js';
+import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.ts';
+import { SpriteSourceError } from './utility.ts';
 
 /**
  * A wrapper around `fs.readdir` that retries a few times and

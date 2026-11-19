@@ -1,6 +1,7 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { pathy } from '@bscotch/pathy';
-import { expect } from 'chai';
-import { Spine } from './spine.js';
+import { Spine } from './spine.ts';
 
 const sampleFile = pathy('samples/sp_player_spine.json');
 
@@ -417,6 +418,6 @@ describe('Spine', function () {
         'discordicon4',
       ],
     };
-    expect(summary).to.eql(expectedSummary);
+    assert.deepEqual(summary, expectedSummary);
   });
 });

@@ -1,5 +1,5 @@
-import { c } from './tokens.categories.js';
-import { createToken } from './tokens.lib.js';
+import { c } from './tokens.categories.ts';
+import { createToken } from './tokens.lib.ts';
 
 const escapedCharacterTokens = [
   createToken({

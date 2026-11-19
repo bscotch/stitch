@@ -1,8 +1,8 @@
 import { arrayWrapped, isArray } from '@bscotch/utility';
-import type { Signifier } from './signifiers.js';
-import { KnownTypesMap } from './types.feather.js';
-import { Type, TypeStore } from './types.js';
-import { PrimitiveName } from './types.primitives.js';
+import type { Signifier } from './signifiers.ts';
+import type { KnownTypesMap } from './types.feather.ts';
+import { Type, TypeStore } from './types.ts';
+import type { PrimitiveName } from './types.primitives.ts';
 
 export function isTypeOfKind<T extends PrimitiveName>(
   item: any,

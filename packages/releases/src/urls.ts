@@ -1,5 +1,5 @@
 import { literal } from '@bscotch/utility/browser';
-import type { Channel } from './feeds.types.js';
+import type { Channel } from './feeds.types.ts';
 
 export function ideFeedUrls() {
   const prefix = `https://gms.yoyogames.com/update-win`;

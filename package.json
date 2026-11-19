@@ -19,16 +19,13 @@
   },
   "dependencies": {
     "@bscotch/pathy": "^2.12.1",
-    "@types/chai": "^5.2.3",
-    "@types/mocha": "^10.0.10",
     "@types/node": "^25.0.3",
-    "@typescript-eslint/eslint-plugin": "~8.52.0",
-    "@typescript-eslint/parser": "~8.52.0",
-    "@typescript-eslint/utils": "^8.52.0",
+    "@typescript-eslint/eslint-plugin": "~8.73.0",
+    "@typescript-eslint/parser": "~8.73.0",
+    "@typescript-eslint/utils": "^8.73.0",
     "del": "8.0.1",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
-    "mocha": "^11.7.5",
     "prettier": "^3.7.4",
     "syncpack": "^13.0.4",
     "zx": "^8.8.5"
@@ -45,6 +42,6 @@
     "packages/*"
   ],
   "devDependencies": {
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   }
 }

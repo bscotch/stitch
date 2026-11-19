@@ -1,7 +1,7 @@
-import { Signifier } from './signifiers.js';
-import { typeFromFeatherString } from './types.feather.js';
-import { StructType, Type } from './types.js';
-import { assert } from './util.js';
+import { Signifier } from './signifiers.ts';
+import { typeFromFeatherString } from './types.feather.ts';
+import { type StructType, Type } from './types.ts';
+import { assert } from './util.ts';
 
 interface VariableInfo {
   variable: string;

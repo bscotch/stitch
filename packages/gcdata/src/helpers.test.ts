@@ -1,9 +1,10 @@
+import { describe, it } from 'node:test';
 import { ok } from 'node:assert';
 import {
-  BsArrayItem,
+  type BsArrayItem,
   createBsArrayKey,
   updateBsArrayOrder,
-} from './helpers.js';
+} from './helpers.ts';
 
 describe('Helpers', function () {
   it('can create a four-character, consonumeric key', function () {

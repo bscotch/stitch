@@ -1,7 +1,8 @@
+import { describe, it } from 'node:test';
 import fs from 'node:fs/promises';
-import { GameChanger, Gcdata } from './GameChanger.js';
-import { assert } from './assert.js';
-import { objectToMap } from './util.js';
+import { GameChanger, Gcdata } from './GameChanger.ts';
+import { assert } from './assert.ts';
+import { objectToMap } from './util.ts';
 
 describe('Packed data', function () {
   it('can load packed data', async function () {

@@ -1,4 +1,5 @@
-import { isBeforeRange, isInRange, ok } from './util.js';
+import { describe, it } from 'node:test';
+import { isBeforeRange, isInRange, ok } from './util.ts';
 
 export function assertThrows(fn: () => void, message?: string) {
   try {

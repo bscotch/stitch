@@ -1,12 +1,10 @@
 {
-	"include": ["src/**/*.ts"],
-	"compilerOptions": {
-		"types": ["node", "mocha", "chai"],
-		"outDir": "dist",
-		"rootDir": "src",
-		"baseUrl": "src",
-		"moduleResolution": "nodenext",
-		"module": "NodeNext"
-	},
-	"extends": "../tsconfig.base.json"
+  "include": [
+    "src/**/*.ts"
+  ],
+  "extends": "../tsconfig.lib.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  }
 }

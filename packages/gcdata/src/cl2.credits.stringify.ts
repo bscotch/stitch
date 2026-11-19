@@ -1,7 +1,7 @@
-import { assert } from './assert.js';
-import { CreditsMote } from './cl2.shared.types.js';
-import type { GameChanger } from './GameChanger.js';
-import { bsArrayToArray } from './helpers.js';
+import { assert } from './assert.ts';
+import type { CreditsMote } from './cl2.shared.types.ts';
+import type { GameChanger } from './GameChanger.ts';
+import { bsArrayToArray } from './helpers.ts';
 
 export function stringifyCredits(
   mote: CreditsMote,

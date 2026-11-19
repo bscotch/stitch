@@ -1,13 +1,18 @@
 import type { FunctionExpressionCstChildren } from '../gml-cst.js';
-import { VisitorContext, withCtxKind } from './parser.js';
-import { Range, fixITokenLocation } from './project.location.js';
-import { Signifier } from './signifiers.js';
-import { getTypeOfKind } from './types.checks.js';
-import { typeFromFeatherString } from './types.feather.js';
-import { Type, TypeStore, WithableType, type StructType } from './types.js';
-import { withableTypes } from './types.primitives.js';
-import { assert } from './util.js';
-import type { GmlSignifierVisitor } from './visitor.js';
+import { type VisitorContext, withCtxKind } from './parser.ts';
+import { Range, fixITokenLocation } from './project.location.ts';
+import { Signifier } from './signifiers.ts';
+import { getTypeOfKind } from './types.checks.ts';
+import { typeFromFeatherString } from './types.feather.ts';
+import {
+  Type,
+  TypeStore,
+  type WithableType,
+  type StructType,
+} from './types.ts';
+import { withableTypes } from './types.primitives.ts';
+import { assert } from './util.ts';
+import type { GmlSignifierVisitor } from './visitor.ts';
 
 /** Visit a function's CST and update any signifiers and types */
 export function visitFunctionExpression(
@@ -98,8 +103,8 @@ export function visitFunctionExpression(
     docs?.jsdoc.kind === 'self'
       ? docs.type[0]
       : docs?.jsdoc.kind === 'function'
-      ? docs.type[0]?.self
-      : undefined;
+        ? docs.type[0]?.self
+        : undefined;
   if (docContextRaw && docContextRaw.kind === 'Function') {
     // Then we use the function's construct if it is a constructor, else its context.
     docContextRaw = docContextRaw.self;
@@ -220,8 +225,9 @@ export function visitFunctionExpression(
       const idx = cstParams.length + i;
       const paramDoc = extraParams[i];
       assert(paramDoc, 'Expected extra param');
-      const type = docs!.type[0]?.local?.getMember(paramDoc.name!.content)
-        ?.type;
+      const type = docs!.type[0]?.local?.getMember(
+        paramDoc.name!.content,
+      )?.type;
       functionType
         .addParameter(idx, paramDoc.name!.content, {
           optional: paramDoc.optional,

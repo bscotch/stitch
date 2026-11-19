@@ -1,37 +1,37 @@
-import type { GameChanger } from './GameChanger.js';
-import { assert } from './assert.js';
-import type { QuestMoteDataPointer } from './cl2.quest.pointers.js';
+import type { GameChanger } from './GameChanger.ts';
+import { assert } from './assert.ts';
+import type { QuestMoteDataPointer } from './cl2.quest.pointers.ts';
 import {
   linePatterns,
-  ParsedClue,
-  ParsedDialog,
-  ParsedEmoteGroup,
-  QuestMomentsLabel,
-  QuestRequirementsLabel,
-  QuestUpdateResult,
-} from './cl2.quest.types.js';
+  type ParsedClue,
+  type ParsedDialog,
+  type ParsedEmoteGroup,
+  type QuestMomentsLabel,
+  type QuestRequirementsLabel,
+  type QuestUpdateResult,
+} from './cl2.quest.types.ts';
 import {
   getMomentStyleNames,
   getMoteLists,
   getRequirementQuestStatuses,
   getRequirementStyleNames,
   isEmoteMoment,
-} from './cl2.quest.utils.js';
+} from './cl2.quest.utils.ts';
 import {
   isCommentLine,
   isStageLine,
   prepareParserHelpers,
   updateWipChangesFromParsed,
-} from './cl2.shared.parse.js';
-import { questSchemaId } from './cl2.shared.types.js';
-import { Crashlands2 } from './cl2.types.auto.js';
+} from './cl2.shared.parse.ts';
+import { questSchemaId } from './cl2.shared.types.ts';
+import type { Crashlands2 } from './cl2.types.auto.ts';
 import {
   bsArrayToArray,
   changedPosition,
   updateBsArrayOrder,
-} from './helpers.js';
-import type { Position } from './types.editor.js';
-import type { Mote } from './types.js';
+} from './helpers.ts';
+import type { Position } from './types.editor.ts';
+import type { Mote } from './types.ts';
 
 export function parseStringifiedQuest(
   text: string,

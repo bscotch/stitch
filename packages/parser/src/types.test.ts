@@ -1,7 +1,8 @@
-import { expect } from 'chai';
-import { replaceGenerics, updateGenericsMap } from './types.checks.js';
-import { KnownTypesMap, typeFromFeatherString } from './types.feather.js';
-import { Type, TypeStore } from './types.js';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { replaceGenerics, updateGenericsMap } from './types.checks.ts';
+import { type KnownTypesMap, typeFromFeatherString } from './types.feather.ts';
+import { Type, TypeStore } from './types.ts';
 
 describe('Types', function () {
   it('can resursively resolve generic types', function () {
@@ -16,29 +17,29 @@ describe('Types', function () {
       new Type('String'),
       knownTypes,
     );
-    expect(resolved.get('T')!.type[0].kind).to.equal('String');
+    assert.equal(resolved.get('T')!.type[0].kind, 'String');
 
     resolved = updateGenericsMap(
       toType('Array<T>'),
       new Type('String'),
       knownTypes,
     );
-    expect(resolved.get('T')).to.be.undefined;
+    assert.equal(resolved.get('T'), undefined);
 
     resolved = updateGenericsMap(
       toType('Array<T>'),
       toType('Array<String>'),
       knownTypes,
     );
-    expect(resolved.get('T')!.type[0].kind).to.equal('String');
+    assert.equal(resolved.get('T')!.type[0].kind, 'String');
 
     resolved = updateGenericsMap(
       toType('Array<T>'),
       toType('Array<Struct<String>>'),
       knownTypes,
     );
-    expect(resolved.get('T')!.type[0].kind).to.equal('Struct');
-    expect(resolved.get('T')!.type[0].items!.type[0].kind).to.equal('String');
+    assert.equal(resolved.get('T')!.type[0].kind, 'Struct');
+    assert.equal(resolved.get('T')!.type[0].items!.type[0].kind, 'String');
 
     // For cases with mixed types, this should still all work!
     resolved = updateGenericsMap(
@@ -47,9 +48,9 @@ describe('Types', function () {
       knownTypes,
     );
     const resolvedTypes = resolved.get('T')!.type;
-    expect(resolvedTypes.length).to.equal(2);
-    expect(resolvedTypes[0].kind).to.equal('Id.DsMap');
-    expect(resolvedTypes[1].kind).to.equal('Id.Instance');
+    assert.equal(resolvedTypes.length, 2);
+    assert.equal(resolvedTypes[0].kind, 'Id.DsMap');
+    assert.equal(resolvedTypes[1].kind, 'Id.Instance');
 
     // Make sure we can substitue generics
     const replaced = replaceGenerics(
@@ -57,29 +58,31 @@ describe('Types', function () {
       knownTypes,
       resolved,
     );
-    expect(replaced.type[0].kind).to.equal('Real');
-    expect(replaced.type[1].kind).to.equal('Array');
-    expect(replaced.type[1].items!.type[0].kind).to.equal('Id.DsMap');
-    expect(replaced.type[1].items!.type[1].kind).to.equal('Id.Instance');
-    expect(replaced.type[2].kind).to.equal('Struct');
-    expect(replaced.type[2].items!.type[0].kind).to.equal('Array');
-    expect(replaced.type[2].items!.type[0].items!.type[0].kind).to.equal(
+    assert.equal(replaced.type[0].kind, 'Real');
+    assert.equal(replaced.type[1].kind, 'Array');
+    assert.equal(replaced.type[1].items!.type[0].kind, 'Id.DsMap');
+    assert.equal(replaced.type[1].items!.type[1].kind, 'Id.Instance');
+    assert.equal(replaced.type[2].kind, 'Struct');
+    assert.equal(replaced.type[2].items!.type[0].kind, 'Array');
+    assert.equal(
+      replaced.type[2].items!.type[0].items!.type[0].kind,
       'Id.DsMap',
     );
-    expect(replaced.type[2].items!.type[0].items!.type[1].kind).to.equal(
+    assert.equal(
+      replaced.type[2].items!.type[0].items!.type[1].kind,
       'Id.Instance',
     );
   });
 
   it('can check whether one simple type satisfies another', function () {
     const string = new Type('String');
-    expect(string.narrows(new Type('String'))).to.be.true;
-    expect(string.narrows(new Type('Real'))).to.be.false;
+    assert.equal(string.narrows(new Type('String')), true);
+    assert.equal(string.narrows(new Type('Real')), false);
 
     const union = new TypeStore();
     union.type = [new Type('String'), new Type('Real')];
-    expect(string.narrows(union)).to.be.true;
-    expect(union.narrows(string)).to.be.false;
+    assert.equal(string.narrows(union), true);
+    assert.equal(union.narrows(string), false);
   });
 
   it('can check whether one struct type satisfies another', function () {
@@ -92,12 +95,12 @@ describe('Types', function () {
     }
 
     // They are the same at the moment, so should be true both ways
-    expect(narrowStruct.narrows(broadStruct)).to.be.true;
-    expect(broadStruct.narrows(narrowStruct)).to.be.true;
+    assert.equal(narrowStruct.narrows(broadStruct), true);
+    assert.equal(broadStruct.narrows(narrowStruct), true);
 
     // Now making the narrow struct more specific
     narrowStruct.addMember('specialty', { type: new Type('String') });
-    expect(narrowStruct.narrows(broadStruct)).to.be.true;
-    expect(broadStruct.narrows(narrowStruct)).to.be.false;
+    assert.equal(narrowStruct.narrows(broadStruct), true);
+    assert.equal(broadStruct.narrows(narrowStruct), false);
   });
 });

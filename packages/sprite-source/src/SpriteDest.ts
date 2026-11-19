@@ -1,42 +1,43 @@
-import { Pathy, pathy } from '@bscotch/pathy';
+import { __decorate } from 'tslib';
+import { type Pathy, pathy } from '@bscotch/pathy';
 import { sequential } from '@bscotch/utility';
 import { Yy } from '@bscotch/yy';
-import { SpriteCache } from './SpriteCache.js';
+import { SpriteCache } from './SpriteCache.ts';
 import {
   isNewer,
   type SpineSummary,
   type SpriteSummary,
   type SpritesInfo,
-} from './SpriteCache.schemas.js';
+} from './SpriteCache.schemas.ts';
 import {
   applySpriteAction,
   type SpriteDestActionResult,
-} from './SpriteDest.actions.js';
+} from './SpriteDest.actions.ts';
 import {
-  SpriteDestAction,
+  type SpriteDestAction,
   spriteDestConfigSchema,
   type SpriteDestConfig,
   type SpriteDestSource,
-} from './SpriteDest.schemas.js';
-import { SpriteSource } from './SpriteSource.js';
+} from './SpriteDest.schemas.ts';
+import { SpriteSource } from './SpriteSource.ts';
 import {
   retryOptions,
   spriteCacheFilename,
   spriteDestConfigFilename,
-} from './constants.js';
-import { Reporter } from './types.js';
-import { SpriteSourceError, assert, rethrow } from './utility.js';
+} from './constants.ts';
+import type { Reporter } from './types.ts';
+import { SpriteSourceError, assert, rethrow } from './utility.ts';
 
 export interface SpriteDestImportOptions {
   allowedNamePatterns?: (string | RegExp)[];
 }
 
 export class SpriteDest extends SpriteCache {
-  protected constructor(
-    spritesRoot: string | Pathy,
-    readonly yypPath: Pathy,
-  ) {
+  readonly yypPath: Pathy;
+
+  protected constructor(spritesRoot: string | Pathy, yypPath: Pathy) {
     super(spritesRoot, 1);
+    this.yypPath = yypPath;
   }
 
   get configFile() {
@@ -45,7 +46,6 @@ export class SpriteDest extends SpriteCache {
       .withValidator(spriteDestConfigSchema);
   }
 
-  @sequential
   protected async inferChangeActions(
     sourceConfig: SpriteDestSource,
     destSpritesCache: SpritesInfo,
@@ -225,7 +225,6 @@ export class SpriteDest extends SpriteCache {
   /**
    * @param overrides Optionally override the configuration file (if it exists)
    */
-  @sequential
   async import(
     overrides?: SpriteDestConfig,
     reporter?: Reporter,
@@ -494,3 +493,7 @@ export class SpriteDest extends SpriteCache {
     return cache;
   }
 }
+
+// Node can't run decorator syntax, so apply them explicitly
+__decorate([sequential], SpriteDest.prototype, 'inferChangeActions', null);
+__decorate([sequential], SpriteDest.prototype, 'import', null);

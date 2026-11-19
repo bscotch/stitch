@@ -1,7 +1,7 @@
-import type { GameChanger } from './GameChanger.js';
-import { characterString, emojiString } from './cl2.shared.stringify.js';
-import type { ChatMote } from './cl2.shared.types.js';
-import { bsArrayToArray, toArrayTag } from './helpers.js';
+import type { GameChanger } from './GameChanger.ts';
+import { characterString, emojiString } from './cl2.shared.stringify.ts';
+import type { ChatMote } from './cl2.shared.types.ts';
+import { bsArrayToArray, toArrayTag } from './helpers.ts';
 
 export function stringifyChat(mote: ChatMote, packed: GameChanger): string {
   // METADATA

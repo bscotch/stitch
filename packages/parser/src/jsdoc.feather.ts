@@ -9,8 +9,8 @@
 //  - `Array<String>`
 //  - `Array[String|Real]`
 
-import type { Type } from './types.js';
-import { ok } from './util.js';
+import type { Type } from './types.ts';
+import { ok } from './util.ts';
 
 export interface FeatherTypeUnion {
   kind: 'union';

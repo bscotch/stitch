@@ -1,16 +1,16 @@
-export { spritesInfoSchema, type SpritesInfo } from './SpriteCache.schemas.js';
-export * from './SpriteDest.actions.js';
-export { SpriteDest } from './SpriteDest.js';
+export { spritesInfoSchema, type SpritesInfo } from './SpriteCache.schemas.ts';
+export * from './SpriteDest.actions.ts';
+export { SpriteDest } from './SpriteDest.ts';
 export {
   spriteDestConfigSchema,
   type SpriteDestConfig,
   type SpriteDestSource,
-} from './SpriteDest.schemas.js';
-export { SpriteDir } from './SpriteDir.js';
-export { SpriteSource } from './SpriteSource.js';
+} from './SpriteDest.schemas.ts';
+export { SpriteDir } from './SpriteDir.ts';
+export { SpriteSource } from './SpriteSource.ts';
 export {
   spriteSourceConfigSchema,
   type SpriteSourceConfig,
   type SpriteSourceStage,
-} from './SpriteSource.schemas.js';
-export type { Issue, Log } from './types.js';
+} from './SpriteSource.schemas.ts';
+export type { Issue, Log } from './types.ts';

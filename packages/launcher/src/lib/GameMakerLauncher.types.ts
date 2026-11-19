@@ -1,13 +1,13 @@
 import type { Pathy } from '@bscotch/pathy';
 import { z } from 'zod';
-import type { GameMakerChannel } from './GameMakerFeeds.types.js';
+import type { GameMakerChannel } from './GameMakerFeeds.types.ts';
 export {
   gameMakerChannelSchema,
   gameMakerFeedOptionsSchema,
   type GameMakerChannel,
   type GameMakerFeedOptions,
   type GameMakerSearch,
-} from './GameMakerFeeds.types.js';
+} from './GameMakerFeeds.types.ts';
 
 export type GameMakerKnownPathId = z.infer<typeof gameMakerKnownPathIdSchema>;
 const gameMakerKnownPathIdSchema = z.enum([

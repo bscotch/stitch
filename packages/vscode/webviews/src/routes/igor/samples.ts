@@ -3,6 +3,7 @@ import type { IgorWebviewExtensionPostRun, IgorWebviewLog } from '@local-vscode/
 export const running: IgorWebviewExtensionPostRun = {
 	kind: 'run',
 	projectName: 'Fake Project',
+	projectDir: 'c:/PROJECT',
 	cleaning: false,
 	cmd: `c:/ProgramData/GameMakerStudio2-Beta/Cache/runtimes/runtime-2024.200.0.516/bin/igor/windows/x64/Igor.exe`,
 	args: [

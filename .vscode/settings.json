@@ -44,8 +44,6 @@
   "svelte.plugin.svelte.defaultScriptLanguage": "ts",
   "svelte.plugin.css.globals": "**/global.css",
   "css.styleSheets": ["global.css"],
-  "typescript.preferences.importModuleSpecifierEnding": "js",
-  "javascript.preferences.importModuleSpecifierEnding": "js",
   "cSpell.useGitignore": true,
   "cSpell.files": ["**/*.md", "**/src/**/*"],
   "grammarly.selectors": [

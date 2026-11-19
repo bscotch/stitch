@@ -1,7 +1,7 @@
-import { ComfortMote } from './cl2.shared.types.js';
-import type { GameChanger } from './GameChanger.js';
-import { bsArrayToArray, toArrayTag } from './helpers.js';
-import { cleanGameChangerString } from './util.js';
+import type { ComfortMote } from './cl2.shared.types.ts';
+import type { GameChanger } from './GameChanger.ts';
+import { bsArrayToArray, toArrayTag } from './helpers.ts';
+import { cleanGameChangerString } from './util.ts';
 
 export function stringifyComfort(
   mote: ComfortMote,

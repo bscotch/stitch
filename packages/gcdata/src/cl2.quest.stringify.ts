@@ -1,9 +1,9 @@
-import type { GameChanger } from './GameChanger.js';
-import { characterString, emojiString } from './cl2.shared.stringify.js';
-import type { Crashlands2 } from './cl2.types.auto.js';
-import { bsArrayToArray, toArrayTag, toMoteTag } from './helpers.js';
-import type { Mote } from './types.js';
-import { capitalize, cleanGameChangerString } from './util.js';
+import type { GameChanger } from './GameChanger.ts';
+import { characterString, emojiString } from './cl2.shared.stringify.ts';
+import type { Crashlands2 } from './cl2.types.auto.ts';
+import { bsArrayToArray, toArrayTag, toMoteTag } from './helpers.ts';
+import type { Mote } from './types.ts';
+import { capitalize, cleanGameChangerString } from './util.ts';
 
 export function stringifyQuest(
   mote: Mote<Crashlands2.Quest>,

@@ -1,19 +1,18 @@
-import type { Gcdata } from './GameChanger.js';
-import { assert } from './assert.js';
+import type { Gcdata } from './GameChanger.ts';
+import { assert } from './assert.ts';
 import {
   arrayTagPattern,
-  ComfortData,
-  ComfortMote,
+  type ComfortData,
+  type ComfortMote,
   comfortSchemaId,
-  ParserResult,
-} from './cl2.shared.types.js';
-import type { BschemaRoot } from './types.js';
+  type ParserResult,
+} from './cl2.shared.types.ts';
+import type { BschemaRoot } from './types.ts';
 
-export interface ComfortUpdateResult
-  extends ParserResult<{
-    description?: string;
-    unlockedDescription?: string;
-  }> {}
+export interface ComfortUpdateResult extends ParserResult<{
+  description?: string;
+  unlockedDescription?: string;
+}> {}
 
 export function listComforts(gcData: Gcdata): ComfortMote[] {
   return gcData.listMotesBySchema<ComfortData>(comfortSchemaId);

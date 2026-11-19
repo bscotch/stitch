@@ -43,8 +43,7 @@
   "scripts": {
     "build": "tsc --build",
     "clean": "rimraf build dist *.tsbuildinfo **/*.tsbuildinfo",
-    "test": "mocha --config ../../config/.mocharc.cjs",
-    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
+    "test": "node --test --test-timeout=10000 \"src/**/*.test.ts\"",
     "watch": "tsc --build --watch"
   },
   "dependencies": {
@@ -57,14 +56,10 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@types/chai": "^5.2.3",
     "@types/inquirer": "^9.0.9",
-    "@types/mocha": "^10.0.10",
-    "chai": "^6.2.2",
     "inquirer": "13.1.0",
-    "mocha": "^11.7.5",
     "rimraf": "^6.1.2",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "publishConfig": {
     "access": "public"

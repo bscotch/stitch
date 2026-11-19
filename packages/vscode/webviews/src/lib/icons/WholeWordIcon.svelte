@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { alt } = $props<{ alt?: string }>();
+	let { alt }: { alt?: string } = $props();
 </script>
 
 <!-- https://github.com/microsoft/vscode-codicons/blob/main/src/icons/whole-word.svg -->

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { jsonSchemaRemoteDir } from './constants.js';
+import { jsonSchemaRemoteDir } from './constants.ts';
 
 export const cacheVersion = 2;
 

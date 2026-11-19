@@ -4,8 +4,8 @@ import {
   listYyFiles,
   parsePath,
   Yy,
-  YySound,
-  YySprite,
+  type YySound,
+  type YySprite,
 } from '@bscotch/yy';
 import { ok } from 'node:assert';
 import fsp from 'node:fs/promises';

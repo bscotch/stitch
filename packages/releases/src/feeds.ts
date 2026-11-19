@@ -1,19 +1,19 @@
-import { Pathy } from '@bscotch/pathy';
+import type { Pathy } from '@bscotch/pathy';
 import { z } from 'zod';
-import { defaultNotesCachePath } from './constants.js';
-import { downloadRssFeed, findPairedRuntime } from './feeds.lib.js';
+import { defaultNotesCachePath } from './constants.ts';
+import { downloadRssFeed, findPairedRuntime } from './feeds.lib.ts';
 import {
-  ArtifactType,
-  GameMakerArtifact,
-  GameMakerRelease,
-  GameMakerReleaseWithNotes,
+  type ArtifactType,
+  type GameMakerArtifact,
+  type GameMakerRelease,
+  type GameMakerReleaseWithNotes,
   channels,
   gameMakerArtifactSchema,
   gameMakerReleaseSchema,
   gameMakerReleaseWithNotesSchema,
-} from './feeds.types.js';
-import { listReleaseNotes } from './notes.js';
-import { ideFeedUrls, runtimeFeedUrls } from './urls.js';
+} from './feeds.types.ts';
+import { listReleaseNotes } from './notes.ts';
+import { ideFeedUrls, runtimeFeedUrls } from './urls.ts';
 
 export async function computeReleasesSummaryWithNotes(
   releases?: GameMakerRelease[],

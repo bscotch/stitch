@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { gameMakerReleaseWithNotesSchema } from './feeds.types.js';
-import { fetchJson } from './fetch.js';
+import { gameMakerReleaseWithNotesSchema } from './feeds.types.ts';
+import { fetchJson } from './fetch.ts';
 
 /**
  * This package is used to generate a releases object, stored

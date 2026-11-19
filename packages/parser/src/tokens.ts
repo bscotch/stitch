@@ -1,12 +1,12 @@
-import { codeTokens } from './tokens.code.js';
-import { tokenListToObject } from './tokens.lib.js';
+import { codeTokens } from './tokens.code.ts';
+import { tokenListToObject } from './tokens.lib.ts';
 import {
   multilineDoubleStringTokens,
   multilineSingleStringTokens,
   stringTokens,
   templateTokens,
-} from './tokens.strings.js';
-export { c, categories } from './tokens.categories.js';
+} from './tokens.strings.ts';
+export { c, categories } from './tokens.categories.ts';
 
 export const tokens = [
   ...codeTokens,

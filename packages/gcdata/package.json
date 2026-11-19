@@ -7,8 +7,7 @@
   "scripts": {
     "build": "tsc --build",
     "build:types": "node scripts/compile-types.mjs",
-    "test": "mocha --config ../../config/.mocharc.cjs",
-    "test:dev": "mocha --config ../../config/.mocharc.cjs --forbid-only=false --parallel=false --timeout=9999999999",
+    "test": "node --test --test-timeout=10000 \"src/**/*.test.ts\"",
     "watch": "tsc --build --watch"
   },
   "dependencies": {
@@ -19,10 +18,8 @@
     "zod": "4.3.5"
   },
   "devDependencies": {
-    "chai": "^6.2.2",
     "json-schema-to-typescript": "15.0.4",
-    "source-map-support": "0.5.21",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "publishConfig": {
     "access": "public"

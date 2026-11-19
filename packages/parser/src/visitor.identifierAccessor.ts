@@ -1,4 +1,4 @@
-import { Defined, arrayWrapped } from '@bscotch/utility';
+import { type Defined, arrayWrapped } from '@bscotch/utility';
 import type { IToken } from 'chevrotain';
 import type {
   AccessorSuffixesCstChildren,
@@ -7,21 +7,21 @@ import type {
   FunctionArgumentsCstNode,
   IdentifierAccessorCstChildren,
 } from '../gml-cst.js';
-import { Docs, withCtxKind, type VisitorContext } from './parser.js';
+import { type Docs, withCtxKind, type VisitorContext } from './parser.ts';
 import {
   identifierFrom,
   isEmpty,
   rhsFrom,
   sortedAccessorSuffixes,
   sortedFunctionCallParts,
-} from './parser.utility.js';
+} from './parser.utility.ts';
 import {
   FunctionArgRange,
   Position,
   Range,
   fixITokenLocation,
-} from './project.location.js';
-import type { Signifier } from './signifiers.js';
+} from './project.location.ts';
+import type { Signifier } from './signifiers.ts';
 import {
   getTypeOfKind,
   getTypeStoreOrType,
@@ -31,12 +31,12 @@ import {
   normalizeType,
   replaceGenerics,
   updateGenericsMap,
-} from './types.checks.js';
-import { Type, TypeStore, WithableType } from './types.js';
-import { withableTypes } from './types.primitives.js';
-import { Values } from './util.js';
-import { assignVariable } from './visitor.assign.js';
-import type { GmlSignifierVisitor } from './visitor.js';
+} from './types.checks.ts';
+import type { Type, TypeStore, WithableType } from './types.ts';
+import { withableTypes } from './types.primitives.ts';
+import type { Values } from './util.ts';
+import { assignVariable } from './visitor.assign.ts';
+import type { GmlSignifierVisitor } from './visitor.ts';
 
 interface LastAccessed {
   /** If we're accessing a named variable, this is that name */
@@ -95,8 +95,8 @@ export function visitIdentifierAccessor(
     const autoDeclarePrefixes =
       this.PROCESSOR.project.options?.settings?.autoDeclareGlobalsPrefixes ||
       [];
-    const isAutoDeclared = autoDeclarePrefixes.some(
-      (prefix) => lastAccessed.name?.startsWith(prefix),
+    const isAutoDeclared = autoDeclarePrefixes.some((prefix) =>
+      lastAccessed.name?.startsWith(prefix),
     );
     if (!isAutoDeclared) {
       this.PROCESSOR.addDiagnostic(

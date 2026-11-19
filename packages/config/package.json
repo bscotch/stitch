@@ -30,7 +30,7 @@
   },
   "scripts": {
     "build": "tsc --build && node scripts/update-schemas.mjs",
-    "test": "node --test src/**/*.test.ts",
+    "test": "node --test --test-timeout=10000 \"src/**/*.test.ts\"",
     "watch": "tsc --build --watch"
   },
   "dependencies": {
@@ -39,8 +39,7 @@
   },
   "devDependencies": {
     "@bscotch/pathy": "^2.12.1",
-    "source-map-support": "0.5.21",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "publishConfig": {
     "access": "public"

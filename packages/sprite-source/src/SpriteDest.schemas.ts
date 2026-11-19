@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { jsonSchemaRemoteDir } from './constants.js';
+import { jsonSchemaRemoteDir } from './constants.ts';
 
 export interface SpriteDestAction {
   kind: 'update' | 'create';

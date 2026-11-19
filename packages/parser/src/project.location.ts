@@ -1,8 +1,13 @@
 import type { CstNodeLocation, IToken } from 'chevrotain';
-import type { Code } from './project.code.js';
-import type { Signifier } from './signifiers.js';
-import { EnumType, FunctionType, StructType, WithableType } from './types.js';
-import { assert } from './util.js';
+import type { Code } from './project.code.ts';
+import type { Signifier } from './signifiers.ts';
+import type {
+  EnumType,
+  FunctionType,
+  StructType,
+  WithableType,
+} from './types.ts';
+import { assert } from './util.ts';
 
 export const firstLineIndex = 1;
 export const firstColumnIndex = 1;
@@ -40,12 +45,17 @@ export type LinePosition = { line: number; column: number };
 
 export class Position implements IPosition {
   readonly $tag = 'Pos';
-  constructor(
-    readonly file: Code,
-    public offset: number,
-    public line: number,
-    public column: number,
-  ) {}
+  readonly file: Code;
+  public offset: number;
+  public line: number;
+  public column: number;
+
+  constructor(file: Code, offset: number, line: number, column: number) {
+    this.file = file;
+    this.offset = offset;
+    this.line = line;
+    this.column = column;
+  }
 
   /**
    * Create a new Positiong instance within this same file
@@ -162,15 +172,20 @@ export class Range implements IRange {
 export class FunctionArgRange extends Range {
   override $tag = 'ArgRange';
   hasExpression = false;
+  readonly type: FunctionType;
+  readonly idx: number;
+
   constructor(
     /** The function reference this call belongs to */
-    readonly type: FunctionType,
+    type: FunctionType,
     /** The index of the parameter we're in. */
-    readonly idx: number,
+    idx: number,
     start: Position,
     end?: Position,
   ) {
     super(start, end);
+    this.type = type;
+    this.idx = idx;
   }
 
   get param(): Signifier {
@@ -181,31 +196,40 @@ export class FunctionArgRange extends Range {
 
 export class StructNewMemberRange extends Range {
   override $tag = 'NewMemberRange';
+  readonly type: StructType;
+
   constructor(
     /** The function reference this call belongs to */
-    readonly type: StructType,
+    type: StructType,
     start: Position,
     end?: Position,
   ) {
     super(start, end);
+    this.type = type;
   }
 }
 
-export const enum ScopeFlag {
-  DotAccessor = 1 << 0,
-}
+export const ScopeFlag = {
+  DotAccessor: 1 << 0,
+} as const;
+export type ScopeFlag = (typeof ScopeFlag)[keyof typeof ScopeFlag];
 
 export class Scope extends Range {
   override readonly $tag = 'Scope';
   /** The immediately adjacent ScopeRange */
   protected _next: Scope | undefined = undefined;
   public flags = 0;
+  public local: StructType;
+  public self: WithableType | EnumType;
+
   constructor(
     start: Position,
-    public local: StructType,
-    public self: WithableType | EnumType,
+    local: StructType,
+    self: WithableType | EnumType,
   ) {
     super(start);
+    this.local = local;
+    this.self = self;
   }
 
   set isDotAccessor(value: boolean) {
@@ -253,12 +277,11 @@ export class Reference extends Range {
   isDef = false;
   protected _itemNamePattern: RegExp | undefined = undefined;
 
-  constructor(
-    public item: Signifier,
-    start: Position,
-    end: Position,
-  ) {
+  public item: Signifier;
+
+  constructor(item: Signifier, start: Position, end: Position) {
     super(start, end);
+    this.item = item;
   }
 
   get itemNamePattern(): RegExp {

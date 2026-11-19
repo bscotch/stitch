@@ -1,7 +1,7 @@
 import {
   createToken as createTokenBase,
-  ITokenConfig as ITokenConfigBase,
-  TokenType as TokenTypeBase,
+  type ITokenConfig as ITokenConfigBase,
+  type TokenType as TokenTypeBase,
 } from 'chevrotain';
 export { Lexer } from 'chevrotain';
 
@@ -16,8 +16,9 @@ export interface TokenType<Name extends string = string> extends TokenTypeBase {
   name: Name;
 }
 
-export interface ITokenConfig<Name extends string = string>
-  extends ITokenConfigBase {
+export interface ITokenConfig<
+  Name extends string = string,
+> extends ITokenConfigBase {
   name: Name;
   push_mode?: GmlLexerMode;
 }

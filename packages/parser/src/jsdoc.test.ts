@@ -1,7 +1,8 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { undent } from '@bscotch/utility';
-import { expect } from 'chai';
-import { parseFeatherTypeString } from './jsdoc.feather.js';
-import { parseJsdoc } from './jsdoc.js';
+import { parseFeatherTypeString } from './jsdoc.feather.ts';
+import { parseJsdoc } from './jsdoc.ts';
 
 const functionJsdoc = `
 /// @desc This is a multiline
@@ -36,68 +37,68 @@ describe('JSDocs', function () {
     const complexType =
       'Array<string OR Array<Real>> or Struct.Hello or Id.Map<String,Real>';
     const parsed = parseFeatherTypeString(complexType);
-    expect(parsed.kind).to.equal('union');
-    expect(parsed.types).to.have.lengthOf(3);
-    expect(parsed.types[0].kind).to.equal('type');
-    expect(parsed.types[0].name.content).to.equal('Array');
-    expect(parsed.types[0].of?.kind).to.equal('union');
-    expect(parsed.types[0].of?.types).to.have.lengthOf(2);
-    expect(parsed.types[0].of?.types[0].kind).to.equal('type');
-    expect(parsed.types[0].of?.types[0].name.content).to.equal('string');
-    expect(parsed.types[0].of?.types[1].kind).to.equal('type');
-    expect(parsed.types[0].of?.types[1].name.content).to.equal('Array');
-    expect(parsed.types[0].of?.types[1].of?.kind).to.equal('union');
-    expect(parsed.types[0].of?.types[1].of?.types).to.have.lengthOf(1);
-    expect(parsed.types[0].of?.types[1].of?.types[0].kind).to.equal('type');
-    expect(parsed.types[0].of?.types[1].of?.types[0].name.content).to.equal(
+    assert.equal(parsed.kind, 'union');
+    assert.equal(parsed.types.length, 3);
+    assert.equal(parsed.types[0].kind, 'type');
+    assert.equal(parsed.types[0].name.content, 'Array');
+    assert.equal(parsed.types[0].of?.kind, 'union');
+    assert.equal((parsed.types[0].of?.types).length, 2);
+    assert.equal(parsed.types[0].of?.types[0].kind, 'type');
+    assert.equal(parsed.types[0].of?.types[0].name.content, 'string');
+    assert.equal(parsed.types[0].of?.types[1].kind, 'type');
+    assert.equal(parsed.types[0].of?.types[1].name.content, 'Array');
+    assert.equal(parsed.types[0].of?.types[1].of?.kind, 'union');
+    assert.equal((parsed.types[0].of?.types[1].of?.types).length, 1);
+    assert.equal(parsed.types[0].of?.types[1].of?.types[0].kind, 'type');
+    assert.equal(
+      parsed.types[0].of?.types[1].of?.types[0].name.content,
       'Real',
     );
-    expect(parsed.types[1].kind).to.equal('type');
-    expect(parsed.types[1].name.content).to.equal('Struct.Hello');
-    expect(parsed.types[2].kind).to.equal('type');
-    expect(parsed.types[2].name.content).to.equal('Id.Map');
-    expect(parsed.types[2].of?.kind).to.equal('union');
-    expect(parsed.types[2].of?.types).to.have.lengthOf(2);
-    expect(parsed.types[2].of?.types[0].kind).to.equal('type');
-    expect(parsed.types[2].of?.types[0].name.content).to.equal('String');
-    expect(parsed.types[2].of?.types[1].kind).to.equal('type');
-    expect(parsed.types[2].of?.types[1].name.content).to.equal('Real');
+    assert.equal(parsed.types[1].kind, 'type');
+    assert.equal(parsed.types[1].name.content, 'Struct.Hello');
+    assert.equal(parsed.types[2].kind, 'type');
+    assert.equal(parsed.types[2].name.content, 'Id.Map');
+    assert.equal(parsed.types[2].of?.kind, 'union');
+    assert.equal((parsed.types[2].of?.types).length, 2);
+    assert.equal(parsed.types[2].of?.types[0].kind, 'type');
+    assert.equal(parsed.types[2].of?.types[0].name.content, 'String');
+    assert.equal(parsed.types[2].of?.types[1].kind, 'type');
+    assert.equal(parsed.types[2].of?.types[1].name.content, 'Real');
   });
 
   it('can parse GML-style Function JSDocs', function () {
     const jsdoc = functionJsdoc;
     const parsed = parseJsdoc(jsdoc);
-    expect(parsed.kind).to.equal('function');
-    expect(parsed.deprecated).to.equal(true);
-    expect(parsed.self?.content).to.equal('Struct.AnotherConstructor');
-    expect(parsed.description).to.equal('This is a multiline\ndescription.');
-    expect(parsed.params).to.have.lengthOf(5);
-    expect(parsed.params![0].name?.content).to.equal('first');
-    expect(parsed.params![0].type?.content).to.equal('String');
-    expect(parsed.params![0].description).to.equal(
-      'This is the first parameter',
-    );
-    expect(parsed.params![1].name?.content).to.equal('second');
-    expect(parsed.params![1].type?.content).to.equal('Real');
-    expect(parsed.params![1].description).to.equal(
+    assert.equal(parsed.kind, 'function');
+    assert.equal(parsed.deprecated, true);
+    assert.equal(parsed.self?.content, 'Struct.AnotherConstructor');
+    assert.equal(parsed.description, 'This is a multiline\ndescription.');
+    assert.equal(parsed.params?.length, 5);
+    assert.equal(parsed.params![0].name?.content, 'first');
+    assert.equal(parsed.params![0].type?.content, 'String');
+    assert.equal(parsed.params![0].description, 'This is the first parameter');
+    assert.equal(parsed.params![1].name?.content, 'second');
+    assert.equal(parsed.params![1].type?.content, 'Real');
+    assert.equal(
+      parsed.params![1].description,
       'This is the second parameter,\nwhich spans multiple lines.',
     );
-    expect(parsed.params![2].name?.content).to.equal('third');
-    expect(parsed.params![2].type?.content).to.equal('Struct');
-    expect(parsed.params![2].optional).to.equal(true);
-    expect(parsed.params![2].description).to.equal(
-      'This parameter is optional',
-    );
-    expect(parsed.params![3].name?.content).to.equal('fourth');
-    expect(parsed.params![3].type?.content).to.equal('Struct');
-    expect(parsed.params![3].optional).to.equal(true);
-    expect(parsed.params![3].description).to.equal(
+    assert.equal(parsed.params![2].name?.content, 'third');
+    assert.equal(parsed.params![2].type?.content, 'Struct');
+    assert.equal(parsed.params![2].optional, true);
+    assert.equal(parsed.params![2].description, 'This parameter is optional');
+    assert.equal(parsed.params![3].name?.content, 'fourth');
+    assert.equal(parsed.params![3].type?.content, 'Struct');
+    assert.equal(parsed.params![3].optional, true);
+    assert.equal(
+      parsed.params![3].description,
       'This is optional and has a default value',
     );
-    expect(parsed.params![4].name?.content).to.equal('...');
-    expect(parsed.params![4].type?.content).to.equal('Bool');
-    expect(parsed.params![4].optional).to.equal(true);
-    expect(parsed.params![4].description).to.equal(
+    assert.equal(parsed.params![4].name?.content, '...');
+    assert.equal(parsed.params![4].type?.content, 'Bool');
+    assert.equal(parsed.params![4].optional, true);
+    assert.equal(
+      parsed.params![4].description,
       'And so is this one, but there can be as many as you want!',
     );
   });
@@ -105,37 +106,36 @@ describe('JSDocs', function () {
   it('can parse JS-style Function JSDocs', function () {
     const jsdoc = functionJsdocJs;
     const parsed = parseJsdoc(jsdoc);
-    expect(parsed.kind).to.equal('function');
-    expect(parsed.deprecated).to.equal(true);
-    expect(parsed.self?.content).to.equal('Struct.AnotherConstructor');
-    expect(parsed.description).to.equal('This is a multiline\ndescription.');
-    expect(parsed.params).to.have.lengthOf(5);
-    expect(parsed.params![0].name?.content).to.equal('first');
-    expect(parsed.params![0].type?.content).to.equal('String');
-    expect(parsed.params![0].description).to.equal(
-      'This is the first parameter',
-    );
-    expect(parsed.params![1].name?.content).to.equal('second');
-    expect(parsed.params![1].type?.content).to.equal('Real');
-    expect(parsed.params![1].description).to.equal(
+    assert.equal(parsed.kind, 'function');
+    assert.equal(parsed.deprecated, true);
+    assert.equal(parsed.self?.content, 'Struct.AnotherConstructor');
+    assert.equal(parsed.description, 'This is a multiline\ndescription.');
+    assert.equal(parsed.params?.length, 5);
+    assert.equal(parsed.params![0].name?.content, 'first');
+    assert.equal(parsed.params![0].type?.content, 'String');
+    assert.equal(parsed.params![0].description, 'This is the first parameter');
+    assert.equal(parsed.params![1].name?.content, 'second');
+    assert.equal(parsed.params![1].type?.content, 'Real');
+    assert.equal(
+      parsed.params![1].description,
       'This is the second parameter,\nwhich spans multiple lines.',
     );
-    expect(parsed.params![2].name?.content).to.equal('third');
-    expect(parsed.params![2].type?.content).to.equal('Struct');
-    expect(parsed.params![2].optional).to.equal(true);
-    expect(parsed.params![2].description).to.equal(
-      'This parameter is optional',
-    );
-    expect(parsed.params![3].name?.content).to.equal('fourth');
-    expect(parsed.params![3].type?.content).to.equal('Struct');
-    expect(parsed.params![3].optional).to.equal(true);
-    expect(parsed.params![3].description).to.equal(
+    assert.equal(parsed.params![2].name?.content, 'third');
+    assert.equal(parsed.params![2].type?.content, 'Struct');
+    assert.equal(parsed.params![2].optional, true);
+    assert.equal(parsed.params![2].description, 'This parameter is optional');
+    assert.equal(parsed.params![3].name?.content, 'fourth');
+    assert.equal(parsed.params![3].type?.content, 'Struct');
+    assert.equal(parsed.params![3].optional, true);
+    assert.equal(
+      parsed.params![3].description,
       'This is optional and has a default value',
     );
-    expect(parsed.params![4].name?.content).to.equal('...');
-    expect(parsed.params![4].type?.content).to.equal('Bool');
-    expect(parsed.params![4].optional).to.equal(true);
-    expect(parsed.params![4].description).to.equal(
+    assert.equal(parsed.params![4].name?.content, '...');
+    assert.equal(parsed.params![4].type?.content, 'Bool');
+    assert.equal(parsed.params![4].optional, true);
+    assert.equal(
+      parsed.params![4].description,
       'And so is this one, but there can be as many as you want!',
     );
   });
@@ -143,24 +143,24 @@ describe('JSDocs', function () {
   it('can parse a GML type tag', function () {
     const jsdoc = '/// @type {String} - This is a string';
     const parsed = parseJsdoc(jsdoc);
-    expect(parsed.kind).to.equal('type');
-    expect(parsed.type?.content).to.equal('String');
-    expect(parsed.description).to.equal('This is a string');
+    assert.equal(parsed.kind, 'type');
+    assert.equal(parsed.type?.content, 'String');
+    assert.equal(parsed.description, 'This is a string');
   });
 
   it('can parse a JS type tag', function () {
     const jsdoc = '@type {String} This is a string';
     const parsed = parseJsdoc(jsdoc);
-    expect(parsed.kind).to.equal('type');
-    expect(parsed.type?.content).to.equal('String');
-    expect(parsed.description).to.equal('This is a string');
+    assert.equal(parsed.kind, 'type');
+    assert.equal(parsed.type?.content, 'String');
+    assert.equal(parsed.description, 'This is a string');
   });
 
   it('can parse a self tag', function () {
     const jsdoc = '/// @self Struct.Hello';
     const parsed = parseJsdoc(jsdoc);
-    expect(parsed.kind).to.equal('self');
-    expect(parsed.self?.content).to.equal('Struct.Hello');
+    assert.equal(parsed.kind, 'self');
+    assert.equal(parsed.self?.content, 'Struct.Hello');
   });
 
   it('can parse template tags', function () {
@@ -171,16 +171,16 @@ describe('JSDocs', function () {
       /// @returns {U}
     `;
     const parsed = parseJsdoc(jsdoc);
-    expect(parsed.kind).to.equal('function');
-    expect(parsed.templates).to.have.lengthOf(2);
-    expect(parsed.templates![0].name?.content).to.equal('T');
-    expect(parsed.templates![0].type).to.be.undefined;
-    expect(parsed.templates![1].name?.content).to.equal('U');
-    expect(parsed.templates![1].type?.content).to.equal('String');
-    expect(parsed.params).to.have.lengthOf(1);
-    expect(parsed.params![0].name?.content).to.equal('first');
-    expect(parsed.params![0].type?.content).to.equal('T');
-    expect(parsed.returns?.type?.content).to.equal('U');
+    assert.equal(parsed.kind, 'function');
+    assert.equal(parsed.templates?.length, 2);
+    assert.equal(parsed.templates![0].name?.content, 'T');
+    assert.equal(parsed.templates![0].type, undefined);
+    assert.equal(parsed.templates![1].name?.content, 'U');
+    assert.equal(parsed.templates![1].type?.content, 'String');
+    assert.equal(parsed.params?.length, 1);
+    assert.equal(parsed.params![0].name?.content, 'first');
+    assert.equal(parsed.params![0].type?.content, 'T');
+    assert.equal(parsed.returns?.type?.content, 'U');
   });
 
   it('can parse utility types', function () {
@@ -190,30 +190,30 @@ describe('JSDocs', function () {
       /// @returns {InstanceType<T>}
     `;
     const parsed = parseJsdoc(jsdoc);
-    expect(parsed.kind).to.equal('function');
-    expect(parsed.templates).to.have.lengthOf(1);
-    expect(parsed.templates![0].name?.content).to.equal('T');
-    expect(parsed.templates![0].type?.content).to.equal('Asset.GMObject');
-    expect(parsed.params).to.have.lengthOf(1);
-    expect(parsed.params![0].name?.content).to.equal('first');
-    expect(parsed.params![0].type?.content).to.equal('T');
-    expect(parsed.returns?.type?.content).to.equal('InstanceType<T>');
+    assert.equal(parsed.kind, 'function');
+    assert.equal(parsed.templates?.length, 1);
+    assert.equal(parsed.templates![0].name?.content, 'T');
+    assert.equal(parsed.templates![0].type?.content, 'Asset.GMObject');
+    assert.equal(parsed.params?.length, 1);
+    assert.equal(parsed.params![0].name?.content, 'first');
+    assert.equal(parsed.params![0].type?.content, 'T');
+    assert.equal(parsed.returns?.type?.content, 'InstanceType<T>');
   });
 
   it('can identify typstring ranges', function () {
     const jsdoc = '/// @type {X|Array<Struct.GlobalConstructor>|String}';
     const parsed = parseJsdoc(jsdoc);
     const ranges = parsed.typeRanges;
-    expect(ranges.length).to.equal(4);
+    assert.equal(ranges.length, 4);
 
     for (const range of ranges) {
       const startOffset = jsdoc.indexOf(range.content);
-      expect(range.start.offset).to.equal(startOffset);
-      expect(range.end.offset).to.equal(startOffset + range.content.length - 1);
-      expect(range.start.column).to.equal(startOffset + 1);
-      expect(range.end.column).to.equal(startOffset + range.content.length);
-      expect(range.start.line).to.equal(1);
-      expect(range.end.line).to.equal(1);
+      assert.equal(range.start.offset, startOffset);
+      assert.equal(range.end.offset, startOffset + range.content.length - 1);
+      assert.equal(range.start.column, startOffset + 1);
+      assert.equal(range.end.column, startOffset + range.content.length);
+      assert.equal(range.start.line, 1);
+      assert.equal(range.end.line, 1);
     }
   });
 });

@@ -1,15 +1,15 @@
 import { z } from 'zod';
-import { assert } from './assert.js';
-import type { Crashlands2 } from './cl2.types.auto.js';
-import type { Gcdata } from './GameChanger.js';
+import { assert } from './assert.ts';
+import type { Crashlands2 } from './cl2.types.auto.ts';
+import type { Gcdata } from './GameChanger.ts';
 import type {
   ParsedLineItem,
   ParsedWord,
   Position,
   Range,
-} from './types.editor.js';
-import type { BschemaEnum, Mote } from './types.js';
-import { resolvePointerInSchema } from './util.js';
+} from './types.editor.ts';
+import type { BschemaEnum, Mote } from './types.ts';
+import { resolvePointerInSchema } from './util.ts';
 
 export type CharacterData = BuddyData | NpcData;
 export type CharacterMote = BuddyMote | NpcMote;

@@ -1,10 +1,11 @@
-import { Pathy, statSafe } from '@bscotch/pathy';
+import { __decorate } from 'tslib';
+import { type Pathy, statSafe } from '@bscotch/pathy';
 import { sequential } from '@bscotch/utility';
 import { Image } from 'image-js';
-import type { SpriteSummary } from './SpriteCache.schemas.js';
-import { retryOptions } from './constants.js';
-import type { BBox } from './types.js';
-import { getPngSize } from './utility.js';
+import type { SpriteSummary } from './SpriteCache.schemas.ts';
+import { retryOptions } from './constants.ts';
+import type { BBox } from './types.ts';
+import { getPngSize } from './utility.ts';
 
 export class SpriteFrame {
   protected _size: undefined | { width: number; height: number };
@@ -13,7 +14,11 @@ export class SpriteFrame {
   protected _masks: { [minAlpha: string]: Image } = {};
   protected _checksum: undefined | string;
 
-  constructor(readonly path: Pathy) {}
+  readonly path: Pathy;
+
+  constructor(path: Pathy) {
+    this.path = path;
+  }
 
   protected clearCache() {
     this._size = undefined;
@@ -40,7 +45,6 @@ export class SpriteFrame {
     return cache.frames[this.path.relative];
   }
 
-  @sequential
   async getImage() {
     if (this._image) {
       return this._image;
@@ -49,7 +53,6 @@ export class SpriteFrame {
     return this._image;
   }
 
-  @sequential
   async getSize() {
     if (this._size) {
       return { ...this._size };
@@ -58,7 +61,6 @@ export class SpriteFrame {
     return this._size;
   }
 
-  @sequential
   async getForegroundMask(foregroundMinAlphaFraction?: number) {
     const alphaKey = `${foregroundMinAlphaFraction}`;
     if (this._masks[alphaKey]) {
@@ -73,7 +75,6 @@ export class SpriteFrame {
     return this._masks[alphaKey];
   }
 
-  @sequential
   async getBoundingBox(padding = 1): Promise<BBox> {
     if (this._bbox) {
       return { ...this._bbox };
@@ -109,7 +110,6 @@ export class SpriteFrame {
     return { ...this._bbox };
   }
 
-  @sequential
   async crop(bbox: BBox) {
     const img = await this.getImage();
     const cropBox = {
@@ -122,7 +122,6 @@ export class SpriteFrame {
     this._image = img.crop(cropBox);
   }
 
-  @sequential
   async bleed() {
     const img = await this.getImage();
     if (!img.alpha) {
@@ -205,9 +204,17 @@ export class SpriteFrame {
     this._image = img;
   }
 
-  @sequential
   async saveTo(path: Pathy) {
     const image = await this.getImage();
     await image.save(path.absolute);
   }
 }
+
+// Node can't run decorator syntax, so apply them explicitly
+__decorate([sequential], SpriteFrame.prototype, 'getImage', null);
+__decorate([sequential], SpriteFrame.prototype, 'getSize', null);
+__decorate([sequential], SpriteFrame.prototype, 'getForegroundMask', null);
+__decorate([sequential], SpriteFrame.prototype, 'getBoundingBox', null);
+__decorate([sequential], SpriteFrame.prototype, 'crop', null);
+__decorate([sequential], SpriteFrame.prototype, 'bleed', null);
+__decorate([sequential], SpriteFrame.prototype, 'saveTo', null);

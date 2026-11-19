@@ -1,8 +1,8 @@
-import type { Gcdata } from './GameChanger.js';
+import type { Gcdata } from './GameChanger.ts';
 import {
   arrayTagPattern,
-  ChatData,
-  ChatMote,
+  type ChatData,
+  type ChatMote,
   chatSchemaId,
   commentLinePattern,
   emojiGroupPattern,
@@ -10,8 +10,8 @@ import {
   moteTagPattern,
   type NpcData,
   type ParserResult,
-} from './cl2.shared.types.js';
-import type { Mote } from './types.js';
+} from './cl2.shared.types.ts';
+import type { Mote } from './types.ts';
 
 export function listChats(gcData: Gcdata): ChatMote[] {
   return gcData.listMotesBySchema<ChatData>(chatSchemaId);
@@ -21,10 +21,9 @@ export function isChatMote(mote: any): mote is Mote<NpcData> {
   return mote.schema_id === chatSchemaId;
 }
 
-export interface ChatUpdateResult
-  extends ParserResult<{
-    moments: ParsedMoment[];
-  }> {}
+export interface ChatUpdateResult extends ParserResult<{
+  moments: ParsedMoment[];
+}> {}
 
 export interface ParsedMoment {
   id: string | undefined;

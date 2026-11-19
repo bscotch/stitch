@@ -1,15 +1,15 @@
 import { Pathy } from '@bscotch/pathy';
 import { assert } from '@bscotch/utility/browser';
-import { defaultNotesCachePath } from './constants.js';
+import { defaultNotesCachePath } from './constants.ts';
 import {
-  ArtifactType,
-  GameMakerRelease,
-  RawReleaseNotesCache,
+  type ArtifactType,
+  type GameMakerRelease,
+  type RawReleaseNotesCache,
   rawReleaseNotesCacheSchema,
   rawReleaseNoteSchema,
-} from './feeds.types.js';
-import { fetchJson } from './fetch.js';
-import { findMax } from './utils.js';
+} from './feeds.types.ts';
+import { fetchJson } from './fetch.ts';
+import { findMax } from './utils.ts';
 
 export async function listReleaseNotes(
   releases: GameMakerRelease[],

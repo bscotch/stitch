@@ -1,6 +1,6 @@
-import sourceMapSupport from 'source-map-support';
-sourceMapSupport.install();
-//
+// Map stack traces from the compiled dist code back to the TypeScript source
+process.setSourceMapsEnabled(true);
+
 import { pathy } from '@bscotch/pathy';
 import { ok } from 'assert';
 import { compile } from 'json-schema-to-typescript';

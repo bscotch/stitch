@@ -1,17 +1,17 @@
 import { Client, Glossary } from '@bscotch/cl2-string-server-shared';
-import { Pathy, pathy } from '@bscotch/pathy';
+import { type Pathy, pathy } from '@bscotch/pathy';
 import fetch from 'node-fetch';
-import { gameChangerEvents } from './GameChanger.events.js';
-import { GcdataError, assert } from './assert.js';
+import { gameChangerEvents } from './GameChanger.events.ts';
+import { GcdataError, assert } from './assert.ts';
 import {
-  GameChangerRumpusMetadata,
+  type GameChangerRumpusMetadata,
   gameChangerRumpusMetadataSchema,
-} from './types.cl2.rumpus.js';
+} from './types.cl2.rumpus.ts';
 import {
-  Bschema,
-  BschemaObject,
-  ChangeType,
-  Changes,
+  type Bschema,
+  type BschemaObject,
+  type ChangeType,
+  type Changes,
   changeSchema,
   changesSchema,
   isBschemaBoolean,
@@ -25,12 +25,12 @@ import {
   type MoteId,
   type PackedData,
   type SchemaId,
-} from './types.js';
+} from './types.ts';
 import {
   resolvePointer,
   resolvePointerInSchema,
   setValueAtPointer,
-} from './util.js';
+} from './util.ts';
 
 interface MoteVisitorDataCtx {
   /** The data at this point in the heirarchy */
@@ -54,10 +54,13 @@ export interface MoteVisitorCtx<T = undefined> {
 }
 
 export class Gcdata {
+  public data: PackedData;
+
   constructor(
-    public data: PackedData,
+    data: PackedData,
     options?: { resolveRefsAndOverrides?: boolean },
   ) {
+    this.data = data;
     // Resolve all refs and overrides in the schemas
     if (options?.resolveRefsAndOverrides) {
       Gcdata.resolveRefsAndOverrides(data);
@@ -275,7 +278,11 @@ export class GameChanger {
   protected changes!: Changes;
   glossary?: Glossary;
 
-  protected constructor(readonly projectName: string) {}
+  readonly projectName: string;
+
+  protected constructor(projectName: string) {
+    this.projectName = projectName;
+  }
 
   protected get workingData(): PackedData {
     return this.working.data;

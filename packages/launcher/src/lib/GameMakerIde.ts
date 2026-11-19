@@ -1,11 +1,12 @@
+import { __decorate } from 'tslib';
 import { Pathy } from '@bscotch/pathy';
 import { ok } from 'assert';
-import { ChildProcess, exec } from 'child_process';
-import { GameMakerComponent } from './GameMakerComponent.js';
+import { type ChildProcess, exec } from 'child_process';
+import { GameMakerComponent } from './GameMakerComponent.ts';
 import type {
   GameMakerDefaultMacros,
   GameMakerInstalledVersion,
-} from './GameMakerLauncher.types.js';
+} from './GameMakerLauncher.types.ts';
 import {
   cleanVersionString,
   createStaticTracer,
@@ -16,10 +17,10 @@ import {
   runIdeInstaller,
   setActiveRuntime,
   trace,
-} from './utility.js';
+} from './utility.ts';
 
-import { TracedClass } from '@bscotch/utility/browser';
-import { logger } from './log.js';
+import type { TracedClass } from '@bscotch/utility/browser';
+import { logger } from './log.ts';
 
 export interface GameMakerIde extends TracedClass {}
 
@@ -44,11 +45,14 @@ export interface GameMakerIdeInstallOptions {
 
 export class GameMakerRunningIde {
   protected process: ChildProcess;
-  constructor(
-    readonly exePath: string,
-    readonly projectYypPath: string,
-    readonly runtimeVersion: string,
-  ) {
+  readonly exePath: string;
+  readonly projectYypPath: string;
+  readonly runtimeVersion: string;
+
+  constructor(exePath: string, projectYypPath: string, runtimeVersion: string) {
+    this.exePath = exePath;
+    this.projectYypPath = projectYypPath;
+    this.runtimeVersion = runtimeVersion;
     this.process = exec(`"${exePath}" "${projectYypPath}"`);
   }
 
@@ -78,11 +82,11 @@ export type GameMakerIdeErrorCode =
   | 'UNKNOWN';
 
 export class GameMakerIdeError extends Error {
-  constructor(
-    message: string,
-    readonly code: GameMakerIdeErrorCode,
-  ) {
+  readonly code: GameMakerIdeErrorCode;
+
+  constructor(message: string, code: GameMakerIdeErrorCode) {
     super(message);
+    this.code = code;
     this.name = 'GameMakerIdeError';
     Error.captureStackTrace(this, this.constructor);
   }
@@ -98,7 +102,6 @@ export function assert(
   }
 }
 
-@trace
 export class GameMakerIde extends GameMakerComponent {
   static readonly error = GameMakerIdeError;
 
@@ -201,7 +204,6 @@ export class GameMakerIde extends GameMakerComponent {
    * downloaded, it will not be re-downloaded. If it
    * is *not* downloaded, then it will be downloaded.
    */
-  @trace
   static async install(
     version: string,
     options?: GameMakerIdeInstallOptions,
@@ -253,13 +255,11 @@ export class GameMakerIde extends GameMakerComponent {
     return installedVersion;
   }
 
-  @trace
   static async findInstalled(version: string) {
     const installedIdeVersions = await GameMakerIde.listInstalled();
     return installedIdeVersions.find((v) => v.version === version);
   }
 
-  @trace
   static async listInstalled() {
     await GameMakerIde.defaultCachedIdeParentDirectory.ensureDirectory();
     return await GameMakerIde.listInstalledInDir(
@@ -288,7 +288,6 @@ export class GameMakerIde extends GameMakerComponent {
     }
   }
 
-  @trace
   protected static async findDirectlyInstalled(
     version: string,
     programFiles?: string,
@@ -305,14 +304,12 @@ export class GameMakerIde extends GameMakerComponent {
    * Stitch to allow parallel installs
    * (see {@link listInstalled}).
    */
-  @trace
   protected static async listDirectlyInstalled(
     programFiles = process.env.PROGRAMFILES!,
   ) {
     return await GameMakerIde.listInstalledInDir(programFiles);
   }
 
-  @trace
   protected static async listInstalledInDir(
     parentDir: string | Pathy,
   ): Promise<GameMakerIde[]> {
@@ -389,3 +386,12 @@ export class GameMakerIde extends GameMakerComponent {
     );
   }
 }
+
+// Node can't run decorator syntax, so apply them explicitly
+__decorate([trace], GameMakerIde, 'install', null);
+__decorate([trace], GameMakerIde, 'findInstalled', null);
+__decorate([trace], GameMakerIde, 'listInstalled', null);
+__decorate([trace], GameMakerIde, 'findDirectlyInstalled', null);
+__decorate([trace], GameMakerIde, 'listDirectlyInstalled', null);
+__decorate([trace], GameMakerIde, 'listInstalledInDir', null);
+__decorate([trace], GameMakerIde);

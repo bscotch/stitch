@@ -1,4 +1,10 @@
-import type { Asset, Code, Range, Reference } from '@bscotch/gml-parser';
+import type {
+  Asset,
+  Code,
+  IRange,
+  Range,
+  Reference,
+} from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
 import { exec } from 'node:child_process';
 import os from 'node:os';
@@ -75,7 +81,7 @@ export function locationOf(thing: Range | string): vscode.Location | undefined {
   );
 }
 
-export function rangeFrom(location: Range) {
+export function rangeFrom(location: IRange) {
   return logThrown(() => {
     return new vscode.Range(
       new vscode.Position(location.start.line - 1, location.start.column - 1),

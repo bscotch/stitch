@@ -1,6 +1,6 @@
-import { c } from './tokens.categories.js';
-import { createToken, Lexer } from './tokens.lib.js';
-import { identifier, numericLiterals } from './tokens.shared.js';
+import { c } from './tokens.categories.ts';
+import { createToken, Lexer } from './tokens.lib.ts';
+import { identifier, numericLiterals } from './tokens.shared.ts';
 
 export const codeTokens = [
   //#region Whitespace and comments

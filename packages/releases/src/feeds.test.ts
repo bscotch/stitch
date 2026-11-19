@@ -1,11 +1,12 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { pathy } from '@bscotch/pathy';
-import { expect } from 'chai';
 import {
   computeReleasesSummary,
   computeReleasesSummaryWithNotes,
-} from './feeds.js';
-import { rawReleaseNotesCacheSchema } from './feeds.types.js';
-import { cleanNote } from './notes.js';
+} from './feeds.ts';
+import { rawReleaseNotesCacheSchema } from './feeds.types.ts';
+import { cleanNote } from './notes.ts';
 
 const notesCache = pathy('release-notes-cache.json').withValidator(
   rawReleaseNotesCacheSchema,
@@ -25,34 +26,43 @@ describe('Release Feeds', function () {
       url: 'https://gms.yoyogames.com/release-notes-2022.1100.0.259.json',
       ...notes,
     });
-    expect(cleaned.title).to.equal('Changes Since Beta Runtime 258');
-    expect(cleaned.changes.groups).to.exist;
-    expect(cleaned.changes.groups.length).to.be.greaterThan(0);
-    expect(cleaned.changes.since).to.equal('258');
-    expect(cleaned.changes.groups[0].title).to.equal('Other Bugs Fixed');
-    expect(cleaned.changes.groups[0].changes.length).to.equal(2);
+    assert.equal(cleaned.title, 'Changes Since Beta Runtime 258');
+    assert.ok(cleaned.changes.groups != null);
+    assert.ok(cleaned.changes.groups.length > 0);
+    assert.equal(cleaned.changes.since, '258');
+    assert.equal(cleaned.changes.groups[0].title, 'Other Bugs Fixed');
+    assert.equal(cleaned.changes.groups[0].changes.length, 2);
   });
 
-  it('can create a centralized GameMaker Releases database', async function () {
-    const releases = await computeReleasesSummary();
-    const withNotes = await computeReleasesSummaryWithNotes(
-      releases,
-      notesCache,
-    );
-    await tmpSummaryPath.write(withNotes);
-    expect(withNotes.length).to.be.greaterThan(0);
-    expect(withNotes.every((r) => r.channel)).to.exist;
-    for (const type of ['ide', 'runtime'] as const) {
-      expect(withNotes.every((r) => r[type])).to.exist;
-      expect(withNotes.every((r) => r[type].version)).to.exist;
-      expect(withNotes.every((r) => r[type].notes)).to.exist;
-      expect(withNotes.every((r) => r[type].notes.groups)).to.exist;
-    }
-    const sampleRelease = withNotes.find(
-      (r) => r.runtime.version === '2022.0.1.30',
-    )!;
-    expect(sampleRelease).to.exist;
-    expect(sampleRelease.runtime.notes.groups).to.exist;
-    expect(sampleRelease.runtime.notes.groups.length).to.be.greaterThan(0);
-  });
+  it(
+    'can create a centralized GameMaker Releases database',
+    {
+      // Without a local notes cache this makes hundreds of requests to
+      // GameMaker's servers and takes minutes. The scheduled releases-summary
+      // job exercises this code in production.
+      skip: process.env.CI ? 'Too slow and network-heavy for CI' : false,
+    },
+    async function () {
+      const releases = await computeReleasesSummary();
+      const withNotes = await computeReleasesSummaryWithNotes(
+        releases,
+        notesCache,
+      );
+      await tmpSummaryPath.write(withNotes);
+      assert.ok(withNotes.length > 0);
+      assert.ok(withNotes.every((r) => r.channel) != null);
+      for (const type of ['ide', 'runtime'] as const) {
+        assert.ok(withNotes.every((r) => r[type]) != null);
+        assert.ok(withNotes.every((r) => r[type].version) != null);
+        assert.ok(withNotes.every((r) => r[type].notes) != null);
+        assert.ok(withNotes.every((r) => r[type].notes.groups) != null);
+      }
+      const sampleRelease = withNotes.find(
+        (r) => r.runtime.version === '2022.0.1.30',
+      )!;
+      assert.ok(sampleRelease != null);
+      assert.ok(sampleRelease.runtime.notes.groups != null);
+      assert.ok(sampleRelease.runtime.notes.groups.length > 0);
+    },
+  );
 });

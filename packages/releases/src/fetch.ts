@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import { XMLParser } from 'fast-xml-parser';
-import { isError } from './utils.js';
+import { isError } from './utils.ts';
 
 export type Validator<T> = { parse: (data: any) => T };
 

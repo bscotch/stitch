@@ -1,11 +1,15 @@
 import { assert, decodeFromBase64JsonString } from '@bscotch/utility';
 import {
-  GameMakerUserData,
+  type GameMakerUserData,
   gameMakerUserTokenPayloadSchema,
-} from './GameMakerLauncher.types.js';
+} from './GameMakerLauncher.types.ts';
 
 export class GameMakerUser {
-  constructor(protected data: GameMakerUserData) {}
+  protected data: GameMakerUserData;
+
+  constructor(data: GameMakerUserData) {
+    this.data = data;
+  }
 
   get isLoggedIn() {
     return (

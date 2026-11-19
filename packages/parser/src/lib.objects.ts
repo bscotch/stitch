@@ -1,5 +1,5 @@
 import path from 'path';
-import { logger } from './logger.js';
+import { logger } from './logger.ts';
 
 export interface ObjectEvent {
   label: string;
@@ -20,12 +20,15 @@ interface ObjectAlarmEvent<N extends number> extends ObjectEvent {
   group: 'alarm';
 }
 
-interface ObjectKeyPressEvent<KeyName extends string, KeyNumber extends number> extends ObjectEvent {
-    label: `Key Pressed (${KeyName})`;
-    name: `KeyPress_${KeyNumber}`;
-    eventNum: KeyNumber;
-    eventType: 9;
-    group: 'key-press';
+interface ObjectKeyPressEvent<
+  KeyName extends string,
+  KeyNumber extends number,
+> extends ObjectEvent {
+  label: `Key Pressed (${KeyName})`;
+  name: `KeyPress_${KeyNumber}`;
+  eventNum: KeyNumber;
+  eventType: 9;
+  group: 'key-press';
 }
 
 interface ObjectCollisionEvent<O extends string> extends ObjectEvent {
@@ -261,7 +264,7 @@ export const objectEvents = [
     name: 'Mouse_57',
     eventNum: 57,
     eventType: 6,
-    group: 'mouse'
+    group: 'mouse',
   },
   {
     label: 'Global Middle Released',

@@ -4,14 +4,19 @@ import { default as axios } from 'axios';
 import { exec } from 'child_process';
 import { createWriteStream } from 'fs';
 import os from 'os';
-import {
+import type {
   GameMakerDefaultMacros,
   GameMakerInstalledVersion,
   GameMakerLogOptions,
-} from './GameMakerLauncher.types.js';
-import { StitchSupportedBuilder } from './GameMakerRuntime.types.js';
+} from './GameMakerLauncher.types.ts';
+import type { StitchSupportedBuilder } from './GameMakerRuntime.types.ts';
 
-import { assert, Debugger, Trace, useTracer } from '@bscotch/utility/browser';
+import {
+  assert,
+  type Debugger,
+  Trace,
+  useTracer,
+} from '@bscotch/utility/browser';
 import { z } from 'zod';
 
 const libName = '@bscotch/stitch-launcher';

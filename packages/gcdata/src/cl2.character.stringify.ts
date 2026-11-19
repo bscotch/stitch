@@ -1,7 +1,7 @@
-import type { GameChanger } from './GameChanger.js';
-import { emojiString } from './cl2.shared.stringify.js';
-import type { CharacterMote } from './cl2.shared.types.js';
-import { bsArrayToArray, toArrayTag } from './helpers.js';
+import type { GameChanger } from './GameChanger.ts';
+import { emojiString } from './cl2.shared.stringify.ts';
+import type { CharacterMote } from './cl2.shared.types.ts';
+import { bsArrayToArray, toArrayTag } from './helpers.ts';
 
 export function stringifyCharacter(
   mote: CharacterMote,

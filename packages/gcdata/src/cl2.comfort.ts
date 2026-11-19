@@ -1,10 +1,10 @@
 export {
   parseStringifiedComfort,
   updateChangesFromParsedComfort,
-} from './cl2.comfort.parse.js';
-export { stringifyComfort } from './cl2.comfort.stringify.js';
+} from './cl2.comfort.parse.ts';
+export { stringifyComfort } from './cl2.comfort.stringify.ts';
 export {
   isComfortMote,
   listComforts,
   type ComfortUpdateResult,
-} from './cl2.comfort.types.js';
+} from './cl2.comfort.types.ts';

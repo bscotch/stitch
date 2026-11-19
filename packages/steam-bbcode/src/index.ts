@@ -1,6 +1,6 @@
 import { Marked } from 'marked';
-import { markedBbcodeExtension } from './lib.js';
-export { markedBbcodeExtension } from './lib.js';
+import { markedBbcodeExtension } from './lib.ts';
+export { markedBbcodeExtension } from './lib.ts';
 
 const marked = new Marked(markedBbcodeExtension);
 

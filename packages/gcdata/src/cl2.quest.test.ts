@@ -1,11 +1,12 @@
+import { describe, it } from 'node:test';
 import { pathy } from '@bscotch/pathy';
-import { GameChanger } from './GameChanger.js';
-import { assert } from './assert.js';
-import { parseStringifiedQuest } from './cl2.quest.parse.js';
-import { stringifyQuest } from './cl2.quest.stringify.js';
-import { isQuestMote } from './cl2.quest.types.js';
-import { Crashlands2 } from './cl2.types.auto.js';
-import { bsArrayToArray } from './helpers.js';
+import { GameChanger } from './GameChanger.ts';
+import { assert } from './assert.ts';
+import { parseStringifiedQuest } from './cl2.quest.parse.ts';
+import { stringifyQuest } from './cl2.quest.stringify.ts';
+import { isQuestMote } from './cl2.quest.types.ts';
+import type { Crashlands2 } from './cl2.types.auto.ts';
+import { bsArrayToArray } from './helpers.ts';
 
 describe('Cl2 Quests', function () {
   it('can convert a quest mote to a text format', async function () {
@@ -42,34 +43,37 @@ describe('Cl2 Quests', function () {
   });
 
   // Slow test, so skip this test when not in active dev
-  xit('can convert quests to text and back without error', async function () {
-    this.timeout(20000);
-    const packed = await GameChanger.from('Crashlands2');
-    assert(packed, 'Packed data should be loaded');
-    const quests =
-      packed.working.listMotesBySchema<Crashlands2.Schemas['cl2_quest']>(
-        'cl2_quest',
-      );
-    for (const quest of quests) {
-      const asText = stringifyQuest(quest, packed);
-      const results = parseStringifiedQuest(asText, packed);
-      if (
-        results.diagnostics.length === 1 &&
-        // EDGE CASE: Content team broke the rules they said
-        // they'd follow, so we ended up with a few non-parseable quests.
-        [
-          'Emoji "indecipherable screaming" not found!',
-          'Emoji "incomprehensible screaming" not found!',
-          'Emoji "inscrutable screaming" not found!',
-          'Emoji "indecipherable shrieks" not found!',
-        ].includes(results.diagnostics[0].message)
-      ) {
-        continue;
-      } else if (results.diagnostics.length > 0) {
-        console.error('Quest not parsed:', quest.id, quest.data.name);
-        console.error(results.diagnostics.map((d) => d.message).join('\n'));
+  it.skip(
+    'can convert quests to text and back without error',
+    { timeout: 20000 },
+    async function () {
+      const packed = await GameChanger.from('Crashlands2');
+      assert(packed, 'Packed data should be loaded');
+      const quests =
+        packed.working.listMotesBySchema<Crashlands2.Schemas['cl2_quest']>(
+          'cl2_quest',
+        );
+      for (const quest of quests) {
+        const asText = stringifyQuest(quest, packed);
+        const results = parseStringifiedQuest(asText, packed);
+        if (
+          results.diagnostics.length === 1 &&
+          // EDGE CASE: Content team broke the rules they said
+          // they'd follow, so we ended up with a few non-parseable quests.
+          [
+            'Emoji "indecipherable screaming" not found!',
+            'Emoji "incomprehensible screaming" not found!',
+            'Emoji "inscrutable screaming" not found!',
+            'Emoji "indecipherable shrieks" not found!',
+          ].includes(results.diagnostics[0].message)
+        ) {
+          continue;
+        } else if (results.diagnostics.length > 0) {
+          console.error('Quest not parsed:', quest.id, quest.data.name);
+          console.error(results.diagnostics.map((d) => d.message).join('\n'));
+        }
+        assert(results.diagnostics.length === 0, 'Should have no errors');
       }
-      assert(results.diagnostics.length === 0, 'Should have no errors');
-    }
-  });
+    },
+  );
 });

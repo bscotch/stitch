@@ -1,6 +1,6 @@
-import type { Signifier } from './signifiers.js';
-import type { Type } from './types.js';
-import { assert } from './util.js';
+import type { Signifier } from './signifiers.ts';
+import type { Type } from './types.ts';
+import { assert } from './util.ts';
 
 function typeMemberToHoverText(member: Signifier) {
   let code = member.name;
@@ -92,8 +92,8 @@ export function typeToHoverText(type: Type) {
       type.isConstructor
         ? type.self!.toFeatherString()
         : type.returns?.type.length
-        ? type.returns.toFeatherString()
-        : 'Undefined'
+          ? type.returns.toFeatherString()
+          : 'Undefined'
     }`;
   } else {
     code += type.toFeatherString();

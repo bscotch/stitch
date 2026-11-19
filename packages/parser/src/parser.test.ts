@@ -1,13 +1,14 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { pathy } from '@bscotch/pathy';
 import { undent } from '@bscotch/utility';
-import { expect } from 'chai';
 import type { IRecognitionException } from 'chevrotain';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
-import { logger } from './logger.js';
-import { GmlParser } from './parser.js';
-import { Type } from './types.js';
-import { ok } from './util.js';
+import { logger } from './logger.ts';
+import { GmlParser } from './parser.ts';
+import { Type } from './types.ts';
+import { ok } from './util.ts';
 
 dotenv.config();
 
@@ -33,7 +34,8 @@ function showErrors(
 
 describe('Parser', function () {
   it('can get types from typestrings', function () {
-    expect(Type.fromFeatherString('Array', new Map(), false)[0].kind).to.equal(
+    assert.equal(
+      Type.fromFeatherString('Array', new Map(), false)[0].kind,
       'Array',
     );
     const stringArray = Type.fromFeatherString(
@@ -41,18 +43,18 @@ describe('Parser', function () {
       new Map(),
       false,
     )[0];
-    expect(stringArray.kind).to.equal('Array');
-    expect(stringArray.items!.kind).to.equal('String');
+    assert.equal(stringArray.kind, 'Array');
+    assert.equal(stringArray.items!.kind, 'String');
     const dsMap = Type.fromFeatherString(
       'Id.DsMap[String,Real]',
       new Map(),
       false,
     )[0];
-    expect(dsMap.kind).to.equal('Id.DsMap');
+    assert.equal(dsMap.kind, 'Id.DsMap');
     const dsMapItems = dsMap.items!.type;
-    expect(dsMapItems.length).to.equal(2);
-    expect(dsMapItems[0].kind).to.equal('String');
-    expect(dsMapItems[1].kind).to.equal('Real');
+    assert.equal(dsMapItems.length, 2);
+    assert.equal(dsMapItems[0].kind, 'String');
+    assert.equal(dsMapItems[1].kind, 'Real');
   });
 
   it('can parse cross-referencing types', function () {
@@ -70,10 +72,10 @@ describe('Parser', function () {
     )[0];
 
     ok(knownTypes.get('Struct.Hello') === structType);
-    expect(arrayOfStructs.kind).to.equal('Array');
-    expect(arrayOfStructs.items!.kind).to.equal('Struct');
+    assert.equal(arrayOfStructs.kind, 'Array');
+    assert.equal(arrayOfStructs.items!.kind, 'Struct');
     ok(arrayOfStructs.items!.type[0] === structType);
-    expect(arrayOfStructs.items!.type[0].name).to.equal('Hello');
+    assert.equal(arrayOfStructs.items!.type[0].name, 'Hello');
   });
 
   it('can parse complex typestrings', function () {
@@ -83,20 +85,20 @@ describe('Parser', function () {
       true,
     );
     const [arrayType, structType, dsMapType] = complexType;
-    expect(complexType.length).to.equal(3);
-    expect(arrayType.kind).to.equal('Array');
+    assert.equal(complexType.length, 3);
+    assert.equal(arrayType.kind, 'Array');
     const arrayItems = arrayType.items!.type;
-    expect(arrayItems.length).to.equal(2);
-    expect(arrayItems[0].kind).to.equal('String');
-    expect(arrayItems[1].kind).to.equal('Array');
-    expect(arrayItems[1].items!.kind).to.equal('Real');
-    expect(structType.kind).to.equal('Struct');
-    expect(structType.name).to.equal('Hello');
-    expect(dsMapType.kind).to.equal('Id.DsMap');
+    assert.equal(arrayItems.length, 2);
+    assert.equal(arrayItems[0].kind, 'String');
+    assert.equal(arrayItems[1].kind, 'Array');
+    assert.equal(arrayItems[1].items!.kind, 'Real');
+    assert.equal(structType.kind, 'Struct');
+    assert.equal(structType.name, 'Hello');
+    assert.equal(dsMapType.kind, 'Id.DsMap');
     const dsMapItems = dsMapType.items!.type;
-    expect(dsMapItems.length).to.equal(2);
-    expect(dsMapItems[0].kind).to.equal('String');
-    expect(dsMapItems[1].kind).to.equal('Real');
+    assert.equal(dsMapItems.length, 2);
+    assert.equal(dsMapItems[0].kind, 'String');
+    assert.equal(dsMapItems[1].kind, 'Real');
   });
 
   it('can parse simple expressions', function () {
@@ -104,8 +106,8 @@ describe('Parser', function () {
     const { cst } = parser.parse(
       '(1 + 2 * 3) + (hello / (world || undefined))',
     );
-    expect(parser.errors.length).to.equal(0);
-    expect(cst).to.exist;
+    assert.equal(parser.errors.length, 0);
+    assert.ok(cst != null);
   });
 
   it('can get errors for invalid simple expressions', function () {
@@ -113,8 +115,8 @@ describe('Parser', function () {
     const { cst, errors } = parser.parse(
       '(1 + 2 * 3) + hello / world || undefined +',
     );
-    expect(parser.errors.length).to.equal(1);
-    expect(errors.length).to.equal(1);
+    assert.equal(parser.errors.length, 1);
+    assert.equal(errors.length, 1);
   });
 
   it('can parse complex expressions', function () {
@@ -122,8 +124,8 @@ describe('Parser', function () {
     const { cst } = parser.parse(
       '1 + 2 * 3 + hello / world[no+true] || undefined + (1 + 2 * 3 + hello / world || undefined ^^ functionCall(10+3,undefined,,))',
     );
-    expect(parser.errors.length).to.equal(0);
-    expect(cst).to.exist;
+    assert.equal(parser.errors.length, 0);
+    assert.ok(cst != null);
     // logger.log(
     //   GmlParser.jsonify(
     //     // @ts-expect-error
@@ -145,8 +147,8 @@ describe('Parser', function () {
       `,
     );
     showErrors(parser);
-    expect(parser.errors.length).to.equal(0);
-    expect(cst).to.exist;
+    assert.equal(parser.errors.length, 0);
+    assert.ok(cst != null);
   });
 
   it('can parse sample files', async function () {
@@ -161,23 +163,23 @@ describe('Parser', function () {
       const code = await fs.readFile(filePath, 'utf-8');
       const { cst } = parser.parse(code);
       showErrors(parser, filePath);
-      expect(cst).to.exist;
-      expect(parser.errors).to.have.length(0);
+      assert.ok(cst != null);
+      assert.equal(parser.errors.length, 0);
       // logger.log(cst);
     }
   });
 
-  xit('can parse sample project', async function () {
+  it.skip('can parse sample project', async function () {
     const projectDir = process.env.GML_PARSER_SAMPLE_PROJECT_DIR;
-    expect(
-      projectDir,
+    assert.ok(
+      projectDir != null,
       'A dotenv file should provide a path to a full sample project, as env var GML_PARSER_SAMPLE_PROJECT_DIR',
-    ).to.exist;
+    );
     const dir = pathy(projectDir);
     const files = await dir.listChildrenRecursively({
       includeExtension: ['.gml'],
     });
-    expect(files.length).to.be.greaterThan(0);
+    assert.ok(files.length > 0);
 
     const parser = new GmlParser();
     for (let i = 0; i < files.length; i++) {
@@ -185,8 +187,8 @@ describe('Parser', function () {
       const code = await file.read<string>();
       const { cst } = parser.parse(code);
       showErrors(parser, file.absolute);
-      expect(cst).to.exist;
-      expect(parser.errors).to.have.length(0);
+      assert.ok(cst != null);
+      assert.equal(parser.errors.length, 0);
       // logger.log(cst);
     }
   });

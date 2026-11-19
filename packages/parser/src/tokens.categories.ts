@@ -1,4 +1,4 @@
-import { createToken, Lexer, tokenListToObject } from './tokens.lib.js';
+import { createToken, Lexer, tokenListToObject } from './tokens.lib.ts';
 
 export const categories = [
   createToken({

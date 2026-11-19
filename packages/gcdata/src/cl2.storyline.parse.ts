@@ -1,18 +1,18 @@
-import type { GameChanger } from './GameChanger.js';
-import { assert } from './assert.js';
+import type { GameChanger } from './GameChanger.ts';
+import { assert } from './assert.ts';
 import {
   isCommentLine,
   isStageLine,
   prepareParserHelpers,
   updateWipChangesFromParsed,
-} from './cl2.shared.parse.js';
-import { storylineSchemaId } from './cl2.shared.types.js';
-import { StorylineMoteDataPointer } from './cl2.storyline.pointers.js';
+} from './cl2.shared.parse.ts';
+import { storylineSchemaId } from './cl2.shared.types.ts';
+import type { StorylineMoteDataPointer } from './cl2.storyline.pointers.ts';
 import {
   getStorylineSchema,
   linePatterns,
   type StorylineUpdateResult,
-} from './cl2.storyline.types.js';
+} from './cl2.storyline.types.ts';
 
 export function parseStringifiedStoryline(
   text: string,

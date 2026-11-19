@@ -5,7 +5,6 @@
     "types": ["node"],
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": "./src",
     "emitDeclarationOnly": true,
     "allowJs": true,
     "checkJs": true,

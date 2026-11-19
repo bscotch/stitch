@@ -1,12 +1,12 @@
 import { CstParser, type CstNode, type ILexingResult } from 'chevrotain';
 import type { GmlVisitor } from '../gml-cst.js';
-import type { JsdocSummary } from './jsdoc.js';
-import { GmlLexer } from './lexer.js';
-import type { GmlParseError } from './project.diagnostics.js';
-import type { Reference, ReferenceableType } from './project.location.js';
-import type { Signifier } from './signifiers.js';
-import { c, categories, t, tokens } from './tokens.js';
-import type { Type, TypeStore } from './types.js';
+import type { JsdocSummary } from './jsdoc.ts';
+import { GmlLexer } from './lexer.ts';
+import type { GmlParseError } from './project.diagnostics.ts';
+import type { Reference, ReferenceableType } from './project.location.ts';
+import type { Signifier } from './signifiers.ts';
+import { c, categories, t, tokens } from './tokens.ts';
+import type { Type, TypeStore } from './types.ts';
 
 export interface GmlParsed {
   lexed: ILexingResult;

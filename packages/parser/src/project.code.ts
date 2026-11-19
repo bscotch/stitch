@@ -1,35 +1,36 @@
+import { __decorate } from 'tslib';
 import type { Pathy } from '@bscotch/pathy';
 import { sequential } from '@bscotch/utility';
-import { YyObject } from '@bscotch/yy';
+import type { YyObject } from '@bscotch/yy';
 import MagicString from 'magic-string';
-import type { JsdocSummary } from './jsdoc.js';
-import { ObjectEvent, getEventFromFilename } from './lib.objects.js';
-import { logger } from './logger.js';
-import { parser, type GmlParsed } from './parser.js';
-import type { Asset } from './project.asset.js';
+import type { JsdocSummary } from './jsdoc.ts';
+import { type ObjectEvent, getEventFromFilename } from './lib.objects.ts';
+import { logger } from './logger.ts';
+import { parser, type GmlParsed } from './parser.ts';
+import type { Asset } from './project.asset.ts';
 import {
   Diagnostic,
-  DiagnosticCollectionName,
-  DiagnosticCollections,
-} from './project.diagnostics.js';
+  type DiagnosticCollectionName,
+  type DiagnosticCollections,
+} from './project.diagnostics.ts';
 import {
-  FunctionArgRange,
-  IPosition,
-  IRange,
-  LinePosition,
+  type FunctionArgRange,
+  type IPosition,
+  type IRange,
+  type LinePosition,
   Position,
   Range,
-  Reference,
-  ReferenceableType,
+  type Reference,
+  type ReferenceableType,
   Scope,
-  StructNewMemberRange,
-} from './project.location.js';
-import type { Signifier } from './signifiers.js';
-import { getTypeOfKind } from './types.checks.js';
-import { Type, type StructType } from './types.js';
-import { assert, isBeforeRange, isInRange } from './util.js';
-import { registerGlobals } from './visitor.globals.js';
-import { registerSignifiers } from './visitor.js';
+  type StructNewMemberRange,
+} from './project.location.ts';
+import type { Signifier } from './signifiers.ts';
+import { getTypeOfKind } from './types.checks.ts';
+import { Type, type StructType } from './types.ts';
+import { assert, isBeforeRange, isInRange } from './util.ts';
+import { registerGlobals } from './visitor.globals.ts';
+import { registerSignifiers } from './visitor.ts';
 
 /** Represenation of a GML code file. */
 export class Code {
@@ -57,10 +58,12 @@ export class Code {
   /** For object events, whether or not `event_inherited` is unambiguously being called */
   public callsSuper = false;
 
-  constructor(
-    readonly asset: Asset,
-    readonly path: Pathy<string>,
-  ) {
+  readonly asset: Asset;
+  readonly path: Pathy<string>;
+
+  constructor(asset: Asset, path: Pathy<string>) {
+    this.asset = asset;
+    this.path = path;
     this.clearAllDiagnostics();
   }
 
@@ -357,7 +360,6 @@ export class Code {
    * Replace all refs for a signifier with a new name,
    * followed by fully reprocessing the file.
    */
-  @sequential
   async renameSignifier(signifier: Signifier, newName: string) {
     const renameableRefs = this.refs.filter(
       (ref) => ref.item === signifier && ref.isRenameable,
@@ -702,3 +704,6 @@ export class Code {
     registerSignifiers(this);
   }
 }
+
+// Node can't run decorator syntax, so apply them explicitly
+__decorate([sequential], Code.prototype, 'renameSignifier', null);

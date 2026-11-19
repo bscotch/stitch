@@ -1,10 +1,10 @@
-import type { Dependency, ImportModuleOptions } from './modules.types.js';
-import { StitchImportError, assertStitchImportClaim } from './modules.util.js';
-import { Asset, isAssetOfKind } from './project.asset.js';
-import type { Project } from './project.js';
-import type { Signifier } from './signifiers.js';
-import { findYyFile, groupPathToPosix, neither, xor } from './util.js';
-export type * from './modules.types.js';
+import type { Dependency, ImportModuleOptions } from './modules.types.ts';
+import { StitchImportError, assertStitchImportClaim } from './modules.util.ts';
+import { Asset, isAssetOfKind } from './project.asset.ts';
+import type { Project } from './project.ts';
+import type { Signifier } from './signifiers.ts';
+import { findYyFile, groupPathToPosix, neither, xor } from './util.ts';
+export type * from './modules.types.ts';
 
 /**
  * @param sourceFolder Full folder path to import from (e.g. `Scripts/MainMenu`)

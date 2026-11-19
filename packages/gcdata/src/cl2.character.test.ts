@@ -1,8 +1,9 @@
+import { describe, it } from 'node:test';
 import { pathy } from '@bscotch/pathy';
-import { GameChanger } from './GameChanger.js';
-import { assert } from './assert.js';
-import { stringifyCharacter } from './cl2.character.stringify.js';
-import { isBuddyMote, listBuddies } from './cl2.character.types.js';
+import { GameChanger } from './GameChanger.ts';
+import { assert } from './assert.ts';
+import { stringifyCharacter } from './cl2.character.stringify.ts';
+import { isBuddyMote, listBuddies } from './cl2.character.types.ts';
 
 describe('Cl2 Characters', function () {
   it('can convert a Buddy mote to a text format', async function () {

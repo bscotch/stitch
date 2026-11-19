@@ -1,18 +1,17 @@
-import type { Gcdata } from './GameChanger.js';
-import { assert } from './assert.js';
+import type { Gcdata } from './GameChanger.ts';
+import { assert } from './assert.ts';
 import {
   commentLinePattern,
-  ParserResult,
-  StorylineData,
-  StorylineMote,
+  type ParserResult,
+  type StorylineData,
+  type StorylineMote,
   storylineSchemaId,
-} from './cl2.shared.types.js';
-import type { BschemaRoot } from './types.js';
+} from './cl2.shared.types.ts';
+import type { BschemaRoot } from './types.ts';
 
-export interface StorylineUpdateResult
-  extends ParserResult<{
-    description?: string;
-  }> {}
+export interface StorylineUpdateResult extends ParserResult<{
+  description?: string;
+}> {}
 
 export function listStorylines(gcData: Gcdata): StorylineMote[] {
   return gcData.listMotesBySchema<StorylineData>(storylineSchemaId);

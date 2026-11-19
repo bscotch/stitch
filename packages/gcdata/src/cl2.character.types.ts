@@ -1,4 +1,4 @@
-import type { Gcdata } from './GameChanger.js';
+import type { Gcdata } from './GameChanger.ts';
 import {
   arrayTagPattern,
   buddySchemaId,
@@ -10,8 +10,8 @@ import {
   type NpcData,
   type NpcMote,
   type ParserResult,
-} from './cl2.shared.types.js';
-import type { Mote } from './types.js';
+} from './cl2.shared.types.ts';
+import type { Mote } from './types.ts';
 
 export function listNpcs(gcData: Gcdata): NpcMote[] {
   return gcData.listMotesBySchema<NpcData>(npcSchemaId);
@@ -38,10 +38,9 @@ export function isNpcMote(mote: any): mote is Mote<NpcData> {
   return mote.schema_id === npcSchemaId;
 }
 
-export interface CharacterUpdateResult
-  extends ParserResult<{
-    idles: ParsedTopic[];
-  }> {}
+export interface CharacterUpdateResult extends ParserResult<{
+  idles: ParsedTopic[];
+}> {}
 
 export interface ParsedTopic {
   id: string | undefined;

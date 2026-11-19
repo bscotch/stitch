@@ -1,22 +1,22 @@
-import { Pathy } from '@bscotch/pathy';
+import { __decorate } from 'tslib';
+import type { Pathy } from '@bscotch/pathy';
 import type { TracedClass } from '@bscotch/utility/browser';
 import { ok } from 'assert';
-import { GameMakerIde } from './GameMakerIde.js';
-import { GameMakerSearch } from './GameMakerLauncher.types.js';
-import { GameMakerRuntime } from './GameMakerRuntime.js';
-import { GameMakerRunOptions } from './GameMakerRuntime.types.js';
+import { GameMakerIde } from './GameMakerIde.ts';
+import type { GameMakerSearch } from './GameMakerLauncher.types.ts';
+import { GameMakerRuntime } from './GameMakerRuntime.ts';
+import type { GameMakerRunOptions } from './GameMakerRuntime.types.ts';
 import {
   bootstrapRuntimeVersion,
   type Logger,
   setActiveRuntime,
   trace,
-} from './utility.js';
+} from './utility.ts';
 
-export * from './GameMakerLauncher.types.js';
+export * from './GameMakerLauncher.types.ts';
 
 export interface GameMakerLauncher extends TracedClass {}
 
-@trace
 export class GameMakerLauncher {
   /**
    * Open a project with a specified IDE and
@@ -32,7 +32,6 @@ export class GameMakerLauncher {
    * and the Runtime is not installed, this method
    * will throw an error.
    */
-  @trace
   static async openProject(
     projectYypPath: string | Pathy,
     openProjectOptions: {
@@ -162,3 +161,7 @@ export class GameMakerLauncher {
     return matchingRuntime;
   }
 }
+
+// Node can't run decorator syntax, so apply them explicitly
+__decorate([trace], GameMakerLauncher, 'openProject', null);
+__decorate([trace], GameMakerLauncher);

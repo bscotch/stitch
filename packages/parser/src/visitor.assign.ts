@@ -1,17 +1,17 @@
 // CST Visitor for creating an AST etc
-import { Docs, VisitorContext, withCtxKind } from './parser.js';
+import { type Docs, type VisitorContext, withCtxKind } from './parser.ts';
 import {
-  Rhs,
+  type Rhs,
   arrayLiteralFromRhs,
   functionFromRhs,
   rhsFrom,
   structLiteralFromRhs,
-} from './parser.utility.js';
-import { Range, Reference } from './project.location.js';
-import { Signifier } from './signifiers.js';
-import { normalizeType } from './types.checks.js';
-import { WithableType } from './types.js';
-import type { GmlSignifierVisitor } from './visitor.js';
+} from './parser.utility.ts';
+import type { Range, Reference } from './project.location.ts';
+import type { Signifier } from './signifiers.ts';
+import { normalizeType } from './types.checks.ts';
+import type { WithableType } from './types.ts';
+import type { GmlSignifierVisitor } from './visitor.ts';
 
 export interface AssignmentInfo {
   static?: boolean;

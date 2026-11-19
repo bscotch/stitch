@@ -87,8 +87,21 @@ For a given project, open up its `package.json` and look at the `"scripts"` sect
 
 - `build` (complete build of the current project (not including local dependencies))
 - `watch` (for active development, rebuilds the project when files change)
-- `test` (run tests on built output)
-- `test:dev` (run tests in dev mode, typically disabling parallization and timeouts)
+- `test` (run tests with Node's built-in test runner)
+
+#### Tests
+
+Tests are `*.test.ts` files next to the code they test, written with `node:test` and `node:assert/strict`. Node runs them directly from the TypeScript source (via [type stripping](https://nodejs.org/api/typescript.html)), so there's no need to build a package before testing it. Workspace _dependencies_ are imported from their built output, though, so build those first (e.g. `pnpm run -r --filter=@bscotch/gml-parser... build`).
+
+To pass extra flags to the test runner, call it directly from a package folder, e.g. `node --test --test-name-pattern="Project" "src/**/*.test.ts"` or `node --test --watch "src/**/*.test.ts"`.
+
+Because Node only _strips_ types, library packages use the stricter [packages/tsconfig.lib.json](packages/tsconfig.lib.json), so that the compiler rejects code that Node can't run:
+
+- Relative imports use the source file's real extension (`./thing.ts`), which `tsc` rewrites to `.js` in the build output.
+- Type-only imports must use `import type` (or inline `type` modifiers).
+- No enums (use an `as const` object plus a same-named type), namespaces, constructor parameter properties, or decorators (apply decorators explicitly with `tslib`'s `__decorate()`).
+
+Tests must be able to run in CI (the [Test workflow](.github/workflows/test.yaml) runs on Windows for every PR and push to `develop`). Tests that need things CI doesn't have (a GameMaker install, interactive prompts, heavy network use) should be skipped there, e.g. with `{ skip: process.env.CI ? 'reason' : false }`. Mark tests for known bugs with `{ todo: 'reason' }` so they run and report without failing the suite.
 
 Also in the `package.json` you'll see the `"dependencies"` for the given project, including local ones (where you see `"workspace:*"` instead of a semver range). Use those to orient yourself towards the other projects you may also need to open and work on.
 

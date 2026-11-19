@@ -1,5 +1,5 @@
-export * from './lib/GameMakerFeeds.types.js';
-export * from './lib/GameMakerIde.js';
-export * from './lib/GameMakerLauncher.js';
-export * from './lib/GameMakerRuntime.js';
-export { logger } from './lib/log.js';
+export * from './lib/GameMakerFeeds.types.ts';
+export * from './lib/GameMakerIde.ts';
+export * from './lib/GameMakerLauncher.ts';
+export * from './lib/GameMakerRuntime.ts';
+export { logger } from './lib/log.ts';

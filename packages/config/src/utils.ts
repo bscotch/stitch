@@ -1,4 +1,4 @@
-import type { NewSoundDefaults, StitchConfig } from './schema.js';
+import type { NewSoundDefaults, StitchConfig } from './schema.ts';
 
 export function isValidSoundName(name: string, config: StitchConfig): boolean {
   const allowedNames = config?.newSoundRules?.allowedNames;

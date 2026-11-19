@@ -1,8 +1,8 @@
 import { keysOf } from '@bscotch/utility';
 import type { IToken } from 'chevrotain';
-import { flattenFeatherTypes } from './jsdoc.feather.js';
-import type { IPosition, IRange } from './project.location.js';
-import { assert } from './util.js';
+import { flattenFeatherTypes } from './jsdoc.feather.ts';
+import type { IPosition, IRange } from './project.location.ts';
+import { assert } from './util.ts';
 
 interface MatchGroups {
   param?: string;
@@ -61,9 +61,8 @@ const optionalParamNamePattern = `\\[\\s*(?<optionalName>(?:[a-zA-Z_][a-zA-Z_0-9
 const names = keysOf(patterns);
 for (const tagName of names) {
   // Add the line prefix and a tag capture group
-  patterns[
-    tagName
-  ] = `${linePrefixPattern}(?<tag>(?<${tagName}>${patterns[tagName]}))`;
+  patterns[tagName] =
+    `${linePrefixPattern}(?<tag>(?<${tagName}>${patterns[tagName]}))`;
 }
 
 // Types with required typeGroups
@@ -82,9 +81,8 @@ for (const tagName of [
   'instancevar',
   'template',
 ] as const) {
-  patterns[
-    tagName
-  ] = `${patterns[tagName]}(\\s+${typeGroupPattern})?\\s+${paramNamePattern}`;
+  patterns[tagName] =
+    `${patterns[tagName]}(\\s+${typeGroupPattern})?\\s+${paramNamePattern}`;
 }
 
 // Self (has a type but no group. Make brackets optional to be more forgiving)
@@ -145,16 +143,15 @@ export interface Jsdoc<T extends JsdocKind = JsdocKind> extends IRange {
   self?: JsdocComponent;
 }
 
-export interface JsdocSummary
-  extends Jsdoc<
-    | 'description'
-    | 'function'
-    | 'type'
-    | 'self'
-    | 'globalvar'
-    | 'instancevar'
-    | 'localvar'
-  > {
+export interface JsdocSummary extends Jsdoc<
+  | 'description'
+  | 'function'
+  | 'type'
+  | 'self'
+  | 'globalvar'
+  | 'instancevar'
+  | 'localvar'
+> {
   /**
    * The list of all tags found in this block, and their
    * respective locations, for use e.g. syntax highlighting.
@@ -453,12 +450,12 @@ export function parseJsdoc(
         const kind = parts.param
           ? 'param'
           : parts.template
-          ? 'template'
-          : parts.localvar
-          ? 'localvar'
-          : parts.globalvar
-          ? 'globalvar'
-          : 'instancevar';
+            ? 'template'
+            : parts.localvar
+              ? 'localvar'
+              : parts.globalvar
+                ? 'globalvar'
+                : 'instancevar';
 
         const typeString = substringRange(
           line.content,

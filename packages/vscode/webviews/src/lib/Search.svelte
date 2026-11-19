@@ -11,9 +11,13 @@
 		close: undefined;
 	}>();
 
-	let { caseSensitive, regex, wholeWord, query, results } = $props<
-		SearchProps & { results?: HTMLElement[] }
-	>();
+	let {
+		caseSensitive,
+		regex,
+		wholeWord,
+		query,
+		results,
+	}: SearchProps & { results?: HTMLElement[] } = $props();
 
 	let currentResultIdx = $state(0);
 	let total = $derived(results?.length || 0);

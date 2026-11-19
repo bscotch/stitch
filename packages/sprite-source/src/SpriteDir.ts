@@ -1,12 +1,12 @@
-import { Pathy, pathy, statSafe } from '@bscotch/pathy';
+import { type Pathy, pathy, statSafe } from '@bscotch/pathy';
 import { Yy } from '@bscotch/yy';
-import type { SpritesInfo } from './SpriteCache.schemas.js';
-import { SpriteFrame } from './SpriteFrame.js';
-import { computeFilesChecksum, computeStringChecksum } from './checksum.js';
-import { retryOptions } from './constants.js';
-import { readdirSafe } from './safeFs.js';
-import type { Log } from './types.js';
-import { SpriteSourceError, assert } from './utility.js';
+import type { SpritesInfo } from './SpriteCache.schemas.ts';
+import { SpriteFrame } from './SpriteFrame.ts';
+import { computeFilesChecksum, computeStringChecksum } from './checksum.ts';
+import { retryOptions } from './constants.ts';
+import { readdirSafe } from './safeFs.ts';
+import type { Log } from './types.ts';
+import { SpriteSourceError, assert } from './utility.ts';
 
 export class SpriteDir {
   protected _frames: SpriteFrame[] = [];
@@ -15,11 +15,15 @@ export class SpriteDir {
     | undefined
     | { atlas: Pathy; json: Pathy; pngs: Pathy[] };
 
-  protected constructor(
-    readonly path: Pathy,
-    readonly logs: Log[],
-    readonly issues: Error[],
-  ) {}
+  readonly path: Pathy;
+  readonly logs: Log[];
+  readonly issues: Error[];
+
+  protected constructor(path: Pathy, logs: Log[], issues: Error[]) {
+    this.path = path;
+    this.logs = logs;
+    this.issues = issues;
+  }
 
   get isSpine() {
     return this._isSpine;

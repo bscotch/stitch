@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { htmlString } from './utils.js';
+import { htmlString } from './utils.ts';
 
 export interface RssFeedEntry {
   title: string;

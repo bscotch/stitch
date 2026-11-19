@@ -1,20 +1,21 @@
-import { Pathy, existsSafe, pathy } from '@bscotch/pathy';
+import { __decorate } from 'tslib';
+import { type Pathy, existsSafe, pathy } from '@bscotch/pathy';
 import { sequential } from '@bscotch/utility';
-import { SpriteCache } from './SpriteCache.js';
-import { SpriteDir } from './SpriteDir.js';
+import { SpriteCache } from './SpriteCache.ts';
+import type { SpriteDir } from './SpriteDir.ts';
 import {
   spriteSourceConfigSchema,
   type SpriteSourceConfig,
   type SpriteSourceStage,
-} from './SpriteSource.schemas.js';
-import { FIO_RETRY_DELAY, MAX_FIO_RETRIES, retryOptions } from './constants.js';
+} from './SpriteSource.schemas.ts';
+import { FIO_RETRY_DELAY, MAX_FIO_RETRIES, retryOptions } from './constants.ts';
 import {
   SpriteSourceError,
   assert,
   deletePngChildren,
   getDirs,
   rethrow,
-} from './utility.js';
+} from './utility.ts';
 
 export class SpriteSource extends SpriteCache {
   get configFile() {
@@ -98,7 +99,6 @@ export class SpriteSource extends SpriteCache {
     }
   }
 
-  @sequential
   async loadConfig(
     overrides: SpriteSourceConfig = {},
   ): Promise<SpriteSourceConfig> {
@@ -143,7 +143,6 @@ export class SpriteSource extends SpriteCache {
    * Transform any staged sprites and add them to the source,
    * and compute updated sprite info.
    */
-  @sequential
   async update(
     /** Optionally override config options */
     options?: SpriteSourceConfig,
@@ -177,3 +176,7 @@ export class SpriteSource extends SpriteCache {
     return source;
   }
 }
+
+// Node can't run decorator syntax, so apply them explicitly
+__decorate([sequential], SpriteSource.prototype, 'loadConfig', null);
+__decorate([sequential], SpriteSource.prototype, 'update', null);

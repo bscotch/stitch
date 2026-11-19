@@ -1,5 +1,5 @@
 import { createEventEmitter } from '@bscotch/emitter';
-import { Mote } from './types.js';
+import type { Mote } from './types.ts';
 
 export namespace GameChangerEvents {
   export type All = [GameChangerWorkingUpdated, GameChangerChangesSaved];

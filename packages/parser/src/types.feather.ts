@@ -3,11 +3,11 @@ import {
   parseFeatherTypeString,
   type FeatherType,
   type FeatherTypeUnion,
-} from './jsdoc.feather.js';
-import type { JsdocSummary } from './jsdoc.js';
-import { Type } from './types.js';
-import { primitiveNames } from './types.primitives.js';
-import { ok } from './util.js';
+} from './jsdoc.feather.ts';
+import type { JsdocSummary } from './jsdoc.ts';
+import { Type } from './types.ts';
+import { primitiveNames } from './types.primitives.ts';
+import { ok } from './util.ts';
 
 export type KnownTypesMap = Map<string, Type>;
 export type GenericsMap = Record<string, Type[]>;

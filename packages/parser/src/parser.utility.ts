@@ -15,7 +15,7 @@ import type {
   MultilineSingleStringLiteralCstChildren,
   StringLiteralCstChildren,
 } from '../gml-cst.js';
-import { isArray, ok } from './util.js';
+import { isArray, ok } from './util.ts';
 
 /** Right-hand side from the CST, normalized via `rhsFrom` */
 export type Rhs =

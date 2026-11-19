@@ -1,5 +1,7 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { sequential } from '@bscotch/utility';
-import { expect } from 'chai';
+import { __decorate } from 'tslib';
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -10,12 +12,13 @@ describe('Utility', function () {
     class MyClass {
       values: any[] = [];
 
-      @sequential
       async addValue(value: any, delayMs = 0) {
         await delay(delayMs);
         this.values.push(value);
       }
     }
+    // Node can't run decorator syntax, so apply it explicitly
+    __decorate([sequential], MyClass.prototype, 'addValue', null);
 
     const myClass = new MyClass();
     await Promise.all([
@@ -23,6 +26,6 @@ describe('Utility', function () {
       myClass.addValue(2, 75),
       myClass.addValue(3, 30),
     ]);
-    expect(myClass.values).to.deep.equal([1, 2, 3]);
+    assert.deepEqual(myClass.values, [1, 2, 3]);
   });
 });

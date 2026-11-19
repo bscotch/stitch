@@ -1,4 +1,4 @@
-import type { Gcdata } from './GameChanger.js';
+import type { Gcdata } from './GameChanger.ts';
 import {
   arrayTagPattern,
   commentLinePattern,
@@ -6,13 +6,13 @@ import {
   emojiGroupPattern,
   moteNamePattern,
   moteTagPattern,
-  ParserResult,
-  QuestData,
-  QuestMote,
+  type ParserResult,
+  type QuestData,
+  type QuestMote,
   questSchemaId,
-} from './cl2.shared.types.js';
-import type { Crashlands2 } from './cl2.types.auto.js';
-import type { Mote } from './types.js';
+} from './cl2.shared.types.ts';
+import type { Crashlands2 } from './cl2.types.auto.ts';
+import type { Mote } from './types.ts';
 
 export function listQuests(gcData: Gcdata): QuestMote[] {
   return gcData.listMotesBySchema<QuestData>(questSchemaId);
@@ -90,23 +90,22 @@ type ParsedRequirement = ParsedRequirementQuest | ParsedRequirementOther;
 export type QuestMomentsLabel = `quest_${'start' | 'end'}_moments`;
 export type QuestRequirementsLabel = `quest_${'start' | 'end'}_requirements`;
 
-export interface QuestUpdateResult
-  extends ParserResult<
-    {
-      /** The moteId for the storyline */
-      storyline?: string;
-      /** The moteId for the quest giver */
-      quest_giver?: string;
-      /** The moteId for the quest receiver */
-      quest_receiver?: string;
-      clues: ParsedClue[];
-      quest_start_log?: string;
-    } & {
-      [K in QuestMomentsLabel]: ParsedMoment[];
-    } & {
-      [K in QuestRequirementsLabel]: ParsedRequirement[];
-    }
-  > {}
+export interface QuestUpdateResult extends ParserResult<
+  {
+    /** The moteId for the storyline */
+    storyline?: string;
+    /** The moteId for the quest giver */
+    quest_giver?: string;
+    /** The moteId for the quest receiver */
+    quest_receiver?: string;
+    clues: ParsedClue[];
+    quest_start_log?: string;
+  } & {
+    [K in QuestMomentsLabel]: ParsedMoment[];
+  } & {
+    [K in QuestRequirementsLabel]: ParsedRequirement[];
+  }
+> {}
 
 export type Section = (typeof sections)[number];
 export const sections = ['start moments', 'end moments'] as const;

@@ -1,16 +1,16 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
 import {
   Yy,
-  YySprite,
+  type YySprite,
   yySpriteSchema,
   type Yyp,
   type YypResourceId,
 } from '@bscotch/yy';
 import path from 'path';
-import type { SpriteDestAction } from './SpriteDest.schemas.js';
-import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.js';
-import { readdirSafeWithFileTypes } from './safeFs.js';
-import { getPngSize } from './utility.js';
+import type { SpriteDestAction } from './SpriteDest.schemas.ts';
+import { FIO_RETRY_DELAY, MAX_FIO_RETRIES } from './constants.ts';
+import { readdirSafeWithFileTypes } from './safeFs.ts';
+import { getPngSize } from './utility.ts';
 
 export interface ApplySpriteActionOptions {
   projectYypPath: string;

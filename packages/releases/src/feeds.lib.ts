@@ -1,9 +1,9 @@
 import {
-  RssFeedEntry,
+  type RssFeedEntry,
   rssFeedSchema,
   type GameMakerArtifact,
-} from './feeds.types.js';
-import { fetchXml } from './fetch.js';
+} from './feeds.types.ts';
+import { fetchXml } from './fetch.ts';
 
 /**
  * Get the runtime with the closest release date to the given IDE

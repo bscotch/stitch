@@ -1,9 +1,9 @@
-import { Range, Reference } from './project.location.js';
-import { Flags } from './signifiers.flags.js';
-import { getTypes } from './types.checks.js';
-import { Type, TypeStore } from './types.js';
-import { PrimitiveName } from './types.primitives.js';
-import { assert } from './util.js';
+import { type Range, Reference } from './project.location.ts';
+import { Flags } from './signifiers.flags.ts';
+import { getTypes } from './types.checks.ts';
+import { type Type, TypeStore } from './types.ts';
+import type { PrimitiveName } from './types.primitives.ts';
+import { assert } from './util.ts';
 
 export class Signifier extends Flags {
   readonly $tag = 'Sym';
@@ -27,12 +27,11 @@ export class Signifier extends Flags {
   protected _def: Range | { file?: undefined } | undefined = undefined;
   refs = new Set<Reference>();
 
-  constructor(
-    parent: Type,
-    readonly name: string,
-    type?: Type | Type[],
-  ) {
+  readonly name: string;
+
+  constructor(parent: Type, name: string, type?: Type | Type[]) {
     super();
+    this.name = name;
     if (type) {
       this.setType(type);
     }

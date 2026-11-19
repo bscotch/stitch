@@ -1,26 +1,26 @@
-import { assert } from './assert.js';
-import { CharacterMoteDataPointer } from './cl2.character.pointers.js';
+import { assert } from './assert.ts';
+import type { CharacterMoteDataPointer } from './cl2.character.pointers.ts';
 import {
   linePatterns,
-  ParsedGroup,
-  ParsedTopic,
+  type ParsedGroup,
+  type ParsedTopic,
   type CharacterUpdateResult,
-} from './cl2.character.types.js';
+} from './cl2.character.types.ts';
 import {
   isCommentLine,
   isStageLine,
   prepareParserHelpers,
   updateWipChangesFromParsed,
-} from './cl2.shared.parse.js';
-import { CharacterMote, npcSchemaId } from './cl2.shared.types.js';
-import type { GameChanger } from './GameChanger.js';
+} from './cl2.shared.parse.ts';
+import { type CharacterMote, npcSchemaId } from './cl2.shared.types.ts';
+import type { GameChanger } from './GameChanger.ts';
 import {
   bsArrayToArray,
   changedPosition,
   updateBsArrayOrder,
-} from './helpers.js';
-import { Position } from './types.editor.js';
-import { Mote } from './types.js';
+} from './helpers.ts';
+import type { Position } from './types.editor.ts';
+import type { Mote } from './types.ts';
 
 export function parseStringifiedCharacter(
   text: string,

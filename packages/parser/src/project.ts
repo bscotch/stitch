@@ -1,4 +1,5 @@
-import { pathy, Pathy } from '@bscotch/pathy';
+import { __decorate } from 'tslib';
+import { pathy, type Pathy } from '@bscotch/pathy';
 import {
   getDefaultsForNewSound,
   isValidSoundName,
@@ -12,7 +13,7 @@ import {
   SoundChannel,
   SpriteType,
   Yy,
-  yyParentSchema,
+  type yyParentSchema,
   yypFolderSchema,
   yyRoomSchema,
   yySpriteSchema,
@@ -26,16 +27,16 @@ import {
   type YySprite,
 } from '@bscotch/yy';
 import { EventEmitter } from 'events';
-import { logger } from './logger.js';
-import { importAssets } from './modules.js';
-import { ImportModuleOptions } from './modules.types.js';
-import { Asset, isAssetOfKind } from './project.asset.js';
-import { Code } from './project.code.js';
-import { Diagnostic } from './project.diagnostics.js';
-import { Native } from './project.native.js';
-import { fshDefault, vshDefault } from './shaderDefaults.js';
-import { Signifier } from './signifiers.js';
-import { StructType, Type } from './types.js';
+import { logger } from './logger.ts';
+import { importAssets } from './modules.ts';
+import type { ImportModuleOptions } from './modules.types.ts';
+import { Asset, isAssetOfKind } from './project.asset.ts';
+import { Code } from './project.code.ts';
+import type { Diagnostic } from './project.diagnostics.ts';
+import { Native } from './project.native.ts';
+import { fshDefault, vshDefault } from './shaderDefaults.ts';
+import { Signifier } from './signifiers.ts';
+import { type StructType, Type } from './types.ts';
 import {
   assert,
   assertIsValidIdentifier,
@@ -43,8 +44,8 @@ import {
   groupPathToPosix,
   ok,
   throwError,
-} from './util.js';
-export { setLogger, type Logger } from './logger.js';
+} from './util.ts';
+export { setLogger, type Logger } from './logger.ts';
 
 type AssetName = string;
 
@@ -126,10 +127,13 @@ export class Project {
   /** Code that needs to be reprocessed, for one reason or another. */
   protected dirtyFiles = new Set<Code>();
 
-  protected constructor(
-    readonly yypPath: Pathy<any>,
-    readonly options?: ProjectOptions,
-  ) {}
+  readonly yypPath: Pathy<any>;
+  readonly options?: ProjectOptions;
+
+  protected constructor(yypPath: Pathy<any>, options?: ProjectOptions) {
+    this.yypPath = yypPath;
+    this.options = options;
+  }
 
   /**
    * @internal For tracking changed code files that will need to be re-parsed.
@@ -256,7 +260,6 @@ export class Project {
   /**
    * @param name The name of the asset to find and remove, case-insensitive.
    */
-  @sequential
   async removeAssetByName(name: string | undefined) {
     if (!name) return;
     name = name.toLocaleLowerCase();
@@ -378,7 +381,6 @@ export class Project {
    * Ensure that the included files listed in the YYP exactly match
    * the files in the `datafiles` directory.
    */
-  @sequential
   async syncIncludedFiles() {
     const includedFiles = (
       await this.dir.join('datafiles').listChildrenRecursively()
@@ -412,7 +414,6 @@ export class Project {
    * @param from The name of the asset to rename, case-insensitive.
    * @param to The new name for the asset, which must be a valid identifier that doesn't already have an associated asset. The name will be set in the provided casing, but must be unique case-insensitively.
    */
-  @sequential
   async renameAsset(from: string, to: string) {
     const asset = this.getAssetByName(from, { assertExists: true });
     assertIsValidIdentifier(to);
@@ -536,7 +537,6 @@ export class Project {
     await Promise.all(waits);
   }
 
-  @sequential
   async import(
     fromProject: Project | string,
     options: ImportModuleOptions = {},
@@ -547,7 +547,6 @@ export class Project {
     return await importAssets(fromProject, this, options);
   }
 
-  @sequential
   async duplicateAsset(sourceName: string, newPath: string) {
     const source = this.getAssetByName(sourceName, { assertExists: true });
     const parsed = await this.parseNewAssetPath(newPath);
@@ -603,7 +602,6 @@ export class Project {
    * @param fromFile The path to the source sound file to copy into the new asset's directory.
    * @example project.createSound('folder/of/sounds/snd_my_new_sound', 'path/to/sound.mp3');
    */
-  @sequential
   async createSound(newSoundPath: string, fromFile: string | Pathy) {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(newSoundPath);
@@ -657,7 +655,6 @@ export class Project {
    * @param newRoomPath The POSIX-style path within the asset tree where you want this asset to be created, where the last component is the name of the asset.
    * @example project.createRoom('folder/of/rooms/rm_my_room');
    */
-  @sequential
   async createRoom(newRoomPath: string): Promise<Asset<'rooms'> | undefined> {
     const parsed = await this.parseNewAssetPath(newRoomPath);
     if (!parsed) {
@@ -701,7 +698,6 @@ export class Project {
    * @param fromImageFile Path to a source PNG image to use as the first frame of the sprite.
    * @example project.createSprite('folder/of/sprites/sp_my_sprite', 'path/to/sprite.png');
    */
-  @sequential
   async createSprite(
     newSpritePath: string,
     fromImageFile: string | Pathy,
@@ -764,7 +760,6 @@ export class Project {
    * in which case folders will be ensured up to the final component.
    * @param newObjectName The POSIX-style path within the asset tree where you want this asset to be created, where the last component is the name of the asset.
    */
-  @sequential
   async createObject(
     newObjectName: string,
   ): Promise<Asset<'objects'> | undefined> {
@@ -806,7 +801,6 @@ export class Project {
     return asset as Asset<'objects'>;
   }
 
-  @sequential
   async createShader(path: string): Promise<Asset<'shaders'> | undefined> {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(path);
@@ -851,7 +845,6 @@ export class Project {
    * Add a script to the yyp file. The path string can include separators,
    * in which case folders will be ensured up to the final component.
    */
-  @sequential
   async createScript(path: string): Promise<Asset<'scripts'> | undefined> {
     // Create the yy file
     const parsed = await this.parseNewAssetPath(path);
@@ -975,7 +968,6 @@ export class Project {
    * Delete a folder recursively. Only allowed if there are no assets
    * in this or any subfolder.
    */
-  @sequential
   async deleteFolder(path: string | string[]) {
     const assets = this.listAssetsInFolder(path, { recursive: true });
     const { full, prefix } = this.parseFolderPath(path);
@@ -1003,7 +995,6 @@ export class Project {
    *
    * Returns the list of folders and assets that are now in a new
    * location. */
-  @sequential
   async renameFolder(oldPath: string | string[], newPath: string | string[]) {
     const oldParts = Array.isArray(oldPath) ? oldPath : oldPath.split(/[/\\]+/);
     const newParts = Array.isArray(newPath) ? newPath : newPath.split(/[/\\]+/);
@@ -1115,7 +1106,6 @@ export class Project {
     return folder;
   }
 
-  @sequential
   async saveYyp() {
     await Yy.write(this.yypPath.absolute, this.yyp, 'project');
   }
@@ -1214,13 +1204,11 @@ export class Project {
     });
   }
 
-  @sequential
   async reloadConfig() {
     this.config = await this.stitchConfig.read({ fallback: {} });
     return this.config;
   }
 
-  @sequential
   async getWindowsName(): Promise<string | undefined> {
     const windowOptionsFile = this.dir.join(
       'options/windows/options_windows.yy',
@@ -1416,3 +1404,21 @@ export class Project {
     '../../assets/GmlSpec.xml',
   );
 }
+
+// Node can't run decorator syntax, so apply them explicitly
+__decorate([sequential], Project.prototype, 'removeAssetByName', null);
+__decorate([sequential], Project.prototype, 'syncIncludedFiles', null);
+__decorate([sequential], Project.prototype, 'renameAsset', null);
+__decorate([sequential], Project.prototype, 'import', null);
+__decorate([sequential], Project.prototype, 'duplicateAsset', null);
+__decorate([sequential], Project.prototype, 'createSound', null);
+__decorate([sequential], Project.prototype, 'createRoom', null);
+__decorate([sequential], Project.prototype, 'createSprite', null);
+__decorate([sequential], Project.prototype, 'createObject', null);
+__decorate([sequential], Project.prototype, 'createShader', null);
+__decorate([sequential], Project.prototype, 'createScript', null);
+__decorate([sequential], Project.prototype, 'deleteFolder', null);
+__decorate([sequential], Project.prototype, 'renameFolder', null);
+__decorate([sequential], Project.prototype, 'saveYyp', null);
+__decorate([sequential], Project.prototype, 'reloadConfig', null);
+__decorate([sequential], Project.prototype, 'getWindowsName', null);

@@ -1,19 +1,19 @@
-import { GameMakerComponent } from './GameMakerComponent.js';
-import type { GameMakerInstalledVersion } from './GameMakerLauncher.types.js';
+import { GameMakerComponent } from './GameMakerComponent.ts';
+import type { GameMakerInstalledVersion } from './GameMakerLauncher.types.ts';
 import {
   executeGameMakerBuildCommand,
   executeGameMakerRuntimeInstallCommand,
-} from './GameMakerRuntime.command.js';
+} from './GameMakerRuntime.command.ts';
 import type {
   GameMakerBuildOptions,
   GameMakerRunOptions,
-} from './GameMakerRuntime.types.js';
+} from './GameMakerRuntime.types.ts';
 import {
   listInstalledRuntimes,
   type Logger,
   sortByDateField,
-} from './utility.js';
-export * from './GameMakerRuntime.command.js';
+} from './utility.ts';
+export * from './GameMakerRuntime.command.ts';
 
 export class GameMakerRuntime extends GameMakerComponent {
   constructor(info: GameMakerInstalledVersion) {

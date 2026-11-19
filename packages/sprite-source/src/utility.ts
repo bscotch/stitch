@@ -1,7 +1,7 @@
-import { Pathy, pathy, rmSafe } from '@bscotch/pathy';
+import { type Pathy, pathy, rmSafe } from '@bscotch/pathy';
 import fsp from 'fs/promises';
 import path from 'path';
-import { readdirSafe, readdirSafeWithFileTypes } from './safeFs.js';
+import { readdirSafe, readdirSafeWithFileTypes } from './safeFs.ts';
 
 export type AnyFunc = (...args: any) => any;
 export type Checked<T extends AnyFunc> =

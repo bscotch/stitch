@@ -1,6 +1,6 @@
-import { assert } from './assert.js';
-import type { GameChanger } from './GameChanger.js';
-import { toMoteTag } from './helpers.js';
+import { assert } from './assert.ts';
+import type { GameChanger } from './GameChanger.ts';
+import { toMoteTag } from './helpers.ts';
 
 export function emojiString(
   emojiId: string | undefined | { emoji?: string } | { emotion?: string },

@@ -1,13 +1,13 @@
-import type { Gcdata } from './GameChanger.js';
-import { assert } from './assert.js';
-import { Crashlands2 } from './cl2.types.auto.js';
+import type { Gcdata } from './GameChanger.ts';
+import { assert } from './assert.ts';
+import type { Crashlands2 } from './cl2.types.auto.ts';
 import type {
   BschemaBsArrayElement,
   BschemaEnum,
   BschemaMoteId,
   BschemaObject,
-} from './types.js';
-import { resolvePointerInSchema } from './util.js';
+} from './types.ts';
+import { resolvePointerInSchema } from './util.ts';
 
 export function getMoteLists(packed: Gcdata) {
   const allowedSpeakers = getAllowedSpeakers(packed);

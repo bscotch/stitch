@@ -1,6 +1,6 @@
 import { pathy, type Pathy } from '@bscotch/pathy';
-import { SpineAnimation, SpineJson } from './spine.types.js';
-import { assert } from './util.js';
+import type { SpineAnimation, SpineJson } from './spine.types.ts';
+import { assert } from './util.ts';
 
 export interface SpineSummary<
   AnimationName extends string = string,

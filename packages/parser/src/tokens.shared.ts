@@ -1,5 +1,5 @@
-import { c } from './tokens.categories.js';
-import { Lexer, createToken } from './tokens.lib.js';
+import { c } from './tokens.categories.ts';
+import { Lexer, createToken } from './tokens.lib.ts';
 
 export const identifier = createToken({
   name: 'Identifier',

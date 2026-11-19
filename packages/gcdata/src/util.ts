@@ -1,16 +1,16 @@
 import type { Glossary } from '@bscotch/cl2-string-server-shared';
-import type { Gcdata } from './GameChanger.js';
-import { assert } from './assert.js';
-import type { ParsedLineItem, ParsedWord } from './types.editor.js';
+import type { Gcdata } from './GameChanger.ts';
+import { assert } from './assert.ts';
+import type { ParsedLineItem, ParsedWord } from './types.editor.ts';
 import {
-  BschemaObject,
+  type BschemaObject,
   getAdditionalProperties,
   getProperties,
   isBschemaObject,
   type Bschema,
   type BschemaConst,
   type Mote,
-} from './types.js';
+} from './types.ts';
 
 export function sizeOf(thing: any): number {
   if (!thing) return 0;

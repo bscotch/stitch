@@ -1,31 +1,31 @@
-import { assert } from './assert.js';
-import { ChatMoteDataPointer } from './cl2.chat.pointers.js';
+import { assert } from './assert.ts';
+import type { ChatMoteDataPointer } from './cl2.chat.pointers.ts';
 import {
   linePatterns,
-  ParsedMoment,
-  ParsedPhrase,
+  type ParsedMoment,
+  type ParsedPhrase,
   type ChatUpdateResult,
-} from './cl2.chat.types.js';
+} from './cl2.chat.types.ts';
 import {
   isCommentLine,
   isStageLine,
   prepareParserHelpers,
   updateWipChangesFromParsed,
-} from './cl2.shared.parse.js';
+} from './cl2.shared.parse.ts';
 import {
-  ChatMote,
+  type ChatMote,
   chatSchemaId,
   listAllCharacters,
-} from './cl2.shared.types.js';
-import type { GameChanger } from './GameChanger.js';
+} from './cl2.shared.types.ts';
+import type { GameChanger } from './GameChanger.ts';
 import {
   bsArrayToArray,
   changedPosition,
   createBsArrayKey,
   updateBsArrayOrder,
-} from './helpers.js';
-import { Position } from './types.editor.js';
-import { Mote } from './types.js';
+} from './helpers.ts';
+import type { Position } from './types.editor.ts';
+import type { Mote } from './types.ts';
 
 export function parseStringifiedChat(
   text: string,

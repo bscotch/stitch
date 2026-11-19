@@ -1,10 +1,11 @@
+import { describe, it } from 'node:test';
 import { pathy } from '@bscotch/pathy';
-import { GameChanger } from './GameChanger.js';
-import { assert } from './assert.js';
-import { parseStringifiedCredits } from './cl2.credits.parse.js';
-import { stringifyCredits } from './cl2.credits.stringify.js';
-import { listCredits } from './cl2.credits.types.js';
-import { creditsSchemaId } from './cl2.shared.types.js';
+import { GameChanger } from './GameChanger.ts';
+import { assert } from './assert.ts';
+import { parseStringifiedCredits } from './cl2.credits.parse.ts';
+import { stringifyCredits } from './cl2.credits.stringify.ts';
+import { listCredits } from './cl2.credits.types.ts';
+import { creditsSchemaId } from './cl2.shared.types.ts';
 
 describe('Cl2 Credits', function () {
   it('can convert a credits mote to a text format', async function () {

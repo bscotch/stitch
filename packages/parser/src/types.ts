@@ -1,16 +1,16 @@
 import { arrayWrapped } from '@bscotch/utility';
-import { typeToFeatherString } from './jsdoc.feather.js';
-import { Flags } from './signifiers.flags.js';
-import { Signifier } from './signifiers.js';
-import { getTypes, narrows } from './types.checks.js';
+import { typeToFeatherString } from './jsdoc.feather.ts';
+import { Flags } from './signifiers.flags.ts';
+import { Signifier } from './signifiers.ts';
+import { getTypes, narrows } from './types.checks.ts';
 import {
   typeFromFeatherString,
   type KnownOrGenerics,
   type KnownTypesMap,
-} from './types.feather.js';
-import { typeToHoverDetails, typeToHoverText } from './types.hover.js';
-import { PrimitiveName, withableTypes } from './types.primitives.js';
-import { assert, ok } from './util.js';
+} from './types.feather.ts';
+import { typeToHoverDetails, typeToHoverText } from './types.hover.ts';
+import type { PrimitiveName, withableTypes } from './types.primitives.ts';
+import { assert, ok } from './util.ts';
 
 export type AnyType = Type<'Any'>;
 export type ArrayType = Type<'Array'>;
@@ -140,7 +140,11 @@ export class Type<T extends PrimitiveName = PrimitiveName> {
   self: WithableType | undefined = undefined;
   returns: TypeStore | undefined = undefined;
 
-  constructor(protected _kind: T) {}
+  protected _kind: T;
+
+  constructor(_kind: T) {
+    this._kind = _kind;
+  }
 
   protected setFlag(flag: number, value: boolean) {
     if (value) {

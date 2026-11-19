@@ -1,4 +1,5 @@
-import { fetchReleasesSummaryWithNotes } from './releases.js';
+import { describe, it } from 'node:test';
+import { fetchReleasesSummaryWithNotes } from './releases.ts';
 
 describe('Releases', function () {
   it('can download and parse a GameMaker Info release', async function () {

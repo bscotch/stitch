@@ -1,19 +1,20 @@
+import { __decorate } from 'tslib';
 import {
-  Channel,
+  type Channel,
   gameMakerReleaseWithNotesSchema,
   releasesUrl,
   runtimeFeedUrls,
 } from '@bscotch/gamemaker-releases';
-import { Pathy, pathy } from '@bscotch/pathy';
+import { type Pathy, pathy } from '@bscotch/pathy';
 import { MaxAge } from '@bscotch/utility/browser';
 import { z } from 'zod';
 import {
-  GameMakerChannel,
-  GameMakerInstalledVersion,
-  GameMakerKnownPath,
+  type GameMakerChannel,
+  type GameMakerInstalledVersion,
+  type GameMakerKnownPath,
   gameMakerUserDataSchema,
-} from './GameMakerLauncher.types.js';
-import { GameMakerUser } from './GameMakerUser.js';
+} from './GameMakerLauncher.types.ts';
+import { GameMakerUser } from './GameMakerUser.ts';
 import {
   cleanVersionString,
   downloadIfCacheExpired,
@@ -23,10 +24,14 @@ import {
   type Logger,
   type RuntimeFeedsFile,
   stitchConfigDir,
-} from './utility.js';
+} from './utility.ts';
 
 export class GameMakerComponent {
-  constructor(protected info: GameMakerInstalledVersion) {}
+  protected info: GameMakerInstalledVersion;
+
+  constructor(info: GameMakerInstalledVersion) {
+    this.info = info;
+  }
 
   get version() {
     return this.info.version;
@@ -70,7 +75,6 @@ export class GameMakerComponent {
   /**
    * List paths to important files and directories.
    */
-  @MaxAge(60, 30)
   static async listWellKnownPaths(options?: { programFiles?: string }) {
     const known: GameMakerKnownPath[] = [];
     const [dataDirs, ideExes] = await Promise.all([
@@ -256,3 +260,6 @@ export class GameMakerComponent {
     }
   }
 }
+
+// Node can't run decorator syntax, so apply them explicitly
+__decorate([MaxAge(60, 30)], GameMakerComponent, 'listWellKnownPaths', null);

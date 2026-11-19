@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { isEmpty } from './parser.utility.js';
-import { normalizeTypeString } from './util.js';
+import { isEmpty } from './parser.utility.ts';
+import { normalizeTypeString } from './util.ts';
 export type GmlSpec = z.output<typeof gmlSpecSchema>;
 export type GmlSpecFunction = GmlSpec['functions'][number];
 export type GmlSpecVariable = GmlSpec['variables'][number];

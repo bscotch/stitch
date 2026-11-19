@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { applyGroupAssignments, ensureProjectConfig } from './project.js';
+import { applyGroupAssignments, ensureProjectConfig } from './project.ts';
 
 const [command, ...args] = process.argv.slice(2);
 

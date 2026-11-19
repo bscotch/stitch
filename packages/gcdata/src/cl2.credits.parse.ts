@@ -1,19 +1,19 @@
-import { assert } from './assert.js';
-import { CreditsMoteDataPointer } from './cl2.credits.pointers.js';
+import { assert } from './assert.ts';
+import type { CreditsMoteDataPointer } from './cl2.credits.pointers.ts';
 import {
   linePatterns,
   type CreditsUpdateResult,
   type CreditsUpdateResultRole,
   type CreditsUpdateResultSection,
-} from './cl2.credits.types.js';
-import { prepareParserHelpers } from './cl2.shared.parse.js';
-import { CreditsMote, creditsSchemaId } from './cl2.shared.types.js';
-import type { GameChanger } from './GameChanger.js';
+} from './cl2.credits.types.ts';
+import { prepareParserHelpers } from './cl2.shared.parse.ts';
+import { type CreditsMote, creditsSchemaId } from './cl2.shared.types.ts';
+import type { GameChanger } from './GameChanger.ts';
 import {
   bsArrayToArray,
   createBsArrayKey,
   updateBsArrayOrder,
-} from './helpers.js';
+} from './helpers.ts';
 
 export function parseStringifiedCredits(
   text: string,

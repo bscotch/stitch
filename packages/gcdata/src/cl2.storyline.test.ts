@@ -1,12 +1,13 @@
+import { describe, it } from 'node:test';
 import { pathy } from '@bscotch/pathy';
-import { GameChanger } from './GameChanger.js';
-import { assert } from './assert.js';
-import { storylineSchemaId } from './cl2.shared.types.js';
+import { GameChanger } from './GameChanger.ts';
+import { assert } from './assert.ts';
+import { storylineSchemaId } from './cl2.shared.types.ts';
 import {
   parseStringifiedStoryline,
   stringifyStoryline,
-} from './cl2.storyline.js';
-import { listStorylines } from './cl2.storyline.types.js';
+} from './cl2.storyline.ts';
+import { listStorylines } from './cl2.storyline.types.ts';
 
 describe('Cl2 Storylines', function () {
   it('can convert a storyline mote to a text format', async function () {

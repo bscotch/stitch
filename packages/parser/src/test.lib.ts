@@ -1,6 +1,6 @@
 import { pathy } from '@bscotch/pathy';
-import { assert } from 'chai';
-import { Project } from './project.js';
+import assert from 'node:assert/strict';
+import { Project } from './project.ts';
 
 export async function resetSandbox() {
   for (const dir of ['target']) {

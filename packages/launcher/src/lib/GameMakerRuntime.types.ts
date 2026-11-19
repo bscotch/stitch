@@ -1,8 +1,8 @@
-import { GameMakerLogOptions } from './GameMakerLauncher.types.js';
-import {
+import type { GameMakerLogOptions } from './GameMakerLauncher.types.ts';
+import type {
   GameMakerCliBuildWorker,
   GameMakerCliOptions,
-} from './GameMakerRuntime.cliTypes.js';
+} from './GameMakerRuntime.cliTypes.ts';
 
 /**
  * GameMaker CLI workers that are for making builds

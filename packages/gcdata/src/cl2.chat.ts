@@ -1,18 +1,18 @@
-import { chatSchemaId } from './cl2.shared.types.js';
-import type { GameChanger } from './GameChanger.js';
-import { createBsArrayKey } from './helpers.js';
-import type { Mote } from './types.js';
+import { chatSchemaId } from './cl2.shared.types.ts';
+import type { GameChanger } from './GameChanger.ts';
+import { createBsArrayKey } from './helpers.ts';
+import type { Mote } from './types.ts';
 
 export {
   parseStringifiedChat,
   updateChangesFromParsedChat,
-} from './cl2.chat.parse.js';
-export { stringifyChat } from './cl2.chat.stringify.js';
+} from './cl2.chat.parse.ts';
+export { stringifyChat } from './cl2.chat.stringify.ts';
 export {
   isChatMote,
   listChats,
   type ChatUpdateResult,
-} from './cl2.chat.types.js';
+} from './cl2.chat.types.ts';
 
 export async function createChatMote(
   packed: GameChanger,

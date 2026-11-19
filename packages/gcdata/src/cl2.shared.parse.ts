@@ -1,23 +1,23 @@
-import { assert } from './assert.js';
+import { assert } from './assert.ts';
 import {
   arrayTagPattern,
   getEmojis,
   getStagingOptions,
   lineIsArrayItem,
-  ParsedBase,
-  ParsedLine,
+  type ParsedBase,
+  type ParsedLine,
   parseIfMatch,
-  ParserResult,
-} from './cl2.shared.types.js';
-import { StorylineMoteDataPointer } from './cl2.storyline.pointers.js';
-import type { GameChanger } from './GameChanger.js';
+  type ParserResult,
+} from './cl2.shared.types.ts';
+import type { StorylineMoteDataPointer } from './cl2.storyline.pointers.ts';
+import type { GameChanger } from './GameChanger.ts';
 import {
   bsArrayToArray,
   createBsArrayKey,
   updateBsArrayOrder,
-} from './helpers.js';
-import { ParsedLineItem } from './types.editor.js';
-import { checkWords, includes } from './util.js';
+} from './helpers.ts';
+import type { ParsedLineItem } from './types.editor.ts';
+import { checkWords, includes } from './util.ts';
 
 export function prepareParserHelpers(
   text: string,

@@ -1,18 +1,18 @@
-import type { GameChanger } from './GameChanger.js';
-import { assert } from './assert.js';
-import type { ComfortMoteDataPointer } from './cl2.comfort.pointers.js';
+import type { GameChanger } from './GameChanger.ts';
+import { assert } from './assert.ts';
+import type { ComfortMoteDataPointer } from './cl2.comfort.pointers.ts';
 import {
   getComfortSchema,
   linePatterns,
   type ComfortUpdateResult,
-} from './cl2.comfort.types.js';
+} from './cl2.comfort.types.ts';
 import {
   isCommentLine,
   isStageLine,
   prepareParserHelpers,
   updateWipChangesFromParsed,
-} from './cl2.shared.parse.js';
-import { comfortSchemaId } from './cl2.shared.types.js';
+} from './cl2.shared.parse.ts';
+import { comfortSchemaId } from './cl2.shared.types.ts';
 
 export function parseStringifiedComfort(
   text: string,

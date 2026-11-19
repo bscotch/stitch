@@ -1,0 +1,22 @@
+{
+  // For Node libraries whose TypeScript source is run directly by Node (e.g.
+  // tests via `node --test`) using type stripping. These settings make the
+  // compiler reject anything Node can't run as-is.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    // Import local files with their real `.ts` extensions, which are
+    // rewritten to `.js` in the compiled output.
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    // No enums, namespaces, parameter properties, etc.
+    "erasableSyntaxOnly": true,
+    // Type-only imports must be marked as such, so Node can strip them.
+    "verbatimModuleSyntax": true,
+    // Node does not support decorators
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
+    "types": ["node"]
+  }
+}

@@ -1,19 +1,24 @@
 import type { CstNodeLocation } from 'chevrotain';
-import type { Docs } from './parser.js';
-import type { Code } from './project.code.js';
+import type { Docs } from './parser.ts';
+import type { Code } from './project.code.ts';
 import {
   Diagnostic,
-  DiagnosticCollectionName,
-  DiagnosticSeverity,
-} from './project.diagnostics.js';
+  type DiagnosticCollectionName,
+  type DiagnosticSeverity,
+} from './project.diagnostics.ts';
 import {
-  Position,
+  type Position,
   Range,
   type IRange,
   type Scope,
-} from './project.location.js';
-import { Type, WithableType, type EnumType, type StructType } from './types.js';
-import { assert } from './util.js';
+} from './project.location.ts';
+import {
+  Type,
+  type WithableType,
+  type EnumType,
+  type StructType,
+} from './types.ts';
+import { assert } from './util.ts';
 
 export const diagnosticCollections = [
   'GLOBAL_SELF',
@@ -39,7 +44,10 @@ export class SignifierProcessor {
    */
   protected readonly definitiveSelfStack: (StructType | undefined)[] = [];
 
-  constructor(readonly file: Code) {
+  readonly file: Code;
+
+  constructor(file: Code) {
+    this.file = file;
     this.scope = file.scopes[0];
     assert(
       this.scope,
