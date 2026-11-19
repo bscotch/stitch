@@ -117,7 +117,6 @@ if (!releaseRef) {
     tagged: '[]',
     publish: '[]',
     filters: '',
-    test_filters: '',
     has_publish: 'false',
   });
   process.exit(0);
@@ -159,6 +158,5 @@ setOutputs({
   tagged: JSON.stringify(plan.tagged),
   publish: JSON.stringify(names),
   filters: pnpmFilters(names),
-  test_filters: pnpmFilters(names, false),
   has_publish: String(names.length > 0),
 });

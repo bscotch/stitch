@@ -4,7 +4,8 @@
 # `<name>@<version>` tag for every bumped project, in one atomic push. This
 # workflow triggers on that branch push (not on the tags: GitHub creates no
 # tag events when more than 3 tags are pushed at once), finds the tags, and:
-# - builds, tests, and publishes public packages to npm (Trusted Publishing)
+# - runs the full test suite (nothing is published if it fails)
+# - builds and publishes public packages to npm (Trusted Publishing)
 # - triggers other publishing workflows for tagged private projects
 #
 # To re-run a release (e.g. after fixing a CI problem), use "Run workflow"
@@ -40,7 +41,6 @@ jobs:
       tagged: ${{ steps.plan.outputs.tagged }}
       publish: ${{ steps.plan.outputs.publish }}
       filters: ${{ steps.plan.outputs.filters }}
-      test_filters: ${{ steps.plan.outputs.test_filters }}
       has_publish: ${{ steps.plan.outputs.has_publish }}
     steps:
       - uses: actions/checkout@v4
@@ -63,9 +63,45 @@ jobs:
             node scripts/release-plan.mts --before "$BEFORE" --after "$AFTER"
           fi
 
+  # Tests everything at the release commit, not just the packages being
+  # published: unpublished workspace deps get bundled into other projects
+  # (e.g. the VSCode extension), and the release scripts themselves matter.
+  test:
+    name: Test
+    needs: plan
+    if: needs.plan.outputs.ref != ''
+    runs-on: windows-latest
+    env:
+      # The npm libraries (and their workspace deps). The site and editor
+      # extensions have no tests and are slow to build.
+      FILTERS: --filter=@bscotch/*... --filter=!@bscotch/stitch-site
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.ref }}
+          lfs: true # Test samples include LFS-tracked images
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.12.0
+      - run: corepack enable
+
+      - name: Install
+        run: pnpm install --frozen-lockfile --filter=@local/stitch-monorepo $FILTERS
+
+      - name: Test release scripts
+        run: pnpm typecheck:scripts && pnpm test:scripts
+
+      # Tests run from TypeScript source, but import workspace dependencies
+      # from their built output.
+      - name: Build
+        run: pnpm run -r $FILTERS build
+
+      - name: Test
+        run: pnpm run -r --if-present $FILTERS test
+
   publish-npm:
     name: Publish to npm
-    needs: plan
+    needs: [plan, test]
     if: needs.plan.outputs.has_publish == 'true'
     runs-on: windows-latest
     # Serialize publishing (without cancelling queued releases)
@@ -92,9 +128,6 @@ jobs:
       - name: Build
         run: pnpm run -r ${{ needs.plan.outputs.filters }} build
 
-      - name: Test
-        run: pnpm run -r --if-present ${{ needs.plan.outputs.test_filters }} test
-
       - name: Publish
         env:
           PUBLISH: ${{ needs.plan.outputs.publish }}
@@ -102,10 +135,11 @@ jobs:
 
   publish-vscode:
     name: Publish Stitch for VSCode
-    needs: [plan, publish-npm]
-    # Run even if there was nothing to publish to npm, but not if npm publishing failed
+    needs: [plan, test, publish-npm]
+    # Run even if there was nothing to publish to npm, but not if tests or npm publishing failed
     if: >-
       !cancelled() && needs.plan.result == 'success'
+      && needs.test.result == 'success'
       && needs.publish-npm.result != 'failure'
       && contains(fromJSON(needs.plan.outputs.tagged), 'bscotch-stitch-vscode')
     uses: ./.github/workflows/publish-stitch-vscode.yaml
@@ -119,9 +153,10 @@ jobs:
 
   # publish-cl2-editor:
   #   name: Publish Crashlands Editor
-  #   needs: [plan, publish-npm]
+  #   needs: [plan, test, publish-npm]
   #   if: >-
   #     !cancelled() && needs.plan.result == 'success'
+  #     && needs.test.result == 'success'
   #     && needs.publish-npm.result != 'failure'
   #     && contains(fromJSON(needs.plan.outputs.tagged), 'crashlands-editor')
   #   uses: ./.github/workflows/publish-cl2-editor.yaml
@@ -131,9 +166,10 @@ jobs:
 
   # update-releases-summary:
   #   name: Update GameMaker Releases Summary
-  #   needs: [plan, publish-npm]
+  #   needs: [plan, test, publish-npm]
   #   if: >-
   #     !cancelled() && needs.plan.result == 'success'
+  #     && needs.test.result == 'success'
   #     && needs.publish-npm.result != 'failure'
   #     && contains(fromJSON(needs.plan.outputs.tagged), '@bscotch/gamemaker-releases')
   #   permissions:

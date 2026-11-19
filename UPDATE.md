@@ -26,7 +26,7 @@ Outcome:
 
 - Mocha/Chai replaced with `node:test`/`node:assert`, running TS source directly. Library packages now extend `packages/tsconfig.lib.json` (erasable syntax only, `.ts` import specifiers, `verbatimModuleSyntax`), which required converting enums, parameter properties, and decorators.
 - ⚠️ `@bscotch/yy`'s enums (`SpriteType`, `SoundChannel`, etc.) are now `as const` objects with same-named types. Member access and type usage are unchanged, but numeric reverse lookups (`SpriteType[2]`) and member-as-type (`x: SpriteType.Spine`) no longer work. This is a breaking change, so the next `yy` release must be a major version bump.
-- New `.github/workflows/test.yaml` builds and tests all npm libraries (plus release scripts) on Windows for PRs and pushes to `develop`.
+- The Release workflow's `test` job builds and tests all npm libraries (plus release scripts) on Windows at the release commit, and blocks all publishing if anything fails. (This replaced a standalone `test.yaml` workflow, so PRs are no longer tested in CI.)
 - Tests that can't run in CI: the launcher suite (was already fully skipped: needs GameMaker installs and interactive prompts) and the full GameMaker release-notes scrape (skipped when `CI` is set; takes minutes without a local cache).
 - Known bug surfaced: the parser keeps a stale struct member after a file is reloaded mid-edit. It was failing under Mocha, and Mocha's `bail` hid the parser tests after it. It's now an isolated `todo` test in `parser/src/project.test.ts` (see Phase 6).
 - Not yet verified on Linux/macOS.

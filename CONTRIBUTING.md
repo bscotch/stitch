@@ -101,7 +101,7 @@ Because Node only _strips_ types, library packages use the stricter [packages/ts
 - Type-only imports must use `import type` (or inline `type` modifiers).
 - No enums (use an `as const` object plus a same-named type), namespaces, constructor parameter properties, or decorators (apply decorators explicitly with `tslib`'s `__decorate()`).
 
-Tests must be able to run in CI (the [Test workflow](.github/workflows/test.yaml) runs on Windows for every PR and push to `develop`). Tests that need things CI doesn't have (a GameMaker install, interactive prompts, heavy network use) should be skipped there, e.g. with `{ skip: process.env.CI ? 'reason' : false }`. Mark tests for known bugs with `{ todo: 'reason' }` so they run and report without failing the suite.
+Tests must be able to run in CI (the `test` job in the [Release workflow](.github/workflows/release.yaml) runs them on Windows before anything is published, and a failure blocks the release). Tests that need things CI doesn't have (a GameMaker install, interactive prompts, heavy network use) should be skipped there, e.g. with `{ skip: process.env.CI ? 'reason' : false }`. Mark tests for known bugs with `{ todo: 'reason' }` so they run and report without failing the suite.
 
 Also in the `package.json` you'll see the `"dependencies"` for the given project, including local ones (where you see `"workspace:*"` instead of a semver range). Use those to orient yourself towards the other projects you may also need to open and work on.
 
