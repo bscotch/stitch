@@ -30,8 +30,6 @@
 
 		// Identify all unique key-combos from both files,
 		// as well as the non-key field names
-		// These collections are local working data, not reactive state
-		/* eslint-disable svelte/prefer-svelte-reactivity */
 		const keys = new Set<string>();
 		const otherFields = new Set<string>();
 		const addedFields = new Set<string>();
@@ -47,7 +45,6 @@
 		current.forEach((entry) => currentMap.set(getKey(entry), entry));
 		const comparisonMap = new Map<string, Entry>();
 		compareTo.forEach((entry) => comparisonMap.set(getKey(entry), entry));
-		/* eslint-enable svelte/prefer-svelte-reactivity */
 
 		const combined: Entry[] = [];
 		const combinedCountries: Entry[] = [];

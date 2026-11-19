@@ -1,6 +1,6 @@
 <script>
-	import { base, resolve } from '$app/paths';
-	import Logo from '$lib/assets/stitch-logo-small.png';
+	import { asset, resolve } from '$app/paths';
+	import Logo from '#lib/assets/stitch-logo-small.png';
 </script>
 
 <svelte:head>
@@ -54,7 +54,7 @@
 				<li>
 					<!-- Static file generated at build time, not a route -->
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-					<a href={`${base}/artifacts/gamemaker/releases-summary.json`}>See the raw feed</a>
+					<a href={asset('artifacts/gamemaker/releases-summary.json')}>See the raw feed</a>
 				</li>
 			</ul>
 		</section>

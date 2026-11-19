@@ -1,5 +1,5 @@
 <script lang="ts">
-	import GameMakerReleases from '$lib/gamemaker-releases/GameMakerReleases.svelte';
+	import GameMakerReleases from '#lib/gamemaker-releases/GameMakerReleases.svelte';
 	import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 

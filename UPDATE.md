@@ -42,8 +42,7 @@ Before updating external dependencies:
   - Replaced the three legacy `.eslintrc.cjs` files (and `.eslintignore`) with one root flat `eslint.config.js` covering TS, JS, and Svelte (site + webviews). All ESLint deps now live only in the root `package.json`. Run with `pnpm lint` (or `pnpm lint:fix`).
   - `pnpm lint` reports 0 errors and 0 warnings. Fixes were mostly unused vars, un-awaited promises (`void`, or `await` where it mattered), `{#each}` keys, `resolve()` for internal site links, and adding reasons to `@ts-expect-error`s.
   - Not in CI yet: the test workflow only installs the npm libraries, but linting needs the site/webview/extension deps too.
-- [ ] Identify any external dependencies that could be replaced by either better dependencies (smaller, more stable, better supported, etc) or, even better, dependencies that could be completely removed and replaced with native Node modules and/or local code.
-- [ ] Update Svelte and related deps used by the Stitch for VSCode webviews, the site package, and anywhere else
+- [x] Update Svelte and related deps used by the Stitch for VSCode webviews, the site package, and anywhere else
 - [ ] Evaluate switching the Stitch for VSCode extension from building .cjs to using actual modules (supported since [1.100](https://code.visualstudio.com/updates/v1_100))
 
 After these are complete, update the remaining dependencies and ensure all tests continue to pass.

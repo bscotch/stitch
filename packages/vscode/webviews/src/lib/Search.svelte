@@ -1,7 +1,7 @@
 <script lang="ts">
-	import CaseSensitiveIcon from '$lib/icons/CaseSensitiveIcon.svelte';
-	import RegexIcon from '$lib/icons/RegexIcon.svelte';
-	import WholeWordIcon from '$lib/icons/WholeWordIcon.svelte';
+	import CaseSensitiveIcon from '#lib/icons/CaseSensitiveIcon.svelte';
+	import RegexIcon from '#lib/icons/RegexIcon.svelte';
+	import WholeWordIcon from '#lib/icons/WholeWordIcon.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import SearchIcon from './icons/SearchIcon.svelte';
 	import type { SearchProps } from './search.js';

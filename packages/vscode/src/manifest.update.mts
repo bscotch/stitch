@@ -88,4 +88,4 @@ async function main() {
   await manifestPath.write(manifest);
 }
 
-await main();
+void main();

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { parseArg } from '$lib/args.js';
-	import AnglesDownIcon from '$lib/icons/AnglesDownIcon.svelte';
-	import SearchIcon from '$lib/icons/SearchIcon.svelte';
-	import { markSearchResults, type SearchProps } from '$lib/search.js';
-	import Search from '$lib/Search.svelte';
-	import { Vscode } from '$lib/Vscode.js';
+	import { parseArg } from '#lib/args.ts';
+	import AnglesDownIcon from '#lib/icons/AnglesDownIcon.svelte';
+	import SearchIcon from '#lib/icons/SearchIcon.svelte';
+	import { markSearchResults, type SearchProps } from '#lib/search.ts';
+	import Search from '#lib/Search.svelte';
+	import { Vscode } from '#lib/Vscode.ts';
 	import type {
 		IgorWebviewConfig,
 		IgorWebviewExtensionPostRun,
