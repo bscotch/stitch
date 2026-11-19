@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 
 	// Keep a query parameter "steamid" in sync with the steamId variable
 	import Bookmarklets from './components/Bookmarklets.svelte';
@@ -37,7 +37,7 @@
 
 	<section>
 		<h3>
-			<a data-sveltekit-reload href={`${base}/steam-tools/bbcode`}>Steam BBCode Generator</a>
+			<a data-sveltekit-reload href={resolve('/steam-tools/bbcode')}>Steam BBCode Generator</a>
 		</h3>
 	</section>
 

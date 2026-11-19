@@ -4,7 +4,7 @@ import { isBeforeRange, isInRange, ok } from './util.ts';
 export function assertThrows(fn: () => void, message?: string) {
   try {
     fn();
-  } catch (e) {
+  } catch {
     return;
   }
   throw new Error(message || 'Expected function to throw');
@@ -16,7 +16,7 @@ export async function assertThrowsAsync(
 ) {
   try {
     await fn();
-  } catch (e) {
+  } catch {
     return;
   }
   throw new Error(message || 'Expected function to throw');

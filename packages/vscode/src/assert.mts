@@ -111,7 +111,7 @@ export function assertLoudly(
   message: string,
 ): asserts condition {
   if (!condition) {
-    showErrorMessage(message);
+    void showErrorMessage(message);
     throw new Error(message);
   }
 }
@@ -123,7 +123,7 @@ export async function loudlyLogThrownAsync<
   try {
     return await fn(...args);
   } catch (err) {
-    showErrorMessage(err as Error);
+    void showErrorMessage(err as Error);
     throw err;
   }
 }

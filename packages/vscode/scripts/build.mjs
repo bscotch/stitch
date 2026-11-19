@@ -1,4 +1,4 @@
-import { Pathy, pathy } from '@bscotch/pathy';
+import { pathy } from '@bscotch/pathy';
 import { config } from 'dotenv';
 import esbuild from 'esbuild';
 import crypto from 'node:crypto';
@@ -9,7 +9,7 @@ config();
 
 await $`mkdir -p ./dist`;
 
-const builder = await esbuild.build({
+await esbuild.build({
   entryPoints: ['./src/extension.ts', './src/manifest.update.mts'],
   bundle: true,
   outdir: './dist/',

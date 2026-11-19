@@ -25,7 +25,6 @@
 	let queryHistory = $state<string[]>([]);
 
 	$effect(() => {
-		currentResultIdx; // to trigger reactivity
 		results?.[currentResultIdx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		markCurrent();
 	});

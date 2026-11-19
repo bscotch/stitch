@@ -15,8 +15,11 @@ import {
 
 export * from './GameMakerLauncher.types.ts';
 
+// Merged with the class to type the methods added by the tracing decorators
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface GameMakerLauncher extends TracedClass {}
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class GameMakerLauncher {
   /**
    * Open a project with a specified IDE and

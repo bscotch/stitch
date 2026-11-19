@@ -1,6 +1,5 @@
 import { describe, it } from 'node:test';
 import { undent } from '@bscotch/utility';
-import type { ILexingResult } from 'chevrotain';
 import fs from 'fs/promises';
 import { GmlLexer } from './lexer.ts';
 import { logger } from './logger.ts';
@@ -79,13 +78,3 @@ describe('Lexer', function () {
     }
   });
 });
-
-function logResult(result: ILexingResult) {
-  logger.log(
-    JSON.stringify(
-      result.tokens,
-      ['image', 'startOffset', 'tokenType', 'name', 'PUSH_MODE', 'POP_MODE'],
-      2,
-    ),
-  );
-}

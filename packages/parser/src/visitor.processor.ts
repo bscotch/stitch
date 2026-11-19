@@ -144,7 +144,7 @@ export class SignifierProcessor {
     }
   }
 
-  createStruct(token: CstNodeLocation, endToken?: CstNodeLocation) {
+  createStruct(_token: CstNodeLocation, _endToken?: CstNodeLocation) {
     return new Type('Struct');
   }
 

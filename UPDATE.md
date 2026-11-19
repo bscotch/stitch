@@ -37,13 +37,16 @@ It's been a while since the 3rd party dependencies were updated, so it'd be wise
 
 Before updating external dependencies:
 
-- [x] Update Typescript and ensure all typechecks still pass
-  - Updated to TypeScript 6.0.3 everywhere. TypeScript 7 (the native Go compiler) doesn't ship the JS compiler API that svelte-check and typescript-eslint need, and no svelte-check release supports it yet. Revisit once the tooling catches up. TS 7 will remove options TS 6 deprecates, and this repo no longer uses any of them.
-  - Minimal in-major bumps for official TS 6 support: `@sveltejs/kit` ^2.70.4, `svelte-check` ^4.7.8, `@typescript-eslint/*` 8.73.
-  - Fixed type errors that predated the update: a stale gcdata import in `cl2-editor`, a too-narrow `rangeFrom()` parameter in `vscode` (the parser now exports `IRange`), and `$props<T>()` generics in the webviews. The webviews' props were untyped until now because svelte-check silently treated them as `any`.
-  - Note: ESLint 9 needs a flat `eslint.config.*`, which the repo doesn't have (only the legacy `.eslintrc.cjs`), so linting is currently non-functional.
-- Update Svelte and other deps used by the Stitch for VSCode webviews, ensuring they still work within the extension
-- Identify any external dependencies that could be replaced by either better dependencies (smaller, more stable, better supported, etc) or, even better, dependencies that could be completely removed and replaced with native Node modules and/or local code.
+- [x] Update to Typescript 6 and ensure all typechecks still pass
+- [x] Fix the ESLint config so that a single root config works for all packages, and address all linting errors.
+  - Replaced the three legacy `.eslintrc.cjs` files (and `.eslintignore`) with one root flat `eslint.config.js` covering TS, JS, and Svelte (site + webviews). All ESLint deps now live only in the root `package.json`. Run with `pnpm lint` (or `pnpm lint:fix`).
+  - `pnpm lint` reports 0 errors and 0 warnings. Fixes were mostly unused vars, un-awaited promises (`void`, or `await` where it mattered), `{#each}` keys, `resolve()` for internal site links, and adding reasons to `@ts-expect-error`s.
+  - Not in CI yet: the test workflow only installs the npm libraries, but linting needs the site/webview/extension deps too.
+- [ ] Identify any external dependencies that could be replaced by either better dependencies (smaller, more stable, better supported, etc) or, even better, dependencies that could be completely removed and replaced with native Node modules and/or local code.
+- [ ] Update Svelte and related deps used by the Stitch for VSCode webviews, the site package, and anywhere else
+- [ ] Evaluate switching the Stitch for VSCode extension from building .cjs to using actual modules (supported since [1.100](https://code.visualstudio.com/updates/v1_100))
+
+After these are complete, update the remaining dependencies and ensure all tests continue to pass.
 
 ## Phase 4: Ensure Compatibility with new GameMaker
 

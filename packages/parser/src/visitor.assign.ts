@@ -45,8 +45,6 @@ export function assignVariable(
 
   // Find the existing variable
   let signifier = variable.container.getMember(variable.name);
-  const isSelfOwned =
-    !!signifier && !!variable.container.getMember(variable.name, true);
   let ref: Reference | undefined;
 
   // Add the variable if missing

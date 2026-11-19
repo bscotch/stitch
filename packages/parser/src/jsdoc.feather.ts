@@ -79,7 +79,6 @@ export function parseFeatherTypeString(typeString: string): FeatherTypeUnion {
   };
   const rootUnion: FeatherTypeUnion = { kind: 'union', types: [] };
   const typeUnionStack: FeatherTypeUnion[] = [rootUnion];
-  0;
   const currentUnion = (): FeatherTypeUnion => typeUnionStack.at(-1)!;
   let currentType: FeatherType | undefined;
 

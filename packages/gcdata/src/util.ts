@@ -185,7 +185,7 @@ export function normalizeSchema(
   return {
     ...schema,
     properties,
-    // @ts-ignore
+    // @ts-expect-error -- Merged `additionalProperties` may be undefined
     additionalProperties,
     oneOf: undefined,
     ...overrides,

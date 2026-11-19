@@ -10,6 +10,8 @@
  * @prop {SteamRegion[]} regions
  */
 
+// Reference data, kept for future use
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const steamCountries = {
   Argentina: [{ name: 'Spanish-Latin America', percent: 100 }],
   Australia: [{ name: 'English', percent: 72 }],
@@ -268,17 +270,6 @@ function addButtons() {
   }
   const table = document.querySelector('table.grouping_table');
   table?.parentNode?.insertBefore(copyEl, table);
-}
-
-/**
- * @param {any} claim
- * @param {string} msg
- * @returns {asserts claim}
- */
-function assert(claim, msg) {
-  if (!claim) {
-    throw new Error(msg);
-  }
 }
 
 addButtons();

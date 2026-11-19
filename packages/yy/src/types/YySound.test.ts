@@ -5,7 +5,7 @@ import { yySoundSchema } from './YySound.ts';
 describe('YySound', function () {
   it('can create a v2+ sound from sparse data', function () {
     const name = 'hello';
-    const asString = Yy.stringify(
+    Yy.stringify(
       {
         name,
         parent: {

@@ -426,7 +426,7 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeItem> {
       treeDataProvider: provider,
       dragAndDropController: provider,
     });
-    crashlandsEvents.on('mote-name-changed', (event) => {
+    crashlandsEvents.on('mote-name-changed', () => {
       void provider.rebuild();
     });
 
@@ -462,7 +462,7 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeItem> {
         'crashlands.tree.setFolder',
         (item: TreeMoteItem) => {
           if (!(item instanceof TreeMoteItem)) return;
-          provider.setFolder(item);
+          void provider.setFolder(item);
         },
       ),
       vscode.commands.registerCommand(

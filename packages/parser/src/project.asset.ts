@@ -487,7 +487,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
       `Folder ${path} does not exist`,
     );
     assert(this.yy.parent, 'Asset has no folder field');
-    // @ts-expect-error
+    // @ts-expect-error -- `parent` is typed as `{}` by the yy schema
     logger.info('moving', this.name, 'from', this.yy.parent.path, 'to', path);
     this.yy.parent = { name: folderName, path };
     await this.saveYy();

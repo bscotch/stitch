@@ -11,7 +11,7 @@ const asSchema = z.toJSONSchema(stitchConfigSchema, {
 });
 // Remove the '$schema' property, since it's only needed for the literals,
 // and add the $id property
-// @ts-expect-error
+// @ts-expect-error -- `properties` isn't typed on the generated schema
 delete asSchema.properties.$schema;
 
 asSchema.$id = jsonSchemaUrl;

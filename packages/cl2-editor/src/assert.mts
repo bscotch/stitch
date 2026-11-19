@@ -89,7 +89,7 @@ export function assertLoudly(
   message: string,
 ): asserts condition {
   if (!condition) {
-    showErrorMessage(message);
+    void showErrorMessage(message);
     throw new Error(message);
   }
 }

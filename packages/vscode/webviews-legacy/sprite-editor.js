@@ -4,7 +4,7 @@
  */
 
 try {
-  // @ts-ignore
+  // @ts-expect-error -- `vscode` is a custom global, and `acquireVsCodeApi` is injected by VSCode
   // eslint-disable-next-line no-undef
   window.vscode = acquireVsCodeApi();
 } catch {
@@ -27,7 +27,7 @@ function sendToVscode(message) {
 /**
  * Defined upstream
  * @type {import('../src/spriteEditor.template.mjs').SpriteInfo} */
-// @ts-ignore
+// @ts-expect-error -- `sprite` is a custom global set by the webview HTML
 const sprite = window.sprite;
 
 const elements = {

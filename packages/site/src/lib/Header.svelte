@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import Logo from '$lib/assets/stitch-logo-small.png';
 	import { faGithub } from '@fortawesome/free-brands-svg-icons';
 	import Fa from 'svelte-fa';
@@ -14,7 +14,7 @@
 </aside>
 
 <nav>
-	<a href={base || '/'} title="Go home">
+	<a href={resolve('/')} title="Go home">
 		<img src={Logo} alt="Stitch Logo" />
 		<span class="name">Stitch</span>
 	</a>

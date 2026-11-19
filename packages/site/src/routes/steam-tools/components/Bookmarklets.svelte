@@ -1,4 +1,5 @@
 <script lang="ts">
+	/* eslint-disable svelte/no-navigation-without-resolve -- All links here are `javascript:` bookmarklets, not app routes */
 	import { steamLikesBookmarklet } from '../lib/steamLikesBookmarklet.js';
 	import { steamRegionsBookmarklet } from '../lib/steamRegionsBookmarklet.js';
 	import { steamTrafficBookmarklet } from '../lib/steamTrafficBookmarklet.js';

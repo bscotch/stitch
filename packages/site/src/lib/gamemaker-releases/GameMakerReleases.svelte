@@ -1,4 +1,5 @@
 <script lang="ts">
+	/* eslint-disable svelte/no-navigation-without-resolve -- Download links here are external GameMaker URLs, not app routes */
 	import type { GameMakerReleaseWithNotes } from '@bscotch/gamemaker-releases';
 	import { faDownload } from '@fortawesome/free-solid-svg-icons';
 	import { onMount } from 'svelte';
@@ -37,7 +38,7 @@
 <section id="gamemaker-releases-component">
 	<FilteredReleases bind:showChannels bind:releases bind:filteredReleases />
 
-	{#each filteredReleases as release}
+	{#each filteredReleases as release (`${release.channel}|${release.ide.version}|${release.runtime.version}`)}
 		<article class="release" data-version={release.ide.version} data-channel={release.channel}>
 			<header>
 				<h2

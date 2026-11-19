@@ -1,3 +1,4 @@
+/* global spine -- Loaded by a <script> tag in the webview HTML */
 /**
  * @typedef {import('../src/spriteEditor.template.mjs').SpineSpriteInfo} SpineSpriteInfo
  * @typedef {import('@esotericsoftware/spine-player').SpinePlayer} SpinePlayer
@@ -5,7 +6,7 @@
  */
 
 try {
-  // @ts-ignore
+  // @ts-expect-error -- `vscode` is a custom global, and `acquireVsCodeApi` is injected by VSCode
   // eslint-disable-next-line no-undef
   window.vscode = acquireVsCodeApi();
 } catch {
@@ -25,7 +26,7 @@ function createSpinePlayer(where, config) {
 /**
  * Defined upstream
  * @type {SpineSpriteInfo} */
-// @ts-ignore
+// @ts-expect-error -- `sprite` is a custom global set by the webview HTML
 const sprite = window.sprite;
 
 const elements = {
@@ -53,7 +54,7 @@ elements.xorigin.innerHTML = `${sprite.xorigin}`;
 elements.yorigin.innerHTML = `${sprite.yorigin}`;
 
 // Embed the Spine player
-const player = createSpinePlayer(elements.player, {
+createSpinePlayer(elements.player, {
   jsonUrl: sprite.spine.json,
   atlasUrl: sprite.spine.atlas,
   preserveDrawingBuffer: true,
@@ -87,36 +88,4 @@ for (const slotName of sprite.summary.slotNames.sort((a, b) =>
   li.innerHTML = `<span class="name">${slotName}</span>`;
   elements.slotsList.appendChild(li);
   // Add an inner list of events and their timings
-}
-
-/**
- * @param {any} condition
- * @param {string} message
- * @returns {asserts condition}
- */
-function assert(condition, message) {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
-
-/**
- * @template T
- * @param {T} value
- * @returns {Exclude<T, undefined|null>}
- */
-function defined(value) {
-  return /** @type {Exclude<T, undefined|null>}*/ (value);
-}
-
-/**
- * Clamps a value between a minimum and maximum value.
- *
- * @param {number} value - The input value to be clamped.
- * @param {number} min - The lower boundary to clamp the value to.
- * @param {number} max - The upper boundary to clamp the value to.
- * @returns {number} - The clamped value.
- */
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
 }

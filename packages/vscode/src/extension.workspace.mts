@@ -395,7 +395,7 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
         this.debouncingOnChange.set(
           doc.uri.fsPath,
           setTimeout(() => {
-            this.onChangeDoc(doc);
+            void this.onChangeDoc(doc);
           }, stitchConfig.reprocessOnTypeDelay),
         );
         return;
@@ -476,7 +476,7 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
         const optionsDir = dir.join('options/main');
         await optionsDir.ensureDir();
         const optionsPath = optionsDir.join('options_main.yy');
-        Yy.write(
+        await Yy.write(
           optionsPath.absolute,
           {
             $GMMainOptions: '',

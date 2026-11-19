@@ -5,7 +5,7 @@ import { bsArrayToArray } from './helpers.ts';
 
 export function stringifyCredits(
   mote: CreditsMote,
-  packed: GameChanger,
+  _packed: GameChanger,
 ): string {
   const blocks: string[] = [];
 

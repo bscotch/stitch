@@ -112,7 +112,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
           const displayIssues = dest.issues.slice(0, 5);
           const moreIssues = totalIssues - displayIssues.length;
           logger.error(dest.issues);
-          showErrorMessage(
+          void showErrorMessage(
             `There were ${totalIssues} issues importing sprites:\n\n${displayIssues
               .map(
                 (issue) =>
@@ -325,7 +325,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       registerCommand(
         'stitch.spriteSource.addStage',
         (source: SpriteSourceFolder) => {
-          tree.addSpriteSourceStage(source);
+          void tree.addSpriteSourceStage(source);
         },
       ),
       registerCommand(
@@ -338,16 +338,16 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       registerCommand(
         'stitch.spriteSource.clearCache',
         (source: SpriteSourceFolder | undefined) => {
-          tree.clearCache(source);
+          void tree.clearCache(source);
         },
       ),
       registerCommand('stitch.spriteSource.create', () => {
-        tree.addSpriteSource();
+        void tree.addSpriteSource();
       }),
       registerCommand(
         'stitch.spriteSource.delete',
         (source: SpriteSourceFolder) => {
-          tree.deleteSpriteSource(source);
+          void tree.deleteSpriteSource(source);
         },
       ),
       registerCommand('stitch.spriteSource.edit', async () => {
@@ -465,7 +465,7 @@ class SpriteSourceFolder extends StitchTreeItemBase<'sprite-source'> {
       stitchConfig.spriteAutoImportOnStartup &&
       !SpriteSourceFolder.sources.has(this.sourceDir.absolute)
     ) {
-      this.watch();
+      void this.watch();
     }
     SpriteSourceFolder.sources.add(this.sourceDir.absolute);
   }

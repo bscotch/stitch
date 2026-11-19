@@ -317,7 +317,7 @@ export function assertThrows(
 ) {
   try {
     fn();
-  } catch (e) {
+  } catch {
     return;
   }
   throw new StitchVscodeInternalError(msg, assertThrows);

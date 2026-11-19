@@ -21,7 +21,9 @@
 		}
 		sbvs = [];
 		tsv = cleanTsv(tsv);
-		tick().then(() => (sbvs = parseTsv(tsv)));
+		// `sbvs` isn't a dependency of this block, so this can't loop
+		// eslint-disable-next-line svelte/infinite-reactive-loop
+		void tick().then(() => (sbvs = parseTsv(tsv)));
 	}
 
 	function cleanTsv(rawTsv: string) {
@@ -145,7 +147,7 @@
 			<section class="sbvs">
 				<h3>SBV File Downloads</h3>
 				<ul>
-					{#each sbvs as { name, sbv }}
+					{#each sbvs as { name, sbv }, i (i)}
 						<li>
 							<a
 								download="{name}.sbv"
@@ -161,7 +163,7 @@
 			<section class="errors">
 				<h3>Errors</h3>
 				<ul>
-					{#each errors as error}
+					{#each errors as error, i (i)}
 						<li>{error}</li>
 					{/each}
 				</ul>

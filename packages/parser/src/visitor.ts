@@ -805,21 +805,21 @@ export class GmlSignifierVisitor extends GmlVisitorBase {
   }
 
   override stringLiteral(
-    children: StringLiteralCstChildren,
-    context: VisitorContext,
+    _children: StringLiteralCstChildren,
+    _context: VisitorContext,
   ): Type<'String'> {
     return new Type('String');
   }
   override multilineDoubleStringLiteral(
-    children: MultilineDoubleStringLiteralCstChildren,
-    context: VisitorContext,
+    _children: MultilineDoubleStringLiteralCstChildren,
+    _context: VisitorContext,
   ): Type<'String'> {
     return new Type('String');
   }
 
   override multilineSingleStringLiteral(
-    children: MultilineSingleStringLiteralCstChildren,
-    context: VisitorContext,
+    _children: MultilineSingleStringLiteralCstChildren,
+    _context: VisitorContext,
   ): Type<'String'> {
     return new Type('String');
   }

@@ -47,7 +47,7 @@ export async function handleDroppedFiles(
           const newSprite = await project.createSprite(dest, imageFile);
           tree.afterNewAssetCreated(newSprite, target, target);
         } catch (err) {
-          showErrorMessage(`Failed to create sprite ${spriteName}: ${err}`);
+          void showErrorMessage(`Failed to create sprite ${spriteName}: ${err}`);
         }
       }
     } else if (targetSprite) {

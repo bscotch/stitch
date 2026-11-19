@@ -56,7 +56,7 @@ export class StitchReleasePickerProvider {
           if (!project) return;
           await project.setIdeVersion(message.version);
           // Dispose of the panel so it will be rebuilt
-          this.revealPanel();
+          void this.revealPanel();
         }
       },
     );

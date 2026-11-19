@@ -157,8 +157,7 @@ export function isObjectWithField<F extends string>(
     obj !== null &&
     typeof obj === 'object' &&
     field in obj &&
-    // @ts-expect-error
-    obj[field] !== undefined
+    (obj as Record<string, unknown>)[field] !== undefined
   );
 }
 

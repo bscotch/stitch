@@ -33,11 +33,11 @@ class ObjectParentFolder extends StitchTreeItemBase<'inspector-object-parents'> 
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
   }
 
-  onSetParent(parent: Asset<'objects'> | undefined) {
+  onSetParent(_parent: Asset<'objects'> | undefined) {
     this.provider.onUpdate(this);
   }
 
-  onSetSprite(sprite: Asset<'sprites'> | undefined) {
+  onSetSprite(_sprite: Asset<'sprites'> | undefined) {
     this.provider.onUpdate(this);
   }
 }

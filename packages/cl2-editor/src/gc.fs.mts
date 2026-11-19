@@ -72,7 +72,7 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     return new Uint8Array(Buffer.from(doc.toString(), 'utf-8'));
   }
 
-  stat(uri: vscode.Uri): vscode.FileStat | Thenable<vscode.FileStat> {
+  stat(_uri: vscode.Uri): vscode.FileStat | Thenable<vscode.FileStat> {
     // TODO: Cache what's been statted, so we can tell if the version has
     // been changed.
     return {
@@ -88,7 +88,7 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     logger.log('readDirectory', uri);
     throw new Error('Readdir not implemented.');
   }
-  createDirectory(uri: vscode.Uri): void | Thenable<void> {
+  createDirectory(_uri: vscode.Uri): void | Thenable<void> {
     throw new Error('CreateDir not implemented.');
   }
   async writeFile(uri: vscode.Uri, content: Uint8Array) {
@@ -99,21 +99,23 @@ export class GameChangerFs implements vscode.FileSystemProvider {
     await doc.save(content.toString());
   }
   delete(
-    uri: vscode.Uri,
-    options: { readonly recursive: boolean },
+    _uri: vscode.Uri,
+    _options: { readonly recursive: boolean },
   ): void | Thenable<void> {
     throw new Error('Delete not implemented.');
   }
   rename(
-    oldUri: vscode.Uri,
-    newUri: vscode.Uri,
-    options: { readonly overwrite: boolean },
+    _oldUri: vscode.Uri,
+    _newUri: vscode.Uri,
+    _options: { readonly overwrite: boolean },
   ): void | Thenable<void> {
     throw new Error('Rename not implemented.');
   }
   watch(): vscode.Disposable {
     // ignore, fires for all changes...
-    return new vscode.Disposable(() => {});
+    return new vscode.Disposable(() => {
+      // Nothing to dispose
+    });
   }
 
   async updateBackupLastOpened(moteId: string, checksum: string) {

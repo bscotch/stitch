@@ -156,7 +156,7 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
   static register(workspace: StitchWorkspace) {
     const igorView = new StitchIgorView(workspace);
     stitchEvents.on('request-run-project-in-webview', (payload) => {
-      igorView.run(payload);
+      void igorView.run(payload);
     });
     stitchEvents.on('request-kill-project-in-webview', () => {
       console.log('Killing runner', !!igorView.runner);
@@ -171,7 +171,7 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
         igorView.container?.webview.postMessage({ kind: 'toggle-line-wrap' });
       }),
       registerCommand('stitch.runner.refresh', () => {
-        igorView.refreshConfig();
+        void igorView.refreshConfig();
       }),
     ];
   }

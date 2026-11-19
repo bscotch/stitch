@@ -224,7 +224,7 @@ Unsetting previous scheduler resolution of 1
 Igor complete.
 `;
 
-export const logs: IgorWebviewLog[] = logSample.split(/\r?\n/g).map((line, i) => ({
+export const logs: IgorWebviewLog[] = logSample.split(/\r?\n/g).map((line) => ({
 	kind: 'stdout',
 	message: line
 }));

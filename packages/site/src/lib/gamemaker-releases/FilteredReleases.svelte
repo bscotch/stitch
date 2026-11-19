@@ -19,12 +19,12 @@
 
 	<fieldset>
 		<legend class="sr-only"> Select which channels to display </legend>
-		{#each channels as channel}
+		{#each channels as channel (channel)}
 			<Checkbox
 				label={channel}
 				value={channel}
 				data={{ channel }}
-				--color-checkbox-text={`var(--color-background)`}
+				--color-checkbox-text="var(--color-background)"
 				--color-checkbox-background={`var(--color-channel-${channel})`}
 				bind:values={showChannels}
 				on:change={() => {

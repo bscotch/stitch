@@ -8,7 +8,7 @@ const manifestPath = `${packageDir}/package.json`;
 
 try {
   await fs.stat(manifestPath);
-} catch (err) {
+} catch {
   console.error(`No package.json in ${packageDir}`);
   process.exit(1);
 }

@@ -21,7 +21,7 @@
 	{/if}
 
 	<form>
-		{#each utmFields as field}
+		{#each utmFields as field (field)}
 			<label for={field}>{field.replace(/^utm/, '')}</label>
 			<input
 				name={field}

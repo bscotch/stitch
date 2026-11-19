@@ -112,7 +112,7 @@ describe('Parser', function () {
 
   it('can get errors for invalid simple expressions', function () {
     const parser = new GmlParser();
-    const { cst, errors } = parser.parse(
+    const { errors } = parser.parse(
       '(1 + 2 * 3) + hello / world || undefined +',
     );
     assert.equal(parser.errors.length, 1);

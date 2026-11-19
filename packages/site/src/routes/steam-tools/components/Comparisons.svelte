@@ -1,4 +1,5 @@
 <script lang="ts">
+	/* eslint-disable svelte/no-navigation-without-resolve -- All links here are external Steam URLs, not app routes */
 	// Keep a query parameter "steamid" in sync with the steamId variable
 	import { links } from '../lib/stores.js';
 	import SteamTrafficComparison from './SteamTrafficComparison.svelte';

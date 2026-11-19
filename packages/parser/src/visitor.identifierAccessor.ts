@@ -406,8 +406,9 @@ function processDotAccessor(
         `Type does not allow dot accessors.`,
       );
     }
-    lastAccessed.rhs &&
+    if (lastAccessed.rhs) {
       visitor.assignmentRightHandSide(lastAccessed.rhs, lastAccessed.ctx);
+    }
     return nextAccessed;
   }
 

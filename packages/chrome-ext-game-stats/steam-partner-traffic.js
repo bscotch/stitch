@@ -2,11 +2,8 @@
 /** @typedef {{[date:string]:number}} Segment */
 /** @typedef {Segment[]} AllSegments */
 
-async function addButtons() {
+function addButtons() {
   // The URL looks like this: https://partner.steamgames.com/apps/navtrafficstats/1401730 (followed by a bunch of query params)
-
-  // Get the game's steamId from the URL
-  const steamId = window.location.pathname.split('/')[2];
 
   // Steam creates a custom script per application + query params that contains
   // the data we need. So we need to extract it out of the script tag.

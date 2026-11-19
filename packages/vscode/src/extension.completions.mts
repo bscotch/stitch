@@ -61,7 +61,7 @@ export function jsdocCompletions(
   document: vscode.TextDocument,
   position: vscode.Position,
   file: Code,
-  jsdoc: JsdocSummary,
+  _jsdoc: JsdocSummary,
 ): vscode.CompletionItem[] {
   // For now just grab all of the global types and return them as completions.
   const completions: vscode.CompletionItem[] = [];

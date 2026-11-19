@@ -149,7 +149,7 @@ export async function activateStitchExtension(
       logger.error(error);
       logger.error('Error loading project', yypFile);
       let message = `Could not load project ${pathyFromUri(yypFile).basename}. This is likely because Stitch does not support the version of GameMaker that was last used with your project. [Submit a GitHub issue](https://github.com/bscotch/stitch/issues/new) with your \`.yyp\` file attached to see if this can be resolved in future versions of Stitch. See your Output panel for Stitch for a full error message.`;
-      showErrorMessage(message);
+      void showErrorMessage(message);
     }
   }
   const watchers = toWatch.map((pattern) =>
@@ -224,7 +224,7 @@ export async function activateStitchExtension(
         logger.warn('stitch.assets.delete called on unknown type', what);
         return;
       }
-      workspace.deleteAsset(asset);
+      void workspace.deleteAsset(asset);
     }),
     registerCommand('stitch.assets.deleteCode', async (what) => {
       // Convert the incoming argument to a Code instance, then emit the event
@@ -284,7 +284,7 @@ export async function activateStitchExtension(
           void showErrorMessage('No project found to run!');
           return;
         }
-        project.kill();
+        void project.kill();
       },
     ),
     registerCommand(
@@ -350,7 +350,7 @@ export async function activateStitchExtension(
           void showErrorMessage('No project found to run!');
           return;
         }
-        project.run({ clean: true });
+        void project.run({ clean: true });
       },
     ),
     registerCommand(

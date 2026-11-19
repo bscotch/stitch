@@ -42,13 +42,13 @@ describe('JSDocs', function () {
     assert.equal(parsed.types[0].kind, 'type');
     assert.equal(parsed.types[0].name.content, 'Array');
     assert.equal(parsed.types[0].of?.kind, 'union');
-    assert.equal((parsed.types[0].of?.types).length, 2);
+    assert.equal(parsed.types[0].of?.types.length, 2);
     assert.equal(parsed.types[0].of?.types[0].kind, 'type');
     assert.equal(parsed.types[0].of?.types[0].name.content, 'string');
     assert.equal(parsed.types[0].of?.types[1].kind, 'type');
     assert.equal(parsed.types[0].of?.types[1].name.content, 'Array');
     assert.equal(parsed.types[0].of?.types[1].of?.kind, 'union');
-    assert.equal((parsed.types[0].of?.types[1].of?.types).length, 1);
+    assert.equal(parsed.types[0].of?.types[1].of?.types.length, 1);
     assert.equal(parsed.types[0].of?.types[1].of?.types[0].kind, 'type');
     assert.equal(
       parsed.types[0].of?.types[1].of?.types[0].name.content,
@@ -59,7 +59,7 @@ describe('JSDocs', function () {
     assert.equal(parsed.types[2].kind, 'type');
     assert.equal(parsed.types[2].name.content, 'Id.Map');
     assert.equal(parsed.types[2].of?.kind, 'union');
-    assert.equal((parsed.types[2].of?.types).length, 2);
+    assert.equal(parsed.types[2].of?.types.length, 2);
     assert.equal(parsed.types[2].of?.types[0].kind, 'type');
     assert.equal(parsed.types[2].of?.types[0].name.content, 'String');
     assert.equal(parsed.types[2].of?.types[1].kind, 'type');

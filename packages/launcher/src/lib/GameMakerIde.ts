@@ -22,6 +22,8 @@ import {
 import type { TracedClass } from '@bscotch/utility/browser';
 import { logger } from './log.ts';
 
+// Merged with the class to type the methods added by the tracing decorators
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface GameMakerIde extends TracedClass {}
 
 export interface GameMakerIdeInstallOptions {
@@ -102,6 +104,7 @@ export function assert(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class GameMakerIde extends GameMakerComponent {
   static readonly error = GameMakerIdeError;
 

@@ -93,6 +93,8 @@
 		}
 	});
 
+	// Non-reactive cache of compiled patterns
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	const stylePatterns = new Map<string, RegExp | null>();
 	function styleLog(log: Log): Log {
 		log.asHtml = undefined; // reset
@@ -268,10 +270,12 @@
 				<div class="command">
 					<samp>{running.cmd}</samp>
 					<ol class="reset args">
-						{#each running.args as arg}
+						{#each running.args as arg, i (i)}
 							{@const parsed = parseArg(arg)}
 							{#if parsed.flag}
 								<li class="arg-flag">
+									<!-- `flag` is a `--word` CLI flag wrapped in a span by `parseArg` -->
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 									<samp>{@html parsed.flag}</samp>
 								</li>
 							{/if}
@@ -288,7 +292,6 @@
 
 		{#if logs.length === 0}
 			<p><i>No logs yet...</i></p>
-			<!-- svelte-ignore legacy_code -->
 		{:else}
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -297,8 +300,12 @@
 				class:wrap={wrapLines}
 				onclick={(e) => {
 					if (e.target instanceof HTMLElement && e.target.classList.contains('asset-link')) {
-						const { type, asset, event, line } = e.target.dataset as Record<string, string>;
-						// @ts-expect-error
+						const { type, asset, event, line } = e.target.dataset as {
+							type: 'scripts' | 'objects';
+							asset: string;
+							event: string;
+							line: string;
+						};
 						vscode.postMessage({ kind: 'open', type, asset, event, line: parseInt(line) || 0 });
 					}
 				}}
@@ -307,6 +314,8 @@
 					<li class={`log ${log.kind}`}>
 						<!-- svelte-ignore a11y_consider_explicit_label -->
 						<a href={`#log-${i}`}></a>
+						<!-- Log HTML is raw Igor output plus our own styling/link spans (not escaped) -->
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						<pre>{#if log.asSearchResult}{@html log.asSearchResult}{:else}{@html log.asHtml ||
 									log.message}{/if}</pre>
 					</li>

@@ -12,6 +12,8 @@
     "clean:artifacts": "node ./scripts/nuke-builds.mjs",
     "clean:deps": "node ./scripts/nuke-deps.mjs",
     "fix:deps": "syncpack fix-mismatches",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "watch": "pnpm run -r --if-present --parallel --stream watch",
     "setup:pnpm": "corepack prepare $npm_package_packageManager --activate",
     "test:scripts": "node --test \"scripts/**/*.test.mts\"",
@@ -20,12 +22,7 @@
   "dependencies": {
     "@bscotch/pathy": "^2.12.1",
     "@types/node": "^25.0.3",
-    "@typescript-eslint/eslint-plugin": "~8.73.0",
-    "@typescript-eslint/parser": "~8.73.0",
-    "@typescript-eslint/utils": "^8.73.0",
     "del": "8.0.1",
-    "eslint": "^9.39.2",
-    "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.7.4",
     "syncpack": "^13.0.4",
     "zx": "^8.8.5"
@@ -42,6 +39,13 @@
     "packages/*"
   ],
   "devDependencies": {
-    "typescript": "6.0.3"
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-svelte": "^3.13.1",
+    "globals": "^17.14.0",
+    "svelte": "^5.46.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "~8.73.0"
   }
 }

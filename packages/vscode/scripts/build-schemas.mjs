@@ -27,7 +27,7 @@ const schemas = [
 const dir = pathy('schemas');
 await dir.ensureDirectory();
 
-for (const { schema, name, filename } of schemas) {
+for (const { schema, filename } of schemas) {
   const jsonSchema = z.toJSONSchema(schema, { target: 'draft-7' });
   await pathy(filename, dir).write(jsonSchema);
 }

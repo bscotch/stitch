@@ -3,8 +3,8 @@ import type { CrashlandsWorkspace } from './workspace.mjs';
 
 export class StoryFoldingRangeProvider implements vscode.FoldingRangeProvider {
   provideFoldingRanges(
-    document: vscode.TextDocument,
-    context: vscode.FoldingContext,
+    _document: vscode.TextDocument,
+    _context: vscode.FoldingContext,
   ): vscode.ProviderResult<vscode.FoldingRange[]> {
     return [];
   }

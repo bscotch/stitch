@@ -386,8 +386,7 @@ function parseOptionName(line) {
     return;
   }
   return {
-    // @ts-ignore
-    name: matches.at(-1)?.groups.optionName,
+    name: matches.at(-1)?.groups?.optionName,
     isFlag: !line.includes('=VALUE'),
   };
 }

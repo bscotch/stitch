@@ -209,8 +209,9 @@ export class Yy {
         Symbol.toPrimitive in value &&
         typeof value[Symbol.toPrimitive] === 'function'
       ) {
-        // @ts-expect-error
-        value = value[Symbol.toPrimitive]('default');
+        value = (
+          value as { [Symbol.toPrimitive]: (hint: string) => unknown }
+        )[Symbol.toPrimitive]('default');
       }
       return value;
     }
@@ -238,8 +239,11 @@ export class Yy {
           if (typeof key !== 'string') {
             continue;
           }
-          // @ts-expect-error
-          recurse(left[key], right[key], `${path}/${key}`);
+          recurse(
+            (left as Record<string, unknown>)[key],
+            (right as Record<string, unknown>)[key],
+            `${path}/${key}`,
+          );
         }
         return;
       }

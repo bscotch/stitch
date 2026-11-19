@@ -114,7 +114,7 @@ export class GameMakerProject extends Project {
       ideVersion: this.ideVersion,
     });
     if (!release) {
-      showErrorMessage(
+      void showErrorMessage(
         `Could not find a release of GameMaker v${this.ideVersion} to run this project.`,
       );
       return;

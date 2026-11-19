@@ -31,7 +31,6 @@ interface MatchGroups {
   extraBracket?: string;
 }
 type MatchIndex = readonly [start: number, end: number];
-type MatchIndices = { [K in keyof MatchGroups]?: MatchIndex };
 
 const patterns = {
   param: `@(param(eter)?|arg(ument)?)\\b`,

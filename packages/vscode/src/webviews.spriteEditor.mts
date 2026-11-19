@@ -37,7 +37,7 @@ export class StitchSpriteEditorProvider {
     );
 
     let timeoutId: NodeJS.Timeout | null = null;
-    panel.webview.onDidReceiveMessage(async (message: SpriteEditedMessage) => {
+    panel.webview.onDidReceiveMessage((message: SpriteEditedMessage) => {
       if (message.spriteName !== this.editing?.name) return;
 
       if (timeoutId) {

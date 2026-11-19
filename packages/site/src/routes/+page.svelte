@@ -1,5 +1,5 @@
 <script>
-	import { base } from '$app/paths';
+	import { base, resolve } from '$app/paths';
 	import Logo from '$lib/assets/stitch-logo-small.png';
 </script>
 
@@ -47,11 +47,13 @@
 			</p>
 			<ul>
 				<li>
-					<a data-sveltekit-reload href={`${base}/gamemaker/releases`}
+					<a data-sveltekit-reload href={resolve('/gamemaker/releases')}
 						>Browse the unified release notes</a
 					>
 				</li>
 				<li>
+					<!-- Static file generated at build time, not a route -->
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 					<a href={`${base}/artifacts/gamemaker/releases-summary.json`}>See the raw feed</a>
 				</li>
 			</ul>
@@ -61,10 +63,10 @@
 			<h3>Other Stuff</h3>
 			<ul>
 				<li>
-					<a data-sveltekit-reload href={`${base}/steam-tools`}>Steam Tools</a>
+					<a data-sveltekit-reload href={resolve('/steam-tools')}>Steam Tools</a>
 				</li>
 				<li>
-					<a data-sveltekit-reload href={`${base}/yt-captions`}>YouTube Captions</a>
+					<a data-sveltekit-reload href={resolve('/yt-captions')}>YouTube Captions</a>
 				</li>
 			</ul>
 		</section>

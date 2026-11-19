@@ -12,15 +12,6 @@ import { setProjectVersion } from './versioning.ts';
 const sampleOutDir = './samples-out';
 mkdirSync(sampleOutDir, { recursive: true });
 
-async function expectToThrowAsync(f: () => Promise<any>): Promise<void> {
-  try {
-    await f();
-  } catch {
-    return;
-  }
-  throw new Error('Expected to throw');
-}
-
 const sampleData = {
   hello: 'world',
   parent: { child: ['10', '20'] },
@@ -339,8 +330,12 @@ describe('Yy Files', function () {
           const reparsed = Yy.parse(stringified, resourceType);
           assert.equal(reparsed[nameField], parsed[nameField]);
           assert.equal(typeof reparsed.resourceType, 'string');
-          // @ts-expect-error
-          assert.equal(typeof reparsed[`$${reparsed.resourceType}`], 'string');
+          assert.equal(
+            typeof (reparsed as Record<string, unknown>)[
+              `$${reparsed.resourceType}`
+            ],
+            'string',
+          );
         }
       });
     }

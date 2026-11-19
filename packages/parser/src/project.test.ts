@@ -422,7 +422,7 @@ describe('Project', function () {
       projectDir,
       'A dotenv file should provide a path to a full sample project, as env var GML_PARSER_SAMPLE_PROJECT_DIR',
     );
-    const project = await Project.initialize(projectDir);
+    await Project.initialize(projectDir);
   });
 });
 

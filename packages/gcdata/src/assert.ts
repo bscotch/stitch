@@ -15,7 +15,7 @@ export function assert(claim: any, message: string): asserts claim {
 export function assertThrows(fn: Function, message: string): void {
   try {
     fn();
-  } catch (e) {
+  } catch {
     return;
   }
   throw new GcdataError(message, assertThrows);

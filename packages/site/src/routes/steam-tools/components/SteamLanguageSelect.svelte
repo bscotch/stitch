@@ -20,7 +20,7 @@
 	}}
 >
 	<option value="">Language</option>
-	{#each steamLanguages as lang}
+	{#each steamLanguages as lang (lang.code)}
 		<option value={lang.code}>{lang.name}</option>
 	{/each}
 </select>

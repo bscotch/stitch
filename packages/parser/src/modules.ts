@@ -131,7 +131,7 @@ export async function importAssets(
   };
 
   const newAssets: Asset[] = [];
-  for (const [name, asset] of derivedImports) {
+  for (const [, asset] of derivedImports) {
     const skip =
       onMissingDependency !== 'include' && !intendedImports.has(asset.name);
     if (skip) {

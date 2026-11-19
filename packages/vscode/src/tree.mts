@@ -81,7 +81,7 @@ export class GameMakerTreeProvider
         this.changed(item);
       }
     });
-    stitchEvents.on('project-changed', (project) => {
+    stitchEvents.on('project-changed', () => {
       this.rebuild();
     });
   }
@@ -244,7 +244,7 @@ export class GameMakerTreeProvider
     const name = parts.pop()!;
     const existingAsset = where.project!.getAssetByName(name);
     if (existingAsset) {
-      showErrorMessage(`An asset named ${name} already exists.`);
+      void showErrorMessage(`An asset named ${name} already exists.`);
       return;
     }
     let folder = where;
@@ -261,7 +261,7 @@ export class GameMakerTreeProvider
     addedTo: GameMakerFolder,
   ) {
     if (!asset) {
-      showErrorMessage(`Failed to create new asset.`);
+      void showErrorMessage(`Failed to create new asset.`);
       return;
     }
     const treeItem = folder.addResource(new TreeAsset(folder, asset));
@@ -314,7 +314,7 @@ export class GameMakerTreeProvider
     if (asset.sprite) {
       spriteOptions.unshift({
         label: 'Sprites',
-        //@ts-expect-error
+        // @ts-expect-error -- Separators aren't part of the options' inferred type
         kind: vscode.QuickPickItemKind.Separator,
       });
       spriteOptions.unshift({
@@ -397,7 +397,7 @@ export class GameMakerTreeProvider
     if (asset.parent) {
       parentOptions.unshift({
         label: 'Objects',
-        //@ts-expect-error
+        // @ts-expect-error -- Separators aren't part of the options' inferred type
         kind: vscode.QuickPickItemKind.Separator,
       });
       parentOptions.unshift({
@@ -687,7 +687,7 @@ export class GameMakerTreeProvider
       }
     }
     if (errors.length) {
-      showErrorMessage(
+      void showErrorMessage(
         `Failed to update sounds:\n${errors.map((e) => e.message).join(', ')}`,
       );
     }
@@ -771,7 +771,7 @@ export class GameMakerTreeProvider
     try {
       await where.project!.deleteFolder(where.path);
     } catch {
-      showErrorMessage(
+      void showErrorMessage(
         `Folders can only be deleted if they contain no assets.`,
       );
       return;

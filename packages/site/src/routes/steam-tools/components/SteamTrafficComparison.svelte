@@ -1,4 +1,5 @@
 <script lang="ts">
+	/* eslint-disable svelte/no-navigation-without-resolve -- All links here are external Steam URLs or blob: downloads, not app routes */
 	import { assert } from '../lib/errors.js';
 	import { config, links } from '../lib/stores.js';
 	import { sortedObject } from '../lib/util.js';
@@ -29,6 +30,8 @@
 
 		// Identify all unique key-combos from both files,
 		// as well as the non-key field names
+		// These collections are local working data, not reactive state
+		/* eslint-disable svelte/prefer-svelte-reactivity */
 		const keys = new Set<string>();
 		const otherFields = new Set<string>();
 		const addedFields = new Set<string>();
@@ -44,6 +47,7 @@
 		current.forEach((entry) => currentMap.set(getKey(entry), entry));
 		const comparisonMap = new Map<string, Entry>();
 		compareTo.forEach((entry) => comparisonMap.set(getKey(entry), entry));
+		/* eslint-enable svelte/prefer-svelte-reactivity */
 
 		const combined: Entry[] = [];
 		const combinedCountries: Entry[] = [];
@@ -218,7 +222,7 @@
 	{#if totals}
 		<p><b style="color:var(--color-result)">Summary:</b></p>
 		<dl>
-			{#each Object.entries(totals) as [key, value]}
+			{#each Object.entries(totals) as [key, value] (key)}
 				{#if !isNaN(value)}
 					<dt>{key}</dt>
 					<dd>{value - Math.round(value) === 0 ? value : value.toFixed(2)}</dd>

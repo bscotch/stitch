@@ -44,7 +44,7 @@ export class CreditsDocument {
     return this.packed.working.getMote(this.moteId)! as CreditsMote;
   }
 
-  onEnter(shifted?: boolean) {
+  onEnter(_shifted?: boolean) {
     const cursor = getCursorPosition();
     if (!cursor) return;
 
