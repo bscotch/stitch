@@ -1,7 +1,7 @@
 import fsp from 'node:fs/promises';
-import { assert, joinPaths, parsePath } from './types/utility.js';
-import { YypResource } from './types/Yyp.js';
-import { Yy } from './Yy.js';
+import { assert, joinPaths, parsePath } from './types/utility.ts';
+import type { YypResource } from './types/Yyp.ts';
+import { Yy } from './Yy.ts';
 
 /**
  * Add a script to a project if it doesn't already exist.

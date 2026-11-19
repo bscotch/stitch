@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { nameField, unstable } from './utility.js';
+import { nameField, unstable } from './utility.ts';
 
 export type yyParentSchema = z.infer<typeof yyParentSchema>;
 export const yyParentSchema = z

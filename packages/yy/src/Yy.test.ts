@@ -1,12 +1,13 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { undent } from '@bscotch/utility';
-import { expect } from 'chai';
 import { existsSync, mkdirSync, readdirSync } from 'fs';
 import fs from 'node:fs/promises';
 import { z } from 'zod';
-import { Yy } from './Yy.js';
-import { yyResourceTypes } from './types/YyBase.js';
-import { FixedNumber, fixedNumber, nameField } from './types/utility.js';
-import { setProjectVersion } from './versioning.js';
+import { Yy } from './Yy.ts';
+import { yyResourceTypes } from './types/YyBase.ts';
+import { FixedNumber, fixedNumber, nameField } from './types/utility.ts';
+import { setProjectVersion } from './versioning.ts';
 
 const sampleOutDir = './samples-out';
 mkdirSync(sampleOutDir, { recursive: true });
@@ -60,25 +61,27 @@ const sampleDataAsString = undent`
 
 describe('Yy Files', function () {
   it('can test for functional equivalence between two Yy objects', function () {
-    expect(Yy.areEqual(1, 2)).to.be.false;
-    expect(Yy.areEqual({ a: 'hello' }, { a: 'world' })).to.be.false;
+    assert.equal(Yy.areEqual(1, 2), false);
+    assert.equal(Yy.areEqual({ a: 'hello' }, { a: 'world' }), false);
 
     const yy1 = { a: 1, b: 2, c: 3, d: [0, { na: { nb: { nc: ['deep!'] } } }] };
-    expect(Yy.areEqual(yy1, yy1), 'An object should equal itself').to.be.true;
-    expect(
+    assert.equal(Yy.areEqual(yy1, yy1), true, 'An object should equal itself');
+    assert.equal(
       Yy.areEqual(yy1, {
         c: 3,
         b: 2,
         d: [0, { na: { nb: { nc: ['deep!'] } } }],
         a: 1,
       }),
+      true,
       'An object should equal another object with the same keys in a different order',
-    ).to.be.true;
-    expect(
+    );
+    assert.equal(
       Yy.areEqual(yy1, { a: 1, b: 2, c: 3 }),
+      false,
       'An object should not equal another object with fewer keys',
-    ).to.be.false;
-    expect(
+    );
+    assert.equal(
       Yy.areEqual(yy1, {
         a: 1,
         b: 2,
@@ -86,54 +89,58 @@ describe('Yy Files', function () {
         d: [0, { na: { nb: { nc: ['deep!'] } } }],
         e: 4,
       }),
+      false,
       'An object should not equal another object with more keys',
-    ).to.be.false;
-    expect(
+    );
+    assert.equal(
       Yy.areEqual(yy1, {
         a: 1,
         b: 2,
         c: 3,
         d: [0, { na: { nb: { nc: ['deep!', 'extra!'] } } }],
       }),
+      false,
       'An object should not equal another object with a deep difference',
-    ).to.be.false;
-    expect(Yy.areEqual(1, 1), 'A number should equal itself').to.be.true;
-    expect(
+    );
+    assert.equal(Yy.areEqual(1, 1), true, 'A number should equal itself');
+    assert.equal(
       Yy.areEqual({ a: '1' }, { a: 1 }),
+      true,
       'A numeric string should still count as equal to the corresponding number',
-    ).to.be.true;
-    expect(
+    );
+    assert.equal(
       Yy.areEqual({ a: 10.111 }, { a: new FixedNumber(10.111, 1) }),
+      true,
       'A FixedNumber should equal a regular number',
-    ).to.be.true;
-    expect(
+    );
+    assert.equal(
       Yy.areEqual(
         { a: new FixedNumber(10.111, 2) },
         { a: new FixedNumber(10.111, 3) },
       ),
+      true,
       'A FixedNumber should equal another FixedNumber with a different precision',
-    ).to.be.true;
+    );
   });
 
   it('can create GameMaker-style JSON', function () {
-    expect(Yy.stringify(sampleData, sampleSchema)).to.equal(sampleDataAsString);
-    expect(
+    assert.equal(Yy.stringify(sampleData, sampleSchema), sampleDataAsString);
+    assert.equal(
       Yy.stringify(
         { num: 15.1234134 },
         z.object({ num: fixedNumber(undefined, 2) }),
       ),
-    ).to.equal('{\r\n  "num": 15.12,\r\n}');
+      '{\r\n  "num": 15.12,\r\n}',
+    );
   });
 
   it('can parse Yy data', function () {
-    expect(Yy.parse(sampleDataAsString, sampleSchema)).to.deep.equal(
-      sampleData,
-    );
+    assert.deepEqual(Yy.parse(sampleDataAsString, sampleSchema), sampleData);
   });
 
   it('can read GameMaker-style JSON', async function () {
     const data = await Yy.read('./samples/sample.yy');
-    expect(data).to.deep.equal(sampleData);
+    assert.deepEqual(data, sampleData);
   });
 
   it('can coerce yyFixed to enable writing fixed decimals', function () {
@@ -149,7 +156,7 @@ describe('Yy Files', function () {
     const cases = [0, 1, 1.2, 233.3333];
     for (const number of cases) {
       const data = { one: number, two: number };
-      expect(Yy.stringify(data, schema)).to.equal(toExpectedString(number));
+      assert.equal(Yy.stringify(data, schema), toExpectedString(number));
     }
   });
 
@@ -205,7 +212,7 @@ describe('Yy Files', function () {
     );
 
     for (let i = 0; i < referenceOrder.length; i++) {
-      expect(sorted[i].id.path).to.equal(referenceOrder[i].id.path);
+      assert.equal(sorted[i].id.path, referenceOrder[i].id.path);
     }
   });
 
@@ -288,11 +295,11 @@ describe('Yy Files', function () {
       a.folderPath.toLowerCase().localeCompare(b.folderPath.toLowerCase()),
     );
     for (let i = 0; i < referenceOrder.length; i++) {
-      expect(sorted[i].folderPath).to.equal(referenceOrder[i].folderPath);
+      assert.equal(sorted[i].folderPath, referenceOrder[i].folderPath);
     }
   });
 
-  xit('can convert an old-format sprite yy file to the new format', async function () {
+  it.skip('can convert an old-format sprite yy file to the new format', async function () {
     const project = await Yy.read(
       './samples/project/Crashlands2.yyp',
       'project',
@@ -330,10 +337,10 @@ describe('Yy Files', function () {
           // Make sure that we can stringify and get it back in the new format
           const stringified = Yy.stringify(parsed, resourceType);
           const reparsed = Yy.parse(stringified, resourceType);
-          expect(reparsed[nameField]).to.equal(parsed[nameField]);
-          expect(reparsed.resourceType).to.be.a('string');
+          assert.equal(reparsed[nameField], parsed[nameField]);
+          assert.equal(typeof reparsed.resourceType, 'string');
           // @ts-expect-error
-          expect(reparsed[`$${reparsed.resourceType}`]).to.be.a('string');
+          assert.equal(typeof reparsed[`$${reparsed.resourceType}`], 'string');
         }
       });
     }

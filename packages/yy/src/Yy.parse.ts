@@ -2,7 +2,7 @@
  * @file Modified from public domain code: https://github.com/sidorares/json-bigint/blob/master/lib/parse.js
  */
 
-import { z } from 'zod';
+import type { z } from 'zod';
 
 const suspectProtoRx =
   /(?:_|\\u005[Ff])(?:_|\\u005[Ff])(?:p|\\u0070)(?:r|\\u0072)(?:o|\\u006[Ff])(?:t|\\u0074)(?:o|\\u006[Ff])(?:_|\\u005[Ff])(?:_|\\u005[Ff])/;

@@ -1,5 +1,5 @@
 import fsp from 'node:fs/promises';
-import { assert, joinPaths, parsePath } from './types/utility.js';
+import { assert, joinPaths, parsePath } from './types/utility.ts';
 
 const platformNames = [
   'amazonfire',

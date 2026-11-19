@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import type { YyResourceType } from './YyBase.js';
-import type { YypResourceId } from './Yyp.js';
+import type { YyResourceType } from './YyBase.ts';
+import type { YypResourceId } from './Yyp.ts';
 
 export const nameField = '%Name';
 
@@ -15,11 +15,11 @@ export function randomString(length = 32) {
 }
 
 export class FixedNumber extends Number {
-  constructor(
-    value: number | FixedNumber,
-    readonly digits = 1,
-  ) {
+  readonly digits: number;
+
+  constructor(value: number | FixedNumber, digits = 1) {
     super(value.valueOf());
+    this.digits = digits;
   }
 
   [Symbol.toPrimitive](hint: 'number' | 'default'): number;

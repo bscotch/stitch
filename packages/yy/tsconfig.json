@@ -1,10 +1,11 @@
 {
-  "include": ["src/**/*.ts", "src/**/*.mts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.mts"
+  ],
+  "extends": "../tsconfig.lib.json",
   "compilerOptions": {
-    "types": ["node", "mocha", "chai"],
     "outDir": "dist",
-    "rootDir": "src",
-    "baseUrl": "src"
-  },
-  "extends": "../tsconfig.base.json"
+    "rootDir": "src"
+  }
 }

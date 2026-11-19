@@ -1,11 +1,11 @@
-import { GameMakerVersionString } from './types/GameMakerVersionString.js';
-import type { Yyp, YypResource } from './types/Yyp.js';
+import { GameMakerVersionString } from './types/GameMakerVersionString.ts';
+import type { Yyp, YypResource } from './types/Yyp.ts';
 import {
   FixedNumber,
   isObjectWithField,
   nameField,
   yyIsNewFormat,
-} from './types/utility.js';
+} from './types/utility.ts';
 
 const escapable =
   // eslint-disable-next-line no-control-regex, no-misleading-character-class

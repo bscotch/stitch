@@ -1,5 +1,6 @@
-import { ensureGroups } from './groups.js';
-import { joinPaths } from './types/utility.js';
+import { describe, it } from 'node:test';
+import { ensureGroups } from './groups.ts';
+import { joinPaths } from './types/utility.ts';
 
 const projectPath = '../../../crashlands-2/Crashlands2';
 const yypPath = joinPaths(projectPath, 'Crashlands2.yyp');

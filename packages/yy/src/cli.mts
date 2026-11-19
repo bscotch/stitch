@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { ok } from 'assert';
-import { Yy } from './Yy.js';
-import { setProjectVersion } from './versioning.js';
+import { Yy } from './Yy.ts';
+import { setProjectVersion } from './versioning.ts';
 
 const [command, ...args] = process.argv.slice(2);
 

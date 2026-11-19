@@ -1,15 +1,16 @@
-import { expect } from 'chai';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { v4 as uuid4 } from 'uuid';
-import { Yy } from '../Yy.js';
-import { FixedNumber } from './utility.js';
-import { YySprite } from './YySprite.js';
+import { Yy } from '../Yy.ts';
+import type { FixedNumber } from './utility.ts';
+import type { YySprite } from './YySprite.ts';
 
 type NumberLike = number | FixedNumber;
 
 function expectEqualNumbers(a: NumberLike, b: NumberLike, message?: string) {
-  expect(a).to.exist;
-  expect(b).to.exist;
-  expect(+a, message).to.equal(+b);
+  assert.ok(a != null);
+  assert.ok(b != null);
+  assert.equal(+a, +b, message);
 }
 
 function expectEqualLengths<
@@ -25,10 +26,11 @@ function expectFramesToMatchKeyframes(sprite: YySprite) {
   expectEqualLengths(frames, keyframes);
   expectEqualLengths(frames, sprite.sequence);
   for (let i = 0; i < frames.length; i++) {
-    expect(
+    assert.equal(
       frames[i].name,
+      keyframes[i].Channels!['0'].Id!.name,
       `Frame name should be found in the index-matched Keyframe`,
-    ).to.equal(keyframes[i].Channels!['0'].Id!.name);
+    );
     expectEqualNumbers(
       keyframes[i].Key!,
       i,
@@ -46,12 +48,13 @@ describe('YySprite', function () {
       },
       'sprites',
     );
-    expect(sprite.name).to.equal('my_sprite');
-    expect(sprite.frames.length).to.equal(0);
-    expect(sprite.layers.length).to.equal(1);
-    expect(sprite.layers[0].name).to.be.a('string').and.have.length.above(0);
-    expect(sprite.sequence.tracks).to.have.length(1);
-    expect(sprite.sequence.tracks[0].keyframes.Keyframes.length).to.equal(0);
+    assert.equal(sprite.name, 'my_sprite');
+    assert.equal(sprite.frames.length, 0);
+    assert.equal(sprite.layers.length, 1);
+    assert.equal(typeof sprite.layers[0].name, 'string');
+    assert.ok(sprite.layers[0].name.length > 0);
+    assert.equal(sprite.sequence.tracks.length, 1);
+    assert.equal(sprite.sequence.tracks[0].keyframes.Keyframes.length, 0);
   });
   it('can add frames', function () {
     // Create a new sprite.
@@ -74,10 +77,10 @@ describe('YySprite', function () {
       sprite.frames.push(frame as any);
       sprite = Yy.populate(sprite, 'sprites');
       if (frame.name) {
-        expect(sprite.frames[i].name).to.equal(frame.name);
+        assert.equal(sprite.frames[i].name, frame.name);
       }
       const keyframes = sprite.sequence.tracks[0].keyframes.Keyframes;
-      expect(keyframes.length).to.equal(i + 1);
+      assert.equal(keyframes.length, i + 1);
       expectFramesToMatchKeyframes(sprite);
     }
   });
@@ -96,7 +99,7 @@ describe('YySprite', function () {
     for (let i = sprite.frames.length - 1; i >= 0; i--) {
       sprite.frames.splice(i, 1);
       sprite = Yy.populate(sprite, 'sprites');
-      expect(sprite.frames.length).to.equal(i);
+      assert.equal(sprite.frames.length, i);
       expectFramesToMatchKeyframes(sprite);
     }
   });

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { yyParentSchema } from './YyBase.js';
+import { yyParentSchema } from './YyBase.ts';
 
 export type YyRoomUI = z.infer<typeof yyRoomUISchema>;
 export const yyRoomUISchema = z.looseObject({

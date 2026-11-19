@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { yyParentSchema } from './YyBase.js';
-import { nameField } from './utility.js';
+import { yyParentSchema } from './YyBase.ts';
+import { nameField } from './utility.ts';
 
 export const yyExtensionStringTypeSchema = z
   .literal(1)

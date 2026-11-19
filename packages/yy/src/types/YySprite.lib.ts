@@ -1,8 +1,8 @@
 import { pointable } from '@bscotch/utility';
-import { PartialDeep } from 'type-fest';
+import type { PartialDeep } from 'type-fest';
 import { v4 as uuidV4 } from 'uuid';
-import { YySprite } from './YySprite.js';
-import { getYyResourceId } from './utility.js';
+import type { YySprite } from './YySprite.ts';
+import { getYyResourceId } from './utility.ts';
 
 export function ensureTrackKeyFrames(
   sprite: PartialDeep<YySprite, { recurseIntoArrays: true }>,

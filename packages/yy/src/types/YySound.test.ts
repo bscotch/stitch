@@ -1,5 +1,6 @@
-import { Yy } from '../Yy.js';
-import { yySoundSchema } from './YySound.js';
+import { describe, it } from 'node:test';
+import { Yy } from '../Yy.ts';
+import { yySoundSchema } from './YySound.ts';
 
 describe('YySound', function () {
   it('can create a v2+ sound from sparse data', function () {

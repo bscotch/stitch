@@ -1,5 +1,5 @@
-import { assert } from './types/utility.js';
-import { Yy } from './Yy.js';
+import { assert } from './types/utility.ts';
+import { Yy } from './Yy.ts';
 
 /**
  * Ensure the provided audio or texture groups exist in the YYP file.

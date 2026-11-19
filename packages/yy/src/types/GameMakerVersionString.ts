@@ -11,7 +11,10 @@ export type GameMakerVersionParsed = [
 export class GameMakerVersionString {
   readonly #parsed: GameMakerVersionParsed;
 
-  constructor(readonly version: string) {
+  readonly version: string;
+
+  constructor(version: string) {
+    this.version = version;
     this.#parsed = GameMakerVersionString.parse(version);
   }
 
