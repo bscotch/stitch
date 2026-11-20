@@ -1,7 +1,7 @@
 import type {
   Channel,
   GameMakerReleaseWithNotes,
-} from '@bscotch/gamemaker-releases';
+} from '@bscotch/gamemaker-releases/legacy';
 import type { GameMakerProject } from './extension.project.mjs';
 import { html } from './lib.mjs';
 

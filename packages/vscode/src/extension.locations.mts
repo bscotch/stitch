@@ -1,4 +1,4 @@
-import type { Channel } from '@bscotch/gamemaker-releases';
+import type { Channel } from '@bscotch/gamemaker-releases/legacy';
 import { pathy } from '@bscotch/pathy';
 import { GameMakerIde } from '@bscotch/stitch-launcher';
 import os from 'os';

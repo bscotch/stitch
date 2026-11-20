@@ -1,4 +1,4 @@
-import type { Channel } from '@bscotch/gamemaker-releases';
+import type { Channel } from '@bscotch/gamemaker-releases/legacy';
 import vscode from 'vscode';
 
 class StitchConfig {

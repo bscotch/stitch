@@ -1,10 +1,12 @@
 import { __decorate } from 'tslib';
+// TODO: Migrate to the v2 releases feed. The legacy feed is frozen and no
+// longer receives new GameMaker releases.
 import {
   type Channel,
   gameMakerReleaseWithNotesSchema,
-  releasesUrl,
+  legacyReleasesUrl as releasesUrl,
   runtimeFeedUrls,
-} from '@bscotch/gamemaker-releases';
+} from '@bscotch/gamemaker-releases/legacy';
 import { type Pathy, pathy } from '@bscotch/pathy';
 import { MaxAge } from '@bscotch/utility/browser';
 import { z } from 'zod';
