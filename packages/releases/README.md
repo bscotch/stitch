@@ -1,16 +1,14 @@
 # GameMaker Releases
 
-[GameMaker](https://gamemaker.io/) releases new builds fairly frequently across several release channels (e.g. beta, stable, and LTS). Each release includes two separate artifacts: an IDE installer and a Runtime.
+[GameMaker](https://gamemaker.io/) publishes new builds across several release channels (LTS, Beta, and more) and platforms (Windows, macOS, and Linux). Each release has two separate artifacts: an IDE and a Runtime. GameMaker's own feeds list those separately, and none of them say which Runtime goes with which IDE.
 
-This package centralizes all of the official GameMaker IDE and Runtime version information (for Windows versions) into a single structured document. It is used by [Butterscotch Shenanigans](https://www.bscotch.net) to keep an up-to-date, centralized history of releases for use in [Stitch for VSCode](https://marketplace.visualstudio.com/items?itemName=bscotch.bscotch-stitch-vscode) and other tools. These are uploaded [as GitHub releases](https://github.com/bscotch/gamemaker-info/releases).
+This package combines all of that into a **single, unified feed of GameMaker IDE releases, each paired with its Runtime**. It is used by [Butterscotch Shenanigans](https://www.bscotch.net) to power [Stitch for VSCode](https://marketplace.visualstudio.com/items?itemName=bscotch.bscotch-stitch-vscode) and other tools.
 
-> ⚠️ This package used to provide consolidated _release notes_ along with version information. GameMaker has since moved their release notes out of their feeds and into [a new site](https://releases.gamemaker.io/). The release note information provided by this package is therefore no longer useful!
+The feed is updated every weekday and published at:
 
-This package is used to generate a summary, updated daily, which you can find at: https://bscotch.github.io/stitch/artifacts/gamemaker/releases-summary.json
-
-## Requirements
-
-- [Node.js 16+](https://nodejs.org)
+- Feed: https://bscotch.github.io/stitch/artifacts/gamemaker/v2/releases.json
+- JSON Schema: https://bscotch.github.io/stitch/artifacts/gamemaker/v2/releases.schema.json
+- Browsable version: https://bscotch.github.io/stitch/gamemaker/releases
 
 ## Installation
 
@@ -19,54 +17,72 @@ This package is used to generate a summary, updated daily, which you can find at
 ## Usage
 
 ```ts
-import {
-  fetchReleasesSummaryWithNotes,
-  computeReleasesSummaryWithNotes,
-} from '@bscotch/gamemaker-releases';
+// Browser-compatible: fetch & validate the latest, already-compiled, unified feed
+import { fetchReleasesFeed } from '@bscotch/gamemaker-releases/browser';
 
-// 🚀 Fetch the latest already-computed summary
-// of all GameMaker releases:
-const releases = await fetchReleasesSummaryWithNotes();
-
-// 🐌 Freshly compile the centralized release summary.
-// This can be useful if the pre-computed
-// summary is out of date.
-const releases = await computeReleasesSummaryWithNotes();
+const { channels, releases } = await fetchReleasesFeed();
+const latestLts = releases.find((r) => r.channels.includes('lts2026'));
+console.log(latestLts?.version, latestLts?.runtime.version);
 ```
 
-## Background Info
+```ts
+// Node: build the feed from scratch, straight from GameMaker's data
+import {
+  buildReleasesFeed,
+  fetchFeedSources,
+} from '@bscotch/gamemaker-releases';
 
-### Artifacts
+// Throws if anything about GameMaker's data is unexpected
+const feed = buildReleasesFeed(await fetchFeedSources());
+```
 
-GameMaker releases are made up of a pair of artifacts: an IDE and a Runtime. While each IDE has a "matching" Runtime, you can specify any Runtime you want for the active IDE (though not all will work with any given IDE version).
+## The Feed
 
-The IDE artifacts are installed via an installer, while Runtimes are installed via the GameMaker IDE or via other installed Runtimes. In other words, you cannot manually install Runtimes.
+Each entry in `releases` is an **IDE release**, unique by `version`, sorted newest first. The IDE details are at the entry's root, and the Runtime it pairs with is in `runtime`. See [`src/schemas.ts`](src/schemas.ts) (or the published JSON Schema) for full details.
 
-### Release Channels
+```jsonc
+{
+  "version": "2026.1.0.27",
+  "family": "2026.1.0",
+  "channels": ["lts2026"],
+  "publishedAt": "2026-11-16T10:48:23.000Z",
+  "downloads": {
+    "windows": "https://gms.yoyogames.com/GameMaker-Installer-2026.1.0.27.exe",
+    "mac": "https://gms.yoyogames.com/GameMaker-2026.1.0.27.pkg",
+    "linux": "https://gms.yoyogames.com/GameMaker-LTS2026-2026.1.0.27.deb",
+  },
+  "runtime": {
+    "kind": "gms2",
+    "version": "2026.1.0.28",
+    "publishedAt": "2026-11-05T16:28:14.000Z",
+    "channels": ["lts2026"],
+    "feedUrl": "https://gms.yoyogames.com/Zeus-Runtime-LTS2026.rss",
+  },
+}
+```
 
-GameMaker artifacts are released into one or more of several channels. Each channel has a separate RSS feed describing the GameMaker versions available in that channel.
+The feed also includes `channels`, metadata describing each release channel (see [`src/channels.ts`](src/channels.ts)). Consumers should use that metadata (e.g. `kind` and `status`) rather than hardcoding channel names, since new channels will be added over time (e.g. for each new LTS series).
 
-- **Long-Term Support (LTS)** Releases intended for maximum stability, with infrequent feature changes.
-- **Stable** Releases intended for typical use-cases. The schedule is roughly monthly, and new features are delivered regularly.
-- **Beta** Releases intended for games in early stages of production, where new and relatively-untested features are delivered rapidly. The schedule is roughly weekly.
-- **Dev (Unstable)** Releases intended for internal use or rapid delivery of new features. Not recommended.
+| Channel    | Kind       | Status | Notes                                                                                            |
+| ---------- | ---------- | ------ | ------------------------------------------------------------------------------------------------ |
+| `lts2026`  | `lts`      | active | GameMaker's recommended channel                                                                  |
+| `lts2022`  | `lts`      | frozen |                                                                                                  |
+| `monthly`  | `monthly`  | frozen | The old "stable" channel. Only 2023.8+ is included.                                              |
+| `beta`     | `beta`     | active | Uses Beta numbering: the minor version is 100x the stable version it becomes (2026.100 → 2026.1) |
+| `unstable` | `unstable` | active | Every Beta release, plus many interim builds that are never promoted                             |
 
-### Release Feeds
+### IDE/Runtime pairing
 
-GameMaker releases are described by RSS feeds and JSON files whose URLs are listed inside those feeds. These RSS feeds are the same ones used by the GameMaker IDE to determine when new IDE and Runtime artifacts have become available.
+IDE and Runtime versions share a `YEAR.MINOR.PATCH` "family", but have independent build numbers. None of GameMaker's feeds say which Runtime goes with which IDE, so the Runtime is inferred: it's the newest Runtime in the IDE's family, on the IDE's most stable channel, published no later than the IDE.
 
-There are distinct feeds for each platform supported by the GameMaker IDE, for each release channel. The IDE and Runtime have separate feeds.
+When checked against the pairings listed in GameMaker's [release notes](https://releases.gamemaker.io), this agreed with 74 of 75. Known exceptions are listed in [`src/overrides.ts`](src/overrides.ts). Add an entry there if the feed ever has a wrong pairing.
 
-#### IDE Feeds (Windows)
+See [NOTES.md](NOTES.md) for more about how GameMaker publishes releases, and why this package works the way it does.
 
-- `lts`: https://gms.yoyogames.com/update-win-LTS.rss
-- `stable`: https://gms.yoyogames.com/update-win.rss
-- `beta`: https://gms.yoyogames.com/update-win-NuBeta.rss
-- `unstable`: https://gms.yoyogames.com/update-win-NuBeta-I.rss
+### GMRT
 
-#### Runtime Feeds (Windows)
+GameMaker's new runtime (GMRT) is out of scope for now. It is distributed via GameMaker's package manager rather than RSS feeds, and is not paired with specific IDE versions. The `runtime.kind` field is reserved for distinguishing it in the future.
 
-- `lts`: https://gms.yoyogames.com/Zeus-Runtime-LTS.rss
-- `stable`: https://gms.yoyogames.com/Zeus-Runtime.rss
-- `beta`: https://gms.yoyogames.com/Zeus-Runtime-NuBeta.rss
-- `unstable`: https://gms.yoyogames.com/Zeus-Runtime-NuBeta-I.rss
+## Legacy feed
+
+The original feed (`https://bscotch.github.io/stitch/artifacts/gamemaker/releases-summary.json`) is frozen: it is still served for older versions of Stitch, but is no longer updated. Utilities for it are available from `@bscotch/gamemaker-releases/legacy`.

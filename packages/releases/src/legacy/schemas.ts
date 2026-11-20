@@ -1,15 +1,33 @@
+/**
+ * @file Schemas and types for the *legacy* (frozen) GameMaker releases
+ * summary feed, which is still served at {@link legacyReleasesUrl} for
+ * backwards compatibility but is no longer updated.
+ * @deprecated Use the v2 feed instead.
+ */
+import { decode } from 'entities';
 import { z } from 'zod';
-import { htmlString } from './utils.ts';
 
-export interface RssFeedEntry {
-  title: string;
-  pubDate: string;
-  link?: string;
-  comments: string;
-  description?: string;
+/** A string schema that normalizes HTML content. */
+function htmlString() {
+  return z.string().transform((s) => {
+    if (!s || typeof s !== 'string') {
+      return s;
+    }
+    // decode HTML entities
+    s = decode(s.trim());
+    // remove anchor targets
+    s = s.replace(/\btarget=[^\s>]+/g, '');
+    // remove excess space
+    s = s.replace(/ +/g, ' ');
+    s = s.replace(/\r/g, '');
+    s = s.replace(/[\t ]*\n[\t ]*(\n[\t ]*)+/g, '\n\n');
+    return s;
+  });
 }
 
+/** @deprecated Legacy feed channel names. */
 export type Channel = (typeof channels)[number];
+/** @deprecated Legacy feed channel names. */
 export const channels = ['lts', 'stable', 'beta', 'unstable'] as const;
 export const channelSchema = z.enum(channels);
 Object.freeze(channels);
@@ -17,33 +35,6 @@ Object.freeze(channels);
 export type ArtifactType = (typeof artifactTypes)[number];
 export const artifactTypes = ['ide', 'runtime'] as const;
 Object.freeze(artifactTypes);
-
-export const rssFeedSchema = z.object({
-  rss: z.object({
-    channel: z.object({
-      title: htmlString(),
-      description: htmlString(),
-      link: z.string(),
-      item: z.preprocess(
-        (arg) => {
-          if (!Array.isArray(arg)) {
-            return [arg];
-          }
-          return arg;
-        },
-        z.array(
-          z.object({
-            title: z.string().regex(/^Version \d+\.\d+\.\d+\.\d+$/),
-            pubDate: z.string(),
-            link: z.string().optional(),
-            comments: z.string(),
-            description: htmlString().optional(),
-          }),
-        ),
-      ),
-    }),
-  }),
-});
 
 export type GameMakerArtifact = z.infer<typeof gameMakerArtifactSchema>;
 export const gameMakerArtifactSchema = z.object({
@@ -97,16 +88,3 @@ export const gameMakerReleaseSchema = gameMakerReleaseBaseSchema.extend({
   ide: gameMakerArtifactSchema.omit({ summary: true }),
   runtime: gameMakerArtifactSchema.omit({ summary: true }),
 });
-
-export type RawReleaseNote = z.infer<typeof rawReleaseNoteSchema>;
-export const rawReleaseNoteSchema = z.strictObject({
-  type: z.enum(artifactTypes).optional(),
-  version: z.string(),
-  release_notes: z.array(z.string()),
-});
-
-export type RawReleaseNotesCache = Record<string, RawReleaseNote>;
-export const rawReleaseNotesCacheSchema = z.record(
-  z.string(),
-  rawReleaseNoteSchema,
-);

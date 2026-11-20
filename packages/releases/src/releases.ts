@@ -1,25 +1,18 @@
-import { z } from 'zod';
-import { gameMakerReleaseWithNotesSchema } from './feeds.types.ts';
 import { fetchJson } from './fetch.ts';
+import { releasesFeedSchema } from './schemas.ts';
+
+const artifactsUrl = 'https://bscotch.github.io/stitch/artifacts/gamemaker';
 
 /**
- * This package is used to generate a releases object, stored
- * as a JSON file for public download. The latest version of this
- * releases object can be downloaded from this URL.
+ * URL of Stitch's unified (v2) GameMaker releases feed, which is
+ * regenerated from GameMaker's data every weekday.
  */
-export const releasesUrl =
-  'https://bscotch.github.io/stitch/artifacts/gamemaker/releases-summary.json';
+export const releasesUrl = `${artifactsUrl}/v2/releases.json`;
 
-/**
- * Given a URL to an already-synthesized
- * GameMaker Studio merged-releases feed,
- * download the feed and return the list of
- * releases.
- */
-export async function fetchReleasesSummaryWithNotes(url = releasesUrl) {
-  const releases = await fetchJson(
-    url,
-    z.array(gameMakerReleaseWithNotesSchema),
-  );
-  return releases;
+/** URL of the JSON Schema for the releases feed at {@link releasesUrl}. */
+export const releasesSchemaUrl = `${artifactsUrl}/v2/releases.schema.json`;
+
+/** Download and validate Stitch's unified GameMaker releases feed. */
+export async function fetchReleasesFeed(url = releasesUrl) {
+  return await fetchJson(url, releasesFeedSchema);
 }

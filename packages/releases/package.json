@@ -1,15 +1,16 @@
 {
   "name": "@bscotch/gamemaker-releases",
   "version": "0.8.0",
-  "description": "Utility for combining GameMaker release data into a single feed.",
+  "description": "A unified feed of GameMaker IDE releases and their paired Runtimes, across all channels and platforms.",
   "keywords": [
     "gamemaker",
     "game-maker",
     "release",
-    "release-notes",
-    "patchnotes",
-    "patch-notes",
-    "changelog",
+    "releases",
+    "runtime",
+    "ide",
+    "lts",
+    "beta",
     "yoyo",
     "bscotch",
     "stitch",
@@ -33,6 +34,10 @@
     "./browser": {
       "import": "./dist/browser.js",
       "types": "./dist/browser.d.ts"
+    },
+    "./legacy": {
+      "import": "./dist/legacy/index.js",
+      "types": "./dist/legacy/index.d.ts"
     }
   },
   "main": "dist/index.js",
@@ -44,8 +49,7 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "@bscotch/pathy": "^2.12.1",
-    "@bscotch/utility": "^7.2.0",
+    "@bscotch/yy": "workspace:*",
     "entities": "^9.0.0",
     "fast-xml-parser": "^5.12.1",
     "zod": "^4.6.7"

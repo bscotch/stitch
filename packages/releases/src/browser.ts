@@ -1,12 +1,30 @@
 /**
- * @file Browser-compatible exports
+ * @file Browser-compatible exports: everything needed to fetch, validate,
+ * and work with Stitch's unified GameMaker releases feed.
  */
-export { ideFeedUrls, runtimeFeedUrls } from './urls.ts';
-export { gameMakerReleaseWithNotesSchema } from './feeds.types.ts';
-export type {
-  ArtifactType,
-  Channel,
-  GameMakerRelease,
-  GameMakerReleaseWithNotes,
-} from './feeds.types.ts';
-export { releasesUrl } from './releases.ts';
+export {
+  channelNames,
+  channels,
+  getChannel,
+  type KnownChannelName,
+} from './channels.ts';
+export {
+  fetchReleasesFeed,
+  releasesSchemaUrl,
+  releasesUrl,
+} from './releases.ts';
+export {
+  channelInfoSchema,
+  channelNameSchema,
+  platforms,
+  releaseSchema,
+  releasesFeedJsonSchema,
+  releasesFeedSchema,
+  runtimeReleaseSchema,
+  versionSchema,
+  type ChannelInfo,
+  type GameMakerRelease,
+  type GameMakerReleasesFeed,
+  type GameMakerRuntimeRelease,
+  type Platform,
+} from './schemas.ts';

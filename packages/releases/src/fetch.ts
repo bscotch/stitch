@@ -1,58 +1,29 @@
-import { XMLParser } from 'fast-xml-parser';
-import { isError } from './utils.ts';
-
-export type Validator<T> = { parse: (data: any) => T };
-
-export async function fetchXml<T = unknown>(
-  url: string,
-  validator?: Validator<T>,
-): Promise<T> {
-  const res = await fetchUrl(url);
-  try {
-    const data = await res.text();
-    const asJson = new XMLParser().parse(data);
-    return validator ? validator.parse(asJson) : (asJson as T);
-  } catch (err) {
-    throw new Error(
-      `Error parsing XML from ${url}: ${
-        isError(err) ? err.message : 'UNKNOWN'
-      }`,
-      { cause: err },
-    );
-  }
+export async function fetchText(url: string) {
+  return await (await fetchUrl(url)).text();
 }
 
 export async function fetchJson<T = unknown>(
   url: string,
-  validator?: Validator<T>,
+  validator?: { parse: (data: unknown) => T },
 ): Promise<T> {
   const res = await fetchUrl(url);
   try {
     const parsed = await res.json();
     return validator ? validator.parse(parsed) : (parsed as T);
   } catch (err) {
-    throw new Error(
-      `Error parsing JSON from ${url}: ${
-        isError(err) ? err.message : 'UNKNOWN'
-      }`,
-      { cause: err },
-    );
+    throw new Error(`Error parsing JSON from ${url}`, { cause: err });
   }
 }
 
-async function fetchUrl(url: string) {
+async function fetchUrl(url: string): Promise<Response> {
+  let res: Response;
   try {
-    const res = await fetch(url);
-    if (res.status >= 300) {
-      throw new Error(
-        `Error fetching "${url}": ${res.status} ${res.statusText}`,
-      );
-    }
-    return res;
+    res = await fetch(url);
   } catch (err) {
-    throw new Error(
-      `Error fetching "${url}": ${isError(err) ? err.message : 'UNKNOWN'}`,
-      { cause: err },
-    );
+    throw new Error(`Error fetching "${url}"`, { cause: err });
   }
+  if (!res.ok) {
+    throw new Error(`Error fetching "${url}": ${res.status} ${res.statusText}`);
+  }
+  return res;
 }
