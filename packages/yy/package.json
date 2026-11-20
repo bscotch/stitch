@@ -26,6 +26,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./version": {
+      "types": "./dist/types/GameMakerVersionString.d.ts",
+      "import": "./dist/types/GameMakerVersionString.js"
     }
   },
   "main": "dist/index.js",

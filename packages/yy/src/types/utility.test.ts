@@ -72,6 +72,25 @@ describe('Utilities', function () {
     );
   });
 
+  it('can normalize and group GameMaker version strings', function () {
+    assert.equal(GameMakerVersionString.normalize('2024.06.2.162'), '2024.6.2.162');
+    assert.equal(GameMakerVersionString.family('2026.100.0.1199'), '2026.100.0');
+    assert.equal(GameMakerVersionString.family('2024.06.2.162'), '2024.6.2');
+    assert.equal(GameMakerVersionString.isBetaNumbering('2026.100.0.1199'), true);
+    assert.equal(GameMakerVersionString.isBetaNumbering('2026.1.0.27'), false);
+    assert.equal(GameMakerVersionString.isBetaNumbering('2.3.7.606'), false);
+    assert.throws(() => GameMakerVersionString.parse('2024.1.0'));
+  });
+
+  it('can compare GameMaker version strings without normalization', function () {
+    // Default comparison treats Beta minors (x100) as their stable equivalents
+    assert.equal(GameMakerVersionString.compare('2024.1400.0.900', '2024.14.0.907'), -1);
+    // Raw comparison does not
+    assert.equal(GameMakerVersionString.compareRaw('2024.1400.0.900', '2024.14.0.907'), 1);
+    assert.equal(GameMakerVersionString.compareRaw('2026.100.0.1199', '2026.100.0.1199'), 0);
+    assert.equal(GameMakerVersionString.compareRaw('2026.100.0.99', '2026.100.0.1199'), -1);
+  });
+
   it('can use FixedNumber instances in place of number primitives', function () {
     assert.ok(new FixedNumber(1) instanceof FixedNumber);
     // @ts-expect-error Types are compatible despite not looking like it

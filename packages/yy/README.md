@@ -4,7 +4,7 @@ Read and write GameMaker's `.yyp` and `.yy` files!
 
 [GameMaker](https://gamemaker.io/en) projects consist of a variety of filetypes, with much of the core metadata described in the project root `.yyp` file and resource-specific `.yy` files. Being able to manipulate these files programmatically, outside of GameMaker's editor, is useful for building custom pipelines.
 
-This package provides parse, strinfification, validation, and reading/writing of GameMaker's `.yyp` and `.yy` files.
+This package provides parse, stringification, validation, and reading/writing of GameMaker's `.yyp` and `.yy` files.
 
 ## GameMaker Compatibility
 

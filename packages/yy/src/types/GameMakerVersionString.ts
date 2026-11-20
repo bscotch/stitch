@@ -1,4 +1,14 @@
-import { ok } from 'node:assert';
+/**
+ * @file Dependency-free (and browser-safe) utilities for GameMaker
+ * version strings. Also exported via the `@bscotch/yy/version` subpath
+ * so that it can be used without loading the rest of this package.
+ */
+
+function ok(condition: unknown, message: string): asserts condition {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
 
 export type GameMakerVersionParsed = [
   year: number,
@@ -144,6 +154,74 @@ export class GameMakerVersionString {
       ok(!isNaN(num), `Invalid GameMaker version string: ${version}`);
       return num;
     }) as any;
+  }
+
+  /**
+   * Compare two versions purely numerically, part by part, without
+   * any normalization of the "minor" part.
+   *
+   * This is the correct comparison for versions *within* a single
+   * GameMaker channel (e.g. two Beta versions, or two LTS versions),
+   * and for comparing IDE or Runtime builds within the same family
+   * (see {@link GameMakerVersionString.family}).
+   * @returns -1 if a < b, 0 if a === b, 1 if a > b
+   */
+  static compareRaw(
+    a: string | GameMakerVersionString,
+    b: string | GameMakerVersionString,
+  ): -1 | 0 | 1 {
+    const aVersion =
+      typeof a === 'string' ? GameMakerVersionString.parse(a) : a.parsed;
+    const bVersion =
+      typeof b === 'string' ? GameMakerVersionString.parse(b) : b.parsed;
+    for (let i = 0; i < 4; i++) {
+      if (aVersion[i] < bVersion[i]) return -1;
+      if (aVersion[i] > bVersion[i]) return 1;
+    }
+    return 0;
+  }
+
+  /**
+   * Normalize a version string into its canonical form, e.g. removing
+   * leading zeroes (GameMaker has released `2024.06.2.162`, which is
+   * `2024.6.2.162`).
+   */
+  static normalize(version: string | GameMakerVersionString): string {
+    return (
+      typeof version === 'string'
+        ? GameMakerVersionString.parse(version)
+        : version.parsed
+    ).join('.');
+  }
+
+  /**
+   * Get the "family" of a version: the first three parts of the version
+   * (`YEAR.MINOR.PATCH`), without the build number. GameMaker IDE and
+   * Runtime builds have independent build numbers, but an IDE is only
+   * compatible with runtimes in its own family.
+   *
+   * @example
+   * GameMakerVersionString.family('2026.100.0.1199'); // '2026.100.0'
+   */
+  static family(version: string | GameMakerVersionString): string {
+    const parsed =
+      typeof version === 'string'
+        ? GameMakerVersionString.parse(version)
+        : version.parsed;
+    return parsed.slice(0, 3).join('.');
+  }
+
+  /**
+   * Whether a version uses GameMaker's Beta numbering, where the "minor"
+   * part is the target stable minor version times 100 (e.g.
+   * `2024.1400.x.y` Betas became `2024.14.x.y`).
+   */
+  static isBetaNumbering(version: string | GameMakerVersionString): boolean {
+    const parsed =
+      typeof version === 'string'
+        ? GameMakerVersionString.parse(version)
+        : version.parsed;
+    return parsed[0] >= 2022 && parsed[1] >= 100;
   }
 
   static sort<T extends (string | GameMakerVersionString)[]>(versions: T): T {
