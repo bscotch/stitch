@@ -36,6 +36,7 @@ jobs:
       - name: Build Deps
         run: pnpm run -r --filter=@bscotch/stitch-site^... build
 
+      # Fails (preventing publishing) if GameMaker's data looks unexpected
       - name: Update Unified Feed
         run: pnpm node scripts/update-unified-feed.mjs
         working-directory: packages/site
@@ -66,3 +67,20 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+  notify-failure:
+    needs: [build, deploy]
+    if: ${{ failure() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Alert Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_ALERTS_WEBHOOK }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "No Discord webhook configured"
+            exit 1
+          fi
+          MESSAGE="⚠️ The Stitch site (including the GameMaker releases feed) failed to build or publish, so the published feed may be getting stale. Details: $RUN_URL"
+          jq -n --arg content "$MESSAGE" '{content: $content}' | curl -sSf -X POST -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK"

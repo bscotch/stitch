@@ -17,13 +17,18 @@
 <main>
 	<h1>Unified GameMaker Releases Feed</h1>
 	<p>
-		This is an <b>unofficial</b>, unified feed combining the public release history for all
-		<a href="https://gamemaker.io">GameMaker</a> Windows Runtime and IDE releases.
+		This is an <b>unofficial</b>, unified feed combining the public release history for
+		<a href="https://gamemaker.io">GameMaker</a> IDE releases across all channels and platforms
+		(Windows, macOS, and Linux), each paired with its matching Runtime. Pairings are inferred
+		from GameMaker's feeds, so may occasionally be wrong.
 	</p>
 	<p>
 		To get this feed as a JSON file for use in your own applications, you can download it <a
-			href="https://bscotch.github.io/stitch/artifacts/gamemaker/releases-summary.json">here</a
-		>.
+			href="https://bscotch.github.io/stitch/artifacts/gamemaker/v2/releases.json">here</a
+		>
+		(<a href="https://bscotch.github.io/stitch/artifacts/gamemaker/v2/releases.schema.json"
+			>JSON Schema</a
+		>).
 	</p>
 	<p>
 		For release <i>notes</i>, refer to the
@@ -39,7 +44,7 @@
 		GameMaker release notes for the most accurate information.
 	</p>
 	<div>
-		<GameMakerReleases releases={data.releases} />
+		<GameMakerReleases channels={data.channels} releases={data.releases} />
 	</div>
 </main>
 

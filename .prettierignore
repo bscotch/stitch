@@ -23,3 +23,6 @@ node_modules
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
+
+# Frozen legacy GameMaker releases feed: must stay byte-identical
+packages/site/static/artifacts/gamemaker/*.json

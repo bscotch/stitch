@@ -164,15 +164,3 @@ jobs:
   #     ref: ${{ needs.plan.outputs.ref }}
   #   secrets: inherit
 
-  # update-releases-summary:
-  #   name: Update GameMaker Releases Summary
-  #   needs: [plan, test, publish-npm]
-  #   if: >-
-  #     !cancelled() && needs.plan.result == 'success'
-  #     && needs.test.result == 'success'
-  #     && needs.publish-npm.result != 'failure'
-  #     && contains(fromJSON(needs.plan.outputs.tagged), '@bscotch/gamemaker-releases')
-  #   permissions:
-  #     contents: write
-  #   uses: ./.github/workflows/update-releases-summary.yaml
-  #   secrets: inherit

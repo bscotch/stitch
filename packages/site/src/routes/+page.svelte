@@ -36,25 +36,25 @@
 		<section>
 			<h3>Unified GameMaker Releases Feed</h3>
 			<p>
-				GameMaker releases come in multiple flavors (LTS, stable, and beta), each with its own
-				release notes for both the IDE and the runtime. The Stitch "GameMaker Releases" <a
+				GameMaker releases come in multiple channels (LTS, Beta, and more) and platforms, with
+				separate feeds for the IDE and the runtime. The Stitch "GameMaker Releases" <a
 					href="https://www.npmjs.com/package/@bscotch/gamemaker-releases">npm package</a
-				> provides mechinisms to convert all of those into a single, unified feed.
+				> combines all of those into a single, unified feed of IDE releases paired with their runtimes.
 			</p>
 			<p>
 				Stitch maintains an updated feed and a user-friendly interface for perusing GameMaker
-				release notes:
+				releases:
 			</p>
 			<ul>
 				<li>
 					<a data-sveltekit-reload href={resolve('/gamemaker/releases')}
-						>Browse the unified release notes</a
+						>Browse the unified releases</a
 					>
 				</li>
 				<li>
 					<!-- Static file generated at build time, not a route -->
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-					<a href={asset('artifacts/gamemaker/releases-summary.json')}>See the raw feed</a>
+					<a href={asset('artifacts/gamemaker/v2/releases.json')}>See the raw feed</a>
 				</li>
 			</ul>
 		</section>

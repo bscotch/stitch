@@ -1,55 +1,79 @@
 <script lang="ts">
 	/* eslint-disable svelte/no-navigation-without-resolve -- Download links here are external GameMaker URLs, not app routes */
-	import type { GameMakerReleaseWithNotes } from '@bscotch/gamemaker-releases';
+	import type {
+		ChannelInfo,
+		GameMakerRelease,
+		Platform
+	} from '@bscotch/gamemaker-releases/browser';
 	import { faDownload } from '@fortawesome/free-solid-svg-icons';
 	import { onMount } from 'svelte';
 	import Fa from 'svelte-fa';
 	import { loadProperty, saveProperty, toDateIso, toDateLocal } from '../util.js';
 	import FilteredReleases from './FilteredReleases.svelte';
-	import { channels, releaseAnchorId, type Channel } from './constants.js';
+	import {
+		channelColor,
+		channelsStorageKey as storageKey,
+		defaultChannelNames,
+		releaseAnchorId
+	} from './constants.js';
 
-	export let showChannels: Channel[] = loadChannelPreference();
-	export let releases: GameMakerReleaseWithNotes[];
+	export let channels: ChannelInfo[];
+	export let releases: GameMakerRelease[];
+	export let showChannels: string[] = loadChannelPreference();
 
-	// We only want to show the download button for Windows clients.
-	let onWindows = true;
+	// Only show download buttons for the viewer's platform
+	let platform: Platform | undefined;
 
-	let filteredReleases: GameMakerReleaseWithNotes[] = [];
+	let filteredReleases: GameMakerRelease[] = [];
 
-	function loadChannelPreference(): Channel[] {
-		let stored: Channel[] = loadProperty('feed-channels', ['lts', 'stable', 'beta']);
-		stored = Array.isArray(stored) ? stored : [];
-		stored = stored.filter((channel) => channels.includes(channel));
-		if (!stored.length) {
-			stored = ['lts', 'stable', 'beta'];
-		}
-		return stored;
+	function loadChannelPreference(): string[] {
+		const known = channels.map((c) => c.name);
+		let stored: string[] = loadProperty(storageKey, []);
+		stored = Array.isArray(stored) ? stored.filter((name) => known.includes(name)) : [];
+		return stored.length ? stored : defaultChannelNames(channels);
+	}
+
+	function channelInfo(name: string) {
+		return channels.find((c) => c.name === name);
 	}
 
 	onMount(() => {
-		onWindows = navigator.userAgent.includes('Windows');
+		const agent = navigator.userAgent;
+		platform = agent.includes('Windows')
+			? 'windows'
+			: agent.includes('Mac')
+				? 'mac'
+				: agent.includes('Linux')
+					? 'linux'
+					: undefined;
 	});
 
 	$: {
-		saveProperty('feed-channels', showChannels);
+		saveProperty(storageKey, showChannels);
 	}
 </script>
 
 <section id="gamemaker-releases-component">
-	<FilteredReleases bind:showChannels bind:releases bind:filteredReleases />
+	<FilteredReleases {channels} bind:showChannels bind:releases bind:filteredReleases />
 
-	{#each filteredReleases as release (`${release.channel}|${release.ide.version}|${release.runtime.version}`)}
-		<article class="release" data-version={release.ide.version} data-channel={release.channel}>
+	{#each filteredReleases as release (release.version)}
+		{@const download = platform && release.downloads[platform]}
+		<article
+			class="release"
+			data-version={release.version}
+			data-channel={release.channels[0]}
+			style:--channel-color={channelColor(channelInfo(release.channels[0]))}
+		>
 			<header>
 				<h2
 					id={releaseAnchorId(release)}
-					title={`Release ${release.ide.version} (${release.channel} channel)`}
+					title={`Release ${release.version} (${release.channels.join(', ')})`}
 				>
 					<span class="versions">
 						<span class="ide">
-							{#if onWindows && release.ide.link}
+							{#if download}
 								<a
-									href={release.ide.link}
+									href={download}
 									class="download-link"
 									title="Download"
 									target="_blank"
@@ -58,12 +82,15 @@
 									<Fa icon={faDownload} size="sm" />
 								</a>
 							{/if}
-							{release.ide.version}
+							{release.version}
 							<span class="label">(IDE)</span>
 						</span>
 						<span class="runtime">
 							{release.runtime.version}
 							<span class="label">(Runtime)</span>
+						</span>
+						<span class="label">
+							{release.channels.map((c) => channelInfo(c)?.title ?? c).join(', ')}
 						</span>
 					</span>
 				</h2>
@@ -85,24 +112,6 @@
 		flex-direction: column;
 		gap: 2em;
 	}
-	/* CHANNEL PILLS */
-	[data-channel='lts'] {
-		--channel-color: var(--color-channel-lts);
-	}
-	[data-channel='stable'] {
-		--channel-color: var(--color-channel-stable);
-	}
-	[data-channel='beta'] {
-		--channel-color: var(--color-channel-beta);
-	}
-	[data-channel='unstable'] {
-		--channel-color: var(--color-channel-unstable);
-	}
-
-	/* article header h2 .versions .runtime {
-    font-size: 0.8em;
-    color: var(--color-text-subtle);
-  } */
 
 	/* RELEASE */
 
@@ -150,25 +159,6 @@
 
 	article header time {
 		color: var(--color-text-subtle);
-	}
-
-	details summary {
-		cursor: pointer;
-		font-size: 1em;
-	}
-	details summary h3 {
-		font-size: 1em;
-		user-select: none;
-		display: inline;
-	}
-	details > section {
-		padding-left: 1em;
-		padding-block: 0 0.75em;
-	}
-	details > section.release-summary {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5em;
 	}
 
 	/* https://tailwindcss.com/docs/screen-readers */

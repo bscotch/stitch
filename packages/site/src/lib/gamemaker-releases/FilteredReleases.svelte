@@ -1,14 +1,17 @@
 <script lang="ts">
-	import type { GameMakerReleaseWithNotes } from '@bscotch/gamemaker-releases';
+	import type { ChannelInfo, GameMakerRelease } from '@bscotch/gamemaker-releases/browser';
 	import Checkbox from '../Checkbox.svelte';
-	import { channels, type Channel } from './constants.js';
+	import { channelColor } from './constants.js';
 
-	export let showChannels: Channel[] = ['lts', 'stable'];
-	export let releases: GameMakerReleaseWithNotes[];
-	export let filteredReleases: GameMakerReleaseWithNotes[] = [];
+	export let channels: ChannelInfo[];
+	export let showChannels: string[];
+	export let releases: GameMakerRelease[];
+	export let filteredReleases: GameMakerRelease[] = [];
 
 	function updateFilteredReleases() {
-		filteredReleases = releases.filter((release) => showChannels.includes(release.channel));
+		filteredReleases = releases.filter((release) =>
+			release.channels.some((c) => showChannels.includes(c))
+		);
 	}
 
 	updateFilteredReleases();
@@ -19,18 +22,20 @@
 
 	<fieldset>
 		<legend class="sr-only"> Select which channels to display </legend>
-		{#each channels as channel (channel)}
-			<Checkbox
-				label={channel}
-				value={channel}
-				data={{ channel }}
-				--color-checkbox-text="var(--color-background)"
-				--color-checkbox-background={`var(--color-channel-${channel})`}
-				bind:values={showChannels}
-				on:change={() => {
-					updateFilteredReleases();
-				}}
-			/>
+		{#each channels as channel (channel.name)}
+			<span title={channel.description}>
+				<Checkbox
+					label={channel.title}
+					value={channel.name}
+					data={{ channel: channel.name }}
+					--color-checkbox-text="var(--color-background)"
+					--color-checkbox-background={channelColor(channel)}
+					bind:values={showChannels}
+					on:change={() => {
+						updateFilteredReleases();
+					}}
+				/>
+			</span>
 		{/each}
 	</fieldset>
 </form>
@@ -47,6 +52,7 @@
 	form fieldset {
 		display: flex;
 		flex-direction: row;
+		flex-wrap: wrap;
 		gap: 0.25em;
 		align-items: center;
 		margin: 0;

@@ -185,12 +185,9 @@ importers:
 
   packages/releases:
     dependencies:
-      '@bscotch/pathy':
-        specifier: ^2.12.1
-        version: 2.12.1
-      '@bscotch/utility':
-        specifier: ^7.2.0
-        version: 7.2.0
+      '@bscotch/yy':
+        specifier: workspace:*
+        version: link:../yy
       entities:
         specifier: ^9.0.0
         version: 9.0.0

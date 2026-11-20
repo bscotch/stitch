@@ -1,1 +1,3 @@
-static/artifacts
+# Generated at build time. (The legacy feed files in static/artifacts/gamemaker/
+# are frozen and intentionally committed, since their URLs must keep working.)
+static/artifacts/gamemaker/v2
