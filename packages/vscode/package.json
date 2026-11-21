@@ -34,9 +34,9 @@
     "build:manifest": "node dist/manifest.update.js && prettier -w package.json",
     "build:webviews": "cd webviews && pnpm build",
     "bump": "cd ../.. && pnpm bump",
-    "package": "vsce package --no-dependencies --githubBranch develop",
+    "package": "vsce package --pre-release --no-dependencies --githubBranch develop",
     "vscode:prepublish": "pnpm build",
-    "vscode:publish": "vsce publish --no-dependencies --githubBranch develop",
+    "vscode:publish": "vsce publish --pre-release --no-dependencies --githubBranch develop",
     "watch": "pnpm run --parallel \"/^watch:/\"",
     "watch:extension": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css,svelte --watch src --watch syntaxes --watch ../parser/dist --watch ../sprite-source/dist --watch ../launcher/dist --ignore src/icons.types.mts --exec \"pnpm build:extension\"",
     "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"pnpm build:grammar\"",
@@ -1150,7 +1150,7 @@
     "@esotericsoftware/spine-player": "4.2.120",
     "@local-vscode/shared": "workspace:*",
     "@local-vscode/webviews": "workspace:*",
-    "@types/vscode": "1.107.0",
+    "@types/vscode": "1.140.0",
     "@vscode/vsce": "4.1.1",
     "esbuild": "^0.28.2",
     "nodemon": "^3.1.14",
@@ -1161,7 +1161,7 @@
     "zod": "^4.6.7"
   },
   "engines": {
-    "vscode": "^1.107.0"
+    "vscode": "^1.140.0"
   },
   "icon": "./images/stitch-logo.png",
   "galleryBanner": {
