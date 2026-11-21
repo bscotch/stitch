@@ -322,8 +322,8 @@ importers:
         specifier: workspace:*
         version: link:webviews
       '@types/vscode':
-        specifier: 1.107.0
-        version: 1.107.0
+        specifier: 1.140.0
+        version: 1.140.0
       '@vscode/vsce':
         specifier: 4.1.1
         version: 4.1.1
@@ -1171,6 +1171,9 @@ packages:
 
   '@types/vscode@1.107.0':
     resolution: {integrity: sha512-XS8YE1jlyTIowP64+HoN30OlC1H9xqSlq1eoLZUgFEC8oUTO6euYZxti1xRiLSfZocs4qytTzR6xCBYtioQTCg==}
+
+  '@types/vscode@1.140.0':
+    resolution: {integrity: sha512-KAB5RBZIgnUhpp4mKsVJPPHLOQKu6WtGy2xpfWjaajEXO4xIIC+UESAXLiQ9ewx6QD1uBmvC/S8BJzkbvv4bRA==}
 
   '@typescript-eslint/eslint-plugin@8.73.0':
     resolution: {integrity: sha512-UkygMFer53Yzn29MCYFTHf34hGXf5KJhiDWfIm1tXtXRrym1CS6l5H9Y3yCtPWChpC0/f93H88gdj8tN0dd4kw==}
@@ -3169,6 +3172,8 @@ snapshots:
   '@types/vscode-webview@1.57.5': {}
 
   '@types/vscode@1.107.0': {}
+
+  '@types/vscode@1.140.0': {}
 
   '@typescript-eslint/eslint-plugin@8.73.0(@typescript-eslint/parser@8.73.0(eslint@10.15.0)(typescript@6.0.3))(eslint@10.15.0)(typescript@6.0.3)':
     dependencies:
