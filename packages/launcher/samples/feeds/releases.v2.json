@@ -1,0 +1,219 @@
+{
+  "generatedAt": "2026-11-21T00:47:37.919Z",
+  "channels": [
+    {
+      "name": "lts2026",
+      "kind": "lts",
+      "status": "active",
+      "title": "LTS 2026",
+      "description": "The 2026 Long-Term Support series. GameMaker recommends this channel for most users. Only receives critical fixes.",
+      "ideFeeds": {
+        "windows": "https://gms.yoyogames.com/update-win-LTS2026.rss",
+        "mac": "https://gms.yoyogames.com/update-mac-LTS2026.rss",
+        "linux": "https://gms.yoyogames.com/update-linux-LTS2026.rss"
+      },
+      "runtimeFeeds": ["https://gms.yoyogames.com/Zeus-Runtime-LTS2026.rss"],
+      "userDirSuffix": "-LTS2026"
+    },
+    {
+      "name": "lts2022",
+      "kind": "lts",
+      "status": "frozen",
+      "title": "LTS 2022",
+      "description": "The 2022 Long-Term Support series. No longer updated, superseded by LTS 2026.",
+      "ideFeeds": {
+        "windows": "https://gms.yoyogames.com/update-win-LTS.rss",
+        "mac": "https://gms.yoyogames.com/update-mac-LTS.rss"
+      },
+      "runtimeFeeds": [
+        "https://gms.yoyogames.com/Zeus-Runtime-LTS.rss",
+        "https://gms.yoyogames.com/Zeus-Runtime-LTS-I.rss"
+      ],
+      "userDirSuffix": "-LTS"
+    },
+    {
+      "name": "monthly",
+      "kind": "monthly",
+      "status": "frozen",
+      "title": "Monthly",
+      "description": "The old \"Monthly\" (stable) releases, from 2023.8 through 2024.14.4. No longer updated, superseded by LTS 2026.",
+      "ideFeeds": {
+        "windows": "https://gms.yoyogames.com/update-win.rss",
+        "mac": "https://gms.yoyogames.com/update-mac.rss"
+      },
+      "runtimeFeeds": ["https://gms.yoyogames.com/Zeus-Runtime.rss"],
+      "userDirSuffix": "",
+      "minVersion": "2023.8.0.0"
+    },
+    {
+      "name": "beta",
+      "kind": "beta",
+      "status": "active",
+      "title": "Beta",
+      "description": "The most up-to-date features, released frequently. Versions use Beta numbering, where the minor version is 100x the stable version it will become (e.g. 2026.100 became LTS 2026.1).",
+      "ideFeeds": {
+        "windows": "https://gms.yoyogames.com/update-win-NuBeta.rss",
+        "mac": "https://gms.yoyogames.com/update-mac-NuBeta.rss",
+        "linux": "https://gms.yoyogames.com/update-linux-NuBeta.rss"
+      },
+      "runtimeFeeds": ["https://gms.yoyogames.com/Zeus-Runtime-NuBeta.rss"],
+      "userDirSuffix": "-Beta"
+    },
+    {
+      "name": "unstable",
+      "kind": "unstable",
+      "status": "active",
+      "title": "Unstable",
+      "description": "Interim builds between Beta releases. Includes every Beta release plus many builds that are never promoted. Not officially documented.",
+      "ideFeeds": {
+        "windows": "https://gms.yoyogames.com/update-win-NuBeta-I.rss",
+        "mac": "https://gms.yoyogames.com/update-mac-NuBeta-I.rss",
+        "linux": "https://gms.yoyogames.com/update-linux-NuBeta-I.rss"
+      },
+      "runtimeFeeds": ["https://gms.yoyogames.com/Zeus-Runtime-NuBeta-I.rss"],
+      "userDirSuffix": "-Beta"
+    }
+  ],
+  "releases": [
+    {
+      "version": "2026.100.0.1207",
+      "family": "2026.100.0",
+      "channels": ["unstable"],
+      "publishedAt": "2026-11-20T04:12:45.000Z",
+      "downloads": {
+        "linux": "https://gms.yoyogames.com/GameMaker-Beta-2026.100.0.1207.deb"
+      },
+      "runtime": {
+        "kind": "gms2",
+        "version": "2026.100.0.1137",
+        "publishedAt": "2026-11-20T03:43:58.000Z",
+        "channels": ["unstable"],
+        "feedUrl": "https://gms.yoyogames.com/Zeus-Runtime-NuBeta-I.rss"
+      }
+    },
+    {
+      "version": "2026.1.0.27",
+      "family": "2026.1.0",
+      "channels": ["lts2026"],
+      "publishedAt": "2026-11-16T10:48:23.000Z",
+      "downloads": {
+        "windows": "https://gms.yoyogames.com/GameMaker-Installer-2026.1.0.27.exe",
+        "mac": "https://gms.yoyogames.com/GameMaker-2026.1.0.27.pkg",
+        "linux": "https://gms.yoyogames.com/GameMaker-LTS2026-2026.1.0.27.deb"
+      },
+      "runtime": {
+        "kind": "gms2",
+        "version": "2026.1.0.28",
+        "publishedAt": "2026-11-05T16:28:14.000Z",
+        "channels": ["lts2026"],
+        "feedUrl": "https://gms.yoyogames.com/Zeus-Runtime-LTS2026.rss"
+      }
+    },
+    {
+      "version": "2026.100.0.1199",
+      "family": "2026.100.0",
+      "channels": ["beta", "unstable"],
+      "publishedAt": "2026-11-04T14:48:43.000Z",
+      "downloads": {
+        "windows": "https://gms.yoyogames.com/GameMaker-Installer-2026.100.0.1199.exe",
+        "mac": "https://gms.yoyogames.com/GameMaker-2026.100.0.1199.pkg",
+        "linux": "https://gms.yoyogames.com/GameMaker-Beta-2026.100.0.1199.deb"
+      },
+      "runtime": {
+        "kind": "gms2",
+        "version": "2026.100.0.1133",
+        "publishedAt": "2026-10-31T02:20:29.000Z",
+        "channels": ["beta", "unstable"],
+        "feedUrl": "https://gms.yoyogames.com/Zeus-Runtime-NuBeta.rss"
+      }
+    },
+    {
+      "version": "2026.0.0.16",
+      "family": "2026.0.0",
+      "channels": ["lts2026", "lts2022"],
+      "publishedAt": "2026-05-26T07:29:33.000Z",
+      "downloads": {
+        "windows": "https://gms.yoyogames.com/GameMaker-Installer-2026.0.0.16.exe",
+        "mac": "https://gms.yoyogames.com/GameMaker-2026.0.0.16.pkg",
+        "linux": "https://gms.yoyogames.com/GameMaker-LTS2026-2026.0.0.16.deb"
+      },
+      "runtime": {
+        "kind": "gms2",
+        "version": "2026.0.0.23",
+        "publishedAt": "2026-05-15T08:50:13.000Z",
+        "channels": ["lts2026"],
+        "feedUrl": "https://gms.yoyogames.com/Zeus-Runtime-LTS2026.rss"
+      }
+    },
+    {
+      "version": "2024.14.4.222",
+      "family": "2024.14.4",
+      "channels": ["monthly"],
+      "publishedAt": "2026-03-31T09:43:52.000Z",
+      "downloads": {
+        "windows": "https://gms.yoyogames.com/GameMaker-Installer-2024.14.4.222.exe",
+        "mac": "https://gms.yoyogames.com/GameMaker-2024.14.4.222.pkg"
+      },
+      "runtime": {
+        "kind": "gms2",
+        "version": "2024.14.4.268",
+        "publishedAt": "2026-03-31T09:24:32.000Z",
+        "channels": ["monthly"],
+        "feedUrl": "https://gms.yoyogames.com/Zeus-Runtime.rss"
+      }
+    },
+    {
+      "version": "2024.1400.3.957",
+      "family": "2024.1400.3",
+      "channels": ["unstable"],
+      "publishedAt": "2025-12-25T02:53:52.000Z",
+      "downloads": {
+        "windows": "https://gms.yoyogames.com/GameMaker-Installer-2024.1400.3.957.exe",
+        "mac": "https://gms.yoyogames.com/GameMaker-2024.1400.3.957.pkg",
+        "linux": "https://gms.yoyogames.com/GameMaker-Beta-2024.1400.3.957.deb"
+      },
+      "runtime": {
+        "kind": "gms2",
+        "version": "2024.1400.3.933",
+        "publishedAt": "2025-12-24T03:06:31.000Z",
+        "channels": ["unstable"],
+        "feedUrl": "https://gms.yoyogames.com/Zeus-Runtime-NuBeta-I.rss"
+      }
+    },
+    {
+      "version": "2024.1400.0.904",
+      "family": "2024.1400.0",
+      "channels": ["beta", "unstable"],
+      "publishedAt": "2025-10-02T09:16:51.000Z",
+      "downloads": {
+        "windows": "https://gms.yoyogames.com/GameMaker-Installer-2024.1400.0.904.exe",
+        "mac": "https://gms.yoyogames.com/GameMaker-2024.1400.0.904.pkg",
+        "linux": "https://gms.yoyogames.com/GameMaker-Beta-2024.1400.0.904.deb"
+      },
+      "runtime": {
+        "kind": "gms2",
+        "version": "2024.1400.0.892",
+        "publishedAt": "2025-10-02T08:59:44.000Z",
+        "channels": ["beta", "unstable"],
+        "feedUrl": "https://gms.yoyogames.com/Zeus-Runtime-NuBeta.rss"
+      }
+    },
+    {
+      "version": "2022.0.0.19",
+      "family": "2022.0.0",
+      "channels": ["lts2022"],
+      "publishedAt": "2022-10-25T14:22:04.000Z",
+      "downloads": {
+        "windows": "https://gms.yoyogames.com/GameMaker-Installer-2022.0.0.19.exe",
+        "mac": "https://gms.yoyogames.com/GameMaker-2022.0.0.19.pkg"
+      },
+      "runtime": {
+        "kind": "gms2",
+        "version": "2022.0.0.12",
+        "publishedAt": "2022-10-25T14:02:43.000Z",
+        "channels": ["lts2022"],
+        "feedUrl": "https://gms.yoyogames.com/Zeus-Runtime-LTS.rss"
+      }
+    }
+  ]
+}

@@ -1,0 +1,405 @@
+unknown option "--help"
+Usage: Igor [OPTIONS]+ WORKER COMMAND
+
+Options:
+      --password=VALUE       password to use for testing SSH connections
+      --username=VALUE       username to use for testing SSH connections
+      --hostname=VALUE       hostname to use for testing SSH connections
+      --options=VALUE        path to a file containing variables (deprecated)
+  -q, --quiet                show less output from commands
+      --jsonErrors           output errors to standard error as a json struct
+      --project=VALUE        yyp project file
+      --rp, --runtimePath=VALUE
+                             path to the runtime to use
+      --ru, --runtimeUrl=VALUE
+                             url to the rss feed containing runtimes
+  -r, --runtime=VALUE        VM or YYC
+      --cache=VALUE          folder to use as a build cache
+      --config=VALUE         project config to build
+      --temp=VALUE           folder to store temporary files created during 
+                               build
+      --packagetype=VALUE    package type used for the build
+      --uf, --user=VALUE     path to the user folder for the user doing the 
+                               build
+  -j=VALUE                   number of cores AssetCompiler should use
+      --of=VALUE             output filename
+      --tf=VALUE             target filename
+  -t, --timeout=VALUE        overall timeout for test including build
+      --wt, --waittime=VALUE time for test to wait once inside main loop
+  -d, --device=VALUE         the name of the device to run on
+      --lf, --licencefile=VALUE
+                             the path to a licence file, if not specified 
+                               we'll look in the user folder
+      --df, --devicefile=VALUE
+                             the path to a devices.json file, if not 
+                               specified we'll look in the user folder
+      --target=VALUE         comma separated list of targets for tests, e.g. 
+                               Windows|Local,HTML5|selenium:firefox
+  -w, --worker=VALUE         the name of the remote worker to do the build on
+      --debug                does a debug build
+  -g, --yydebug              export yydebug as part of compile
+      --dbgp=VALUE           sets the port the debugger will try to connect on
+      --targetOptions=VALUE  path to a file containing remote target options 
+                               (deprecated)
+      --destFolder=VALUE     Destination folder to copy a framework to on 
+                               macOS remote
+      --timingStats=VALUE    output file for JSON with timing stats
+      --functionStats=VALUE  output file for function stats
+      --fnames=VALUE         input file for fnames (needed for coverage info)
+      --parentproject=VALUE  parent project to be used while testing
+  -v, --verbose              increase the amount of verbose output
+      --ic, --ignorecache    tell asset compiler to ignore cache
+      --ac, --assetCompiler=VALUE
+                             pass option to the asset compiler
+      --targetDevice=VALUE   Device identifier for target device
+      --ssdk=VALUE           Steam SDK Directory
+      --cr, --consoleRedirect
+                             force Igor to think console is redirected
+  -m, --modules=VALUE        runtime modules to download
+      --mqtt=VALUE           address and port of the mqtt server
+      --ak, --accessKey=VALUE
+                             api access key
+      --pf, --prefabs=VALUE  path to the prefabs library folder
+      --pt, --projectool=VALUE
+                             path to the project tool to be used
+      --launch               install (if necessary) and launch built package 
+                               on target
+      --nb, --nobuild        runs a prebuild version of the game (doesn't 
+                               build)
+Supported Workers and Commands are
+
+windows        Compile
+windows        Run
+windows        PackageZip
+windows        PackageNsis
+windows        PackageZipArm64
+windows        PackageNsisArm64
+windows        Clean
+windows        CleanCode
+windows        CleanGraphics
+windows        CleanAudio
+windows        Stop
+windows        Package
+windows        PreRunStep
+windows        PostRunStep
+windows        PreBuildStep
+windows        PostBuildStep
+windows        PrePackageStep
+windows        PreGradleStep
+windows        PostPackageStep
+windows        PreCleanStep
+windows        PostCleanStep
+
+mac            HandleExtensions
+mac            Clean
+mac            CleanCode
+mac            Compile
+mac            Run
+mac            PackageDMG
+mac            PackageZip
+mac            Stop
+mac            CleanGraphics
+mac            CleanAudio
+mac            Package
+mac            PreRunStep
+mac            PostRunStep
+mac            PreBuildStep
+mac            PostBuildStep
+mac            PrePackageStep
+mac            PreGradleStep
+mac            PostPackageStep
+mac            PreCleanStep
+mac            PostCleanStep
+
+linux          IniFile
+linux          Compile
+linux          Run
+linux          Package
+linux          Clean
+linux          CleanCode
+linux          CleanGraphics
+linux          CleanAudio
+linux          Stop
+linux          PreRunStep
+linux          PostRunStep
+linux          PreBuildStep
+linux          PostBuildStep
+linux          PrePackageStep
+linux          PreGradleStep
+linux          PostPackageStep
+linux          PreCleanStep
+linux          PostCleanStep
+
+html5          Compile
+html5          Run
+html5          zip
+html5          folder
+html5          Package
+html5          Clean
+html5          CleanCode
+html5          CleanGraphics
+html5          CleanAudio
+html5          Stop
+html5          PreRunStep
+html5          PostRunStep
+html5          PreBuildStep
+html5          PostBuildStep
+html5          PrePackageStep
+html5          PreGradleStep
+html5          PostPackageStep
+html5          PreCleanStep
+html5          PostCleanStep
+
+ios            Clean
+ios            HandleExtensions
+ios            Compile
+ios            Run
+ios            Package
+ios            LaunchXcWorkspaceYYC
+ios            DetectDevices
+ios            DetectSimulators
+ios            LaunchSimulator
+ios            CleanCode
+ios            CleanGraphics
+ios            CleanAudio
+ios            Stop
+ios            PreRunStep
+ios            PostRunStep
+ios            PreBuildStep
+ios            PostBuildStep
+ios            PrePackageStep
+ios            PreGradleStep
+ios            PostPackageStep
+ios            PreCleanStep
+ios            PostCleanStep
+
+tvos           IniFile
+tvos           Clean
+tvos           HandleExtensions
+tvos           Compile
+tvos           Run
+tvos           Package
+tvos           LaunchXcWorkspaceYYC
+tvos           DetectDevices
+tvos           DetectSimulators
+tvos           LaunchSimulator
+tvos           CleanCode
+tvos           CleanGraphics
+tvos           CleanAudio
+tvos           Stop
+tvos           PreRunStep
+tvos           PostRunStep
+tvos           PreBuildStep
+tvos           PostBuildStep
+tvos           PrePackageStep
+tvos           PreGradleStep
+tvos           PostPackageStep
+tvos           PreCleanStep
+tvos           PostCleanStep
+
+android        AndroidRun_Command
+android        Clean
+android        Compile
+android        Run
+android        Package
+android        Stop
+android        CleanCode
+android        CleanGraphics
+android        CleanAudio
+android        PreRunStep
+android        PostRunStep
+android        PreBuildStep
+android        PostBuildStep
+android        PrePackageStep
+android        PreGradleStep
+android        PostPackageStep
+android        PreCleanStep
+android        PostCleanStep
+
+amazonfire     AndroidRun_Command
+amazonfire     Clean
+amazonfire     Compile
+amazonfire     Run
+amazonfire     Package
+amazonfire     Stop
+amazonfire     CleanCode
+amazonfire     CleanGraphics
+amazonfire     CleanAudio
+amazonfire     PreRunStep
+amazonfire     PostRunStep
+amazonfire     PreBuildStep
+amazonfire     PostBuildStep
+amazonfire     PrePackageStep
+amazonfire     PreGradleStep
+amazonfire     PostPackageStep
+amazonfire     PreCleanStep
+amazonfire     PostCleanStep
+
+ps4            IniFile
+ps4            WriteMemoryFile
+ps4            Compile
+ps4            Run
+ps4            Package
+ps4            Clean
+ps4            CleanCode
+ps4            CleanGraphics
+ps4            CleanAudio
+ps4            Stop
+ps4            PreRunStep
+ps4            PostRunStep
+ps4            PreBuildStep
+ps4            PostBuildStep
+ps4            PrePackageStep
+ps4            PreGradleStep
+ps4            PostPackageStep
+ps4            PreCleanStep
+ps4            PostCleanStep
+
+ps5            IniFile
+ps5            Compile
+ps5            Run
+ps5            Package
+ps5            Clean
+ps5            CleanCode
+ps5            CleanGraphics
+ps5            CleanAudio
+ps5            Stop
+ps5            PreRunStep
+ps5            PostRunStep
+ps5            PreBuildStep
+ps5            PostBuildStep
+ps5            PrePackageStep
+ps5            PreGradleStep
+ps5            PostPackageStep
+ps5            PreCleanStep
+ps5            PostCleanStep
+
+xboxseriesxs   IniFile
+xboxseriesxs   DetermineVSVersion
+xboxseriesxs   Compile
+xboxseriesxs   Run
+xboxseriesxs   PackageDevXboxOne
+xboxseriesxs   PackageDevXboxSeriesXS
+xboxseriesxs   PackageSubmissionXboxOne
+xboxseriesxs   PackageSubmissionXboxSeriesXS
+xboxseriesxs   Clean
+xboxseriesxs   CleanCode
+xboxseriesxs   CleanGraphics
+xboxseriesxs   CleanAudio
+xboxseriesxs   Stop
+xboxseriesxs   Package
+xboxseriesxs   PreRunStep
+xboxseriesxs   PostRunStep
+xboxseriesxs   PreBuildStep
+xboxseriesxs   PostBuildStep
+xboxseriesxs   PrePackageStep
+xboxseriesxs   PreGradleStep
+xboxseriesxs   PostPackageStep
+xboxseriesxs   PreCleanStep
+xboxseriesxs   PostCleanStep
+
+wasm           IniFile
+wasm           Run
+wasm           Package
+wasm           Clean
+wasm           CleanCode
+wasm           CleanGraphics
+wasm           CleanAudio
+wasm           Compile
+wasm           Stop
+wasm           PreRunStep
+wasm           PostRunStep
+wasm           PreBuildStep
+wasm           PostBuildStep
+wasm           PrePackageStep
+wasm           PreGradleStep
+wasm           PostPackageStep
+wasm           PreCleanStep
+wasm           PostCleanStep
+
+operagx        IniFile
+operagx        Compile
+operagx        Run
+operagx        Package
+operagx        Clean
+operagx        CleanCode
+operagx        CleanGraphics
+operagx        CleanAudio
+operagx        Stop
+operagx        PreRunStep
+operagx        PostRunStep
+operagx        PreBuildStep
+operagx        PostBuildStep
+operagx        PrePackageStep
+operagx        PreGradleStep
+operagx        PostPackageStep
+operagx        PreCleanStep
+operagx        PostCleanStep
+
+reddit         IniFile
+reddit         Compile
+reddit         Run
+reddit         Package
+reddit         Clean
+reddit         CleanCode
+reddit         CleanGraphics
+reddit         CleanAudio
+reddit         Stop
+reddit         PreRunStep
+reddit         PostRunStep
+reddit         PreBuildStep
+reddit         PostBuildStep
+reddit         PrePackageStep
+reddit         PreGradleStep
+reddit         PostPackageStep
+reddit         PreCleanStep
+reddit         PostCleanStep
+
+switch2        IniFile
+switch2        Compile
+switch2        Run
+switch2        Package
+switch2        Clean
+switch2        CleanCode
+switch2        CleanGraphics
+switch2        CleanAudio
+switch2        Stop
+switch2        PreRunStep
+switch2        PostRunStep
+switch2        PreBuildStep
+switch2        PostBuildStep
+switch2        PrePackageStep
+switch2        PreGradleStep
+switch2        PostPackageStep
+switch2        PreCleanStep
+switch2        PostCleanStep
+
+switch         IniFile
+switch         Compile
+switch         Run
+switch         Package
+switch         Clean
+switch         CleanCode
+switch         CleanGraphics
+switch         CleanAudio
+switch         Stop
+switch         PreRunStep
+switch         PostRunStep
+switch         PreBuildStep
+switch         PostBuildStep
+switch         PrePackageStep
+switch         PreGradleStep
+switch         PostPackageStep
+switch         PreCleanStep
+switch         PostCleanStep
+
+tests          CalculateCoverage
+tests          RunTests
+
+runtime        ListInstalled
+runtime        Info
+runtime        Install
+runtime        List
+runtime        Verify
+runtime        FetchLicense
+

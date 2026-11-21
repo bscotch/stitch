@@ -28,14 +28,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./types": {
-      "types": "./dist/lib/GameMakerLauncher.types.d.ts",
-      "import": "./dist/lib/GameMakerLauncher.types.js"
-    },
-    "./dist/lib/GameMakerLauncher.types.js": {
-      "types": "./dist/lib/GameMakerLauncher.types.d.ts",
-      "import": "./dist/lib/GameMakerLauncher.types.js"
     }
   },
   "main": "dist/index.js",
@@ -48,10 +40,7 @@
   },
   "dependencies": {
     "@bscotch/gamemaker-releases": "workspace:*",
-    "@bscotch/logger": "0.2.2",
-    "@bscotch/pathy": "^2.12.1",
-    "@bscotch/utility": "^7.2.0",
-    "tslib": "^2.9.1",
+    "@bscotch/yy": "workspace:*",
     "zod": "^4.6.7"
   },
   "devDependencies": {

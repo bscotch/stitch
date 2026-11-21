@@ -1,7 +1,4 @@
-import type {
-  Channel,
-  GameMakerReleaseWithNotes,
-} from '@bscotch/gamemaker-releases/legacy';
+import type { GameMakerRelease } from '@bscotch/gamemaker-releases';
 import type { GameMakerProject } from './extension.project.mjs';
 import { html } from './lib.mjs';
 
@@ -13,8 +10,9 @@ const css = html`
       box-sizing: border-box;
     }
     :root {
-      --color-lts: #ff8652;
-      --color-stable: #ae89ff;
+      --color-lts2026: #ff8652;
+      --color-lts2022: #ffb38f;
+      --color-monthly: #ae89ff;
       --color-beta: #569cff;
       --color-unstable: rgb(169, 169, 169);
       --color-background: #0e0e0e;
@@ -73,11 +71,14 @@ const css = html`
       font-weight: bold;
       font-size: 0.9em;
     }
-    section.channels > ol > li[data-channel='lts'] {
-      background-color: var(--color-lts);
+    section.channels > ol > li[data-channel='lts2026'] {
+      background-color: var(--color-lts2026);
     }
-    section.channels > ol > li[data-channel='stable'] {
-      background-color: var(--color-stable);
+    section.channels > ol > li[data-channel='lts2022'] {
+      background-color: var(--color-lts2022);
+    }
+    section.channels > ol > li[data-channel='monthly'] {
+      background-color: var(--color-monthly);
     }
     section.channels > ol > li[data-channel='beta'] {
       background-color: var(--color-beta);
@@ -88,11 +89,14 @@ const css = html`
     ol.releases > li {
       margin-bottom: 1.5em;
     }
-    [data-channel='lts']:where(.ide-version) {
-      color: var(--color-lts);
+    [data-channel='lts2026']:where(.ide-version) {
+      color: var(--color-lts2026);
     }
-    [data-channel='stable']:where(.ide-version) {
-      color: var(--color-stable);
+    [data-channel='lts2022']:where(.ide-version) {
+      color: var(--color-lts2022);
+    }
+    [data-channel='monthly']:where(.ide-version) {
+      color: var(--color-monthly);
     }
     [data-channel='beta']:where(.ide-version) {
       color: var(--color-beta);
@@ -149,14 +153,16 @@ const script = html`
 `;
 
 function compileRelease(
-  release: GameMakerReleaseWithNotes,
+  release: GameMakerRelease,
   projects: GameMakerProject[],
 ) {
-  const releaseDate = new Date(release.ide.publishedAt).toLocaleDateString();
-  const releaseDateIso = new Date(release.ide.publishedAt).toISOString();
+  const releaseDate = new Date(release.publishedAt).toLocaleDateString();
+  const releaseDateIso = new Date(release.publishedAt).toISOString();
+  // Color-code by the most stable channel
+  const channel = release.channels[0];
 
   const projectsUsingThisVersion = projects.filter(
-    (project) => project.ideVersion === release.ide.version,
+    (project) => project.ideVersion === release.version,
   );
   const usedByProjects = projectsUsingThisVersion.map(
     (project) => html`<li class="used-by-project">${project.name}</li>`,
@@ -171,25 +177,24 @@ function compileRelease(
     : '';
 
   // Need a "use" button if there are any projects that don't use this version.
-  const useButton = projects.some((p) => p.ideVersion !== release.ide.version)
+  const useButton = projects.some((p) => p.ideVersion !== release.version)
     ? html`<a
         role="button"
         class="use-button"
-        onclick="vscode.postMessage({type: 'setVersion', version: '${release.ide
-          .version}'})"
+        onclick="vscode.postMessage({type: 'setVersion', version: '${release.version}'})"
       >
         Use this version
       </a>`
     : '';
 
   return html`
-    <article class="release ${release.channel}">
+    <article class="release ${channel}">
       <header>
-        <h2 class="ide-version" data-channel="${release.channel}">
-          ${projectsUsingThisVersion.length ? '🌟' : ''} ${release.ide.version}
+        <h2 class="ide-version" data-channel="${channel}">
+          ${projectsUsingThisVersion.length ? '🌟' : ''} ${release.version}
           (IDE)
         </h2>
-        <h3 class="runtime-version" data-channel="${release.channel}">
+        <h3 class="runtime-version" data-channel="${channel}">
           ${release.runtime.version} (Runtime)
         </h3>
         <time datetime="${releaseDateIso}"> ${releaseDate} </time>
@@ -200,9 +205,9 @@ function compileRelease(
 }
 
 export function compile(
-  releases: GameMakerReleaseWithNotes[],
+  releases: GameMakerRelease[],
   projects: GameMakerProject[],
-  channels: Channel[],
+  channels: string[],
 ) {
   return html`
     <!doctype html>
@@ -216,8 +221,8 @@ export function compile(
         <h1>GameMaker Version Picker</h1>
         <p>
           <i>
-            These release notes are automatically compiled from the public
-            GameMaker release notes. They may be incomplete or contain errors.
+            Compiled from GameMaker's release feeds. Runtime pairings are
+            inferred, so they may occasionally be wrong.
           </i>
         </p>
         <section class="channels">

@@ -1,4 +1,4 @@
-import { GameMakerIde } from '@bscotch/stitch-launcher';
+import { getReleasesFeed } from '@bscotch/stitch-launcher';
 import vscode from 'vscode';
 import { stitchConfig } from './config.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
@@ -72,12 +72,13 @@ export class StitchReleasePickerProvider {
   }
 
   static async listReleases() {
-    const releases = await showProgress(
-      () => GameMakerIde.listReleases(),
-      `Fetching GameMaker release notes...`,
+    const feed = await showProgress(
+      () => getReleasesFeed(stitchConfig.launcherOptions),
+      `Fetching GameMaker releases...`,
     );
-    return releases.filter((release) =>
-      stitchConfig.releaseNotesChannels.includes(release.channel),
+    const channels = stitchConfig.releaseNotesChannels;
+    return feed.releases.filter((release) =>
+      release.channels.some((c) => channels.includes(c)),
     );
   }
 

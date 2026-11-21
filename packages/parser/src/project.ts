@@ -34,6 +34,7 @@ import { Asset, isAssetOfKind } from './project.asset.ts';
 import { Code } from './project.code.ts';
 import type { Diagnostic } from './project.diagnostics.ts';
 import { Native } from './project.native.ts';
+import type { LauncherOptions } from '@bscotch/stitch-launcher';
 import { fshDefault, vshDefault } from './shaderDefaults.ts';
 import { Signifier } from './signifiers.ts';
 import { type StructType, Type } from './types.ts';
@@ -89,6 +90,11 @@ export interface ProjectOptions {
     warn: (...args: any[]) => void;
     error: (...args: any[]) => void;
   };
+  /**
+   * Options for finding cached GameMaker IDEs and installed runtimes
+   * (e.g. a custom IDE cache dir), used to find the help docs and GML spec.
+   */
+  launcher?: LauncherOptions;
 }
 
 export class Project {
@@ -1187,7 +1193,10 @@ export class Project {
     // Need the path to the IDE folder. Can probably get by with the default
     // installation location...
     await this.nativeWaiter;
-    const file = await Native.findHelpLinksFile(this.ideVersion);
+    const file = await Native.findHelpLinksFile(
+      this.ideVersion,
+      this.options?.launcher,
+    );
     const content = await file?.read({ fallback: {} });
     this.helpLinks = new Proxy(content || ({} as { [key: string]: string }), {
       get: (target, key) => {
@@ -1247,6 +1256,7 @@ export class Project {
     const specFiles = await Native.listSpecFiles({
       ideVersion: this.ideVersion,
       runtimeVersion,
+      launcher: this.options?.launcher,
     });
     this.native = await Native.from(specFiles, this.self, this.types);
     logger.log(`Loaded GML spec in ${Date.now() - t}ms`);

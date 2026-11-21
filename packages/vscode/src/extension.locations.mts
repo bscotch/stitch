@@ -1,6 +1,6 @@
-import type { Channel } from '@bscotch/gamemaker-releases/legacy';
+import { channels } from '@bscotch/gamemaker-releases';
 import { pathy } from '@bscotch/pathy';
-import { GameMakerIde } from '@bscotch/stitch-launcher';
+import { listPaths } from '@bscotch/stitch-launcher';
 import os from 'os';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
@@ -11,13 +11,23 @@ import { openPath, registerCommand, showProgress } from './lib.mjs';
 export class StitchLocationsProvider {
   constructor(readonly workspace: StitchWorkspace) {}
 
-  async promptForGameMakerReleaseChannel() {
-    const channels = stitchConfig.releaseNotesChannels;
-    assertLoudly(channels.length, 'No release notes channels configured!');
-    const channel = (await vscode.window.showQuickPick(channels, {
-      title: 'Select a GameMaker release channel',
-    })) as Channel | undefined;
-    return channel;
+  async promptForGameMakerReleaseChannel(): Promise<string | undefined> {
+    // Configured channels first, then the rest
+    const configured = stitchConfig.releaseNotesChannels;
+    const sorted = [...channels].sort(
+      (a, b) =>
+        Number(!configured.includes(a.name)) -
+        Number(!configured.includes(b.name)),
+    );
+    const picked = await vscode.window.showQuickPick(
+      sorted.map((c) => ({
+        label: c.title,
+        description: c.name,
+        channel: c.name,
+      })),
+      { title: 'Select a GameMaker release channel' },
+    );
+    return picked?.channel;
   }
 
   async openProjectSaveDirectory() {
@@ -39,24 +49,15 @@ export class StitchLocationsProvider {
   async promptForGameMakerLocation() {
     const channel = await this.promptForGameMakerReleaseChannel();
     if (!channel) return;
-    // /^GameMaker(Studio2?)?(-(Beta|LTS))?\.exe$/
-    const uniquePaths = new Set<string>();
     const paths = (
       await showProgress(
-        () => GameMakerIde.listWellKnownPaths(),
+        () => listPaths(stitchConfig.launcherOptions),
         'Searching for paths...',
       )
-    ).filter((p) => {
-      if (uniquePaths.has(p.path)) return false;
-      uniquePaths.add(p.path);
-      if (p.path.endsWith('.exe')) return false;
-      const isLts = p.path.match(/GameMaker(Studio2?)?-LTS/);
-      const isBeta = p.path.match(/GameMaker(Studio2?)?-Beta/);
-      if (channel === 'lts' && isLts) return true;
-      if (['unstable', 'beta'].includes(channel) && isBeta) return true;
-      if (channel === 'stable' && !isLts && !isBeta) return true;
-      return false;
-    });
+    ).filter(
+      // Stitch's own dirs apply to every channel
+      (p) => p.exists && (!p.channels.length || p.channels.includes(channel)),
+    );
     // Sort by name, and add separators between different `Whatever: ` prefixes
     paths.sort((a, b) => {
       return a.name.localeCompare(b.name);

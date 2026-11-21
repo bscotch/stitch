@@ -1,5 +1,27 @@
-import type { Channel } from '@bscotch/gamemaker-releases/legacy';
+import type { LauncherOptions } from '@bscotch/stitch-launcher';
 import vscode from 'vscode';
+import { logger } from './log.mjs';
+
+/** Release channels shown by default (v2 channel names) */
+export const defaultReleaseChannels = ['lts2026', 'beta'];
+
+/**
+ * Channel names used before the v2 releases feed, and their v2 names.
+ * The legacy "lts" channel covered the LTS 2022 series.
+ */
+const legacyChannelNames: Record<string, string[]> = {
+  stable: ['monthly'],
+  lts: ['lts2022', 'lts2026'],
+};
+
+/** Convert legacy channel names to v2 names, removing duplicates */
+export function migrateChannelNames(channels: string[]): string[] {
+  return [...new Set(channels.flatMap((c) => legacyChannelNames[c] ?? [c]))];
+}
+
+export function hasLegacyChannelNames(channels: string[]): boolean {
+  return channels.some((c) => c in legacyChannelNames);
+}
 
 class StitchConfig {
   public context!: vscode.ExtensionContext;
@@ -35,16 +57,42 @@ class StitchConfig {
       this.config.get<string[]>('diagnostics.autoDeclaredGlobalsPatterns') || []
     );
   }
-  get releaseNotesChannels(): Channel[] {
-    return (
-      this.config.get<Channel[]>('gameMaker.releases.notes.channels') || []
+  get releaseNotesChannels(): string[] {
+    // Settings are migrated on activation, but convert here too in case
+    // a legacy value comes from somewhere that couldn't be migrated.
+    return migrateChannelNames(
+      this.config.get<string[]>('gameMaker.releases.notes.channels') ||
+        defaultReleaseChannels,
     );
   }
-  get disableGameMakerUpdatePrompt() {
+  get disableGameMakerUpdatePrompt(): boolean {
     return (
-      this.config.get<boolean>('gameMaker.disableGameMakerUpdatePrompt') ||
-      false
+      this.config.get<boolean>('gameMaker.disableGameMakerUpdatePrompt') ?? true
     );
+  }
+  get ideCacheDir(): string | undefined {
+    return (
+      this.config.get<string>('gameMaker.launcher.ideCacheDir') || undefined
+    );
+  }
+  get downloadsDir(): string | undefined {
+    return (
+      this.config.get<string>('gameMaker.launcher.downloadsDir') || undefined
+    );
+  }
+  get sevenZipPath(): string | undefined {
+    return (
+      this.config.get<string>('gameMaker.launcher.sevenZipPath') || undefined
+    );
+  }
+  /** Options for `@bscotch/stitch-launcher`, from the user's settings */
+  get launcherOptions(): LauncherOptions {
+    return {
+      ideCacheDir: this.ideCacheDir,
+      downloadsDir: this.downloadsDir,
+      sevenZipPath: this.sevenZipPath,
+      logger: logger.withPrefix('LAUNCHER'),
+    };
   }
 
   get enableFunctionSignatureStatus() {

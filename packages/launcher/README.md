@@ -5,68 +5,143 @@
 [GameMaker](https://gamemaker.io) is composed of two components:
 
 1. **GameMaker IDE**. The IDE is what you install via the GameMaker website, and is the graphical user interface for managing a GameMaker project.
-2. **GameMaker Runtime**. The "Runtimes" are what take your GameMaker project and convert it into a playable game. They are normally managed via the GameMaker IDE. A given IDE version may work with multiple Runtime versions.
+2. **GameMaker Runtime**. The "Runtimes" are what take your GameMaker project and convert it into a playable game. Each IDE version installs its paired Runtime version.
 
-These components are delivered as completely distinct bundles and versioned independently. Knowing which version of each you should be using for a given project, and switching between versions, is a tedious, manual process.
+GameMaker normally allows one installed IDE version per release channel, so switching between projects that use different versions means re-installing GameMaker.
 
-> 📄 See [the notes](./docs/gamemaker-engine.md) for more information about how GameMaker installations work.
+Stitch Launcher keeps its own cache of GameMaker IDE versions, so that each project can be opened in the IDE version it was last saved with, and run with the matching Runtime, without re-installing anything.
 
-## 🚀 What Stitch Launcher Does
-
-This package provides helper utilities for automating switching between and installing IDE and Runtime versions, allowing higher-level workflow tools to not have to know the details.
-
-It is used by the [Stitch](https://www.npmjs.com/package/@bscotch/stitch) to provide CLI commands for opening a GameMaker project with a specified IDE and Runtime version. See Stitch's docs for more information.
-
-> **💀 WARNING 💀** Stitch Launcher is in active development and may change substantially from version to version. Use at your own risk!
+> 📄 See [the notes](./NOTES.md) for how GameMaker installations work, and why this package works the way it does.
 
 _Butterscotch Shenanigans&reg; and Stitch are not affiliated with GameMaker&reg;._
 
-## 🪲 Known Issues
+## 🚀 What Stitch Launcher does
 
-While GameMaker IDEs can be directly downloaded and installed, even without a GameMaker license, GameMaker Runtimes can only be installed through GameMaker itself. GameMaker Runtimes can be used to install other Runtimes, but there are a myriad of licensing issues and GameMaker CLI bugs that make this a fragile process.
+- **Installs IDE versions into its own cache.** It downloads the official installer to your Downloads folder and extracts it with 7-Zip. It never runs installers, and never touches your own GameMaker installs, which keep working normally alongside it.
+- **Finds installed Runtimes.** Runtimes are installed by the IDE itself, the first time an IDE version boots. Stitch Launcher only finds them.
+- **Opens projects** in the right cached IDE, optionally suppressing the IDE's "IDE Update Available" prompt (which older cached versions would otherwise always show).
+- **Runs and builds projects** with Igor, GameMaker's command-line build tool, using a self-cleaning build cache outside your project.
 
-Stitch Launcher _may_ attempt to install missing runtimes, but there's a good chance you'll run into errors when you specify runtimes that aren't already installed. The two solutions are:
-
-1. Through the GameMaker IDE, install the the beta Runtime v2022.300.0.476. This Runtime is known to be able to install other Runtimes, so long as your GameMaker license is valid and your GameMaker IDE login has not expired (just but up the IDE and log in if it has). Stitch Launcher attempts to use that Runtime version unless you specify a different one, in cases where Stitch Launcher will try to install missing Runtimes for you.
-2. Install all Runtimes manually, through the GameMaker IDE. Stitch Launcher will still make it easy to ensure that you're using the Runtime version you want to be using, even if it can't be used to install them for you.
+Version information comes from Stitch's [unified GameMaker releases feed](../releases/README.md).
 
 ## Requirements
 
-- [Node.js v16+](https://nodejs.org/en/). This package is only exported as ESM -- [here's a guide](https://adamcoster.com/blog/commonjs-and-esm-importexport-compatibility-examples) to how to import it if you're using CommonJS.
-- [A GameMaker license](https://gamemaker.io/). This package can be used to automate downloading and installing of GameMaker components, but you'll need to have a GameMaker license to actually use it!
+- [Node.js v22+](https://nodejs.org/en/). This package is ESM-only.
+- A **full** [7-Zip](https://www.7-zip.org/download.html) install, to extract GameMaker installers. The standalone `7za` build can't extract them.
+  - Windows: `winget install 7zip.7zip`
+  - macOS: `brew install sevenzip`
+  - Linux: `sudo apt install 7zip` (or `p7zip-full` on older distros)
+- [A GameMaker account](https://gamemaker.io/) to use GameMaker itself.
+
+### Platform support
+
+|                       | Windows   | macOS                    | Linux                    |
+| --------------------- | --------- | ------------------------ | ------------------------ |
+| Paths, runtimes, Igor | ✅ Tested | ⚠️ Implemented, untested | ⚠️ Implemented, untested |
+| Installing IDEs       | ✅ Tested | ⚠️ Implemented, untested | ⚠️ Implemented, untested |
+| Opening projects      | ✅ Tested | ⚠️ Implemented, untested | ⚠️ Implemented, untested |
+
+GameMaker only publishes Beta, Unstable and LTS 2026 releases for Linux. The macOS and Linux details come from unpacking GameMaker's installers, not from real machines, and are marked `TODO(verify)` in the source. Reports and fixes are welcome!
 
 ## Installation
 
-In a Node project, run `npm install @bscotch/stitch-launcher`
+```sh
+npm install @bscotch/stitch-launcher
+```
 
 ## Usage
 
-This package exports the class `GameMakerLauncher`. Import this into a Node project and use your editor's Typescript intellisense features to discover the available properties and methods.
+Every function takes an optional options object, for overriding defaults like the IDE cache dir (`ideCacheDir`), the downloads dir (`downloadsDir`), and the 7-Zip path (`sevenZipPath`). See `LauncherOptions` for all of them.
 
-Some examples (in Typescript):
-
-### Example: Open a project with a specific IDE/Runtime combo
+### Open a project in its IDE version
 
 ```ts
-import { GameMakerLauncher } from '@bscotch/stitch-launcher';
+import {
+  findIde,
+  installIde,
+  openProject,
+  readProjectIdeVersion,
+} from '@bscotch/stitch-launcher';
 
-// Open a project with a specific IDE/Runtime combo
-// (downloads and installs will happen automatically)
-await GameMakerLauncher.openProject('path/to/my-project.yyp', {
-  ideVersion: '2022.2.2.2',
-  runtimeVersion: '2022.1.1.1',
+const project = 'path/to/my-project.yyp';
+const ideVersion = await readProjectIdeVersion(project);
+if (!(await findIde(ideVersion))) {
+  await installIde(ideVersion, {
+    onProgress: (p) => console.log(p.stage),
+  });
+}
+const ide = await openProject(project); // Defaults to the project's IDE version
+await ide.waitForClose();
+```
+
+`installIde` throws a `LauncherError` with a `code` you can act on, such as `SEVEN_ZIP_MISSING` (with install instructions), `VC_RUNTIME_MISSING` (Windows; points at the downloaded installer, which installs it), or `IDE_NOT_INSTALLABLE` (the version can't be downloaded anymore; lists alternatives).
+
+### Run or build a project with Igor
+
+```ts
+import {
+  findRuntime,
+  getIdeVersionDetails,
+  runIgor,
+} from '@bscotch/stitch-launcher';
+
+const { runtimeVersion } = await getIdeVersionDetails('2026.100.0.1199');
+const runtime = await findRuntime(runtimeVersion);
+if (!runtime)
+  throw new Error(
+    'Open the project in its IDE once, so the IDE installs its runtime',
+  );
+
+const result = await runIgor({
+  project: 'path/to/my-project.yyp',
+  runtime,
+  command: 'PackageZip', // Default: 'Run'
+  compiler: 'yyc', // Default: 'vm'
 });
+console.log(result.success, result.logFile);
 ```
 
-### Example: Run/build a project with a specific Runtime
+Igor must be able to load the project, so the project must have been saved by an IDE that's compatible with the runtime. Use `prepareIgorCommand` to get the command without running it (e.g. to run it in a terminal).
 
-While you can use the GameMaker IDE to specify the runtime to use, you may want to be able to run or build a project _outside_ of the IDE. For example, you may want to re-run the project every time you update its files, or you may want to automate some build-related tasks.
-
-> 📝 **Note:** Directly running/building projects via the Runtime (instead of doing so indirectly via the IDE) may only work for Enterprise GameMaker licenses for some platform targets.
+### Manage the caches
 
 ```ts
-import { GameMakerLauncher } from '@bscotch/stitch-launcher';
+import {
+  getIdeCacheInfo,
+  pruneIdeCache,
+  pruneIgorCache,
+} from '@bscotch/stitch-launcher';
 
-// Directly use a specific Runtime to run a project
-await GameMakerLauncher.runProject('path/to/my-project.yyp', '2022.0.0.0');
+for (const ide of await getIdeCacheInfo()) {
+  console.log(
+    ide.version,
+    ide.channel,
+    ide.sizeBytes,
+    ide.installable ? '' : 'not downloadable anymore!',
+  );
+}
+await pruneIdeCache(['2024.1400.0.904']);
+await pruneIgorCache(); // Clear all Igor build caches
 ```
+
+Cached versions that can no longer be downloaded can't be replaced, so `pruneIdeCache` refuses to delete them unless you pass `includeNotInstallable: true`.
+
+## Where things go
+
+| What                  | Default                                                                                                  | Option         |
+| --------------------- | -------------------------------------------------------------------------------------------------------- | -------------- |
+| Cached IDEs           | `~/.stitch/launcher/ide`                                                                                 | `ideCacheDir`  |
+| Downloaded installers | Your Downloads folder                                                                                    | `downloadsDir` |
+| Igor build caches     | Windows `%LOCALAPPDATA%\stitch\igor`, macOS `~/Library/Caches/stitch/igor`, Linux `~/.cache/stitch/igor` | `igorCacheDir` |
+| Launcher state        | `~/.stitch/launcher`                                                                                     | `stateDir`     |
+
+Older versions of this package put Igor's caches in `<project>/tmp/igor`. Those folders are no longer used and can be deleted.
+
+## Development
+
+- `pnpm test` runs the unit tests, which don't need GameMaker.
+- Integration tests are opt-in; see [`src/integration.test.ts`](src/integration.test.ts):
+  - `STITCH_LAUNCHER_INTEGRATION=1`: read-only checks against this machine's GameMaker installs, plus an Igor build of `samples/project`.
+  - `STITCH_LAUNCHER_INTEGRATION_INSTALL=1`: downloads and extracts an IDE into a temp dir.
+  - `STITCH_LAUNCHER_INTEGRATION_IDE=1`: launches the IDE, and temporarily changes its `default_macros.json`.
+- `node scripts/generate-igor-types.mts [path/to/Igor]` regenerates the Igor CLI types from Igor's usage text.

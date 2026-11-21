@@ -1,5 +1,11 @@
 import { type Pathy, pathy } from '@bscotch/pathy';
-import { GameMakerIde, GameMakerLauncher } from '@bscotch/stitch-launcher';
+import {
+  findIde,
+  findRuntime,
+  getIdeVersionDetails,
+  listAvailableIdes,
+  type LauncherOptions,
+} from '@bscotch/stitch-launcher';
 import { ok } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { parseJsdoc } from './jsdoc.ts';
@@ -356,38 +362,60 @@ export class Native {
     '../../assets/GmlSpec.xml',
   );
 
+  /**
+   * Find the help-docs keywords file from Stitch's cached copy of the
+   * project's IDE, or from any cached IDE if that version isn't cached.
+   */
   static async findHelpLinksFile(
     ideVersion: string,
+    launcher?: LauncherOptions,
   ): Promise<Pathy<{ [method: string]: string }> | undefined> {
-    const ides = await GameMakerIde.listInstalled();
-    const ide = ides.find((ide) => ide.version === ideVersion) || ides[0];
-    return ide?.directory.join('RoboHelp/helpdocs_keywords.json');
+    try {
+      const ide =
+        (await findIde(ideVersion, launcher)) ??
+        (await listAvailableIdes(launcher))[0];
+      return ide ? pathy(ide.helpKeywordsFile) : undefined;
+    } catch (err) {
+      logger.warn('Could not look up cached GameMaker IDEs', err);
+      return;
+    }
   }
 
   static async listSpecFiles(options: {
     runtimeVersion?: string;
     ideVersion?: string;
+    launcher?: LauncherOptions;
   }): Promise<Pathy[]> {
     if (!options.runtimeVersion && options.ideVersion) {
       logger.warn('No stitch config found, looking up runtime version');
       // Look up the runtime version that matches the project's IDE version.
-      const usingRelease = await GameMakerIde.findRelease({
-        ideVersion: options.ideVersion,
-        logger,
-      });
-      logger.info('Done looking, found:', usingRelease?.runtime.version);
-      options.runtimeVersion = usingRelease?.runtime.version;
+      try {
+        const details = await getIdeVersionDetails(
+          options.ideVersion,
+          options.launcher,
+        );
+        options.runtimeVersion = details.runtimeVersion;
+        logger.info('Done looking, found:', details.runtimeVersion);
+      } catch (err) {
+        logger.warn(
+          `Could not look up the runtime for IDE v${options.ideVersion}`,
+          err,
+        );
+      }
     }
     if (options.runtimeVersion) {
       // Find the locally installed runtime folder
       logger.info('Looking for runtime', options.runtimeVersion);
-      const installedRuntime = await GameMakerLauncher.findInstalledRuntime(
-        { version: options.runtimeVersion },
-        logger,
-      );
+      const installedRuntime = await findRuntime(
+        options.runtimeVersion,
+        options.launcher,
+      ).catch((err) => {
+        logger.warn('Could not look up installed runtimes', err);
+        return undefined;
+      });
       if (installedRuntime) {
         logger.info(
-          `Looking for spec files in "${installedRuntime.directory?.absolute}"`,
+          `Looking for spec files in "${installedRuntime.directory}"`,
         );
         const specs = await pathy(
           installedRuntime.directory,

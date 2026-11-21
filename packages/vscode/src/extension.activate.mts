@@ -13,6 +13,7 @@ import {
 import { StitchDefinitionsProvider } from './extension.definitions.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
 import { StitchHoverProvider } from './extension.hover.mjs';
+import { StitchLauncherProvider } from './extension.launcher.mjs';
 import { StitchLensProvider } from './extension.lens.mjs';
 import { StitchLocationsProvider } from './extension.locations.mjs';
 import { StitchReferenceProvider } from './extension.refs.mjs';
@@ -205,6 +206,7 @@ export async function activateStitchExtension(
     ...StitchSpriteEditorProvider.register(workspace),
     ...StitchReferenceProvider.register(workspace),
     ...StitchLocationsProvider.register(workspace),
+    ...StitchLauncherProvider.register(workspace),
     vscode.languages.registerSignatureHelpProvider('gml', workspace, '(', ','),
     vscode.languages.registerDocumentFormattingEditProvider(
       'yy',
@@ -418,12 +420,11 @@ export async function activateStitchExtension(
         return;
       }
       // Get the signature helper.
-      const signatureHelp = swallowThrown(
-        () =>
-          workspace.provideSignatureHelp(
-            e.textEditor.document,
-            e.selections[0].start,
-          )!,
+      const signatureHelp = swallowThrown(() =>
+        workspace.provideSignatureHelp(
+          e.textEditor.document,
+          e.selections[0].start,
+        )!,
       );
       if (!signatureHelp) {
         return;

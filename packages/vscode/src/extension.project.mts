@@ -6,23 +6,52 @@ import {
 } from '@bscotch/gml-parser';
 import { pathy } from '@bscotch/pathy';
 import {
-  GameMakerIde,
-  GameMakerLauncher,
-  GameMakerRuntime,
-  computeGameMakerBuildCommand,
-  computeGameMakerCleanCommand,
-  stringifyGameMakerBuildCommand,
-  stringifyGameMakerCleanCommand,
+  findIde,
+  findRuntime,
+  getIdeVersionDetails,
+  installIde,
+  openProject,
+  prepareIgorCommand,
+  type IgorShell,
+  type InstallProgress,
+  type RunningIde,
 } from '@bscotch/stitch-launcher';
 import path from 'path';
 import vscode from 'vscode';
 import { loudlyLogThrownAsync } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
+import { showLauncherError } from './extension.launcher.mjs';
 import { killProjectRunner } from './lib.mjs';
 import { logger, showErrorMessage, warn } from './log.mjs';
 
 setLogger(logger.withPrefix('PARSER'));
+
+/** The kind of shell VS Code's terminals use, for quoting commands */
+function terminalShell(): IgorShell {
+  const shell = path.basename(vscode.env.shell || '').toLowerCase();
+  if (/^(pwsh|powershell)(\.exe)?$/.test(shell)) return 'powershell';
+  if (/^cmd(\.exe)?$/.test(shell)) return 'cmd';
+  if (shell) return 'posix';
+  return process.platform === 'win32' ? 'powershell' : 'posix';
+}
+
+function describeInstallProgress(p: InstallProgress): string {
+  switch (p.stage) {
+    case 'checking':
+      return 'Checking prerequisites...';
+    case 'downloading':
+      return p.totalBytes
+        ? `Downloading installer (${Math.round((100 * p.receivedBytes) / p.totalBytes)}%)...`
+        : `Downloading installer (${Math.round(p.receivedBytes / 1024 ** 2)} MB)...`;
+    case 'verifying':
+      return 'Verifying installer...';
+    case 'extracting':
+      return 'Extracting...';
+    case 'done':
+      return 'Installed!';
+  }
+}
 
 export class GameMakerProject extends Project {
   readonly kind = 'project';
@@ -36,45 +65,48 @@ export class GameMakerProject extends Project {
     return this.yyp.name;
   }
 
-  openInIde() {
+  /**
+   * Open the project in its GameMaker IDE version, installing that version
+   * into Stitch's cache first if needed. Shows errors (with fixes, where
+   * possible) instead of throwing.
+   */
+  async openInIde(): Promise<RunningIde | undefined> {
     stitchEvents.emit('open-project-start', this);
-    return vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: `Opening in GameMaker`,
-        cancellable: false,
-      },
-      async (progress) => {
-        progress.report({
-          increment: 0,
-          message: `Searching IDE installs...`,
-        });
-        const ide = await GameMakerIde.findInstalled(this.ideVersion);
-        if (!ide) {
-          progress.report({
-            increment: 10,
-            message: 'Version not found. Installing...',
+    const options = stitchConfig.launcherOptions;
+    const ideVersion = this.ideVersion;
+    try {
+      return await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: `Opening in GameMaker v${ideVersion}`,
+          cancellable: false,
+        },
+        async (progress) => {
+          progress.report({ message: 'Looking for this GameMaker version...' });
+          if (!(await findIde(ideVersion, options))) {
+            progress.report({ message: 'Not installed yet. Installing...' });
+            await installIde(ideVersion, {
+              ...options,
+              onProgress: (p) =>
+                progress.report({ message: describeInstallProgress(p) }),
+            });
+          }
+          progress.report({ message: 'Opening project...' });
+          const running = await openProject(this.yypPath.absolute, {
+            ...options,
+            ideVersion,
+            suppressUpdatePrompt: stitchConfig.disableGameMakerUpdatePrompt,
           });
-          await GameMakerIde.install(this.ideVersion);
-        }
-        progress.report({
-          increment: 90,
-          message: `Opening project...`,
-        });
-        const runner = await GameMakerLauncher.openProject(
-          this.yypPath.absolute,
-          {
-            ideVersion: this.yyp.MetaData.IDEVersion,
-            disableUpdatePrompt: stitchConfig.disableGameMakerUpdatePrompt,
-          },
-        );
-        progress.report({
-          increment: 100,
-          message: `Project opened!`,
-        });
-        return runner;
-      },
-    );
+          progress.report({
+            message: 'Opened! The window may take a few seconds to appear.',
+          });
+          return running;
+        },
+      );
+    } catch (err) {
+      await showLauncherError(err);
+      return;
+    }
   }
 
   async kill() {
@@ -109,58 +141,64 @@ export class GameMakerProject extends Project {
       compiler = stitchConfig.runCompilerDefault;
     }
 
-    logger.info(`Looking for GameMaker v${this.ideVersion}...`);
-    const release = await GameMakerRuntime.findRelease({
-      ideVersion: this.ideVersion,
-    });
-    if (!release) {
-      void showErrorMessage(
-        `Could not find a release of GameMaker v${this.ideVersion} to run this project.`,
+    const launcher = stitchConfig.launcherOptions;
+    logger.info(`Looking for the runtime for GameMaker v${this.ideVersion}...`);
+    let runtimeVersion: string;
+    try {
+      runtimeVersion = (
+        await getIdeVersionDetails(this.ideVersion, {
+          ...launcher,
+          runtimeVersion: this.config?.runtimeVersion,
+        })
+      ).runtimeVersion;
+    } catch (err) {
+      await showLauncherError(err).catch(() =>
+        showErrorMessage(
+          `Could not find GameMaker v${this.ideVersion} to run this project.`,
+        ),
       );
       return;
     }
-    logger.info(`Looking for runtime ${release.runtime.version}...`);
-    const runtime = await GameMakerLauncher.findInstalledRuntime({
-      version: release.runtime.version,
-    });
+    logger.info(`Looking for runtime ${runtimeVersion}...`);
+    const runtime = await findRuntime(runtimeVersion, launcher);
 
     logger.info(`Found runtime? ${!!runtime}`);
     if (!runtime) {
       const installOptions = ['Yes', 'No'] as const;
       const chosenOption = await showErrorMessage(
-        `The runtime for GameMaker v${this.ideVersion} is either not installed or not discoverable by Stitch. Do you want Stitch to install and launch GameMaker v${this.ideVersion} for you?`,
+        `GameMaker runtime ${runtimeVersion} (for GameMaker v${this.ideVersion}) is not installed. GameMaker installs its runtime when it starts. Do you want Stitch to open the project in GameMaker v${this.ideVersion}?`,
         ...installOptions,
       );
       if (chosenOption === 'Yes') {
-        await this.openInIde();
-        vscode.window.showInformationMessage(
-          `GameMaker v${this.ideVersion} has been installed and opened. Once it's done installing its runtime you should be able to run your game from Stitch!`,
-        );
+        const running = await this.openInIde();
+        if (running) {
+          void vscode.window.showInformationMessage(
+            `GameMaker v${this.ideVersion} is starting. Once it has installed its runtime, you can run your game from Stitch!`,
+          );
+        }
       }
       return;
     }
 
-    if (stitchConfig.runInTerminal) {
-      logger.info(`Running Igor`, {
-        igorPath: runtime.executablePath,
-      });
-
-      const cmd = await loudlyLogThrownAsync(
-        async () =>
-          await (
-            options?.clean
-              ? stringifyGameMakerCleanCommand
-              : stringifyGameMakerBuildCommand
-          )(runtime, {
+    logger.info('Computing Igor command...');
+    const command = await loudlyLogThrownAsync(
+      async () =>
+        await prepareIgorCommand(
+          {
             project: this.yypPath.absolute,
+            runtime,
+            command: options?.clean ? 'Clean' : 'Run',
             config: config || undefined,
-            yyc: compiler === 'yyc',
-            noCache: false,
-            quiet: true,
-          }),
-      );
+            compiler,
+            verbose: false,
+          },
+          launcher,
+        ),
+    );
 
-      logger.info(`Igor command:`, JSON.stringify(cmd));
+    if (stitchConfig.runInTerminal) {
+      const cmd = command.toShellString(terminalShell());
+      logger.info(`Igor command:`, cmd);
 
       // Create or re-use a terminal
       if (
@@ -176,27 +214,9 @@ export class GameMakerProject extends Project {
       this.runnerTerminal.sendText(cmd);
       this.runnerTerminal.show();
     } else {
-      logger.info('Computing Igor command...');
-      let { cmd, args } = await loudlyLogThrownAsync(
-        async () =>
-          await (
-            options?.clean
-              ? computeGameMakerCleanCommand
-              : computeGameMakerBuildCommand
-          )(runtime, {
-            project: this.yypPath.absolute,
-            config: config || undefined,
-            yyc: compiler === 'yyc',
-            noCache: false,
-            quiet: true,
-          }),
-      );
-      cmd = cmd.replace(/[/\\]/g, '/').replace(/ /g, '\\ ');
-      logger.info('Running command:');
-      logger.info(cmd);
+      logger.info('Running command:', command.cmd, command.args);
       stitchEvents.emit('request-run-project-in-webview', {
-        cmd,
-        args,
+        command,
         runtime,
         project: this,
         clean: options?.clean,
@@ -237,6 +257,7 @@ export class GameMakerProject extends Project {
         autoDeclareGlobalsPrefixes: stitchConfig.autoDeclaredGlobalsPrefixes,
       },
       logger,
+      launcher: stitchConfig.launcherOptions,
     };
     const project = new GameMakerProject(yypPath, options);
     await project.initialize(options);

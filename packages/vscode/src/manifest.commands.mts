@@ -50,6 +50,11 @@ export const commands = {
     enablement: when.hasProjects,
     [$showInPalette]: true,
   },
+  'stitch.gameMaker.pruneIdeCache': {
+    command: 'stitch.gameMaker.pruneIdeCache',
+    title: 'Stitch: Prune Cached GameMaker Versions',
+    [$showInPalette]: true,
+  },
   'stitch.assets.rename': {
     command: 'stitch.assets.rename',
     title: 'Rename...',

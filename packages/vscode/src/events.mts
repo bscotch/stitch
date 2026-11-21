@@ -1,6 +1,9 @@
 import { createEventEmitter } from '@bscotch/emitter';
 import type { Asset, Code } from '@bscotch/gml-parser';
-import type { GameMakerRuntime } from '@bscotch/stitch-launcher';
+import type {
+  InstalledRuntime,
+  PreparedIgorCommand,
+} from '@bscotch/stitch-launcher';
 import type vscode from 'vscode';
 import type { GameMakerProject } from './extension.project.mjs';
 
@@ -22,9 +25,8 @@ export namespace StitchEvents {
     name: 'request-run-project-in-webview';
     payload: [
       {
-        cmd: string;
-        args: string[];
-        runtime: GameMakerRuntime;
+        command: PreparedIgorCommand;
+        runtime: InstalledRuntime;
         project: GameMakerProject;
         clean?: boolean;
       },

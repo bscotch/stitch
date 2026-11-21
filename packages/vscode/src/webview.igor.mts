@@ -120,8 +120,8 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
     const runMessage: IgorWebviewExtensionPostRun = {
       kind: 'run',
       runtimeVersion: event.runtime.version,
-      cmd: event.cmd,
-      args: event.args,
+      cmd: event.command.cmd,
+      args: event.command.args,
       projectName: event.project.name,
       projectDir: event.project.dir.absolute,
       config: await this.getConfig(),
@@ -131,10 +131,11 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
     // Tell the view we're about to run!
     await webview.postMessage(runMessage);
 
-    this.runner = spawn(event.cmd, event.args, {
-      shell: true,
+    // No shell: the arguments are passed through exactly as built
+    this.runner = spawn(event.command.cmd, event.command.args, {
+      cwd: event.command.cwd,
       env: {
-        ...process.env,
+        ...event.command.env,
         STITCH_VSCODE_RUNNER: 'custom',
       },
     });
