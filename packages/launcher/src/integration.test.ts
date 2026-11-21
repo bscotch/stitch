@@ -7,13 +7,21 @@
  *   `samples/project` into temp dirs. Needs the runtime that matches the
  *   sample project's IDE to be installed (see `samples/project/project.yyp`).
  * - `STITCH_LAUNCHER_INTEGRATION_INSTALL=1`: `installIde` into a temp cache,
- *   downloading the installer (~500 MB) into a temp downloads dir.
- * - `STITCH_LAUNCHER_INTEGRATION_IDE=1`: launches the GameMaker IDE and
- *   temporarily changes its channel's `default_macros.json` (back it up!).
- *   Needs the sample project's IDE version in the real IDE cache.
+ *   downloading the installer (~500 MB) into the Downloads folder (reused if
+ *   it's already there).
+ * - `STITCH_LAUNCHER_INTEGRATION_IDE=1`: opens a temp copy of the sample
+ *   project in the GameMaker IDE, installing the IDE into the real IDE cache
+ *   first if needed. Temporarily changes its channel's `default_macros.json`,
+ *   and migrates old-launcher leftovers there (back it up!).
+ *
+ * Optional:
+ * - `STITCH_LAUNCHER_IDE_VERSION`: use this IDE version instead of the
+ *   sample project's.
+ * - `STITCH_LAUNCHER_FEED_FILE`: use a local v2 releases feed file instead
+ *   of fetching it.
  */
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
@@ -28,13 +36,27 @@ import {
   openProject,
   readProjectIdeVersion,
   resolveOptions,
+  restoreUpdatePrompts,
   runIgor,
+  type LauncherOptions,
 } from './index.ts';
 import { samplesDir } from './test/helpers.ts';
 
 const enabled = (name: string) =>
   process.env[name] === '1' || process.env[name] === 'true';
 const sampleProject = path.join(samplesDir, 'project', 'project.yyp');
+
+async function launcherOptions(): Promise<LauncherOptions> {
+  const feedFile = process.env.STITCH_LAUNCHER_FEED_FILE;
+  return feedFile ? { feed: JSON.parse(await readFile(feedFile, 'utf8')) } : {};
+}
+
+async function testIdeVersion() {
+  return (
+    process.env.STITCH_LAUNCHER_IDE_VERSION ||
+    (await readProjectIdeVersion(sampleProject))
+  );
+}
 
 async function tmp() {
   const dir = await mkdtemp(
@@ -69,8 +91,11 @@ describe(
       'packages the sample project',
       { timeout: 10 * 60_000 },
       async function () {
-        const ideVersion = await readProjectIdeVersion(sampleProject);
-        const details = await getIdeVersionDetails(ideVersion);
+        const ideVersion = await testIdeVersion();
+        const details = await getIdeVersionDetails(
+          ideVersion,
+          await launcherOptions(),
+        );
         const runtime = await findRuntime(details.runtimeVersion);
         assert.ok(
           runtime,
@@ -108,10 +133,10 @@ describe(
       async function () {
         const dir = await tmp();
         const options = {
+          ...(await launcherOptions()),
           ideCacheDir: path.join(dir, 'ide'),
-          downloadsDir: path.join(dir, 'downloads'),
         };
-        const ideVersion = await readProjectIdeVersion(sampleProject);
+        const ideVersion = await testIdeVersion();
         const ide = await installIde(ideVersion, options);
         assert.ok((await stat(ide.executable)).isFile());
         assert.ok(ide.pairedRuntimeVersion);
@@ -129,15 +154,33 @@ describe(
       'opens, suppresses the update prompt, restores it, and closes',
       { timeout: 5 * 60_000 },
       async function () {
-        const ideVersion = await readProjectIdeVersion(sampleProject);
-        const ide = await findIde(ideVersion);
-        assert.ok(ide, `IDE ${ideVersion} is not cached; run installIde first`);
-        const dirs = computeGameMakerDirs(ide.programDirName, resolveOptions());
+        const options = await launcherOptions();
+        const ideVersion = await testIdeVersion();
+        const ide =
+          (await findIde(ideVersion, options)) ??
+          (await installIde(ideVersion, options));
+        const dirs = computeGameMakerDirs(
+          ide.programDirName,
+          resolveOptions(options),
+        );
         const readMacros = () =>
           readFile(dirs.defaultMacros, 'utf8').catch(() => undefined);
-        const before = await readMacros();
 
-        const running = await openProject(sampleProject);
+        // Open a copy, so the IDE can't modify the fixture
+        const dir = await tmp();
+        await cp(path.dirname(sampleProject), path.join(dir, 'project'), {
+          recursive: true,
+          filter: (src) => !/[\\/](tmp|logs)$/.test(src),
+        });
+        const project = path.join(dir, 'project', 'project.yyp');
+
+        // Clean up any old-launcher leftovers first, so "before" is the
+        // state the launcher should restore.
+        await restoreUpdatePrompts(options);
+        const before = await readMacros();
+        assert.doesNotMatch(before || '', /TOTALLY-FAKE/);
+
+        const running = await openProject(project, { ...options, ideVersion });
         assert.match((await readMacros()) || '', /update-stitch-disabled/);
         // Wait for the boot-time update check, after which the original returns
         const deadline = Date.now() + 90_000;

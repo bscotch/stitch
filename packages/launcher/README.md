@@ -144,4 +144,5 @@ Older versions of this package put Igor's caches in `<project>/tmp/igor`. Those 
   - `STITCH_LAUNCHER_INTEGRATION=1`: read-only checks against this machine's GameMaker installs, plus an Igor build of `samples/project`.
   - `STITCH_LAUNCHER_INTEGRATION_INSTALL=1`: downloads and extracts an IDE into a temp dir.
   - `STITCH_LAUNCHER_INTEGRATION_IDE=1`: launches the IDE, and temporarily changes its `default_macros.json`.
+  - Optional: `STITCH_LAUNCHER_IDE_VERSION` overrides the IDE version (default: the sample project's), and `STITCH_LAUNCHER_FEED_FILE` uses a local v2 releases feed file instead of fetching it.
 - `node scripts/generate-igor-types.mts [path/to/Igor]` regenerates the Igor CLI types from Igor's usage text.
