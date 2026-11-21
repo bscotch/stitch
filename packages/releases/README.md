@@ -85,4 +85,4 @@ GameMaker's new runtime (GMRT) is out of scope for now. It is distributed via Ga
 
 ## Legacy feed
 
-The original feed (`https://bscotch.github.io/stitch/artifacts/gamemaker/releases-summary.json`) is frozen: it is still served for older versions of Stitch, but is no longer updated. Utilities for it are available from `@bscotch/gamemaker-releases/legacy`.
+The original feed (`https://bscotch.github.io/stitch/artifacts/gamemaker/releases-summary.json`) is frozen: it is still served for older versions of Stitch, but is no longer updated. The `@bscotch/gamemaker-releases/legacy` utilities for it have been removed; use the v2 feed instead.

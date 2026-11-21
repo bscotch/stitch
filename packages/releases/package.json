@@ -34,10 +34,6 @@
     "./browser": {
       "import": "./dist/browser.js",
       "types": "./dist/browser.d.ts"
-    },
-    "./legacy": {
-      "import": "./dist/legacy/index.js",
-      "types": "./dist/legacy/index.d.ts"
     }
   },
   "main": "dist/index.js",
