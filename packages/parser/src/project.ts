@@ -1158,7 +1158,7 @@ export class Project {
 
     // We'll say that resources take 80% of loading,
     // and distribute that across the number of resources.
-    const perAssetIncrement = this.yyp.resources.length / 80;
+    const perAssetIncrement = 80 / (this.yyp.resources.length || 1);
     const resourceWaits: Promise<Asset | undefined>[] = [];
     for (const resourceInfo of this.yyp.resources) {
       assert(

@@ -826,7 +826,7 @@ export class Asset<T extends YyResourceType = YyResourceType> {
     for (const typeName of [this.typeName, this.instanceTypeName]) {
       const type = this.project.types.get(typeName);
       if (type) {
-        this.project.types.delete(this.typeName);
+        this.project.types.delete(typeName);
         // Try to get any refereneces using this type updated
         for (const ref of type.signifier?.refs || []) {
           ref.file.dirty = true;
