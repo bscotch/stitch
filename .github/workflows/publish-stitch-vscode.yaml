@@ -26,6 +26,9 @@ defaults:
 jobs:
   publish:
     runs-on: windows-latest
+    permissions:
+      contents: read
+      id-token: write # VS Marketplace Trusted Publishing (OIDC)
     steps:
       # SETUP
       - uses: actions/checkout@v4
@@ -46,6 +49,4 @@ jobs:
       # PUBLISH
       - name: Publish
         working-directory: packages/vscode
-        run: pnpm vscode:publish
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: pnpm vscode:publish --oidc
