@@ -5,9 +5,18 @@ import { existsSync, mkdirSync, readdirSync } from 'fs';
 import fs from 'node:fs/promises';
 import { z } from 'zod';
 import { Yy } from './Yy.ts';
+import { GameMakerVersionString } from './types/GameMakerVersionString.ts';
 import { yyResourceTypes } from './types/YyBase.ts';
-import { FixedNumber, fixedNumber, nameField } from './types/utility.ts';
+import type { Yyp } from './types/Yyp.ts';
+import { nameField } from './types/utility.ts';
 import { setProjectVersion } from './versioning.ts';
+
+/**
+ * Samples from this IDE version onward must round-trip
+ * byte-for-byte. (Older samples may not have been saved by
+ * the GameMaker IDE, or use formats Stitch no longer writes exactly.)
+ */
+const exactRoundTripMinVersion = '2024.1400.0.904';
 
 const sampleOutDir = './samples-out';
 mkdirSync(sampleOutDir, { recursive: true });
@@ -99,30 +108,10 @@ describe('Yy Files', function () {
       true,
       'A numeric string should still count as equal to the corresponding number',
     );
-    assert.equal(
-      Yy.areEqual({ a: 10.111 }, { a: new FixedNumber(10.111, 1) }),
-      true,
-      'A FixedNumber should equal a regular number',
-    );
-    assert.equal(
-      Yy.areEqual(
-        { a: new FixedNumber(10.111, 2) },
-        { a: new FixedNumber(10.111, 3) },
-      ),
-      true,
-      'A FixedNumber should equal another FixedNumber with a different precision',
-    );
   });
 
   it('can create GameMaker-style JSON', function () {
     assert.equal(Yy.stringify(sampleData, sampleSchema), sampleDataAsString);
-    assert.equal(
-      Yy.stringify(
-        { num: 15.1234134 },
-        z.object({ num: fixedNumber(undefined, 2) }),
-      ),
-      '{\r\n  "num": 15.12,\r\n}',
-    );
   });
 
   it('can parse Yy data', function () {
@@ -132,23 +121,6 @@ describe('Yy Files', function () {
   it('can read GameMaker-style JSON', async function () {
     const data = await Yy.read('./samples/sample.yy');
     assert.deepEqual(data, sampleData);
-  });
-
-  it('can coerce yyFixed to enable writing fixed decimals', function () {
-    const schema = z.object({
-      one: fixedNumber(),
-      two: fixedNumber(undefined, 2),
-    });
-    const toExpectedString = (n: number) => {
-      return `{\r\n  "one": ${Number(n).toFixed(1)},\r\n  "two": ${Number(
-        n,
-      ).toFixed(2)},\r\n}`;
-    };
-    const cases = [0, 1, 1.2, 233.3333];
-    for (const number of cases) {
-      const data = { one: number, two: number };
-      assert.equal(Yy.stringify(data, schema), toExpectedString(number));
-    }
   });
 
   it('yyp resource files sort as expected', function () {
@@ -321,6 +293,22 @@ describe('Yy Files', function () {
         const yyFilePath = `${samplesFolder}/${sampleFile}`;
         // Will throw if invalid
         const parsed = await Yy.read(yyFilePath, resourceType);
+
+        // Samples named after recent GameMaker IDE versions (e.g.
+        // `2026.100.0.1199-frames.yy`) were saved by that IDE version,
+        // and so must be reproduced exactly when stringified.
+        const ideVersion = sampleFile.match(/^\d+\.\d+\.\d+\.\d+/)?.[0];
+        if (
+          ideVersion &&
+          new GameMakerVersionString(ideVersion).gte(exactRoundTripMinVersion)
+        ) {
+          const original = await fs.readFile(yyFilePath, 'utf8');
+          const yyp = {
+            '%Name': 'SampleProject',
+            MetaData: { IDEVersion: ideVersion },
+          } as unknown as Yyp;
+          assert.equal(Yy.stringify(parsed, resourceType, yyp), original);
+        }
         // (Can't check if stringification is exactly correct, because samples may end up with different formatting than GameMaker applies)
         // Write to disk so we can eyeball it
         await Yy.write(`${outFolder}/${sampleFile}`, parsed, resourceType);

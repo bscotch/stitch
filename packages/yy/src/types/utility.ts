@@ -30,28 +30,25 @@ export function randomString(length = 32) {
   return a;
 }
 
-export class FixedNumber extends Number {
-  readonly digits: number;
-
-  constructor(value: number | FixedNumber, digits = 1) {
-    super(value.valueOf());
-    this.digits = digits;
+/**
+ * Format a number the way GameMaker writes `double`-typed fields:
+ * the shortest representation that round-trips, always with a decimal
+ * point (e.g. `0.0`, `1.5`, `88.888885`), switching to .NET-style
+ * scientific notation for very large or small values (e.g. `1.5E-05`).
+ */
+export function formatGameMakerFloat(value: number): string {
+  if (!Number.isFinite(value)) return String(value);
+  if (value === 0) return Object.is(value, -0) ? '-0.0' : '0.0';
+  const [mantissa, exponentString] = value.toExponential().split('e');
+  const exponent = Number(exponentString);
+  if (exponent < -4 || exponent >= 15) {
+    const sign = exponent < 0 ? '-' : '+';
+    return `${mantissa}E${sign}${String(Math.abs(exponent)).padStart(2, '0')}`;
   }
-
-  [Symbol.toPrimitive](hint: 'number' | 'default'): number;
-  [Symbol.toPrimitive](hint: 'string'): string;
-  [Symbol.toPrimitive](hint: 'number' | 'string' | 'default'): number | string {
-    return hint === 'string' ? this.toString() : this.valueOf();
-  }
-
-  override toString(): string {
-    return this.toFixed(this.digits);
-  }
-
-  toJSON(): number {
-    return this.valueOf();
-  }
+  const asString = String(value);
+  return asString.includes('.') ? asString : `${asString}.0`;
 }
+
 
 /**
  * A wrapper that transforms the wrapped value to `undefined` and marks it as optional.
@@ -62,18 +59,6 @@ export class FixedNumber extends Number {
  */
 export function hint<T extends z.ZodTypeAny>(schema: T) {
   return schema.optional().transform(() => undefined);
-}
-
-export const fixed0 = new FixedNumber(0);
-export const fixed1 = new FixedNumber(1);
-
-export function fixedNumber(schema = z.number(), digits = 1) {
-  const coercedToNumber = z.preprocess(
-    (arg) =>
-      arg instanceof FixedNumber || typeof arg === 'number' ? +arg : arg,
-    schema,
-  );
-  return coercedToNumber.transform((value) => new FixedNumber(value, digits));
 }
 
 /**

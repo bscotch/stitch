@@ -1,10 +1,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { Yy } from '../Yy.ts';
-import type { FixedNumber } from './utility.ts';
 import type { YySprite } from './YySprite.ts';
 
-type NumberLike = number | FixedNumber;
+type NumberLike = number;
 
 function expectEqualNumbers(a: NumberLike, b: NumberLike, message?: string) {
   assert.ok(a != null);

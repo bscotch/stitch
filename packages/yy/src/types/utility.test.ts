@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { GameMakerVersionString } from './GameMakerVersionString.ts';
-import { FixedNumber, joinPaths, parsePath, toPosixPath } from './utility.ts';
+import { joinPaths, parsePath, toPosixPath } from './utility.ts';
 
 describe('Utilities', function () {
   it('can join path parts', function () {
@@ -89,34 +89,5 @@ describe('Utilities', function () {
     assert.equal(GameMakerVersionString.compareRaw('2024.1400.0.900', '2024.14.0.907'), 1);
     assert.equal(GameMakerVersionString.compareRaw('2026.100.0.1199', '2026.100.0.1199'), 0);
     assert.equal(GameMakerVersionString.compareRaw('2026.100.0.99', '2026.100.0.1199'), -1);
-  });
-
-  it('can use FixedNumber instances in place of number primitives', function () {
-    assert.ok(new FixedNumber(1) instanceof FixedNumber);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(1) == 1, true);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(1) == 2, false);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(32) + 2 == 34, true);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(32) + 2 == 3, false);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(10.11) == 10.11, true);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(10.11) === 10.11, false);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(10.11) > 10, true);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(10.11) < 12, true);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(10.11) < 10, false);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(10.11) > 12, false);
-    assert.equal(`${new FixedNumber(10.123, 2)}`, '10.12');
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(10.123, 2) == '10.12', false);
-    // @ts-expect-error Types are compatible despite not looking like it
-    assert.equal(new FixedNumber(10.123, 2) == '10.123', true);
   });
 });

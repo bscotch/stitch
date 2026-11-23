@@ -2,10 +2,6 @@
 import { z } from 'zod';
 import { yyBaseSchema } from './YyBase.ts';
 import {
-  FixedNumber,
-  fixed0,
-  fixed1,
-  fixedNumber,
   randomString,
   unstable,
   yyResourceIdSchemaGenerator,
@@ -38,7 +34,7 @@ export const yyRoomInstanceSchema = unstable({
   hasCreationCode: z.boolean().default(false),
   ignore: z.boolean().default(false),
   imageIndex: z.number().default(0),
-  imageSpeed: fixedNumber().default(fixed1),
+  imageSpeed: z.number().default(1),
   inheritCode: z.boolean().default(false),
   inheritedItemId: z.unknown().nullable().default(null),
   inheritItemSettings: z.boolean().default(false),
@@ -48,12 +44,12 @@ export const yyRoomInstanceSchema = unstable({
   properties: z.array(z.unknown()).default([]),
   resourceType: z.literal('GMRInstance').default('GMRInstance'),
   resourceVersion: z.string().default('1.0'),
-  rotation: fixedNumber().default(fixed0),
-  scaleX: fixedNumber().default(fixed1),
-  scaleY: fixedNumber().default(fixed1),
+  rotation: z.number().default(0),
+  scaleX: z.number().default(1),
+  scaleY: z.number().default(1),
   tags: z.array(z.string()).optional(),
-  x: fixedNumber().default(fixed0),
-  y: fixedNumber().default(fixed0),
+  x: z.number().default(0),
+  y: z.number().default(0),
 });
 
 export type YyRoomLayerBase = z.infer<typeof yyRoomLayerBaseSchema>;
@@ -174,11 +170,11 @@ const yyRoomAssetLayerSchema = z.looseObject({
 
 export type YyRoomBackgroundLayer = z.infer<typeof yyRoomBackgroundLayerSchema>;
 const yyRoomBackgroundLayerSchema = yyRoomLayerBaseSchema.extend({
-  animationFPS: fixedNumber().default(new FixedNumber(15)),
+  animationFPS: z.number().default(15),
   animationSpeedType: z.number().default(0),
   colour: z.number().default(4278190080),
   depth: z.number().default(100),
-  hspeed: fixedNumber().default(fixed0),
+  hspeed: z.number().default(0),
   htiled: z.boolean().default(false),
   name: z.string().default('Background'),
   properties: z.array(z.unknown()).default([]),
@@ -194,7 +190,7 @@ const yyRoomBackgroundLayerSchema = yyRoomLayerBaseSchema.extend({
   stretch: z.boolean().default(false),
   tags: z.array(z.string()).optional(),
   userdefinedAnimFPS: z.boolean().default(false),
-  vspeed: fixedNumber().default(fixed0),
+  vspeed: z.number().default(0),
   vtiled: z.boolean().default(false),
   x: z.number().default(0),
   y: z.number().default(0),
@@ -277,18 +273,18 @@ export const yyRoomSchema = yyBaseSchema.extend({
   physicsSettings: unstable({
     inheritPhysicsSettings: z.boolean().default(false),
     PhysicsWorld: z.boolean().default(false),
-    PhysicsWorldGravityX: fixedNumber().default(fixed0),
-    PhysicsWorldGravityY: fixedNumber().default(new FixedNumber(10)),
-    PhysicsWorldPixToMetres: fixedNumber().default(fixed0),
+    PhysicsWorldGravityX: z.number().default(0),
+    PhysicsWorldGravityY: z.number().default(10),
+    PhysicsWorldPixToMetres: z.number().default(0),
   }).default({
     inheritPhysicsSettings: false,
     PhysicsWorld: false,
-    PhysicsWorldGravityX: fixed0,
-    PhysicsWorldGravityY: new FixedNumber(10),
-    PhysicsWorldPixToMetres: fixed0,
+    PhysicsWorldGravityX: 0,
+    PhysicsWorldGravityY: 10,
+    PhysicsWorldPixToMetres: 0,
   }),
   isDnd: z.boolean().default(false),
-  volume: fixedNumber().default(new FixedNumber(10)),
+  volume: z.number().default(10),
   parentRoom: z.unknown().nullable().default(null),
   /**
    * 8 identical 'views' are created by default.

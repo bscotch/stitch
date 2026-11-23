@@ -3,10 +3,6 @@ import { z } from 'zod';
 import { yyBaseSchema } from './YyBase.ts';
 import { ensureTrackKeyFrames } from './YySprite.lib.ts';
 import {
-  FixedNumber,
-  fixed0,
-  fixed1,
-  fixedNumber,
   unstable,
   yyResourceIdSchemaGenerator,
 } from './utility.ts';
@@ -162,8 +158,8 @@ const spriteImageLayerSchema = unstable({
   visible: z.boolean().default(true),
   isLocked: z.boolean().default(false),
   blendMode: spriteLayerBlendModeSchema.default(0),
-  opacity: fixedNumber(z.number().min(0).max(100)).default(
-    new FixedNumber(100),
+  opacity: z.number().min(0).max(100).default(
+    100,
   ),
   displayName: z.string().default('default'),
   resourceVersion: z.string().default('1.0'),
@@ -184,8 +180,8 @@ const spriteFolderLayerSchema = unstable({
   blendMode: spriteLayerBlendModeSchema.default(0),
   displayName: z.string().default('Layer Group'),
   isLocked: z.boolean().default(false),
-  opacity: fixedNumber(z.number().min(0).max(100)).default(
-    new FixedNumber(100),
+  opacity: z.number().min(0).max(100).default(
+    100,
   ),
   visible: z.boolean().default(true),
   layers: z.array(spriteImageLayerSchema).default([]),
@@ -213,9 +209,9 @@ const spriteSequenceTrackKeyframeBaseSchema = z.object({
   /**
    * Appears to be the index position within the keyframes array
    */
-  Key: fixedNumber(z.number().min(0)).default(fixed0),
+  Key: z.number().min(0).default(0),
   /** Seems to always be 1? */
-  Length: fixedNumber().default(fixed1),
+  Length: z.number().default(1),
   Stretch: z.boolean().default(false),
   Disabled: z.boolean().default(false),
   IsCreationKey: z.boolean().default(false),
@@ -337,7 +333,7 @@ const spriteKeyframesSchema = z.preprocess(
     .and(spriteSequenceTrackKeyframesTypeSchema)
     .transform((arg) => {
       arg.Keyframes.forEach((k, i) => {
-        k.Key = new FixedNumber(i);
+        k.Key = i;
       });
       return arg;
     }),
@@ -371,21 +367,21 @@ const spriteSequenceSchema = unstable({
   /**
    * FPS (probably 30, 45, or 60), set via the editor
    */
-  playbackSpeed: fixedNumber(z.number().min(0)).default(new FixedNumber(60)),
+  playbackSpeed: z.number().min(0).default(60),
   /**
    * FPS type, set via the editor
    */
   playbackSpeedType: spritePlaybackSpeedTypeSchema.default(0),
   autoRecord: z.boolean().default(true),
-  volume: fixedNumber().default(fixed1),
+  volume: z.number().default(1),
   /**
    * Number of frames
    */
-  length: fixedNumber().default(fixed0),
+  length: z.number().default(0),
   visibleRange: z
     .object({
-      x: fixedNumber(),
-      y: fixedNumber(),
+      x: z.number(),
+      y: z.number(),
     })
     .nullable()
     .default(null),
@@ -393,11 +389,11 @@ const spriteSequenceSchema = unstable({
   showBackdrop: z.boolean().default(true),
   showBackdropImage: z.boolean().default(false),
   backdropImagePath: z.string().default(''),
-  backdropImageOpacity: fixedNumber().default(fixed0),
+  backdropImageOpacity: z.number().default(0),
   backdropWidth: z.number().default(1366),
   backdropHeight: z.number().default(768),
-  backdropXOffset: fixedNumber().default(fixed0),
-  backdropYOffset: fixedNumber().default(fixed0),
+  backdropXOffset: z.number().default(0),
+  backdropYOffset: z.number().default(0),
   xorigin: z.number().default(0),
   yorigin: z.number().default(0),
   eventToFunction: z.unknown().default({}),
@@ -468,9 +464,11 @@ const yySpriteSchemaStrict = yyBaseSchema
      */
     swfPrecision: z.number().default(2.525),
     bbox_left: z.number().default(0),
-    bbox_right: z.number().default(0),
+    /** Defaults to the sprite width if not provided */
+    bbox_right: z.number().optional(),
     bbox_top: z.number().default(0),
-    bbox_bottom: z.number().default(0),
+    /** Defaults to the sprite height if not provided */
+    bbox_bottom: z.number().optional(),
     /**
      * Horizontally tiled
      */
@@ -513,7 +511,7 @@ const yySpriteSchemaStrict = yyBaseSchema
       sprite.sequence.tracks[0].keyframes.Keyframes.slice(0, frameCount);
 
     // Ensure that sequence length is a tally of the frames
-    sprite.sequence.length = new FixedNumber(frameCount);
+    sprite.sequence.length = frameCount;
 
     // Ensure keyframes map onto frames
     for (const [
@@ -526,13 +524,16 @@ const yySpriteSchemaStrict = yyBaseSchema
     // Ensure starting size
     sprite.width ||= 64;
     sprite.height ||= 64;
-    sprite.bbox_right ||= sprite.width;
-    sprite.bbox_bottom ||= sprite.height;
 
     // Ensure that the sequence has a name
     sprite.sequence.name = sprite.name;
 
-    return sprite;
+    // Only populate the bbox if it's missing (GameMaker
+    // uses 0 for new sprites, so 0 is a valid value!)
+    return Object.assign(sprite, {
+      bbox_right: sprite.bbox_right ?? sprite.width,
+      bbox_bottom: sprite.bbox_bottom ?? sprite.height,
+    });
   });
 
 /**

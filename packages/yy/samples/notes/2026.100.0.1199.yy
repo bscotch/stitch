@@ -1,0 +1,11 @@
+{
+  "$GMNotes":"v2",
+  "%Name":"Note1",
+  "name":"Note1",
+  "parent":{
+    "name":"SampleProject",
+    "path":"SampleProject.yyp",
+  },
+  "resourceType":"GMNotes",
+  "resourceVersion":"2.0",
+}

@@ -1,7 +1,8 @@
 import { GameMakerVersionString } from './types/GameMakerVersionString.ts';
 import type { Yyp, YypResource } from './types/Yyp.ts';
+import { isGameMakerFloatField } from './Yy.floats.ts';
 import {
-  FixedNumber,
+  formatGameMakerFloat,
   isObjectWithField,
   nameField,
   yyIsNewFormat,
@@ -42,17 +43,60 @@ function quote(string: string) {
 
 export type AnyExceptPromise<T> = T extends Promise<any> ? never : T;
 
+const yypPathCollator = new Intl.Collator('en');
+
+/**
+ * The first GameMaker IDE versions known to have
+ * specific project-file format changes.
+ */
+export const gameMakerVersions = {
+  /** `$GMScript`, `$GMRoom`, `$GMRInstance`, and `$GMEvent` went from `""` to `"v1"` */
+  v1Scripts: '2024.800.0.618',
+  /** `$GMSound` went to `"v2"`, `$GMAudioGroup` to `"v1"` (both with an `exportDir` field) */
+  v2Sounds: '2024.1400.0.815',
+  /** `$GMSprite` went to `"v2"`, `$GMSpriteFrame` and `$GMSequence` to `"v1"` */
+  v2Sprites: '2024.1400.0.904',
+  /** Arrays of numbers inside of inlined objects are also inlined */
+  inlinedNumberArrays: '2024.1400.0.904',
+} as const;
+
+/**
+ * Compare two strings the way GameMaker does when sorting
+ * resources, folders, and included files in the project file.
+ *
+ * Uses a fixed locale so that results don't depend on the
+ * system locale (which, for example, puts CJK characters
+ * before latin characters for Chinese locales).
+ */
+export function compareYypPaths(a: string, b: string): number {
+  return yypPathCollator.compare(a.toLowerCase(), b.toLowerCase());
+}
+
 /**
  * Jsonify, with GameMaker-like JSON and allowing for BigInts.
  * Based on {@link https://github.com/sidorares/json-bigint/blob/master/lib/stringify.js json-bigint}.
  *
  * The yyp file can be passed in to use as a reference,
- * e.g. to ensure the write format is used for new files.
+ * e.g. to ensure the right format is used for new files.
  */
 export function stringifyYy(yyData: any, yyp?: Yyp): string {
   const isNewFormat = yyIsNewFormat(yyData) || yyIsNewFormat(yyp);
+  const ideVersion = yyp?.MetaData?.IDEVersion
+    ? new GameMakerVersionString(yyp.MetaData.IDEVersion)
+    : null;
+  /**
+   * Whether or not number arrays inside of inlined
+   * objects should also be inlined. If we don't know the
+   * IDE version, assume the latest behavior.
+   */
+  const inlinesNumberArrays =
+    isNewFormat &&
+    (!ideVersion || ideVersion.gte(gameMakerVersions.inlinedNumberArrays));
 
   const eol = isNewFormat ? '\n' : `\r\n`;
+  const rootResourceType: unknown = isObjectWithField(yyData, 'resourceType')
+    ? yyData.resourceType
+    : undefined;
 
   let gap = '';
   let level = 0; // Level 1 are root elements
@@ -81,12 +125,28 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
     const mind = gap;
     const startingLevel = level;
 
-    if (value instanceof FixedNumber) {
-      return value.toFixed(value.digits);
+    if (typeof value === 'number' && typeof key === 'string') {
+      // The key of the parent object/array containing the holder
+      const parentKey = pointer
+        .slice(0, -1)
+        .findLast((p): p is string => typeof p === 'string');
+      if (isGameMakerFloatField(holder.resourceType, parentKey, key)) {
+        return formatGameMakerFloat(value);
+      }
     }
 
     // If the value has a toJSON method, call it to obtain a replacement value.
-    value = value?.toJSON?.(key) ?? value;
+    // Only objects are allowed to do this: other code running in the same
+    // process (e.g. another VSCode extension) may have patched
+    // `BigInt.prototype.toJSON` to return a string, which would cause
+    // integers like `-1` to be written as `"-1"`.
+    if (
+      value &&
+      typeof value === 'object' &&
+      typeof value.toJSON === 'function'
+    ) {
+      value = value.toJSON(key) ?? value;
+    }
 
     // What happens next depends on the value's type.
     switch (typeof value) {
@@ -129,17 +189,29 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
             (_, i) => stringify(i, value, [...pointer]) || 'null',
           );
 
+          // Since 2024.1400, arrays of numbers that are within
+          // an inlined object (one nested inside of an array) are
+          // also inlined, e.g. `"args":[1,2,],`
+          const isInlinedNumberArray =
+            inlinesNumberArrays &&
+            arrayLevel > 1 &&
+            value.every(
+              (item) => typeof item === 'number' || typeof item === 'bigint',
+            );
+
           // Join all of the elements together, separated with commas, and wrap them in
           // brackets.
           const v =
             jsonifiedValues.length === 0
               ? '[]'
-              : `[${eol}` +
-                gap +
-                jsonifiedValues.join(`,${eol}` + gap) +
-                `,${eol}` +
-                mind +
-                ']';
+              : isInlinedNumberArray
+                ? `[${jsonifiedValues.join(',')},]`
+                : `[${eol}` +
+                  gap +
+                  jsonifiedValues.join(`,${eol}` + gap) +
+                  `,${eol}` +
+                  mind +
+                  ']';
           gap = mind;
           level = startingLevel;
           arrayLevel--;
@@ -172,10 +244,18 @@ export function stringifyYy(yyData: any, yyp?: Yyp): string {
           (pointer.at(-1) === 'Channels' ||
             pointer.find((p) => p === 'ConfigValues'));
 
+        // In the new format, a font's glyphs (a dictionary keyed by
+        // character code) has each glyph inlined.
+        const isInlinedFontGlyph =
+          isNewFormat &&
+          rootResourceType === 'GMFont' &&
+          pointer.length === 2 &&
+          pointer[0] === 'glyphs';
+
         const v =
           partial.length === 0
             ? '{}'
-            : includeGaps || needsLineBreak
+            : (includeGaps || needsLineBreak) && !isInlinedFontGlyph
               ? `{${eol}` +
                 gap +
                 partial.join(`,${eol}` + gap) +
@@ -241,23 +321,46 @@ function prepareForStringification<T>(
     isNewFormat,
     path: [...__meta.path],
   };
-  if (isObjectWithField(yyData, '$GMScript')) {
-    if (ideVersion?.gte('2024.800.0.618')) {
+
+  // Apply GameMaker's own format upgrades, based on the IDE version
+  // (Using an aliased variable so we can type it as unknown)
+  const data: unknown = yyData;
+  if (isYyOfType(data, 'GMScript', isNewFormat)) {
+    if (ideVersion?.gte(gameMakerVersions.v1Scripts)) {
       // Then we need to set this to "v1" instead of ""
-      yyData[`$GMScript`] = 'v1';
+      data[`$GMScript`] = 'v1';
     }
-  } else if (isObjectWithField(yyData, '$GMSound')) {
-    if (ideVersion?.gte('2024.1400.0.815')) {
-      yyData['$GMSound'] = 'v2';
-      // The 'type' field has been replaced with 'channelFormat'
-      // @ts-expect-error Type isn't known here
-      yyData['channelFormat'] ||= yyData['type'] || 1;
-      // @ts-expect-error Type isn't known here
-      yyData['compressionQuality'] ||= 4;
-      // @ts-expect-error Type isn't known here
-      yyData['exportDir'] ||= '';
-      delete yyData.type;
-      delete yyData.bitRate;
+  } else if (isYyOfType(data, 'GMSound', isNewFormat)) {
+    if (ideVersion?.gte(gameMakerVersions.v2Sounds)) {
+      data['$GMSound'] = 'v2';
+      // The 'type' field has been replaced with 'channelFormat'.
+      // (Note that 0 is a valid value for both!)
+      data['channelFormat'] ??= data['type'] ?? 1;
+      data['compressionQuality'] ??= 4;
+      data['exportDir'] ??= '';
+      delete data.type;
+      delete data.bitRate;
+    }
+  } else if (isYyOfType(data, 'GMAudioGroup', isNewFormat)) {
+    if (ideVersion?.gte(gameMakerVersions.v2Sounds)) {
+      data['$GMAudioGroup'] = 'v1';
+      data['exportDir'] ??= '';
+    }
+  } else if (isYyOfType(data, 'GMSprite', isNewFormat)) {
+    if (ideVersion?.gte(gameMakerVersions.v2Sprites)) {
+      // GameMaker upgrades sprites by changing their
+      // version strings (and nothing else).
+      data['$GMSprite'] = 'v2';
+      const frames: unknown[] = Array.isArray(data.frames) ? data.frames : [];
+      for (const frame of frames) {
+        if (isYyOfType(frame, 'GMSpriteFrame', isNewFormat)) {
+          frame['$GMSpriteFrame'] = 'v1';
+        }
+      }
+      const sequence: unknown = data.sequence;
+      if (isYyOfType(sequence, 'GMSequence', isNewFormat)) {
+        sequence['$GMSequence'] = 'v1';
+      }
     }
   }
   if (Array.isArray(yyData)) {
@@ -271,27 +374,19 @@ function prepareForStringification<T>(
       if (currentPath === 'resources') {
         // Sort based on the path
         const resources = prepared as YypResource[];
-        resources.sort((a, b) =>
-          a.id.path.toLowerCase().localeCompare(b.id.path.toLowerCase()),
-        );
+        resources.sort((a, b) => compareYypPaths(a.id.path, b.id.path));
       } else if (currentPath === 'IncludedFiles') {
         const includedFiles = prepared as Yyp['IncludedFiles'];
         includedFiles.sort((a, b) =>
-          `${a.filePath}/${a.name}`
-            .toLowerCase()
-            .localeCompare(`${b.filePath}/${b.name}`.toLowerCase()),
+          compareYypPaths(`${a.filePath}/${a.name}`, `${b.filePath}/${b.name}`),
         );
       } else if (currentPath === 'Folders') {
         const folders = prepared as Yyp['Folders'];
-        folders.sort((a, b) =>
-          a.folderPath.toLowerCase().localeCompare(b.folderPath.toLowerCase()),
-        );
+        folders.sort((a, b) => compareYypPaths(a.folderPath, b.folderPath));
       }
     }
 
     return prepared;
-  } else if (yyData instanceof FixedNumber) {
-    return yyData;
   } else if (typeof yyData === 'object' && yyData !== null) {
     const yyDataCopy = { ...yyData } as Record<string, any>;
     const hasResourceType =
@@ -305,7 +400,7 @@ function prepareForStringification<T>(
         ['GMScript', 'GMRoom', 'GMRInstance', 'GMEvent'].includes(
           yyData.resourceType as string,
         ) &&
-        ideVersion?.gte('2024.800.0.618')
+        ideVersion?.gte(gameMakerVersions.v1Scripts)
       ) {
         // Then we need to set this to "v1" instead of ""
         yyDataCopy[`$${yyData.resourceType}`] = 'v1';
@@ -378,4 +473,23 @@ function prepareForStringification<T>(
   }
 
   return yyData;
+}
+
+/**
+ * Whether some yyData represents a GameMaker resource of the
+ * given type. In the new (2023+) format, checks both for the
+ * `$${resourceType}` key and for the `resourceType` field, since
+ * newly created data may not have the former yet.
+ */
+function isYyOfType(
+  yyData: unknown,
+  resourceType: string,
+  isNewFormat: boolean,
+): yyData is Record<string, any> {
+  if (isObjectWithField(yyData, `$${resourceType}`)) return true;
+  return (
+    isNewFormat &&
+    isObjectWithField(yyData, 'resourceType') &&
+    yyData.resourceType === resourceType
+  );
 }

@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"Shader11",
+  "name":"Shader11",
+  "parent":{
+    "name":"SampleProject",
+    "path":"SampleProject.yyp",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

@@ -84,10 +84,15 @@ export const yypFolderSchema = z.preprocess(
 
 export type YypAudioGroup = z.infer<typeof yypAudioGroupSchema>;
 export type YypAudioGroupLoose = z.input<typeof yypAudioGroupSchema>;
-export const yypAudioGroupSchema = z.object({
+export const yypAudioGroupSchema = z.looseObject({
   ConfigValues: z
     .record(z.string(), z.record(z.string(), z.string()))
     .optional(),
+  /**
+   * Added in GameMaker 2024.1400, along with the
+   * `$GMAudioGroup` value changing from `""` to `"v1"`.
+   */
+  exportDir: z.string().optional(),
   name: z.string(),
   targets: bigNumber().default(-1n),
   resourceType: z.literal('GMAudioGroup').default('GMAudioGroup'),
