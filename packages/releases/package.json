@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/gamemaker-releases",
-  "version": "0.8.0",
+  "version": "1.0.0",
   "description": "A unified feed of GameMaker IDE releases and their paired Runtimes, across all channels and platforms.",
   "keywords": [
     "gamemaker",

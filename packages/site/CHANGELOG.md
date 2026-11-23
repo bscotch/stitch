@@ -1,5 +1,11 @@
 # @bscotch/stitch-site Changelog
 
+## 0.10.1 (2026-11-20)
+
+### Fixes
+
+- Updated the public Stitch site to publish the v2 GameMaker Releases feed and use it for its own interface.
+
 ## 0.10.0 (2026-01-07)
 
 ### Features

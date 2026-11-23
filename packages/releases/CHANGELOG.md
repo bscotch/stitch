@@ -1,5 +1,12 @@
 # @bscotch/gamemaker-releases Changelog
 
+## 1.0.0 (2026-11-21)
+
+### Breaking Changes
+
+- Removed the `@bscotch/gamemaker-releases/legacy` export, which nothing uses anymore. Use the v2 releases feed instead. The legacy feed file itself is still served for older Stitch versions.
+- Completely overhauled the GameMaker Releases feed to drop stuff that no longer makes sense and to enable support for LTS feeds. The API and data structures are completely changed!
+
 ## 0.8.0 (2026-01-07)
 
 ### Features

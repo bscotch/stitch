@@ -1,5 +1,28 @@
 # Stitch Changelog
 
+## 2.0.0 (2026-11-21)
+
+### Breaking Changes
+
+- Stitch Launcher has been completely overhauled, with a new function-based API (the old classes are gone). It now uses the v2 GameMaker releases feed, only uses IDEs from its own cache (ignoring your own GameMaker installs), and has a platform layer for Windows, macOS and Linux (macOS and Linux are implemented but untested).
+- Stitch Launcher now installs IDE versions by downloading the official installer to your Downloads folder and extracting it with a user-installed full 7-Zip, instead of running the installer. Stitch never runs GameMaker installers. Missing 7-Zip or a missing Visual C++ runtime produce errors with instructions.
+- Stitch Launcher no longer installs runtimes (the IDE installs its own on boot), and no longer edits runtime.json or runtime_feeds.json.
+- Igor builds now use a self-cleaning cache in your OS's cache folder instead of `<project>/tmp/igor` (those old folders can be deleted), and their success is based on Igor's exit code.
+- Stitch for VSCode now uses the v2 GameMaker release channels (lts2026, lts2022, monthly, beta, unstable). Existing channel settings are migrated automatically.
+- Stitch for VSCode now suppresses GameMaker's update prompt by default when opening projects, and restores GameMaker's settings automatically.
+
+### Features
+
+- Stitch Launcher can prune cached IDE versions, and flags versions that can no longer be downloaded.
+- The parser can be given launcher options (e.g. a custom IDE cache folder) for finding GameMaker help docs and GML specs.
+- Stitch for VSCode has new settings for the GameMaker IDE cache folder, the installer downloads folder, and the 7-Zip path, plus a "Prune Cached GameMaker Versions" command.
+
+### Fixes
+
+- Temporarily changed Stitch for VSCode to use the "Prerelease" channel so that all of these changes can be verified in production before being made available to all users.
+- Suppressing GameMaker's "IDE Update Available" prompt now only affects the launched channel, keeps a real backup, and restores your settings right after the IDE's startup update check. Leftovers from older Stitch versions are cleaned up automatically.
+- Updated to continue using the legacy version of the unified releases feed (just to ensure things keep working until we update to use the new version).
+
 ## 1.81.0 (2026-01-11)
 
 ### Features
@@ -1002,7 +1025,7 @@
 
 ### Fixes
 
-- Resolved issue
+- Resolved issue where manually triggered a utocompletes are empty.
 
 ## 1.3.0 (2023-07-10)
 

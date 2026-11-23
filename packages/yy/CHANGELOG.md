@@ -1,5 +1,21 @@
 # @bscotch/yy Changelog
 
+## 3.0.0 (2026-11-23)
+
+### Breaking Changes
+
+- Change all Typescript enums to real objects, to allow for all Typescript syntax to be "erasable" so that source files can be run directly.
+
+### Features
+
+- Now supports reading/writing project files for GameMaker 2026.100.0.1199
+- Added more methods for evaluating GameMaker version strings and comparing them to each other.
+
+### Fixes
+
+- Potentially resolved issue where numeric values could become a `"-1"` string. This is probably due to interference by 3rd party patching of JavaScript's BigInt type and, if so, that should no longer be a problem.
+- Resolved sorting order problem where Chinese glyphs would result in different sorting in GameMaker and Stitch
+
 ## 2.7.0 (2026-01-07)
 
 ### Features
@@ -138,10 +154,13 @@
 
 ## 2.0.0 (2024-02-13)
 
+### Breaking Changes
+
+- Added support for GameMaker project format whose runtime is 2024.200.0.508+, and removed support for 2024.200.0.490.
+
 ### Features
 
 - Re-updated YY stringification logic to account for additional changes to the new format
-- Added support for GameMaker project format whose runtime is 2024.200.0.508+, and removed support for 2024.200.0.490.
 
 ## 1.0.2 (2024-01-29)
 
@@ -157,7 +176,7 @@
 
 ## 1.0.0 (2024-01-29)
 
-### Features
+### Breaking Changes
 
 - Added support for the new GameMaker project format
 

@@ -61,7 +61,7 @@
 
 ## 1.0.0 (2024-01-29)
 
-### Features
+### Breaking Changes
 
 - Added support for the new GameMaker project format
 
