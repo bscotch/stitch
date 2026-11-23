@@ -1,20 +1,66 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { commitTouchesDir, paragraphs } from './commits.mts';
+import type { Change } from './commits.mts';
+import { commitTouchesDir, parseChanges } from './commits.mts';
 import type { GitCommit } from './git.mts';
 import { parseVersionTag } from './git.mts';
 import { compareVersions } from './semver.mts';
 import type { Project } from './workspace.mts';
 
-/** Which commit types appear in changelogs, and under which heading. */
-export const CHANGELOG_GROUPS: readonly { pattern: RegExp; group: string }[] = [
-  { pattern: /^fix|bug(fix)?|perf(ormance)$/, group: 'Fixes' },
-  { pattern: /^feat(ure)?$/, group: 'Features' },
-  { pattern: /^docs$/, group: 'Docs' },
+/**
+ * Which commit types appear in changelogs, and under which heading.
+ * Any change marked breaking with `!` goes under {@link BREAKING_GROUP}
+ * regardless of its type.
+ */
+export const CHANGELOG_GROUPS: readonly {
+  types: readonly string[];
+  group: string;
+}[] = [
+  {
+    types: ['breaking', 'change', 'alt', 'alteration', '🧨', '💣'],
+    group: 'Breaking Changes',
+  },
+  { types: ['feat', 'feature', '✨', '🆕'], group: 'Features' },
+  {
+    types: [
+      'fix',
+      'bug',
+      'bugfix',
+      'issue',
+      'perf',
+      'performance',
+      'security',
+      '🐛',
+      '🐞',
+      '🧯',
+      '🚒',
+      '⚕',
+      '💉',
+      '🩹',
+      '🚀',
+      '🔒',
+      '🔐',
+    ],
+    group: 'Fixes',
+  },
+  {
+    types: ['docs', 'doc', 'documentation', '📚', '📙', '📃', '📜', '📄'],
+    group: 'Docs',
+  },
 ];
 
-const headerPattern =
-  /^(?<type>[a-z]+?)(\((?<scope>[^)]*)\))?(?<isBreaking>!)?: (?<description>.*)/;
+const BREAKING_GROUP = CHANGELOG_GROUPS[0].group;
+
+/** The changelog heading for a change, if it belongs in the changelog. */
+export function changelogGroup(change: Change): string | undefined {
+  if (change.breaking) return BREAKING_GROUP;
+  return CHANGELOG_GROUPS.find((g) => g.types.includes(change.type))?.group;
+}
+
+/** Collapse a (possibly hard-wrapped) change title onto one line. */
+function oneLine(text: string): string {
+  return text.replace(/\s*\r?\n\s*/g, ' ').trim();
+}
 
 export interface ChangelogVersion {
   version: string;
@@ -69,12 +115,8 @@ export function collectChangelog(
     if (!version) continue; // Unreleased
     if (!commitTouchesDir(log, project.dir)) continue;
 
-    for (const paragraph of paragraphs(log.body)) {
-      const header = paragraph.match(headerPattern)?.groups;
-      if (!header) continue;
-      const group = CHANGELOG_GROUPS.find((g) =>
-        g.pattern.test(header.type),
-      )?.group;
+    for (const change of parseChanges(log.body)) {
+      const group = changelogGroup(change);
       if (!group) continue;
       let section = versions.find((v) => v.version === version);
       if (!section) {
@@ -83,7 +125,7 @@ export function collectChangelog(
       } else if (log.date > section.date) {
         section.date = log.date;
       }
-      (section.groups[group] ||= []).push(header.description);
+      (section.groups[group] ||= []).push(oneLine(change.title));
     }
   }
   return versions.sort((a, b) => compareVersions(b.version, a.version));

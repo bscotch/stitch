@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { z } from 'zod';
 import { Yy } from './Yy.ts';
 import { compareYypPaths } from './Yy.stringify.ts';
 import type { Yyp } from './types/Yyp.ts';

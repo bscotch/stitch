@@ -76,11 +76,11 @@ describe('changelog', () => {
     );
   });
 
-  it('only includes Fixes, Features, and Docs', () => {
+  it('only includes Breaking Changes, Fixes, Features, and Docs', () => {
     const yy = project('@bscotch/yy', '1.0.0');
     const commits = [
       commit(
-        'chore: nope\n\nfeat: Yes\n\ndocs: Documented\n\ntest: nope\n\nbugfix: Bug',
+        'chore: nope\n\nfeat: Yes\n\ndocs: Documented\n\ntest: nope\n\nbugfix: Bug\n\nbreaking: Broke it',
         dir,
       ),
     ];
@@ -88,6 +88,44 @@ describe('changelog', () => {
       Features: ['Yes'],
       Docs: ['Documented'],
       Fixes: ['Bug'],
+      'Breaking Changes': ['Broke it'],
+    });
+  });
+
+  it('groups `!` changes as breaking, whatever their type', () => {
+    const yy = project('@bscotch/yy', '1.0.0');
+    const commits = [
+      commit('feat!: Big feature\n\nfix(scope)!: Big fix\n\nfeat: Small', dir),
+    ];
+    assert.deepEqual(collectChangelog(yy, commits)[0].groups, {
+      'Breaking Changes': ['Big feature', 'Big fix'],
+      Features: ['Small'],
+    });
+  });
+
+  it('matches commit types exactly', () => {
+    const yy = project('@bscotch/yy', '1.0.0');
+    const commits = [
+      commit(
+        'perf: Faster\n\nissue: Issue\n\nsecurity: Safer\n\ndebug: nope\n\nfixup: nope\n\nperformances: nope',
+        dir,
+      ),
+    ];
+    assert.deepEqual(collectChangelog(yy, commits)[0].groups, {
+      Fixes: ['Faster', 'Issue', 'Safer'],
+    });
+  });
+
+  it('joins hard-wrapped change descriptions onto one line', () => {
+    const yy = project('@bscotch/yy', '1.0.0');
+    const commits = [
+      commit(
+        'docs: Updated the notes and\njust focused on\r\n  the basics.',
+        dir,
+      ),
+    ];
+    assert.deepEqual(collectChangelog(yy, commits)[0].groups, {
+      Docs: ['Updated the notes and just focused on the basics.'],
     });
   });
 

@@ -2,3 +2,5 @@
 !dist/**/*
 !types/**/*
 !assets/**/*
+dist/**/*.test.*
+dist/test.lib.*

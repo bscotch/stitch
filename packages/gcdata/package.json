@@ -3,6 +3,11 @@
   "version": "0.26.0",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/gcdata"
+  },
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc --build",

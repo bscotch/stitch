@@ -1,95 +1,44 @@
 # Stitch Update
 
-Stitch no longer fully works with the more recent versions of GameMaker we need, so it's time to get things updated!
+Branch `feat/2026.100.0.1199` updates Stitch for GameMaker IDE 2026.100.0.1199 (runtime 2026.100.0.1133), moves publishing into CI, and overhauls the tooling, dependencies, and Stitch Launcher. What's left is getting it released, then follow-ups.
 
-We'll do that in phases on branch `feat/2026.100.0.1199`. Note that this is a Windows-first project so most of this work should happen _on_ Windows, though ideally anything we do would also work on Linux and Mac (or fail gracefully on those platforms).
+This is a Windows-first project, but anything we do should ideally also work on Linux and macOS (or fail gracefully there).
 
-## [✅ COMPLETE] Phase 1: Publishing Overhaul
+## Before merging
 
-The npm packages in this project are just published by running the `pnpm:bump` script locally.
+- [ ] Manually test the Svelte-based UIs (dependencies were upgraded): the Stitch for VSCode webviews and the Stitch site.
+- [ ] Smoke-test Stitch for VSCode against a real project in GameMaker 2026.100.0.1199 (open project, set version, Igor build, prune IDE cache).
+- [ ] Confirm that raising `engines.vscode` to `^1.140.0` is intended (users on older VSCode builds or forks like Cursor won't get the update).
+- [ ] Check [the Issues](https://github.com/bscotch/stitch/issues) for any remaining compatibility problems with the new GameMaker version.
 
-Publishing locally was never a good idea, but now it's way too finicky since npm changed their approach to auth tokens. So we need to move publishing into CI.
+## Publishing setup (one-time)
 
-To do this, we should drop the `trebuchet` dependency and reconstruct its necessary features within the project as scripts. Trebuchet is a custom utility for version-bumping and publishing packages in monorepos, and for generating changelogs in the process (via a modified version of Conventional Commits). We should be able to reproduce the parts of that we actually use without all of the baggage of that (very outdated) general-purpose tooling that Trebuchet provides.
+- [ ] Set up npm Trusted Publishing for each public package. On npmjs.com, go to the package's Settings → Trusted Publisher → GitHub Actions and enter organization `bscotch`, repository `stitch`, workflow `release.yaml`, and no environment.
+  - Needed for this release: `@bscotch/yy`, `@bscotch/gamemaker-releases`, `@bscotch/stitch-launcher`, `@bscotch/gml-parser`, `@bscotch/sprite-source`, `@bscotch/stitch-config`
+  - Needed before their next release: `@bscotch/gcdata`, `@bscotch/steam-bbcode`
+- [ ] Make sure the `VSCE_PAT` repo secret exists and hasn't expired.
+- [ ] Make sure maintainers can push directly to `develop`, since `pnpm bump` pushes the bump commit and tags itself.
 
-The goal is to still be able to simply run `pnpm:bump` to have versioning all happen properly, and changelogs written as expected, and then have actual publishing happen in CI while ensuring tests are passing and builds are complete.
+## Release
 
-We will not do any test-running or versioning in this phase, we're just getting things ready.
+See [Releasing](CONTRIBUTING.md#releasing-maintainers) for how bumping and publishing work.
 
-## [✅ COMPLETE] Phase 2: Update test-running
+- [ ] Merge into `develop` with a merge commit or rebase, **not a squash**: versions and changelogs come from the individual commit messages.
+- [ ] On `develop`, run `pnpm bump --dry-run` and review the planned versions and changelogs. Expected: major bumps for `yy`, `gamemaker-releases`, `stitch-launcher`, `gml-parser`, and Stitch for VSCode.
+- [ ] Run `pnpm bump`, then watch the Release workflow. This is the first CI publish, so expect to debug it. To retry, run the workflow manually with the bump commit's SHA (already-published versions are skipped).
 
-Tests currently depend on Mocha, but Node has its own runner now and can run Typescript files directly, so that makes for a better overall experience. So we should replace Mocha with Node's native runner.
+## After the release
 
-We also need to evaluate the existing test suites for compatibility with CI, and figure out how to get them into a state where they _are_ compatible with CI.
+- [ ] Once publishing through CI works, set each npm package's "Publishing access" to disallow token-based publishing.
+- [ ] Stitch for VSCode is temporarily published to the Pre-Release channel. Once verified, remove `--pre-release` from its `package` and `vscode:publish` scripts and bump again (the stable version must be higher than the pre-release).
+- [ ] Consider running tests and `pnpm lint` on PRs. CI currently only tests at release time, and linting needs the site, webview, and extension dependencies installed.
 
-Outcome:
-
-- Mocha/Chai replaced with `node:test`/`node:assert`, running TS source directly. Library packages now extend `packages/tsconfig.lib.json` (erasable syntax only, `.ts` import specifiers, `verbatimModuleSyntax`), which required converting enums, parameter properties, and decorators.
-- ⚠️ `@bscotch/yy`'s enums (`SpriteType`, `SoundChannel`, etc.) are now `as const` objects with same-named types. Member access and type usage are unchanged, but numeric reverse lookups (`SpriteType[2]`) and member-as-type (`x: SpriteType.Spine`) no longer work. This is a breaking change, so the next `yy` release must be a major version bump.
-- The Release workflow's `test` job builds and tests all npm libraries (plus release scripts) on Windows at the release commit, and blocks all publishing if anything fails. (This replaced a standalone `test.yaml` workflow, so PRs are no longer tested in CI.)
-- Tests that can't run in CI: the launcher suite (was already fully skipped: needs GameMaker installs and interactive prompts) and the full GameMaker release-notes scrape (skipped when `CI` is set; takes minutes without a local cache).
-- Known bug surfaced: the parser keeps a stale struct member after a file is reloaded mid-edit. It was failing under Mocha, and Mocha's `bail` hid the parser tests after it. It's now an isolated `todo` test in `parser/src/project.test.ts` (see Phase 6).
-- Not yet verified on Linux/macOS.
-
-## Phase 3: Update Dependencies
-
-It's been a while since the 3rd party dependencies were updated, so it'd be wise to make those updates and make sure all Typescript typechecking continues to work, all existing tests pass, and any new tests are added for related coverage that's missing.
-
-Before updating external dependencies:
-
-- [x] Update to Typescript 6 and ensure all typechecks still pass
-- [x] Fix the ESLint config so that a single root config works for all packages, and address all linting errors.
-  - Replaced the three legacy `.eslintrc.cjs` files (and `.eslintignore`) with one root flat `eslint.config.js` covering TS, JS, and Svelte (site + webviews). All ESLint deps now live only in the root `package.json`. Run with `pnpm lint` (or `pnpm lint:fix`).
-  - `pnpm lint` reports 0 errors and 0 warnings. Fixes were mostly unused vars, un-awaited promises (`void`, or `await` where it mattered), `{#each}` keys, `resolve()` for internal site links, and adding reasons to `@ts-expect-error`s.
-  - Not in CI yet: the test workflow only installs the npm libraries, but linting needs the site/webview/extension deps too.
-- [x] Update Svelte and related deps used by the Stitch for VSCode webviews, the site package, and anywhere else
-- [ ] Evaluate switching the Stitch for VSCode extension from building .cjs to using actual modules (supported since [1.100](https://code.visualstudio.com/updates/v1_100))
-
-After these are complete, update the remaining dependencies and ensure all tests continue to pass.
-
-- [x] Audit all external dependencies: replace with native Node/local code where possible, else swap for a better package, else update.
-  - **Replaced with native/local code:** `node-fetch`, `axios` (global `fetch`), `uuid` (`crypto.randomUUID()`), `type-fest` (local `PartialDeep` exported from `@bscotch/yy`), `dotenv` (`process.loadEnvFile()`), `inquirer` (`node:readline/promises`), `citty` (`node:util` `parseArgs`), `zx`/`del`/`rimraf` (`node:fs/promises`, via `scripts/clean.mjs`), `concurrently` (pnpm's regex script selector). Unused `glob` and `tslib` (in packages not using `__decorate`) were removed.
-  - **Swapped:** `xml2js` → `fast-xml-parser` (output verified identical across 34 GmlSpec files); `image-js` → `fast-png` + a small local `Raster` (output verified pixel-identical across all PNG formats). ⚠️ Behavior change: sprite-source now treats images without alpha as fully opaque when cropping (image-js used the last color channel as if it were alpha).
-  - **Updated** everything else to latest, except: TypeScript stays at 6.0.3 (typescript-eslint, svelte-check, and Kit don't support 7 yet), `@types/vscode` matches `engines.vscode` (1.107), and `spine-player` stays on 4.2.x to match the Spine editor version.
-  - **Node 22 is the baseline** (VSCode's embedded runtime): `@types/node` ^22, CI and `.npmrc`'s `use-node-version` on 22.x, and `engines.node: ">=22"` on published libraries. Under Node 22 `node --test` defaults to the TAP reporter when not in a TTY.
-  - `gcdata`'s `build:types` output changes shape under `json-schema-to-typescript` 16 (`oneOf` branches are intersected with shared properties). The code supports both shapes, but the generated `cl2.types.auto.ts` was not regenerated, since doing so also pulls in unrelated Crashlands2 data changes.
-
-## Phase 4: Ensure Compatibility with new GameMaker
-
-We need support for GameMaker IDE 2026.100.0.1199 and runtime 2026.100.0.1133:
-
-- Obtain sample files from that IDE version and add to the test suite
-- Update Yy schemas so they work with the new files
-- Check [the Issues](https://github.com/bscotch/stitch/issues) for any related compatibility issues we missed
-
-## Phase 5: Publish!
-
-In Phase 1 we won't have _actually_ published anything so those changes will have gone untested. But now we'll have stuff to publish, so we can do so while debugging any problems with the new publishing approach.
-
-Before the first CI publish, set up npm Trusted Publishing for each public package. On npmjs.com, go to the package's Settings → Trusted Publisher → GitHub Actions and enter:
-
-- Organization/user: `bscotch`
-- Repository: `stitch`
-- Workflow filename: `release.yaml`
-- Environment: none
-
-Packages:
-
-- [ ] `@bscotch/gamemaker-releases`
-- [ ] `@bscotch/gcdata`
-- [ ] `@bscotch/gml-parser`
-- [ ] `@bscotch/sprite-source`
-- [ ] `@bscotch/steam-bbcode`
-- [ ] `@bscotch/stitch-config`
-- [ ] `@bscotch/stitch-launcher`
-- [ ] `@bscotch/yy`
-
-Once everything publishes successfully through CI, consider setting each package's "Publishing access" to disallow token-based publishing.
-
-## Phase 6: Miscellaneous updates
-
-While we're at it, it would be good to resolve any other low-hanging fixes/features from [the Issues](https://github.com/bscotch/stitch/issues) and look into what it would take to handle other wishlist items.
-
-Known bugs to fix:
+## Follow-ups
 
 - [ ] **Parser: stale struct members after a mid-edit reload.** Reloading a file with `reloadDirty` (as happens while editing) leaves members from the previous content on the type. E.g. reloading `Complicated.gml` with `function Tmp () constructor {a}` and then `{ab}` leaves `a` as a member of `Tmp`'s `self` type. Reproduced by the `todo` test "removes stale members when a file is reloaded mid-edit" in `packages/parser/src/project.test.ts`. Once fixed, remove its `todo` option.
+- [ ] Verify the Stitch Launcher and test suites on Linux and macOS (implemented but untested).
+- [ ] Evaluate switching the Stitch for VSCode extension from building .cjs to using actual modules (supported since [1.100](https://code.visualstudio.com/updates/v1_100)).
+- [ ] Replace the deprecated `on:` event directives in `packages/vscode/webviews/src/lib/Search.svelte` (Svelte warns on every build).
+- [ ] Regenerate `gcdata`'s `cl2.types.auto.ts` (its shape changes under `json-schema-to-typescript` 16 and it will pull in unrelated Crashlands2 data changes).
+- [ ] Upgrade to TypeScript 7 once typescript-eslint, svelte-check, and SvelteKit support it.
+- [ ] Resolve other low-hanging fixes and features from [the Issues](https://github.com/bscotch/stitch/issues).

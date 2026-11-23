@@ -131,10 +131,12 @@ Version bumps and changelogs are generated from [conventional-commit](https://ww
 | ---------------------------------------------- | ----- | ----------------- |
 | `feat`, `feature`                              | minor | Features          |
 | `fix`, `bug`, `bugfix`, `issue`                | patch | Fixes             |
-| `docs`, `doc`, `documentation`                 | patch | Docs (`docs`)     |
-| `perf`, `performance`, `security`              | patch |                   |
-| `change`, `breaking`, `alt`, or any type + `!` | major |                   |
+| `perf`, `performance`, `security`              | patch | Fixes             |
+| `docs`, `doc`, `documentation`                 | patch | Docs              |
+| `change`, `breaking`, `alt`, or any type + `!` | major | Breaking Changes  |
 | anything else (`chore`, `test`, `refactor`…)   | none  |                   |
+
+Each paragraph becomes a single changelog line, so hard-wrapped paragraphs are fine.
 
 A project is affected by a commit if the commit changes files in its `packages/*` folder. If a project's workspace dependencies get bumped, it gets at least a patch bump.
 

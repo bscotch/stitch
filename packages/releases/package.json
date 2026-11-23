@@ -20,7 +20,7 @@
   "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/releases#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bscotch/gamemaker-info.git",
+    "url": "https://github.com/bscotch/stitch.git",
     "directory": "packages/releases"
   },
   "license": "MIT",
