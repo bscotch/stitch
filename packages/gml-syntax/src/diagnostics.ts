@@ -7,7 +7,12 @@ export type SyntaxDiagnosticCode =
   | 'expected-token'
   | 'expected-expression'
   | 'expected-identifier'
-  | 'invalid-assignment-target';
+  | 'invalid-assignment-target'
+  | 'jsdoc-invalid-type'
+  | 'jsdoc-expected-name'
+  | 'jsdoc-unterminated'
+  | 'jsdoc-duplicate-param'
+  | 'jsdoc-unexpected-braces';
 
 export interface SyntaxDiagnostic {
   code: SyntaxDiagnosticCode;
