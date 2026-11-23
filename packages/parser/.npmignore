@@ -4,3 +4,4 @@
 !assets/**/*
 dist/**/*.test.*
 dist/test.lib.*
+dist/snapshot.lib.*
