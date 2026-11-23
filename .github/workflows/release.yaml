@@ -8,9 +8,11 @@
 # - builds and publishes public packages to npm (Trusted Publishing)
 # - triggers other publishing workflows for tagged private projects
 #
-# To re-run a release (e.g. after fixing a CI problem), use "Run workflow"
-# with the bumped commit's SHA (or one of its tags) as the ref. Versions
-# that are already published are skipped.
+# To retry a failed release, push any fixes to develop and use "Run workflow"
+# (on develop, leaving the ref blank). It releases the newest bump commit at
+# or before the ref, but tests, builds, and publishes the code at the ref.
+# Versions that are already published are skipped, so retry as often as
+# needed.
 name: Release
 
 on:
@@ -19,8 +21,8 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: Commit (or tag) created by `pnpm bump` to release
-        required: true
+        description: Commit to release from (defaults to the selected branch). Releases the newest bump at or before it.
+        required: false
         type: string
 
 permissions:
@@ -53,7 +55,7 @@ jobs:
       - name: Plan release
         id: plan
         env:
-          INPUT_REF: ${{ inputs.ref }}
+          INPUT_REF: ${{ inputs.ref || github.sha }}
           BEFORE: ${{ github.event.before }}
           AFTER: ${{ github.sha }}
         run: |

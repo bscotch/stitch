@@ -7,7 +7,11 @@
  *
  * Usage:
  *   node scripts/release-plan.mts --before <sha> --after <sha>   # a push
- *   node scripts/release-plan.mts --ref <commit-ish>             # one commit
+ *   node scripts/release-plan.mts --ref <commit-ish>             # a retry
+ *
+ * With `--ref`, the newest bump commit at or before `<commit-ish>` (along
+ * first parents) is released, but using the code at `<commit-ish>`. That way
+ * a failed release can be retried after pushing fixes, without re-bumping.
  */
 import { appendFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
@@ -45,7 +49,9 @@ function isCommit(ref: string | undefined): ref is string {
 /** Commits to inspect, newest first. */
 function listCandidateCommits(): string[] {
   if (args.ref) {
-    return [git(['rev-parse', `${args.ref}^{commit}`], root)];
+    return git(['rev-list', '--first-parent', `${args.ref}^{commit}`], root)
+      .split(/\r?\n/)
+      .filter(Boolean);
   }
   const after = args.after || 'HEAD';
   if (isCommit(args.before)) {
@@ -122,12 +128,21 @@ if (!releaseRef) {
   process.exit(0);
 }
 
-console.log(`Release commit: ${releaseRef}`);
+// The commit to test, build, and publish. Normally the bump commit itself,
+// but a retry can use a later commit (e.g. with CI fixes).
+const buildRef = args.ref
+  ? git(['rev-parse', `${args.ref}^{commit}`], root)
+  : releaseRef;
+
+console.log(`Bump commit: ${releaseRef}`);
+if (buildRef !== releaseRef) console.log(`Building from: ${buildRef}`);
 console.log(`Tags: ${tags.map((t) => t.tag).join(', ')}`);
 
 let plan;
 try {
-  plan = planRelease(tags, loadProjectsAt(releaseRef), npmRegistry);
+  // Tags must still match the manifests at the build commit, so a retry from
+  // a later commit can't publish anything the bump didn't version.
+  plan = planRelease(tags, loadProjectsAt(buildRef), npmRegistry);
 } catch (err) {
   console.error(`\n✖ ${(err as Error).message}`);
   summarize(
@@ -147,14 +162,14 @@ console.log(
 );
 summarize(
   [
-    `### Release ${releaseRef.slice(0, 8)}`,
+    `### Release ${releaseRef.slice(0, 8)}${buildRef !== releaseRef ? ` (built from ${buildRef.slice(0, 8)})` : ''}`,
     `**Tagged:** ${plan.tagged.join(', ')}`,
     `**npm:** ${names.length ? plan.publish.map((p) => `\`${p.name}@${p.version}\``).join(', ') : 'nothing to publish'}`,
   ].join('\n\n'),
 );
 
 setOutputs({
-  ref: releaseRef,
+  ref: buildRef,
   tagged: JSON.stringify(plan.tagged),
   publish: JSON.stringify(names),
   filters: pnpmFilters(names),

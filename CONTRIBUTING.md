@@ -162,6 +162,6 @@ Pushing a bump triggers the [Release workflow](.github/workflows/release.yaml), 
 3. Builds and tests the packages to be published, then publishes them to npm (in dependency order) using npm Trusted Publishing.
 4. Triggers the Stitch for VSCode publishing workflow if that extension was bumped.
 
-To retry a failed release, run the Release workflow manually with the bump commit's SHA.
+To retry a failed release, push any fixes to `develop` and then run the Release workflow manually on `develop` (no need to re-bump). It re-plans the newest bump at or before that commit, but tests, builds, and publishes the code at that commit. Already-published versions are skipped, so this can be repeated until everything is out. Fixes made this way don't appear in the changelogs of the versions being retried.
 
 Release-script tests: `pnpm test:scripts` and `pnpm typecheck:scripts`.
