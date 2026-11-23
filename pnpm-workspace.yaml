@@ -2,3 +2,12 @@ packages:
   - "packages/*"
   - "packages/vscode/webviews"
   - "packages/vscode/shared"
+
+# pnpm-only settings live here rather than in .npmrc, since npm (used for
+# publishing) warns about config it doesn't recognize.
+strictPeerDependencies: false
+publishBranch: develop
+useNodeVersion: 22.23.5
+preferWorkspacePackages: true
+saveWorkspaceProtocol: rolling
+linkWorkspacePackages: false
