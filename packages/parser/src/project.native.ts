@@ -319,9 +319,9 @@ export class Native {
     filePaths = filePaths || [Native.fallbackGmlSpecPath];
     const parsed = (
       await Promise.all(
-        filePaths.map((path) => {
+        filePaths.map(async (path) => {
           try {
-            return Native.parse(path.absolute);
+            return await Native.parse(path.absolute);
           } catch (err) {
             logger.error(err);
           }

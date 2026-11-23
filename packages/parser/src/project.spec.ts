@@ -202,7 +202,10 @@ export const gmlSpecSchema = z
     GameMakerLanguageSpec: z
       .strictObject({
         $: z.object({
-          RuntimeVersion: z.string(),
+          RuntimeVersion: z
+            .string()
+            .optional()
+            .describe('Appears to be removed in 2026+'),
           Module: z.string().default('Unknown'),
         }),
         // Should have length 0 or 1
