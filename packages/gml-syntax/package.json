@@ -1,0 +1,44 @@
+{
+  "name": "@bscotch/gml-syntax",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A lossless, error-tolerant lexer and parser for GML (GameMaker Language), producing a typed syntax tree.",
+  "keywords": [
+    "gml",
+    "parser",
+    "lexer",
+    "ast",
+    "gamemaker",
+    "game maker language",
+    "stitch"
+  ],
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/gml-syntax#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/gml-syntax"
+  },
+  "license": "MIT",
+  "author": "Adam Coster (https://www.bscotch.net/about#adam-coster)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "node ../../scripts/clean.mjs build dist \"*.tsbuildinfo\" \"**/*.tsbuildinfo\"",
+    "test": "node --test --test-timeout=60000 \"src/**/*.test.ts\"",
+    "watch": "tsc --build --watch"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
