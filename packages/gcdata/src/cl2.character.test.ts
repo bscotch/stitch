@@ -1,11 +1,12 @@
 import { describe, it } from 'node:test';
 import { pathy } from '@bscotch/pathy';
 import { GameChanger } from './GameChanger.ts';
+import { skipWithoutCl2Data } from './testing.ts';
 import { assert } from './assert.ts';
 import { stringifyCharacter } from './cl2.character.stringify.ts';
 import { isBuddyMote, listBuddies } from './cl2.character.types.ts';
 
-describe('Cl2 Characters', function () {
+describe('Cl2 Characters', { skip: skipWithoutCl2Data }, function () {
   it('can convert a Buddy mote to a text format', async function () {
     const packed = await GameChanger.from('Crashlands2');
     assert(packed, 'Packed data should be loaded');

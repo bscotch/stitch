@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import { pathy } from '@bscotch/pathy';
 import { GameChanger } from './GameChanger.ts';
+import { skipWithoutCl2Data } from './testing.ts';
 import { assert } from './assert.ts';
 import { parseStringifiedQuest } from './cl2.quest.parse.ts';
 import { stringifyQuest } from './cl2.quest.stringify.ts';
@@ -8,7 +9,7 @@ import { isQuestMote } from './cl2.quest.types.ts';
 import type { Crashlands2 } from './cl2.types.auto.ts';
 import { bsArrayToArray } from './helpers.ts';
 
-describe('Cl2 Quests', function () {
+describe('Cl2 Quests', { skip: skipWithoutCl2Data }, function () {
   it('can convert a quest mote to a text format', async function () {
     const packed = await GameChanger.from('Crashlands2');
     assert(packed, 'Packed data should be loaded');

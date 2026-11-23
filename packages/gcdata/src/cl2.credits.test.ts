@@ -1,13 +1,14 @@
 import { describe, it } from 'node:test';
 import { pathy } from '@bscotch/pathy';
 import { GameChanger } from './GameChanger.ts';
+import { skipWithoutCl2Data } from './testing.ts';
 import { assert } from './assert.ts';
 import { parseStringifiedCredits } from './cl2.credits.parse.ts';
 import { stringifyCredits } from './cl2.credits.stringify.ts';
 import { listCredits } from './cl2.credits.types.ts';
 import { creditsSchemaId } from './cl2.shared.types.ts';
 
-describe('Cl2 Credits', function () {
+describe('Cl2 Credits', { skip: skipWithoutCl2Data }, function () {
   it('can convert a credits mote to a text format', async function () {
     const packed = await GameChanger.from('Crashlands2');
     assert(packed, 'Packed data should be loaded');

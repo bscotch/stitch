@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import { pathy } from '@bscotch/pathy';
 import { GameChanger } from './GameChanger.ts';
+import { skipWithoutCl2Data } from './testing.ts';
 import { assert } from './assert.ts';
 import { storylineSchemaId } from './cl2.shared.types.ts';
 import {
@@ -9,7 +10,7 @@ import {
 } from './cl2.storyline.ts';
 import { listStorylines } from './cl2.storyline.types.ts';
 
-describe('Cl2 Storylines', function () {
+describe('Cl2 Storylines', { skip: skipWithoutCl2Data }, function () {
   it('can convert a storyline mote to a text format', async function () {
     const packed = await GameChanger.from('Crashlands2');
     assert(packed, 'Packed data should be loaded');
