@@ -1,5 +1,5 @@
 import vscode from 'vscode';
-import type { GameMakerProject } from './extension.project.mjs';
+import type { StitchProject as GameMakerProject } from './extension.project.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 import { TreeAsset, TreeFilterGroup } from './tree.items.mjs';
 

@@ -1,28 +1,23 @@
+import { GameMakerProject, type Asset } from '@bscotch/gamemaker-project';
 import {
-  Project,
-  type Asset,
-  type Code,
-  type DiagnosticsEventPayload,
-  type FunctionArgRange,
-  type OnDiagnostics,
-  type Reference,
-  type ReferenceableType,
-} from '@bscotch/gml-parser';
+  assetRenameEditsRequest,
+  symbolInfoRequest,
+  type AssetRenameEditsParams,
+  type SymbolInfo,
+  type SymbolInfoParams,
+} from '@bscotch/gml-language-server/protocol';
 import { Yy, yypSchema } from '@bscotch/yy';
 import { randomUUID } from 'node:crypto';
+import path from 'node:path';
 import vscode from 'vscode';
+import type { WorkspaceEdit } from 'vscode-languageclient/node';
 import { assertLoudly } from './assert.mjs';
-import { ChangeTracker } from './changes.mjs';
 import { stitchConfig } from './config.mjs';
-import {
-  diagnosticCollection,
-  normalizeDiagnosticsEvents,
-} from './diagnostics.mjs';
 import { stitchEvents } from './events.mjs';
 import { activateStitchExtension } from './extension.activate.mjs';
-import { completionTriggerCharacters } from './extension.completions.mjs';
-import { GameMakerSemanticTokenProvider } from './extension.highlighting.mjs';
-import { GameMakerProject } from './extension.project.mjs';
+import { StitchProject } from './extension.project.mjs';
+import type { GameMakerTreeProvider } from './tree.mjs';
+import { sendSettings, startLanguageClient } from './languageClient.mjs';
 import {
   activeTab,
   isSpriteTab,
@@ -30,10 +25,9 @@ import {
   pathyFromUri,
   showProgress,
 } from './lib.mjs';
-import { info, logger, warn } from './log.mjs';
+import { info, logger, showErrorMessage, warn } from './log.mjs';
 
-export class StitchWorkspace implements vscode.SignatureHelpProvider {
-  readonly semanticHighlightProvider = new GameMakerSemanticTokenProvider(this);
+export class StitchWorkspace {
   readonly signatureHelpStatus = vscode.window.createStatusBarItem(
     stitchConfig.functionSignatureStatusAlignment,
     stitchConfig.functionSignatureStatusAlignment ===
@@ -41,151 +35,239 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
       ? -Infinity
       : Infinity,
   );
-  readonly diagnosticCollection = diagnosticCollection;
-  readonly externalChangeTracker = new ChangeTracker(this);
 
-  projects: GameMakerProject[] = [];
+  projects: StitchProject[] = [];
+  /** The asset tree (set on activation) */
+  tree?: GameMakerTreeProvider;
 
-  readonly processingFiles = new Map<string, Promise<any>>();
-  readonly debouncingOnChange = new Map<string, NodeJS.Timeout>();
+  /**
+   * If `true`, the project has not been run since the last clean (so the
+   * cache is already clean). Used to decide whether a change to a Spine
+   * atlas file should trigger a clean.
+   */
+  protected igorCacheIsClean = false;
 
   protected constructor(readonly ctx: vscode.ExtensionContext) {
     this.signatureHelpStatus.hide();
+    stitchEvents.on(
+      'clean-project-start',
+      () => (this.igorCacheIsClean = true),
+    );
+    stitchEvents.on('run-project-start', () => (this.igorCacheIsClean = false));
   }
 
-  clearDiagnosticsInGroups(groups: string[]) {
-    if (!groups.length) return;
-    for (const project of this.projects) {
-      for (const [, asset] of project.assets) {
-        for (const group of groups) {
-          if (asset.isInFolder(group)) {
-            for (const [, code] of asset.gmlFiles) {
-              this.diagnosticCollection.delete(
-                vscode.Uri.file(code.path.absolute),
-              );
-            }
-          }
-        }
-      }
-    }
+  protected setProjectCount() {
+    void vscode.commands.executeCommand(
+      'setContext',
+      'stitch.projectCount',
+      this.projects.length,
+    );
   }
+
+  async clearProjects() {
+    const projects = this.projects;
+    this.projects = [];
+    this.setProjectCount();
+    await Promise.all(projects.map((p) => p.dispose()));
+  }
+
+  //#region Loading
 
   /**
-   * Emit a collection of diagnostics for a particular file. */
-  emitDiagnostics(payload: DiagnosticsEventPayload) {
-    const suppresedGroups = stitchConfig.suppressDiagnosticsInGroups;
-    for (const group of suppresedGroups) {
-      if (payload.code?.asset.isInFolder(group)) {
-        // Then skip this file!
-        return;
-      }
-    }
-    this.diagnosticCollection.set(
-      vscode.Uri.file(payload.filePath),
-      normalizeDiagnosticsEvents(payload),
-    );
-  }
-
-  clearProjects() {
-    this.projects = [];
-    void vscode.commands.executeCommand(
-      'setContext',
-      'stitch.projectCount',
-      this.projects.length,
-    );
-  }
-
-  async loadProject(yypPath: vscode.Uri, onDiagnostics: OnDiagnostics) {
-    let project!: GameMakerProject;
-    await vscode.window.withProgress(
+   * Load a project: its files, a watcher that keeps them up to date, and a
+   * language server for its code.
+   */
+  async loadProject(yypPath: vscode.Uri): Promise<StitchProject> {
+    const project = await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Stitch: Loading project from ${pathyFromUri(yypPath).basename}`,
+        title: `Stitch: Loading project from ${path.basename(yypPath.fsPath)}`,
         cancellable: false,
       },
-      async (progress) => {
-        progress.report({
-          increment: 0,
-        });
-        project = await GameMakerProject.from(
-          yypPath,
-          onDiagnostics,
-          (percent, message) => {
-            progress.report({
-              increment: percent,
-              message,
-            });
-          },
-        );
-        try {
-          await project.syncIncludedFiles();
-        } catch {}
-        progress.report({
-          increment: 100,
-          message: 'Done!',
-        });
-      },
+      () => StitchProject.open(yypPath.fsPath),
     );
     this.projects.push(project);
-    void vscode.commands.executeCommand(
-      'setContext',
-      'stitch.projectCount',
-      this.projects.length,
-    );
+    this.setProjectCount();
+    this.followProjectEvents(project);
+    try {
+      await project.gm.syncIncludedFiles();
+    } catch (err) {
+      logger.warn('Could not sync included files', err);
+    }
+
+    const watchers = this.watchProjectFiles(project);
+    this.ctx.subscriptions.push(...watchers);
+    try {
+      project.client = await startLanguageClient(this.ctx, project, watchers);
+    } catch (err) {
+      logger.error('Could not start the language server', err);
+      void showErrorMessage(
+        `Could not start the GML language server for ${project.name}. See the Stitch output for details.`,
+      );
+    }
     return project;
   }
 
-  async deleteAsset(asset: Asset) {
-    await asset.project.removeAssetByName(asset.name);
-    stitchEvents.emit('asset-deleted', asset);
+  /**
+   * Watch the project's files. Changes go to the project (and, through the
+   * language client, to the language server).
+   */
+  protected watchProjectFiles(project: StitchProject) {
+    const base = vscode.Uri.file(project.gm.dir);
+    const watchers = [
+      '*.yyp',
+      'stitch.config.json',
+      '*/*/*',
+      'datafiles/**/*',
+    ].map((pattern) =>
+      vscode.workspace.createFileSystemWatcher(
+        new vscode.RelativePattern(base, pattern),
+      ),
+    );
+    const onChange = (
+      uri: vscode.Uri,
+      type: 'create' | 'change' | 'delete',
+    ) => {
+      project.gm.notifyChanged(uri.fsPath);
+      if (type === 'change' && uri.fsPath.endsWith('.atlas')) {
+        this.onSpineAtlasChanged(project, uri);
+      }
+    };
+    for (const watcher of watchers) {
+      watcher.onDidCreate((uri) => onChange(uri, 'create'));
+      watcher.onDidChange((uri) => onChange(uri, 'change'));
+      watcher.onDidDelete((uri) => onChange(uri, 'delete'));
+    }
+    return watchers;
   }
 
-  provideSignatureHelp(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-  ): vscode.SignatureHelp | undefined {
-    const argRange = this.getFunctionArg(document, position);
-    if (!argRange?.param?.parent) {
-      return;
-    }
-    const param = argRange.param;
-    const func = argRange.type;
-    // Create the signature help
-    const signature = new vscode.SignatureInformation(
-      func.code,
-      func.description,
+  protected onSpineAtlasChanged(project: StitchProject, uri: vscode.Uri) {
+    const shouldClean =
+      stitchConfig.cleanOnSpineSpriteChange && !this.igorCacheIsClean;
+    logger.info(
+      `atlas file "${uri.fsPath}" changed on disk.`,
+      shouldClean ? 'Cleaning!' : 'Skipping cache-clean.',
     );
-    signature.activeParameter = param.idx!;
-    signature.parameters = func.listParameters().map((p) => {
-      return new vscode.ParameterInformation(
-        p?.name || 'unknown',
-        p?.description,
-      );
-    });
-    const help = new vscode.SignatureHelp();
-    help.signatures = [signature];
-    help.activeSignature = 0;
-    help.activeParameter = param.idx!;
-    return help;
+    if (shouldClean) {
+      this.igorCacheIsClean = true;
+      void project.run({ clean: true });
+    }
   }
+
+  /** Turn the project's change events into Stitch events for the UI */
+  protected followProjectEvents(project: StitchProject) {
+    const gm = project.gm;
+    let structureTimer: NodeJS.Timeout | undefined;
+    const structureChanged = () => {
+      // (Changes often come in bursts, e.g. during a git pull)
+      clearTimeout(structureTimer);
+      structureTimer = setTimeout(
+        () => stitchEvents.emit('project-changed', project),
+        50,
+      );
+    };
+    gm.on('assetAdded', structureChanged);
+    gm.on('assetRemoved', structureChanged);
+    gm.on('yypChanged', structureChanged);
+    gm.on('assetChanged', (asset) => stitchEvents.emit('asset-changed', asset));
+    gm.on('includedFilesChanged', async () => {
+      try {
+        await gm.syncIncludedFiles();
+      } catch (err) {
+        logger.warn('Could not sync included files', err);
+      }
+      stitchEvents.emit('datafiles-changed', project);
+    });
+    gm.on('error', (err) => logger.warn('Project file problem:', err.message));
+  }
+
+  /** Send changed settings to the language servers */
+  onSettingsChanged() {
+    for (const project of this.projects) sendSettings(project.client);
+  }
+
+  //#endregion
+
+  //#region Changing assets
 
   /**
-   * Determine the project the file belongs to,
-   * and pass an update request to that project.
+   * Rename an asset: update the code that refers to it, then rename its
+   * files and the references to it in other assets' yy files.
    */
-  async updateFile(document: vscode.TextDocument): Promise<Code | undefined> {
-    const code = this.getGmlFile(document);
-    await code?.reload(document.getText(), {
-      reloadDirty: true,
-    });
-    return code;
+  async renameAsset(asset: Asset, newName: string): Promise<Asset> {
+    const project = this.getProjectOfAsset(asset);
+    assertLoudly(project, `Could not find the project for ${asset.name}`);
+    const oldDir = path.normalize(asset.dir);
+    // Code edits first, while the language server still knows the old name
+    if (project.client) {
+      const params: AssetRenameEditsParams = { name: asset.name, newName };
+      const lspEdit: WorkspaceEdit = await project.client.sendRequest(
+        assetRenameEditsRequest,
+        params,
+      );
+      const edit =
+        await project.client.protocol2CodeConverter.asWorkspaceEdit(lspEdit);
+      if (edit.size) {
+        assertLoudly(
+          await vscode.workspace.applyEdit(edit),
+          'Could not update the code that refers to this asset.',
+        );
+        // Save, so the edits are on disk before files are moved
+        for (const [uri] of edit.entries()) {
+          const document = vscode.workspace.textDocuments.find(
+            (d) => d.uri.toString() === uri.toString(),
+          );
+          await document?.save();
+        }
+      }
+    }
+    // Note any of the asset's files that are open, to reopen them afterwards
+    const openTabs = vscode.window.tabGroups.all
+      .flatMap((group) => group.tabs)
+      .filter(
+        (tab) =>
+          tab.input instanceof vscode.TabInputText &&
+          path.normalize(tab.input.uri.fsPath).startsWith(oldDir + path.sep),
+      );
+    const renamed = await project.gm.renameAsset(asset, newName);
+    for (const tab of openTabs) {
+      const oldFile = (tab.input as vscode.TabInputText).uri.fsPath;
+      const newFile = path.join(
+        renamed.dir,
+        path.basename(oldFile).replace(asset.name, renamed.name),
+      );
+      await vscode.window.tabGroups.close(tab).then(
+        () =>
+          vscode.window.showTextDocument(vscode.Uri.file(newFile), {
+            preview: false,
+            preserveFocus: true,
+          }),
+        () => undefined,
+      );
+    }
+    return renamed;
   }
+
+  async deleteAsset(asset: Asset) {
+    const project = this.getProjectOfAsset(asset);
+    assertLoudly(project, `Could not find the project for ${asset.name}`);
+    const { danglingReferences } = await project.gm.deleteAsset(asset);
+    if (danglingReferences.length) {
+      void vscode.window.showWarningMessage(
+        `Deleted ${asset.name}, but these still refer to it: ${danglingReferences.join(', ')}`,
+      );
+    }
+  }
+
+  //#endregion
+
+  //#region Lookups
 
   getActiveDocument(): vscode.TextDocument | undefined {
     return vscode.window.activeTextEditor?.document;
   }
 
-  getActiveProject(): GameMakerProject | undefined {
+  getActiveProject(): StitchProject | undefined {
     const doc = this.getActiveDocument();
     const project = doc ? this.getProject(doc) : undefined;
     return project || this.projects[0];
@@ -193,22 +275,23 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
 
   /** Given a URI, get the project that contains that file */
   getProject(
-    document: vscode.TextDocument | vscode.Uri,
-  ): GameMakerProject | undefined {
-    if (!document) {
-      return;
-    }
+    document: vscode.TextDocument | vscode.Uri | undefined,
+  ): StitchProject | undefined {
+    if (!document) return;
     return this.projects.find((p) => p.includesFile(document));
+  }
+
+  getProjectOfAsset(asset: Asset): StitchProject | undefined {
+    return this.projects.find((p) => p.gm.getAsset(asset.name) === asset);
   }
 
   /** If there is only one project in the workspace, return it. Otherwise prompt the user. */
   async chooseProject(
     title = 'Choose a project',
-  ): Promise<GameMakerProject | undefined> {
+  ): Promise<StitchProject | undefined> {
     if (this.projects.length === 1) {
       return this.projects[0];
     }
-    // Create a quickpick
     const projectName = await vscode.window.showQuickPick(
       this.projects.map((p) => p.name),
       { title },
@@ -217,210 +300,74 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
     return this.projects.find((p) => p.name === projectName);
   }
 
-  getFunctionArg(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-  ): FunctionArgRange | undefined {
-    const offset = document.offsetAt(position);
-    return this.getGmlFile(document)?.getFunctionArgRangeAt(offset);
-  }
-
-  getReference(
-    where: vscode.TextDocument | vscode.Uri,
-    position: vscode.Position,
-  ): Reference | undefined {
-    const document =
-      where instanceof vscode.Uri
-        ? vscode.workspace.textDocuments.find(
-            (d) => d.uri.fsPath === where.fsPath,
-          )
-        : where;
-    if (!document) {
-      return;
-    }
-    const offset = document.offsetAt(position);
-    const file = this.getGmlFile(document);
-    if (!file) {
-      warn(`Could not find file for ${document}`);
-      return;
-    }
-    const ref = file.getReferenceAt(offset);
-    if (!ref) {
-      warn(`Could not find reference at ${offset}`);
-      return;
-    }
-    return ref;
-  }
-
-  getSignifier(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-  ): ReferenceableType | undefined {
-    const ref = this.getReference(document, position);
-    if (!ref) {
-      return;
-    }
-    const item = ref.item;
-    if (!item) {
-      warn(`Could not find symbol for ${ref}`);
-      return;
-    }
-    return item;
-  }
-
-  getSprite(
-    document: vscode.TextDocument,
-    name: string,
-  ): Asset<'sprites'> | undefined {
-    const asset = this.getAsset(document, name);
-    if (asset && asset.assetKind === 'sprites') {
-      return asset as Asset<'sprites'>;
-    }
-    return;
-  }
-
-  getCurrentAsset() {
+  /** The asset whose file (or sprite editor) is in the active tab */
+  getCurrentAsset(): Asset | undefined {
     const tab = activeTab();
     if (!tab) {
       return;
     }
     if (isSpriteTab(tab)) {
-      // Then we have the asset name, get the first project
-      // that has that name.
-      const project = this.projects.find((p) =>
-        p.getAssetByName(tab.assetName),
-      );
-      return project?.getAssetByName(tab.assetName);
+      for (const project of this.projects) {
+        const asset = project.getAssetByName(tab.assetName);
+        if (asset) return asset;
+      }
+      return;
     }
-    // Otherwise we have a full URI so we can find the project
-    // and asset.
-    const currentProject = this.getProject(tab.uri);
-    return currentProject?.getAsset(pathyFromUri(tab.uri));
+    return this.getProject(tab.uri)?.getAssetByPath(tab.uri);
   }
 
+  /** The asset a document belongs to, or an asset by name in its project */
   getAsset(document: vscode.TextDocument, name?: string): Asset | undefined {
     const project = this.getProject(document);
     if (!project) {
-      warn(`getAsset: Could not find project for`, document);
+      warn(`getAsset: Could not find project for`, document.uri.fsPath);
       return;
     }
-    name ||= pathyFromUri(document).name;
-    const asset = project.getAssetByName(name);
-    return asset;
+    return name
+      ? project.getAssetByName(name)
+      : project.getAssetByPath(document.uri);
   }
 
-  getGmlFile(
-    document: vscode.TextDocument | vscode.Uri | undefined,
-  ): Code | undefined {
-    document ||= this.getActiveDocument();
-    if (!document) {
-      // warn(`getGmlFile: Could not find document`);
+  /** Ask the language server about the symbol at a position */
+  async getSymbolInfo(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+  ): Promise<SymbolInfo | undefined> {
+    const client = this.getProject(document)?.client;
+    if (!client || document.languageId !== 'gml') return;
+    const params: SymbolInfoParams = {
+      textDocument: { uri: document.uri.toString() },
+      position: { line: position.line, character: position.character },
+    };
+    try {
+      return (
+        (await client.sendRequest<SymbolInfo | null>(
+          symbolInfoRequest,
+          params,
+        )) ?? undefined
+      );
+    } catch (err) {
+      logger.warn('Could not get symbol info', err);
       return;
     }
-    const path = pathyFromUri(document);
-    if (!path.hasExtension('gml')) return;
-    const project = this.getProject(document);
-    if (!project) {
-      warn(`getGmlFile: Could not find project for`, path);
-      return;
-    }
-    const file = project.getGmlFile(path);
-    if (!file) {
-      warn(`getGmlFile: Could not find file for ${path.absolute}`);
-      return;
-    }
-    return file;
   }
 
-  getRefFromSelection(
-    document?: vscode.TextDocument,
-    selection?: readonly vscode.Selection[],
-  ) {
-    document ||= vscode.window.activeTextEditor?.document;
-    if (
-      !document ||
-      document.uri.scheme !== 'file' ||
-      !document.uri.fsPath.endsWith('.gml')
-    ) {
-      return;
-    }
-    const file = this.getGmlFile(document);
-    if (!file) return;
-
-    // Get the reference at the cursor
-    selection ||= vscode.window.activeTextEditor?.selections;
-    if (!selection) return;
-    const start = selection[0].start;
-    const ref = file.getReferenceAt(start.line + 1, start.character);
-    return ref;
+  /** The symbol at the cursor in the active editor */
+  async getSymbolAtCursor(): Promise<SymbolInfo | undefined> {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) return;
+    return await this.getSymbolInfo(editor.document, editor.selection.active);
   }
 
-  /**
-   * A general function for reprocessing files upon change. Handles
-   * debounding and the like.
-   */
-  async onChangeDoc(
-    event: vscode.TextDocumentChangeEvent | vscode.TextDocument | undefined,
-  ) {
-    if (!event) {
-      return;
-    }
-    const doc = 'document' in event ? event.document : event;
-    if (doc.languageId !== 'gml') {
-      return;
-    }
-
-    // While actively typing, we don't want to reprocess on
-    // every keystroke since that'll make things feel sluggish.
-    // So for calls to this function triggered by typing, we
-    // only immediately reprocess if the character is a trigger
-    // character. Otherwise, we debounce.
-    if (
-      'contentChanges' in event &&
-      event.contentChanges.length === 1 &&
-      event.contentChanges[0].text.length
-    ) {
-      const isTriggerCharacter = [
-        ...completionTriggerCharacters,
-        ' ',
-        '\r\n',
-        '\n',
-        ';',
-        ',',
-      ].includes(event.contentChanges[0].text as any);
-      if (!isTriggerCharacter) {
-        // TODO: Debounce this so that we still get reprocessing
-        // while editing, but only when not actively typing.
-        clearTimeout(this.debouncingOnChange.get(doc.uri.fsPath));
-        this.debouncingOnChange.set(
-          doc.uri.fsPath,
-          setTimeout(() => {
-            void this.onChangeDoc(doc);
-          }, stitchConfig.reprocessOnTypeDelay),
-        );
-        return;
-      }
-    }
-
-    if (this.processingFiles.has(doc.uri.fsPath)) {
-      logger.info('Already processing file', doc.uri.fsPath);
-      return;
-    }
-
-    this.diagnosticCollection.delete(doc.uri);
-    // Add the processing promise to a map so
-    // that other functionality can wait for it
-    // to complete.
-    const updateWait = StitchWorkspace.provider.updateFile(doc).finally(() => {
-      // Semantic highlighting is normally updated by VSCode
-      // upon change. But since we're delaying processing of the
-      // file, we need to manually trigger a refresh.
-      this.semanticHighlightProvider.refresh();
-    });
-    this.processingFiles.set(doc.uri.fsPath, updateWait);
-    await updateWait;
-    this.processingFiles.delete(doc.uri.fsPath);
+  /** The asset referred to at the cursor in the active editor, if any */
+  async getAssetAtCursor(): Promise<Asset | undefined> {
+    const symbol = await this.getSymbolAtCursor();
+    if (symbol?.kind !== 'asset') return;
+    const document = vscode.window.activeTextEditor!.document;
+    return this.getProject(document)?.getAssetByName(symbol.name);
   }
+
+  //#endregion
 
   async createNewProject() {
     const project = this.getActiveProject();
@@ -441,8 +388,7 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
     yyp.AudioGroups = [{ name: 'audiogroup_default' }];
     // @ts-expect-error We'll rely on the yywriter to complete
     yyp.TextureGroups = [{ name: 'default' }];
-    // @ts-expect-error We'll rely on the yywriter to complete
-    yyp.RoomOrderNodes = [{ roomId: { name: roomName } }];
+    yyp.RoomOrderNodes = [];
 
     // Prompt for the project name
     const projectName = await vscode.window.showInputBox({
@@ -505,18 +451,12 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
         );
       }
 
-      // Load as a project
-      const newProject = await Project.initialize(yypPath.absolute);
-      // Add the default object
+      // Add a starting object and room, with an instance of the object
+      const newProject = await GameMakerProject.open(yypPath.absolute);
       const obj = await newProject.createObject(`${resourceFolder}/${objName}`);
-      // Add the default room
       const room = await newProject.createRoom(`${resourceFolder}/${roomName}`);
-      // Add an object instance to the room
-      if (obj && room) {
-        await room?.addRoomInstance(obj);
-      }
+      await newProject.addRoomInstance(room, obj);
 
-      // TODO: Open the new project folder in a new window
       await openPath(dir);
     }, 'Creating new project...');
   }
@@ -535,5 +475,9 @@ export class StitchWorkspace implements vscode.SignatureHelpProvider {
     this.provider = new StitchWorkspace(ctx);
     await activateStitchExtension(this.provider, ctx);
     return this.provider;
+  }
+
+  static async deactivate() {
+    await this.provider?.clearProjects();
   }
 }

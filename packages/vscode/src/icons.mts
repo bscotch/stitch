@@ -1,4 +1,4 @@
-import type { Asset } from '@bscotch/gml-parser';
+import type { Asset } from '@bscotch/gamemaker-project';
 import type { YyResourceType } from '@bscotch/yy';
 import path from 'path';
 import vscode from 'vscode';
@@ -19,9 +19,9 @@ export function getAssetIcon(assetKind: YyResourceType, asset?: Asset) {
       break;
     case 'sprites':
       // icon = getGameMakerIcon('sprite');
-      const frame = asset?.framePaths?.[0];
+      const frame = asset?.framePaths[0];
       if (frame) {
-        icon = vscode.Uri.file(frame.absolute);
+        icon = vscode.Uri.file(frame);
       } else {
         icon = getGameMakerIcon('sprites');
       }

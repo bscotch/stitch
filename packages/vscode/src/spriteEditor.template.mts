@@ -1,4 +1,9 @@
-import { Spine, type Asset, type SpineSummary } from '@bscotch/gml-parser';
+import {
+  summarizeSpine,
+  type Asset,
+  type SpineSummary,
+} from '@bscotch/gamemaker-project';
+import path from 'node:path';
 import fsp from 'node:fs/promises';
 import vscode from 'vscode';
 import spineEditorHtml from '../webviews-legacy/spine-editor.html';
@@ -52,7 +57,7 @@ function compileRegularSprite(
     xorigin: sprite.yy.sequence.xorigin,
     yorigin: sprite.yy.sequence.yorigin,
     frameUrls: sprite.framePaths.map((p) =>
-      panel.webview.asWebviewUri(vscode.Uri.file(p.absolute)).toString(),
+      panel.webview.asWebviewUri(vscode.Uri.file(p)).toString(),
     ),
     zoom: defaultZoom || computeInitialZoom(sprite),
   };
@@ -84,9 +89,9 @@ async function compileSpineSprite(
 
   // Add the atlas and json data URIs
   const [atlasContent, jsonContent, summary] = await Promise.all([
-    fsp.readFile(atlas.absolute),
-    fsp.readFile(json.absolute),
-    new Spine(json).summarize(),
+    fsp.readFile(atlas),
+    fsp.readFile(json),
+    summarizeSpine(json),
   ]);
   const data: SpineSpriteInfo = {
     name: sprite.name,
@@ -96,17 +101,16 @@ async function compileSpineSprite(
     yorigin: sprite.yy.sequence.yorigin,
     spine: {
       // Use the basenames since we'll be using data urls
-      atlas: atlas.basename,
-      json: json.basename,
+      atlas: path.basename(atlas),
+      json: path.basename(json),
     },
     spineDataUris: {},
     summary,
   };
-  console.log(JSON.stringify(data.summary, null, 2));
 
-  data.spineDataUris[atlas.basename] =
+  data.spineDataUris[path.basename(atlas)] =
     `data:application/octet-stream;base64,${atlasContent.toString('base64')}`;
-  data.spineDataUris[json.basename] =
+  data.spineDataUris[path.basename(json)] =
     `data:application/json;base64,${jsonContent.toString('base64')}`;
 
   // Discover the PNGs and their data URIs
@@ -115,16 +119,16 @@ async function compileSpineSprite(
       .toString('utf8')
       .split(/[\r\n]+/)
       .filter((line) => line.match(/^.*\.png$/))
-      .map((name) => atlas.up().join(name))
-      .map(async (path) => {
-        if (!(await path.exists())) {
-          logger.warn(`Atlas references non-existent file ${path.absolute}`);
+      .map((name) => path.join(path.dirname(atlas), name))
+      .map(async (file) => {
+        let imageContent: Buffer;
+        try {
+          imageContent = await fsp.readFile(file);
+        } catch {
+          logger.warn(`Atlas references non-existent file ${file}`);
           return;
-        } else {
-          logger.info(`Atlas references existing file ${path.absolute}`);
         }
-        const imageContent = await fsp.readFile(path.absolute);
-        data.spineDataUris[path.basename] =
+        data.spineDataUris[path.basename(file)] =
           `data:image/png;base64,${imageContent.toString('base64')}`;
       }),
   );

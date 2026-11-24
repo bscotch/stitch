@@ -1,16 +1,13 @@
 import { createEventEmitter } from '@bscotch/emitter';
-import type { Asset, Code } from '@bscotch/gml-parser';
+import type { Asset } from '@bscotch/gamemaker-project';
 import type {
   InstalledRuntime,
   PreparedIgorCommand,
 } from '@bscotch/stitch-launcher';
-import type vscode from 'vscode';
-import type { GameMakerProject } from './extension.project.mjs';
+import type { StitchProject } from './extension.project.mjs';
 
 export namespace StitchEvents {
   export type All = [
-    AssetDeleted,
-    CodeFileDeleted,
     SpriteEditorOpen,
     RunProjectStart,
     CleanProjectStart,
@@ -27,7 +24,7 @@ export namespace StitchEvents {
       {
         command: PreparedIgorCommand;
         runtime: InstalledRuntime;
-        project: GameMakerProject;
+        project: StitchProject;
         clean?: boolean;
       },
     ];
@@ -38,15 +35,7 @@ export namespace StitchEvents {
   }
   export interface DatafilesChanged {
     name: 'datafiles-changed';
-    payload: [GameMakerProject];
-  }
-  export interface AssetDeleted {
-    name: 'asset-deleted';
-    payload: [Asset];
-  }
-  export interface CodeFileDeleted {
-    name: 'code-file-deleted';
-    payload: [Code];
+    payload: [StitchProject];
   }
   export interface SpriteEditorOpen {
     name: 'sprite-editor-open';
@@ -54,27 +43,25 @@ export namespace StitchEvents {
   }
   export interface RunProjectStart {
     name: 'run-project-start';
-    payload: [GameMakerProject];
+    payload: [StitchProject];
   }
   export interface CleanProjectStart {
     name: 'clean-project-start';
-    payload: [GameMakerProject];
+    payload: [StitchProject];
   }
   export interface OpenProjectStart {
     name: 'open-project-start';
-    payload: [GameMakerProject];
+    payload: [StitchProject];
   }
+  /** An asset's yy data or files changed */
   export interface AssetChanged {
     name: 'asset-changed';
-    payload: [
-      sprite: Asset,
-      type: 'change' | 'create' | 'delete',
-      path: vscode.Uri,
-    ];
+    payload: [asset: Asset];
   }
+  /** Assets were added or removed, or the project's folders changed */
   export interface ProjectChanged {
     name: 'project-changed';
-    payload: [project: GameMakerProject];
+    payload: [project: StitchProject];
   }
 }
 

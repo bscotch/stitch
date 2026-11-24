@@ -1,4 +1,3 @@
-import { isAssetOfKind } from '@bscotch/gml-parser';
 import { fileURLToPath } from 'node:url';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
@@ -13,7 +12,6 @@ import {
   type Treeable,
 } from './tree.items.mjs';
 import type { GameMakerTreeProvider } from './tree.mjs';
-import { ensureFolders } from './tree.utility.mjs';
 
 export async function handleDroppedFiles(
   tree: GameMakerTreeProvider,
@@ -28,12 +26,12 @@ export async function handleDroppedFiles(
     await tree.upsertSounds(target, soundFiles);
   }
   const imageFiles = uris
-    .filter((u) => u.fsPath.match(/\.png$/))
+    .filter((u) => u.fsPath.match(/\.png$/i))
     .map((u) => pathyFromUri(u));
   if (imageFiles.length) {
     await project.reloadConfig();
     const targetSprite =
-      target instanceof TreeAsset && isAssetOfKind(target.asset, 'sprites')
+      target instanceof TreeAsset && target.asset.isKind('sprites')
         ? target.asset
         : target instanceof TreeSpriteFrame
           ? target.parent.asset
@@ -42,17 +40,24 @@ export async function handleDroppedFiles(
       // Then we're creating new sprites with these images
       for (const imageFile of imageFiles) {
         const spriteName = imageFile.name;
-        const dest = target.path + '/' + spriteName;
+        const dest = [target.path, spriteName].filter(Boolean).join('/');
         try {
-          const newSprite = await project.createSprite(dest, imageFile);
-          tree.afterNewAssetCreated(newSprite, target, target);
+          const newSprite = await project.gm.createSprite(
+            dest,
+            imageFile.absolute,
+          );
+          tree.afterNewAssetCreated(newSprite);
         } catch (err) {
-          void showErrorMessage(`Failed to create sprite ${spriteName}: ${err}`);
+          void showErrorMessage(
+            `Failed to create sprite ${spriteName}: ${err}`,
+          );
         }
       }
     } else if (targetSprite) {
-      await targetSprite.addFrames(imageFiles);
-      tree.changed(target);
+      await project.gm.addSpriteFrames(
+        targetSprite,
+        imageFiles.map((f) => f.absolute),
+      );
     }
   }
 }
@@ -101,7 +106,7 @@ export async function handleDrop(
     );
     const targetRoom =
       target instanceof TreeAsset ? target.asset : target.parent.asset;
-    assertLoudly(isAssetOfKind(targetRoom, 'rooms'), `Target must be a Room!`);
+    assertLoudly(targetRoom.isKind('rooms'), `Target must be a Room!`);
     // Every instance must be a member of of the same room
     assertLoudly(
       sequentialDropInstances.every((i) => i.parent.asset === targetRoom),
@@ -125,8 +130,10 @@ export async function handleDrop(
       0,
       ...sequentialDropInstanceIds,
     );
-    await targetRoom.reorganizeRoomInstances(currentInstanceIds);
-    tree.changed(target instanceof TreeRoomInstance ? target.parent : target);
+    await target.project!.gm.reorderRoomInstances(
+      targetRoom,
+      currentInstanceIds,
+    );
     return;
   }
 
@@ -145,10 +152,7 @@ export async function handleDrop(
     );
     const targetSprite =
       target instanceof TreeAsset ? target.asset : target.parent.asset;
-    assertLoudly(
-      isAssetOfKind(targetSprite, 'sprites'),
-      `Target must be a Sprite!`,
-    );
+    assertLoudly(targetSprite.isKind('sprites'), `Target must be a Sprite!`);
     // Every frame must be a member of of the same sprite
     assertLoudly(
       sequentialDropFrames.every((f) => f.parent.asset === targetSprite),
@@ -168,8 +172,7 @@ export async function handleDrop(
         : -1;
     // Splice in the moved frames
     currentFrames.splice(dropPosition + 1, 0, ...sequentialDropFrameIds);
-    await targetSprite.reorganizeFrames(currentFrames);
-    tree.changed(target instanceof TreeSpriteFrame ? target.parent : target);
+    await target.project!.gm.reorderSpriteFrames(targetSprite, currentFrames);
     return;
   }
 
@@ -185,9 +188,11 @@ export async function handleDrop(
       ? target.asset
       : target.parent.asset;
     for (const obj of dropping) {
-      await targetRoom.addRoomInstance((obj as TreeAsset<'objects'>).asset);
+      await target.project!.gm.addRoomInstance(
+        targetRoom,
+        (obj as TreeAsset<'objects'>).asset,
+      );
     }
-    tree.changed(target);
     return;
   }
 
@@ -271,31 +276,22 @@ export async function handleDrop(
         return;
       }
       for (const folder of folders) {
-        const newPath = `${target.path}/${folder.name}`;
-        ensureFolders(newPath, target.heirarchy[0]);
-        await target.project!.renameFolder(folder.path, newPath);
+        const newPath = [target.path, folder.name].filter(Boolean).join('/');
+        await target.project!.gm.renameFolder(folder.path, newPath);
         renameCount++;
         progress.report({
           increment: (renameCount / totalRenames) * 100,
           message: `Moving root-most folders...`,
         });
       }
-      // Assets can be moved in parallel since they store their
-      // folder in their own file.
-      const waits: Promise<any>[] = [];
       for (const asset of assets) {
-        waits.push(
-          asset.asset.moveToFolder(target.path).then(() => {
-            renameCount++;
-            progress.report({
-              increment: (renameCount / totalRenames) * 100,
-              message: `Moving assets...`,
-            });
-          }),
-        );
+        await target.project!.gm.moveAsset(asset.asset, target.path);
+        renameCount++;
+        progress.report({
+          increment: (renameCount / totalRenames) * 100,
+          message: `Moving assets...`,
+        });
       }
-      await Promise.all(waits);
-      // Move all of the assets!
       tree.rebuild();
     },
   );

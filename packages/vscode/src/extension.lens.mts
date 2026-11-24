@@ -1,69 +1,51 @@
-import { isAssetOfKind } from '@bscotch/gml-parser';
-import { Pathy } from '@bscotch/pathy';
+import path from 'node:path';
 import vscode from 'vscode';
 import type { StitchWorkspace } from './extension.workspace.mjs';
+import { assetMainFile } from './tree.items.mjs';
 
+/** Links at the top of an asset's yy file, to its code and other files */
 export class StitchLensProvider implements vscode.CodeLensProvider {
   protected constructor(readonly workspace: StitchWorkspace) {}
   provideCodeLenses(
     document: vscode.TextDocument,
   ): vscode.ProviderResult<vscode.CodeLens[]> {
-    const matchingAsset = this.workspace.getAsset(document);
-    if (!matchingAsset) return [];
-    // Put these on the top line
+    const asset = this.workspace.getAsset(document);
+    if (!asset) return [];
     const topLine = new vscode.Range(0, 0, 0, 0);
     const lenses: vscode.CodeLens[] = [];
-    if (isAssetOfKind(matchingAsset, 'sprites')) {
-      const command: vscode.Command = {
-        command: 'stitch.assets.editSprite',
-        title: '$(pencil) Edit Sprite',
-        tooltip: 'Open the Sprite Editor',
-        arguments: [matchingAsset],
-      };
-      lenses.push(new vscode.CodeLens(topLine, command));
-    } else if (isAssetOfKind(matchingAsset, 'objects')) {
-      for (const [idx, file] of matchingAsset.gmlFilesArray.entries()) {
+    const open = (title: string, file: string, tooltip?: string) =>
+      new vscode.CodeLens(topLine, {
+        command: 'vscode.open',
+        title,
+        tooltip,
+        arguments: [vscode.Uri.file(file)],
+      });
+    if (asset.isKind('sprites')) {
+      lenses.push(
+        new vscode.CodeLens(topLine, {
+          command: 'stitch.assets.editSprite',
+          title: '$(pencil) Edit Sprite',
+          tooltip: 'Open the Sprite Editor',
+          arguments: [asset],
+        }),
+      );
+    } else if (asset.isKind('objects')) {
+      for (const [idx, { event, file }] of asset.listEvents().entries()) {
         lenses.push(
-          new vscode.CodeLens(topLine, {
-            command: 'vscode.open',
-            title: `${idx === 0 ? '$(go-to-file) ' : ''}${
-              file.objectEventInfo?.label || file.path.name
-            }`,
-            arguments: [vscode.Uri.file(file.path.absolute)],
-          }),
+          open(`${idx === 0 ? '$(go-to-file) ' : ''}${event.label}`, file),
         );
       }
-    } else if (isAssetOfKind(matchingAsset, 'shaders')) {
-      for (const [idx, fileKind] of (
-        ['fragment', 'vertex'] as const
-      ).entries()) {
-        lenses.push(
-          new vscode.CodeLens(topLine, {
-            command: 'vscode.open',
-            title: `${idx === 0 ? '$(go-to-file) ' : ''}${
-              fileKind === 'fragment' ? 'Fragment' : 'Vertex'
-            }`,
-            arguments: [
-              vscode.Uri.file(matchingAsset.shaderPaths?.[fileKind]?.absolute),
-            ],
-          }),
-        );
-      }
+    } else if (asset.isKind('shaders') && asset.shaderPaths) {
+      lenses.push(
+        open('$(go-to-file) Fragment', asset.shaderPaths.fragment),
+        open('Vertex', asset.shaderPaths.vertex),
+      );
     } else {
-      let path: Pathy | undefined;
-      if (matchingAsset.gmlFile || matchingAsset.shaderPaths?.fragment)
-        path =
-          matchingAsset.gmlFile?.path || matchingAsset.shaderPaths?.fragment;
-      else if (isAssetOfKind(matchingAsset, 'sounds'))
-        path = matchingAsset.dir.join(matchingAsset.yy.soundFile);
-      if (path) {
-        const command: vscode.Command = {
-          command: 'vscode.open',
-          title: '$(go-to-file) Open Asset',
-          tooltip: 'Open the associated file',
-          arguments: [vscode.Uri.file(path.absolute)],
-        };
-        lenses.push(new vscode.CodeLens(topLine, command));
+      const file = assetMainFile(asset);
+      if (path.resolve(file) !== path.resolve(document.uri.fsPath)) {
+        lenses.push(
+          open('$(go-to-file) Open Asset', file, 'Open the associated file'),
+        );
       }
     }
     return lenses;

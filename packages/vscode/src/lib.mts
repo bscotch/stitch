@@ -1,10 +1,3 @@
-import type {
-  Asset,
-  Code,
-  IRange,
-  Range,
-  Reference,
-} from '@bscotch/gml-parser';
 import { Pathy, pathy } from '@bscotch/pathy';
 import { exec } from 'node:child_process';
 import os from 'node:os';
@@ -13,9 +6,8 @@ import {
   StitchVscodeInternalError,
   assertInternalClaim,
   assertLoudly,
-  logThrown,
 } from './assert.mjs';
-import type { GameMakerProject } from './extension.project.mjs';
+import type { StitchProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import type { CommandName } from './manifest.commands.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
@@ -28,14 +20,6 @@ export function getWorkspaceRoot() {
     throw new Error('Not in a workspace!');
   }
   return root;
-}
-
-export function getAssetFromRef(ref: Reference | undefined): Asset | undefined {
-  if (!ref) return;
-  const project = ref.file.project;
-  return ref.item.asset
-    ? project.getAssetByName(ref.item.name)
-    : ref.item.def?.file?.asset;
 }
 
 /**
@@ -61,33 +45,6 @@ export function pathyFromUri(
 
 export function uriFromPathy(pathy: Pathy) {
   return vscode.Uri.file(pathy.absolute);
-}
-
-export function uriFromCodeFile(file: Code) {
-  return vscode.Uri.file(file.path.absolute);
-}
-
-export function locationOf(thing: Range | string): vscode.Location | undefined {
-  if (typeof thing === 'string') {
-    return new vscode.Location(
-      vscode.Uri.file(thing),
-      new vscode.Position(0, 0),
-    );
-  }
-  // Get a vscode.Range from the thing
-  return new vscode.Location(
-    vscode.Uri.file(thing.file.path.absolute),
-    rangeFrom(thing),
-  );
-}
-
-export function rangeFrom(location: IRange) {
-  return logThrown(() => {
-    return new vscode.Range(
-      new vscode.Position(location.start.line - 1, location.start.column - 1),
-      new vscode.Position(location.end.line - 1, location.end.column),
-    );
-  });
 }
 
 export type Tab = DocTab | ImageTab | AudioTab | SpriteTab;
@@ -167,9 +124,9 @@ export function activeTab(): Tab | undefined {
 export function findProject(
   workspace: StitchWorkspace,
   uriOrFolder: string[] | GameMakerFolder | undefined,
-): GameMakerProject | undefined {
+): StitchProject | undefined {
   // Identify the target project
-  let project: GameMakerProject | undefined;
+  let project: StitchProject | undefined;
   if (workspace.projects.length === 1) {
     project = workspace.projects[0];
   } else if (uriOrFolder instanceof GameMakerFolder) {

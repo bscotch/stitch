@@ -1,31 +1,27 @@
-import {
-  OnDiagnostics,
-  Project,
-  ProjectOptions,
-  setLogger,
-} from '@bscotch/gml-parser';
-import { pathy } from '@bscotch/pathy';
+import { GameMakerProject, type Asset } from '@bscotch/gamemaker-project';
+import { pathy, type Pathy } from '@bscotch/pathy';
 import {
   findIde,
   findRuntime,
   getIdeVersionDetails,
   installIde,
+  listAvailableIdes,
   openProject,
   prepareIgorCommand,
   type IgorShell,
   type InstallProgress,
   type RunningIde,
 } from '@bscotch/stitch-launcher';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import vscode from 'vscode';
+import type { LanguageClient } from 'vscode-languageclient/node';
 import { loudlyLogThrownAsync } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
 import { showLauncherError } from './extension.launcher.mjs';
 import { killProjectRunner } from './lib.mjs';
-import { logger, showErrorMessage, warn } from './log.mjs';
-
-setLogger(logger.withPrefix('PARSER'));
+import { logger, showErrorMessage } from './log.mjs';
 
 /** The kind of shell VS Code's terminals use, for quoting commands */
 function terminalShell(): IgorShell {
@@ -53,16 +49,117 @@ function describeInstallProgress(p: InstallProgress): string {
   }
 }
 
-export class GameMakerProject extends Project {
+/**
+ * A loaded GameMaker project: the project's files (via
+ * `@bscotch/gamemaker-project`, the only thing in the extension that changes
+ * them), the language server analyzing its code, and running it.
+ */
+export class StitchProject {
   readonly kind = 'project';
   public runnerTerminal?: vscode.Terminal;
+  /** The language server for this project, once started */
+  public client?: LanguageClient;
+  protected helpLinksFile?: Promise<Record<string, string>>;
 
-  protected constructor(yypPath: vscode.Uri, options: ProjectOptions) {
-    super(pathy(yypPath.fsPath), options);
+  constructor(readonly gm: GameMakerProject) {}
+
+  static async open(yypPath: string): Promise<StitchProject> {
+    return new StitchProject(await GameMakerProject.open(yypPath));
   }
 
-  get name() {
-    return this.yyp.name;
+  get name(): string {
+    return this.gm.name;
+  }
+
+  get yyp() {
+    return this.gm.yyp;
+  }
+
+  get dir(): Pathy {
+    return pathy(this.gm.dir);
+  }
+
+  get yypPath(): Pathy {
+    return pathy(this.gm.yypPath);
+  }
+
+  get ideVersion(): string {
+    return this.gm.ideVersion;
+  }
+
+  get config() {
+    return this.gm.config;
+  }
+
+  get configs(): string[] {
+    return this.gm.configs;
+  }
+
+  /** Make sure the Stitch config is up to date with what's on disk */
+  async reloadConfig() {
+    await this.gm.reconcile([path.join(this.gm.dir, 'stitch.config.json')]);
+    return this.gm.config;
+  }
+
+  getAssetByName(name: string | undefined): Asset | undefined {
+    return name ? this.gm.getAsset(name) : undefined;
+  }
+
+  /** The asset a file belongs to */
+  getAssetByPath(file: string | vscode.Uri): Asset | undefined {
+    return this.gm.getAssetByPath(
+      typeof file === 'string' ? file : file.fsPath,
+    );
+  }
+
+  async setIdeVersion(version: string) {
+    await this.gm.setIdeVersion(version);
+  }
+
+  async getWindowsName() {
+    return await this.gm.getWindowsName();
+  }
+
+  includesFile(document: vscode.Uri | vscode.TextDocument): boolean {
+    const file = document instanceof vscode.Uri ? document : document.uri;
+    const relative = path.relative(this.gm.dir, file.fsPath);
+    return (
+      !relative || (!relative.startsWith('..') && !path.isAbsolute(relative))
+    );
+  }
+
+  /**
+   * A link to the GameMaker manual page for a built-in function or variable,
+   * using the help index of the project's GameMaker version (or any cached
+   * version).
+   */
+  async helpLink(name: string): Promise<string> {
+    this.helpLinksFile ||= (async () => {
+      try {
+        const launcher = stitchConfig.launcherOptions;
+        const ide =
+          (await findIde(this.ideVersion, launcher)) ??
+          (await listAvailableIdes(launcher))[0];
+        if (!ide) return {};
+        return JSON.parse(await fs.readFile(ide.helpKeywordsFile, 'utf8'));
+      } catch (err) {
+        logger.warn('Could not load the GameMaker help index', err);
+        return {};
+      }
+    })();
+    const links = await this.helpLinksFile;
+    const baseUrl = `https://beta-manual.yoyogames.com/#t=`;
+    if (name && name in links) {
+      return `${baseUrl}${encodeURIComponent(links[name])}.htm`;
+    } else if (name) {
+      return `${baseUrl}Content.htm&rhsearch=${encodeURIComponent(name)}&ux=${encodeURIComponent(name)}`;
+    }
+    return `${baseUrl}Content.htm`;
+  }
+
+  async dispose() {
+    await this.client?.stop().catch(() => undefined);
+    this.client = undefined;
   }
 
   /**
@@ -92,7 +189,7 @@ export class GameMakerProject extends Project {
             });
           }
           progress.report({ message: 'Opening project...' });
-          const running = await openProject(this.yypPath.absolute, {
+          const running = await openProject(this.gm.yypPath, {
             ...options,
             ideVersion,
             suppressUpdatePrompt: stitchConfig.disableGameMakerUpdatePrompt,
@@ -185,7 +282,7 @@ export class GameMakerProject extends Project {
       async () =>
         await prepareIgorCommand(
           {
-            project: this.yypPath.absolute,
+            project: this.gm.yypPath,
             runtime,
             command: options?.clean ? 'Clean' : 'Run',
             config: config || undefined,
@@ -223,44 +320,5 @@ export class GameMakerProject extends Project {
       });
     }
     return;
-  }
-
-  includesFile(document: vscode.Uri | vscode.TextDocument): boolean {
-    const file = document instanceof vscode.Uri ? document : document.uri;
-    const relative = path.relative(this.dir.absolute, file.fsPath);
-    return !relative || !relative.startsWith('..');
-  }
-
-  /**
-   * Determine which resource this file belongs to,
-   * and pass an update request to that resource.
-   */
-  async updateFile(doc: vscode.Uri | vscode.TextDocument): Promise<void> {
-    const uri = pathy((doc instanceof vscode.Uri ? doc : doc.uri).fsPath);
-    const resource = this.getAsset(uri);
-    if (!resource) {
-      warn(`Could not find resource for file ${uri}`);
-    } else {
-      await resource.reloadFile(uri);
-    }
-  }
-
-  static async from(
-    yypPath: vscode.Uri,
-    onDiagnostics: OnDiagnostics,
-    onProgress: (increment: number, message?: string) => void,
-  ) {
-    const options: ProjectOptions = {
-      onDiagnostics,
-      onLoadProgress: onProgress,
-      settings: {
-        autoDeclareGlobalsPrefixes: stitchConfig.autoDeclaredGlobalsPrefixes,
-      },
-      logger,
-      launcher: stitchConfig.launcherOptions,
-    };
-    const project = new GameMakerProject(yypPath, options);
-    await project.initialize(options);
-    return project;
   }
 }

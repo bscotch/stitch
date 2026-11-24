@@ -38,7 +38,7 @@
     "vscode:prepublish": "pnpm build",
     "vscode:publish": "vsce publish --pre-release --no-dependencies --githubBranch develop",
     "watch": "pnpm run --parallel \"/^watch:/\"",
-    "watch:extension": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css,svelte --watch src --watch syntaxes --watch ../parser/dist --watch ../sprite-source/dist --watch ../launcher/dist --ignore src/icons.types.mts --exec \"pnpm build:extension\"",
+    "watch:extension": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css,svelte --watch src --watch syntaxes --watch ../gml-language-server/dist --watch ../gml-analysis/dist --watch ../gamemaker-project/dist --watch ../sprite-source/dist --watch ../launcher/dist --ignore src/icons.types.mts --exec \"pnpm build:extension\"",
     "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"pnpm build:grammar\"",
     "watch:webviews": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css,svelte --watch webviews/src --watch webviews-legacy --exec \"pnpm build:webviews\""
   },
@@ -353,6 +353,12 @@
           "type": "boolean",
           "default": false
         },
+        "stitch.projects.includePrefabs": {
+          "title": "Include prefabs when finding projects",
+          "description": "GameMaker stores prefabs in a project's `prefabs/` folder, as projects of their own. By default Stitch ignores them when looking for projects to load. Enable this to also offer them.",
+          "type": "boolean",
+          "default": false
+        },
         "stitch.diagnostics.autoDeclaredGlobalsPatterns": {
           "title": "Prefixes for auto-declared globals",
           "description": "Variables with these prefixes will be automatically declared as globals if they are't declared in the user code.",
@@ -373,6 +379,78 @@
           },
           "default": [],
           "description": "Add asset groups (folders) to this list to suppress diagnostics from assets in these groups. Specify groups using their full path."
+        },
+        "stitch.diagnostics.argumentEvaluationOrder": {
+          "title": "Argument evaluation order",
+          "description": "Report function calls where more than one argument calls a function or has side effects. GameMaker's argument evaluation order can vary by platform.",
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "info",
+            "warning",
+            "error"
+          ],
+          "default": "off"
+        },
+        "stitch.diagnostics.argumentTypes": {
+          "title": "Argument types",
+          "description": "Report function arguments whose type clearly doesn't match the parameter's documented type.",
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "info",
+            "warning",
+            "error"
+          ],
+          "default": "warning"
+        },
+        "stitch.diagnostics.missingDocs": {
+          "title": "Missing documentation",
+          "description": "Report global functions, constructors, enums, macros and global variables that have no doc comment.",
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "info",
+            "warning",
+            "error"
+          ],
+          "default": "off"
+        },
+        "stitch.diagnostics.mixedOperators": {
+          "title": "Mixed operators without parentheses",
+          "description": "Report expressions that mix operators of different precedence without parentheses (e.g. `a || b && c`). GameMaker's operator precedence can vary by platform.",
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "info",
+            "warning",
+            "error"
+          ],
+          "default": "off"
+        },
+        "stitch.gml.format.enable": {
+          "title": "Enable GML formatting",
+          "description": "Format GML files with Stitch's formatter (e.g. with the Format Document command, or on save if `editor.formatOnSave` is enabled). Files with syntax errors are never formatted.",
+          "type": "boolean",
+          "default": true
+        },
+        "stitch.gml.format.preset": {
+          "title": "GML formatting style",
+          "description": "How GML files are formatted. Neither style reflows code: line breaks inside statements are kept.",
+          "type": "string",
+          "enum": [
+            "bscotch",
+            "standard"
+          ],
+          "enumDescriptions": [
+            "Normalizes only widely-followed conventions (spacing, semicolons, indentation) and keeps the rest of your hand-formatting, for minimal changes.",
+            "Fully normalized style."
+          ],
+          "default": "bscotch"
         },
         "stitch.sprites.editor.minInitialWidth": {
           "title": "Minimum initial sprite preview width",
@@ -455,6 +533,15 @@
           "type": "string",
           "default": "",
           "markdownDescription": "Stitch extracts GameMaker installers with a *full* 7-Zip install (`7z.exe` on Windows, `7zz` on macOS/Linux; the standalone `7za` is not enough). Leave empty to find it automatically. Get it from [7-zip.org](https://www.7-zip.org/download.html)."
+        },
+        "stitch.gameMaker.gmlSpecPaths": {
+          "title": "Extra GmlSpec locations",
+          "description": "Where to find the `GmlSpec.xml` files that describe GameMaker's built-in functions and constants, when the project's runtime is installed somewhere Stitch doesn't look (e.g. on a build machine). Each entry can be a `GmlSpec.xml` file, a runtime folder, or a folder of runtimes (`runtime-<version>` folders, in which case the project's runtime version is used). Relative paths are relative to the project folder. When set, these are used instead of the installed runtime.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
         },
         "stitch.editing.autocomplete.ignoredPrefix": {
           "title": "Ignore autocomplete prefix",
@@ -1139,8 +1226,10 @@
   ],
   "devDependencies": {
     "@bscotch/emitter": "0.2.1",
+    "@bscotch/gamemaker-project": "workspace:*",
     "@bscotch/gamemaker-releases": "workspace:*",
-    "@bscotch/gml-parser": "workspace:*",
+    "@bscotch/gml-analysis": "workspace:*",
+    "@bscotch/gml-language-server": "workspace:*",
     "@bscotch/pathy": "^2.12.1",
     "@bscotch/sprite-source": "workspace:*",
     "@bscotch/stitch-config": "workspace:*",
@@ -1157,6 +1246,7 @@
     "plist": "5.1.2",
     "tslib": "^2.9.1",
     "typescript": "6.0.3",
+    "vscode-languageclient": "11.0.0",
     "yaml": "2.9.1",
     "zod": "^4.6.7"
   },

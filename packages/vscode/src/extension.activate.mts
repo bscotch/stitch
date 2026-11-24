@@ -1,42 +1,37 @@
-import { Asset, Code } from '@bscotch/gml-parser';
 import { literal } from '@bscotch/utility';
 import vscode from 'vscode';
-import { swallowThrown } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
-import { stitchEvents } from './events.mjs';
-import { StitchCompletionProvider } from './extension.completions.mjs';
 import {
   createCopyAsJsdocSelfCallback,
   createCopyAsJsdocTypeCallback,
   createCopyAsTypeCallback,
 } from './extension.copyType.mjs';
-import { StitchDefinitionsProvider } from './extension.definitions.mjs';
 import { StitchYyFormatProvider } from './extension.formatting.mjs';
-import { StitchHoverProvider } from './extension.hover.mjs';
 import { StitchLauncherProvider } from './extension.launcher.mjs';
 import { StitchLensProvider } from './extension.lens.mjs';
 import { StitchLocationsProvider } from './extension.locations.mjs';
-import { StitchReferenceProvider } from './extension.refs.mjs';
 import { StitchReleasePickerProvider } from './extension.releases.mjs';
-import { StitchRenameProvider } from './extension.rename.mjs';
-import { StitchWorkspaceSymbolProvider } from './extension.symbols.mjs';
-import { StitchTypeDefinitionProvider } from './extension.typeDefs.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { StitchIncludedFilesTree } from './includedFilesTree.mjs';
 import { GameMakerInspectorProvider } from './inspector.mjs';
-import {
-  createSorter,
-  findProject,
-  getAssetFromRef,
-  pathyFromUri,
-  registerCommand,
-} from './lib.mjs';
+import { createSorter, findProject, registerCommand } from './lib.mjs';
 import { Timer, info, logger, showErrorMessage, warn } from './log.mjs';
+import { chooseWorkspaceProject } from './projectDiscovery.mjs';
 import { SpriteSourcesTree } from './spriteSources.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
+import { TreeAsset, TreeCode } from './tree.items.mjs';
 import { GameMakerTreeProvider } from './tree.mjs';
 import { StitchIgorView } from './webview.igor.mjs';
 import { StitchSpriteEditorProvider } from './webviews.spriteEditor.mjs';
+
+/** Debounce a function, keeping only the latest call's arguments */
+function debounce<T extends any[]>(fn: (...args: T) => unknown, ms: number) {
+  let timer: NodeJS.Timeout | undefined;
+  return (...args: T) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
+}
 
 export async function activateStitchExtension(
   workspace: StitchWorkspace,
@@ -46,205 +41,101 @@ export async function activateStitchExtension(
   stitchConfig.context = ctx;
 
   const t = Timer.start();
-  // Ensure that things stay up to date!
 
   // Dispose any existing subscriptions
   // to allow for reloading the extension
   ctx.subscriptions.forEach((s) => s.dispose());
 
-  workspace.clearProjects();
+  await workspace.clearProjects();
 
   // Dev-only watcher: reload window when files in dist/ or assets/ change,
   // debounced so rapid changes only trigger one reload.
   if (ctx.extensionMode === vscode.ExtensionMode.Development) {
-    const patterns = [
-      new vscode.RelativePattern(ctx.extensionPath, 'dist/**'),
-      new vscode.RelativePattern(ctx.extensionPath, 'assets/**'),
-    ];
-
-    let timer: NodeJS.Timeout | undefined;
-    const DEBOUNCE_MS = 100; // adjust delay as needed
-
-    const scheduleReload = () => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        console.log('Extension source updated. Reloading!');
-        vscode.commands.executeCommand('workbench.action.reloadWindow');
-      }, DEBOUNCE_MS);
-    };
-
-    const extWatchers = patterns.map((p) =>
-      vscode.workspace.createFileSystemWatcher(p, false, false, false),
-    );
-
-    extWatchers.forEach((w) => {
-      w.onDidCreate(scheduleReload);
-      w.onDidChange(scheduleReload);
-      w.onDidDelete(scheduleReload);
-      ctx.subscriptions.push(w);
-    });
-  }
-
-  info('Loading projects...');
-  const toWatch: vscode.RelativePattern[] = [];
-
-  let yypFiles = await vscode.workspace.findFiles(`**/*.yyp`);
-  if (!yypFiles.length) {
-    warn('No .yyp files found in workspace!');
-  }
-
-  // Pre-filter based on allowed project config
-  const allowed = stitchConfig.allowedProjects.map((p) => p.toLowerCase());
-  let prefiltered = [...yypFiles];
-  if (allowed.length) {
-    prefiltered = prefiltered.filter((projectUri) => {
-      const path = pathyFromUri(projectUri);
-      const yypName = path.name;
-      const folderName = path.up().name;
-      return (
-        allowed.includes(yypName.toLowerCase()) ||
-        allowed.includes(folderName.toLowerCase())
+    const scheduleReload = debounce(() => {
+      console.log('Extension source updated. Reloading!');
+      void vscode.commands.executeCommand('workbench.action.reloadWindow');
+    }, 100);
+    for (const pattern of ['dist/**', 'assets/**']) {
+      const watcher = vscode.workspace.createFileSystemWatcher(
+        new vscode.RelativePattern(ctx.extensionPath, pattern),
       );
-    });
-  }
-  yypFiles = prefiltered.length ? prefiltered : yypFiles;
-
-  // Only allow loading one project at a time to reduce complexity
-  if (yypFiles.length > 1) {
-    const chosen = await vscode.window.showQuickPick(
-      yypFiles.map((yyp) => ({
-        label: pathyFromUri(yyp).basename,
-        description: pathyFromUri(yyp).up().absolute,
-        uri: yyp,
-      })),
-      {
-        title:
-          'Stitch: Multiple GameMaker projects found! Choose a project to load.',
-      },
-    );
-    if (!chosen) yypFiles.length = 0;
-    else yypFiles = [chosen.uri];
-  }
-
-  for (const yypFile of yypFiles) {
-    info('Loading project', yypFile);
-    const pt = Timer.start();
-    try {
-      await workspace.loadProject(
-        yypFile,
-        workspace.emitDiagnostics.bind(workspace),
-      );
-      pt.seconds('Loaded project in');
-      // Add watcher paths
-      const projectFolder = pathyFromUri(yypFile).up();
-      const base = vscode.Uri.file(projectFolder.absolute);
-      toWatch.push(
-        new vscode.RelativePattern(base, '*.yyp'),
-        new vscode.RelativePattern(base, '*/*/*.yy'),
-        new vscode.RelativePattern(base, '*/*/*.gml'),
-        new vscode.RelativePattern(base, '*/*/*.atlas'),
-        new vscode.RelativePattern(base, '*/*/*.png'),
-        new vscode.RelativePattern(base, 'datafiles/**/*'),
-      );
-    } catch (error) {
-      logger.error(error);
-      logger.error('Error loading project', yypFile);
-      let message = `Could not load project ${pathyFromUri(yypFile).basename}. This is likely because Stitch does not support the version of GameMaker that was last used with your project. [Submit a GitHub issue](https://github.com/bscotch/stitch/issues/new) with your \`.yyp\` file attached to see if this can be resolved in future versions of Stitch. See your Output panel for Stitch for a full error message.`;
-      void showErrorMessage(message);
+      watcher.onDidCreate(scheduleReload);
+      watcher.onDidChange(scheduleReload);
+      watcher.onDidDelete(scheduleReload);
+      ctx.subscriptions.push(watcher);
     }
   }
-  const watchers = toWatch.map((pattern) =>
-    vscode.workspace.createFileSystemWatcher(pattern),
-  );
+
+  info('Looking for projects...');
+  const yypFile = await chooseWorkspaceProject();
+  if (!yypFile) {
+    warn('No GameMaker project found (or chosen) in this workspace.');
+  } else {
+    info('Loading project', yypFile.fsPath);
+    const pt = Timer.start();
+    try {
+      await workspace.loadProject(yypFile);
+      pt.seconds('Loaded project in');
+    } catch (error) {
+      logger.error(error);
+      logger.error('Error loading project', yypFile.fsPath);
+      void showErrorMessage(
+        `Could not load project ${yypFile.fsPath}. This is likely because Stitch does not support the version of GameMaker that was last used with your project. [Submit a GitHub issue](https://github.com/bscotch/stitch/issues/new) with your \`.yyp\` file attached to see if this can be resolved in future versions of Stitch. See your Output panel for Stitch for a full error message.`,
+      );
+    }
+  }
 
   const treeProvider = new GameMakerTreeProvider(workspace);
+  workspace.tree = treeProvider;
   const inspectorProvider = new GameMakerInspectorProvider(workspace);
-  const definitionsProvider = new StitchDefinitionsProvider(workspace);
 
   ctx.subscriptions.push(
-    // vscode.window.onDidChangeActiveTextEditor((editor) => {
-    //   if (!editor) {
-    //     return;
-    //   }
-    //   const code = provider.getGmlFile(editor.document);
-    // }),
-    vscode.workspace.onDidChangeTextDocument((event) =>
-      workspace.onChangeDoc(event),
-    ),
-    // vscode.workspace.onDidOpenTextDocument((event) => {
-    //   // provider.onChangeDoc(event),
-    // }),
-    ...watchers,
-    ...watchers.map((watcher) =>
-      watcher.onDidCreate((uri) => {
-        workspace.externalChangeTracker.addChange({ uri, type: 'create' });
-      }),
-    ),
-    ...watchers.map((watcher) =>
-      watcher.onDidDelete((uri) => {
-        workspace.externalChangeTracker.addChange({ uri, type: 'delete' });
-      }),
-    ),
-    ...watchers.map((watcher) =>
-      watcher.onDidChange((uri) => {
-        workspace.externalChangeTracker.addChange({ uri, type: 'change' });
-      }),
-    ),
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('stitch')) workspace.onSettingsChanged();
+    }),
     ...treeProvider.register(),
     ...inspectorProvider.register(),
-    ...definitionsProvider.register(),
     ...StitchIncludedFilesTree.register(workspace),
-    ...StitchTypeDefinitionProvider.register(workspace),
     ...StitchReleasePickerProvider.register(workspace),
-    ...StitchRenameProvider.register(workspace),
     ...(SpriteSourcesTree?.register(workspace) || []),
-    StitchHoverProvider.register(workspace),
     StitchLensProvider.register(workspace),
-    StitchWorkspaceSymbolProvider.register(workspace),
-    StitchCompletionProvider.register(workspace),
     ...StitchIgorView.register(workspace),
     ...StitchSpriteEditorProvider.register(workspace),
-    ...StitchReferenceProvider.register(workspace),
     ...StitchLocationsProvider.register(workspace),
     ...StitchLauncherProvider.register(workspace),
-    vscode.languages.registerSignatureHelpProvider('gml', workspace, '(', ','),
     vscode.languages.registerDocumentFormattingEditProvider(
       'yy',
       new StitchYyFormatProvider(),
     ),
-    registerCommand('stitch.assets.delete', (what) => {
-      // Convert the incoming argument to an Asset, then emit the event
-      let asset: Asset | undefined;
-      if (what && typeof what === 'object') {
-        if (what instanceof Asset) {
-          asset = what;
-        } else if ('asset' in what && what.asset instanceof Asset) {
-          asset = what.asset;
-        }
-      }
+    registerCommand('stitch.assets.delete', async (what: unknown) => {
+      const asset =
+        what instanceof TreeAsset
+          ? what.asset
+          : what && typeof what === 'object' && 'asset' in what
+            ? (what.asset as TreeAsset['asset'])
+            : undefined;
       if (!asset) {
         logger.warn('stitch.assets.delete called on unknown type', what);
         return;
       }
-      void workspace.deleteAsset(asset);
-    }),
-    registerCommand('stitch.assets.deleteCode', async (what) => {
-      // Convert the incoming argument to a Code instance, then emit the event
-      let code: Code | undefined;
-      if (what && typeof what === 'object') {
-        if (what instanceof Code) {
-          code = what;
-        } else if ('code' in what && what.code instanceof Code) {
-          code = what.code;
-        }
+      try {
+        await workspace.deleteAsset(asset);
+      } catch (err) {
+        void showErrorMessage(err as Error);
       }
-      // Actually delete the code!
-      if (!code) {
+    }),
+    registerCommand('stitch.assets.deleteCode', async (what: unknown) => {
+      if (!(what instanceof TreeCode)) {
         logger.warn('stitch.assets.deleteCode called on unknown type', what);
         return;
       }
-      await code.remove();
-      stitchEvents.emit('code-file-deleted', code);
+      const project = workspace.getProjectOfAsset(what.asset);
+      if (!project || !what.event) return;
+      try {
+        await project.gm.deleteObjectEvent(what.asset, what.event);
+      } catch (err) {
+        void showErrorMessage(err as Error);
+      }
     }),
     registerCommand('stitch.types.copy', createCopyAsTypeCallback(workspace)),
     registerCommand(
@@ -254,6 +145,29 @@ export async function activateStitchExtension(
     registerCommand(
       'stitch.types.copyAsJsdocType',
       createCopyAsJsdocTypeCallback(workspace),
+    ),
+    registerCommand(
+      'stitch.openDocs',
+      async (options?: { from?: 'keybind' }) => {
+        const project = workspace.getActiveProject();
+        const editor = vscode.window.activeTextEditor;
+        if (!project) return;
+        let word = '';
+        if (editor) {
+          const range = editor.document.getWordRangeAtPosition(
+            editor.selection.active,
+          );
+          if (range) word = editor.document.getText(range);
+        }
+        if (options?.from === 'keybind') {
+          // Only for built-in functions and variables
+          const symbol = await workspace.getSymbolAtCursor();
+          if (!symbol?.native) return;
+        }
+        await vscode.env.openExternal(
+          vscode.Uri.parse(await project.helpLink(word)),
+        );
+      },
     ),
     registerCommand(
       'stitch.run',
@@ -298,7 +212,7 @@ export async function activateStitchExtension(
           return;
         }
         // QuickPick to select the config
-        const configs = project.configs.sort(
+        const configs = [...project.configs].sort(
           createSorter({
             first: [stitchConfig.runConfigDefault || '', 'Default'],
           }),
@@ -317,7 +231,7 @@ export async function activateStitchExtension(
         });
         if (!chosenCompiler) return;
 
-        ctx.workspaceState.update('lastRunConfig', {
+        void ctx.workspaceState.update('lastRunConfig', {
           compiler: chosenCompiler as any,
           config: chosenConfig,
         });
@@ -369,91 +283,98 @@ export async function activateStitchExtension(
     registerCommand('stitch.newProject', async () => {
       await workspace.createNewProject();
     }),
-    workspace.semanticHighlightProvider.register(),
     workspace.signatureHelpStatus,
-    vscode.window.onDidChangeTextEditorSelection((e) => {
-      // Update the 'when' clause for the 'stitch.selectionIs(Native|Sprite|Sound)' contexts
-      const ref = workspace.getRefFromSelection(
-        e.textEditor.document,
-        e.selections,
-      );
-      if (!ref) return;
-      const asset = getAssetFromRef(ref);
-
-      // Skip 'event_inherited' since we want to be able to
-      // go-to-def on it to trace the inheritance chain.
-      const isNative =
-        !!ref.item?.native && ref.item.name !== 'event_inherited';
-
-      void vscode.commands.executeCommand(
-        'setContext',
-        'stitch.selectionIsNative',
-        isNative,
-      );
-      void vscode.commands.executeCommand(
-        'setContext',
-        'stitch.selectionIsSprite',
-        asset?.isSprite && asset.name,
-      );
-      void vscode.commands.executeCommand(
-        'setContext',
-        'stitch.selectionIsSound',
-        asset?.isSound && asset.name,
-      );
-    }),
-    vscode.window.onDidChangeTextEditorSelection((e) => {
-      // Update the function signature
-
-      // This includes events from the output window, so skip those
-      if (e.textEditor.document.uri.scheme !== 'file') {
-        return;
-      }
-      workspace.signatureHelpStatus.text = '';
-      workspace.signatureHelpStatus.hide();
-      if (!stitchConfig.enableFunctionSignatureStatus) {
-        return;
-      }
-      // If something is actually selected, versus
-      // just the cursor being in a position, then
-      // we don't want to do anything.
-      if (e.selections.length !== 1) {
-        return;
-      }
-      // Get the signature helper.
-      const signatureHelp = swallowThrown(() =>
-        workspace.provideSignatureHelp(
-          e.textEditor.document,
-          e.selections[0].start,
-        )!,
-      );
-      if (!signatureHelp) {
-        return;
-      }
-      // Update the status bar with the signature.
-      // We can't do any formatting, so we'll need
-      // to upper-case the current parameter.
-      const signature = signatureHelp.signatures[signatureHelp.activeSignature];
-      const name = signature.label.match(/^function\s+([^(]+)/i)?.[1];
-      if (!name) {
-        return;
-      }
-      const asString = `${name}(${signature.parameters
-        .map((p, i) => {
-          if (
-            typeof p.label === 'string' &&
-            i === signatureHelp.activeParameter
-          ) {
-            return p.label.toUpperCase();
-          }
-          return p.label;
-        })
-        .join(', ')})`;
-      workspace.signatureHelpStatus.text = asString;
-      workspace.signatureHelpStatus.show();
-    }),
-    workspace.diagnosticCollection,
+    vscode.window.onDidChangeTextEditorSelection(
+      debounce(
+        (e: vscode.TextEditorSelectionChangeEvent) =>
+          void updateSelectionContext(workspace, e),
+        100,
+      ),
+    ),
+    vscode.window.onDidChangeTextEditorSelection(
+      debounce(
+        (e: vscode.TextEditorSelectionChangeEvent) =>
+          void updateSignatureStatus(workspace, e),
+        100,
+      ),
+    ),
   );
 
   t.seconds('Extension activated in');
   return workspace;
+}
+
+/**
+ * Update the `stitch.selectionIs(Native|Sprite|Sound)` contexts, which
+ * decide which commands are shown for the symbol at the cursor.
+ */
+async function updateSelectionContext(
+  workspace: StitchWorkspace,
+  e: vscode.TextEditorSelectionChangeEvent,
+) {
+  const document = e.textEditor.document;
+  if (document.languageId !== 'gml' || document.uri.scheme !== 'file') return;
+  const symbol = await workspace.getSymbolInfo(document, e.selections[0].start);
+  // `event_inherited` is excluded so that go-to-definition can be used on
+  // it, to trace the inheritance chain
+  const isNative = !!symbol?.native && symbol.name !== 'event_inherited';
+  const assetKind = symbol?.kind === 'asset' ? symbol.assetKind : undefined;
+  const setContext = (key: string, value: unknown) =>
+    void vscode.commands.executeCommand('setContext', key, value);
+  setContext('stitch.selectionIsNative', isNative);
+  setContext(
+    'stitch.selectionIsSprite',
+    assetKind === 'sprites' ? symbol!.name : false,
+  );
+  setContext(
+    'stitch.selectionIsSound',
+    assetKind === 'sounds' ? symbol!.name : false,
+  );
+}
+
+/** Show the signature of the function call at the cursor in the status bar */
+async function updateSignatureStatus(
+  workspace: StitchWorkspace,
+  e: vscode.TextEditorSelectionChangeEvent,
+) {
+  const status = workspace.signatureHelpStatus;
+  const document = e.textEditor.document;
+  // (Selection events include the output window)
+  if (document.uri.scheme !== 'file' || document.languageId !== 'gml') {
+    return;
+  }
+  if (
+    !stitchConfig.enableFunctionSignatureStatus ||
+    e.selections.length !== 1
+  ) {
+    status.hide();
+    return;
+  }
+  let help: vscode.SignatureHelp | undefined;
+  try {
+    help = await vscode.commands.executeCommand<vscode.SignatureHelp>(
+      'vscode.executeSignatureHelpProvider',
+      document.uri,
+      e.selections[0].start,
+    );
+  } catch {
+    // (No provider, or it failed)
+  }
+  const signature = help?.signatures[help.activeSignature];
+  const name = signature?.label.match(/^function\s+([^(]+)/i)?.[1];
+  if (!help || !signature || !name) {
+    status.hide();
+    return;
+  }
+  // The status bar can't be formatted, so the current parameter is upper-cased
+  const params = signature.parameters.map((p, i) => {
+    const label =
+      typeof p.label === 'string'
+        ? p.label
+        : signature.label.slice(p.label[0], p.label[1]);
+    const paramName = label.split(/[?:]/)[0];
+    return i === help.activeParameter ? paramName.toUpperCase() : paramName;
+  });
+  status.text = `${name}(${params.join(', ')})`;
+  status.show();
 }

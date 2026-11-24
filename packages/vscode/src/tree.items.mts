@@ -1,14 +1,8 @@
-import {
-  Asset,
-  Code,
-  getEventFromFilename,
-  isAssetOfKind,
-} from '@bscotch/gml-parser';
-import { Pathy } from '@bscotch/pathy';
-import { YyResourceType } from '@bscotch/yy';
+import type { Asset, AssetKind, ObjectEvent } from '@bscotch/gamemaker-project';
+import path from 'node:path';
 import vscode from 'vscode';
 import { getAssetIcon } from './icons.mjs';
-import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
+import { StitchTreeItemBase, eventIcon } from './tree.base.mjs';
 import { GameMakerFolder } from './tree.folder.mjs';
 
 export type Treeable =
@@ -23,11 +17,20 @@ export type Treeable =
 
 // ICONS: See https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 
-export function isTreeAssetOfKind(
-  item: any,
-  kind: YyResourceType,
-): item is TreeAsset<YyResourceType> {
-  return item instanceof TreeAsset && isAssetOfKind(item.asset, kind);
+export function isTreeAssetOfKind<K extends AssetKind>(
+  item: unknown,
+  kind: K,
+): item is TreeAsset<K> {
+  return item instanceof TreeAsset && item.asset.isKind(kind);
+}
+
+/** The file to open for an asset: its main GML file, sound file, etc. */
+export function assetMainFile(asset: Asset): string {
+  if (asset.isKind('sounds') && asset.soundFile) return asset.soundFile;
+  if (asset.isKind('shaders') && asset.shaderPaths) {
+    return asset.shaderPaths.fragment;
+  }
+  return asset.gmlFiles[0] ?? asset.yyPath;
 }
 
 export class TreeFilterGroup extends StitchTreeItemBase<'tree-filter-group'> {
@@ -106,7 +109,7 @@ export class TreeFilter extends StitchTreeItemBase<'tree-filter'> {
 }
 
 export class TreeAsset<
-  T extends YyResourceType = YyResourceType,
+  T extends AssetKind = AssetKind,
 > extends StitchTreeItemBase<'asset'> {
   override readonly kind = 'asset';
   readonly asset: Asset<T>;
@@ -118,7 +121,7 @@ export class TreeAsset<
     asset: Asset<T>,
   ) {
     super(asset.name);
-    this.contextValue = `asset-${asset.assetKind}`;
+    this.contextValue = `asset-${asset.kind}`;
     TreeAsset.lookup.set(asset, this);
 
     this.asset = asset;
@@ -135,95 +138,85 @@ export class TreeAsset<
   }
 
   refreshTreeItem() {
-    let file: vscode.Uri;
     const asset = this.asset;
-    if (isAssetOfKind(asset, 'scripts') || isAssetOfKind(asset, 'objects')) {
-      const gmlFile = asset.gmlFilesArray?.[0];
-      file = vscode.Uri.file(
-        gmlFile?.path.absolute || this.asset.yyPath.absolute,
-      );
-    } else if (isAssetOfKind(asset, 'sounds')) {
-      file = vscode.Uri.file(asset.dir.join(asset.yy.soundFile).absolute);
-    }
-    file ||= vscode.Uri.file(this.asset.yyPath.absolute);
-    this.command = {
-      command: 'vscode.open',
-      title: 'Open',
-      arguments: [file],
-    };
-
-    // If this is a sprite, overwrite the command to
-    // open the sprite editor.
-    if (isAssetOfKind(asset, 'sprites')) {
+    if (asset.isKind('sprites')) {
       this.command = {
         command: 'stitch.assets.editSprite',
         title: 'Edit Sprite',
         arguments: [this],
       };
+    } else {
+      this.command = {
+        command: 'vscode.open',
+        title: 'Open',
+        arguments: [vscode.Uri.file(assetMainFile(asset))],
+      };
     }
 
     this.collapsibleState = ['objects', 'sprites', 'shaders', 'rooms'].includes(
-      this.asset.assetKind,
+      asset.kind,
     )
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
 
-    this.iconPath = getAssetIcon(this.asset.assetKind, this.asset);
+    this.iconPath = getAssetIcon(asset.kind, asset);
   }
 }
 
+/** An object event's GML file */
 export class TreeCode extends StitchTreeItemBase<'code'> {
   override readonly kind = 'code';
-  static lookup: Map<Code, TreeCode> = new Map();
 
   constructor(
-    readonly parent: TreeAsset,
-    readonly code: Code,
+    readonly parent: TreeAsset | undefined,
+    readonly asset: Asset<'objects'>,
+    readonly file: string,
+    readonly event: ObjectEvent | undefined,
   ) {
-    super(code.name);
+    super(event?.label ?? path.basename(file, '.gml'));
     this.contextValue = this.kind;
-    TreeCode.lookup.set(code, this);
-
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     this.command = {
       command: 'vscode.open',
       title: 'Open',
       arguments: [this.uri],
     };
-    this.setIcon();
-    this.id = this.parent.id + '/' + this.code.name;
-
-    // Ensure that the tree label is human-friendly.
-    this.label = getEventFromFilename(this.uri.fsPath);
+    this.iconPath = eventIcon(event?.name ?? path.basename(file, '.gml'));
+    this.id = `${parent?.id ?? asset.name}/${path.basename(file)}`;
   }
 
   get uri() {
-    return vscode.Uri.file(this.code.path.absolute);
+    return vscode.Uri.file(this.file);
   }
 
-  protected setIcon = setEventIcon;
+  /** The event files of an object, as tree items */
+  static listFor(asset: Asset<'objects'>, parent?: TreeAsset): TreeCode[] {
+    return asset
+      .listEvents()
+      .map((e) => new TreeCode(parent, asset, e.file, e.event));
+  }
 }
 
 export class TreeSpriteFrame extends StitchTreeItemBase<'sprite-frame'> {
   override readonly kind = 'sprite-frame';
   constructor(
-    readonly parent: TreeAsset,
-    readonly imagePath: Pathy<Buffer>,
+    readonly parent: TreeAsset<'sprites'>,
+    readonly imagePath: string,
     readonly idx: number,
   ) {
-    super(`[${idx}] ${imagePath.name}`);
+    super(`[${idx}] ${path.basename(imagePath, '.png')}`);
     this.contextValue = this.kind;
-    this.iconPath = vscode.Uri.file(imagePath.absolute);
+    this.iconPath = vscode.Uri.file(imagePath);
     this.command = {
       command: 'vscode.open',
       title: 'Open',
       arguments: [this.iconPath],
     };
-    this.id = this.parent.id + '/' + this.imagePath.name;
+    this.id = this.parent.id + '/' + path.basename(imagePath);
   }
 
   get frameId() {
-    return this.imagePath.name;
+    return path.basename(this.imagePath, '.png');
   }
 
   get project() {
@@ -235,20 +228,20 @@ export class TreeShaderFile extends StitchTreeItemBase<'shader-file'> {
   override readonly kind = 'shader-file';
   constructor(
     readonly parent: TreeAsset,
-    readonly path: Pathy<string>,
+    readonly path: string,
   ) {
-    super(path.hasExtension('vsh') ? 'Vertex' : 'Fragment');
+    super(path.endsWith('.vsh') ? 'Vertex' : 'Fragment');
     this.contextValue = this.kind;
     this.command = {
       command: 'vscode.open',
       title: 'Open',
       arguments: [this.uri],
     };
-    this.id = this.parent.id + '/' + this.path.basename;
+    this.id = this.parent.id + '/' + path.split(/[\\/]/).pop();
     this.setFileIcon('shader');
   }
   get uri() {
-    return vscode.Uri.file(this.path.absolute);
+    return vscode.Uri.file(this.path);
   }
 }
 
@@ -256,29 +249,26 @@ export class TreeRoomInstance extends StitchTreeItemBase<'room-instance'> {
   override readonly kind = 'room-instance';
   constructor(
     readonly parent: TreeAsset<'rooms'>,
-    readonly asset: Asset<'objects'>,
+    /** The instance's object (if it still exists) */
+    readonly asset: Asset<'objects'> | undefined,
+    readonly objectName: string,
     readonly instanceId: string,
   ) {
-    super(asset.name);
+    super(objectName);
     this.contextValue = this.kind;
     this.description = instanceId;
-    this.command = {
-      command: 'vscode.open',
-      title: 'Open',
-      arguments: [this.iconPath],
-    };
     this.id = this.parent.id + '/' + instanceId;
-
-    const gmlFile = asset.gmlFilesArray?.[0];
-    const file = vscode.Uri.file(
-      gmlFile?.path.absolute || asset.yyPath.absolute,
-    );
-    this.command = {
-      command: 'vscode.open',
-      title: 'Open',
-      arguments: [file],
-    };
-    this.iconPath = getAssetIcon(asset.assetKind, asset);
+    if (asset) {
+      this.command = {
+        command: 'vscode.open',
+        title: 'Open',
+        arguments: [vscode.Uri.file(assetMainFile(asset))],
+      };
+      this.iconPath = getAssetIcon(asset.kind, asset);
+    } else {
+      this.setBaseIcon('warning');
+      this.tooltip = `Object "${objectName}" does not exist.`;
+    }
   }
 
   get project() {

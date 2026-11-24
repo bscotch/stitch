@@ -1,15 +1,13 @@
 import vscode from 'vscode';
 import { stitchEvents } from './events.mjs';
-import type { GameMakerProject } from './extension.project.mjs';
+import type { StitchProject as GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { registerCommand } from './lib.mjs';
 import { StitchTreeItemBase } from './tree.base.mjs';
 
 type IncludedFileTreeItem = IncludedFileFolder | IncludedFile;
 
-export class StitchIncludedFilesTree
-  implements vscode.TreeDataProvider<IncludedFileTreeItem>
-{
+export class StitchIncludedFilesTree implements vscode.TreeDataProvider<IncludedFileTreeItem> {
   project: GameMakerProject | undefined;
   view!: vscode.TreeView<IncludedFileTreeItem>;
   private _onDidChangeTreeData: vscode.EventEmitter<

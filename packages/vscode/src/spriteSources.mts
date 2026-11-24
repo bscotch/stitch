@@ -1,4 +1,4 @@
-import { Asset, isAssetOfKind } from '@bscotch/gml-parser';
+import type { Asset } from '@bscotch/gamemaker-project';
 import { Pathy, pathy } from '@bscotch/pathy';
 import {
   SpriteDest,
@@ -11,7 +11,7 @@ import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
-import type { GameMakerProject } from './extension.project.mjs';
+import type { StitchProject as GameMakerProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { ObjectSpriteItem } from './inspector.mjs';
 import { registerCommand, sortAlphaInsensitive } from './lib.mjs';
@@ -57,7 +57,7 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
     stitchEvents.on('project-changed', () => this.rebuild());
     stitchEvents.on(
       'asset-changed',
-      (asset) => isAssetOfKind(asset, 'sprites') && this.rebuild(),
+      (asset) => asset.isKind('sprites') && this.rebuild(),
     );
   }
 
@@ -102,9 +102,14 @@ export class SpriteSourcesTree implements vscode.TreeDataProvider<Item> {
       },
       async (progress) => {
         await project.reloadConfig();
-        const actions = await dest.import(undefined, progress, {
-          allowedNamePatterns: project.config.newSpriteRules?.allowedNames,
-        });
+        // The import rewrites the yyp, so it runs as a project transaction:
+        // no other change to the project can happen in the middle of it.
+        const actions = await project.gm.transaction(() =>
+          dest.import(undefined, progress, {
+            allowedNamePatterns: project.config.newSpriteRules?.allowedNames,
+          }),
+        );
+        await project.gm.reconcile([project.gm.yypPath]);
 
         // Summarize all isues into a single popup
         const totalIssues = dest.issues.length;
@@ -574,7 +579,7 @@ class RecentlyChangedFolder extends StitchTreeItemBase<'sprites'> {
     const changedSprites = [...changes.entries()]
       .map(([name, info]) => {
         const asset = this.project.getAssetByName(name);
-        if (!isAssetOfKind(asset, 'sprites')) return;
+        if (!asset?.isKind('sprites')) return;
         return new SpriteItem(asset, info);
       })
       .filter((s): s is SpriteItem => !!s);

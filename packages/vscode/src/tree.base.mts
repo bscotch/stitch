@@ -1,4 +1,3 @@
-import { Code } from '@bscotch/gml-parser';
 import vscode from 'vscode';
 import {
   getBaseIcon,
@@ -18,9 +17,9 @@ and on other extensions is to:
   e.g. the current query string as the item with a search icon button for opening the input dialog and a clear button for resetting the query.
 */
 
-export abstract class StitchTreeItemBase<
-  Kind extends string = string,
-> extends vscode.TreeItem {
+export abstract class StitchTreeItemBase<Kind extends string = string>
+  extends vscode.TreeItem
+{
   /** The kind of Node this item is. Also used as the default `contextValue` value */
   readonly kind!: Kind;
   abstract readonly parent: StitchTreeItemBase | undefined;
@@ -53,6 +52,7 @@ export abstract class StitchTreeItemBase<
   }
 }
 
-export function setEventIcon(this: StitchTreeItemBase & { code: Code }) {
-  this.iconPath = getObjectEventIcon(this.code.name);
+/** The icon for an object event, given its file name (e.g. `Step_0`) */
+export function eventIcon(eventFileName: string) {
+  return getObjectEventIcon(eventFileName);
 }

@@ -1,15 +1,11 @@
-import {
-  Asset,
-  Code,
-  getEventFromFilename,
-  isAssetOfKind,
-} from '@bscotch/gml-parser';
+import type { Asset } from '@bscotch/gamemaker-project';
 import vscode from 'vscode';
 import { stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
-import { createSorter, uriFromPathy } from './lib.mjs';
+import { createSorter } from './lib.mjs';
 import { logger } from './log.mjs';
-import { StitchTreeItemBase, setEventIcon } from './tree.base.mjs';
+import { StitchTreeItemBase } from './tree.base.mjs';
+import { assetMainFile, TreeCode } from './tree.items.mjs';
 export type { ObjectParentFolder };
 
 type InspectorItem =
@@ -17,28 +13,17 @@ type InspectorItem =
   | ObjectParentFolder
   | ObjectChildren
   | ObjectEvents
-  | ObjectEventItem
+  | TreeCode
   | ObjectSpriteItem
   | ObjectSpriteFolder;
 
 class ObjectParentFolder extends StitchTreeItemBase<'inspector-object-parents'> {
   override readonly kind = 'inspector-object-parents';
   parent = undefined;
-  constructor(
-    readonly asset: Asset<'objects'>,
-    readonly provider: GameMakerInspectorProvider,
-  ) {
+  constructor(readonly asset: Asset<'objects'>) {
     super('Parent');
     this.contextValue = this.kind;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-  }
-
-  onSetParent(_parent: Asset<'objects'> | undefined) {
-    this.provider.onUpdate(this);
-  }
-
-  onSetSprite(_sprite: Asset<'sprites'> | undefined) {
-    this.provider.onUpdate(this);
   }
 }
 
@@ -63,22 +48,18 @@ class ObjectItem extends StitchTreeItemBase<'asset-objects'> {
   constructor(
     readonly asset: Asset<'objects'>,
     readonly listing: 'children' | 'parents',
+    hasEntries: boolean,
   ) {
     super(asset.name);
     this.contextValue = this.kind;
     this.setBaseIcon('symbol-misc');
-
-    const hasEntries =
-      (listing === 'children' && asset.children.length > 0) ||
-      (listing === 'parents' && asset.parent);
     this.collapsibleState = hasEntries
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
-
     this.command = {
       command: 'vscode.open',
       title: 'Open',
-      arguments: [uriFromPathy(asset.gmlFile?.path || asset.yyPath)],
+      arguments: [vscode.Uri.file(assetMainFile(asset))],
     };
   }
 }
@@ -86,52 +67,17 @@ class ObjectItem extends StitchTreeItemBase<'asset-objects'> {
 class ObjectEvents extends StitchTreeItemBase<'inspector-object-events'> {
   override readonly kind = 'inspector-object-events';
   parent = undefined;
-  constructor(
-    readonly asset: Asset<'objects'>,
-    readonly provider: GameMakerInspectorProvider,
-  ) {
+  constructor(readonly asset: Asset<'objects'>) {
     super('Events');
     this.contextValue = this.kind;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
   }
-
-  // To be called by the stitch.assets.newEvent command registered by the TreeProvider.
-  onCreateEvent() {
-    this.provider.onUpdate(this);
-    this.provider.view.reveal(this, { expand: true });
-  }
-}
-
-class ObjectEventItem extends StitchTreeItemBase<'code'> {
-  override readonly kind = 'code';
-  parent = undefined;
-
-  constructor(readonly code: Code) {
-    super(code.name);
-    this.contextValue = this.kind;
-
-    this.collapsibleState = vscode.TreeItemCollapsibleState.None;
-    this.command = {
-      command: 'vscode.open',
-      title: 'Open',
-      arguments: [uriFromPathy(code.path)],
-    };
-    this.setIcon();
-
-    // Ensure that the tree label is human-friendly.
-    this.label = getEventFromFilename(code.path.absolute);
-  }
-
-  protected setIcon = setEventIcon;
 }
 
 export class ObjectSpriteFolder extends StitchTreeItemBase<'inspector-object-sprites'> {
   override readonly kind = 'inspector-object-sprites';
   parent = undefined;
-  constructor(
-    readonly asset: Asset<'objects'>,
-    readonly provider: GameMakerInspectorProvider,
-  ) {
+  constructor(readonly asset: Asset<'objects'>) {
     super('Sprite');
     this.contextValue = this.kind;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
@@ -156,19 +102,17 @@ export class ObjectSpriteItem extends StitchTreeItemBase<'asset-sprites'> {
   }
 
   setIcon() {
-    const frame = this.asset.framePaths?.[0];
+    const frame = this.asset.framePaths[0];
     if (frame) {
-      const uri = vscode.Uri.file(frame.absolute);
-      this.iconPath = uri;
+      this.iconPath = vscode.Uri.file(frame);
     } else {
-      this.setGameMakerIcon('sprite');
+      this.setGameMakerIcon('sprites');
     }
   }
 }
 
-export class GameMakerInspectorProvider
-  implements vscode.TreeDataProvider<InspectorItem>
-{
+/** Details of the object whose file is open: its parent, sprite, events and children */
+export class GameMakerInspectorProvider implements vscode.TreeDataProvider<InspectorItem> {
   asset: Asset<'objects'> | undefined;
   view!: vscode.TreeView<InspectorItem>;
   private _onDidChangeTreeData: vscode.EventEmitter<
@@ -176,75 +120,80 @@ export class GameMakerInspectorProvider
   > = new vscode.EventEmitter<InspectorItem | undefined | null | void>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-  private _onDidCollapseElement: vscode.EventEmitter<
-    InspectorItem | undefined | null | void
-  > = new vscode.EventEmitter<InspectorItem | undefined | null | void>();
-  readonly onDidCollapseElement = this._onDidCollapseElement.event;
+  constructor(readonly workspace: StitchWorkspace) {}
 
-  constructor(readonly provider: StitchWorkspace) {}
-
-  onUpdate(updated: InspectorItem) {
-    this._onDidChangeTreeData.fire(updated);
+  protected get gm() {
+    return this.asset
+      ? this.workspace.getProjectOfAsset(this.asset)?.gm
+      : undefined;
   }
 
   getTreeItem(element: InspectorItem): vscode.TreeItem {
     return element;
   }
 
+  protected objectItem(
+    asset: Asset<'objects'>,
+    listing: 'children' | 'parents',
+  ) {
+    const gm = this.gm;
+    const hasEntries =
+      listing === 'children'
+        ? !!gm?.getChildren(asset).length
+        : !!asset.parentName;
+    return new ObjectItem(asset, listing, hasEntries);
+  }
+
+  protected childrenOf(asset: Asset<'objects'>): ObjectItem[] {
+    return (this.gm?.getChildren(asset) ?? [])
+      .sort(createSorter({ sortByField: 'name' }))
+      .map((child) => this.objectItem(child, 'children'));
+  }
+
   getChildren(
     element?: InspectorItem | undefined,
   ): InspectorItem[] | undefined {
-    if (!this.asset) {
+    const asset = this.asset;
+    const gm = this.gm;
+    if (!asset || !gm) {
       return;
     }
     if (!element) {
-      // Then we're at the root.
       return [
-        new ObjectParentFolder(this.asset, this),
-        new ObjectSpriteFolder(this.asset, this),
-        new ObjectEvents(this.asset, this),
-        new ObjectChildren(this.asset.children.length),
+        new ObjectParentFolder(asset),
+        new ObjectSpriteFolder(asset),
+        new ObjectEvents(asset),
+        new ObjectChildren(gm.getChildren(asset).length),
       ];
-    } else if (element instanceof ObjectParentFolder && this.asset.parent) {
-      return [new ObjectItem(this.asset.parent, 'parents')];
+    } else if (element instanceof ObjectParentFolder) {
+      const parent = gm.getParent(asset);
+      return parent ? [this.objectItem(parent, 'parents')] : [];
     } else if (element instanceof ObjectSpriteFolder) {
-      const sprite = this.asset.sprite;
-      if (sprite) {
-        return [new ObjectSpriteItem(sprite)];
-      }
+      const sprite = gm.getAsset(asset.spriteName);
+      return sprite?.isKind('sprites') ? [new ObjectSpriteItem(sprite)] : [];
     } else if (element instanceof ObjectEvents) {
-      const events = this.asset.gmlFilesArray.map((code) => {
-        return new ObjectEventItem(code);
-      });
-      return events;
+      return TreeCode.listFor(asset);
     } else if (element instanceof ObjectChildren) {
-      return GameMakerInspectorProvider.getChildrenAsTreeItems(this.asset);
+      return this.childrenOf(asset);
     } else if (element instanceof ObjectItem) {
       if (element.listing === 'children') {
-        return GameMakerInspectorProvider.getChildrenAsTreeItems(element.asset);
-      } else if (element.asset.parent) {
-        return [new ObjectItem(element.asset.parent, 'parents')];
+        return this.childrenOf(element.asset);
       }
+      const parent = gm.getParent(element.asset);
+      return parent ? [this.objectItem(parent, 'parents')] : [];
     }
     return;
   }
 
-  static getChildrenAsTreeItems(asset: Asset<'objects'>) {
-    return asset.children
-      .sort(createSorter({ sortByField: 'name' }))
-      .map((child) => {
-        return new ObjectItem(child, 'children');
-      });
-  }
-
-  rebuild() {
-    const currentAsset = this.provider.getCurrentAsset();
-    if (!currentAsset || !isAssetOfKind(currentAsset, 'objects')) {
+  /** Show the object whose file is in the active editor (if it's an object) */
+  rebuild(force = false) {
+    const currentAsset = this.workspace.getCurrentAsset();
+    if (!currentAsset?.isKind('objects')) {
+      if (force) this._onDidChangeTreeData.fire();
       return;
     }
     this.asset = currentAsset;
     logger.info('Rebuilding inspector tree', this.asset.name);
-
     this._onDidChangeTreeData.fire();
     this.view.title = `Inspector: ${this.asset.name}`;
   }
@@ -259,24 +208,27 @@ export class GameMakerInspectorProvider
 
     this.rebuild();
 
-    // Handle emitted events
-    stitchEvents.on('asset-deleted', (asset) => {
-      if (this.asset === asset) {
-        this.asset = undefined;
+    // Keep up with changes to the project
+    stitchEvents.on('asset-changed', (asset) => {
+      if (!this.asset) return;
+      // (The object itself, or a related object or sprite)
+      if (
+        asset === this.asset ||
+        asset.name === this.asset.spriteName ||
+        asset.isKind('objects')
+      ) {
+        this._onDidChangeTreeData.fire();
       }
-      // Just always rebuild. It's a rare event, and it's
-      // a bit complicated to do this in a sparse way (e.g. we'd
-      // need to check parents/children etc)
-      this.rebuild();
     });
-    stitchEvents.on('code-file-deleted', (code) => {
-      if (this.asset === code.asset) {
-        this.rebuild();
+    stitchEvents.on('project-changed', () => {
+      // The object may have been deleted or renamed
+      if (this.asset && !this.gm?.getAsset(this.asset.name)) {
+        this.asset = undefined;
+        this.view.title = 'Inspector';
       }
+      this._onDidChangeTreeData.fire();
     });
 
-    // Return subscriptions to owned events and this view
-    const subscriptions = [this.view, activeEditorMonitor];
-    return subscriptions;
+    return [this.view, activeEditorMonitor];
   }
 }

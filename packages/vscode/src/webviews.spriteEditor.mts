@@ -1,4 +1,4 @@
-import type { Asset } from '@bscotch/gml-parser';
+import type { Asset } from '@bscotch/gamemaker-project';
 import vscode from 'vscode';
 import { assertInternalClaim } from './assert.mjs';
 import { stitchEvents } from './events.mjs';
@@ -59,9 +59,11 @@ export class StitchSpriteEditorProvider {
             xorigin !== this.editing.yy.sequence.xorigin ||
             yorigin !== this.editing.yy.sequence.yorigin
           ) {
-            this.editing.yy.sequence.xorigin = xorigin;
-            this.editing.yy.sequence.yorigin = yorigin;
-            await this.editing.saveYy();
+            const project = this.workspace.getProjectOfAsset(this.editing);
+            await project?.gm.updateYy(this.editing, (yy) => {
+              yy.sequence.xorigin = xorigin;
+              yy.sequence.yorigin = yorigin;
+            });
           }
           if (zoom !== computeInitialZoom(this.editing)) {
             // Save the zoom for this sprite so it doesn't change when we re-render the editor

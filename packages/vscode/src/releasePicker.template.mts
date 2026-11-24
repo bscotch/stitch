@@ -1,5 +1,5 @@
 import type { GameMakerRelease } from '@bscotch/gamemaker-releases';
-import type { GameMakerProject } from './extension.project.mjs';
+import type { StitchProject as GameMakerProject } from './extension.project.mjs';
 import { html } from './lib.mjs';
 
 const css = html`

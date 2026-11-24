@@ -12,7 +12,11 @@ try {
 await fsp.mkdir('./dist', { recursive: true });
 
 await esbuild.build({
-  entryPoints: ['./src/extension.ts', './src/manifest.update.mts'],
+  entryPoints: [
+    './src/extension.ts',
+    './src/server.ts',
+    './src/manifest.update.mts',
+  ],
   bundle: true,
   outdir: './dist/',
   target: 'esnext',
@@ -39,7 +43,7 @@ await esbuild.build({
 // Copy the template project from current stitch-core
 await fsp.rm('./assets/templates', { recursive: true, force: true });
 await fsp.mkdir('./assets/templates', { recursive: true });
-await fsp.cp('../parser/assets/GmlSpec.xml', './assets/GmlSpec.xml');
+await fsp.cp('../gml-analysis/assets/GmlSpec.xml', './assets/GmlSpec.xml');
 
 // Copy the pixel-checksum binaries from current pixel-checksum,
 // if we don't already have the same file. (This is because the

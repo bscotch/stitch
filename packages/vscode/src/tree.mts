@@ -1,32 +1,29 @@
 import {
-  assertIsAssetOfKind,
-  Asset,
-  Code,
-  ImportModuleOptions,
-  isAssetOfKind,
-  ObjectEvent,
+  GameMakerProject,
+  getEventFromFilename,
+  ImportError,
+  importAssets,
   objectEvents,
-  Project,
-} from '@bscotch/gml-parser';
+  type Asset,
+  type ImportOptions,
+  type ObjectEvent,
+} from '@bscotch/gamemaker-project';
+import { analyzeProject, listCodeDependencies } from '@bscotch/gml-analysis';
+import { globalNamesRequest } from '@bscotch/gml-language-server/protocol';
 import { pathy } from '@bscotch/pathy';
 import { applySpriteAction, SpriteDir } from '@bscotch/sprite-source';
 import { isValidSpriteName } from '@bscotch/stitch-config';
+import fs from 'node:fs/promises';
 import vscode from 'vscode';
 import { assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
-import { GameMakerProject } from './extension.project.mjs';
+import type { StitchProject } from './extension.project.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
 import { getAssetIcon, getBaseIcon } from './icons.mjs';
 import type { ObjectParentFolder, ObjectSpriteFolder } from './inspector.mjs';
-import {
-  getAssetFromRef,
-  pathyFromUri,
-  registerCommand,
-  showProgress,
-  uriFromCodeFile,
-} from './lib.mjs';
-import { logger, showErrorMessage, warn } from './log.mjs';
+import { pathyFromUri, registerCommand, showProgress } from './lib.mjs';
+import { logger, showErrorMessage } from './log.mjs';
 import { handleDrag, handleDrop } from './tree.dragDrop.mjs';
 import {
   GameMakerFolder,
@@ -44,12 +41,16 @@ import {
   type Treeable,
 } from './tree.items.mjs';
 import {
-  ensureFolders,
   getPathWithSelection,
   promptForAssetName,
   promptForAssetPath,
   validateFolderName,
 } from './tree.utility.mjs';
+
+/** Join asset-tree path parts, skipping empty ones */
+function joinTreePath(...parts: string[]): string {
+  return parts.filter(Boolean).join('/');
+}
 
 export class GameMakerTreeProvider
   implements
@@ -73,11 +74,12 @@ export class GameMakerTreeProvider
   readonly onDidCollapseElement = this._onDidCollapseElement.event;
 
   constructor(readonly workspace: StitchWorkspace) {
+    // The tree follows the project: every change (made here, by GameMaker,
+    // by git, ...) arrives as an event.
     stitchEvents.on('asset-changed', (asset) => {
       const item = TreeAsset.lookup.get(asset);
       if (item) {
         item.refreshTreeItem();
-        this.changed(item.parent);
         this.changed(item);
       }
     });
@@ -86,7 +88,7 @@ export class GameMakerTreeProvider
     });
   }
 
-  get projects(): GameMakerProject[] {
+  get projects(): StitchProject[] {
     return this.workspace.projects;
   }
 
@@ -94,7 +96,11 @@ export class GameMakerTreeProvider
     target: Treeable | undefined,
     dataTransfer: vscode.DataTransfer,
   ) {
-    return await handleDrop(this, target, dataTransfer);
+    try {
+      return await handleDrop(this, target, dataTransfer);
+    } catch (err) {
+      void showErrorMessage(err as Error);
+    }
   }
 
   handleDrag(source: readonly Treeable[], dataTransfer: vscode.DataTransfer) {
@@ -106,11 +112,11 @@ export class GameMakerTreeProvider
   }
 
   /**
-   * Reveal an associate tree item in the sidebar.
-   * For folders, the value just be the folder's path string
+   * Reveal an associated tree item in the sidebar.
+   * For folders, the value must be the folder's path string
    * with `/` separators.
    */
-  reveal(item: string | Asset | Code | undefined) {
+  reveal(item: string | Asset | undefined) {
     item ||= this.workspace.getCurrentAsset();
     if (!item) {
       return;
@@ -118,13 +124,15 @@ export class GameMakerTreeProvider
     const treeItem =
       typeof item === 'string'
         ? GameMakerFolder.lookup.get(item)
-        : item instanceof Asset
-          ? TreeAsset.lookup.get(item)
-          : TreeCode.lookup.get(item);
+        : TreeAsset.lookup.get(item);
     if (!treeItem) {
       return;
     }
-    this.view.reveal(treeItem, { focus: true, expand: true, select: true });
+    void this.view.reveal(treeItem, {
+      focus: true,
+      expand: true,
+      select: true,
+    });
   }
 
   /** Import assets from another project */
@@ -136,16 +144,10 @@ export class GameMakerTreeProvider
     );
     if (acceptsRisk !== 'Yes') return;
 
-    // Get the target from the current projects
     const targetProject = await this.workspace.chooseProject(
       'Choose the target project',
     );
     if (!targetProject) return;
-    // const targetFolder = await vscode.window.showQuickPick(
-    //   targetProject.folders,
-    //   { title: 'Choose a target folder for imports' },
-    // );
-    // if (!targetFolder) return;
 
     // Get the source project from the file system
     const sourceProjectPath = (
@@ -159,45 +161,33 @@ export class GameMakerTreeProvider
       })
     )?.[0];
     if (!sourceProjectPath) return;
-    const sourceProject = await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: 'Loading source project...',
-        cancellable: false,
-      },
-      async (progress) => {
-        return await Project.initialize(sourceProjectPath.fsPath, {
-          onLoadProgress: (percent, message) => {
-            progress.report({
-              increment: percent,
-              message,
-            });
-          },
-        });
-      },
-    );
+    const { source, dependencies } = await showProgress(async () => {
+      const source = await GameMakerProject.open(sourceProjectPath.fsPath);
+      // Code dependencies, so that what the imported code needs comes along
+      const analyzer = await analyzeProject(source);
+      return { source, dependencies: listCodeDependencies(source, analyzer) };
+    }, 'Loading source project...');
 
     // Get the desired assets to import
     const choices: vscode.QuickPickItem[] = [];
-    for (const folder of sourceProject.folders) {
+    for (const folder of source.folders) {
       choices.push({
         label: folder,
         description: 'folder',
         iconPath: getBaseIcon('folder'),
       });
     }
-    for (const [, asset] of sourceProject.assets) {
+    for (const asset of source.assets) {
       choices.push({
         label: asset.name,
-        description: asset.assetKind,
-        iconPath: getAssetIcon(asset.assetKind, asset),
+        description: asset.kind,
+        iconPath: getAssetIcon(asset.kind, asset),
       });
     }
 
     const choice = await vscode.window.showQuickPick(choices, {
       title: 'Choose an asset or folder to import',
     });
-
     if (!choice) return;
 
     const missingDepOpts = ['error', 'skip', 'include'] as const;
@@ -209,28 +199,42 @@ export class GameMakerTreeProvider
     )?.label;
     if (!onMissingDependency) return;
 
-    const options: ImportModuleOptions = {
-      // targetFolder,
+    // Symbols the target project already defines satisfy code dependencies
+    const targetGlobals = new Set<string>(
+      (await targetProject.client
+        ?.sendRequest<string[]>(globalNamesRequest)
+        .catch(() => [])) ?? [],
+    );
+    const options: ImportOptions = {
       sourceAsset: choice.description === 'folder' ? undefined : choice.label,
       sourceFolder: choice.description === 'folder' ? choice.label : undefined,
       onMissingDependency,
+      dependencies,
+      targetHasSymbol: (name) => targetGlobals.has(name),
     };
 
-    // Set the options for the merge
-    const results = await showProgress(async function () {
-      return await targetProject.import(sourceProjectPath.fsPath, options);
-    }, 'Importing...');
-    assertLoudly(
-      !results.errors.length,
-      'There were errors importing the project. See the logs for details.',
-    );
-
-    this.rebuild();
+    try {
+      const result = await showProgress(
+        () => importAssets(source, targetProject.gm, options),
+        'Importing...',
+      );
+      void vscode.window.showInformationMessage(
+        `Imported ${result.created.length} new and ${result.replaced.length} replaced assets.` +
+          (result.missing.length
+            ? ` Skipped ${result.missing.length} missing dependencies.`
+            : ''),
+      );
+    } catch (err) {
+      if (err instanceof ImportError) {
+        logger.error('Import failed', err.conflicts, err.missing);
+      }
+      void showErrorMessage(err as Error);
+    }
   }
 
   /**
-   * Prompt the user for a new asset name and do all of
-   * the non-type-specific prep work for creating the asset.
+   * Prompt the user for a new asset name (optionally with subfolders),
+   * returning its full asset-tree path.
    */
   protected async prepareForNewAsset(
     where: GameMakerFolder,
@@ -242,67 +246,64 @@ export class GameMakerTreeProvider
     }
     const parts = newAssetName.split('/');
     const name = parts.pop()!;
-    const existingAsset = where.project!.getAssetByName(name);
-    if (existingAsset) {
+    if (where.project!.getAssetByName(name)) {
       void showErrorMessage(`An asset named ${name} already exists.`);
       return;
     }
-    let folder = where;
-    for (const part of parts) {
-      folder = folder.addFolder(part);
-    }
-    const path = folder.path + '/' + name;
-    return { folder, path, name };
+    return { path: joinTreePath(where.path, ...parts, name), name };
   }
 
-  afterNewAssetCreated(
-    asset: Asset | undefined,
-    folder: GameMakerFolder,
-    addedTo: GameMakerFolder,
-  ) {
+  /** Show a newly created asset in the tree */
+  afterNewAssetCreated(asset: Asset | undefined) {
     if (!asset) {
       void showErrorMessage(`Failed to create new asset.`);
       return;
     }
-    const treeItem = folder.addResource(new TreeAsset(folder, asset));
-    this.changed(addedTo);
-    this.view.reveal(treeItem, { focus: true });
+    this.rebuild();
+    const treeItem = TreeAsset.lookup.get(asset);
+    if (treeItem) void this.view.reveal(treeItem, { focus: true });
+  }
+
+  /** Run a change, showing any error instead of throwing */
+  protected async attempt<T>(change: () => Promise<T>): Promise<T | undefined> {
+    try {
+      return await change();
+    } catch (err) {
+      logger.error(err);
+      void showErrorMessage(err as Error);
+      return undefined;
+    }
   }
 
   async deleteRoomInstance(item: TreeRoomInstance) {
-    const room = item.parent.asset;
-    await room.removeRoomInstance(item.instanceId);
-    this.changed(item.parent);
+    await this.attempt(() =>
+      item.project!.gm.removeRoomInstance(item.parent.asset, item.instanceId),
+    );
   }
 
   async addRoomInstance(roomItem: TreeAsset<'rooms'>) {
-    const asset = roomItem.asset;
-
-    const objectOptions = [...asset.project.assets.values()]
-      .filter((a) => isAssetOfKind(a, 'objects'))
-      .map((p) => ({
-        label: p.name,
-        object: p as Asset<'objects'>,
-      }));
-    const objectChoice = await vscode.window.showQuickPick(objectOptions, {
-      title: 'Choose the object to add to the room',
-    });
-    if (!objectChoice) {
-      return;
-    }
-    await asset.addRoomInstance(objectChoice.object);
-    this.changed(roomItem);
+    const project = roomItem.project!;
+    const objectChoice = await vscode.window.showQuickPick(
+      project.gm.listAssets('objects').map((object) => ({
+        label: object.name,
+        object,
+      })),
+      { title: 'Choose the object to add to the room' },
+    );
+    if (!objectChoice) return;
+    await this.attempt(() =>
+      project.gm.addRoomInstance(roomItem.asset, objectChoice.object),
+    );
   }
 
   async setSprite(
     objectItem: ObjectParentFolder | ObjectSpriteFolder | TreeAsset,
   ) {
     const asset = objectItem.asset;
-    if (!isAssetOfKind(asset, 'objects')) {
-      return;
-    }
-    const spriteOptions = [...asset.project.assets.values()]
-      .filter((a) => isAssetOfKind(a, 'sprites'))
+    const project = this.workspace.getProjectOfAsset(asset);
+    if (!asset.isKind('objects') || !project) return;
+    const spriteOptions = project.gm
+      .listAssets('sprites')
       .map((p) => ({
         label: p.name,
         sprite: p as Asset<'sprites'> | undefined,
@@ -311,7 +312,7 @@ export class GameMakerTreeProvider
       .sort((a, b) =>
         a.label.toLocaleLowerCase().localeCompare(b.label.toLocaleLowerCase()),
       );
-    if (asset.sprite) {
+    if (asset.spriteName) {
       spriteOptions.unshift({
         label: 'Sprites',
         // @ts-expect-error -- Separators aren't part of the options' inferred type
@@ -326,75 +327,57 @@ export class GameMakerTreeProvider
     const spriteChoice = await vscode.window.showQuickPick(spriteOptions, {
       title: 'Select the sprite to assign to this object',
     });
-    if (!spriteChoice || (!spriteChoice.sprite && !asset.sprite)) {
+    if (!spriteChoice || (!spriteChoice.sprite && !asset.spriteName)) {
       return;
     }
-    logger.info('Setting sprite', spriteChoice);
-    asset.sprite = spriteChoice.sprite;
-    if (
-      'onSetSprite' in objectItem &&
-      typeof objectItem.onSetSprite === 'function'
-    ) {
-      objectItem.onSetSprite(spriteChoice.sprite);
-    } else if ('provider' in objectItem) {
-      objectItem.provider.onUpdate?.(objectItem);
-    }
-  }
-
-  editSound(entity: TreeAsset | Asset | undefined) {
-    entity ||= getAssetFromRef(this.workspace.getRefFromSelection());
-    if (!entity) {
-      console.log('No entity to edit sprite for');
-      return;
-    }
-    const asset = '$tag' in entity ? entity : entity.asset;
-    if (!isAssetOfKind(asset, 'sounds')) {
-      return;
-    }
-    vscode.commands.executeCommand(
-      'vscode.open',
-      vscode.Uri.file(asset.dir.join(asset.yy.soundFile).absolute),
+    logger.info('Setting sprite', spriteChoice.label);
+    await this.attempt(() =>
+      project.gm.setObjectSprite(asset, spriteChoice.sprite),
     );
   }
 
-  editSprite(entity: TreeAsset | Asset | undefined) {
-    entity ||= getAssetFromRef(this.workspace.getRefFromSelection());
-    console.log('editing sprite', entity);
-    if (!entity) {
-      console.log('No entity to edit sprite for');
-      return;
-    }
-    const asset = '$tag' in entity ? entity : entity.asset;
-    if (!isAssetOfKind(asset, 'sprites')) {
-      return;
-    }
+  /** The asset to act on: a tree item's, the given one, or the one at the cursor */
+  protected async resolveAsset(
+    entity: TreeAsset | Asset | { asset: Asset } | undefined,
+  ): Promise<Asset | undefined> {
+    if (!entity) return await this.workspace.getAssetAtCursor();
+    return 'asset' in entity ? entity.asset : entity;
+  }
+
+  async editSound(entity: TreeAsset | Asset | undefined) {
+    const asset = await this.resolveAsset(entity);
+    if (!asset?.isKind('sounds') || !asset.soundFile) return;
+    await vscode.commands.executeCommand(
+      'vscode.open',
+      vscode.Uri.file(asset.soundFile),
+    );
+  }
+
+  async editSprite(entity: TreeAsset | Asset | undefined) {
+    const asset = await this.resolveAsset(entity);
+    if (!asset?.isKind('sprites')) return;
     stitchEvents.emit('sprite-editor-open', asset);
   }
 
   async setParent(objectItem: ObjectParentFolder | TreeAsset) {
     const asset = objectItem.asset;
-    if (!isAssetOfKind(asset, 'objects')) {
-      return;
-    }
-    const possibleParents: Asset<'objects'>[] = [];
-    for (const [, possibleParent] of asset.project.assets) {
-      if (!isAssetOfKind(possibleParent, 'objects')) {
-        continue;
-      }
-      // Ensure no circularity
-      if (possibleParent === asset || possibleParent.parents.includes(asset)) {
-        continue;
-      }
-      possibleParents.push(possibleParent);
-    }
-    const parentOptions = possibleParents
+    const project = this.workspace.getProjectOfAsset(asset);
+    if (!asset.isKind('objects') || !project) return;
+    // (No circular inheritance)
+    const parentOptions = project.gm
+      .listAssets('objects')
+      .filter(
+        (candidate) =>
+          candidate !== asset &&
+          !project.gm.getAncestors(candidate).includes(asset),
+      )
       .map((p) => ({
         label: p.name,
         asset: p as Asset<'objects'> | undefined,
         description: undefined as string | undefined,
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-    if (asset.parent) {
+    if (asset.parentName) {
       parentOptions.unshift({
         label: 'Objects',
         // @ts-expect-error -- Separators aren't part of the options' inferred type
@@ -409,106 +392,127 @@ export class GameMakerTreeProvider
     const parentChoice = await vscode.window.showQuickPick(parentOptions, {
       title: 'Select the parent object',
     });
-    if (!parentChoice || (!parentChoice.asset && !asset.parent)) {
+    if (!parentChoice || (!parentChoice.asset && !asset.parentName)) {
       return;
     }
-    logger.info('Setting parent', parentChoice);
-    asset.parent = parentChoice.asset || undefined;
-    if (
-      'onSetParent' in objectItem &&
-      typeof objectItem.onSetParent === 'function'
-    ) {
-      objectItem.onSetParent(parentChoice.asset);
-    }
+    logger.info('Setting parent', parentChoice.label);
+    await this.attempt(() =>
+      project.gm.setObjectParent(asset, parentChoice.asset),
+    );
   }
 
   async createRoom(where: GameMakerFolder) {
     const info = await this.prepareForNewAsset(where);
-    if (!info) {
-      return;
-    }
-    const { folder, path } = info;
-    const asset = await where.project!.createRoom(path);
-    this.afterNewAssetCreated(asset, folder, where);
+    if (!info) return;
+    this.afterNewAssetCreated(
+      await this.attempt(() => where.project!.gm.createRoom(info.path)),
+    );
   }
 
-  async createEvent(objectItem: TreeAsset) {
+  /**
+   * Add an event to an object. Includes collision events, for which the
+   * other object is chosen next.
+   */
+  async createEvent(objectItem: TreeAsset | { asset: Asset }) {
     const asset = objectItem.asset;
+    const project = this.workspace.getProjectOfAsset(asset);
     assertLoudly(
-      isAssetOfKind(asset, 'objects'),
-      `Cannot create event for ${asset.assetKind} asset.`,
+      asset.isKind('objects') && project,
+      `Cannot create event for ${asset.kind} asset.`,
     );
-    const events: (
-      | ObjectEvent
-      | { kind: vscode.QuickPickItemKind.Separator; label: string }
-    )[] = [];
-    for (let i = 0; i < objectEvents.length; i++) {
-      const event = objectEvents[i];
-      if (i > 0 && objectEvents[i - 1].group !== event.group) {
-        // Add a separator between event types
-        events.push({
+    const existing = new Set(
+      asset.listEvents().map((e) => e.event.name.toLowerCase()),
+    );
+    type EventChoice = vscode.QuickPickItem & {
+      event?: ObjectEvent;
+      collision?: boolean;
+    };
+    const choices: EventChoice[] = [];
+    let lastGroup = '';
+    const addSeparator = (group: string) => {
+      if (group !== lastGroup && choices.length) {
+        choices.push({
+          label: group,
           kind: vscode.QuickPickItemKind.Separator,
-          label: event.group,
         });
       }
-      events.push(event);
+      lastGroup = group;
+    };
+    for (const event of objectEvents) {
+      if (existing.has(event.name.toLowerCase())) continue;
+      addSeparator(event.group);
+      choices.push({ label: event.label, event });
     }
-    const eventInfo = await vscode.window.showQuickPick(events, {
+    addSeparator('collision');
+    choices.push({
+      label: 'Collision...',
+      description: 'Choose the other object',
+      collision: true,
+    });
+    const choice = await vscode.window.showQuickPick(choices, {
       title: 'Select which type of event to create.',
     });
-    if (!eventInfo || !('eventNum' in eventInfo)) {
-      return;
+    if (!choice) return;
+
+    let event = choice.event;
+    if (choice.collision) {
+      const other = await vscode.window.showQuickPick(
+        project.gm
+          .listAssets('objects')
+          .filter((o) => !existing.has(`collision_${o.name.toLowerCase()}`))
+          .map((o) => ({
+            label: o.name,
+            iconPath: getAssetIcon('objects', o),
+          })),
+        { title: `Create a collision event with which object?` },
+      );
+      if (!other) return;
+      event = getEventFromFilename(`Collision_${other.label}`);
     }
-    const code = await asset.createEvent(eventInfo);
-    if (!code) {
-      return;
+    if (!event) return;
+    const file = await this.attempt(() =>
+      project.gm.createObjectEvent(asset, event),
+    );
+    if (!file) return;
+    if (objectItem instanceof TreeAsset) {
+      void this.view.reveal(objectItem, { expand: true });
     }
-    if (
-      'onCreateEvent' in objectItem &&
-      typeof objectItem.onCreateEvent === 'function'
-    ) {
-      objectItem.onCreateEvent(eventInfo);
-    }
-    this.changed(objectItem);
-    this.view.reveal(objectItem);
-    vscode.window.showTextDocument(uriFromCodeFile(code));
+    await vscode.window.showTextDocument(vscode.Uri.file(file));
   }
 
   async createShader(where: GameMakerFolder) {
     const info = await this.prepareForNewAsset(where);
-    if (!info) {
-      return;
-    }
-    const { folder, path } = info;
-    const asset = await where.project!.createShader(path);
-    this.afterNewAssetCreated(asset, folder, where);
+    if (!info) return;
+    this.afterNewAssetCreated(
+      await this.attempt(() => where.project!.gm.createShader(info.path)),
+    );
   }
 
   async replaceSpriteFrames(item: TreeAsset) {
     const asset = item.asset;
-    assertIsAssetOfKind(asset, 'sprites');
-    const project = item.parent.project!;
-    // Prompt for the source folder
+    assertLoudly(asset.isKind('sprites'), 'Not a sprite');
+    const project = item.project!;
     const spriteDir = await this.getSpriteSource();
     if (!spriteDir) return;
-
-    // TODO: Convert into an "Action"
-    // TODO: Call applySpriteAction() to complete the process
-    const dest = project.dir.join('sprites').join(asset.name);
-    await applySpriteAction({
-      action: {
-        kind: 'update',
-        name: asset.name,
-        source: spriteDir.path.absolute,
-        sourceRoot: '', // Not needed for this
-        dest: dest.absolute,
-        spine: spriteDir.isSpine,
-      },
-      projectYypPath: project.yypPath.absolute,
-      yyp: project.yyp,
-    });
-    this.changed(item);
-    this.view.reveal(item, { focus: true });
+    // (In a transaction, so it can't interleave with other changes)
+    await this.attempt(() =>
+      project.gm.transaction(async () => {
+        await applySpriteAction({
+          action: {
+            kind: 'update',
+            name: asset.name,
+            source: spriteDir.path.absolute,
+            sourceRoot: '', // Not needed for this
+            dest: asset.dir,
+            spine: spriteDir.isSpine,
+          },
+          projectYypPath: project.gm.yypPath,
+          yyp: project.gm.yyp,
+        });
+      }),
+    );
+    await project.gm.reconcile([asset.yyPath]);
+    void this.view.reveal(item, { focus: true });
   }
 
   private async getSoundSources(): Promise<vscode.Uri[] | undefined> {
@@ -527,7 +531,6 @@ export class GameMakerTreeProvider
   }
 
   private async getSpriteSource() {
-    // Prompt for the source folder
     const sourceFolder = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,
@@ -537,7 +540,6 @@ export class GameMakerTreeProvider
     });
     if (!sourceFolder?.length) return;
 
-    // Create a SpriteDir from that folder
     const errors: Error[] = [];
     const spriteDir = await SpriteDir.from(
       pathy(sourceFolder[0].fsPath),
@@ -566,21 +568,18 @@ export class GameMakerTreeProvider
       ],
       { canPickMany: true, title: 'Source Mutations' },
     );
-    const bleed = preparations?.find((p) => p.label === 'Bleed');
-    const crop = preparations?.find((p) => p.label === 'Crop');
-    if (crop) {
+    if (preparations?.find((p) => p.label === 'Crop')) {
       await spriteDir.crop();
     }
-    if (bleed) {
+    if (preparations?.find((p) => p.label === 'Bleed')) {
       await spriteDir.bleed();
     }
     return spriteDir;
   }
 
   async createSpriteFromImage(where: GameMakerFolder) {
-    const project = where.project!;
+    const project = where.project;
     assertLoudly(project, 'Cannot create sprite without a project.');
-    // Prompt for the source folder
     const sourceImage = await vscode.window.showOpenDialog({
       canSelectFiles: true,
       canSelectFolders: false,
@@ -595,14 +594,18 @@ export class GameMakerTreeProvider
     const sourceImagePath = pathyFromUri(sourceImage[0]);
     const name = await promptForAssetName(sourceImagePath.name);
     if (!name) return;
-    const path = where.path + '/' + name;
-    const newSprite = await project.createSprite(path, sourceImagePath);
-    this.changed(where);
-    this.reveal(newSprite);
+    this.afterNewAssetCreated(
+      await this.attempt(() =>
+        project.gm.createSprite(
+          joinTreePath(where.path, name),
+          sourceImagePath.absolute,
+        ),
+      ),
+    );
   }
 
   async createSprite(where: GameMakerFolder) {
-    const project = where.project!;
+    const project = where.project;
     assertLoudly(project, 'Cannot create sprite without a project.');
     await project.reloadConfig();
 
@@ -610,52 +613,40 @@ export class GameMakerTreeProvider
     if (!spriteDir) return;
 
     const info = await this.prepareForNewAsset(where, spriteDir.path.name);
-    if (!info) {
-      return;
-    }
-    const { folder, name } = info;
+    if (!info) return;
     assertLoudly(
-      isValidSpriteName(name, project.config),
+      isValidSpriteName(info.name, project.config),
       'Sprite name does not match allowed patterns.',
     );
 
-    // TODO: Convert into an "Action"
-    // TODO: Call applySpriteAction() to complete the process
-    const dest = project.dir.join('sprites').join(name);
-    await applySpriteAction({
-      action: {
-        kind: 'create',
-        name,
-        source: spriteDir.path.absolute,
-        sourceRoot: '', // Not needed for this
-        dest: dest.absolute,
-        spine: spriteDir.isSpine,
-      },
-      projectYypPath: project.yypPath.absolute,
-      yyp: project.yyp,
+    const created = await this.attempt(async () => {
+      // Write the sprite's files (in a transaction, so this can't interleave
+      // with other changes), then add it to the project
+      await project.gm.transaction(async () => {
+        await applySpriteAction({
+          action: {
+            kind: 'create',
+            name: info.name,
+            source: spriteDir.path.absolute,
+            sourceRoot: '', // Not needed for this
+            dest: project.dir.join('sprites').join(info.name).absolute,
+            spine: spriteDir.isSpine,
+          },
+          projectYypPath: project.gm.yypPath,
+          yyp: project.gm.yyp,
+        });
+      });
+      return await project.gm.adoptAsset('sprites', info.path);
     });
-
-    // NOTE: At this point we've bypassed the parser, so we'll need to
-    // register the asset manually.
-    const assetInfo = await project.addAssetToYyp(
-      dest.join(`${name}.yy`).absolute,
-    );
-    const asset = await Asset.from(project, assetInfo);
-    assertLoudly(asset, 'Failed to create sprite asset.');
-    project.registerAsset(asset);
-    await project.createFolder(folder.path);
-    await asset.moveToFolder(folder.path);
-    this.afterNewAssetCreated(asset, folder, where);
+    this.afterNewAssetCreated(created);
   }
 
   async createObject(where: GameMakerFolder) {
     const info = await this.prepareForNewAsset(where);
-    if (!info) {
-      return;
-    }
-    const { folder, path } = info;
-    const asset = await where.project!.createObject(path);
-    this.afterNewAssetCreated(asset, folder, where);
+    if (!info) return;
+    this.afterNewAssetCreated(
+      await this.attempt(() => where.project!.gm.createObject(info.path)),
+    );
   }
 
   async upsertSounds(where: GameMakerFolder, sourceFiles?: vscode.Uri[]) {
@@ -670,16 +661,17 @@ export class GameMakerTreeProvider
     const created: string[] = [];
     for (const sourceFile of sourceFiles) {
       const sourcePath = pathyFromUri(sourceFile);
-      const resourcePath = where.path + '/' + sourcePath.name;
       try {
-        // If there's an existing asset, just update it
+        // If there's an existing sound, just replace its audio file
         const existing = project.getAssetByName(sourcePath.name);
-        if (existing) {
-          await sourcePath.copy(existing.soundFile);
+        if (existing?.isKind('sounds') && existing.soundFile) {
+          await fs.copyFile(sourcePath.absolute, existing.soundFile);
           updated.push(sourcePath.name);
         } else {
-          // Otherwise, create a new asset
-          await project.createSound(resourcePath, sourcePath);
+          await project.gm.createSound(
+            joinTreePath(where.path, sourcePath.name),
+            sourcePath.absolute,
+          );
           created.push(sourcePath.name);
         }
       } catch (err) {
@@ -692,26 +684,23 @@ export class GameMakerTreeProvider
       );
     }
     if (updated.length) {
-      vscode.window.showInformationMessage(
+      void vscode.window.showInformationMessage(
         `Updated sounds:\n${updated.join(', ')}`,
       );
     }
     if (created.length) {
-      vscode.window.showInformationMessage(
+      void vscode.window.showInformationMessage(
         `Created sounds:\n${created.join(', ')}`,
       );
     }
-    this.changed(where);
   }
 
   async createScript(where: GameMakerFolder) {
     const info = await this.prepareForNewAsset(where);
-    if (!info) {
-      return;
-    }
-    const { folder, path } = info;
-    const asset = await where.project!.createScript(path);
-    this.afterNewAssetCreated(asset, folder, where);
+    if (!info) return;
+    this.afterNewAssetCreated(
+      await this.attempt(() => where.project!.gm.createScript(info.path)),
+    );
   }
 
   async promptToRenameFolder(where: GameMakerFolder) {
@@ -734,18 +723,21 @@ export class GameMakerTreeProvider
         if (!value) {
           return;
         }
-        if (!value.match(/^[a-z_][a-z0-9_]*/i)) {
+        if (!value.match(/^[a-z_][a-z0-9_]*$/i)) {
           return 'Asset names must start with a letter or underscore, and can only contain letters, numbers, and underscores.';
         }
         return;
       },
     });
     if (!newName) return;
-    await where.asset.project.renameAsset(where.asset.name, newName);
+    const renamed = await showProgress(
+      () =>
+        this.attempt(() => this.workspace.renameAsset(where.asset, newName)),
+      `Renaming ${where.asset.name} to ${newName}...`,
+    );
+    if (!renamed) return;
     this.rebuild();
-    const newAsset = where.asset.project.getAssetByName(newName);
-    const newTreeItem = TreeAsset.lookup.get(newAsset!)!;
-    this.view.reveal(newTreeItem);
+    this.reveal(renamed);
   }
 
   async suppressDiagnostics(where: GameMakerFolder) {
@@ -755,21 +747,21 @@ export class GameMakerTreeProvider
       return;
     }
     suppressed.push(path);
+    // (The language server is sent the new settings)
     await stitchConfig.config.update('diagnostics.suppressGroups', suppressed);
-    // Clear existing diagnostics
-    this.workspace.clearDiagnosticsInGroups([path]);
   }
 
   protected async renameFolder(where: GameMakerFolder, newFolderName: string) {
-    const folder = ensureFolders(newFolderName, where.heirarchy[0]);
-    await where.project!.renameFolder(where.path, folder.path);
+    await this.attempt(() =>
+      where.project!.gm.renameFolder(where.path, newFolderName),
+    );
     this.rebuild();
-    this.view.reveal(GameMakerFolder.lookup.get(newFolderName)!);
+    this.reveal(newFolderName);
   }
 
   async deleteFolder(where: GameMakerFolder) {
     try {
-      await where.project!.deleteFolder(where.path);
+      await where.project!.gm.deleteFolder(where.path);
     } catch {
       void showErrorMessage(
         `Folders can only be deleted if they contain no assets.`,
@@ -780,26 +772,26 @@ export class GameMakerTreeProvider
   }
 
   async deleteSpriteFrame(item: TreeSpriteFrame) {
-    const asset = item.parent.asset;
-    await asset.deleteFrames([item.frameId]);
-    this.changed(item.parent);
+    await this.attempt(() =>
+      item.project!.gm.deleteSpriteFrames(item.parent.asset, [item.frameId]),
+    );
   }
 
   async duplicateAsset(item: TreeAsset) {
     const dest = await this.prepareForNewAsset(item.parent);
     if (!dest) return;
-    const asset = await item.parent.project!.duplicateAsset(
-      item.asset.name,
-      dest.path,
+    this.afterNewAssetCreated(
+      await this.attempt(() =>
+        item.project!.gm.duplicateAsset(item.asset, dest.path),
+      ),
     );
-    this.afterNewAssetCreated(asset, dest.folder, item.parent);
   }
 
-  /**
-   * Create a new folder in the GameMaker asset tree. */
+  /** Create a new folder in the GameMaker asset tree */
   async createFolder(where: GameMakerFolder | undefined) {
-    const basePath = where ? where.path + '/' : '';
-    where ||= this.tree;
+    const project = where?.project ?? this.projects[0];
+    if (!project) return;
+    const basePath = where?.path ? where.path + '/' : '';
     const newFolderName = await vscode.window.showInputBox({
       prompt: 'Enter a name for the new folder',
       value: basePath,
@@ -810,12 +802,12 @@ export class GameMakerTreeProvider
     if (!newFolderName) {
       return;
     }
-    const folder = ensureFolders(newFolderName, where.heirarchy[0]);
-    this.changed(where.heirarchy[0]);
-    // Ensure that this folder exists in the actual project.
-    await where.project!.createFolder(folder.path);
+    const created = await this.attempt(() =>
+      project.gm.createFolder(newFolderName),
+    );
+    if (!created) return;
     this.rebuild();
-    this.view.reveal(GameMakerFolder.lookup.get(newFolderName)!);
+    this.reveal(created);
   }
 
   getTreeItem(element: Treeable): vscode.TreeItem {
@@ -837,8 +829,7 @@ export class GameMakerTreeProvider
     };
 
     if (!element) {
-      // Then we're at the root.
-      // If there is only one project (folder), we can return its tree.
+      // If there is only one project, show its contents at the root
       if (this.projects.length === 1) {
         return this.getChildren(this.tree.folders[0]);
       } else {
@@ -858,112 +849,95 @@ export class GameMakerTreeProvider
     } else if (element instanceof TreeFilterGroup) {
       return element.filters.sort((a, b) => a.query.localeCompare(b.query));
     } else if (element instanceof TreeAsset) {
-      if (isAssetOfKind(element.asset, 'objects')) {
-        return element.asset.gmlFilesArray.map((f) => new TreeCode(element, f));
-      } else if (isAssetOfKind(element.asset, 'sprites')) {
-        return element.asset.framePaths.map(
-          (p, i) => new TreeSpriteFrame(element, p, i),
+      const asset = element.asset;
+      if (asset.isKind('objects')) {
+        return TreeCode.listFor(asset, element);
+      } else if (asset.isKind('sprites')) {
+        return asset.framePaths.map(
+          (p, i) => new TreeSpriteFrame(element as TreeAsset<'sprites'>, p, i),
         );
-      } else if (isAssetOfKind(element.asset, 'shaders')) {
-        const paths = element.asset.shaderPaths!;
+      } else if (asset.isKind('shaders') && asset.shaderPaths) {
         return [
-          new TreeShaderFile(element, paths.fragment),
-          new TreeShaderFile(element, paths.vertex),
+          new TreeShaderFile(element, asset.shaderPaths.fragment),
+          new TreeShaderFile(element, asset.shaderPaths.vertex),
         ];
-      } else if (isAssetOfKind(element.asset, 'rooms')) {
-        const instances = element.asset.roomInstances;
-        return instances.map(
-          (i) =>
-            new TreeRoomInstance(
-              element as TreeAsset<'rooms'>,
-              i.object,
-              i.instanceId,
-            ),
-        );
+      } else if (asset.isKind('rooms')) {
+        const project = element.project;
+        return asset.roomInstances.map((i) => {
+          const object = project?.getAssetByName(i.objectName);
+          return new TreeRoomInstance(
+            element as TreeAsset<'rooms'>,
+            object?.isKind('objects') ? object : undefined,
+            i.objectName,
+            i.instanceId,
+          );
+        });
       }
     }
     return;
   }
 
   rebuild() {
-    // TODO: Move the logic for this into the tree elements so that we
-    // don't have to do so much of fully-rebuilding on change.
-
-    const folderPathToParts = (folderPath: string) =>
-      folderPath
-        .replace(/^folders[\\/]/, '')
-        .replace(/\.yy$/, '')
-        .split(/[\\/]/);
     const toReveal: Treeable[] = [];
 
     // Grab the current filters before nuking everything.
-    const filterGroups = new Map<GameMakerProject, TreeFilterGroup>();
+    const filterGroups = new Map<StitchProject, TreeFilterGroup>();
     for (const projectFolder of this.tree.folders) {
       filterGroups.set(projectFolder.project, projectFolder.filterGroup);
     }
 
     // Rebuild the tree
+    TreeAsset.lookup.clear();
+    GameMakerFolder.lookup.clear();
     this.tree = new GameMakerRootFolder();
     for (const project of this.projects) {
       const projectFolder = this.tree.addFolder(project.name, {
         project,
       }) as GameMakerProjectFolder;
-      // Add the filter groups
-      if (filterGroups.has(project)) {
-        projectFolder.filterGroup = filterGroups.get(project)!;
-      } else {
-        for (const filterGroupName of ['Folders', 'Assets']) {
-          const filterGroup = new TreeFilterGroup(
-            projectFolder,
-            filterGroupName,
-          );
-          projectFolder.filterGroup = filterGroup;
-        }
+      const existingFilters = filterGroups.get(project);
+      if (existingFilters) {
+        projectFolder.filterGroup = existingFilters;
       }
 
       const query = projectFolder.filterGroup.enabled?.query;
       const filter = query?.length ? new RegExp(query, 'i') : undefined;
 
+      const addFolders = (folderPath: string, open = false) => {
+        let parent = projectFolder as GameMakerFolder;
+        for (const part of folderPath.split('/').filter(Boolean)) {
+          parent = parent.addFolder(part, { open });
+        }
+        return parent;
+      };
+
       // Add all of the folders, unless we're filtering
       if (!filter) {
-        for (const folder of project.yyp.Folders) {
-          const pathParts = folderPathToParts(folder.folderPath);
-          let parent = projectFolder as GameMakerFolder;
-          for (let i = 0; i < pathParts.length; i++) {
-            parent = parent.addFolder(pathParts[i]);
-          }
-        }
+        for (const folder of project.gm.folders) addFolders(folder);
       }
 
-      // Add all of the resources, applying the filter if any
-      // If filtering, everything should be in the OPEN state
-      for (const [, resource] of project.assets) {
-        const path = (resource.yy.parent as any).path;
-        if (!path) {
-          warn('Resource has no path', resource);
+      // Add the assets, applying the filter if any
+      for (const asset of project.gm.assets) {
+        if (filter && !asset.name.match(filter)) {
           continue;
         }
-        const pathParts = folderPathToParts(path);
-        // Apply asset filters, if any
-        if (filter && !resource.name.match(filter)) {
-          continue;
-        }
-        let parent = projectFolder as GameMakerFolder;
-        for (let i = 0; i < pathParts.length; i++) {
-          parent = parent.addFolder(pathParts[i], {
-            open: !!filter && stitchConfig.openFoldersOnFilter,
-          });
-        }
-        const asset = new TreeAsset(parent, resource);
-        parent.addResource(asset);
+        const parent = addFolders(
+          asset.folder,
+          !!filter && stitchConfig.openFoldersOnFilter,
+        );
+        const item = new TreeAsset(parent, asset);
+        parent.addResource(item);
         if (filter) {
-          toReveal.push(asset);
+          toReveal.push(item);
         }
       }
     }
     this.changed();
     for (const element of toReveal) {
-      this.view.reveal(element, { focus: false, expand: false, select: false });
+      void this.view?.reveal(element, {
+        focus: false,
+        expand: false,
+        select: false,
+      });
     }
     return this;
   }
@@ -977,7 +951,7 @@ export class GameMakerTreeProvider
     }
     const filter = group.addFilter(query);
     this.rebuild();
-    this.view.reveal(filter);
+    void this.view.reveal(filter);
   }
 
   async editFilter(filter: TreeFilter) {
@@ -990,7 +964,7 @@ export class GameMakerTreeProvider
     }
     filter.query = query;
     this.rebuild();
-    this.view.reveal(filter);
+    void this.view.reveal(filter);
   }
 
   deleteFilter(filter: TreeFilter) {
@@ -1018,25 +992,6 @@ export class GameMakerTreeProvider
       treeDataProvider: this.rebuild(),
       canSelectMany: true,
       dragAndDropController: this,
-    });
-
-    // Handle emitted events
-    stitchEvents.on('asset-deleted', (asset) => {
-      const treeItem = TreeAsset.lookup.get(asset);
-      if (!treeItem) {
-        return;
-      }
-      TreeAsset.lookup.delete(asset);
-      treeItem.parent.removeResource(treeItem);
-      this.changed(treeItem.parent);
-    });
-    stitchEvents.on('code-file-deleted', (code) => {
-      const treeItem = TreeCode.lookup.get(code);
-      if (!treeItem) {
-        return;
-      }
-      TreeCode.lookup.delete(code);
-      this.changed(treeItem.parent);
     });
 
     // Return subscriptions to owned commands and this view
@@ -1069,10 +1024,7 @@ export class GameMakerTreeProvider
       ),
       registerCommand(
         'stitch.assets.editSound',
-        (item: TreeAsset | Asset | undefined) => {
-          console.log('triggered edit sound');
-          this.editSound(item);
-        },
+        (item: TreeAsset | Asset | undefined) => this.editSound(item),
       ),
       registerCommand(
         'stitch.assets.duplicate',

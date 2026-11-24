@@ -3,8 +3,8 @@ import type { StitchWorkspace } from './extension.workspace.mjs';
 import { copyToClipboard } from './lib.mjs';
 
 export function createCopyAsTypeCallback(provider: StitchWorkspace) {
-  return (file: vscode.Uri) => {
-    const type = uriToType(provider, file);
+  return async () => {
+    const type = await typeAtCursor(provider);
     if (type) {
       copyToClipboard(type);
     }
@@ -12,8 +12,8 @@ export function createCopyAsTypeCallback(provider: StitchWorkspace) {
 }
 
 export function createCopyAsJsdocSelfCallback(provider: StitchWorkspace) {
-  return (file: vscode.Uri) => {
-    const type = uriToType(provider, file);
+  return async () => {
+    const type = await typeAtCursor(provider);
     if (type && type.match(/^(Struct|Id.Instance|Asset.GMObject)/)) {
       copyToClipboard(`/// @self ${type}`);
     } else if (type) {
@@ -26,26 +26,17 @@ export function createCopyAsJsdocSelfCallback(provider: StitchWorkspace) {
 }
 
 export function createCopyAsJsdocTypeCallback(provider: StitchWorkspace) {
-  return (file: vscode.Uri) => {
-    const type = uriToType(provider, file);
+  return async () => {
+    const type = await typeAtCursor(provider);
     if (type) {
       copyToClipboard(`/// @type {${type}}`);
     }
   };
 }
 
-function uriToType(provider: StitchWorkspace, file: vscode.Uri) {
-  const position = vscode.window.activeTextEditor?.selection.active;
-  if (!position) {
-    return;
-  }
-  const ref = provider.getReference(file, position);
-  if (!ref) {
-    return;
-  }
-  const isConstructor = ref.item.type.constructs.length > 0;
-  if (isConstructor) {
-    return `Struct.${ref.item.name}`;
-  }
-  return ref.item.type.toFeatherString();
+/** The type of the symbol at the cursor, in Feather notation */
+async function typeAtCursor(provider: StitchWorkspace) {
+  const symbol = await provider.getSymbolAtCursor();
+  if (!symbol) return;
+  return symbol.constructs ?? symbol.type;
 }

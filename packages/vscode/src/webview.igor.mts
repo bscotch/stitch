@@ -1,4 +1,3 @@
-import type { Asset } from '@bscotch/gml-parser';
 import type {
   IgorExitedMessage,
   IgorWebviewConfig,
@@ -14,13 +13,12 @@ import { assertLoudly } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
 import { StitchEvents, stitchEvents } from './events.mjs';
 import type { StitchWorkspace } from './extension.workspace.mjs';
-import { registerCommand, uriFromCodeFile } from './lib.mjs';
+import { registerCommand } from './lib.mjs';
+import { assetMainFile } from './tree.items.mjs';
 
 export class StitchIgorView implements vscode.WebviewViewProvider {
   readonly viewType = 'bscotch-stitch-igor';
   protected container?: vscode.WebviewView;
-  public editing: Asset<'sprites'> | undefined;
-  public zooms = new Map<Asset<'sprites'>, number>();
   protected lastRequest?: StitchEvents.RequestRunInWebview['payload'][0];
   protected runner?: ChildProcessWithoutNullStreams;
 
@@ -44,11 +42,11 @@ export class StitchIgorView implements vscode.WebviewViewProvider {
           ?.getAssetByName(e.asset);
         assertLoudly(asset, `Asset not found: ${e.asset}`);
         const file =
-          e.type === 'objects' && e.event
-            ? (asset.getEventByName(e.event as any) ?? asset.gmlFile)
-            : asset.gmlFile;
+          (asset.isKind('objects') && e.event
+            ? asset.getEventFile(e.event)
+            : undefined) ?? assetMainFile(asset);
         const editor = await vscode.window.showTextDocument(
-          uriFromCodeFile(file),
+          vscode.Uri.file(file),
         );
         // Go to the line
         if (e.line) {

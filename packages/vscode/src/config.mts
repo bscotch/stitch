@@ -1,3 +1,8 @@
+import type {
+  DiagnosticLevel,
+  FormatPreset,
+  GmlServerSettings,
+} from '@bscotch/gml-language-server/protocol';
 import type { LauncherOptions } from '@bscotch/stitch-launcher';
 import vscode from 'vscode';
 import { logger } from './log.mjs';
@@ -163,6 +168,53 @@ class StitchConfig {
   }
   get spriteAutoImportOnStartup() {
     return this.config.get<boolean>('sprites.sources.watchOnStartup') ?? false;
+  }
+  get includePrefabs(): boolean {
+    return this.config.get<boolean>('projects.includePrefabs') ?? false;
+  }
+  get gmlSpecPaths(): string[] {
+    return this.config.get<string[]>('gameMaker.gmlSpecPaths') || [];
+  }
+  protected diagnosticLevel(
+    key: string,
+    fallback: DiagnosticLevel,
+  ): DiagnosticLevel {
+    const value = this.config.get<string>(`diagnostics.${key}`);
+    return ['error', 'warning', 'info', 'hint', 'off'].includes(value!)
+      ? (value as DiagnosticLevel)
+      : fallback;
+  }
+  get enableGmlFormatting(): boolean {
+    return this.config.get<boolean>('gml.format.enable') ?? true;
+  }
+  get gmlFormatPreset(): FormatPreset {
+    return this.config.get<string>('gml.format.preset') === 'standard'
+      ? 'standard'
+      : 'bscotch';
+  }
+  /** The language server's settings */
+  get serverSettings(): GmlServerSettings {
+    return {
+      diagnostics: {
+        suppressGroups: this.suppressDiagnosticsInGroups,
+        autoDeclaredGlobalsPrefixes: this.autoDeclaredGlobalsPrefixes,
+        missingDocs: this.diagnosticLevel('missingDocs', 'off'),
+        mixedOperators: this.diagnosticLevel('mixedOperators', 'off'),
+        argumentEvaluationOrder: this.diagnosticLevel(
+          'argumentEvaluationOrder',
+          'off',
+        ),
+        argumentTypes: this.diagnosticLevel('argumentTypes', 'warning'),
+      },
+      format: { preset: this.gmlFormatPreset },
+      completion: { ignoredPrefix: this.autocompleteIgnoredPrefix },
+      workspaceSymbols: {
+        includeInstanceVariables: this.symbolsIncludeInstanceVars,
+        includeLocalVariables: this.symbolsIncludeLocalVars,
+        maxResults: this.symbolsMaxSearchResults,
+      },
+      analysisDelay: this.reprocessOnTypeDelay,
+    };
   }
   get openFoldersOnFilter() {
     return this.config.get<boolean>('assets.filters.openAllFolders') ?? false;
