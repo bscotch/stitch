@@ -2202,7 +2202,12 @@ export function normalizeInferred(types: readonly Type[]): Type[] {
       }
       for (const item of type.items) {
         if (item.generic) {
-          result.push({ kind: utility, name: item.name, generic: true });
+          result.push({
+            kind: utility,
+            name: item.name,
+            generic: true,
+            utility: type.kind as Type['utility'],
+          });
         } else if (
           utility === 'Struct' &&
           (item.kind === 'Function' || item.kind === 'Struct')
@@ -2261,7 +2266,12 @@ function substituteGenerics(
   for (const type of types) {
     if (type.generic && type.name) {
       const bound = generics.get(type.name);
-      if (bound?.length) result.push(...bound);
+      if (bound?.length && type.utility) {
+        // E.g. `InstanceType<T>`, with `T` bound to an object
+        result.push(
+          ...normalizeInferred([{ kind: type.utility, items: bound }]),
+        );
+      } else if (bound?.length) result.push(...bound);
       else result.push(T.any);
       continue;
     }

@@ -235,4 +235,43 @@ describe('Semantics', function () {
       assert.deepEqual(codes(p, 'scripts/A'), []);
     });
   });
+
+  describe('generics', function () {
+    it('infers return types from template parameters', async function () {
+      const p = await analyzeFiles({
+        'scripts/A': [
+          '/// @template T',
+          '/// @param {T} value',
+          '/// @returns {T}',
+          'function identity(value) { return value; }',
+          'var str = identity("hello");',
+          'var num = identity(42);',
+        ].join('\n'),
+      });
+      assert.equal(p.typeAt('scripts/A', 'var str'), 'String');
+      assert.equal(p.typeAt('scripts/A', 'var num'), 'Real');
+    });
+
+    it('applies utility types to template parameters', async function () {
+      const p = await analyzeFiles(
+        {
+          'scripts/A': [
+            '/// @template {Asset.GMObject} T',
+            '/// @param {T} obj',
+            '/// @returns {InstanceType<T>}',
+            'function make(obj) { return undefined; }',
+            '/// @template {Id.Instance} T',
+            '/// @param {T} inst',
+            '/// @returns {ObjectType<T>}',
+            'function object_of(inst) { return undefined; }',
+            'var inst = make(o_thing);',
+            'var obj = object_of(inst);',
+          ].join('\n'),
+        },
+        { assets: [{ name: 'o_thing', kind: 'objects' }] },
+      );
+      assert.equal(p.typeAt('scripts/A', 'var inst'), 'Id.Instance.o_thing');
+      assert.equal(p.typeAt('scripts/A', 'var obj'), 'Asset.GMObject.o_thing');
+    });
+  });
 });

@@ -112,6 +112,11 @@ export interface Type {
   readonly entity?: string;
   /** For template parameters: this stands for whatever the template resolves to */
   readonly generic?: boolean;
+  /**
+   * For a template parameter inside a utility type (e.g. `T` in
+   * `InstanceType<T>`): the utility is applied to whatever `T` resolves to.
+   */
+  readonly utility?: 'InstanceType' | 'ObjectType' | 'StaticType';
   /** For native constant classes (`Constant.Foo`), the class name is in `name` */
   readonly constant?: boolean;
   /** For string literal types (`"left"`), the literal as written */
