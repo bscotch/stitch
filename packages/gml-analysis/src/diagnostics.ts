@@ -5,8 +5,13 @@
  */
 import { binaryPrecedence, walk, type Node } from '@bscotch/gml-syntax';
 import type { GmlAnalyzer } from './analyzer.ts';
-import type { Diagnostic, DiagnosticSeverity } from './analysis.types.ts';
+import type {
+  Diagnostic,
+  DiagnosticCode,
+  DiagnosticSeverity,
+} from './analysis.types.ts';
 import { ids } from './symbols.ts';
+import { formatUnion, type Type, type TypeUnion } from './types.ts';
 
 export interface DiagnosticOptions {
   /**
@@ -23,6 +28,16 @@ export interface DiagnosticOptions {
   argumentEvaluationOrder?: DiagnosticSeverity | 'off';
   /** Undeclared variables with these prefixes are assumed to exist */
   autoDeclareGlobalsPrefixes?: string[];
+  /**
+   * Flag global functions, constructors, enums, macros and global variables
+   * that have no doc comment. @default 'off'
+   */
+  missingDocs?: DiagnosticSeverity | 'off';
+  /**
+   * Flag arguments whose type clearly doesn't match the parameter's (e.g. a
+   * string where a number is expected). @default 'warning'
+   */
+  argumentTypes?: DiagnosticSeverity | 'off';
 }
 
 export function fileDiagnostics(
@@ -116,6 +131,49 @@ export function fileDiagnostics(
     }
   }
 
+  // Argument types
+  const argumentTypes = options.argumentTypes ?? 'warning';
+  if (argumentTypes !== 'off') {
+    for (const call of analysis.calls) {
+      const fn = table.getFunction(call.fn);
+      if (!fn || fn.templates?.length) continue;
+      for (const arg of call.args) {
+        const param = table.getSymbol(fn.params[arg.idx]);
+        if (!param || !arg.types?.length || !arg.hasExpression) continue;
+        if (isAssignable(arg.types, param.type)) continue;
+        diagnostics.push({
+          code: 'argument-type',
+          severity: argumentTypes,
+          message: `\`${param.name}\` expects \`${formatUnion(param.type)}\`, but this is \`${formatUnion(arg.types)}\`.`,
+          start: arg.start,
+          end: arg.end,
+        });
+      }
+    }
+  }
+
+  // Missing docs on global declarations in this file
+  const missingDocs = options.missingDocs ?? 'off';
+  if (missingDocs !== 'off') {
+    for (const symbol of table.listMembers(ids.globalShape)) {
+      if (symbol.native || symbol.def?.file !== fileId || symbol.description)
+        continue;
+      if (
+        !['function', 'constructor', 'enum', 'macro', 'variable'].includes(
+          symbol.kind,
+        )
+      )
+        continue;
+      diagnostics.push({
+        code: 'missing-docs',
+        severity: missingDocs,
+        message: `\`${symbol.name}\` has no documentation.`,
+        start: symbol.def.start,
+        end: symbol.def.end,
+      });
+    }
+  }
+
   // Unused global functions declared in this file
   for (const symbol of table.listMembers(ids.globalShape)) {
     if (symbol.native || symbol.def?.file !== fileId) continue;
@@ -173,8 +231,99 @@ export function fileDiagnostics(
     });
   }
 
-  return diagnostics.sort((a, b) => a.start - b.start || a.end - b.end);
+  return suppress(analyzer, fileId, diagnostics).sort(
+    (a, b) => a.start - b.start || a.end - b.end,
+  );
 }
+
+/**
+ * Remove diagnostics suppressed by comments:
+ * - `// @stitch-ignore-next-line` or `// @stitch-ignore-next-line: code, code`
+ * - `// @stitch-ignore` (or with codes) at the end of the line it applies to
+ */
+function suppress(
+  analyzer: GmlAnalyzer,
+  fileId: string,
+  diagnostics: Diagnostic[],
+): Diagnostic[] {
+  const parsed = analyzer.getFile(fileId)!;
+  /** Line → suppressed codes (empty: all) */
+  const ignored = new Map<number, Set<string>>();
+  const pattern =
+    /@stitch-ignore(-next-line)?\b\s*:?\s*([\w-]+(?:\s*,\s*[\w-]+)*)?/;
+  for (const token of parsed.parsed.tokens) {
+    if (token.kind !== 'lineComment' && token.kind !== 'blockComment') continue;
+    const match = parsed.text.slice(token.start, token.end).match(pattern);
+    if (!match) continue;
+    const line = parsed.lines.positionAt(token.start).line + (match[1] ? 1 : 0);
+    const codes = new Set(match[2]?.split(/\s*,\s*/) ?? []);
+    const existing = ignored.get(line);
+    ignored.set(
+      line,
+      existing && !existing.size
+        ? existing
+        : new Set([...(existing ?? []), ...codes]),
+    );
+    if (!match[2]) ignored.set(line, new Set());
+  }
+  if (!ignored.size) return diagnostics;
+  return diagnostics.filter((d) => {
+    const codes = ignored.get(parsed.lines.positionAt(d.start).line);
+    return !codes || (codes.size > 0 && !codes.has(d.code));
+  });
+}
+
+/**
+ * Whether values of one type can (plausibly) be passed where another is
+ * expected. Deliberately permissive: only clear mismatches fail, like a
+ * string where a number is expected.
+ */
+export function isAssignable(from: TypeUnion, to: TypeUnion): boolean {
+  if (!to.length || !from.length) return true;
+  // A variable's type includes everything ever assigned to it, so it's fine
+  // if any of its possible types fits
+  return from.some((f) => to.some((t) => accepts(t, f)));
+}
+
+const numberLike = new Set(['Real', 'Bool', 'Enum', 'EnumMember', 'Pointer']);
+
+function accepts(to: Type, from: Type): boolean {
+  const loose = [
+    'Any',
+    'Mixed',
+    'Unknown',
+    'Undefined',
+    'Never',
+    'ArgumentIdentity',
+  ];
+  if (to.generic || from.generic) return true;
+  if (loose.includes(to.kind) || loose.includes(from.kind)) return true;
+  if (to.kind === from.kind) return true;
+  const family = (kind: string) => kind.split('.')[0];
+  // Numbers, booleans, enums, constants, and handles (assets and ids are
+  // numbers in older code) are interchangeable
+  const numeric = (t: Type) =>
+    numberLike.has(t.kind) ||
+    !!t.constant ||
+    family(t.kind) === 'Asset' ||
+    family(t.kind) === 'Id';
+  if (numeric(to) && numeric(from)) return true;
+  // Instances and structs can both be used as scopes
+  const scope = (t: Type) =>
+    t.kind === 'Struct' ||
+    t.kind === 'Id.Instance' ||
+    t.kind === 'Asset.GMObject';
+  if (scope(to) && scope(from)) return true;
+  // Functions are also methods (structs)
+  if (
+    (to.kind === 'Struct' && from.kind === 'Function') ||
+    (to.kind === 'Function' && from.kind === 'Struct')
+  )
+    return true;
+  return false;
+}
+
+export type { DiagnosticCode };
 
 /** Whether evaluating a node could call code or change state */
 function hasSideEffects(node: Node): boolean {

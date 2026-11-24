@@ -62,7 +62,7 @@ export interface CheckOptions {
 /** The `self` scope a piece of code runs in */
 interface Frame {
   /** What created the frame */
-  kind?: 'file' | 'function' | 'with';
+  kind?: 'file' | 'function' | 'with' | 'struct';
   /** The local scope shape */
   local: ShapeId;
   /** The self type (`undefined` = the global scope) */
@@ -74,6 +74,8 @@ interface Frame {
   own?: ShapeId;
   /** The function being checked, for collecting return types */
   fn?: { returns: Type[]; entry: FunctionEntry };
+  /** The static struct of the (non-constructor) function being checked */
+  statics?: ShapeId;
   /**
    * `self` is whatever instance calls the code (in script functions), so
    * names that aren't found may be the caller's variables.
@@ -440,6 +442,17 @@ export class Checker {
     options?: { ownOnly?: boolean },
   ): SymbolEntry | undefined {
     if (shape?.startsWith('local:')) return this.findLocal(shape, name);
+    // A constructor's static struct: the static members of its struct
+    const constructs = this.staticView(shape);
+    if (constructs) {
+      const member = this.table.findMember(
+        constructs,
+        name,
+        this.deps,
+        options,
+      );
+      return member?.static ? member : undefined;
+    }
     return this.table.findMember(shape, name, this.deps, options);
   }
 
@@ -466,10 +479,26 @@ export class Checker {
     return undefined;
   }
 
+  /**
+   * If a shape is a constructor's static struct, the shape of the structs it
+   * constructs (whose static members it holds)
+   */
+  protected staticView(shape: ShapeId | undefined): ShapeId | undefined {
+    if (!shape?.startsWith('static:')) return undefined;
+    const fn = this.getFunction(shape.slice('static:'.length));
+    return fn?.isConstructor ? fn.constructs : undefined;
+  }
+
   /** The shape holding a type's members, if any */
   protected shapeOfType(type: Type | undefined): ShapeId | undefined {
     if (!type) return undefined;
+    if (type.entity?.startsWith('static:')) return type.entity;
     if (type.entity && this.table.getShape(type.entity)) return type.entity;
+    // Functions' (and constructors') static structs
+    if (type.kind === 'Function') {
+      const fn = this.functionOfType(type);
+      return fn ? ids.staticShape(fn.id) : undefined;
+    }
     switch (type.kind) {
       case 'Struct':
         if (type.name === 'global') return ids.globalShape;
@@ -826,10 +855,13 @@ export class Checker {
         this.checkNativeShadow(name);
         this.ref(name, symbol, { write: true });
       } else if (node.keyword === 'static') {
-        // Statics belong to the constructor's struct, or to the function
+        // Statics belong to the constructor's struct, or to the function's
+        // static struct (outside functions they're just locals)
         const fn = this.frame.fn?.entry;
         const shape =
-          fn?.isConstructor && fn.constructs ? fn.constructs : this.frame.local;
+          fn?.isConstructor && fn.constructs
+            ? fn.constructs
+            : (this.frame.statics ?? this.frame.local);
         let symbol: SymbolEntry;
         if (shape === this.frame.local) {
           symbol = this.declareLocal(shape, name.name, name, {
@@ -956,8 +988,14 @@ export class Checker {
     });
     this.checkNativeShadow(node.name);
     this.ref(node.name, symbol);
+    // Values: literal numbers, or one more than the previous member
+    let next: number | undefined = 0;
     for (const [idx, member] of node.members.entries()) {
-      if (member.init) this.expression(member.init);
+      if (member.init) this.unused(() => this.expression(member.init!));
+      const value: number | undefined = member.init
+        ? numericValue(member.init)
+        : next;
+      next = value === undefined ? undefined : value + 1;
       const memberSymbol = this.contribute({
         shape: shapeId,
         name: member.name.name,
@@ -971,6 +1009,7 @@ export class Checker {
         description: docDescription(this.docAt(member.start)),
         writable: false,
         idx,
+        value,
       });
       this.ref(member.name, memberSymbol);
     }
@@ -1063,7 +1102,13 @@ export class Checker {
         this.ref(target, ids.global(name), { implicit: true, write: true });
         return;
       }
-      if (!declares || this.frame.callerSelf) {
+      // (On an instance of unknown type, e.g. a script function's caller or
+      // `with` on a generic instance, the variable may well exist)
+      if (
+        !declares ||
+        this.frame.callerSelf ||
+        selfShape === ids.instanceBase
+      ) {
         // (In script functions, it's the caller's variable)
         this.valueExpression(node.value, { name, doc });
         this.ref(target, ids.member(selfShape, name), {
@@ -1181,7 +1226,9 @@ export class Checker {
       this.expression(node.value);
       return;
     }
-    if (shape === ids.instanceBase) {
+    if (shape === ids.instanceBase || shape.startsWith('static:')) {
+      // An instance of unknown type (the variable may well exist), or a
+      // function's static struct
       // An instance of unknown type: the variable may well exist
       this.valueExpression(node.value, { name, doc: info.doc });
       this.ref(target.property, ids.member(shape, name), {
@@ -1437,7 +1484,6 @@ export class Checker {
         else
           this.ref(parentName, ids.global(parentName.name), { implicit: true });
         parents.push(ids.structShape(parentName.name));
-        node.parent.args.forEach((a) => this.argumentExpression(a));
       }
       const shape = this.ownShape(shapeId, 'struct', { name, parents });
       shape.symbol = isGlobalConstructor
@@ -1479,6 +1525,23 @@ export class Checker {
     if (self && !withableKinds.has(self.kind)) self = this.frame.self;
     entry.self = callerSelf ? undefined : self;
     const selfShape = this.shapeOfType(self);
+
+    // The function's scope: parameter defaults, parent constructor arguments
+    // and the body all run in it
+    const returns: Type[] = [];
+    this.frames.push({
+      kind: 'function',
+      local: localId,
+      self,
+      selfShape,
+      definitive: node.isConstructor || isMixin ? selfShape : undefined,
+      own: node.isConstructor || isMixin ? selfShape : this.frame.own,
+      fn: { returns, entry },
+      statics: node.isConstructor ? undefined : ids.staticShape(fnId),
+      callerSelf:
+        callerSelf ||
+        (this.frame.callerSelf && !node.isConstructor && !docSelf && !isMixin),
+    });
 
     // Parameters
     const paramDocs = docTags(doc, 'param');
@@ -1561,21 +1624,12 @@ export class Checker {
       this.ref(this.nameSpan(paramDoc.name), symbol);
     }
     entry.params = params;
+    // A parent constructor's arguments can use the child's parameters
+    if (node.isConstructor && node.parent) {
+      node.parent.args.forEach((a) => this.argumentExpression(a));
+    }
 
     // Body
-    const returns: Type[] = [];
-    this.frames.push({
-      kind: 'function',
-      local: localId,
-      self,
-      selfShape,
-      definitive: node.isConstructor || isMixin ? selfShape : undefined,
-      own: node.isConstructor || isMixin ? selfShape : this.frame.own,
-      fn: { returns, entry },
-      callerSelf:
-        callerSelf ||
-        (this.frame.callerSelf && !node.isConstructor && !docSelf && !isMixin),
-    });
     const open = this.tokenAfter(
       '(',
       node.kind === 'FunctionDeclaration' ? node.name.end : node.start,
@@ -1714,6 +1768,10 @@ export class Checker {
     const frame = this.frame;
     const local = this.findMember(frame.local, name);
     if (local) return local;
+    if (frame.statics) {
+      const statics = this.findMember(frame.statics, name);
+      if (statics) return statics;
+    }
     if (frame.selfShape) {
       const member = this.findMember(frame.selfShape, name, {
         ownOnly: options?.ownOnly,
@@ -1791,6 +1849,8 @@ export class Checker {
   protected otherFrame(): Frame | 'unknown' {
     for (let i = this.frames.length - 1; i >= 0; i--) {
       const frame = this.frames[i];
+      // In a struct literal, `other` is the scope creating the struct
+      if (frame.kind === 'struct') return frame;
       if (frame.kind === 'with') return this.frames[i - 1] ?? this.fileSelf;
       if (frame.kind === 'function') return 'unknown';
     }
@@ -1815,7 +1875,9 @@ export class Checker {
       (t) =>
         withableKinds.has(t.kind) ||
         t.kind === 'Enum' ||
-        (t.kind === 'Struct' && t.name === 'global'),
+        (t.kind === 'Struct' && t.name === 'global') ||
+        // A function's static variables
+        (t.kind === 'Function' && !!this.functionOfType(t)),
     );
     let chosen = dottable[0];
     const name = node.property.name;
@@ -1928,12 +1990,15 @@ export class Checker {
         continue;
       }
       const declaredType = this.docType(docTag(doc, 'type'));
+      // Values are evaluated in the creating scope, where `other` is `self`
+      this.frames.push({ ...this.frame, kind: 'struct' });
       const valueType = this.valueExpression(property.value, {
         name,
         owner: shape.id,
         declaredType,
         doc,
       });
+      this.frames.pop();
       const symbol = this.contribute({
         shape: shape.id,
         name,
@@ -2020,6 +2085,21 @@ export class Checker {
     }
     const isMethod =
       fn?.id === ids.fn('method') && fn.symbol === ids.global('method');
+    if (fn?.isConstructor && node.kind === 'CallExpression') {
+      this.diagnostic(
+        'invalid-operation',
+        'error',
+        `\`${fn.name ?? 'This function'}\` is a constructor, so it must be called with \`new\`.`,
+        node.callee,
+      );
+    } else if (fn && !fn.isConstructor && node.kind === 'NewExpression') {
+      this.diagnostic(
+        'invalid-operation',
+        'error',
+        `\`${fn.name ?? 'This function'}\` isn't a constructor, so it can't be called with \`new\`.`,
+        node.callee,
+      );
+    }
     // Mixins add their variables to the caller
     if (fn?.mixin && fn.mixinShape && this.frame.selfShape) {
       for (const member of this.table.listMembers(fn.mixinShape, this.deps)) {
@@ -2045,15 +2125,15 @@ export class Checker {
     const generics = new Map<string, Type[]>();
     let methodSelf: Type | undefined;
     let methodReturns: Type[] | undefined;
+    const argTypes: Type[][] = [];
     for (const [idx, arg] of node.args.entries()) {
       const param = this.table.getSymbol(fn?.params[idx]);
       const self = isMethod && idx === 1 ? methodSelf : undefined;
-      const affectsResult = isMethod || !!fn?.templates?.length;
+      // (Argument types matter: for generics, `method()`, and type checks)
       const argType = normalizeInferred(
-        affectsResult
-          ? this.used(() => this.argumentExpression(arg, { self }))
-          : this.unused(() => this.argumentExpression(arg, { self })),
+        this.used(() => this.argumentExpression(arg, { self })),
       );
+      argTypes[idx] = argType;
       if (isMethod && idx === 0)
         methodSelf = argType.find((t) => withableKinds.has(t.kind));
       if (isMethod && idx === 1)
@@ -2070,6 +2150,7 @@ export class Checker {
           fn: fn.id,
           idx: i,
           hasExpression: !!arg && arg.kind !== 'OmittedArgument',
+          types: argTypes[i],
         });
       }
       this.out.argumentRanges.push(...ranges);
@@ -2122,6 +2203,22 @@ export function normalizeInferred(types: readonly Type[]): Type[] {
       for (const item of type.items) {
         if (item.generic) {
           result.push({ kind: utility, name: item.name, generic: true });
+        } else if (
+          utility === 'Struct' &&
+          (item.kind === 'Function' || item.kind === 'Struct')
+        ) {
+          // `static_get(fn)`: the function's (or constructor's) static struct
+          const fn =
+            item.kind === 'Function'
+              ? (item.entity ?? (item.name ? ids.fn(item.name) : undefined))
+              : item.name
+                ? ids.fn(item.name)
+                : undefined;
+          result.push(
+            fn
+              ? { kind: 'Struct', entity: ids.staticShape(fn) }
+              : { kind: 'Struct' },
+          );
         } else {
           result.push({
             kind: utility,
@@ -2182,6 +2279,32 @@ function substituteGenerics(
 
 function stringValue(raw: string): string {
   return raw.replace(/^@?["']|["']$/g, '');
+}
+
+/** The value of a numeric literal (possibly negated or in hex), if it is one */
+function numericValue(node: Expression): number | undefined {
+  if (node.kind === 'ParenthesizedExpression')
+    return numericValue(node.expression);
+  if (
+    node.kind === 'UnaryExpression' &&
+    (node.operator === '-' || node.operator === '+')
+  ) {
+    const value = numericValue(node.argument);
+    return value === undefined
+      ? undefined
+      : node.operator === '-'
+        ? -value
+        : value;
+  }
+  if (node.kind !== 'Literal' || node.literalKind !== 'number')
+    return undefined;
+  const raw = node.raw.replace(/_/g, '');
+  const value = /^(0x|\$)/i.test(raw)
+    ? parseInt(raw.replace(/^(0x|\$)/i, ''), 16)
+    : raw.startsWith('0b')
+      ? parseInt(raw.slice(2), 2)
+      : Number(raw);
+  return Number.isFinite(value) ? value : undefined;
 }
 
 function isOpener(kind: string): boolean {

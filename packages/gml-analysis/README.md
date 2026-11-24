@@ -65,47 +65,68 @@ The same loop handles loading a project and updating it after an edit:
 
 ## Language semantics
 
-- **Scripts:**
-  - Function declarations are global, unless they're inside another function. This includes those inside `if` blocks.
-  - In a script function, `self` is whatever instance calls it. Built-in instance variables resolve, and names assigned there are treated as the caller's variables.
-  - Function _expressions_ are bound to the `self` where they're created.
-- **Objects:**
-  - Variables are inherited from parent objects. A child assigning to a parent's variable uses the parent's declaration rather than shadowing it; assigning a function makes an override.
-  - Without `event_inherited()` in its Create event, an object doesn't inherit its parent's variables.
-- **`with` and `other`:**
-  - `with (target)` changes `self` to the target's type, or to "some instance" when the type is unknown.
-  - `other` is the scope outside the innermost `with`, or the colliding instance in a collision event.
-  - Inside functions and other events, `other` is unknown and isn't flagged.
-- **Constructors and functions:**
-  - Constructors create a struct shape. Parent constructors' members are inherited, and `static` members belong to the struct.
-  - `method(target, function)` binds the function's `self` to `target`.
-  - Calling a `@mixin` function adds the variables it declares to the caller.
-- **JSDoc and Feather:**
-  - Supported tags: `@param`, `@returns`, `@self`, `@type`, `@template`, `@localvar`, `@instancevar`, `@globalvar`, `@description`, `@deprecated` and `@mixin`.
-  - `@see` and `{@link}` targets are resolved to symbols (for go-to-definition and rename) and reported if they're broken.
-  - Docs attach to the code that follows them, and to a function declaration even across blank lines.
-- **Room and instance creation code** are analyzed, with the right `self`.
+These follow the GameMaker manual's pages on [structs](https://manual.gamemaker.io/lts/en/GameMaker_Language/GML_Overview/Structs.htm), [static structs](https://manual.gamemaker.io/lts/en/GameMaker_Language/GML_Overview/Structs/Static_Structs.htm), [variable scope](https://manual.gamemaker.io/lts/en/GameMaker_Language/GML_Overview/Variables_And_Variable_Scope.htm), [`with`](https://manual.gamemaker.io/lts/en/GameMaker_Language/GML_Overview/Language_Features/with.htm), [`self`](https://manual.gamemaker.io/lts/en/GameMaker_Language/GML_Overview/Instance%20Keywords/self.htm), [`other`](https://manual.gamemaker.io/lts/en/GameMaker_Language/GML_Overview/Instance%20Keywords/other.htm) and [method variables](https://manual.gamemaker.io/lts/en/GameMaker_Language/GML_Overview/Method_Variables.htm).
+
+**Scope**
+
+- Local variables (`var`) belong to the whole event or function, not to a block. They take precedence over instance variables, they're visible inside `with`, and they aren't visible inside nested functions (GML has no closures).
+- In a script, function declarations are global unless they're inside another function (even if they're in an `if` block). In a script function, `self` is whatever instance calls it: built-in instance variables resolve, and names assigned there are treated as the caller's variables.
+- In an object event, a function declaration is a method of the instance. Function _expressions_ (`f = function () {}`) are bound to the `self` where they're created.
+- `with (target)` changes `self` to the target's type (an object, an instance, a struct, `global`, ...). For a target of unknown type, or a generic instance, `self` is "some instance": built-ins resolve and assignments aren't errors.
+- `other` is the scope outside the innermost `with`, the colliding instance in a collision event, and the creating scope inside a struct literal. Inside functions and other events it depends on the caller, so it's unknown (and not flagged).
+
+**Objects**
+
+- Variables are inherited from parent objects. A child assigning to a parent's variable uses the parent's declaration rather than shadowing it; assigning a function makes an override.
+- Without `event_inherited()` in its Create event, an object doesn't inherit its parent's variables.
+- Variables defined in the IDE's object editor (in the object's yy file) are declared, with types from their editor type, and are inherited by children.
+
+**Structs and constructors**
+
+- Struct literal members are declared at the literal. Values are evaluated in the creating scope (so `self` and `other` there refer to it), and functions in a literal are bound to the struct. Shorthand members (`{ a, b }`) use the variables of the same name.
+- Constructors create a struct shape. Parent constructors' members are inherited, and the parent's arguments (like parameter defaults) are evaluated in the child constructor, so they can use its parameters.
+- Constructors must be called with `new`, and only constructors can be.
+- Static variables belong to the function's static struct: in a constructor, they're members of its structs and can be accessed through the constructor (`Thing.count`); in other functions they persist between calls and can be accessed through the function (`counter.count`). `static_get(target)` returns the static struct.
+- `method(target, function)` binds the function's `self` to `target`. Calling a `@mixin` function adds the variables it declares to the caller.
+
+**JSDoc and Feather**
+
+- `@param`, `@returns`, `@self`, `@type`, `@template`, `@localvar`, `@instancevar`, `@globalvar`, `@description`, `@deprecated` and `@mixin`.
+- `@see` and `{@link}` targets are resolved to symbols (for go-to-definition and rename) and reported if broken.
+- Docs attach to the code that follows them, and to a function declaration even across blank lines.
+
+**Other**
+
+- Room and instance creation code are analyzed, with the right `self`.
+- Enum members' values are computed from literal values (and counting up from the previous member), and shown on hover.
 
 ## Diagnostics
 
-`fileDiagnostics(analyzer, fileId, options)` combines:
+`fileDiagnostics(analyzer, fileId, options)` combines diagnostics found while checking, diagnostics that depend on the whole project, and optional checks:
 
-- diagnostics found while checking;
-- diagnostics that depend on the whole project;
-- optional style checks.
+| Code                                                     | Meaning                                                                                                                                                          |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `syntax`                                                 | Syntax errors (from `gml-syntax`)                                                                                                                                |
+| `jsdoc`, `jsdoc-mismatch`, `unknown-type`, `broken-link` | Doc comment problems                                                                                                                                             |
+| `undeclared-global`, `undeclared-variable`               | Names that aren't declared anywhere                                                                                                                              |
+| `missing-argument`, `too-many-arguments`                 | Argument counts. Explicitly omitted arguments (`f(a,,c)`) and trailing commas are allowed.                                                                       |
+| `argument-type`                                          | Arguments whose type clearly doesn't match the parameter (e.g. a string where a number is expected). Variables whose possible types include a match are allowed. |
+| `unused-function`                                        | Global functions that nothing references                                                                                                                         |
+| `global-self`                                            | `self`/`other` referring to the global scope                                                                                                                     |
+| `invalid-operation`                                      | E.g. calling a constructor without `new`, dot access on a non-struct, an undefined enum member                                                                   |
+| `shadowed-native`                                        | A declaration with the same name as a built-in                                                                                                                   |
+| `missing-docs`                                           | _(Off by default)_ Global functions, constructors, enums, macros and variables without doc comments                                                              |
+| `mixed-operators`                                        | _(Off by default)_ Operators of different precedence mixed without parentheses. GameMaker's precedence can vary by platform.                                     |
+| `argument-evaluation-order`                              | _(Off by default)_ More than one argument has side effects. GameMaker's argument evaluation order can vary by platform.                                          |
 
-| Code                                                     | Meaning                                                                                                                      |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `syntax`                                                 | Syntax errors (from `gml-syntax`)                                                                                            |
-| `jsdoc`, `jsdoc-mismatch`, `unknown-type`, `broken-link` | Doc comment problems                                                                                                         |
-| `undeclared-global`, `undeclared-variable`               | Names that aren't declared anywhere                                                                                          |
-| `missing-argument`, `too-many-arguments`                 | Argument counts. Explicitly omitted arguments (`f(a,,c)`) and trailing commas are allowed.                                   |
-| `unused-function`                                        | Global functions that nothing references                                                                                     |
-| `global-self`                                            | `self`/`other` referring to the global scope                                                                                 |
-| `invalid-operation`                                      | E.g. dot access on a non-struct, an undefined enum member                                                                    |
-| `shadowed-native`                                        | A declaration with the same name as a built-in                                                                               |
-| `mixed-operators`                                        | _(Off by default)_ Operators of different precedence mixed without parentheses. GameMaker's precedence can vary by platform. |
-| `argument-evaluation-order`                              | _(Off by default)_ More than one argument has side effects. GameMaker's argument evaluation order can vary by platform.      |
+Diagnostics can be suppressed with comments, by code or entirely:
+
+```gml
+function called_by_pragma() {} // @stitch-ignore: unused-function
+
+// @stitch-ignore-next-line: unused-function, missing-docs
+function another() {}
+```
 
 ## Compared with `@bscotch/gml-parser`
 

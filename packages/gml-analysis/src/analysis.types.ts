@@ -29,7 +29,9 @@ export type DiagnosticCode =
   | 'mixed-operators'
   | 'argument-evaluation-order'
   | 'broken-link'
-  | 'unknown-type';
+  | 'unknown-type'
+  | 'missing-docs'
+  | 'argument-type';
 
 export interface Diagnostic {
   code: DiagnosticCode;
@@ -75,6 +77,8 @@ export interface ArgumentRange {
   fn: FunctionId;
   idx: number;
   hasExpression: boolean;
+  /** The argument's inferred type */
+  types?: TypeUnion;
 }
 
 export interface CallInfo {
@@ -127,6 +131,8 @@ export interface MemberContribution {
   mixin?: boolean;
   writable?: boolean;
   idx?: number;
+  /** For enum members, their value (when known) */
+  value?: number;
 }
 
 /** Entities a file defines that nothing else contributes to */

@@ -282,16 +282,7 @@ export class ProjectTable {
           byFile.set(fileId, entity);
         }
       }
-      for (const c of provides.members) {
-        const key = groupKey(c);
-        let byFile = this.groups.get(key);
-        if (!byFile) this.groups.set(key, (byFile = new Map()));
-        if (!byFile.has(fileId)) byFile.set(fileId, []);
-        byFile.get(fileId)!.push(c);
-        let keys = this.keysByName.get(c.name);
-        if (!keys) this.keysByName.set(c.name, (keys = new Set()));
-        keys.add(key);
-      }
+      for (const c of provides.members) this.addContribution(fileId, c);
     }
     for (const kind of ['shapes', 'functions', 'symbols'] as const) {
       for (const id of this.owners[kind].keys()) this.applyOwned(kind, id);
@@ -586,6 +577,24 @@ export class ProjectTable {
       table.symbols.set(symbol.id, symbol);
       global.members.set(asset.name, symbol.id);
     }
+    // Object variables defined in the IDE: declared by the object itself,
+    // before any of its code runs
+    for (const asset of this.project.assets) {
+      for (const variable of asset.variables ?? []) {
+        this.addContribution(variable.file, {
+          shape: ids.objectShape(asset.name),
+          name: variable.name,
+          file: variable.file,
+          start: 0,
+          end: 0,
+          priority: -1,
+          kind: 'variable',
+          declaredType: this.objectVariableType(variable.varType),
+          description: `Defined in the object editor${variable.value !== undefined ? ` (default: \`${variable.value}\`)` : ''}.`,
+          instance: true,
+        });
+      }
+    }
     for (const name of this.project.audioGroups ?? []) {
       const id = ids.global(name);
       table.symbols.set(id, {
@@ -602,6 +611,35 @@ export class ProjectTable {
     }
     for (const extension of this.project.extensions ?? [])
       this.addExtension(extension);
+  }
+
+  protected objectVariableType(varType: number): Type[] {
+    switch (varType) {
+      case 0:
+      case 1:
+        return [{ kind: 'Real' }];
+      case 2:
+        return [{ kind: 'String' }];
+      case 3:
+        return [{ kind: 'Bool' }];
+      case 5:
+        return [{ kind: 'Asset' }];
+      case 7:
+        return [this.natives.getType('Constant.Color') ?? { kind: 'Real' }];
+      default:
+        return [{ kind: 'Any' }];
+    }
+  }
+
+  protected addContribution(fileId: string, c: MemberContribution) {
+    const key = groupKey(c);
+    let byFile = this.groups.get(key);
+    if (!byFile) this.groups.set(key, (byFile = new Map()));
+    if (!byFile.has(fileId)) byFile.set(fileId, []);
+    byFile.get(fileId)!.push(c);
+    let keys = this.keysByName.get(c.name);
+    if (!keys) this.keysByName.set(c.name, (keys = new Set()));
+    keys.add(key);
   }
 
   protected addExtension(extension: ExtensionInfo) {
@@ -826,6 +864,7 @@ export function deriveSymbol(
     fn: withFn?.fn,
     shape: sorted.find((c) => c.shapeRef)?.shapeRef,
     idx: def.idx,
+    value: def.value,
     global: shape === ids.globalShape || undefined,
     instance: shape !== ids.globalShape ? (any('instance') ?? true) : undefined,
     static: any('static') as boolean | undefined,

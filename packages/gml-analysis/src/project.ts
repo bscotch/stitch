@@ -14,6 +14,24 @@ import type { SourceFile } from './file.ts';
 import { NativeTable } from './natives.ts';
 import { fallbackGmlSpecPath, readGmlSpec, type GmlSpec } from './spec.ts';
 
+async function mapConcurrent<T, R>(
+  items: readonly T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (next < items.length) {
+        const i = next++;
+        results[i] = await fn(items[i]);
+      }
+    }),
+  );
+  return results;
+}
+
 /** Describe a project's GML files for the analyzer */
 export function listSourceFiles(project: GameMakerProject): SourceFile[] {
   const files: SourceFile[] = [];
@@ -79,11 +97,31 @@ export function projectInfo(project: GameMakerProject): ProjectInfo {
       });
     }
   }
+  const rel = (file: string) =>
+    path.relative(project.dir, file).split(path.sep).join('/');
   return {
     assets: project.listAssets().map((a) => ({
       name: a.name,
       kind: a.kind,
       parent: a.parentName,
+      variables: a.isKind('objects')
+        ? (
+            (
+              a.yy as {
+                properties?: {
+                  name: string;
+                  varType: number;
+                  value?: string;
+                }[];
+              }
+            ).properties ?? []
+          ).map((p) => ({
+            name: p.name,
+            varType: p.varType,
+            value: p.value,
+            file: rel(a.yyPath),
+          }))
+        : undefined,
     })),
     audioGroups: project.audioGroups.map((g) => g.name),
     extensions,
@@ -111,8 +149,9 @@ export async function analyzeProject(
   const analyzer = new GmlAnalyzer(new NativeTable(specs), options);
   analyzer.setProject(projectInfo(project));
   const files = listSourceFiles(project);
-  const texts = await Promise.all(
-    files.map((f) => fs.readFile(path.join(project.dir, f.id), 'utf8')),
+  // (Bounded, to avoid running out of file handles in large projects)
+  const texts = await mapConcurrent(files, 64, (f) =>
+    fs.readFile(path.join(project.dir, f.id), 'utf8'),
   );
   files.forEach((file, i) => analyzer.setFile(file, texts[i]));
   analyzer.analyze();

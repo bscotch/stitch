@@ -154,7 +154,7 @@ export class GmlQueries {
               !s.native && s.def && s.kind !== 'macro' && s.kind !== 'enum',
           );
       }
-      return table.listMembers(scope.self).filter(usable);
+      return this.membersOf(scope.self).filter(usable);
     }
     const found = new Map<string, SymbolEntry>();
     const add = (symbols: SymbolEntry[]) => {
@@ -181,6 +181,20 @@ export class GmlQueries {
   parameterFor(arg: ArgumentRange): SymbolEntry | undefined {
     const fn = this.table.getFunction(arg.fn);
     return this.table.getSymbol(fn?.params[arg.idx]);
+  }
+
+  /**
+   * A shape's members, handling static structs (a constructor's static
+   * struct holds the static members of what it constructs)
+   */
+  membersOf(shape: string | undefined): SymbolEntry[] {
+    if (shape?.startsWith('static:')) {
+      const fn = this.table.getFunction(shape.slice('static:'.length));
+      if (fn?.isConstructor) {
+        return this.table.listMembers(fn.constructs).filter((m) => m.static);
+      }
+    }
+    return this.table.listMembers(shape);
   }
 
   /** Every reference to a symbol, across the project */
@@ -256,7 +270,11 @@ export class GmlQueries {
         continue;
       }
       code.add(
-        symbol.kind === 'enum' ? `enum ${symbol.name}` : formatType(type),
+        symbol.kind === 'enum'
+          ? `enum ${symbol.name}`
+          : symbol.kind === 'enumMember' && symbol.value !== undefined
+            ? `${formatType(type)} = ${symbol.value}`
+            : formatType(type),
       );
       const details = this.typeDetails(type);
       if (details) text.add(details);

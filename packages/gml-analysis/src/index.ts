@@ -5,6 +5,7 @@ export {
   type AnalyzerOptions,
   type IndexedReference,
   type AssetInfo,
+  type ObjectVariableInfo,
   type ExtensionInfo,
   type ProjectInfo,
 } from './analyzer.ts';

@@ -252,4 +252,9 @@ export const ids = {
   enumShape: (name: string) => `enum:${name}`,
   fn: (key: string) => `fn:${key}`,
   local: (key: string) => `local:${key}`,
+  /**
+   * A function's static struct. For constructors it's a view of the static
+   * members of the struct they construct.
+   */
+  staticShape: (fn: string) => `static:${fn}`,
 };

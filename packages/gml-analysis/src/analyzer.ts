@@ -32,6 +32,22 @@ export interface AssetInfo {
   kind: string;
   /** For objects, the parent object's name */
   parent?: string;
+  /** For objects, the variables defined in the IDE's object editor */
+  variables?: ObjectVariableInfo[];
+}
+
+/** An instance variable defined in the object editor (in the object's yy file) */
+export interface ObjectVariableInfo {
+  name: string;
+  /**
+   * The yy `varType`: 0 Real, 1 Integer, 2 String, 3 Boolean,
+   * 4 Expression, 5 Asset, 6 List, 7 Colour
+   */
+  varType: number;
+  /** The default value, as written in the editor */
+  value?: string;
+  /** Where it's defined (the yy file's id), for go-to-definition */
+  file: string;
 }
 
 /** Functions and constants provided by extensions */
