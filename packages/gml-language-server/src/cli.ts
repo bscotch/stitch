@@ -3,7 +3,6 @@
  * Run the language server. Pass `--stdio`, `--node-ipc` or
  * `--socket=<port>` to choose how it talks to the client.
  */
-import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
-import { startServer } from './server.ts';
+import { runServer } from './index.ts';
 
-startServer(createConnection(ProposedFeatures.all));
+runServer();

@@ -115,6 +115,13 @@ export interface AssetRenameEditsParams {
   newName: string;
 }
 
+/**
+ * Client → server request: the names of the global symbols the project
+ * defines (functions, constructors, macros, enums, global variables and
+ * assets; not built-ins). Returns `string[]`.
+ */
+export const globalNamesRequest = 'stitch/globalNames';
+
 //#endregion
 
 /** The semantic token types the server uses, in legend order */

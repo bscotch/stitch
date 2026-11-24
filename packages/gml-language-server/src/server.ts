@@ -2,9 +2,9 @@
  * The language server: LSP handlers, document syncing, and scheduling of
  * analysis and diagnostics for one GameMaker project.
  */
+import { ids } from '@bscotch/gml-analysis';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
-  DidChangeConfigurationNotification,
   ErrorCodes,
   ResponseError,
   TextDocuments,
@@ -34,6 +34,7 @@ import {
 } from './features.ts';
 import {
   assetRenameEditsRequest,
+  globalNamesRequest,
   semanticTokenModifiers,
   semanticTokenTypes,
   statusNotification,
@@ -231,7 +232,9 @@ export class GmlLanguageServer {
 
   protected refreshSemanticTokens() {
     if (!this.canRefreshSemanticTokens) return;
-    void this.connection.languages.semanticTokens.refresh().catch(() => {});
+    void this.connection.languages.semanticTokens
+      .refresh()
+      .catch(() => undefined);
   }
 
   //#endregion
@@ -321,17 +324,14 @@ export class GmlLanguageServer {
     const { connection, documents } = this;
 
     connection.onInitialize((params) => this.initialize(params));
-    connection.onInitialized(() => {
-      void connection.client
-        .register(DidChangeConfigurationNotification.type, undefined)
-        .catch(() => {});
-      void this.load();
-    });
+    connection.onInitialized(() => void this.load());
     connection.onShutdown(() => this.dispose());
-    connection.onDidChangeConfiguration(
-      (params) =>
-        void this.changeSettings(params.settings as GmlServerSettings),
-    );
+    connection.onDidChangeConfiguration((params) => {
+      // (Some clients send `null` for settings they don't manage)
+      if (params.settings && typeof params.settings === 'object') {
+        void this.changeSettings(params.settings as GmlServerSettings);
+      }
+    });
 
     // Keep up with the editor's documents and the file system
     documents.onDidChangeContent((e) => {
@@ -441,6 +441,7 @@ export class GmlLanguageServer {
     connection.onRequest(symbolInfoRequest, (params: SymbolInfoParams) =>
       this.atPosition(params, null, symbolInfo),
     );
+    connection.onRequest(globalNamesRequest, () => this.globalNames());
     connection.onRequest(
       assetRenameEditsRequest,
       async (params: AssetRenameEditsParams) => {
@@ -449,6 +450,15 @@ export class GmlLanguageServer {
         return assetRenameEdits(session, params.name, params.newName);
       },
     );
+  }
+
+  protected async globalNames(): Promise<string[]> {
+    const session = await this.ready();
+    if (!session) return [];
+    return session.analyzer.table
+      .listMembers(ids.globalShape)
+      .filter((s) => !s.native && (s.def || s.kind === 'asset'))
+      .map((s) => s.name);
   }
 
   protected asRenameResult<T>(fn: () => T): T {

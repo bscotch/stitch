@@ -21,6 +21,7 @@ import {
 } from 'vscode-languageserver/node';
 import {
   assetRenameEditsRequest,
+  globalNamesRequest,
   statusNotification,
   symbolInfoRequest,
   type GmlServerInitializationOptions,
@@ -397,6 +398,14 @@ describe('GmlLanguageServer', function () {
     assert.equal(asset?.assetKind, 'objects');
   });
 
+  it("lists the project's global names", async function () {
+    const names: string[] =
+      await client.connection.sendRequest(globalNamesRequest);
+    assert.ok(names.includes('global_function'));
+    assert.ok(names.includes('o_parent'));
+    assert.ok(!names.includes('show_debug_message'));
+  });
+
   it('provides code edits for renaming an asset', async function () {
     const edit: WorkspaceEdit = await client.connection.sendRequest(
       assetRenameEditsRequest,
@@ -416,7 +425,9 @@ describe('GmlLanguageServer', function () {
     const file = 'scripts/Recovery/Recovery.gml';
     await client.open(file, 'var x = undeclared_thing_123;');
     await client.waitForDiagnostics(file, (p) =>
-      p.diagnostics.some((d) => String(d.message).includes('undeclared_thing_123')),
+      p.diagnostics.some((d) =>
+        String(d.message).includes('undeclared_thing_123'),
+      ),
     );
     await client.connection.sendNotification('textDocument/didChange', {
       textDocument: { uri: client.uri(file), version: 2 },
@@ -425,7 +436,9 @@ describe('GmlLanguageServer', function () {
     await client.waitForDiagnostics(
       file,
       (p) =>
-        !p.diagnostics.some((d) => String(d.message).includes('undeclared_thing_123')),
+        !p.diagnostics.some((d) =>
+          String(d.message).includes('undeclared_thing_123'),
+        ),
     );
     await client.connection.sendNotification('textDocument/didClose', {
       textDocument: { uri: client.uri(file) },
