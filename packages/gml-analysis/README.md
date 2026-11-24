@@ -30,6 +30,8 @@ analyzer.analyze(); // Re-checks only what's affected
 Analysis is built on the syntax trees from [`@bscotch/gml-syntax`](../gml-syntax/). It has four parts:
 
 1. **Natives** (`NativeTable`): the built-in functions, variables, constants, structs and enums, loaded from the runtime's `GmlSpec.xml` files. The base instance variables (`x`, `sprite_index`, ...) belong to a base shape that every object inherits from.
+
+   When a project's runtime can't be found, the spec bundled in `assets/GmlSpec.xml` is used instead. It comes from runtime 2026.1.0.28 (LTS 2026). To update it, copy `GmlSpec.xml` from the root of a newer runtime's folder. Newer spec files don't record their runtime version, so update this note too.
 2. **Declarations** (`declare`): a pure, per-file pass that finds what each file declares, without knowing anything else about the project:
    - global functions, constructors, enums, macros and globals;
    - likely instance variables;
