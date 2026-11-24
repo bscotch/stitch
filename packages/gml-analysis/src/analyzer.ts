@@ -15,6 +15,7 @@ import type { NativeTable } from './natives.ts';
 import {
   ids,
   type ShapeEntry,
+  type SymbolEntry,
   type SymbolKind,
   type SymbolTable,
 } from './symbols.ts';
@@ -212,6 +213,7 @@ export class GmlAnalyzer {
     this.dirty.clear();
     this._refIndex = undefined;
     this._memberNames = undefined;
+    this._globalsByFile = undefined;
     return { checked, passes };
   }
 
@@ -392,6 +394,23 @@ export class GmlAnalyzer {
       this._memberNames = names;
     }
     return this._memberNames;
+  }
+
+  protected _globalsByFile: Map<string, SymbolEntry[]> | undefined;
+
+  /** Project-declared members of the global scope, by the file declaring them */
+  globalsDeclaredIn(fileId: string): readonly SymbolEntry[] {
+    if (!this._globalsByFile) {
+      const index = new Map<string, SymbolEntry[]>();
+      for (const symbol of this.table.listMembers(ids.globalShape)) {
+        if (symbol.native || !symbol.def) continue;
+        let list = index.get(symbol.def.file);
+        if (!list) index.set(symbol.def.file, (list = []));
+        list.push(symbol);
+      }
+      this._globalsByFile = index;
+    }
+    return this._globalsByFile.get(fileId) ?? [];
   }
 
   protected _refIndex: Map<string, IndexedReference[]> | undefined;

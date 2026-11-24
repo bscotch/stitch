@@ -155,7 +155,7 @@ export function fileDiagnostics(
   // Missing docs on global declarations in this file
   const missingDocs = options.missingDocs ?? 'off';
   if (missingDocs !== 'off') {
-    for (const symbol of table.listMembers(ids.globalShape)) {
+    for (const symbol of analyzer.globalsDeclaredIn(fileId)) {
       if (symbol.native || symbol.def?.file !== fileId || symbol.description)
         continue;
       if (
@@ -175,7 +175,7 @@ export function fileDiagnostics(
   }
 
   // Unused global functions declared in this file
-  for (const symbol of table.listMembers(ids.globalShape)) {
+  for (const symbol of analyzer.globalsDeclaredIn(fileId)) {
     if (symbol.native || symbol.def?.file !== fileId) continue;
     if (symbol.kind !== 'function' && symbol.kind !== 'constructor') continue;
     const refs = analyzer.refIndex.get(symbol.id) ?? [];
