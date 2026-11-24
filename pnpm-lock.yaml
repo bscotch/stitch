@@ -93,6 +93,19 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
+  packages/gamemaker-project:
+    dependencies:
+      '@bscotch/stitch-config':
+        specifier: workspace:*
+        version: link:../config
+      '@bscotch/yy':
+        specifier: workspace:*
+        version: link:../yy
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
   packages/gcdata:
     dependencies:
       '@bscotch/cl2-string-server-shared':

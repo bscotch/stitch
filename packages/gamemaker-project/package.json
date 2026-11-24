@@ -1,0 +1,46 @@
+{
+  "name": "@bscotch/gamemaker-project",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Read and safely modify GameMaker project files (yyp/yy), with disk as the source of truth.",
+  "keywords": [
+    "gamemaker",
+    "yyp",
+    "yy",
+    "project",
+    "stitch"
+  ],
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/gamemaker-project#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/gamemaker-project"
+  },
+  "license": "MIT",
+  "author": "Adam Coster (https://www.bscotch.net/about#adam-coster)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "node ../../scripts/clean.mjs build dist \"*.tsbuildinfo\" \"**/*.tsbuildinfo\"",
+    "test": "node --test --test-concurrency=1 --test-timeout=120000 \"src/**/*.test.ts\"",
+    "watch": "tsc --build --watch"
+  },
+  "dependencies": {
+    "@bscotch/stitch-config": "workspace:*",
+    "@bscotch/yy": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
