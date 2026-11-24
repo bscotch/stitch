@@ -184,6 +184,31 @@ describe('GameMakerProject', function () {
       assert.equal((script.yy as any).parent.path, 'project.yyp');
     });
 
+    it('adopts assets whose files were written by another tool', async function () {
+      const project = await openSandbox();
+      const source = project.requireAsset('Script1', 'scripts');
+      const dir = path.join(project.dir, 'scripts', 'scr_adopted');
+      await fs.mkdir(dir, { recursive: true });
+      await fs.writeFile(path.join(dir, 'scr_adopted.gml'), '');
+      const yy = {
+        ...(source.yy as any),
+        name: 'scr_adopted',
+        '%Name': 'scr_adopted',
+      };
+      await fs.writeFile(path.join(dir, 'scr_adopted.yy'), JSON.stringify(yy));
+      const adopted = await project.adoptAsset(
+        'scripts',
+        'Adopted/Here/scr_adopted',
+      );
+      assert.equal(adopted.folder, 'Adopted/Here');
+      assert.ok(project.folders.includes('Adopted/Here'));
+      assert.ok(project.yyp.resources.some((r) => r.id.name === 'scr_adopted'));
+      await assertMatchesDisk(project, assert);
+      await assert.rejects(() =>
+        project.adoptAsset('scripts', 'scr_does_not_exist'),
+      );
+    });
+
     it('refuses invalid or taken names', async function () {
       const project = await openSandbox();
       await assert.rejects(() => project.createScript('Scripts/Script1'));

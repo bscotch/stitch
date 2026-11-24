@@ -368,6 +368,35 @@ export class GameMakerProject extends ProjectState {
   }
 
   /**
+   * Add an asset whose files already exist in the project folder (e.g. written
+   * by a sprite importer) to the yyp, and put it in a folder. Its yy file must
+   * be at the standard location: `<kind>/<name>/<name>.yy`.
+   * @param assetPath The asset-tree path, ending with the asset's name.
+   */
+  async adoptAsset<K extends AssetKind>(
+    kind: K,
+    assetPath: string,
+  ): Promise<Asset<K>> {
+    const { name, folder } = this.parseNewAssetPath(assetPath);
+    await this.transaction(async (tx) => {
+      const yyp = await tx.yyp();
+      assert(
+        !yyp.resources.some((r) => key(r.id.name) === key(name)),
+        `An asset named "${name}" already exists`,
+      );
+      const id = assetId(kind, name);
+      const yyPath = path.join(this.dir, id.path);
+      assert(await exists(yyPath), `No yy file found at ${yyPath}`);
+      const yy = await tx.yyAt(yyPath, kind);
+      (yy as { parent?: ParentRef }).parent = await tx.ensureFolder(folder);
+      tx.stageYy(yyPath, kind, yy);
+      yyp.resources.push({ id });
+      if (kind === 'rooms') yyp.RoomOrderNodes.push({ roomId: { ...id } });
+    });
+    return this.requireAsset(name, kind);
+  }
+
+  /**
    * Create a copy of an asset.
    * @param newAssetPath The asset-tree path for the copy, ending with its
    * name. If there's no folder, the copy goes in the source's folder.
@@ -784,8 +813,11 @@ export class GameMakerProject extends ProjectState {
 
   // --- Helpers ---
 
-  /** Apply a change to an asset's yy data, in a transaction */
-  protected async updateYy<K extends AssetKind>(
+  /**
+   * Change an asset's yy data, in a transaction. `change` gets the data as
+   * read fresh from disk, and mutates it.
+   */
+  async updateYy<K extends AssetKind>(
     asset: Asset<K>,
     change: (yy: YyData<K>) => void,
   ): Promise<void> {
