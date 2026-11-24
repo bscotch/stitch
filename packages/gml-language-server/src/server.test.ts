@@ -20,6 +20,7 @@ import {
   type WorkspaceEdit,
 } from 'vscode-languageserver/node';
 import {
+  activeDocumentNotification,
   assetRenameEditsRequest,
   globalNamesRequest,
   statusNotification,
@@ -349,6 +350,35 @@ describe('GmlLanguageServer', function () {
       { query: 'o_child1' },
     );
     assert.ok(assets.some((s) => s.name === 'o_child1'));
+  });
+
+  it('includes local variables of the active file only', async function () {
+    const active = 'scripts/Generics/Generics.gml';
+    const other = 'scripts/Withing/Withing.gml';
+    await client.open(active, 'var zz_active_local = 1;');
+    await client.open(other, 'var zz_other_local = 2;');
+    const search = async () =>
+      (
+        (await client.connection.sendRequest('workspace/symbol', {
+          query: 'zz_',
+        })) as SymbolInformation[]
+      ).map((s) => s.name);
+
+    // No active editor: no locals
+    assert.deepEqual(await search(), []);
+    await client.connection.sendNotification(activeDocumentNotification, {
+      uri: client.uri(active),
+    });
+    assert.deepEqual(await search(), ['zz_active_local']);
+    await client.connection.sendNotification(activeDocumentNotification, {
+      uri: null,
+    });
+    assert.deepEqual(await search(), []);
+    for (const file of [active, other]) {
+      await client.connection.sendNotification('textDocument/didClose', {
+        textDocument: { uri: client.uri(file) },
+      });
+    }
   });
 
   it('formats documents, but not ones with syntax errors', async function () {

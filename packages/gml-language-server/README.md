@@ -48,7 +48,7 @@ Settings can be changed later with `workspace/didChangeConfiguration`, sending t
   - `event_inherited()` goes to the same event in the nearest ancestor that has it.
   - Assets go to their main file (an object's Create event, a shader's fragment shader, a sound's audio file, ...).
 - **References and rename.** Built-ins and assets can't be renamed; the error says why.
-- **Semantic tokens and workspace symbols.** Workspace symbols include assets, and the local variables of open files.
+- **Semantic tokens and workspace symbols.** Workspace symbols include assets, and the local variables of the file in the active editor (which the client reports with `stitch/activeDocument`).
 - **Formatting** with `@bscotch/gml-formatter` (the `bscotch` preset by default, or `standard`). Files with syntax errors are left alone.
 
 ### Stitch messages
@@ -57,6 +57,8 @@ Settings can be changed later with `workspace/didChangeConfiguration`, sending t
 | --- | --- | --- |
 | `stitch/status` | server → client | Loading progress: `loading`, `ready` (with file count and time), or `error`. |
 | `stitch/symbolInfo` | client → server | Describe the symbol at a position (its kind, whether it's built-in, its asset kind and type). Clients use this for commands like "copy type" or "edit sprite". |
+| `stitch/activeDocument` | client → server | Which document is in the active editor (`uri: null` for none). Only its local variables are included in workspace symbols. |
+| `stitch/globalNames` | client → server | The names of the project's global symbols (not built-ins). |
 | `stitch/assetRenameEdits` | client → server | The code edits that rename every reference to an asset, as a `WorkspaceEdit`. The client renames the asset's files itself. |
 
 ## Design

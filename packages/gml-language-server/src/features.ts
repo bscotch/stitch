@@ -661,7 +661,8 @@ export function workspaceSymbols(
   session: ProjectSession,
   query: string,
   settings: GmlServerSettings,
-  openFileIds: string[],
+  /** The file in the active editor, whose local variables are included */
+  activeFileId?: string,
 ): SymbolInformation[] {
   query = query.trim();
   if (!query) return [];
@@ -727,9 +728,9 @@ export function workspaceSymbols(
     }));
   }
 
-  // Locals of open files
-  if (includeLocals) {
-    for (const fileId of openFileIds) {
+  // Locals of the active file
+  if (includeLocals && activeFileId) {
+    for (const fileId of [activeFileId]) {
       const shapes = new Set(
         session.analyzer.getAnalysis(fileId)?.scopes.map((s) => s.local),
       );

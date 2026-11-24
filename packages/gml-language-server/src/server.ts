@@ -33,12 +33,14 @@ import {
   workspaceSymbols,
 } from './features.ts';
 import {
+  activeDocumentNotification,
   assetRenameEditsRequest,
   globalNamesRequest,
   semanticTokenModifiers,
   semanticTokenTypes,
   statusNotification,
   symbolInfoRequest,
+  type ActiveDocumentParams,
   type AssetRenameEditsParams,
   type GmlServerInitializationOptions,
   type GmlServerSettings,
@@ -64,6 +66,8 @@ export class GmlLanguageServer {
   /** The diagnostics last published for each file (as JSON), by file id */
   protected readonly published = new Map<string, string>();
   protected canRefreshSemanticTokens = false;
+  /** The document in the client's active editor */
+  protected activeUri: string | null = null;
   protected disposed = false;
 
   constructor(connection: Connection) {
@@ -417,11 +421,12 @@ export class GmlLanguageServer {
     connection.onWorkspaceSymbol(async (params) => {
       const session = await this.ready();
       if (!session) return [];
+      const activeFile = this.activeUri ? uriToPath(this.activeUri) : undefined;
       return workspaceSymbols(
         session,
         params.query,
         this.settings,
-        this.openFileIds,
+        activeFile ? session.fileIdOf(activeFile) : undefined,
       );
     });
     connection.onDocumentFormatting((params) => {
@@ -440,6 +445,12 @@ export class GmlLanguageServer {
     // Stitch's own requests
     connection.onRequest(symbolInfoRequest, (params: SymbolInfoParams) =>
       this.atPosition(params, null, symbolInfo),
+    );
+    connection.onNotification(
+      activeDocumentNotification,
+      (params: ActiveDocumentParams) => {
+        this.activeUri = params.uri;
+      },
     );
     connection.onRequest(globalNamesRequest, () => this.globalNames());
     connection.onRequest(

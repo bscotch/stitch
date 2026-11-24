@@ -2,7 +2,9 @@
  * Starting the GML language server for a project, and talking to it.
  */
 import {
+  activeDocumentNotification,
   statusNotification,
+  type ActiveDocumentParams,
   type GmlServerInitializationOptions,
   type StatusParams,
 } from '@bscotch/gml-language-server/protocol';
@@ -95,7 +97,32 @@ export async function startLanguageClient(
   );
   showLoadProgress(client, project);
   await client.start();
+  ctx.subscriptions.push(trackActiveDocument(client, project));
   return client;
+}
+
+/**
+ * Tell the server which document is in the active editor, since workspace
+ * symbols include that file's local variables (and only that file's).
+ */
+function trackActiveDocument(
+  client: LanguageClient,
+  project: StitchProject,
+): vscode.Disposable {
+  let lastSent: string | null | undefined;
+  const send = (editor: vscode.TextEditor | undefined) => {
+    const document = editor?.document;
+    const uri =
+      document?.languageId === 'gml' && project.includesFile(document)
+        ? document.uri.toString()
+        : null;
+    if (uri === lastSent || !client.isRunning()) return;
+    lastSent = uri;
+    const params: ActiveDocumentParams = { uri };
+    void client.sendNotification(activeDocumentNotification, params);
+  };
+  send(vscode.window.activeTextEditor);
+  return vscode.window.onDidChangeActiveTextEditor(send);
 }
 
 /** Show the server's loading progress in a notification */

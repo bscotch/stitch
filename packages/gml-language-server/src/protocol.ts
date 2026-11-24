@@ -116,6 +116,15 @@ export interface AssetRenameEditsParams {
 }
 
 /**
+ * Client → server notification: which document is in the active editor
+ * (`uri: null` when none is). Workspace symbols include its local variables.
+ */
+export const activeDocumentNotification = 'stitch/activeDocument';
+export interface ActiveDocumentParams {
+  uri: string | null;
+}
+
+/**
  * Client → server request: the names of the global symbols the project
  * defines (functions, constructors, macros, enums, global variables and
  * assets; not built-ins). Returns `string[]`.
