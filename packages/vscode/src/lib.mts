@@ -117,7 +117,6 @@ export function activeTab(): Tab | undefined {
       };
     }
   }
-  console.log('UNKNOWN TAB', tab);
   return;
 }
 
