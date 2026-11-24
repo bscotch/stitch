@@ -47,6 +47,16 @@ jobs:
         run: pnpm run -r --filter=bscotch-stitch-vscode... build
 
       # PUBLISH
+      # Retried, since getting the OIDC token sometimes fails with a transient
+      # GitHub error (e.g. "504 Gateway Timeout"). With `--skip-duplicate`, a
+      # version that's already published counts as success, so retries (and
+      # re-runs) are safe even if an earlier attempt got as far as publishing.
       - name: Publish
         working-directory: packages/vscode
-        run: pnpm vscode:publish --oidc
+        run: |
+          for attempt in 1 2 3; do
+            pnpm vscode:publish --oidc --skip-duplicate && exit 0
+            echo "::warning::Publish attempt $attempt failed."
+            if [ "$attempt" -lt 3 ]; then sleep 60; fi
+          done
+          exit 1
