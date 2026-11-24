@@ -31,7 +31,9 @@ Stitch provides Intellisense (auto-complete, hovertext, function signature helpe
 
 ### 📛 Renaming
 
-Since Stitch knows about all of your project's symbols, it can also rename them for you! Use the hotkey (`F2` by default) or the right-click context menu to "Rename" a symbol. You can also rename assets via the tree view (while maintaining parent/child relationships). Stitch will auto-rename all references to the symbol, including in JSDoc comments.
+Since Stitch knows about all of your project's symbols, it can also rename them for you! Use the hotkey (`F2` by default) or the right-click context menu to "Rename" a symbol. Stitch will auto-rename all references to the symbol, including in JSDoc comments. (Built-in functions and variables can't be renamed.)
+
+Rename assets from the asset tree (`F2` there, too). Stitch updates the code that refers to the asset, and every reference to it in your project's other assets: parent objects, object sprites, room instances, collision events, and so on.
 
 > ⚠️ Note that it's possible to write GML code where references to the same symbol are not discoverable by static analysis tools like Stitch, so you may need to do some manual cleanup after renaming.
 
@@ -40,19 +42,19 @@ Since Stitch knows about all of your project's symbols, it can also rename them 
 GameMaker includes a type system called "Feather", which Stitch builds upon. Stitch does take a different overall approach and provides some extensions to the Feather type system and additional features that are not currently available in GameMaker.
 
 - **Go to Type Definition:** Stitch implements the "Go To Type Definition" command, letting you quickly get from a variable to e.g. the constructor for its type.
-- **Declarations FTW:** Unlike Feather, Stitch only infers types at the time an identifier is _declared_. When a variable is declared without assignment, Stitch will infer its type using the first assignment it sees, but that might result in surprises! For best results, use the `@type` JSDoc tag to specify the type of a variable when it is declared if there is any ambiguity. (Typescript and JavaScript+JSDoc programmers will be familiar with this approach.)
+- **Declared types win:** A variable's type is everything that gets assigned to it. For example, a variable assigned both a number and a string has the type `Real|String`. If that's not what you want, use the `@type` JSDoc tag to declare the variable's type, and Stitch will use that instead. (Typescript and JavaScript+JSDoc programmers will be familiar with this approach.)
 - **Union Type Support:** Feather technically supports "union" types (e.g. `String|Number`), but with limitations. Stitch tries to provide more robust support for union types, though this is a work in progress.
 - **`InstanceType<>`, `ObjectType<>`:** Stitch provides custom "Utility Types" that you can use to get one type from another. For example, `InstanceType<Asset.GMObject.my_object>` evaluates to `Id.Instance.my_object`.
 - **`@self` tag for `with` statements:** the `with` statement changes the scope of your code, but Feather does not provide a way to tell it what that scope should be. Stitch allows you to use the `@self` (or `@context`) tag before a `with` statement to specify its context for cases where inference is insufficient:
   ```js
-  /// @self {Struct.Player}
+  /// @self Struct.Player
   with (player) {
     // ...
   }
   ```
 - **`@self` support for Function types:** Normally the `@self` tag should have its type set to something with-able, like a Struct, Instance, or Object type. Stitch also allows using function types -- if that function is a constructor the constructed type will be used as the context, otherwise the function's context will be used.
   ```js
-  /// @self {Function.my_func}
+  /// @self Function.my_func
   function do_stuff() {
     // ...
   }
@@ -96,8 +98,50 @@ GameMaker includes a type system called "Feather", which Stitch builds upon. Sti
     added_variable = 42;
   }
   ```
-- **JSDoc Autocompletes:** Stitch provides autocompletes and syntax highlighting for Feather types within JSDoc comments.
+- **`@see` and `{@link}`:** Link to other symbols with `@see some_function` or an inline `{@link some_function}` (or `{@link some_function|label}`) in any description. Links work with go-to-definition and rename, and broken links are reported.
+- **JSDoc Autocompletes:** Stitch autocompletes JSDoc tags (after `@`) and Feather types (inside `{}`), and provides syntax highlighting for them.
 - **JSDoc helpers:** Stitch provides snippets for JSDoc tags, and context menus to copy the Feather type of a symbol to your clipboard.
+
+### 🩺 Diagnostics
+
+Stitch checks your code as you type, and reports problems in the editor and in the Problems panel:
+
+- syntax errors;
+- undeclared variables and globals;
+- calls with too few or too many arguments, and arguments of clearly the wrong type;
+- invalid operations, like calling a constructor without `new` or using an undefined enum member;
+- JSDoc problems, like unknown types and broken links;
+- unused global functions (shown faded out).
+
+Some extra checks are off by default. Turn them on (and choose how severe they are) in the settings:
+
+- `stitch.diagnostics.missingDocs`: global functions, constructors, enums, macros and global variables without doc comments.
+- `stitch.diagnostics.mixedOperators`: operators of different precedence mixed without parentheses, like `a || b && c`. GameMaker's operator precedence can vary by platform.
+- `stitch.diagnostics.argumentEvaluationOrder`: calls where more than one argument calls a function or has other side effects. GameMaker's argument evaluation order can vary by platform.
+
+You can also change the severity of argument-type problems (`stitch.diagnostics.argumentTypes`), skip diagnostics for whole folders of the asset tree (`stitch.diagnostics.suppressGroups`, or "Suppress Diagnostics" in a folder's context menu), and treat undeclared variables with certain prefixes as declared (`stitch.diagnostics.autoDeclaredGlobalsPatterns`).
+
+To silence specific diagnostics, use a comment:
+
+```js
+function called_dynamically() {} // @stitch-ignore: unused-function
+
+// @stitch-ignore-next-line: unused-function, missing-docs
+function another() {}
+```
+
+Leave off the `: ...` part to silence all diagnostics on that line.
+
+### 🧹 Formatting
+
+Stitch can format your GML files (with "Format Document", or on save if you have `editor.formatOnSave` enabled). The formatter only changes whitespace (plus, depending on the style, adding missing semicolons and parentheses around conditions), and never reflows your code: line breaks inside statements stay where you put them. Files with syntax errors are never formatted.
+
+Choose a style with `stitch.gml.format.preset`:
+
+- `bscotch` (the default) normalizes only widely-followed conventions (spacing, semicolons, indentation) and keeps the rest of your hand-formatting, for minimal changes.
+- `standard` fully normalizes your code's style.
+
+To turn GML formatting off, set `stitch.gml.format.enable` to `false`.
 
 ### 📄 Included Files ("Datafiles")
 
@@ -167,7 +211,13 @@ You can create new Scripts from the context menu of folder items.
 
 #### Objects
 
-You can create new Objects from the context menu of folder items, and you can create new Object events from the context menu of an Object's tree entry.
+You can create new Objects from the context menu of folder items, and you can create new Object events from the context menu of an Object's tree entry (or from the Inspector's "Events" section). This includes collision events: choose "Collision..." and then the other object. Events are listed with the same names as in the GameMaker IDE, like "Draw GUI" or "Collision (o_wall)".
+
+The Inspector in the Stitch sidebar shows the Object whose file you have open: its parent, sprite, events and children. You can change its parent and sprite from there, too.
+
+#### Rooms
+
+You can create new Rooms from the context menu of folder items. In the asset tree, a Room lists its object instances, in creation order. You can add instances (from the Room's context menu, or by dragging Objects onto the Room), remove them, and drag them to change their creation order.
 
 #### Shaders
 
@@ -179,15 +229,18 @@ You can create new Shaders from the context menu of folder items. This will gene
 
 Stitch provides the "Stitch: Import Assets" command via the palette, which lets you import an asset or a folder of assets from another GameMaker project.
 
-Since Stitch knows about all of your assets and code, it can identify possible conflicts during an import and let you choose how to resolve them.
+Since Stitch knows about all of your assets and code, it can find what the imported assets depend on: other assets referenced in their files (like an object's parent or sprite), and functions and other assets their code uses. You choose what to do if a dependency is missing from your project: stop the import, import anyway, or import the dependencies too.
 
 ### 🔍 Navigating your project
 
 Stitch provides a tree view that mirrors the project resources in the GameMaker IDE. You can open it by clicking the Stitch icon in the Activity Bar. From there you can filter and open resources, add new ones, reorganize things, and so on.
 
-Stitch also provides support for symbol search <kbd><kbd>Ctrl</kbd>+<kbd>T</kbd></kbd> via the command palette, which finds where all of your project's globals are defined. It will also pull up your asset and your object events, so you can find everything in one place.
+Stitch also provides support for symbol search <kbd><kbd>Ctrl</kbd>+<kbd>T</kbd></kbd> via the command palette, which finds where all of your project's globals are defined. It also finds your assets, the variables of your objects and constructors, and the local variables of the file you're editing, so you can find everything in one place. (See the `stitch.editing.workspaceSymbols.*` settings to change what's included.)
 
-Finally, the Intellisense features (go-to-definition, find-references, etc) make it easy to navigate the code in your project.
+Finally, the Intellisense features (go-to-definition, find-references, etc) make it easy to navigate the code in your project:
+
+- Go-to-definition on an asset takes you to its main file (e.g. an Object's Create event), and on `event_inherited()` it takes you to the same event in the nearest parent Object that has it.
+- With the cursor on a built-in function, <kbd>F12</kbd> opens its page in the GameMaker manual. On a Sprite or Sound, it opens the Sprite Editor or the sound file.
 
 ### 🦋 Syntax highlighting
 
@@ -345,7 +398,9 @@ Stitch supports projects that use recent versions of GameMaker, and makes no eff
 
 It may not support _very_ recent versions, since we only add support once we bump the version of GameMaker we're using for our games. We only do that when new versions pass all of our tests -- sometimes that doesn't happen for a while.
 
-Different GameMaker versions may have different features and built-in functions, constants, etc. This extension tries to infer the correct features for your project's GameMaker version, but it might give you incorrect autocompletes or surprising command outcomes if it cannot find a match!
+Different GameMaker versions may have different features and built-in functions, constants, etc. Stitch gets the built-ins from your project's runtime (its `GmlSpec.xml` files), wherever GameMaker or Stitch installed it. If it can't find the runtime, it uses a recent spec bundled with Stitch instead, which may give you incorrect autocompletes or diagnostics for your version!
+
+If your runtime is installed somewhere unusual (e.g. on a build machine), point Stitch to it with the `stitch.gameMaker.gmlSpecPaths` setting. Each entry can be a `GmlSpec.xml` file, a runtime folder, or a folder of runtimes.
 
 ## 📦 Recommended Extensions
 
@@ -362,10 +417,8 @@ The nice thing about being in the VSCode ecosystem is that there are TONS of oth
 To see the current list of known issues and feature requests, check out the [issues page](https://github.com/bscotch/stitch/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Akeyboard%3A+vscode%22).
 
 - 😕 **Code only**. Stitch leverages VSCode's power for editing _code_, and makes no attempt to provide visual editors for any type of GameMaker asset.
-- 😕 **Macro limitations**. The Stitch parser can only handle macros that are set to simple and complete expressions. There are no plans to extend the parser to support more complex macro usage.
-- 😕 **Variable Definitions** via the UI are not supported. Since instance variables can be defined in code (via Creation events) we don't also support defining them via the "Variable Definitions" feature of Objects. If for some reason you need that feature, please provide context on the [associated issue](https://github.com/bscotch/stitch/issues/205)!
-- 😕 **Extraneous Curlies**. To avoid some parser complexity, the Stitch parser does not support extraneous curly braces (`{}`). For example, if a random section of code (not following a `for`, `if`, etc) is wrapped in curlies, the parser will emit errors.
-- 😕 **IIFFEs**. Stitch does not support IIFEs (immediately-invoked function expressions), e.g. `(function(){})()`. This is due to parser complexity, but pull requests addressing this are welcome!
+- 😕 **Macro limitations**. Stitch understands macros whose value is a complete expression (like `#macro MAX_HP 100`). Macros that expand to something else, like part of a statement (`#macro IF_DEBUG if DEBUG`), are recognized, but Stitch can't tell what type they are or check how they're used.
+- 😕 **One project at a time**. Stitch loads one GameMaker project per VSCode window. Your project doesn't have to be at the root of your workspace: Stitch finds `.yyp` files anywhere in it. If it finds more than one project, it asks which one to load (see `stitch.assets.filters.allowedProjects` to narrow that list down).
 - 📝 **Stitch settings**. Stitch provides a number of settings that you can use to customize your experience. You can find them by opening the command palette and searching for "Preferences: Open Settings".
-- 🪵 **How to view logs**. If you run into trouble, you can view the extension's logs by opening the Output panel and selecting "Stitch" from the dropdown menu. These are particularly helpful for providing context when leaving bug reports!
-- ⁉️ **Unexpected projects appear in the tree view**. If you're seeing extra projects in your tree view, it's likely that these are being discovered inside `node_modules` or other normally-hidden locations. Stitch excludes the same files that your VSCode setup does via the `files.exclude` setting, so if you want to prevent those projects from appearing add their parent folders to your excluded files.
+- 🪵 **How to view logs**. If you run into trouble, you can view the extension's logs by opening the Output panel and selecting "Stitch" from the dropdown menu. Logs about code analysis (Intellisense, diagnostics, formatting) are under "Stitch Language Server". These are particularly helpful for providing context when leaving bug reports!
+- ⁉️ **Unexpected projects are offered**. Stitch skips prefabs (which GameMaker stores as projects in a project's `prefabs/` folder; set `stitch.projects.includePrefabs` to include them) and any other `.yyp` files inside another project's folder. If you're still offered extra projects, they're likely being discovered inside `node_modules` or other normally-hidden locations. Stitch excludes the same files that your VSCode setup does via the `files.exclude` setting, so if you want to prevent those projects from appearing add their parent folders to your excluded files.
