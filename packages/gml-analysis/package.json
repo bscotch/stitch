@@ -1,0 +1,49 @@
+{
+  "name": "@bscotch/gml-analysis",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Semantic analysis for GML (GameMaker Language): symbols, types, references, and diagnostics, computed incrementally.",
+  "keywords": [
+    "gml",
+    "gamemaker",
+    "analysis",
+    "types",
+    "language server",
+    "stitch"
+  ],
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/gml-analysis#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/gml-analysis"
+  },
+  "license": "MIT",
+  "author": "Adam Coster (https://www.bscotch.net/about#adam-coster)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "node ../../scripts/clean.mjs build dist \"*.tsbuildinfo\" \"**/*.tsbuildinfo\"",
+    "test": "node --test --test-concurrency=1 --test-timeout=300000 \"src/**/*.test.ts\"",
+    "watch": "tsc --build --watch"
+  },
+  "dependencies": {
+    "@bscotch/gamemaker-project": "workspace:*",
+    "@bscotch/gml-syntax": "workspace:*",
+    "fast-xml-parser": "^5.12.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

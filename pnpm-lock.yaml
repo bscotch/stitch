@@ -128,6 +128,25 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
+  packages/gml-analysis:
+    dependencies:
+      '@bscotch/gamemaker-project':
+        specifier: workspace:*
+        version: link:../gamemaker-project
+      '@bscotch/gml-syntax':
+        specifier: workspace:*
+        version: link:../gml-syntax
+      fast-xml-parser:
+        specifier: ^5.12.1
+        version: 5.12.1
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
   packages/gml-formatter:
     dependencies:
       '@bscotch/gml-syntax':

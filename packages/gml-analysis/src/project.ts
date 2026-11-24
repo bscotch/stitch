@@ -1,0 +1,120 @@
+/**
+ * Analyzing a `@bscotch/gamemaker-project` project.
+ */
+import type { GameMakerProject } from '@bscotch/gamemaker-project';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {
+  GmlAnalyzer,
+  type AnalyzerOptions,
+  type ExtensionInfo,
+  type ProjectInfo,
+} from './analyzer.ts';
+import type { SourceFile } from './file.ts';
+import { NativeTable } from './natives.ts';
+import { fallbackGmlSpecPath, readGmlSpec, type GmlSpec } from './spec.ts';
+
+/** Describe a project's GML files for the analyzer */
+export function listSourceFiles(project: GameMakerProject): SourceFile[] {
+  const files: SourceFile[] = [];
+  const rel = (file: string) =>
+    path.relative(project.dir, file).split(path.sep).join('/');
+  for (const asset of project.assets) {
+    if (asset.isKind('scripts')) {
+      for (const file of asset.gmlFiles) {
+        files.push({ id: rel(file), kind: 'script', asset: asset.name });
+      }
+    } else if (asset.isKind('objects')) {
+      for (const file of asset.gmlFiles) {
+        files.push({
+          id: rel(file),
+          kind: 'objectEvent',
+          asset: asset.name,
+          event: path.basename(file, '.gml'),
+        });
+      }
+    } else if (asset.isKind('rooms')) {
+      const instances = new Map(
+        asset.roomInstances.map((i) => [i.creationCodeFile?.toLowerCase(), i]),
+      );
+      for (const file of asset.gmlFiles) {
+        const instance = instances.get(file.toLowerCase());
+        files.push(
+          instance
+            ? {
+                id: rel(file),
+                kind: 'instanceCreation',
+                asset: asset.name,
+                object: instance.objectName,
+              }
+            : { id: rel(file), kind: 'roomCreation', asset: asset.name },
+        );
+      }
+    }
+  }
+  return files;
+}
+
+/** Describe a project's assets for the analyzer */
+export function projectInfo(project: GameMakerProject): ProjectInfo {
+  const extensions: ExtensionInfo[] = [];
+  for (const asset of project.listAssets('extensions')) {
+    const yy = asset.yy as {
+      files?: {
+        constants?: { name: string; value: string; hidden?: boolean }[];
+        functions?: {
+          name: string;
+          externalName: string;
+          args: number[];
+          returnType: number;
+          help?: string;
+          hidden?: boolean;
+        }[];
+      }[];
+    };
+    for (const file of yy.files ?? []) {
+      extensions.push({
+        constants: (file.constants ?? []).filter((c) => !c.hidden),
+        functions: (file.functions ?? []).filter((f) => !f.hidden),
+      });
+    }
+  }
+  return {
+    assets: project.listAssets().map((a) => ({
+      name: a.name,
+      kind: a.kind,
+      parent: a.parentName,
+    })),
+    audioGroups: project.audioGroups.map((g) => g.name),
+    extensions,
+  };
+}
+
+export interface AnalyzeProjectOptions extends AnalyzerOptions {
+  /** GmlSpec files to load natives from (default: the bundled spec) */
+  specs?: (string | URL)[] | GmlSpec[];
+}
+
+/** Load natives, read every GML file, and analyze the project */
+export async function analyzeProject(
+  project: GameMakerProject,
+  options: AnalyzeProjectOptions = {},
+): Promise<GmlAnalyzer> {
+  const specSources = options.specs?.length
+    ? options.specs
+    : [fallbackGmlSpecPath];
+  const specs = await Promise.all(
+    specSources.map((s) =>
+      typeof s === 'string' || s instanceof URL ? readGmlSpec(s) : s,
+    ),
+  );
+  const analyzer = new GmlAnalyzer(new NativeTable(specs), options);
+  analyzer.setProject(projectInfo(project));
+  const files = listSourceFiles(project);
+  const texts = await Promise.all(
+    files.map((f) => fs.readFile(path.join(project.dir, f.id), 'utf8')),
+  );
+  files.forEach((file, i) => analyzer.setFile(file, texts[i]));
+  analyzer.analyze();
+  return analyzer;
+}
