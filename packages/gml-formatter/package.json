@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/gml-formatter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A safe, configurable code formatter for GML (GameMaker Language) that preserves your line breaks.",
   "keywords": [
     "gml",

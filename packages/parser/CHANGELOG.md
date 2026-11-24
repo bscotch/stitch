@@ -1,5 +1,15 @@
 # @bscotch/gml-parser Changelog
 
+## 3.0.0 (2026-11-24)
+
+### Breaking Changes
+
+- @bscotch/gml-parser is now a rewrite that does semantic analysis of GameMaker projects' GML code (symbols, types, references, diagnostics and editor queries, updated incrementally as files change), with a new API. Parsing GML, managing project files, formatting and editor features now come from the new @bscotch/gml-syntax, @bscotch/gamemaker-project, @bscotch/gml-formatter and @bscotch/gml-language-server packages.
+
+### Fixes
+
+- Removing an asset now also removes its instance type, and project-load progress is now reported in correctly-sized increments.
+
 ## 2.0.0 (2026-11-23)
 
 ### Breaking Changes

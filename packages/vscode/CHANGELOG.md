@@ -1,5 +1,17 @@
 # Stitch Changelog
 
+## 2.1.0 (2026-11-24)
+
+### Features
+
+- The fallback GmlSpec used by gml-analysis (and so by Stitch for VSCode) when a project's runtime can't be found is now from GameMaker runtime 2026.1.0.28 (LTS 2026), and an unused copy of an old GmlSpec was removed from the VSCode extension's samples.
+- Stitch for VSCode now gets its GML language features from the new GML language server, and manages project files with @bscotch/gamemaker-project instead of @bscotch/gml-parser. Projects no longer need to be at the root of the workspace, prefabs and other nested .yyp files are no longer offered as projects (unless stitch.projects.includePrefabs is enabled), collision events can be created from the asset tree and are labeled with their object, GML files can be formatted (stitch.gml.format.*), and there are new settings for extra GmlSpec locations (stitch.gameMaker.gmlSpecPaths) and for the optional missing-docs, mixed-operator, argument-evaluation-order and argument-type diagnostics.
+- The gamemaker-project package can now tell real projects apart from prefabs and nested .yyp files found by a search (classifyYypPaths), and gml-analysis can list the dependencies between a project's assets found in its code (listCodeDependencies), for importing assets between projects.
+
+### Fixes
+
+- Workspace symbol search in Stitch for VSCode again includes only the local variables of the file in the active editor, rather than those of every open document.
+
 ## 2.0.0 (2026-11-21)
 
 ### Breaking Changes

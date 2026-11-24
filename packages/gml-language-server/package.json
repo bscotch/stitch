@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/gml-language-server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "A language server for GML (GameMaker Language): diagnostics, navigation, completion, rename, formatting, and more for GameMaker projects.",
   "keywords": [

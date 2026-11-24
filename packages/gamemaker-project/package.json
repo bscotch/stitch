@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/gamemaker-project",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Read and safely modify GameMaker project files (yyp/yy), with disk as the source of truth.",
   "keywords": [
     "gamemaker",
