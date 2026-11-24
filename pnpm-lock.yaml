@@ -115,6 +115,16 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
+  packages/gml-formatter:
+    dependencies:
+      '@bscotch/gml-syntax':
+        specifier: workspace:*
+        version: link:../gml-syntax
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
   packages/gml-syntax:
     devDependencies:
       typescript:
