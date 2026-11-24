@@ -21,6 +21,7 @@ export {
 export { NativeTable, parseTypeString } from './natives.ts';
 export {
   analyzeProject,
+  listCodeDependencies,
   listSourceFiles,
   projectInfo,
   type AnalyzeProjectOptions,

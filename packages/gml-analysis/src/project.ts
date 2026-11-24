@@ -1,7 +1,10 @@
 /**
  * Analyzing a `@bscotch/gamemaker-project` project.
  */
-import type { GameMakerProject } from '@bscotch/gamemaker-project';
+import type {
+  AssetDependency,
+  GameMakerProject,
+} from '@bscotch/gamemaker-project';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {
@@ -11,6 +14,7 @@ import {
   type ProjectInfo,
 } from './analyzer.ts';
 import type { SourceFile } from './file.ts';
+import { ids } from './symbols.ts';
 import { NativeTable } from './natives.ts';
 import { fallbackGmlSpecPath, readGmlSpec, type GmlSpec } from './spec.ts';
 
@@ -156,4 +160,48 @@ export async function analyzeProject(
   files.forEach((file, i) => analyzer.setFile(file, texts[i]));
   analyzer.analyze();
   return analyzer;
+}
+
+/**
+ * The dependencies between a project's assets found in its code: each asset
+ * whose code refers to a global symbol declared in another asset's code, or
+ * to another asset by name. For `importAssets` (in
+ * `@bscotch/gamemaker-project`), which finds the other kinds of dependencies
+ * itself.
+ */
+export function listCodeDependencies(
+  project: GameMakerProject,
+  analyzer: GmlAnalyzer,
+): AssetDependency[] {
+  const assetOfFile = new Map(
+    listSourceFiles(project).map((f) => [f.id, f.asset] as const),
+  );
+  const table = analyzer.table;
+  const found = new Map<string, AssetDependency>();
+  for (const fileId of analyzer.fileIds) {
+    const requiredBy = project.getAsset(assetOfFile.get(fileId));
+    if (!requiredBy) continue;
+    for (const ref of analyzer.getAnalysis(fileId)?.refs ?? []) {
+      if (ref.keyword) continue;
+      const symbol = table.getSymbol(ref.symbol);
+      if (!symbol || symbol.native || symbol.owner !== ids.globalShape) {
+        continue;
+      }
+      const requirement = project.getAsset(
+        symbol.kind === 'asset'
+          ? symbol.name
+          : assetOfFile.get(symbol.def?.file ?? ''),
+      );
+      if (!requirement || requirement === requiredBy) continue;
+      const key = `${requiredBy.name}/${requirement.name}/${symbol.name}`;
+      if (found.has(key)) continue;
+      found.set(key, {
+        relationship: 'code',
+        requiredBy: { name: requiredBy.name, kind: requiredBy.kind },
+        requirement: { name: requirement.name, kind: requirement.kind },
+        symbol: symbol.name,
+      });
+    }
+  }
+  return [...found.values()];
 }

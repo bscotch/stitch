@@ -6,6 +6,7 @@ export {
   type ObjectEventFile,
   type RoomInstanceInfo,
 } from './asset.ts';
+export * from './discovery.ts';
 export * from './import.ts';
 export * from './objectEvents.ts';
 export { GameMakerProject, type DeleteAssetResult } from './project.ts';
