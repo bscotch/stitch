@@ -128,25 +128,6 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
-  packages/gml-analysis:
-    dependencies:
-      '@bscotch/gamemaker-project':
-        specifier: workspace:*
-        version: link:../gamemaker-project
-      '@bscotch/gml-syntax':
-        specifier: workspace:*
-        version: link:../gml-syntax
-      fast-xml-parser:
-        specifier: ^5.12.1
-        version: 5.12.1
-      zod:
-        specifier: ^4.6.7
-        version: 4.6.7
-    devDependencies:
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-
   packages/gml-formatter:
     dependencies:
       '@bscotch/gml-syntax':
@@ -167,7 +148,7 @@ importers:
         version: link:../gml-formatter
       '@bscotch/gml-parser':
         specifier: workspace:*
-        version: link:../gml-analysis
+        version: link:../parser
       '@bscotch/gml-syntax':
         specifier: workspace:*
         version: link:../gml-syntax
@@ -196,6 +177,25 @@ importers:
       '@bscotch/yy':
         specifier: workspace:*
         version: link:../yy
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/parser:
+    dependencies:
+      '@bscotch/gamemaker-project':
+        specifier: workspace:*
+        version: link:../gamemaker-project
+      '@bscotch/gml-syntax':
+        specifier: workspace:*
+        version: link:../gml-syntax
+      fast-xml-parser:
+        specifier: ^5.12.1
+        version: 5.12.1
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -329,7 +329,7 @@ importers:
         version: link:../gml-language-server
       '@bscotch/gml-parser':
         specifier: workspace:*
-        version: link:../gml-analysis
+        version: link:../parser
       '@bscotch/pathy':
         specifier: ^2.12.1
         version: 2.12.1

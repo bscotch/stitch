@@ -14,11 +14,11 @@
     "language server",
     "stitch"
   ],
-  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/gml-analysis#readme",
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/parser#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/bscotch/stitch.git",
-    "directory": "packages/gml-analysis"
+    "directory": "packages/parser"
   },
   "license": "MIT",
   "author": "Adam Coster (https://www.bscotch.net/about#adam-coster)",

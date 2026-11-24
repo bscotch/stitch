@@ -16,9 +16,9 @@ import { fileDiagnostics } from './diagnostics.ts';
 import { analyzeProject } from './project.ts';
 import { GmlQueries } from './queries.ts';
 
-const projectDir = new URL('../../parser/samples/project', import.meta.url);
+const projectDir = new URL('../samples/project', import.meta.url);
 const snapshotFile = new URL(
-  '../../parser/snapshots/project.json',
+  '../snapshots/project.json',
   import.meta.url,
 );
 

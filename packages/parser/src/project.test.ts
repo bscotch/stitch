@@ -6,7 +6,7 @@ import { analyzeProject, listCodeDependencies } from './project.ts';
 
 const sampleProject = path.resolve(
   import.meta.dirname,
-  '../../parser/samples/project',
+  '../samples/project',
 );
 
 describe('listCodeDependencies', function () {
