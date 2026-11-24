@@ -1738,8 +1738,7 @@ export class Checker {
         );
         return [{ kind: 'Struct', name: 'global' }];
       }
-      const named = this.table.getShape(frame.selfShape)?.symbol;
-      if (named) this.ref(node, named);
+      // (`self` isn't a reference by name, so it isn't recorded as one)
       return frame.self ? [frame.self] : [T.any];
     }
     if (name === 'other') {
@@ -1754,8 +1753,6 @@ export class Checker {
         );
         return [{ kind: 'Struct', name: 'global' }];
       }
-      const named = this.table.getShape(other.selfShape)?.symbol;
-      if (named) this.ref(node, named);
       return other.self ? [other.self] : [T.any];
     }
     if (name === 'global') {

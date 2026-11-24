@@ -23,7 +23,16 @@ export {
   projectInfo,
   type AnalyzeProjectOptions,
 } from './project.ts';
-export { GmlQueries } from './queries.ts';
+export {
+  GmlQueries,
+  type HoverInfo,
+  type SemanticToken,
+  type SemanticTokenModifier,
+  type SemanticTokenType,
+  type TextEdit,
+  type WorkspaceSymbol,
+} from './queries.ts';
 export * from './spec.ts';
 export * from './symbols.ts';
+export { ProjectTable, type ChangeSet, type FileProvides } from './table.ts';
 export * from './types.ts';
