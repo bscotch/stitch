@@ -1,0 +1,57 @@
+{
+  "name": "@bscotch/gml-language-server",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A language server for GML (GameMaker Language): diagnostics, navigation, completion, rename, formatting, and more for GameMaker projects.",
+  "keywords": [
+    "gml",
+    "gamemaker",
+    "language server",
+    "lsp",
+    "stitch"
+  ],
+  "homepage": "https://github.com/bscotch/stitch/tree/develop/packages/gml-language-server#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bscotch/stitch.git",
+    "directory": "packages/gml-language-server"
+  },
+  "license": "MIT",
+  "author": "Adam Coster (https://www.bscotch.net/about#adam-coster)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./protocol": {
+      "types": "./dist/protocol.d.ts",
+      "import": "./dist/protocol.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "gml-language-server": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "node ../../scripts/clean.mjs build dist \"*.tsbuildinfo\" \"**/*.tsbuildinfo\"",
+    "test": "node --test --test-concurrency=1 --test-timeout=300000 \"src/**/*.test.ts\"",
+    "watch": "tsc --build --watch"
+  },
+  "dependencies": {
+    "@bscotch/gamemaker-project": "workspace:*",
+    "@bscotch/gml-analysis": "workspace:*",
+    "@bscotch/gml-formatter": "workspace:*",
+    "@bscotch/gml-syntax": "workspace:*",
+    "vscode-languageserver": "11.0.0",
+    "vscode-languageserver-textdocument": "1.0.16"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
