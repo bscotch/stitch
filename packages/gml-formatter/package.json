@@ -1,7 +1,6 @@
 {
   "name": "@bscotch/gml-formatter",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
   "description": "A safe, configurable code formatter for GML (GameMaker Language) that preserves your line breaks.",
   "keywords": [
     "gml",
@@ -38,6 +37,9 @@
   },
   "devDependencies": {
     "typescript": "6.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": ">=22"

@@ -1,8 +1,7 @@
 # @bscotch/gml-language-server
 
-A [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) server for GML (GameMaker Language). It provides editor features for a GameMaker project, built on [`@bscotch/gml-analysis`](../gml-analysis/), [`@bscotch/gml-formatter`](../gml-formatter/) and [`@bscotch/gamemaker-project`](../gamemaker-project/).
+A [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) server for GML (GameMaker Language). It provides editor features for a GameMaker project, built on [`@bscotch/gml-parser`](../parser/), [`@bscotch/gml-formatter`](../gml-formatter/) and [`@bscotch/gamemaker-project`](../gamemaker-project/).
 
-> 🚧 This package is part of the in-progress [GML parser overhaul](../parser/UPDATE.md). It is not yet published.
 
 ## Usage
 
@@ -31,7 +30,7 @@ The client must pass the project's `.yyp` path in `initializationOptions` (see `
 }
 ```
 
-`specs` lists the `GmlSpec.xml` files that define GameMaker's built-in functions and constants. Usually these come from the project's runtime. Without them, the server uses the spec bundled with `gml-analysis`.
+`specs` lists the `GmlSpec.xml` files that define GameMaker's built-in functions and constants. Usually these come from the project's runtime. Without them, the server uses the spec bundled with `@bscotch/gml-parser`.
 
 Settings can be changed later with `workspace/didChangeConfiguration`, sending the same `GmlServerSettings` object as `settings`.
 

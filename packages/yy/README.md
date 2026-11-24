@@ -55,7 +55,7 @@ import { setProjectVersion } from '@bscotch/yy';
 await setProjectVersion('my/project.yyp', '1.2.3.4');
 ```
 
-Ensure a script exists, for example to update a script containing version information as part of a build pipeline (note that the [`@bscotch/gml-parser](https://www.npmjs.com/package/@bscotch/gml-parser) project is more full-featured for managing assets):
+Ensure a script exists, for example to update a script containing version information as part of a build pipeline (note that [`@bscotch/gamemaker-project`](https://www.npmjs.com/package/@bscotch/gamemaker-project) is more full-featured for managing assets):
 
 ```ts
 import { addScript } from '@bscotch/yy';

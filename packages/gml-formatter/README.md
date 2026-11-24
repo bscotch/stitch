@@ -2,7 +2,6 @@
 
 A safe, configurable code formatter for GML (GameMaker Language).
 
-> 🚧 This package is part of the in-progress [GML parser overhaul](../parser/UPDATE.md). It is not yet published.
 
 ```ts
 import { formatGml } from '@bscotch/gml-formatter';

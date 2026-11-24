@@ -16,7 +16,7 @@ import {
   readGmlSpec,
   type AnalyzeResult,
   type SourceFile,
-} from '@bscotch/gml-analysis';
+} from '@bscotch/gml-parser';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 

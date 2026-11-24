@@ -38,7 +38,7 @@
     "vscode:prepublish": "pnpm build",
     "vscode:publish": "vsce publish --pre-release --no-dependencies --githubBranch develop",
     "watch": "pnpm run --parallel \"/^watch:/\"",
-    "watch:extension": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css,svelte --watch src --watch syntaxes --watch ../gml-language-server/dist --watch ../gml-analysis/dist --watch ../gamemaker-project/dist --watch ../sprite-source/dist --watch ../launcher/dist --ignore src/icons.types.mts --exec \"pnpm build:extension\"",
+    "watch:extension": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css,svelte --watch src --watch syntaxes --watch ../gml-language-server/dist --watch node_modules/@bscotch/gml-parser/dist --watch ../gamemaker-project/dist --watch ../sprite-source/dist --watch ../launcher/dist --ignore src/icons.types.mts --exec \"pnpm build:extension\"",
     "watch:grammar": "nodemon --delay 1 --watch syntaxes/gml.tmLanguage.yaml --exec \"pnpm build:grammar\"",
     "watch:webviews": "nodemon --delay 1 -e js,cjs,mjs,ts,mts,cts,yaml,html,css,svelte --watch webviews/src --watch webviews-legacy --exec \"pnpm build:webviews\""
   },
@@ -1228,8 +1228,8 @@
     "@bscotch/emitter": "0.2.1",
     "@bscotch/gamemaker-project": "workspace:*",
     "@bscotch/gamemaker-releases": "workspace:*",
-    "@bscotch/gml-analysis": "workspace:*",
     "@bscotch/gml-language-server": "workspace:*",
+    "@bscotch/gml-parser": "workspace:*",
     "@bscotch/pathy": "^2.12.1",
     "@bscotch/sprite-source": "workspace:*",
     "@bscotch/stitch-config": "workspace:*",

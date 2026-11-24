@@ -1,8 +1,14 @@
-# @bscotch/gml-analysis
+# @bscotch/gml-parser
 
-Semantic analysis for GML (GameMaker Language): symbols, types, references and diagnostics, kept up to date incrementally as files change.
+Semantic analysis for GML (GameMaker Language): symbols, types, references and diagnostics for a GameMaker project's code, kept up to date incrementally as files change.
 
-> 🚧 This package is part of the in-progress [GML parser overhaul](../parser/UPDATE.md). It is not yet published.
+> **Upgrading from v2?** Version 3 is a rewrite, with a different API. Its jobs are now split across packages:
+> - parsing GML into a lossless syntax tree: [`@bscotch/gml-syntax`](../gml-syntax/);
+> - reading and changing project files (assets, folders, events, ...): [`@bscotch/gamemaker-project`](../gamemaker-project/);
+> - formatting: [`@bscotch/gml-formatter`](../gml-formatter/);
+> - editor features over LSP: [`@bscotch/gml-language-server`](../gml-language-server/).
+>
+> This package does what's left: semantic analysis. See [Compared with v2](#compared-with-v2) for behavior changes.
 
 ```ts
 import { GameMakerProject } from '@bscotch/gamemaker-project';
@@ -10,7 +16,7 @@ import {
   analyzeProject,
   fileDiagnostics,
   GmlQueries,
-} from '@bscotch/gml-analysis';
+} from '@bscotch/gml-parser';
 
 const project = await GameMakerProject.open('path/to/project');
 const analyzer = await analyzeProject(project, { specs: [pathToGmlSpecXml] });
@@ -97,6 +103,20 @@ These follow the GameMaker manual's pages on [structs](https://manual.gamemaker.
 - `@see` and `{@link}` targets are resolved to symbols (for go-to-definition and rename) and reported if broken.
 - Docs attach to the code that follows them, and to a function declaration even across blank lines.
 
+**Types**
+
+Types follow GameMaker's Feather type system, with some extensions. Feather's type system isn't documented, so this is based on how Feather and the GmlSpec files use it.
+
+- Base types: `Any`, `Array`, `Asset`, `Bool`, `Constant`, `Function`, `Id`, `Pointer`, `Real`, `String`, `Struct` and `Undefined`.
+- Base types can have *specifiers* (named subtypes): `Id.Instance`, `Asset.GMObject`, `Asset.GMObject.o_player`, `Id.Instance.o_player`, `Struct.MyStruct`, ...
+- Container types can have item types: `Array<Real>`, `Id.DsMap<String>`, `Struct<Real>` (a struct whose values are all `Real`).
+- Unions: `Real|String`.
+- Stitch extensions:
+  - `Enum.MyEnum` and `EnumMember` for enums and their members;
+  - `Unknown` (couldn't be inferred) and `Never` (no value, e.g. what a function that always throws returns);
+  - generics, with `@template`.
+- Doc comments may use any of the spellings Feather accepts (unions with `|`, `,` or `OR`, and items in `<>` or `[]`). Types are shown in one normalized spelling.
+
 **Other**
 
 - Room and instance creation code are analyzed, with the right `self`.
@@ -130,17 +150,17 @@ function called_by_pragma() {} // @stitch-ignore: unused-function
 function another() {}
 ```
 
-## Compared with `@bscotch/gml-parser`
+## Compared with v2
 
-`src/snapshot.test.ts` compares this package's analysis of `../parser/samples/project` against the golden snapshot recorded from the old parser. Every reference resolves to the same declaration, and completions are identical. `node scripts/compare-snapshot.ts` prints the remaining (intended) differences, which include:
+Version 2 of this package was a single, all-in-one parser and project model. `src/snapshot.test.ts` compares this version's analysis of `samples/project` against a golden snapshot recorded from v2 (`snapshots/project.json`). Every reference resolves to the same declaration, and completions are identical. `node scripts/compare-snapshot.ts` prints the remaining (intended) differences, which include:
 
 - References from doc types (`@param {Struct.Foo}`) cover just the name, which is better for rename.
 - Documented-only parameters (for functions that use `argument[n]`) are declared, and appear in signatures but not as variables.
 - Methods called from inside `method()` and constructor bodies now resolve, so they get signature help.
 - `throw` is treated as the keyword it is.
-- `self` and `other` are recorded as references to their object or constructor (for hover and go-to-definition), but marked as not being references by name. So renaming a constructor leaves them alone, where the old parser relied on checking each reference's text.
+- `self` and `other` are recorded as references to their object or constructor (for hover and go-to-definition), but marked as not being references by name. So renaming a constructor leaves them alone, where v2 relied on checking each reference's text.
 
-On two large real projects, the old parser's diagnostics included many false positives. The new analysis reports fewer of most kinds, mainly because of the script-function and `other` semantics above.
+On two large real projects, v2's diagnostics included many false positives. This version reports fewer of most kinds, mainly because of the script-function and `other` semantics above.
 
 ## Queries
 

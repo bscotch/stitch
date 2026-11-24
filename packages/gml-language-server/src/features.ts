@@ -13,7 +13,7 @@ import {
   type Location as GmlLocation,
   type SymbolEntry,
   type Type,
-} from '@bscotch/gml-analysis';
+} from '@bscotch/gml-parser';
 import { formatGml, GmlFormatError } from '@bscotch/gml-formatter';
 import { LineIndex } from '@bscotch/gml-syntax';
 import { readFileSync } from 'node:fs';

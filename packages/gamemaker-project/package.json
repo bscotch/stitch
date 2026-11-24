@@ -1,7 +1,6 @@
 {
   "name": "@bscotch/gamemaker-project",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
   "description": "Read and safely modify GameMaker project files (yyp/yy), with disk as the source of truth.",
   "keywords": [
     "gamemaker",
@@ -39,6 +38,9 @@
   },
   "devDependencies": {
     "typescript": "6.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": ">=22"

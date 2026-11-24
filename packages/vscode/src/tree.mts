@@ -8,7 +8,7 @@ import {
   type ImportOptions,
   type ObjectEvent,
 } from '@bscotch/gamemaker-project';
-import { analyzeProject, listCodeDependencies } from '@bscotch/gml-analysis';
+import { analyzeProject, listCodeDependencies } from '@bscotch/gml-parser';
 import { globalNamesRequest } from '@bscotch/gml-language-server/protocol';
 import { pathy } from '@bscotch/pathy';
 import { applySpriteAction, SpriteDir } from '@bscotch/sprite-source';

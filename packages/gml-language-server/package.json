@@ -1,7 +1,6 @@
 {
   "name": "@bscotch/gml-language-server",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
   "description": "A language server for GML (GameMaker Language): diagnostics, navigation, completion, rename, formatting, and more for GameMaker projects.",
   "keywords": [
     "gml",
@@ -42,14 +41,17 @@
   },
   "dependencies": {
     "@bscotch/gamemaker-project": "workspace:*",
-    "@bscotch/gml-analysis": "workspace:*",
     "@bscotch/gml-formatter": "workspace:*",
+    "@bscotch/gml-parser": "workspace:*",
     "@bscotch/gml-syntax": "workspace:*",
     "vscode-languageserver": "11.0.0",
     "vscode-languageserver-textdocument": "1.0.16"
   },
   "devDependencies": {
     "typescript": "6.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": ">=22"

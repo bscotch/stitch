@@ -2,6 +2,8 @@ import { pathy } from '@bscotch/pathy';
 import esbuild from 'esbuild';
 import crypto from 'node:crypto';
 import fsp from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 try {
   process.loadEnvFile();
@@ -43,7 +45,12 @@ await esbuild.build({
 // Copy the template project from current stitch-core
 await fsp.rm('./assets/templates', { recursive: true, force: true });
 await fsp.mkdir('./assets/templates', { recursive: true });
-await fsp.cp('../gml-analysis/assets/GmlSpec.xml', './assets/GmlSpec.xml');
+// The fallback GmlSpec, from the package that ships it (wherever it lives)
+const gmlParserEntry = fileURLToPath(import.meta.resolve('@bscotch/gml-parser'));
+await fsp.cp(
+  path.join(path.dirname(gmlParserEntry), '..', 'assets', 'GmlSpec.xml'),
+  './assets/GmlSpec.xml',
+);
 
 // Copy the pixel-checksum binaries from current pixel-checksum,
 // if we don't already have the same file. (This is because the

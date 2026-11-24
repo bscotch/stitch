@@ -4,7 +4,6 @@ A lossless, error-tolerant lexer and parser for GML (GameMaker Language).
 
 This package has one job: **text in, syntax tree out**. It does no file I/O and knows nothing about GameMaker projects, symbols or types. Those belong to higher layers. It has no dependencies, and its results are plain, serializable data, so it's safe to use from worker threads.
 
-> 🚧 This package is part of the in-progress [GML parser overhaul](../parser/UPDATE.md). It is not yet published.
 
 ## Usage
 

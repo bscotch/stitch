@@ -2,7 +2,7 @@
  * The language server: LSP handlers, document syncing, and scheduling of
  * analysis and diagnostics for one GameMaker project.
  */
-import { ids } from '@bscotch/gml-analysis';
+import { ids } from '@bscotch/gml-parser';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
   ErrorCodes,

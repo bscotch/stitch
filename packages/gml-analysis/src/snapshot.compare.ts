@@ -1,5 +1,5 @@
 /**
- * Compare this package's analysis of `../parser/samples/project` against the
+ * Compare this package's analysis of `samples/project` against the
  * golden feature snapshot recorded from the old `@bscotch/gml-parser`.
  *
  * Symbol ids differ between the two engines, so references are compared by

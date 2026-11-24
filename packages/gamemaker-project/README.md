@@ -2,7 +2,6 @@
 
 Read and safely change GameMaker projects: assets, folders, and settings, in their yyp/yy files.
 
-> 🚧 This package is part of the in-progress [GML parser overhaul](../parser/UPDATE.md). It is not yet published.
 
 ```ts
 import { GameMakerProject } from '@bscotch/gamemaker-project';
@@ -88,9 +87,9 @@ An `Asset` keeps its identity (`===`) while its data changes. Treat `asset.yy` a
 - Object event helpers: `getEvent`, `getEventFromFilename`, `getEventFromLabel`, `objectEvents`
 - Spine helpers: `readSpineJson`, `summarizeSpine`
 
-## Differences from `@bscotch/gml-parser`
+## Differences from `@bscotch/gml-parser` v2
 
-This package replaces the file-handling half of the old `Project`/`Asset` classes. Where the old behavior was wrong, it was fixed rather than reproduced:
+This package replaces the file-handling half of the `Project`/`Asset` classes in v2 of `@bscotch/gml-parser`. Where the old behavior was wrong, it was fixed rather than reproduced:
 
 - **No hidden writes.**
   - Setting a property never writes a file in the background; every change is an explicit, awaitable method.

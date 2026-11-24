@@ -1,11 +1,14 @@
 {
-  "name": "@bscotch/gml-analysis",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Semantic analysis for GML (GameMaker Language): symbols, types, references, and diagnostics, computed incrementally.",
+  "name": "@bscotch/gml-parser",
+  "version": "2.0.0",
+  "description": "Semantic analysis of GameMaker projects' GML (GameMaker Language) code: symbols, types, references, diagnostics and editor queries, kept up to date incrementally as files change.",
   "keywords": [
     "gml",
+    "parser",
     "gamemaker",
+    "game maker",
+    "game maker language",
+    "gml parser",
     "analysis",
     "types",
     "language server",
@@ -42,6 +45,9 @@
   },
   "devDependencies": {
     "typescript": "6.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": ">=22"
