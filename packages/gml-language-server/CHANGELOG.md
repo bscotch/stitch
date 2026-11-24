@@ -1,5 +1,11 @@
 # @bscotch/gml-language-server Changelog
 
+## 1.1.1 (2026-11-24)
+
+### Fixes
+
+- Removed the temporary 'private' flag on the language server package so it can now be published.
+
 ## 1.1.0 (2026-11-24)
 
 ### Features
