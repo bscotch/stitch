@@ -65,6 +65,15 @@ interface FileState {
   analysis?: FileAnalysis;
 }
 
+/** A reference, in the project-wide index */
+export interface IndexedReference {
+  file: string;
+  start: number;
+  end: number;
+  /** `self`/`other`: refers to the symbol, but not by name */
+  keyword?: boolean;
+}
+
 export interface AnalyzeResult {
   /** Files that were (re)checked */
   checked: Set<string>;
@@ -369,21 +378,22 @@ export class GmlAnalyzer {
     return this._memberNames;
   }
 
-  protected _refIndex:
-    Map<string, { file: string; start: number; end: number }[]> | undefined;
+  protected _refIndex: Map<string, IndexedReference[]> | undefined;
 
   /** Every reference to every symbol, by symbol id */
   get refIndex() {
     if (!this._refIndex) {
-      const index = new Map<
-        string,
-        { file: string; start: number; end: number }[]
-      >();
+      const index = new Map<string, IndexedReference[]>();
       for (const [file, state] of this.files) {
         for (const ref of state.analysis?.refs ?? []) {
           let list = index.get(ref.symbol);
           if (!list) index.set(ref.symbol, (list = []));
-          list.push({ file, start: ref.start, end: ref.end });
+          list.push({
+            file,
+            start: ref.start,
+            end: ref.end,
+            keyword: ref.keyword,
+          });
         }
       }
       this._refIndex = index;

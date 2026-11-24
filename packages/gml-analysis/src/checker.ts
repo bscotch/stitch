@@ -264,7 +264,7 @@ export class Checker {
   protected ref(
     at: { start: number; end: number },
     symbol: SymbolEntry | string,
-    extra?: { implicit?: boolean; write?: boolean },
+    extra?: { implicit?: boolean; write?: boolean; keyword?: boolean },
   ) {
     if (at.end <= at.start) return;
     this.out.refs.push({
@@ -1738,7 +1738,8 @@ export class Checker {
         );
         return [{ kind: 'Struct', name: 'global' }];
       }
-      // (`self` isn't a reference by name, so it isn't recorded as one)
+      const named = this.table.getShape(frame.selfShape)?.symbol;
+      if (named) this.ref(node, named, { keyword: true });
       return frame.self ? [frame.self] : [T.any];
     }
     if (name === 'other') {
@@ -1753,6 +1754,8 @@ export class Checker {
         );
         return [{ kind: 'Struct', name: 'global' }];
       }
+      const named = this.table.getShape(other.selfShape)?.symbol;
+      if (named) this.ref(node, named, { keyword: true });
       return other.self ? [other.self] : [T.any];
     }
     if (name === 'global') {

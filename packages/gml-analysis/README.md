@@ -115,7 +115,7 @@ The same loop handles loading a project and updating it after an edit:
 - Documented-only parameters (for functions that use `argument[n]`) are declared, and appear in signatures but not as variables.
 - Methods called from inside `method()` and constructor bodies now resolve, so they get signature help.
 - `throw` is treated as the keyword it is.
-- `self` and `other` aren't references by name, so they aren't recorded as references. Renaming a constructor no longer touches them.
+- `self` and `other` are recorded as references to their object or constructor (for hover and go-to-definition), but marked as not being references by name. So renaming a constructor leaves them alone, where the old parser relied on checking each reference's text.
 
 On two large real projects, the old parser's diagnostics included many false positives. The new analysis reports fewer of most kinds, mainly because of the script-function and `other` semantics above.
 

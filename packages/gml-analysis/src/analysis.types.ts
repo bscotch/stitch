@@ -49,6 +49,11 @@ export interface Reference {
   implicit?: boolean;
   /** The reference assigns to the symbol */
   write?: boolean;
+  /**
+   * `self` or `other`: refers to the symbol, but not by name (so it's left
+   * alone when the symbol is renamed)
+   */
+  keyword?: boolean;
 }
 
 /** A region of a file with a specific local and `self` scope, for completions */

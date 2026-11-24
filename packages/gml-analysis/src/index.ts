@@ -3,6 +3,7 @@ export {
   GmlAnalyzer,
   type AnalyzeResult,
   type AnalyzerOptions,
+  type IndexedReference,
   type AssetInfo,
   type ExtensionInfo,
   type ProjectInfo,

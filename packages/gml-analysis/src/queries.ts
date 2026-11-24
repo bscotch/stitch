@@ -363,7 +363,13 @@ export class GmlQueries {
   ): { start: number; end: number; symbol: SymbolEntry } | undefined {
     const ref = this.referenceAt(fileId, offset);
     const symbol = this.symbolOf(ref);
-    if (!ref || !symbol || symbol.native || symbol.kind === 'asset') {
+    if (
+      !ref ||
+      ref.keyword ||
+      !symbol ||
+      symbol.native ||
+      symbol.kind === 'asset'
+    ) {
       return undefined;
     }
     if (reservedNames.has(symbol.name) || !symbol.def) return undefined;
@@ -384,12 +390,15 @@ export class GmlQueries {
     if (clash && clash.id !== target.symbol.id) {
       throw new Error(`"${newName}" already exists.`);
     }
-    return this.referencesTo(target.symbol.id).map((r) => ({
-      file: r.file,
-      start: r.start,
-      end: r.end,
-      newText: newName,
-    }));
+    // (`self`/`other` refer to the symbol, but not by name)
+    return this.referencesTo(target.symbol.id)
+      .filter((r) => !r.keyword)
+      .map((r) => ({
+        file: r.file,
+        start: r.start,
+        end: r.end,
+        newText: newName,
+      }));
   }
 
   //#endregion

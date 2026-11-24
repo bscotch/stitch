@@ -55,8 +55,14 @@ describe('Queries', function () {
       'scripts/Use',
       p.at('scripts/Use', 'Point'),
     );
-    // Declaration, the {@link}, the doc type, and the use
-    assert.equal(refs.length, 4);
+    // Declaration, the {@link}, the doc type, the use, and `self` x2
+    assert.equal(refs.length, 6);
+    // Go to definition works from `self`
+    const fromSelf = p.queries.definition(
+      'scripts/Lib',
+      p.at('scripts/Lib', 'self.x'),
+    );
+    assert.equal(fromSelf?.start, p.at('scripts/Lib', 'Point('));
     const withoutDecl = p.queries.references(
       'scripts/Use',
       p.at('scripts/Use', 'Point'),
@@ -64,7 +70,7 @@ describe('Queries', function () {
         includeDeclaration: false,
       },
     );
-    assert.equal(withoutDecl.length, 3);
+    assert.equal(withoutDecl.length, 5);
   });
 
   it('computes rename edits across files and docs', async function () {
@@ -74,6 +80,7 @@ describe('Queries', function () {
       p.at('scripts/Use', 'Point'),
       'Vec',
     );
+    // (`self` isn't renamed)
     assert.equal(edits.length, 4);
     assert.ok(edits.every((e) => e.newText === 'Vec'));
     for (const edit of edits) {
