@@ -255,7 +255,7 @@ Check out Stitch settings to configure how your project is run. In particular:
 
 - `stitch.run.defaultConfig`: Choose a run configuration to use as the default (defaults to "Default"). This will remain the default until you update your Target.
 - `stitch.run.defaultCompiler`: Choose whether to use the VM or YYC compiler (defaults to "VM"). This will remain the default until you update your Target.
-- `stitch.run.inTerminal`: By default Stitch opens a terminal in VSCode and runs your project there, using your default terminal settings. Set this to `false` to use the Stitch Runner Panel instead.
+- `stitch.run.inTerminal`: By default Stitch runs your project in a separate process and logs output in the Stitch Runner Panel. Set this to `true` to run commands in your VSCode terminal instead.
 
 #### ⚡ Stitch Runner Panel
 

@@ -3,12 +3,17 @@
  * actionable errors, and managing Stitch's cache of GameMaker IDEs.
  */
 import {
+  checkSystemRequirements,
   getIdeCacheInfo,
   isLauncherError,
   pruneIdeCache,
   restoreUpdatePrompts,
   type CachedIdeWithSize,
+  type RequirementGroup,
 } from '@bscotch/stitch-launcher';
+import { writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import vscode from 'vscode';
 import {
   hasLegacyChannelNames,
@@ -61,6 +66,77 @@ export async function initializeLauncher() {
   }
 }
 
+/** Requirement groups already found to be satisfied this session */
+const satisfiedRequirements = new Set<RequirementGroup>();
+
+/**
+ * Make sure the system packages and tools GameMaker needs (on Linux) are
+ * installed. If some are missing, offer to install them in a terminal
+ * (where the user enters their own sudo password).
+ *
+ * @returns Whether to go ahead: `true` if everything is present or the
+ * user chose to continue anyway.
+ */
+export async function ensureSystemRequirements(
+  groups: RequirementGroup[],
+  purpose: string,
+): Promise<boolean> {
+  const needed = groups.filter((g) => !satisfiedRequirements.has(g));
+  if (!needed.length) return true;
+  let report;
+  try {
+    report = await checkSystemRequirements(
+      needed,
+      stitchConfig.launcherOptions,
+    );
+  } catch (err) {
+    logger.warn('Could not check GameMaker system requirements', err);
+    return true;
+  }
+  if (report.note) logger.warn(report.note);
+  if (!report.missing.length) {
+    if (!report.note) needed.forEach((g) => satisfiedRequirements.add(g));
+    return true;
+  }
+
+  const names = report.missing.map((r) =>
+    r.kind === 'apt' ? (r.installName ?? r.packages[0]) : r.id,
+  );
+  logger.warn(
+    `Missing GameMaker requirements for ${purpose}:`,
+    report.missing.map((r) => `${r.id} (${r.description})`),
+  );
+  const install = 'Install in terminal';
+  const copy = 'Copy install script';
+  const anyway = 'Continue anyway';
+  const choice = await vscode.window.showWarningMessage(
+    `GameMaker needs some system packages and tools for ${purpose} that aren't installed: ${names.join(', ')}.${report.installScript ? ' Stitch can install them (you will be asked for your password).' : ''}${report.note ? ` ${report.note}` : ''}`,
+    ...(report.installScript ? [install, copy] : []),
+    anyway,
+  );
+  if (choice === install && report.installScript) {
+    const script = path.join(os.tmpdir(), 'stitch-gamemaker-requirements.sh');
+    await writeFile(script, report.installScript, { mode: 0o755 });
+    const terminal = vscode.window.createTerminal({
+      name: 'GameMaker requirements',
+    });
+    terminal.show();
+    terminal.sendText(`bash '${script.replace(/'/g, `'\\''`)}'`);
+    void vscode.window.showInformationMessage(
+      `Installing GameMaker requirements in the terminal. Try again once it's done.`,
+    );
+    return false;
+  }
+  if (choice === copy && report.installScript) {
+    await vscode.env.clipboard.writeText(report.installScript);
+    void vscode.window.showInformationMessage(
+      'Copied the install script. Run it in a terminal, then try again.',
+    );
+    return false;
+  }
+  return choice === anyway;
+}
+
 /**
  * Show a launcher error, offering fixes where there are any. Rethrows
  * anything that isn't a launcher error.
@@ -80,12 +156,13 @@ export async function showLauncherError(err: unknown): Promise<void> {
     return;
   }
   if (
-    isLauncherError(err, 'SEVEN_ZIP_MISSING') ||
-    isLauncherError(err, 'SEVEN_ZIP_INCAPABLE')
+    isLauncherError(err, 'UNPACKER_MISSING') ||
+    isLauncherError(err, 'UNPACKER_INCAPABLE')
   ) {
-    const open = 'Open 7-Zip download page';
+    // Only Windows and macOS need an external unpacker (7-Zip)
+    const open = `Open ${err.data.tool} download page`;
     const copy = 'Copy install command';
-    const settings = 'Set 7-Zip path';
+    const settings = `Set ${err.data.tool} path`;
     const choice = await showErrorMessage(err.message, open, copy, settings);
     if (choice === open) {
       await vscode.env.openExternal(vscode.Uri.parse(err.data.downloadUrl));

@@ -19,7 +19,10 @@ import type { LanguageClient } from 'vscode-languageclient/node';
 import { loudlyLogThrownAsync } from './assert.mjs';
 import { stitchConfig } from './config.mjs';
 import { stitchEvents } from './events.mjs';
-import { showLauncherError } from './extension.launcher.mjs';
+import {
+  ensureSystemRequirements,
+  showLauncherError,
+} from './extension.launcher.mjs';
 import { killProjectRunner } from './lib.mjs';
 import { logger, showErrorMessage } from './log.mjs';
 
@@ -171,6 +174,16 @@ export class StitchProject {
     stitchEvents.emit('open-project-start', this);
     const options = stitchConfig.launcherOptions;
     const ideVersion = this.ideVersion;
+    // Includes what running games needs: the IDE doesn't explain why a
+    // run fails when something's missing.
+    if (
+      !(await ensureSystemRequirements(
+        ['ide', 'run'],
+        'the GameMaker IDE and running games from it',
+      ))
+    ) {
+      return;
+    }
     try {
       return await vscode.window.withProgress(
         {
@@ -274,6 +287,17 @@ export class StitchProject {
           );
         }
       }
+      return;
+    }
+
+    // Igor builds for the host OS. On Linux that needs system tools.
+    if (
+      !options?.clean &&
+      !(await ensureSystemRequirements(
+        compiler === 'yyc' ? ['run', 'yyc'] : ['run'],
+        `running games (${compiler.toUpperCase()})`,
+      ))
+    ) {
       return;
     }
 

@@ -534,7 +534,7 @@
           "title": "7-Zip Path",
           "type": "string",
           "default": "",
-          "markdownDescription": "Stitch extracts GameMaker installers with a *full* 7-Zip install (`7z.exe` on Windows, `7zz` on macOS/Linux; the standalone `7za` is not enough). Leave empty to find it automatically. Get it from [7-zip.org](https://www.7-zip.org/download.html)."
+          "markdownDescription": "On Windows and macOS, Stitch unpacks GameMaker installers with a *full* 7-Zip install (`7z.exe` on Windows, `7zz` on macOS; the standalone `7za` is not enough). Leave empty to find it automatically. Get it from [7-zip.org](https://www.7-zip.org/download.html). Not needed on Linux."
         },
         "stitch.gameMaker.gmlSpecPaths": {
           "title": "Extra GmlSpec locations",
@@ -606,7 +606,7 @@
           "title": "Run in terminal",
           "description": "If true, when you run a project in Stitch it will run in a terminal window. When false, it will run internally and log to a webview (more feature-rich but potentially less performant).",
           "type": "boolean",
-          "default": true
+          "default": false
         },
         "stitch.runView.fontFamily": {
           "title": "Runner View Font Family",
