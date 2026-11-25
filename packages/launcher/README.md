@@ -38,9 +38,9 @@ Version information comes from Stitch's [unified GameMaker releases feed](../rel
 | --------------------- | --------- | ------------------------ | ------------------------ |
 | Paths, runtimes, Igor | ✅ Tested | ⚠️ Partly tested (arm64) | ⚠️ Implemented, untested |
 | Installing IDEs       | ✅ Tested | ⚠️ Partly tested (arm64) | ⚠️ Implemented, untested |
-| Opening projects      | ✅ Tested | ⚠️ Implemented, untested | ⚠️ Implemented, untested |
+| Opening projects      | ✅ Tested | ⚠️ Partly tested (arm64) | ⚠️ Implemented, untested |
 
-GameMaker only publishes Beta, Unstable and LTS 2026 releases for Linux. The Linux details come from unpacking GameMaker's installers, not from a real machine. On macOS, finding runtimes, running Igor, and downloading, verifying and extracting IDEs have been tried on an arm64 Mac; the rest comes from unpacking the installers. Unconfirmed details are marked `TODO(verify)` in the source. Reports and fixes are welcome!
+GameMaker only publishes Beta, Unstable and LTS 2026 releases for Linux. The Linux details come from unpacking GameMaker's installers, not from a real machine. On macOS, finding runtimes, running Igor, downloading, verifying and extracting IDEs, and opening and closing them have been tried on an arm64 Mac; the rest comes from unpacking the installers. Unconfirmed details are marked `TODO(verify)` in the source. Reports and fixes are welcome!
 
 ## Installation
 

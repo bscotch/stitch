@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { parsePkgSignature, yoyoGamesTeamId } from './mac.ts';
+import {
+  parseLsofExecutable,
+  parsePkgSignature,
+  yoyoGamesTeamId,
+} from './mac.ts';
 
 /** `pkgutil --check-signature` output for the 2026.100.0.1199 pkg */
 const signed = `Package "GameMaker-2026.100.0.1199.pkg":
@@ -44,5 +48,24 @@ describe('macOS pkg signatures', function () {
       'Someone (ABCDE12345)',
     );
     assert.equal(parsePkgSignature(other).teamId, 'ABCDE12345');
+  });
+});
+
+describe('macOS processes', function () {
+  it('reads the executable from lsof output', function () {
+    // For an IDE whose `ps` name is just "arm64/GameMaker"
+    const output = [
+      'p17814',
+      'ftxt',
+      'n/Applications/GameMaker Beta.app/Contents/MacOS/arm64/GameMaker',
+      'ftxt',
+      'n/usr/lib/dyld',
+      '',
+    ].join('\n');
+    assert.equal(
+      parseLsofExecutable(output),
+      '/Applications/GameMaker Beta.app/Contents/MacOS/arm64/GameMaker',
+    );
+    assert.equal(parseLsofExecutable(''), undefined);
   });
 });

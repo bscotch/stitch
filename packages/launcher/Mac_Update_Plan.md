@@ -148,6 +148,24 @@ These run the opt-in suites in [`src/integration.test.ts`](./src/integration.tes
 - **Tests:** the install integration test now also runs `codesign --verify --deep --strict` on the extracted app on macOS. It passes, in 15 s.
 - **Docs:** NOTES.md, the launcher README, the `sevenZipPath` option doc, and the VS Code 7-Zip setting description are updated.
 
+### Step 3 results: opening the IDE (2026-11-25)
+
+Ran `STITCH_LAUNCHER_INTEGRATION_IDE=1 STITCH_LAUNCHER_IDE_VERSION=2026.100.0.1199`. It installed 1199 into the real cache, `~/.stitch/launcher/ide` (833 MB, the same as `/Applications`), with `pkgutil`. A competing Monthly IDE (`GameMaker CL2.app`) was running throughout and wasn't affected.
+
+**First run: ✅ the test passed, but there was a bug.** `ps` was sampled every 4 s during the run:
+
+- `Contents/MacOS/GameMaker` (the stub) appeared at about t+12 s, and the real IDE `arm64/GameMaker`, its child, at about t+28 s. The roughly 15 s gap only happened on the first launch of the newly extracted app, so it's probably Gatekeeper's first-launch assessment (unverified).
+- **The launcher never saw the real IDE.** The stub starts it with a relative path, so `ps -o comm` reports `arm64/GameMaker`, which doesn't match the launcher's `<app>/Contents/MacOS/` prefix.
+- **`close()` killed only the stub.** The real IDE kept running as an orphan (parent PID 1) with the test's deleted temp project open, until it was killed by hand.
+- ✅ **Update-prompt suppression worked.** `default_macros.json` was created, the IDE requested `update-stitch-disabled.rss` and got a 403 (`CheckForIDEUpdates Failed`), and the file was removed again because there hadn't been one before. `update-prompt.json` was left with no records.
+
+**Fix:**
+
+- **`mac.ts`:** `listProcesses` now also resolves `ps` entries with a relative `…/GameMaker` name to their real executable with `lsof -a -p <pid> -d txt -Fn` (about 40 ms each). It keeps them if they're inside the app, which also covers an IDE orphaned after its stub exited. The `lsof` output is parsed by `parseLsofExecutable`, which has a unit test.
+- **Integration test:** it now also checks, independently of the launcher, that no process's command line still contains the project path after `close()`.
+
+**Second run: ✅ passed in 4.5 s.** Both the stub and `arm64/GameMaker` were found and closed, and no IDE process was left. The boot check, the 403 and the restore all happened again.
+
 ## Phase 3: End-user scenarios
 
 - On a Mac missing a dependency (e.g. 7-Zip), the launcher names what's missing and how to install it.
@@ -189,20 +207,20 @@ From `TODO(verify)` markers:
 - [ ] System dir is `/Users/Shared/<pdn>` (`mac.ts:48`)
 - [ ] User dir is `~/Library/Application Support/<pdn>`; does `um.json` land there or in `~/.config`? (`mac.ts:50`)
 - [ ] Igor is at `<runtime>/bin/igor/osx/{arm64,x64}/Igor` (`mac.ts:65`). Partly confirmed 2026-11-24: the arm64 path exists and runs in IDE-installed runtimes. It has its exec bit set, no quarantine xattr, and a YoYo Games Developer ID signature (`C9E7J7HL3D`). The x64 path is unchecked.
-- [ ] Running the stub with a project path opens the project, or `open -a` is needed (`mac.ts:93`)
+- [ ] Running the stub with a project path opens the project, or `open -a` is needed (`mac.ts:93`). Partly confirmed 2026-11-25: the stub passes the path on to `<arch>/GameMaker`, whose `ui.log` lists it under "Command line arguments" and reaches `LoadingState: CheckLaunchProject`. Whether the project window actually opens hasn't been checked visually.
 - [x] ✅ `matching.runtime` is at `Contents/MacOS/<arch>/` (`mac.ts:97`). Confirmed 2026-11-25 in the extracted 1199 bundle: `2026.100.0.1133`.
 - [x] ✅ Help keywords location in the bundle (`mac.ts:99`). Confirmed 2026-11-25: `Contents/MacOS/arm64/RoboHelp/helpdocs_keywords.json`.
 - [ ] Extracted `.app` runs: permissions, symlinks, Gatekeeper, quarantine (`mac.ts:105`). 7-Zip extraction broke the code signature. **Fixed 2026-11-25** by switching to `pkgutil --expand-full`: exec bits, a valid signature and no quarantine are confirmed. Launching it is step 3.
 - [x] ✅ Exec bits survive cpio extraction (`mac.ts:132`). Confirmed 2026-11-25: all 886 executables match `/Applications`.
 - [x] ✅ Pkg signature check (`mac.ts`). Implemented 2026-11-25 with `pkgutil --check-signature`, requiring Team ID `C9E7J7HL3D`. The 1199 pkg passes, and the parser rejects an unsigned pkg's output.
 - [ ] `chmod 0777` of the system dir matches the pkg postinstall (`mac.ts:151`)
-- [ ] Process names and paths from `ps` (`mac.ts:166`)
+- [x] ✏️ Process names and paths from `ps` (`mac.ts`). **Corrected 2026-11-25:** `ps` reports the real IDE as the relative `arm64/GameMaker`, so the launcher missed it. It now resolves such processes with `lsof`. See [step 3](#step-3-results-opening-the-ide-2026-11-25).
 - [ ] 7-Zip `-snl` behavior with cpio/tar payloads (`posix.ts:21`)
 
 From NOTES.md open questions:
 
 - [ ] Does `GM_RESTART=0` stop the post-install launch? (Only relevant if the official installer is used for prerequisites.)
-- [ ] Does the IDE install its runtime on a plain boot, without `--runtime`?
+- [x] ✅ Does the IDE install its runtime on a plain boot, without `--runtime`? Yes: after runtime 1133 was deleted (the Phase 1 incident), opening the Beta IDE normally reinstalled it. **[observed]** 2026-11-25.
 - [ ] Does a CLI project open work when an IDE of the same channel is already running?
 
 ## Discoveries

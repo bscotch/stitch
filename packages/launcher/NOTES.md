@@ -141,7 +141,7 @@ How these facts shape the launcher's macOS and Linux support:
   - Exec bits are preserved. The extracted files get `com.apple.provenance` but no quarantine attribute.
 - **On Linux, extraction is multi-step with 7-Zip.** A deb is an Ar archive containing `data.tar.*`, and 7-Zip can unpack each layer. Whether the result runs (exec bits, symlinks, and zstd-compressed `data.tar` support in the user's 7-Zip) is untested.
 - **On Linux, run `<arch>/GameMaker` directly** with that dir as the working dir, to avoid the wrapper's quoting and `cd` problems.
-- **On macOS, the IDE process is a child of the launcher stub**, so the IDE's processes are recognized by path prefix within `Contents/MacOS/`, not by one exact executable.
+- **On macOS, the IDE process is a child of the launcher stub.** `Contents/MacOS/GameMaker` starts `<arch>/GameMaker` using a relative path, so `ps -o comm` reports the real IDE as just `arm64/GameMaker`. The launcher resolves such processes to their real executable with `lsof -a -p <pid> -d txt -Fn`, and recognizes them by path prefix within `Contents/MacOS/`. Killing the stub doesn't stop the child, which then keeps running under launchd. **[experiment K]**
 - **On macOS, the system dir is world-writable.** The pkg's postinstall `chmod 0777`s `/Users/Shared/<pdn>` and its runtime cache **[package]**, so the launcher does the same when it creates them. On Linux the system dir is under the user's home, so nothing is needed.
 - **Don't derive dir names from the Mac installer scripts.** They `chmod` `/Users/Shared/GameMaker-LTS*`, which doesn't match the IDE's `GameMakerStudio2-LTS*`.
 - **Pkg signatures are checked with `pkgutil --check-signature`.** For 1199 it reports `signed by a developer certificate issued by Apple for distribution`, `trusted by the Apple notary service`, and a leaf certificate of `Developer ID Installer: YoYo Games Ltd (C9E7J7HL3D)`. The launcher requires an Apple-issued signature with YoYo Games' Team ID `C9E7J7HL3D`, which also signs the runtime's Igor. **[experiment J]**
@@ -329,7 +329,7 @@ The cache dir (which can grow to many GB: this machine had 10 GB), the downloads
 
 - **macOS/Linux, on real machines:**
   - Does `GM_RESTART=0` stop the Mac post-install launch?
-  - Does the IDE install its runtime on a plain boot, without `--runtime`?
+  - ~~Does the IDE install its runtime on a plain boot, without `--runtime`?~~ Yes: after its paired runtime was deleted, a normal boot of the Beta IDE reinstalled it. **[observed]**
   - Where do `um.json` and the user subdir land on Mac (`~/Library/Application Support` vs `~/.config`)?
   - Is `~/.local/share/<pdn>` the real Linux system dir?
   - Does running `<arch>/GameMaker` directly on Linux behave like the wrapper?
@@ -377,3 +377,8 @@ These were run on 2026-11-20. Every GameMaker config file was backed up first an
   - `pkgutil --expand-full` produced 8,267 files, with no `._*` files and the `com.apple.cs.*` attributes in place. `codesign` reported "valid on disk", and `spctl` accepted it as "Notarized Developer ID".
   - Exec bits matched the official install (886 executables). `matching.runtime` (`2026.100.0.1133`) and `RoboHelp/helpdocs_keywords.json` were in `Contents/MacOS/<arch>/`.
   - With the launcher switched to `pkgutil`, its install integration test passed in 15 s, including a `codesign --verify` of the extracted app.
+- **K. Opening an IDE on macOS** (2026-11-25, the same Mac, a `pkgutil`-extracted 1199 in the real IDE cache, the launcher's IDE integration test):
+  - The stub appeared first, and `arm64/GameMaker` appeared as its child about 15 s later on the first launch, and within 3 s on the next one.
+  - `ui.log` listed the project path under "Command line arguments", then reached `LoadingState: CheckLaunchProject`.
+  - With update-prompt suppression on, the IDE requested `update-stitch-disabled.rss`, got a 403, and logged `CheckForIDEUpdates Failed`, about 3 s after its log started. The launcher then removed the `default_macros.json` it had created.
+  - Before the `lsof` fix, the launcher only tracked the stub, and killing it left `arm64/GameMaker` running under launchd. After the fix, both were found and closed.

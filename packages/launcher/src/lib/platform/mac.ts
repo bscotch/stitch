@@ -12,7 +12,7 @@ import { LauncherError } from '../errors.ts';
 import { execFile } from '../exec.ts';
 import { exists } from '../fsUtil.ts';
 import { findEntries, killPosixProcess, parsePsOutput } from './posix.ts';
-import type { IdeLayout, PlatformLayer } from './types.ts';
+import type { IdeLayout, PlatformLayer, RunningProcess } from './types.ts';
 
 const p = path.posix;
 
@@ -51,6 +51,17 @@ export function parsePkgSignature(output: string): PkgSignature {
     signer,
     teamId: signer?.match(/\(([A-Z0-9]{10})\)$/)?.[1],
   };
+}
+
+/**
+ * The executable path from `lsof -a -p <pid> -d txt -Fn` output: the first
+ * `txt` file listed is the process's executable.
+ */
+export function parseLsofExecutable(output: string): string | undefined {
+  return output
+    .split('\n')
+    .find((line) => line.startsWith('n'))
+    ?.slice(1);
 }
 
 function macArchDir(arch: string) {
@@ -171,14 +182,36 @@ export const mac: PlatformLayer = {
   },
 
   async listProcesses(executable) {
-    // The launcher spawns `<arch>/GameMaker` as a child process, so match
-    // anything running from the app's MacOS dir.
-    // TODO(verify): process names and paths on a real Mac.
+    // `Contents/MacOS/GameMaker` is a launcher stub that runs the real IDE,
+    // `<arch>/GameMaker`, as a child process via a *relative* path, so `ps`
+    // reports it as just "arm64/GameMaker". Resolve such entries to their
+    // real executable with `lsof`. That also finds an IDE whose stub has
+    // exited (it's then a child of launchd). [observed]
     const result = await execFile('ps', ['-axo', 'pid=,comm=']);
     const prefix = `${p.dirname(executable)}/`;
-    return parsePsOutput(result.stdout).filter((proc) =>
-      proc.executable.startsWith(prefix),
-    );
+    const found: RunningProcess[] = [];
+    for (const proc of parsePsOutput(result.stdout)) {
+      if (proc.executable.startsWith(prefix)) {
+        found.push(proc);
+      } else if (
+        !proc.executable.startsWith('/') &&
+        p.basename(proc.executable) === 'GameMaker'
+      ) {
+        const lsof = await execFile('lsof', [
+          '-a',
+          '-p',
+          String(proc.pid),
+          '-d',
+          'txt',
+          '-Fn',
+        ]).catch(() => undefined);
+        const real = lsof && parseLsofExecutable(lsof.stdout);
+        if (real?.startsWith(prefix)) {
+          found.push({ pid: proc.pid, executable: real });
+        }
+      }
+    }
+    return found;
   },
 
   killProcess: killPosixProcess,

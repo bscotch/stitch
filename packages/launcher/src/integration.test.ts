@@ -206,6 +206,17 @@ describe(
         assert.ok(await running.isRunning());
         await running.close();
         await running.waitForClose();
+        if (process.platform !== 'win32') {
+          // Independent of the launcher's own process tracking: no process
+          // may still have the project open. (On macOS, the real IDE is a
+          // child of a launcher stub, and once outlived the stub.)
+          const leftovers = execFileSync('ps', ['-axo', 'pid=,command='], {
+            encoding: 'utf8',
+          })
+            .split('\n')
+            .filter((line) => line.includes(project));
+          assert.deepEqual(leftovers, [], 'IDE processes are still running');
+        }
       },
     );
   },
