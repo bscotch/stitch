@@ -1,28 +1,25 @@
 /**
  * @file The Linux platform layer.
  *
- * Nothing here has been tested on a real Linux machine. It's based on the
- * unpacked 2026.100.0.1199 and LTS2026 2026.1.0.27 `.deb`s, the 1133
- * runtime module zips, and disassembled IDE code (see NOTES.md). Every such
- * fact is marked `TODO(verify)`. Only Beta/Unstable and LTS2026 have Linux
- * releases.
+ * Tested on Ubuntu 24.04 (x64) with Beta 2026.100.0.1199; see "Linux
+ * layout" in NOTES.md. arm64 is untested, and marked `TODO(verify)`. Only
+ * Beta/Unstable and LTS2026 have Linux releases.
  */
-import { chmod, mkdir, readdir, readlink, rename, rm } from 'node:fs/promises';
+import { mkdir, readdir, readlink } from 'node:fs/promises';
 import path from 'node:path';
 import { execFile } from '../exec.ts';
 import { exists } from '../fsUtil.ts';
-import {
-  extractNested,
-  findEntries,
-  killPosixProcess,
-  sevenZipExtract,
-} from './posix.ts';
+import { unpackDeb } from './deb.ts';
+import { killPosixProcess } from './posix.ts';
 import type { IdeLayout, PlatformLayer, RunningProcess } from './types.ts';
 
 const p = path.posix;
 
 /** Package dirs under /opt: `GameMaker-Beta`, `GameMaker-LTS2026` */
 const pkgPattern = /^GameMaker(-[A-Za-z0-9]+)?$/;
+
+/** `opt/<pkg>/…` in a deb's data, captured as `<pkg>/…` */
+const optPkgPathPattern = /^opt\/(GameMaker(?:-[A-Za-z0-9]+)?(?:\/.*)?)$/;
 
 function linuxArchDir(arch: string) {
   return arch === 'arm64' ? 'aarch64' : 'x86_64';
@@ -31,18 +28,15 @@ function linuxArchDir(arch: string) {
 export const linux: PlatformLayer = {
   os: 'linux',
   feedPlatform: 'linux',
-  sevenZipFormat: 'Ar',
-  // TODO(verify): [unverified] package names (`p7zip-full` on older distros).
-  sevenZipInstallCommand: 'sudo apt install 7zip',
-  sevenZipNames: ['7zz', '7z'],
+  // Debs are unpacked natively (see deb.ts), so no 7-Zip is needed.
   pathDelimiter: ':',
   path: p,
 
   specialFolders(env) {
     const home = env.homedir;
     return {
-      // TODO(verify): [IL] the IDE sets CommonApplicationData to
-      // LocalApplicationData, i.e. $XDG_DATA_HOME or ~/.local/share.
+      // The IDE sets CommonApplicationData to LocalApplicationData, i.e.
+      // $XDG_DATA_HOME or ~/.local/share.
       commonApplicationData:
         env.env.XDG_DATA_HOME || p.join(home, '.local', 'share'),
       applicationData: env.env.XDG_CONFIG_HOME || p.join(home, '.config'),
@@ -75,17 +69,9 @@ export const linux: PlatformLayer = {
   },
 
   igorCandidates(runtimeDir, arch) {
-    // TODO(verify): [package] Igor locations in the runtime's linux module.
+    // x64 is observed; TODO(verify): the arm64 location.
     const dir = p.join(runtimeDir, 'bin', 'igor', 'linux');
     return [p.join(dir, arch === 'arm64' ? 'arm64' : 'x64', 'Igor')];
-  },
-
-  sevenZipCandidates() {
-    return Promise.resolve([
-      '/usr/bin/7zz',
-      '/usr/local/bin/7zz',
-      '/usr/bin/7z',
-    ]);
   },
 
   async resolveIdeLayout(ideDir, arch): Promise<IdeLayout | undefined> {
@@ -103,42 +89,28 @@ export const linux: PlatformLayer = {
       programDirName: `GameMakerStudio2${suffix}`,
       // `/opt/<pkg>/GameMaker` is a bash wrapper that `cd`s into the arch
       // dir and passes its arguments unquoted, which breaks paths with
-      // spaces and relative paths. Run the real binary directly instead.
-      // TODO(verify): [package] that this works the same as the wrapper.
+      // spaces and relative paths. Run the real binary directly instead
+      // (the wrapper only adds crash-dump settings).
       executable: p.join(archDir, 'GameMaker'),
       cwd: archDir,
       matchingRuntime: p.join(archDir, 'matching.runtime'),
-      // TODO(verify): help keywords location.
       helpKeywords: p.join(archDir, 'RoboHelp', 'helpdocs_keywords.json'),
     };
   },
 
-  async extractInstaller(sevenZip, installer, destDir) {
-    // deb (ar) → data.tar.* → data.tar → opt/<pkg>/
-    // TODO(verify): that the result runs, including exec bits, symlinks,
-    // and data.tar compression (xz vs zstd) support in the user's 7-Zip.
-    const work = p.join(destDir, '.extract');
-    const ar = p.join(work, 'ar');
-    await mkdir(ar, { recursive: true });
-    await sevenZipExtract(sevenZip, installer, ar, 'Ar');
-    const dataTar = (await readdir(ar)).find((n) => n.startsWith('data.tar'));
-    if (!dataTar) throw new Error('No data.tar found in the deb');
-    const root = await extractNested(
-      sevenZip,
-      p.join(ar, dataTar),
-      p.join(work, 'data'),
+  async unpackInstaller(installer, destDir) {
+    // Only `opt/<pkg>/` matters: the deb's other files are a .desktop
+    // entry, MIME types and docs. File modes come from the deb.
+    await unpackDeb(
+      installer,
+      destDir,
+      (entry) => entry.match(optPkgPathPattern)?.[1],
     );
-    const optDir = p.join(root, 'opt');
-    const pkg = (await readdir(optDir)).find((n) => pkgPattern.test(n));
-    if (!pkg) throw new Error('No /opt/GameMaker* dir found in the deb');
-    await rename(p.join(optDir, pkg), p.join(destDir, pkg));
-    await rm(work, { recursive: true, force: true });
-    for (const exe of await findEntries(
-      p.join(destDir, pkg),
-      (n, isDir) => !isDir && n === 'GameMaker',
-      1,
-    )) {
-      await chmod(exe, 0o755).catch(() => undefined);
+    const pkgs = (await readdir(destDir)).filter((n) => pkgPattern.test(n));
+    if (pkgs.length !== 1) {
+      throw new Error(
+        `Expected one /opt/GameMaker* dir in the deb, found ${pkgs.length}`,
+      );
     }
   },
 

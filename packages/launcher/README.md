@@ -17,7 +17,7 @@ _Butterscotch Shenanigans&reg; and Stitch are not affiliated with GameMaker&reg;
 
 ## 🚀 What Stitch Launcher does
 
-- **Installs IDE versions into its own cache.** It downloads the official installer to your Downloads folder and extracts it with 7-Zip. It never runs installers, and never touches your own GameMaker installs, which keep working normally alongside it.
+- **Installs IDE versions into its own cache.** It downloads the official installer to your Downloads folder and unpacks it (with 7-Zip on Windows and macOS, by itself on Linux). It never runs installers, and never touches your own GameMaker installs, which keep working normally alongside it.
 - **Finds installed Runtimes.** Runtimes are installed by the IDE itself, the first time an IDE version boots. Stitch Launcher only finds them.
 - **Opens projects** in the right cached IDE, optionally suppressing the IDE's "IDE Update Available" prompt (which older cached versions would otherwise always show).
 - **Runs and builds projects** with Igor, GameMaker's command-line build tool, using a self-cleaning build cache outside your project.
@@ -27,10 +27,9 @@ Version information comes from Stitch's [unified GameMaker releases feed](../rel
 ## Requirements
 
 - [Node.js v22+](https://nodejs.org/en/). This package is ESM-only.
-- A **full** [7-Zip](https://www.7-zip.org/download.html) install, to extract GameMaker installers. The standalone `7za` build can't extract them.
+- On Windows and macOS, a **full** [7-Zip](https://www.7-zip.org/download.html) install, to unpack GameMaker installers. The standalone `7za` build can't unpack them. Linux needs nothing extra: the launcher unpacks GameMaker's `.deb`s itself (with Node 22.15 or newer).
   - Windows: `winget install 7zip.7zip`
   - macOS: `brew install sevenzip`
-  - Linux: `sudo apt install 7zip` (or `p7zip-full` on older distros)
 - [A GameMaker account](https://gamemaker.io/) to use GameMaker itself.
 
 ### Platform support
@@ -51,7 +50,7 @@ npm install @bscotch/stitch-launcher
 
 ## Usage
 
-Every function takes an optional options object, for overriding defaults like the IDE cache dir (`ideCacheDir`), the downloads dir (`downloadsDir`), and the 7-Zip path (`sevenZipPath`). See `LauncherOptions` for all of them.
+Every function takes an optional options object, for overriding defaults like the IDE cache dir (`ideCacheDir`), the downloads dir (`downloadsDir`), and the 7-Zip path on Windows and macOS (`sevenZipPath`). See `LauncherOptions` for all of them.
 
 ### Open a project in its IDE version
 

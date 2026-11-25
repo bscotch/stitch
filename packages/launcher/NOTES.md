@@ -2,7 +2,7 @@
 
 How GameMaker IDE and Runtime installs work, as far as the launcher is concerned, and why the launcher works the way it does.
 
-Details are based on experiments and analysis done in November 2026 on Windows 11, using GameMaker IDE versions Beta 2026.100.0.1199 (runtime 2026.100.0.1133), Beta 2024.1400.0.904 and LTS2026 2026.1.0.27. GameMaker changes things without notice, so whether or not these results will stay true is anyone's guess!
+Details are based on experiments and analysis done in November 2026 on Windows 11, using GameMaker IDE versions Beta 2026.100.0.1199 (runtime 2026.100.0.1133), Beta 2024.1400.0.904 and LTS2026 2026.1.0.27, and on Ubuntu 24.04 (x64) with Beta 2026.100.0.1199. GameMaker changes things without notice, so whether or not these results will stay true is anyone's guess!
 
 Each claim is marked with how it was established:
 
@@ -105,7 +105,7 @@ Incomplete runtime dirs exist, e.g. one containing only `download/`, or one with
 
 ## macOS and Linux
 
-Nothing here was tested on a real Mac or Linux machine. The facts come from unpacking the 2026.100.0.1199 `.pkg`/`.deb`, the LTS2026 2026.1.0.27 `.deb`, the 1133 runtime module zips, and package metadata for other channels **[package]**, plus disassembled IDE code **[IL]**. The launcher implements its macOS and Linux support from these facts, and marks each unconfirmed one with `TODO(verify)` in the source.
+Linux was tested on Ubuntu 24.04; see [Linux layout](#linux-layout) for what was confirmed, which takes precedence over this section. Nothing here was tested on a real Mac. The facts come from unpacking the 2026.100.0.1199 `.pkg`/`.deb`, the LTS2026 2026.1.0.27 `.deb`, the 1133 runtime module zips, and package metadata for other channels **[package]**, plus disassembled IDE code **[IL]**. The launcher implements its macOS and Linux support from these facts, and marks each unconfirmed one with `TODO(verify)` in the source.
 
 The macro scheme is the same as on Windows: `default_macros.json` is byte-identical, and `program_dir_name` is in the branding `GameMaker.dll`. What differs per OS is the special folders:
 
@@ -133,12 +133,66 @@ The macro scheme is the same as on Windows: `default_macros.json` is byte-identi
 How these facts shape the launcher's macOS and Linux support:
 
 - **Cached copies keep the installed shape.** On macOS a cached version holds the `.app` bundle taken from the pkg payload; on Linux it holds the `/opt/<pkg>/` dir taken from the deb. The `.app` name or `<pkg>` name is how the channel (and so `program_dir_name`) is recognized later: `GameMaker LTS 2026.app` and `GameMaker-LTS2026` both mean `-LTS2026`.
-- **Extraction is multi-step.** A pkg is a Xar archive containing a `Payload` (a compressed cpio stream); a deb is an Ar archive containing `data.tar.*`. 7-Zip can unpack each layer. Whether the results run (exec bits, symlinks, Gatekeeper and quarantine, and zstd-compressed `data.tar` support in the user's 7-Zip) is untested.
+- **Extraction is multi-step.** A pkg is a Xar archive (with a zlib-compressed TOC) containing a `Payload`, which for 1199 is a **gzip**-compressed cpio stream **[package]**; 7-Zip can unpack each layer. Whether the results run (exec bits, symlinks, Gatekeeper and quarantine) is untested. Every layer is in formats Node can read, so pkgs could be unpacked natively like debs, removing the 7-Zip dependency on macOS too. A deb is an Ar archive containing `data.tar.zst`; see [Linux layout](#linux-layout).
 - **On Linux, run `<arch>/GameMaker` directly** with that dir as the working dir, to avoid the wrapper's quoting and `cd` problems.
 - **On macOS, the IDE process is a child of the launcher stub**, so the IDE's processes are recognized by path prefix within `Contents/MacOS/`, not by one exact executable.
-- **On macOS, the system dir is world-writable.** The pkg's postinstall `chmod 0777`s `/Users/Shared/<pdn>` and its runtime cache **[package]**, so the launcher does the same when it creates them. On Linux the system dir is under the user's home, so nothing is needed.
+- **On macOS, the system dir is world-writable.** The pkg's postinstall `chmod 0777`s `/Users/Shared/<pdn>` and its runtime cache **[package]**, so the launcher does the same when it creates them. On Linux the system dir is under the user's home, so nothing is needed. **[observed]**
 - **Don't derive dir names from the Mac installer scripts.** They `chmod` `/Users/Shared/GameMaker-LTS*`, which doesn't match the IDE's `GameMakerStudio2-LTS*`.
 - **Pkg signatures aren't checked yet**; that needs a Mac to test against.
+
+## Linux layout
+
+Confirmed on Ubuntu 24.04 (x64, X11, NVIDIA) with Beta 2026.100.0.1199, starting from a machine with no GameMaker traces. See [Linux experiments](#linux-experiments).
+
+### The deb
+
+| Fact        | Notes                                                                                                                                                                                                                                                                                                                                                                           |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Packages    | `GameMaker-Beta` (Beta and Unstable) and `GameMaker-LTS2026`, `Architecture: all`, `Depends: ffmpeg, zip, unzip, libglu1-mesa, zenity`. **[package]**                                                                                                                                                                                                                           |
+| Contents    | `opt/<pkg>/` (the IDE), plus a `.desktop` entry, MIME types for `.yyp`/`.yyz`, and docs under `usr/share`. No symlinks. **[package]**                                                                                                                                                                                                                                           |
+| Compression | `data.tar.zst` (zstd). **Ubuntu's own `7zip` package (23.01) can't decompress zstd**, and installs `7z`, not `7zz`. **[observed]**                                                                                                                                                                                                                                              |
+| Postinst    | Only writes an AppArmor profile, `profile GameMaker-Beta /opt/GameMaker-Beta/** flags=(unconfined) {}`. A copy outside `/opt` doesn't need it: the IDE and Igor ran fine from Stitch's cache. **[experiment L1]**                                                                                                                                                               |
+| IDE dir     | `opt/<pkg>/{x86_64,aarch64}/`, each a self-contained .NET 8 app: `GameMaker` (a native apphost, the real IDE), `GameMaker.dll` (branding; `program_dir_name` is `GameMakerStudio2-Beta`/`GameMakerStudio2-LTS2026` **[observed]**), `matching.runtime` (no trailing space, unlike Windows), `defaults/default_macros.json`, `RoboHelp/helpdocs_keywords.json`. No Chromium/CEF. |
+| Wrapper     | `opt/<pkg>/GameMaker` is a bash script: it `cd`s to the arch dir, sets .NET crash-dump env vars (dumps to `~/.local/share/GameMakerDumps`), and runs `./GameMaker ${@:1}` (unquoted). Running the arch binary directly loses nothing that matters. **[package, experiment L2]**                                                                                                 |
+
+**The launcher unpacks debs itself** (`platform/deb.ts`): ar → zstd (Node's built-in `zlib`, Node 22.15+) → tar, keeping only `opt/<pkg>/`. For 1199 the result is byte-for-byte identical to `dpkg-deb -x`, modes included, in about 2.5 s. **[experiment L3]** Node 22.23.5 (CI) and VS Code's Node (24.18 in VS Code 1.140, 24.22 in 1.147) both have zstd.
+
+### Directories
+
+| Dir           | Path                                       | Notes                                                                                                              |
+| ------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| System        | `$XDG_DATA_HOME` or `~/.local/share/<pdn>` | `runtime.json`, `runtime_feeds.json`, `ui.log`, `Cache/runtimes/`, as on Windows. **[observed]**                   |
+| User          | `$XDG_CONFIG_HOME` or `~/.config/<pdn>`    | `um.json`, `<login>_<userID>/` or `unknownUser_unknownUserID/`, `Cache/GMS2IDE`, `Cache/GMS2CACHE`. **[observed]** |
+| Temp          | `/tmp/<pdn>/GMS2TEMP`                      | Also `/tmp/GameMaker/PackageInstalls`. **[observed]**                                                              |
+| Other         | `~/gmpm-beta/`, `~/GameMakerProjects/`     | As on Windows. **[observed]**                                                                                      |
+| Build staging | `~/GameMakerStudio2/`                      | Igor's Linux builds stage everything here (see [Igor on Linux](#igor-on-linux)).                                   |
+
+### Boot and processes
+
+- **The IDE installs its runtime on boot, logged out**, in about 10 s: modules `base`, `base-module-linux-x64`, `linux` and `operagx` (no YYC by default). **It makes Igor executable itself** (the module zips store no Unix permissions), so the launcher doesn't need to `chmod` anything. **[experiment L1]**
+- **The IDE doesn't relaunch itself** on Linux: the spawned PID is the IDE, and `/proc/<pid>/exe` is the arch dir's `GameMaker`. **[experiment L1]**
+- **`SIGTERM` closes it** within about 2 s. **[experiment L1]**
+- **A project path passed as one argument opens**, spaces included. **[experiment L2]**
+- Harmless boot noise: `PlatformNotSupportedException: Access Control List (ACL) APIs…` (Windows-only .NET APIs), and a missing `user_cache_directory/Styles` under the IDE dir.
+
+### Igor on Linux
+
+- The `linux` worker has `Package` (a zip), not `PackageZip`. **[experiment L4]**
+- **Building for Linux needs a logged-in user.** Logged out, `Package` fails with `Permission Error : Unable to obtain permission to execute` (reason code `0000002A`), unlike Windows VM builds. **[experiment L4]**
+- **Builds are staged in `~/GameMakerStudio2/`**, through the same commands Igor uses for a remote Linux machine, run locally with `/bin/bash -c` (`cp`, `zip`, `unzip`, `chmod`). This dir is shared by every channel and project. **[experiment L4]**
+- **`Package`** produced a zip of a native `project` executable plus `assets/` in 3.4 s. **[experiment L4]**
+- **`Run` builds an AppImage**: it calls `linuxdeploy --appimage-extract` from the PATH, then runs `linuxdeploy` **inside the Steam runtime** with `unshare -mUprf … chroot <steamrt_sdk_dir>`. The Steam runtime dir comes from the GameMaker preference `machine.Platform Settings.Linux.steamrt_sdk_dir` (default `/opt/steam-runtime`). Without it, `Run` fails with `mount: /opt/steam-runtime/tmp/: mount point does not exist`. The `unshare` itself works under Ubuntu 24.04's `apparmor_restrict_unprivileged_userns=1`. **[experiment L5]**
+- `execute.sh` (copied into the staging dir) runs a command in `xterm`, `gnome-terminal` or `lxterminal`.
+
+### System requirements
+
+Stitch's cached IDEs skip the deb's `Depends`, and Igor's builds need more. `checkSystemRequirements` (in `requirements.ts`) lists them by what they're for, checks them with `dpkg-query`/`apt-cache policy` and the PATH, and generates a sudo install script. Sources: the deb, GameMaker's [Ubuntu guide](https://github.com/YoYoGames/GameMaker-Bugs/wiki/Ubuntu-GMS2), Igor's commands, and `ldd` on a built game.
+
+- **IDE:** `ffmpeg zip unzip libglu1-mesa zenity`.
+- **VM runs:** `linuxdeploy` and `appimagetool` (AppImages from GitHub, installed to `/usr/local/bin`), `libfuse2`, the Steam runtime SDK (about 710 MB, unpacked into `/opt/steam-runtime`), and the libraries games link against (`libGL`, `libGLU`, X11 extensions, `libopenal`, `libpulse`, `libcurl-gnutls`).
+- **YYC:** `build-essential clang` and the `-dev` packages from GameMaker's guide.
+- **Package names vary by release:** on 24.04, `libfuse2` is `libfuse2t64` and `libcurl3-gnutls` is `libcurl3t64-gnutls`; the old names have no install candidate. **[observed]**
+- **Deliberately left out:** `pulseaudio` (from GameMaker's guide) would replace PipeWire's PulseAudio server on modern Ubuntu, and games only need the `libpulse0` client; `openssh-server` is only for building from another machine's IDE.
 
 ## The official installer
 
@@ -208,7 +262,7 @@ Tested with runtime 1133, using `--project --user --runtimePath --runtime=VM --c
 
 - **`windows PackageZip` works** and produces the zip at `--tf`.
 - **`windows Run` works:** it compiles, prints `Run_Start`, and launches `<runtime>\Windows\x64\Runner.exe -game …`. Igor's exit code follows the Runner's.
-- **The exit code is the reliable success signal.** Counting `Igor complete.` lines is not: one failed `PackageZip` printed it twice and then exited 1 after an exception.
+- **The exit code is the best success signal, but not a perfect one.** Counting `Igor complete.` lines is worse: one failed `PackageZip` printed it twice and then exited 1 after an exception. But an **unknown command exits 0**, after printing `[IGOR] Unknown command: "…" for platform …` and the valid commands. **[experiment L4]**
 - **`--tf`'s parent dir must already exist.** Otherwise packaging fails at the last step with `DirectoryNotFoundException`.
 - **`--of` needs a file name**, but only its dir is used.
 - **Igor won't load a project saved in an older format.** It fails with `A type tag field is required…` for a 2022.600 project. Only the IDE upgrades projects, so a project must be opened and saved in an IDE compatible with the runtime before Igor can build it.
@@ -243,7 +297,7 @@ GameMaker checks its channel's IDE feed at boot, and shows "IDE Update Available
 
 - **The check happens once, at boot**, about 5 s after launch. **[experiment F]** Removing an override while the IDE was running produced no further checks, and the only code that reads `updateURI` is `RuntimeFeedManager.OnIDELoaded`. **[IL]**
 - **A fake `updateURI` on GameMaker's host suppresses the prompt**: the check fails with a 403 and the IDE carries on. **[observed]**
-- **What `ui.log` shows** **[observed]**: `Download op:1 file url: <updateURI>`, then about a second later `CheckForIDEUpdates Failed: … (403) Forbidden.` Either line means the IDE has already read `updateURI`.
+- **What `ui.log` shows** **[observed]**: `Download op:1 file url: <updateURI>`, then about a second later `CheckForIDEUpdates Failed: … (403) Forbidden.` Either line means the IDE has already read `updateURI`. **On Linux no URL is logged**: a failed check logs `DoUpdateDownload exception … (403) Forbidden.`, and a successful one `Update found - got <n> items` / `We do NOT need to update`. **[experiment L2]**
 - **The old launcher's version of this hack** wrote a fake URI into every channel's `default_macros.json` on every launch and never restored it. Its `.bk.json` "backups" were made after the fake URI was written, so on this machine every one contained the fake URI and couldn't restore anything. **[observed]** Users' own GameMaker installs then silently stopped checking for updates.
 
 ## Why the launcher works the way it does
@@ -259,9 +313,13 @@ Alternatives considered:
 
 Extraction avoids all of that, and the user's normal installs keep working alongside Stitch.
 
-### 7-Zip is a user-installed dependency
+### Installers are unpacked natively where possible, otherwise with 7-Zip
 
-The standalone `7za` builds that could be bundled (including the `7zip-bin` npm package) can't extract any of GameMaker's installer formats. Only the full build can, and it's easy to install with each OS's package manager. Since 7-Zip builds differ, the launcher checks the formats a binary reports (`7z i`) before using it, and checks this before downloading anything.
+On Linux the launcher unpacks debs itself, so Linux users need no extra tools. Ubuntu's own 7-Zip package can't even decompress GameMaker's zstd debs.
+
+Windows installers are NSIS with **solid LZMA** compression **[package]**: Node has no LZMA, and the file list only comes from interpreting the NSIS script, which 7-Zip does. So on Windows (and, for now, macOS) 7-Zip is a user-installed dependency. The standalone `7za` builds that could be bundled (including the `7zip-bin` npm package) can't extract any of GameMaker's installer formats. Only the full build can, and it's easy to install with each OS's package manager. Since 7-Zip builds differ, the launcher checks the formats a binary reports (`7z i`) before using it, and checks this before downloading anything.
+
+The platform layers share one interface for this (`findUnpacker`, `unpackInstaller`, and the `UNPACKER_MISSING`/`UNPACKER_INCAPABLE` errors), whatever does the unpacking.
 
 ### A missing VC++ runtime is an error with instructions
 
@@ -319,15 +377,17 @@ The cache dir (which can grow to many GB: this machine had 10 GB), the downloads
 
 ## Open questions
 
-- **macOS/Linux, on real machines:**
+- **macOS, on a real machine:**
   - Does `GM_RESTART=0` stop the Mac post-install launch?
-  - Does the IDE install its runtime on a plain boot, without `--runtime`?
+  - Does the IDE install its runtime on a plain boot, without `--runtime`? (Yes on Linux.)
   - Where do `um.json` and the user subdir land on Mac (`~/Library/Application Support` vs `~/.config`)?
-  - Is `~/.local/share/<pdn>` the real Linux system dir?
-  - Does running `<arch>/GameMaker` directly on Linux behave like the wrapper?
-  - Does Igor need `chmod +x`, or a quarantine fix on Mac?
+  - Does Igor need a quarantine fix on Mac? (The IDE makes it executable on Linux.)
   - Is the Mac LTS2026 `program_dir_name` really `GameMakerStudio2-LTS2026`?
-  - Do extracted `.app` bundles and `/opt/<pkg>` dirs run, and is there quarantine or permission fallout?
+  - Do extracted `.app` bundles run, and is there quarantine or permission fallout?
+- **Linux:**
+  - YYC builds, and the Linux LTS2026 IDE, are untested.
+  - Does `Run` work once the Steam runtime is installed, and is the game then a child process Stitch can track?
+  - Other distros: only Debian-based systems can be checked by `checkSystemRequirements`.
 - **Does a CLI project open work when an IDE of the same channel is already running?**
 - **VC++ detection:** is the registry key reliable on machines that only have the runtime from another app's installer?
 
@@ -363,3 +423,19 @@ These were run on 2026-11-20. Every GameMaker config file was backed up first an
   - The IDE requested the new fake URI and got a 403, so no prompt.
   - The original file was restored right after that, and `runtime.json` and `runtime_feeds.json` were unchanged.
   - It found the relaunched IDE process and closed it. The whole test took 35 s.
+
+### Linux experiments
+
+Run on 2026-11-25 on Ubuntu 24.04, which had never had GameMaker installed.
+
+- **L1. Clean-slate boot:** the 1199 deb unpacked with `dpkg-deb -x` into a scratch dir (not `/opt`, no AppArmor profile), then `x86_64/GameMaker` run directly.
+  - It booted, created the dirs in [Linux layout](#directories), and installed runtime 1133 logged out within about 10 s, making Igor executable.
+  - The spawned PID was the IDE. `SIGTERM` closed it in 2 s.
+- **L2. The launcher's install and open, end to end:** `installIde` into a scratch cache (native unpacker), then `openProject` on a project whose path contains a space.
+  - The IDE got the path as one argument and loaded the project.
+  - The update check failed against the fake URI with `DoUpdateDownload exception … (403)`, which the launcher's log pattern didn't match yet, so only the 60 s fallback restored `default_macros.json`. The pattern now includes the Linux lines.
+- **L3. Native unpacking:** the launcher's deb unpacker vs `dpkg-deb -x` on the 1199 deb: identical trees, modes, sizes and contents.
+- **L4. Igor packaging** with runtime 1133 and the parser sample project (in a path with a space, broken scripts blanked):
+  - `PackageZip` exited 0 with "Unknown command"; `Package` logged out failed with the permission error.
+  - Logged in, `Package` produced the zip in 3.4 s, staged through `~/GameMakerStudio2/`.
+- **L5. Igor `Run`:** failed first on a missing `linuxdeploy`, then (with `linuxdeploy`, `appimagetool` and `libfuse2t64` installed) on the missing Steam runtime, as described in [Igor on Linux](#igor-on-linux).

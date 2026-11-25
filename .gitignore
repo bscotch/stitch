@@ -3,6 +3,10 @@
 *.resource_order
 stitch-import.log.yaml
 *.tmp.*
+# Launcher tests that simulate Windows paths on POSIX create files named
+# like `\tmp\stitch-launcher-test-*` (literal backslashes)
+\\tmp\\stitch-launcher-test-*
+
 
 
 # secrets

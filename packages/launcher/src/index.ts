@@ -5,10 +5,9 @@
 export {
   isLauncherError,
   LauncherError,
-  sevenZipDownloadUrl,
   type LauncherErrorCode,
   type LauncherErrorData,
-  type SevenZipErrorData,
+  type UnpackerErrorData,
 } from './lib/errors.ts';
 export { getReleasesFeed, normalizeVersion } from './lib/feed.ts';
 export {
@@ -89,9 +88,24 @@ export {
   type InstalledRuntime,
   type RuntimeModule,
 } from './lib/runtimes.ts';
-export { findSevenZip, type SevenZipInfo } from './lib/sevenZip.ts';
+export {
+  findSevenZip,
+  sevenZipDownloadUrl,
+  type SevenZipInfo,
+} from './lib/sevenZip.ts';
+export { findUnpacker, type InstallerUnpacker } from './lib/unpacker.ts';
 export { restoreUpdatePrompts } from './lib/updatePrompt.ts';
 export {
   getIdeVersionDetails,
   type IdeVersionDetails,
 } from './lib/versions.ts';
+export {
+  buildInstallScript,
+  checkSystemRequirements,
+  linuxRequirements,
+  type RequirementDefinition,
+  type RequirementGroup,
+  type RequirementProbe,
+  type SystemRequirement,
+  type SystemRequirementsReport,
+} from './lib/requirements.ts';

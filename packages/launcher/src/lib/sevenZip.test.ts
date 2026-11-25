@@ -96,7 +96,7 @@ describe('7-Zip', function () {
     await assert.rejects(
       findSevenZip(winOpts(), fakeProbe({ 'C:\\bin\\7z.exe': standalone })),
       (err) => {
-        assert.ok(isLauncherError(err, 'SEVEN_ZIP_INCAPABLE'));
+        assert.ok(isLauncherError(err, 'UNPACKER_INCAPABLE'));
         assert.deepEqual(err.data.found, [
           { path: 'C:\\bin\\7z.exe', version: '26.06' },
         ]);
@@ -123,7 +123,7 @@ describe('7-Zip', function () {
     );
     assert.equal(found.path, '/opt/homebrew/bin/7zz');
     await assert.rejects(findSevenZip(mac, fakeProbe({})), (err) =>
-      isLauncherError(err, 'SEVEN_ZIP_MISSING'),
+      isLauncherError(err, 'UNPACKER_MISSING'),
     );
   });
 });

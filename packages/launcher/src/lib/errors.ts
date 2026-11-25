@@ -1,19 +1,23 @@
-export const sevenZipDownloadUrl = 'https://www.7-zip.org/download.html';
-
-export interface SevenZipErrorData {
-  /** 7-Zip binaries that were found but lack the required format support */
+/**
+ * About the external tool some OSes need to unpack GameMaker installers
+ * (7-Zip, on Windows and macOS), when it's missing or unsuitable.
+ */
+export interface UnpackerErrorData {
+  /** The tool's name, e.g. "7-Zip" */
+  tool: string;
+  /** Copies of the tool that were found but lack the required support */
   found: { path: string; version?: string }[];
   /** The archive format this OS needs (e.g. "Nsis" on Windows) */
   requiredFormat: string;
   downloadUrl: string;
-  /** OS-specific command that installs a suitable 7-Zip */
+  /** OS-specific command that installs a suitable copy of the tool */
   installCommand: string;
 }
 
 /** Extra information attached to errors, per error code */
 export interface LauncherErrorData {
-  SEVEN_ZIP_MISSING: SevenZipErrorData;
-  SEVEN_ZIP_INCAPABLE: SevenZipErrorData;
+  UNPACKER_MISSING: UnpackerErrorData;
+  UNPACKER_INCAPABLE: UnpackerErrorData;
   VC_RUNTIME_MISSING: {
     /** The downloaded official installer, which installs the VC++ runtime when run normally */
     installerPath?: string;

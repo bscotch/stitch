@@ -1,11 +1,11 @@
 /**
  * @file Find a user-installed *full* 7-Zip build, which Stitch uses to
- * extract the official GameMaker installers. The standalone `7za` build
+ * unpack the official GameMaker installers on Windows and macOS. The standalone `7za` build
  * (including the one in the `7zip-bin` npm package) supports none of the
  * needed formats (NSIS, Xar, Ar).
  */
 import { execFile } from './exec.ts';
-import { LauncherError, sevenZipDownloadUrl } from './errors.ts';
+import { LauncherError } from './errors.ts';
 import { exists } from './fsUtil.ts';
 import {
   resolveOptions,
@@ -13,6 +13,9 @@ import {
   type ResolvedOptions,
 } from './options.ts';
 import { splitPath } from './platform/posix.ts';
+import type { SevenZipSupport } from './platform/types.ts';
+
+export const sevenZipDownloadUrl = 'https://www.7-zip.org/download.html';
 
 export interface SevenZipInfo {
   path: string;
@@ -66,26 +69,37 @@ const defaultProbe: SevenZipProbe = {
 
 /** Candidate 7-Zip paths, in the order they should be tried */
 export async function listSevenZipCandidates(opts: ResolvedOptions) {
+  const support = requireSevenZipSupport(opts);
   if (opts.sevenZipPath) return [opts.sevenZipPath];
   const { platform, env } = opts;
   const pathVar = env.env.PATH ?? env.env.Path;
   const onPath = splitPath(pathVar, platform.pathDelimiter).flatMap((dir) =>
-    platform.sevenZipNames.map((name) => platform.path.join(dir, name)),
+    support.names.map((name) => platform.path.join(dir, name)),
   );
-  return [...new Set([...onPath, ...(await platform.sevenZipCandidates(env))])];
+  return [...new Set([...onPath, ...(await support.candidates(env))])];
+}
+
+function requireSevenZipSupport(opts: ResolvedOptions): SevenZipSupport {
+  if (!opts.platform.sevenZip) {
+    throw new Error(
+      `GameMaker installers for ${opts.platform.os} are unpacked without 7-Zip.`,
+    );
+  }
+  return opts.platform.sevenZip;
 }
 
 /**
- * Find a 7-Zip that can extract this OS's GameMaker installers, or throw
- * a `SEVEN_ZIP_MISSING`/`SEVEN_ZIP_INCAPABLE` error with install
- * instructions.
+ * Find a 7-Zip that can unpack this OS's GameMaker installers, or throw
+ * an `UNPACKER_MISSING`/`UNPACKER_INCAPABLE` error with install
+ * instructions. Only for OSes that need 7-Zip (see `PlatformLayer.sevenZip`).
  */
 export async function findSevenZip(
   options?: AnyLauncherOptions,
   probe: SevenZipProbe = defaultProbe,
 ): Promise<SevenZipInfo> {
   const opts = resolveOptions(options);
-  const required = opts.platform.sevenZipFormat;
+  const support = requireSevenZipSupport(opts);
+  const required = support.format;
   const found: { path: string; version?: string }[] = [];
   for (const candidate of await listSevenZipCandidates(opts)) {
     if (!(await probe.exists(candidate))) continue;
@@ -105,25 +119,26 @@ export async function findSevenZip(
   }
 
   const data = {
+    tool: '7-Zip',
     found,
     requiredFormat: required,
     downloadUrl: sevenZipDownloadUrl,
-    installCommand: opts.platform.sevenZipInstallCommand,
+    installCommand: support.installCommand,
   };
   const fix = `Install the full 7-Zip from ${sevenZipDownloadUrl} (or run \`${data.installCommand}\`)${opts.sevenZipPath ? '' : ", or set Stitch's 7-Zip path setting"}.`;
   if (found.length) {
     throw new LauncherError(
-      'SEVEN_ZIP_INCAPABLE',
-      `Stitch needs a full 7-Zip build with ${required} support to extract GameMaker installers, but found only: ${found.map((f) => `${f.path}${f.version ? ` (v${f.version})` : ''}`).join(', ')}. The standalone "7za" build is not enough.`,
+      'UNPACKER_INCAPABLE',
+      `Stitch needs a full 7-Zip build with ${required} support to unpack GameMaker installers, but found only: ${found.map((f) => `${f.path}${f.version ? ` (v${f.version})` : ''}`).join(', ')}. The standalone "7za" build is not enough.`,
       data,
       { fix },
     );
   }
   throw new LauncherError(
-    'SEVEN_ZIP_MISSING',
+    'UNPACKER_MISSING',
     opts.sevenZipPath
       ? `7-Zip was not found at "${opts.sevenZipPath}".`
-      : 'Stitch needs 7-Zip to extract GameMaker installers, but could not find it.',
+      : 'Stitch needs 7-Zip to unpack GameMaker installers, but could not find it.',
     data,
     { fix },
   );

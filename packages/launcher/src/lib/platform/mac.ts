@@ -36,10 +36,19 @@ function macArchDir(arch: string) {
 export const mac: PlatformLayer = {
   os: 'mac',
   feedPlatform: 'mac',
-  sevenZipFormat: 'Xar',
-  // TODO(verify): [unverified] the Homebrew formula name.
-  sevenZipInstallCommand: 'brew install sevenzip',
-  sevenZipNames: ['7zz'],
+  // TODO: pkgs (Xar → gzip → cpio) could be unpacked natively, like debs
+  // on Linux, removing the 7-Zip dependency on macOS.
+  sevenZip: {
+    format: 'Xar',
+    // TODO(verify): [unverified] the Homebrew formula name.
+    installCommand: 'brew install sevenzip',
+    names: ['7zz'],
+    candidates() {
+      // GUI apps (like VS Code launched from the Dock) may not have
+      // Homebrew's bin dir on their PATH.
+      return Promise.resolve(['/opt/homebrew/bin/7zz', '/usr/local/bin/7zz']);
+    },
+  },
   pathDelimiter: ':',
   path: p,
 
@@ -69,12 +78,6 @@ export const mac: PlatformLayer = {
       : [p.join(dir, 'x64', 'Igor')];
   },
 
-  sevenZipCandidates() {
-    // GUI apps (like VS Code launched from the Dock) may not have Homebrew's
-    // bin dir on their PATH.
-    return Promise.resolve(['/opt/homebrew/bin/7zz', '/usr/local/bin/7zz']);
-  },
-
   async resolveIdeLayout(ideDir, arch): Promise<IdeLayout | undefined> {
     let entries: string[];
     try {
@@ -101,7 +104,8 @@ export const mac: PlatformLayer = {
     };
   },
 
-  async extractInstaller(sevenZip, installer, destDir) {
+  async unpackInstaller(installer, destDir, sevenZip) {
+    if (!sevenZip) throw new Error('7-Zip is required to unpack installers');
     // TODO(verify): extracting the pkg (Xar → Payload → cpio) produces a
     // runnable app: permissions, symlinks, Gatekeeper and quarantine.
     // The pkg only installs to /Applications, so extracting is the only way

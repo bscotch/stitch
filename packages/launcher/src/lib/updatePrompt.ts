@@ -47,13 +47,16 @@ export const updateCheckTimeoutMs = 60_000;
 export const staleLaunchMs = 90_000;
 
 /**
- * Lines in `ui.log` that show the IDE's boot-time update check. Observed:
- * `Download op:1 file url: <updateURI>` and then (about a second later)
- * `CheckForIDEUpdates Failed: … (403) Forbidden.` Either means the IDE has
- * already read `updateURI`.
+ * Lines in `ui.log` that show the IDE's boot-time update check. Any of
+ * them means the IDE has already read `updateURI`. Observed:
+ * - Windows: `Download op:1 file url: <updateURI>` and then (about a
+ *   second later) `CheckForIDEUpdates Failed: … (403) Forbidden.`
+ * - Linux: no URL is logged. A failed check logs `DoUpdateDownload
+ *   exception … (403) Forbidden.`, and a successful one `Update found -
+ *   got <n> items`.
  */
 export const updateCheckLogPattern =
-  /CheckForIDEUpdates|update-stitch-disabled|TOTALLY-FAKE|update-(?:win|mac|linux)/i;
+  /CheckForIDEUpdates|DoUpdateDownload|Update found - got|update-stitch-disabled|TOTALLY-FAKE|update-(?:win|mac|linux)/i;
 
 export interface UpdatePromptLaunch {
   id: string;

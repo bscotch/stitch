@@ -49,6 +49,21 @@ export interface ExecResult {
 }
 
 /**
+ * For OSes whose installers are unpacked with a user-installed 7-Zip:
+ * how to find a suitable one.
+ */
+export interface SevenZipSupport {
+  /** The 7-Zip format needed to unpack this OS's installers */
+  readonly format: 'Nsis' | 'Xar';
+  /** The OS-specific command to install a full 7-Zip build */
+  readonly installCommand: string;
+  /** Executable names to look for on the PATH */
+  readonly names: string[];
+  /** 7-Zip locations to try after the override and the PATH */
+  candidates(env: PlatformEnv): Promise<string[]>;
+}
+
+/**
  * Everything that differs between operating systems. One implementation
  * per OS; see `getPlatformLayer`.
  */
@@ -56,12 +71,11 @@ export interface PlatformLayer {
   readonly os: OsName;
   /** This OS's key in the releases feed's `downloads` */
   readonly feedPlatform: Platform;
-  /** The 7-Zip format needed to extract this OS's installers */
-  readonly sevenZipFormat: 'Nsis' | 'Xar' | 'Ar';
-  /** The OS-specific command to install a full 7-Zip build */
-  readonly sevenZipInstallCommand: string;
-  /** Executable names to look for on the PATH */
-  readonly sevenZipNames: string[];
+  /**
+   * Set when this OS's installers need 7-Zip to unpack them. Otherwise
+   * the launcher unpacks them itself.
+   */
+  readonly sevenZip?: SevenZipSupport;
   readonly pathDelimiter: string;
   /** Path functions for this OS (so paths can be computed cross-platform) */
   readonly path: PlatformPath;
@@ -71,8 +85,6 @@ export interface PlatformLayer {
   defaultDownloadsDir(env: PlatformEnv): Promise<string>;
   /** Candidate Igor paths inside a runtime dir, best first */
   igorCandidates(runtimeDir: string, arch: string): string[];
-  /** 7-Zip locations to try after the override and the PATH */
-  sevenZipCandidates(env: PlatformEnv): Promise<string[]>;
 
   /**
    * Find the IDE inside a cached `gamemaker-<version>` dir.
@@ -82,11 +94,15 @@ export interface PlatformLayer {
     ideDir: string,
     arch: string,
   ): Promise<IdeLayout | undefined>;
-  /** Extract an official installer into `destDir` (which exists and is empty) */
-  extractInstaller(
-    sevenZip: string,
+  /**
+   * Unpack an official installer into `destDir` (which exists and is
+   * empty). `toolPath` is the external unpacker's path, given when this
+   * OS needs one (see `sevenZip`).
+   */
+  unpackInstaller(
     installer: string,
     destDir: string,
+    toolPath?: string,
   ): Promise<void>;
   /** Throw if the installer isn't validly signed by YoYo Games */
   verifyInstaller(installer: string): Promise<void>;

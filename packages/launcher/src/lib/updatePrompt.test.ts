@@ -11,6 +11,7 @@ import {
   isStitchFakeUpdateUri,
   restoreUpdatePrompts,
   staleLaunchMs,
+  updateCheckLogPattern,
   waitForUpdateCheck,
 } from './updatePrompt.ts';
 
@@ -34,6 +35,25 @@ async function setup() {
 }
 
 describe('Update prompt suppression', function () {
+  it("recognizes the boot-time update check in each OS's ui.log", function () {
+    for (const line of [
+      // Windows
+      '[10:01:02:003(1a2b)] Download op:1 file url: https://gms.yoyogames.com/update-stitch-disabled.rss',
+      '[10:01:03:003(1a2b)] CheckForIDEUpdates Failed: The remote server returned an error: (403) Forbidden.',
+      // Linux, with the fake feed and with a real one
+      '[09:27:40:062(742b)] DoUpdateDownload exception System.Net.WebException: The remote server returned an error: (403) Forbidden.',
+      '[09:20:06:718(c13f)] Update found - got 55 items',
+    ]) {
+      assert.match(line, updateCheckLogPattern);
+    }
+    for (const line of [
+      '[09:20:06:713(c13f)] Current assembly revision is 2026.100.0.1199',
+      '[09:27:40:134(742b)] LoadingState: CheckingRSS',
+    ]) {
+      assert.doesNotMatch(line, updateCheckLogPattern);
+    }
+  });
+
   it('recognizes its own fake URIs', function () {
     assert.ok(isStitchFakeUpdateUri(fakeUpdateUri));
     assert.ok(isStitchFakeUpdateUri(oldFakeUri));

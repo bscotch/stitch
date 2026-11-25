@@ -3,7 +3,8 @@
  * opt-in via an env var:
  *
  * - `STITCH_LAUNCHER_INTEGRATION=1`: read-only checks of this machine's
- *   runtimes and prerequisites, and an Igor `PackageZip` of
+ *   runtimes and prerequisites, and an Igor package (`PackageZip`, or
+ *   `Package` on Linux, which needs a logged-in GameMaker user) of
  *   `samples/project` into temp dirs. Needs the runtime that matches the
  *   sample project's IDE to be installed (see `samples/project/project.yyp`).
  * - `STITCH_LAUNCHER_INTEGRATION_INSTALL=1`: `installIde` into a temp cache,
@@ -81,7 +82,7 @@ describe(
 
     it('finds the prerequisites', async function () {
       const prereqs = await checkPrerequisites();
-      assert.ok(!(prereqs.sevenZip instanceof Error), String(prereqs.sevenZip));
+      assert.ok(!(prereqs.unpacker instanceof Error), String(prereqs.unpacker));
       if (process.platform === 'win32') assert.equal(prereqs.vcRuntime, true);
       const downloads = await resolveOptions().downloadsDir();
       assert.ok((await stat(downloads)).isDirectory(), downloads);
@@ -107,7 +108,8 @@ describe(
           {
             project: sampleProject,
             runtime,
-            command: 'PackageZip',
+            // Linux's worker only has `Package` (a zip)
+            command: process.platform === 'linux' ? 'Package' : 'PackageZip',
             outputFile,
           },
           { igorCacheDir: path.join(dir, 'igor') },

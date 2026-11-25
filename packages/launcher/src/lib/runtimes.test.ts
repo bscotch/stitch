@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import { put, testOptions, tmpDir } from '../test/helpers.ts';
+import { nativeOs, put, testOptions, tmpDir } from '../test/helpers.ts';
 import { resolveOptions } from './options.ts';
+import { getPlatformLayer } from './platform/index.ts';
 import { computeGameMakerDirs } from './paths.ts';
 import {
   findRuntime,
@@ -30,6 +31,10 @@ const receipt = {
   windowsYYC: { Name: 'windowsYYC', Version: '2026.100.0.1133' },
 };
 
+// Runtime dirs are made with the host OS's layout, since the tests use the
+// real filesystem.
+const os = nativeOs();
+
 async function fakeRuntime(
   runtimesDir: string,
   version: string,
@@ -37,10 +42,7 @@ async function fakeRuntime(
 ) {
   const dir = path.join(runtimesDir, `runtime-${version}`);
   if (opts.igor ?? true)
-    await put(
-      path.join(dir, 'bin', 'igor', 'windows', 'x64', 'Igor.exe'),
-      'exe',
-    );
+    await put(getPlatformLayer(os).igorCandidates(dir, 'x64')[0], 'exe');
   if (opts.receipt ?? true) await put(path.join(dir, 'receipt.json'), receipt);
   return dir;
 }
@@ -81,7 +83,7 @@ describe('Runtime files', function () {
 describe('Installed runtimes', function () {
   it('lists complete runtimes across channels, skipping incomplete ones', async function () {
     const root = await tmpDir();
-    const options = { ...testOptions(root, undefined), os: 'windows' as const };
+    const options = { ...testOptions(root, undefined), os };
     const resolved = resolveOptions(options);
     const beta = computeGameMakerDirs('GameMakerStudio2-Beta', resolved);
     const lts = computeGameMakerDirs('GameMakerStudio2-LTS2026', resolved);
@@ -109,9 +111,12 @@ describe('Installed runtimes', function () {
       runtimes[0].modules.map((m) => m.name),
       ['base', 'windows', 'windowsYYC'],
     );
-    assert.match(
+    assert.equal(
       runtimes[0].igorPath,
-      /bin[\\/]igor[\\/]windows[\\/]x64[\\/]Igor\.exe$/,
+      getPlatformLayer(os).igorCandidates(
+        path.join(beta.runtimes, 'runtime-2026.100.0.1133'),
+        'x64',
+      )[0],
     );
 
     const found = await findRuntime('2026.1.0.28', options);
@@ -121,7 +126,7 @@ describe('Installed runtimes', function () {
 
   it('prefers the requested channel for duplicate versions', async function () {
     const root = await tmpDir();
-    const options = { ...testOptions(root, undefined), os: 'windows' as const };
+    const options = { ...testOptions(root, undefined), os };
     const resolved = resolveOptions(options);
     for (const pdn of ['GameMakerStudio2-LTS2026', 'GameMakerStudio2-Beta']) {
       await fakeRuntime(
