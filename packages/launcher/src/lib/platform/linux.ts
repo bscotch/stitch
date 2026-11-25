@@ -31,10 +31,19 @@ function linuxArchDir(arch: string) {
 export const linux: PlatformLayer = {
   os: 'linux',
   feedPlatform: 'linux',
-  sevenZipFormat: 'Ar',
-  // TODO(verify): [unverified] package names (`p7zip-full` on older distros).
-  sevenZipInstallCommand: 'sudo apt install 7zip',
-  sevenZipNames: ['7zz', '7z'],
+  sevenZip: {
+    format: 'Ar',
+    // TODO(verify): [unverified] package names (`p7zip-full` on older distros).
+    installCommand: 'sudo apt install 7zip',
+    names: ['7zz', '7z'],
+    candidates() {
+      return Promise.resolve([
+        '/usr/bin/7zz',
+        '/usr/local/bin/7zz',
+        '/usr/bin/7z',
+      ]);
+    },
+  },
   pathDelimiter: ':',
   path: p,
 
@@ -80,14 +89,6 @@ export const linux: PlatformLayer = {
     return [p.join(dir, arch === 'arm64' ? 'arm64' : 'x64', 'Igor')];
   },
 
-  sevenZipCandidates() {
-    return Promise.resolve([
-      '/usr/bin/7zz',
-      '/usr/local/bin/7zz',
-      '/usr/bin/7z',
-    ]);
-  },
-
   async resolveIdeLayout(ideDir, arch): Promise<IdeLayout | undefined> {
     let entries: string[];
     try {
@@ -113,7 +114,8 @@ export const linux: PlatformLayer = {
     };
   },
 
-  async extractInstaller(sevenZip, installer, destDir) {
+  async extractInstaller(installer, destDir, sevenZip) {
+    if (!sevenZip) throw new Error('7-Zip is required to extract installers');
     // deb (ar) → data.tar.* → data.tar → opt/<pkg>/
     // TODO(verify): that the result runs, including exec bits, symlinks,
     // and data.tar compression (xz vs zstd) support in the user's 7-Zip.

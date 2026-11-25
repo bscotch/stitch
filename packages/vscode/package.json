@@ -454,7 +454,7 @@
           "title": "7-Zip Path",
           "type": "string",
           "default": "",
-          "markdownDescription": "Stitch extracts GameMaker installers with a *full* 7-Zip install (`7z.exe` on Windows, `7zz` on macOS/Linux; the standalone `7za` is not enough). Leave empty to find it automatically. Get it from [7-zip.org](https://www.7-zip.org/download.html)."
+          "markdownDescription": "On Windows and Linux, Stitch extracts GameMaker installers with a *full* 7-Zip install (`7z.exe` on Windows, `7zz` or `7z` on Linux; the standalone `7za` is not enough). Leave empty to find it automatically. Get it from [7-zip.org](https://www.7-zip.org/download.html). Not used on macOS, where Stitch uses the built-in `pkgutil`."
         },
         "stitch.editing.autocomplete.ignoredPrefix": {
           "title": "Ignore autocomplete prefix",

@@ -21,9 +21,28 @@ const ideExePattern = /^GameMaker(?:Studio2?)?(-[A-Za-z0-9]+)?\.exe$/i;
 export const windows: PlatformLayer = {
   os: 'windows',
   feedPlatform: 'windows',
-  sevenZipFormat: 'Nsis',
-  sevenZipInstallCommand: 'winget install 7zip.7zip',
-  sevenZipNames: ['7z.exe'],
+  sevenZip: {
+    format: 'Nsis',
+    installCommand: 'winget install 7zip.7zip',
+    names: ['7z.exe'],
+    async candidates(env) {
+      const candidates: string[] = [];
+      for (const hive of ['HKCU', 'HKLM']) {
+        for (const name of ['Path64', 'Path']) {
+          const value = await readRegistryValue(
+            `${hive}\\SOFTWARE\\7-Zip`,
+            name,
+          );
+          if (value?.value) candidates.push(p.join(value.value, '7z.exe'));
+        }
+      }
+      for (const programFiles of [env.env.ProgramW6432, env.env.ProgramFiles]) {
+        if (programFiles)
+          candidates.push(p.join(programFiles, '7-Zip', '7z.exe'));
+      }
+      return candidates;
+    },
+  },
   pathDelimiter: ';',
   path: p,
 
@@ -65,21 +84,6 @@ export const windows: PlatformLayer = {
       : [x64];
   },
 
-  async sevenZipCandidates(env) {
-    const candidates: string[] = [];
-    for (const hive of ['HKCU', 'HKLM']) {
-      for (const name of ['Path64', 'Path']) {
-        const value = await readRegistryValue(`${hive}\\SOFTWARE\\7-Zip`, name);
-        if (value?.value) candidates.push(p.join(value.value, '7z.exe'));
-      }
-    }
-    for (const programFiles of [env.env.ProgramW6432, env.env.ProgramFiles]) {
-      if (programFiles)
-        candidates.push(p.join(programFiles, '7-Zip', '7z.exe'));
-    }
-    return candidates;
-  },
-
   async resolveIdeLayout(ideDir): Promise<IdeLayout | undefined> {
     let files: string[];
     try {
@@ -103,7 +107,8 @@ export const windows: PlatformLayer = {
     };
   },
 
-  async extractInstaller(sevenZip, installer, destDir) {
+  async extractInstaller(installer, destDir, sevenZip) {
+    if (!sevenZip) throw new Error('7-Zip is required to extract installers');
     // Skip the NSIS installer's own plugins and temp files: the result is
     // exactly the IDE's install dir.
     const result = await execFile(

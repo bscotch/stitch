@@ -21,6 +21,7 @@
  *   of fetching it.
  */
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { cp, mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -141,6 +142,15 @@ describe(
         assert.ok((await stat(ide.executable)).isFile());
         assert.ok(ide.pairedRuntimeVersion);
         assert.deepEqual(await findIde(ideVersion, options), ide);
+        if (process.platform === 'darwin') {
+          // The app's code signature must survive extraction (7-Zip broke
+          // it; see NOTES.md). Throws if it doesn't verify.
+          const app = path.resolve(ide.executable, '..', '..', '..');
+          assert.match(app, /\.app$/);
+          execFileSync('codesign', ['--verify', '--deep', '--strict', app], {
+            stdio: 'pipe',
+          });
+        }
       },
     );
   },

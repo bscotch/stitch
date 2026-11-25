@@ -111,6 +111,43 @@ These run the opt-in suites in [`src/integration.test.ts`](./src/integration.tes
    - suppressing and restoring the update prompt
    - the runtime installing on boot
 
+### Step 1 results: runtimes and Igor (2026-11-24)
+
+- **Runtimes and prerequisites:** ✅ pass. 7-Zip is found at `/opt/homebrew/bin/7zz`.
+- **Packaging the sample project:** ❌ blocked. The sample is saved in the 2022.600 format, which Igor can't load. With `STITCH_LAUNCHER_IDE_VERSION=2026.100.0.1199`, Igor runs but rejects every `.yy` file, and about a third of the time it crashes with `SIGABRT` (see [Discoveries](#discoveries)). This step needs a sample saved by a recent IDE.
+
+### Step 2 results: installing an IDE (2026-11-25)
+
+**The suite passes** (`STITCH_LAUNCHER_INTEGRATION_INSTALL=1 STITCH_LAUNCHER_IDE_VERSION=2026.100.0.1199`), in 18.5 s, including the download of the 466 MB pkg into `~/Downloads`. But it only checks that the executable exists and that a paired runtime was found. Inspecting an extracted copy shows:
+
+- ✅ **Layout:** `GameMaker Beta.app` sits directly in `gamemaker-2026.100.0.1199/`. The channel is `beta`, the `program_dir_name` is `GameMakerStudio2-Beta`, and `Info.plist` gives version 2026.100.0.1199 and ID `com.yoyogames.gms2-beta`.
+- ✅ **Permissions:** exec bits survive; all 886 executables match the `/Applications` install.
+- ✅ **Files:** `matching.runtime` (`2026.100.0.1133`) and `helpdocs_keywords.json` are where `mac.ts` expects.
+- ✅ **No quarantine:** the extracted files only get `com.apple.provenance`.
+- ❌ **The code signature is broken.**
+  - The pkg payload stores each file's extended attributes as AppleDouble data. 7-Zip writes that data out as 8,186 extra `._<name>` files instead of applying it, so the bundle holds 16,453 files against 8,267 in `/Applications`.
+  - Those attributes are the per-file code signatures (`com.apple.cs.CodeDirectory`, `CodeRequirements` and `CodeSignature`) that non-Mach-O files in `Contents/MacOS` need.
+  - Result: `codesign --verify --deep --strict` says "code object is not signed at all", and `spctl` rejects the app.
+  - Deleting the `._*` files doesn't help (the signatures are then missing), and neither does `dot_clean -m`, which removes them without restoring the `com.apple.cs.*` attributes.
+  - Risks besides Gatekeeper: stray files like `._Alice.dll` and `._Alice.gmplugin` sit next to real plugins and assemblies.
+- ✅ **Fix candidate: `pkgutil --expand-full <pkg> <dir>`.**
+  - It's built into macOS, needs no root, and runs no install scripts. It took 7.5 s.
+  - The resulting `GameMakerStudio2-Installer.pkg/Payload/GameMaker Beta.app` has no `._*` files and keeps the `com.apple.cs.*` attributes. `codesign` reports "valid on disk", and `spctl` accepts it as "Notarized Developer ID".
+  - **Implication:** on macOS the launcher could drop 7-Zip entirely, using `pkgutil --expand-full` to extract and `pkgutil --check-signature` to verify. That would change the "7-Zip is a user-installed dependency" design note for Mac.
+
+**Fixed 2026-11-25.** macOS no longer uses 7-Zip:
+
+- **`mac.ts`:**
+  - `extractInstaller` runs `pkgutil --expand-full` and moves the `.app` out of the payload.
+  - `verifyInstaller` runs `pkgutil --check-signature` and requires an Apple-issued signature from YoYo Games' Team ID `C9E7J7HL3D`. The output is parsed by `parsePkgSignature`, which has unit tests in `mac.test.ts`.
+- **`PlatformLayer`:** the 7-Zip settings are grouped into an optional `sevenZip` requirement, which Windows and Linux declare and macOS doesn't.
+- **On macOS:**
+  - `installIde` and `checkPrerequisites` skip 7-Zip entirely. `Prerequisites.sevenZip` is `undefined` there.
+  - `findSevenZip` throws `NOT_SUPPORTED`.
+  - `sevenZipPath` is ignored.
+- **Tests:** the install integration test now also runs `codesign --verify --deep --strict` on the extracted app on macOS. It passes, in 15 s.
+- **Docs:** NOTES.md, the launcher README, the `sevenZipPath` option doc, and the VS Code 7-Zip setting description are updated.
+
 ## Phase 3: End-user scenarios
 
 - On a Mac missing a dependency (e.g. 7-Zip), the launcher names what's missing and how to install it.
@@ -134,6 +171,8 @@ These run the opt-in suites in [`src/integration.test.ts`](./src/integration.tes
 - **Copy install command** copies `brew install sevenzip`.
 - **Set 7-Zip path** opens the setting.
 
+**Update 2026-11-25:** macOS no longer needs 7-Zip (see [Phase 2 step 2](#step-2-results-installing-an-ide-2026-11-25)), so this scenario no longer applies on a Mac. The 7-Zip error and the VS Code buttons still apply on Windows and Linux. No other Mac dependency is known so far.
+
 **Gaps:**
 
 - The extension never calls `checkPrerequisites()`, so a missing 7-Zip is only reported when an install is attempted, not up front.
@@ -146,16 +185,16 @@ For each item, mark one of: ✅ confirmed (remove the `TODO(verify)` marker and 
 From `TODO(verify)` markers:
 
 - [ ] App names and channel mapping; LTS2026's `program_dir_name` is `GameMakerStudio2-LTS2026` (`mac.ts:27`)
-- [x] ✅ `brew install sevenzip` provides `7zz` with Xar/Cpio support (`mac.ts:40`). Confirmed 2026-11-24: Homebrew installed 7-Zip 26.06 (arm64) at `/opt/homebrew/bin/7zz`. `7zz i` lists Xar, Cpio, Ar and Nsis, and `checkPrerequisites()` finds it.
+- [x] ~~`brew install sevenzip` provides `7zz` with Xar/Cpio support.~~ Confirmed 2026-11-24, then moot since 2026-11-25: macOS no longer needs 7-Zip.
 - [ ] System dir is `/Users/Shared/<pdn>` (`mac.ts:48`)
 - [ ] User dir is `~/Library/Application Support/<pdn>`; does `um.json` land there or in `~/.config`? (`mac.ts:50`)
 - [ ] Igor is at `<runtime>/bin/igor/osx/{arm64,x64}/Igor` (`mac.ts:65`). Partly confirmed 2026-11-24: the arm64 path exists and runs in IDE-installed runtimes. It has its exec bit set, no quarantine xattr, and a YoYo Games Developer ID signature (`C9E7J7HL3D`). The x64 path is unchecked.
 - [ ] Running the stub with a project path opens the project, or `open -a` is needed (`mac.ts:93`)
-- [ ] `matching.runtime` is at `Contents/MacOS/<arch>/` (`mac.ts:97`)
-- [ ] Help keywords location in the bundle (`mac.ts:99`)
-- [ ] Extracted `.app` runs: permissions, symlinks, Gatekeeper, quarantine (`mac.ts:105`)
-- [ ] Exec bits survive cpio extraction (`mac.ts:132`)
-- [ ] Pkg signature check, e.g. `pkgutil --check-signature` (`mac.ts:144`)
+- [x] ✅ `matching.runtime` is at `Contents/MacOS/<arch>/` (`mac.ts:97`). Confirmed 2026-11-25 in the extracted 1199 bundle: `2026.100.0.1133`.
+- [x] ✅ Help keywords location in the bundle (`mac.ts:99`). Confirmed 2026-11-25: `Contents/MacOS/arm64/RoboHelp/helpdocs_keywords.json`.
+- [ ] Extracted `.app` runs: permissions, symlinks, Gatekeeper, quarantine (`mac.ts:105`). 7-Zip extraction broke the code signature. **Fixed 2026-11-25** by switching to `pkgutil --expand-full`: exec bits, a valid signature and no quarantine are confirmed. Launching it is step 3.
+- [x] ✅ Exec bits survive cpio extraction (`mac.ts:132`). Confirmed 2026-11-25: all 886 executables match `/Applications`.
+- [x] ✅ Pkg signature check (`mac.ts`). Implemented 2026-11-25 with `pkgutil --check-signature`, requiring Team ID `C9E7J7HL3D`. The 1199 pkg passes, and the parser rejects an unsigned pkg's output.
 - [ ] `chmod 0777` of the system dir matches the pkg postinstall (`mac.ts:151`)
 - [ ] Process names and paths from `ps` (`mac.ts:166`)
 - [ ] 7-Zip `-snl` behavior with cpio/tar payloads (`posix.ts:21`)

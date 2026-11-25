@@ -1,8 +1,9 @@
 /**
  * @file Find a user-installed *full* 7-Zip build, which Stitch uses to
- * extract the official GameMaker installers. The standalone `7za` build
- * (including the one in the `7zip-bin` npm package) supports none of the
- * needed formats (NSIS, Xar, Ar).
+ * extract the official GameMaker installers on Windows and Linux. The
+ * standalone `7za` build (including the one in the `7zip-bin` npm package)
+ * supports none of the needed formats (NSIS, Ar). macOS doesn't need 7-Zip:
+ * its pkgs are extracted with the built-in `pkgutil`.
  */
 import { execFile } from './exec.ts';
 import { LauncherError, sevenZipDownloadUrl } from './errors.ts';
@@ -64,28 +65,42 @@ const defaultProbe: SevenZipProbe = {
   },
 };
 
-/** Candidate 7-Zip paths, in the order they should be tried */
+/**
+ * Candidate 7-Zip paths, in the order they should be tried. Empty on an OS
+ * that doesn't need 7-Zip.
+ */
 export async function listSevenZipCandidates(opts: ResolvedOptions) {
-  if (opts.sevenZipPath) return [opts.sevenZipPath];
   const { platform, env } = opts;
+  const requirement = platform.sevenZip;
+  if (!requirement) return [];
+  if (opts.sevenZipPath) return [opts.sevenZipPath];
   const pathVar = env.env.PATH ?? env.env.Path;
   const onPath = splitPath(pathVar, platform.pathDelimiter).flatMap((dir) =>
-    platform.sevenZipNames.map((name) => platform.path.join(dir, name)),
+    requirement.names.map((name) => platform.path.join(dir, name)),
   );
-  return [...new Set([...onPath, ...(await platform.sevenZipCandidates(env))])];
+  return [...new Set([...onPath, ...(await requirement.candidates(env))])];
 }
 
 /**
  * Find a 7-Zip that can extract this OS's GameMaker installers, or throw
  * a `SEVEN_ZIP_MISSING`/`SEVEN_ZIP_INCAPABLE` error with install
- * instructions.
+ * instructions. Throws `NOT_SUPPORTED` on an OS that doesn't use 7-Zip
+ * (macOS); check `platform.sevenZip` (or use `checkPrerequisites`) first.
  */
 export async function findSevenZip(
   options?: AnyLauncherOptions,
   probe: SevenZipProbe = defaultProbe,
 ): Promise<SevenZipInfo> {
   const opts = resolveOptions(options);
-  const required = opts.platform.sevenZipFormat;
+  const requirement = opts.platform.sevenZip;
+  if (!requirement) {
+    throw new LauncherError(
+      'NOT_SUPPORTED',
+      `Stitch doesn't use 7-Zip on ${opts.platform.os}: GameMaker installers are extracted with built-in tools.`,
+      { os: opts.platform.os },
+    );
+  }
+  const required = requirement.format;
   const found: { path: string; version?: string }[] = [];
   for (const candidate of await listSevenZipCandidates(opts)) {
     if (!(await probe.exists(candidate))) continue;
@@ -108,7 +123,7 @@ export async function findSevenZip(
     found,
     requiredFormat: required,
     downloadUrl: sevenZipDownloadUrl,
-    installCommand: opts.platform.sevenZipInstallCommand,
+    installCommand: requirement.installCommand,
   };
   const fix = `Install the full 7-Zip from ${sevenZipDownloadUrl} (or run \`${data.installCommand}\`)${opts.sevenZipPath ? '' : ", or set Stitch's 7-Zip path setting"}.`;
   if (found.length) {

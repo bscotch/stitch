@@ -33,7 +33,8 @@ export interface LauncherOptions {
   downloadsDir?: string;
   /**
    * Path to a *full* 7-Zip build (`7z.exe` with its `7z.dll` on Windows,
-   * `7zz` elsewhere). The standalone `7za` build can't extract installers.
+   * `7zz` or `7z` on Linux). The standalone `7za` build can't extract
+   * installers. Not used on macOS, which extracts with `pkgutil`.
    * @default Found on the PATH or in its usual install location
    */
   sevenZipPath?: string;

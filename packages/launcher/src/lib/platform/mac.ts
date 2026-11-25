@@ -1,21 +1,17 @@
 /**
  * @file The macOS platform layer.
  *
- * Nothing here has been tested on a real Mac. It's based on the unpacked
- * 2026.100.0.1199 `.pkg`, the 1133 runtime module zips, and disassembled IDE
- * code (see NOTES.md). Every such fact is marked `TODO(verify)`.
+ * Based on the unpacked 2026.100.0.1199 `.pkg`, the 1133 runtime module
+ * zips, and disassembled IDE code, and partly tested on a real Mac
+ * (macOS 27, arm64) in November 2026 (see NOTES.md). Facts that haven't
+ * been confirmed on a Mac yet are marked `TODO(verify)`.
  */
 import { chmod, mkdir, readdir, rename, rm } from 'node:fs/promises';
 import path from 'node:path';
+import { LauncherError } from '../errors.ts';
 import { execFile } from '../exec.ts';
 import { exists } from '../fsUtil.ts';
-import {
-  extractNested,
-  findEntries,
-  killPosixProcess,
-  parsePsOutput,
-  sevenZipExtract,
-} from './posix.ts';
+import { findEntries, killPosixProcess, parsePsOutput } from './posix.ts';
 import type { IdeLayout, PlatformLayer } from './types.ts';
 
 const p = path.posix;
@@ -29,6 +25,34 @@ const p = path.posix;
  */
 const appPattern = /^GameMaker((?: [A-Za-z0-9]+)*)\.app$/;
 
+/** The Apple Developer Team ID that YoYo Games signs its pkgs and apps with */
+export const yoyoGamesTeamId = 'C9E7J7HL3D';
+
+export interface PkgSignature {
+  /** Whether `pkgutil` says it's signed with an Apple-issued certificate */
+  signed: boolean;
+  notarized: boolean;
+  /** The leaf certificate, e.g. "Developer ID Installer: YoYo Games Ltd (C9E7J7HL3D)" */
+  signer?: string;
+  teamId?: string;
+}
+
+/** Parse the output of `pkgutil --check-signature <pkg>` */
+export function parsePkgSignature(output: string): PkgSignature {
+  const status = output.match(/^\s*Status:\s*(.+)$/m)?.[1] ?? '';
+  const signer = output.match(/^\s*1\.\s*(.+?)\s*$/m)?.[1];
+  return {
+    signed: /^signed by a (developer )?certificate issued by Apple/i.test(
+      status,
+    ),
+    notarized: /^\s*Notarization:\s*trusted by the Apple notary service/im.test(
+      output,
+    ),
+    signer,
+    teamId: signer?.match(/\(([A-Z0-9]{10})\)$/)?.[1],
+  };
+}
+
 function macArchDir(arch: string) {
   return arch === 'arm64' ? 'arm64' : 'x86_64';
 }
@@ -36,10 +60,6 @@ function macArchDir(arch: string) {
 export const mac: PlatformLayer = {
   os: 'mac',
   feedPlatform: 'mac',
-  sevenZipFormat: 'Xar',
-  // TODO(verify): [unverified] the Homebrew formula name.
-  sevenZipInstallCommand: 'brew install sevenzip',
-  sevenZipNames: ['7zz'],
   pathDelimiter: ':',
   path: p,
 
@@ -69,12 +89,6 @@ export const mac: PlatformLayer = {
       : [p.join(dir, 'x64', 'Igor')];
   },
 
-  sevenZipCandidates() {
-    // GUI apps (like VS Code launched from the Dock) may not have Homebrew's
-    // bin dir on their PATH.
-    return Promise.resolve(['/opt/homebrew/bin/7zz', '/usr/local/bin/7zz']);
-  },
-
   async resolveIdeLayout(ideDir, arch): Promise<IdeLayout | undefined> {
     let entries: string[];
     try {
@@ -94,55 +108,51 @@ export const mac: PlatformLayer = {
       // project, or whether `open -a <app> <project>` is needed.
       executable: p.join(macOsDir, 'GameMaker'),
       cwd: macOsDir,
-      // TODO(verify): [package] matching.runtime location.
       matchingRuntime: p.join(archDir, 'matching.runtime'),
-      // TODO(verify): help keywords location in the app bundle.
       helpKeywords: p.join(archDir, 'RoboHelp', 'helpdocs_keywords.json'),
     };
   },
 
-  async extractInstaller(sevenZip, installer, destDir) {
-    // TODO(verify): extracting the pkg (Xar → Payload → cpio) produces a
-    // runnable app: permissions, symlinks, Gatekeeper and quarantine.
-    // The pkg only installs to /Applications, so extracting is the only way
-    // to get a cached copy without touching the user's own install.
-    const work = p.join(destDir, '.extract');
-    await sevenZipExtract(sevenZip, installer, p.join(work, 'xar'), 'Xar');
-    const payloads = await findEntries(
-      p.join(work, 'xar'),
-      (name, isDir) => name === 'Payload' && !isDir,
-      3,
+  async extractInstaller(installer, destDir) {
+    // `pkgutil --expand-full` unpacks the pkg and its Payload without
+    // installing anything or running its scripts, and needs no root. Unlike
+    // 7-Zip, it applies the payload's extended attributes, which hold the
+    // code signatures of the non-Mach-O files in `Contents/MacOS`. 7-Zip
+    // writes them out as `._*` files instead, which breaks the app's
+    // signature. See NOTES.md.
+    const work = p.join(destDir, '.expand'); // pkgutil requires a new dir
+    const result = await execFile(
+      'pkgutil',
+      ['--expand-full', installer, work],
+      { timeoutMs: 15 * 60_000 },
     );
-    if (!payloads.length) throw new Error('No Payload found in the pkg');
-    let app: string | undefined;
-    for (const [i, payload] of payloads.entries()) {
-      const root = await extractNested(
-        sevenZip,
-        payload,
-        p.join(work, `p${i}`),
+    if (result.code !== 0) {
+      throw new Error(
+        `pkgutil exited with code ${result.code}: ${result.stderr || result.stdout}`,
       );
-      app = (
-        await findEntries(root, (n, isDir) => isDir && appPattern.test(n), 2)
-      )[0];
-      if (app) break;
     }
+    // Layout: <work>/<component>.pkg/Payload/GameMaker <Channel>.app
+    const app = (
+      await findEntries(work, (n, isDir) => isDir && appPattern.test(n), 3)
+    )[0];
     if (!app) throw new Error('No GameMaker .app found in the pkg payload');
     await rename(app, p.join(destDir, p.basename(app)));
     await rm(work, { recursive: true, force: true });
-    // TODO(verify): whether exec bits survive the cpio extraction.
-    const macOsDir = p.join(destDir, p.basename(app), 'Contents', 'MacOS');
-    for (const exe of await findEntries(
-      macOsDir,
-      (n) => n === 'GameMaker',
-      1,
-    )) {
-      await chmod(exe, 0o755).catch(() => undefined);
-    }
   },
 
-  async verifyInstaller() {
-    // TODO(verify): check the pkg signature (e.g. `pkgutil --check-signature`
-    // for a YoYo Games Developer ID). Skipped until it can be tested.
+  async verifyInstaller(installer) {
+    const result = await execFile('pkgutil', ['--check-signature', installer], {
+      timeoutMs: 60_000,
+    });
+    const sig = parsePkgSignature(result.stdout);
+    if (result.code !== 0 || !sig.signed || sig.teamId !== yoyoGamesTeamId) {
+      throw new LauncherError(
+        'INSTALLER_INVALID',
+        `The GameMaker installer at "${installer}" does not have a valid YoYo Games signature (signer: ${sig.signer || 'none'}).`,
+        { installerPath: installer },
+        { fix: 'Delete the file so that it can be downloaded again.' },
+      );
+    }
   },
 
   async ensureSystemDir(dir) {

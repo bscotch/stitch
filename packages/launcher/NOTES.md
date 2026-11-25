@@ -105,7 +105,7 @@ Incomplete runtime dirs exist, e.g. one containing only `download/`, or one with
 
 ## macOS and Linux
 
-Nothing here was tested on a real Mac or Linux machine. The facts come from unpacking the 2026.100.0.1199 `.pkg`/`.deb`, the LTS2026 2026.1.0.27 `.deb`, the 1133 runtime module zips, and package metadata for other channels **[package]**, plus disassembled IDE code **[IL]**. The launcher implements its macOS and Linux support from these facts, and marks each unconfirmed one with `TODO(verify)` in the source.
+Most of these facts come from unpacking the 2026.100.0.1199 `.pkg`/`.deb`, the LTS2026 2026.1.0.27 `.deb`, the 1133 runtime module zips, and package metadata for other channels **[package]**, plus disassembled IDE code **[IL]**. Nothing was tested on a real Linux machine. Some macOS facts were confirmed on an arm64 Mac running macOS 27 in November 2026 ([Experiment J](#experiments)); those are marked **[observed]** or **[experiment]**. The launcher marks each unconfirmed fact with `TODO(verify)` in the source.
 
 The macro scheme is the same as on Windows: `default_macros.json` is byte-identical, and `program_dir_name` is in the branding `GameMaker.dll`. What differs per OS is the special folders:
 
@@ -133,12 +133,18 @@ The macro scheme is the same as on Windows: `default_macros.json` is byte-identi
 How these facts shape the launcher's macOS and Linux support:
 
 - **Cached copies keep the installed shape.** On macOS a cached version holds the `.app` bundle taken from the pkg payload; on Linux it holds the `/opt/<pkg>/` dir taken from the deb. The `.app` name or `<pkg>` name is how the channel (and so `program_dir_name`) is recognized later: `GameMaker LTS 2026.app` and `GameMaker-LTS2026` both mean `-LTS2026`.
-- **Extraction is multi-step.** A pkg is a Xar archive containing a `Payload` (a compressed cpio stream); a deb is an Ar archive containing `data.tar.*`. 7-Zip can unpack each layer. Whether the results run (exec bits, symlinks, Gatekeeper and quarantine, and zstd-compressed `data.tar` support in the user's 7-Zip) is untested.
+- **On macOS, pkgs are extracted with `pkgutil --expand-full`, not 7-Zip.** **[experiment J]**
+  - A pkg is a Xar archive containing a `Payload` (a compressed cpio stream). The payload stores each file's extended attributes as AppleDouble data.
+  - Those attributes include the per-file code signatures (`com.apple.cs.CodeDirectory`, `CodeRequirements` and `CodeSignature`) of the non-Mach-O files in `Contents/MacOS` (DLLs, JSON, plugins). 7-Zip writes them out as one `._<name>` file per file instead of applying them: 8,186 extra files for 1199. The app's signature then fails `codesign --verify` and `spctl`.
+  - Deleting the `._*` files leaves the signatures missing, and `dot_clean -m` removes them without restoring the `com.apple.cs.*` attributes.
+  - `pkgutil --expand-full <pkg> <new dir>` is built in, needs no root, and runs no install scripts. It applies the attributes, so the app it produces verifies and is accepted by Gatekeeper as "Notarized Developer ID". The app is at `<dir>/<component>.pkg/Payload/GameMaker <Channel>.app`. It took 7.5 s for 1199.
+  - Exec bits are preserved. The extracted files get `com.apple.provenance` but no quarantine attribute.
+- **On Linux, extraction is multi-step with 7-Zip.** A deb is an Ar archive containing `data.tar.*`, and 7-Zip can unpack each layer. Whether the result runs (exec bits, symlinks, and zstd-compressed `data.tar` support in the user's 7-Zip) is untested.
 - **On Linux, run `<arch>/GameMaker` directly** with that dir as the working dir, to avoid the wrapper's quoting and `cd` problems.
 - **On macOS, the IDE process is a child of the launcher stub**, so the IDE's processes are recognized by path prefix within `Contents/MacOS/`, not by one exact executable.
 - **On macOS, the system dir is world-writable.** The pkg's postinstall `chmod 0777`s `/Users/Shared/<pdn>` and its runtime cache **[package]**, so the launcher does the same when it creates them. On Linux the system dir is under the user's home, so nothing is needed.
 - **Don't derive dir names from the Mac installer scripts.** They `chmod` `/Users/Shared/GameMaker-LTS*`, which doesn't match the IDE's `GameMakerStudio2-LTS*`.
-- **Pkg signatures aren't checked yet**; that needs a Mac to test against.
+- **Pkg signatures are checked with `pkgutil --check-signature`.** For 1199 it reports `signed by a developer certificate issued by Apple for distribution`, `trusted by the Apple notary service`, and a leaf certificate of `Developer ID Installer: YoYo Games Ltd (C9E7J7HL3D)`. The launcher requires an Apple-issued signature with YoYo Games' Team ID `C9E7J7HL3D`, which also signs the runtime's Igor. **[experiment J]**
 
 ## The official installer
 
@@ -160,7 +166,7 @@ The Windows installer is **NSIS 3.11**, signed by YoYo Games Ltd, and requires a
 - It takes about 8 s, needs no admin, and writes nothing to the registry, Program Files, or Start Menu.
 - The result is a clean single-version dir that includes `matching.runtime`.
 - The extracted 1199 IDE booted normally, logged in, installed its runtime, and opened (offering to upgrade) a project passed on the command line.
-- **It needs the _full_ 7-Zip build**: `7z.exe` + `7z.dll` on Windows (verified to work on their own), `7zz` on Mac/Linux. **[experiment]** The standalone `7za` build supports none of the formats needed: NSIS, Xar (`.pkg`), Ar (`.deb`) or Cpio. That's true of both the official 26.06 build and the `7zip-bin` npm package, which also bundles an old 21.07.
+- **It needs the _full_ 7-Zip build**: `7z.exe` + `7z.dll` on Windows (verified to work on their own), `7zz` or `7z` on Linux. **[experiment]** (macOS uses `pkgutil` instead; see [macOS and Linux](#macos-and-linux).) The standalone `7za` build supports none of the formats needed: NSIS, Xar (`.pkg`), Ar (`.deb`) or Cpio. That's true of both the official 26.06 build and the `7zip-bin` npm package, which also bundles an old 21.07.
 - **`7z i` lists the supported formats**, under a `Formats:` heading, so a binary's capability can be checked before relying on it.
 - On Windows, 7-Zip records its install dir in the registry: `HKCU`/`HKLM\SOFTWARE\7-Zip`, values `Path64` and `Path`. **[observed]**
 - **It skips everything the NSIS script does besides copying files.** Nothing missing was observed, but the script is unreadable. The known steps it skips are:
@@ -259,9 +265,11 @@ Alternatives considered:
 
 Extraction avoids all of that, and the user's normal installs keep working alongside Stitch.
 
-### 7-Zip is a user-installed dependency
+### 7-Zip is a user-installed dependency on Windows and Linux
 
 The standalone `7za` builds that could be bundled (including the `7zip-bin` npm package) can't extract any of GameMaker's installer formats. Only the full build can, and it's easy to install with each OS's package manager. Since 7-Zip builds differ, the launcher checks the formats a binary reports (`7z i`) before using it, and checks this before downloading anything.
+
+macOS doesn't need 7-Zip. 7-Zip's extraction of a pkg breaks the app's code signature, and the built-in `pkgutil --expand-full` extracts it correctly ([details](#macos-and-linux)). So on macOS, `checkPrerequisites` reports no 7-Zip requirement, and the `sevenZipPath` option is ignored.
 
 ### A missing VC++ runtime is an error with instructions
 
@@ -325,9 +333,9 @@ The cache dir (which can grow to many GB: this machine had 10 GB), the downloads
   - Where do `um.json` and the user subdir land on Mac (`~/Library/Application Support` vs `~/.config`)?
   - Is `~/.local/share/<pdn>` the real Linux system dir?
   - Does running `<arch>/GameMaker` directly on Linux behave like the wrapper?
-  - Does Igor need `chmod +x`, or a quarantine fix on Mac?
+  - ~~Does Igor need `chmod +x`, or a quarantine fix on Mac?~~ No, at least for runtimes the IDE installed: the arm64 Igor has its exec bit, no quarantine attribute, and a YoYo Games Developer ID signature, and it runs. **[observed]**
   - Is the Mac LTS2026 `program_dir_name` really `GameMakerStudio2-LTS2026`?
-  - Do extracted `.app` bundles and `/opt/<pkg>` dirs run, and is there quarantine or permission fallout?
+  - Do extracted `.app` bundles and `/opt/<pkg>` dirs run, and is there quarantine or permission fallout? On macOS, `pkgutil`-extracted apps keep their exec bits and a valid signature, and have no quarantine attribute **[experiment J]**. Launching one is still untested.
 - **Does a CLI project open work when an IDE of the same channel is already running?**
 - **VC++ detection:** is the registry key reliable on machines that only have the runtime from another app's installer?
 
@@ -363,3 +371,9 @@ These were run on 2026-11-20. Every GameMaker config file was backed up first an
   - The IDE requested the new fake URI and got a 403, so no prompt.
   - The original file was restored right after that, and `runtime.json` and `runtime_feeds.json` were unchanged.
   - It found the relaunched IDE process and closed it. The whole test took 35 s.
+- **J. macOS pkg extraction** (2026-11-25, macOS 27 on arm64, Homebrew 7-Zip 26.06, the 2026.100.0.1199 Beta pkg):
+  - 7-Zip (Xar → Payload → cpio) produced `GameMaker Beta.app` with 16,453 files against 8,267 in the official `/Applications` install. The extra 8,186 were `._*` AppleDouble files carrying `com.apple.cs.*` attributes. `codesign --verify --deep --strict` said "code object is not signed at all", and `spctl` rejected it.
+  - Deleting the `._*` files, or merging them with `dot_clean -m`, left the app unsigned.
+  - `pkgutil --expand-full` produced 8,267 files, with no `._*` files and the `com.apple.cs.*` attributes in place. `codesign` reported "valid on disk", and `spctl` accepted it as "Notarized Developer ID".
+  - Exec bits matched the official install (886 executables). `matching.runtime` (`2026.100.0.1133`) and `RoboHelp/helpdocs_keywords.json` were in `Contents/MacOS/<arch>/`.
+  - With the launcher switched to `pkgutil`, its install integration test passed in 15 s, including a `codesign --verify` of the extracted app.

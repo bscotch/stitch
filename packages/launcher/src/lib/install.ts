@@ -1,7 +1,7 @@
 /**
  * @file Installing an IDE version into Stitch's cache: download the official
- * installer to the Downloads dir, then extract it with 7-Zip. Stitch never
- * runs installers.
+ * installer to the Downloads dir, then extract it (with 7-Zip on Windows and
+ * Linux, and `pkgutil` on macOS). Stitch never runs installers.
  */
 import { GameMakerVersionString } from '@bscotch/yy/version';
 import { createWriteStream } from 'node:fs';
@@ -9,7 +9,7 @@ import { mkdir, rename, rm, stat } from 'node:fs/promises';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type { ReadableStream as WebReadableStream } from 'node:stream/web';
-import { LauncherError } from './errors.ts';
+import { isLauncherError, LauncherError } from './errors.ts';
 import { findRelease, getReleasesFeed, normalizeVersion } from './feed.ts';
 import { exists } from './fsUtil.ts';
 import {
@@ -46,7 +46,8 @@ const inFlight = new Map<string, Promise<CachedIde>>();
  * Install an IDE version into Stitch's cache, unless it's already there.
  * The IDE installs its own runtime the first time it boots.
  *
- * Fails fast (before downloading) if no suitable 7-Zip is available. On
+ * Fails fast (before downloading) if this OS needs 7-Zip and no suitable
+ * one is available. On
  * Windows, fails with `VC_RUNTIME_MISSING` if the VC++ runtime the IDE
  * needs is missing; the error points at the downloaded installer, which
  * installs it when run as a normal install.
@@ -83,7 +84,9 @@ async function install(
     if (cached) return cached;
   }
 
-  const sevenZip = await findSevenZip(opts);
+  const sevenZip = opts.platform.sevenZip
+    ? await findSevenZip(opts)
+    : undefined;
   const feed = await getReleasesFeed(opts);
   const release = findRelease(feed, version);
   const url = release?.downloads[opts.platform.feedPlatform];
@@ -127,7 +130,7 @@ async function findCached(dir: string, version: string, opts: ResolvedOptions) {
 async function extract(
   installer: string,
   version: string,
-  sevenZip: SevenZipInfo,
+  sevenZip: SevenZipInfo | undefined,
   finalDir: string,
   opts: ResolvedOptions,
 ): Promise<CachedIde> {
@@ -140,7 +143,7 @@ async function extract(
   );
   await mkdir(tmpDir, { recursive: true });
   try {
-    await opts.platform.extractInstaller(sevenZip.path, installer, tmpDir);
+    await opts.platform.extractInstaller(installer, tmpDir, sevenZip?.path);
     const layout = await opts.platform.resolveIdeLayout(tmpDir, opts.env.arch);
     if (
       !layout ||
@@ -306,8 +309,11 @@ async function downloadInstaller(
 }
 
 export interface Prerequisites {
-  /** The 7-Zip that will be used, or the error explaining what's wrong */
-  sevenZip:
+  /**
+   * The 7-Zip that will be used, or the error explaining what's wrong.
+   * `undefined` on an OS that doesn't need 7-Zip (macOS).
+   */
+  sevenZip?:
     SevenZipInfo | LauncherError<'SEVEN_ZIP_MISSING' | 'SEVEN_ZIP_INCAPABLE'>;
   /** Windows only: whether the VC++ runtime is installed */
   vcRuntime?: boolean;
@@ -319,14 +325,17 @@ export async function checkPrerequisites(
 ): Promise<Prerequisites> {
   const opts = resolveOptions(options);
   const [sevenZip, vcRuntime] = await Promise.all([
-    findSevenZip(opts).catch((err) => {
-      if (err instanceof LauncherError) {
-        return err as LauncherError<
-          'SEVEN_ZIP_MISSING' | 'SEVEN_ZIP_INCAPABLE'
-        >;
-      }
-      throw err;
-    }),
+    opts.platform.sevenZip
+      ? findSevenZip(opts).catch((err) => {
+          if (
+            isLauncherError(err, 'SEVEN_ZIP_MISSING') ||
+            isLauncherError(err, 'SEVEN_ZIP_INCAPABLE')
+          ) {
+            return err;
+          }
+          throw err;
+        })
+      : undefined,
     opts.platform.checkVcRuntime?.(),
   ]);
   return { sevenZip, vcRuntime };

@@ -109,6 +109,25 @@ describe('7-Zip', function () {
   });
 
   it('requires the OS-specific format', async function () {
+    const linux = resolveOptions({
+      os: 'linux',
+      platformEnv: {
+        homedir: '/home/me',
+        env: { PATH: '/opt/bin' },
+        arch: 'x64',
+      },
+    });
+    const found = await findSevenZip(
+      linux,
+      fakeProbe({ '/opt/bin/7zz': await full() }),
+    );
+    assert.equal(found.path, '/opt/bin/7zz');
+    await assert.rejects(findSevenZip(linux, fakeProbe({})), (err) =>
+      isLauncherError(err, 'SEVEN_ZIP_MISSING'),
+    );
+  });
+
+  it("isn't needed on macOS", async function () {
     const mac = resolveOptions({
       os: 'mac',
       platformEnv: {
@@ -116,14 +135,12 @@ describe('7-Zip', function () {
         env: { PATH: '/opt/homebrew/bin' },
         arch: 'arm64',
       },
+      sevenZipPath: '/opt/homebrew/bin/7zz',
     });
-    const found = await findSevenZip(
-      mac,
-      fakeProbe({ '/opt/homebrew/bin/7zz': await full() }),
-    );
-    assert.equal(found.path, '/opt/homebrew/bin/7zz');
-    await assert.rejects(findSevenZip(mac, fakeProbe({})), (err) =>
-      isLauncherError(err, 'SEVEN_ZIP_MISSING'),
+    assert.deepEqual(await listSevenZipCandidates(mac), []);
+    await assert.rejects(
+      findSevenZip(mac, fakeProbe({ '/opt/homebrew/bin/7zz': await full() })),
+      (err) => isLauncherError(err, 'NOT_SUPPORTED'),
     );
   });
 });

@@ -17,7 +17,7 @@ _Butterscotch Shenanigans&reg; and Stitch are not affiliated with GameMaker&reg;
 
 ## 🚀 What Stitch Launcher does
 
-- **Installs IDE versions into its own cache.** It downloads the official installer to your Downloads folder and extracts it with 7-Zip. It never runs installers, and never touches your own GameMaker installs, which keep working normally alongside it.
+- **Installs IDE versions into its own cache.** It downloads the official installer to your Downloads folder and extracts it (with 7-Zip on Windows and Linux, and the built-in `pkgutil` on macOS). It never runs installers, and never touches your own GameMaker installs, which keep working normally alongside it.
 - **Finds installed Runtimes.** Runtimes are installed by the IDE itself, the first time an IDE version boots. Stitch Launcher only finds them.
 - **Opens projects** in the right cached IDE, optionally suppressing the IDE's "IDE Update Available" prompt (which older cached versions would otherwise always show).
 - **Runs and builds projects** with Igor, GameMaker's command-line build tool, using a self-cleaning build cache outside your project.
@@ -27,9 +27,8 @@ Version information comes from Stitch's [unified GameMaker releases feed](../rel
 ## Requirements
 
 - [Node.js v22+](https://nodejs.org/en/). This package is ESM-only.
-- A **full** [7-Zip](https://www.7-zip.org/download.html) install, to extract GameMaker installers. The standalone `7za` build can't extract them.
+- On Windows and Linux, a **full** [7-Zip](https://www.7-zip.org/download.html) install, to extract GameMaker installers. The standalone `7za` build can't extract them. macOS doesn't need it.
   - Windows: `winget install 7zip.7zip`
-  - macOS: `brew install sevenzip`
   - Linux: `sudo apt install 7zip` (or `p7zip-full` on older distros)
 - [A GameMaker account](https://gamemaker.io/) to use GameMaker itself.
 
@@ -37,11 +36,11 @@ Version information comes from Stitch's [unified GameMaker releases feed](../rel
 
 |                       | Windows   | macOS                    | Linux                    |
 | --------------------- | --------- | ------------------------ | ------------------------ |
-| Paths, runtimes, Igor | ✅ Tested | ⚠️ Implemented, untested | ⚠️ Implemented, untested |
-| Installing IDEs       | ✅ Tested | ⚠️ Implemented, untested | ⚠️ Implemented, untested |
+| Paths, runtimes, Igor | ✅ Tested | ⚠️ Partly tested (arm64) | ⚠️ Implemented, untested |
+| Installing IDEs       | ✅ Tested | ⚠️ Partly tested (arm64) | ⚠️ Implemented, untested |
 | Opening projects      | ✅ Tested | ⚠️ Implemented, untested | ⚠️ Implemented, untested |
 
-GameMaker only publishes Beta, Unstable and LTS 2026 releases for Linux. The macOS and Linux details come from unpacking GameMaker's installers, not from real machines, and are marked `TODO(verify)` in the source. Reports and fixes are welcome!
+GameMaker only publishes Beta, Unstable and LTS 2026 releases for Linux. The Linux details come from unpacking GameMaker's installers, not from a real machine. On macOS, finding runtimes, running Igor, and downloading, verifying and extracting IDEs have been tried on an arm64 Mac; the rest comes from unpacking the installers. Unconfirmed details are marked `TODO(verify)` in the source. Reports and fixes are welcome!
 
 ## Installation
 
@@ -51,7 +50,7 @@ npm install @bscotch/stitch-launcher
 
 ## Usage
 
-Every function takes an optional options object, for overriding defaults like the IDE cache dir (`ideCacheDir`), the downloads dir (`downloadsDir`), and the 7-Zip path (`sevenZipPath`). See `LauncherOptions` for all of them.
+Every function takes an optional options object, for overriding defaults like the IDE cache dir (`ideCacheDir`), the downloads dir (`downloadsDir`), and the 7-Zip path (`sevenZipPath`, Windows and Linux only). See `LauncherOptions` for all of them.
 
 ### Open a project in its IDE version
 
