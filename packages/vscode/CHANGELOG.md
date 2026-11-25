@@ -1,5 +1,15 @@
 # Stitch Changelog
 
+## 2.2.0 (2026-11-25)
+
+### Docs
+
+- Updated the Stitch for VSCode README for the new language server: diagnostics (and how to configure and silence them), GML formatting, collision events, rooms, the Inspector, asset renames that update code, how built-in functions are found for your GameMaker version, and current limitations.
+
+### Features
+
+- Stitch for VSCode now supports Ubuntu!
+
 ## 2.1.0 (2026-11-24)
 
 ### Features

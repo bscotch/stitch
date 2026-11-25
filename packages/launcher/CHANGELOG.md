@@ -1,5 +1,15 @@
 # @bscotch/stitch-launcher Changelog
 
+## 3.0.0 (2026-11-25)
+
+### Breaking Changes
+
+- Since 7zip is not needed for the launcher on Ubuntu, interfaces and function names assuming that requirement for all platforms have been changed.
+
+### Features
+
+- The launcher now supports Ubuntu!
+
 ## 2.0.0 (2026-11-21)
 
 ### Breaking Changes

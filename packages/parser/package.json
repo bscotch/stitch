@@ -1,6 +1,6 @@
 {
   "name": "@bscotch/gml-parser",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Semantic analysis of GameMaker projects' GML (GameMaker Language) code: symbols, types, references, diagnostics and editor queries, kept up to date incrementally as files change.",
   "keywords": [
     "gml",

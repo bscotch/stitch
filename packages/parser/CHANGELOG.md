@@ -1,5 +1,11 @@
 # @bscotch/gml-parser Changelog
 
+## 3.0.1 (2026-11-24)
+
+### Fixes
+
+- In gml-parser, utility types that wrap a template parameter (like `@returns {InstanceType<T>}`) now apply to the type the template resolves to, so passing an object to such a function gives an instance of that object instead of the object itself.
+
 ## 3.0.0 (2026-11-24)
 
 ### Breaking Changes
