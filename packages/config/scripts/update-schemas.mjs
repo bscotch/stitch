@@ -13,6 +13,9 @@ const asSchema = z.toJSONSchema(stitchConfigSchema, {
 // and add the $id property
 // @ts-expect-error -- `properties` isn't typed on the generated schema
 delete asSchema.properties.$schema;
+// It has a default, so Zod lists it as required, but configs don't need it.
+asSchema.required = asSchema.required?.filter((key) => key !== '$schema');
+if (!asSchema.required?.length) delete asSchema.required;
 
 asSchema.$id = jsonSchemaUrl;
 

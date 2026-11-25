@@ -122,9 +122,6 @@
       "description": "Styling rules for the game's STDOUT/STDERR for compatible runners"
     }
   },
-  "required": [
-    "$schema"
-  ],
   "additionalProperties": {},
   "description": "Stitch configuration schema. Stitch utilities may support subsets of this configuration.",
   "$id": "https://raw.githubusercontent.com/bscotch/stitch/develop/packages/config/schemas/stitch.config.schema.json"
