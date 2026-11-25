@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import { put, testOptions, tmpDir } from '../test/helpers.ts';
+import {
+  igorRelativePath,
+  sandboxedOs,
+  put,
+  testOptions,
+  tmpDir,
+} from '../test/helpers.ts';
 import { resolveOptions } from './options.ts';
 import { computeGameMakerDirs } from './paths.ts';
 import {
@@ -37,10 +43,7 @@ async function fakeRuntime(
 ) {
   const dir = path.join(runtimesDir, `runtime-${version}`);
   if (opts.igor ?? true)
-    await put(
-      path.join(dir, 'bin', 'igor', 'windows', 'x64', 'Igor.exe'),
-      'exe',
-    );
+    await put(path.join(dir, igorRelativePath(sandboxedOs())), 'exe');
   if (opts.receipt ?? true) await put(path.join(dir, 'receipt.json'), receipt);
   return dir;
 }
@@ -81,7 +84,7 @@ describe('Runtime files', function () {
 describe('Installed runtimes', function () {
   it('lists complete runtimes across channels, skipping incomplete ones', async function () {
     const root = await tmpDir();
-    const options = { ...testOptions(root, undefined), os: 'windows' as const };
+    const options = { ...testOptions(root, undefined), os: sandboxedOs() };
     const resolved = resolveOptions(options);
     const beta = computeGameMakerDirs('GameMakerStudio2-Beta', resolved);
     const lts = computeGameMakerDirs('GameMakerStudio2-LTS2026', resolved);
@@ -111,7 +114,7 @@ describe('Installed runtimes', function () {
     );
     assert.match(
       runtimes[0].igorPath,
-      /bin[\\/]igor[\\/]windows[\\/]x64[\\/]Igor\.exe$/,
+      /bin[\\/]igor[\\/](windows|osx|linux)[\\/]x64[\\/]Igor(\.exe)?$/,
     );
 
     const found = await findRuntime('2026.1.0.28', options);
@@ -121,7 +124,7 @@ describe('Installed runtimes', function () {
 
   it('prefers the requested channel for duplicate versions', async function () {
     const root = await tmpDir();
-    const options = { ...testOptions(root, undefined), os: 'windows' as const };
+    const options = { ...testOptions(root, undefined), os: sandboxedOs() };
     const resolved = resolveOptions(options);
     for (const pdn of ['GameMakerStudio2-LTS2026', 'GameMakerStudio2-Beta']) {
       await fakeRuntime(

@@ -81,6 +81,35 @@ export function nativeOs(): OsName {
       : 'linux';
 }
 
+/**
+ * An OS layout whose GameMaker dirs all come from `testOptions`' temp
+ * `platformEnv`, so tests that write files never touch the real machine.
+ * Not `nativeOs()`: the mac layout hardcodes the system dir to
+ * `/Users/Shared`, so on a Mac a test would write into real GameMaker dirs.
+ */
+export function sandboxedOs(): OsName {
+  return process.platform === 'win32' ? 'windows' : 'linux';
+}
+
+/**
+ * Why a test that creates real files in `os`'s layout must be skipped on
+ * this host, or `false` if it can run. The Windows layout joins paths with
+ * `path.win32`, which turns a POSIX temp root into a relative,
+ * backslash-named path, so it only works on a Windows host.
+ */
+export function layoutSkipReasonForWindowsExclusiveTests(): string | false {
+  return process.platform !== 'win32'
+    ? 'Windows layouts need a Windows host'
+    : false;
+}
+
+/** Relative path to Igor in a runtime dir, for `testOptions`' x64 arch */
+export function igorRelativePath(os: OsName): string {
+  return os === 'windows'
+    ? path.join('bin', 'igor', 'windows', 'x64', 'Igor.exe')
+    : path.join('bin', 'igor', os === 'mac' ? 'osx' : 'linux', 'x64', 'Igor');
+}
+
 /** Create a fake cached IDE for an OS. Returns its dir. */
 export async function fakeCachedIde(
   cacheDir: string,

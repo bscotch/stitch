@@ -5,7 +5,9 @@ import { describe, it } from 'node:test';
 import {
   fakeCachedIde,
   fixtureFeed,
+  sandboxedOs,
   put,
+  layoutSkipReasonForWindowsExclusiveTests,
   testOptions,
   tmpDir,
 } from '../test/helpers.ts';
@@ -39,64 +41,83 @@ async function setup(os: OsName) {
 
 describe('IDE cache', function () {
   for (const os of ['windows', 'mac', 'linux'] as const) {
-    it(`lists cached IDEs (${os} layout)`, async function () {
-      const { options } = await setup(os);
-      const ides = await listAvailableIdes(options);
-      assert.deepEqual(
-        ides.map((i) => [
-          i.version,
-          i.channel,
-          i.programDirName,
-          i.pairedRuntimeVersion,
-          i.installable,
-        ]),
-        [
+    it(
+      `lists cached IDEs (${os} layout)`,
+      {
+        skip: layoutSkipReasonForWindowsExclusiveTests(),
+      },
+      async function () {
+        const { options } = await setup(os);
+        const ides = await listAvailableIdes(options);
+        assert.deepEqual(
+          ides.map((i) => [
+            i.version,
+            i.channel,
+            i.programDirName,
+            i.pairedRuntimeVersion,
+            i.installable,
+          ]),
           [
-            '2026.100.0.1199',
-            'beta',
-            'GameMakerStudio2-Beta',
-            '2026.100.0.1133',
-            true,
+            [
+              '2026.100.0.1199',
+              'beta',
+              'GameMakerStudio2-Beta',
+              '2026.100.0.1133',
+              true,
+            ],
+            [
+              '2026.1.0.27',
+              'lts2026',
+              'GameMakerStudio2-LTS2026',
+              '2026.1.0.28',
+              true,
+            ],
+            [
+              '2023.400.0.324',
+              'beta',
+              'GameMakerStudio2-Beta',
+              undefined,
+              false,
+            ],
           ],
-          [
-            '2026.1.0.27',
-            'lts2026',
-            'GameMakerStudio2-LTS2026',
-            '2026.1.0.28',
-            true,
-          ],
-          ['2023.400.0.324', 'beta', 'GameMakerStudio2-Beta', undefined, false],
-        ],
-      );
-      assert.deepEqual(ides[0].channels, ['beta', 'unstable']);
-      assert.deepEqual(ides[2].channels, ['beta', 'unstable']);
-    });
+        );
+        assert.deepEqual(ides[0].channels, ['beta', 'unstable']);
+        assert.deepEqual(ides[2].channels, ['beta', 'unstable']);
+      },
+    );
   }
 
-  it('reads caches made by old Stitch versions (copied installs)', async function () {
-    const root = await tmpDir();
-    const options = {
-      ...testOptions(root, await fixtureFeed()),
-      os: 'windows' as const,
-    };
-    const dir = path.join(options.ideCacheDir!, 'gamemaker-2024.1400.0.904');
-    await put(path.join(dir, 'GameMaker-Beta.exe'));
-    await put(path.join(dir, 'uninstall.exe'));
-    await put(path.join(dir, 'GameMakerProjectTool.exe'));
-    await put(path.join(dir, 'matching.runtime'), '2024.1400.0.892 ');
-    const ide = await findIde('2024.1400.0.904', options);
-    assert.equal(ide?.executable, path.join(dir, 'GameMaker-Beta.exe'));
-    assert.equal(ide?.pairedRuntimeVersion, '2024.1400.0.892');
-    assert.equal(
-      ide?.helpKeywordsFile,
-      path.join(dir, 'RoboHelp', 'helpdocs_keywords.json'),
-    );
-  });
+  // Old Stitch versions only ran on Windows
+  it(
+    'reads caches made by old Stitch versions (copied installs)',
+    {
+      skip: layoutSkipReasonForWindowsExclusiveTests(),
+    },
+    async function () {
+      const root = await tmpDir();
+      const options = {
+        ...testOptions(root, await fixtureFeed()),
+        os: 'windows' as const,
+      };
+      const dir = path.join(options.ideCacheDir!, 'gamemaker-2024.1400.0.904');
+      await put(path.join(dir, 'GameMaker-Beta.exe'));
+      await put(path.join(dir, 'uninstall.exe'));
+      await put(path.join(dir, 'GameMakerProjectTool.exe'));
+      await put(path.join(dir, 'matching.runtime'), '2024.1400.0.892 ');
+      const ide = await findIde('2024.1400.0.904', options);
+      assert.equal(ide?.executable, path.join(dir, 'GameMaker-Beta.exe'));
+      assert.equal(ide?.pairedRuntimeVersion, '2024.1400.0.892');
+      assert.equal(
+        ide?.helpKeywordsFile,
+        path.join(dir, 'RoboHelp', 'helpdocs_keywords.json'),
+      );
+    },
+  );
 
   it('ignores partial extractions and unrelated entries', async function () {
-    const { options, cache } = await setup('windows');
+    const { options, cache } = await setup(sandboxedOs());
     await fakeCachedIde(cache, '2026.100.0.1207', {
-      os: 'windows',
+      os: sandboxedOs(),
       suffix: '-Beta',
     });
     const { rename } = await import('node:fs/promises');
@@ -111,7 +132,7 @@ describe('IDE cache', function () {
   });
 
   it('works without a feed', async function () {
-    const { options } = await setup('windows');
+    const { options } = await setup(sandboxedOs());
     const ides = await listAvailableIdes({
       ...options,
       feed: undefined,
@@ -123,13 +144,13 @@ describe('IDE cache', function () {
   });
 
   it('reports sizes', async function () {
-    const { options } = await setup('windows');
+    const { options } = await setup(sandboxedOs());
     const info = await getIdeCacheInfo(options);
     assert.ok(info.every((i) => i.sizeBytes > 0));
   });
 
   it('prunes by version and by predicate', async function () {
-    const { options, cache } = await setup('windows');
+    const { options, cache } = await setup(sandboxedOs());
     const removed = await pruneIdeCache(['2026.1.0.27'], options);
     assert.deepEqual(removed, [path.join(cache, 'gamemaker-2026.1.0.27')]);
     await pruneIdeCache(
@@ -140,7 +161,7 @@ describe('IDE cache', function () {
   });
 
   it('requires confirmation to prune versions that are no longer downloadable', async function () {
-    const { options, cache } = await setup('windows');
+    const { options, cache } = await setup(sandboxedOs());
     await assert.rejects(
       pruneIdeCache(() => true, options),
       (err) => {
@@ -158,7 +179,7 @@ describe('IDE cache', function () {
   });
 
   it('removes leftovers from old launcher versions and abandoned extractions', async function () {
-    const { options, cache } = await setup('windows');
+    const { options, cache } = await setup(sandboxedOs());
     await put(path.join(cache, 'gamemaker-2022.9.1.66.exe'), 'old installer');
     const abandoned = path.join(cache, '.tmp-2026.100.0.1207-old');
     const fresh = path.join(cache, '.tmp-2026.100.0.1207-new');

@@ -8,16 +8,16 @@ The "launcher" package has draft macOS support. It was written from unpacked `.p
 
 Record this for every test session, because NOTES.md dates and versions every finding.
 
-| Item                      | Value                                                  |
-| ------------------------- | ------------------------------------------------------ |
-| Date                      | 2026-11-24                                             |
-| macOS version             | 27.0.1 (build 26A434)                                  |
-| CPU (arm64 / x86_64)      | arm64 (Apple M5 Max)                                   |
-| Node version              | v24.18.0                                               |
-| Homebrew                  | 7.0.16                                                 |
-| 7-Zip build (`7zz i`)     | **Not installed** (no `7zz`, `7z` or `7za` on `PATH`)  |
-| IDE version(s) tested     | (none yet)                                             |
-| Runtime version(s) tested | (none yet)                                             |
+| Item                      | Value                                                 |
+| ------------------------- | ----------------------------------------------------- |
+| Date                      | 2026-11-24                                            |
+| macOS version             | 27.0.1 (build 26A434)                                 |
+| CPU (arm64 / x86_64)      | arm64 (Apple M5 Max)                                  |
+| Node version              | v24.18.0                                              |
+| Homebrew                  | 7.0.16                                                |
+| 7-Zip build (`7zz i`)     | **Not installed** (no `7zz`, `7z` or `7za` on `PATH`) |
+| IDE version(s) tested     | (none yet)                                            |
+| Runtime version(s) tested | (none yet)                                            |
 
 Existing official GameMaker installs on this machine (in `/Applications`, read from each app's `Info.plist`):
 
@@ -46,6 +46,51 @@ Run `pnpm test` in this package and classify each failure:
 - **Product:** a real bug in the cross-OS logic. Fix the code and add a regression test.
 
 Unit tests only simulate layouts with fake dirs, so passing them says little about real macOS behavior.
+
+### Results (2026-11-24) ✅ Done
+
+**First run:** 71 tests, 62 passed, 9 failed. All 9 were **harness** failures, with no product bugs:
+
+- **Cause:** every failing test forced `os: 'windows'` while creating real files (7 in `ideCache.test.ts`, 2 in `runtimes.test.ts`). The `os` option is documented as test-only, so product code never uses a foreign layout.
+- **Layouts that work:** the mac and linux layout tests already passed. POSIX paths built on a POSIX host are fine.
+
+**Fixes** (test code only):
+
+- `src/test/helpers.ts`:
+  - `sandboxedOs()` picks a layout whose GameMaker dirs all come from `testOptions`' temp env: `windows` on Windows, `linux` elsewhere. It's never `mac`, because the mac layout hardcodes the system dir to `/Users/Shared` (see the incident below).
+  - `layoutSkipReasonForWindowsExclusiveTests()` skips Windows-layout file tests on non-Windows hosts and provides a reason to display.
+  - `igorRelativePath(os)` gives the Igor path inside a runtime dir for each OS.
+- `ideCache.test.ts`:
+  - The layout loop covers all three OSes, and the Windows case is skipped on macOS. The mac case only reads from the temp IDE cache, so it's safe.
+  - The test for caches made by old Stitch versions only runs on Windows, since those copies only existed there.
+  - The generic cache tests (partial extractions, no feed, sizes, pruning, leftovers) use `sandboxedOs()`.
+- `runtimes.test.ts`: both runtime-listing tests use `sandboxedOs()` and that OS's Igor path.
+- `versions.test.ts`: these tests used the native layout, which reads real `/Users/Shared` on a Mac. They now use `sandboxedOs()` too.
+
+**After the fixes:** 71 tests, 69 passed, 0 failed, 2 skipped (the Windows-only tests above). `tsc --noEmit` is clean. Running the suite again changed nothing under `/Users/Shared/GameMakerStudio2*` or `~/Library/Application Support/GameMakerStudio2*`.
+
+**Leftovers:** 22 stray backslash-named dirs (26 empty fixture files) from the earlier runs are still in the package dir and can be deleted. The new runs created none.
+
+### ⚠️ Incident: tests wrote into real GameMaker dirs (2026-11-24)
+
+The first version of the fix ran `runtimes.test.ts` in the native (mac) layout. Because the mac system dir is hardcoded to `/Users/Shared`, the tests wrote fake runtimes into the machine's real GameMaker dirs. The second run then saw the first run's leftovers and failed, which exposed the problem.
+
+- **Created** (fake, safe to delete):
+  - `GameMakerStudio2-Beta/Cache/runtimes/runtime-{2024.1400.3.933,2026.0.0.10,2026.100.0.1199,2026.100.0.1200,not-a-version}`
+  - `GameMakerStudio2-LTS2026/Cache/runtimes/runtime-{2026.0.0.10,2026.1.0.28}`
+  - `GameMakerStudio2-Beta/Cache/runtimes/runtime-2026.100.0.1133/bin/igor/osx/x64/` (inside the real runtime; the real `arm64` Igor is intact)
+- **Overwritten** (the original contents are lost):
+  - `GameMakerStudio2-Beta/Cache/runtimes/runtime-2026.100.0.1133/receipt.json`
+  - `GameMakerStudio2-Beta/runtime.json`
+- **Repair:**
+  - Delete the fake dirs.
+  - Reinstall runtime 1133. One way is to delete `runtime-2026.100.0.1133` and boot the Beta 1199 IDE, which installs its paired runtime on boot.
+  - The IDE also rewrites `runtime.json` on boot.
+- **Lesson:** the mac layout can't be sandboxed through `platformEnv`. Any test that writes files must use `sandboxedOs()`.
+
+### Open: flaky Igor cache test
+
+`igor.test.ts` "prunes manually and reports sizes" failed once in 8 runs: `info.every((e) => e.sizeBytes >= 4 && e.meta)` was false. The test is untouched by these changes, so the flakiness predates them. It still needs investigating.
 
 ## Phase 2: Integration on macOS
 
@@ -102,4 +147,4 @@ From NOTES.md open questions:
 
 Dated findings, moved into NOTES.md once confirmed.
 
-- Running `pnpm test` on macOS creates dirs like `packages/launcher/\var\folders\…\stitch-launcher-test-XXXX\ProgramData\GameMakerStudio2-Beta\Cache\runtimes`. Cause: "windows layout" tests compute paths with `path.win32` from a POSIX temp root, which gives a relative, backslash-named path under the cwd. This is a harness bug.
+- Running `pnpm test` on macOS creates dirs like `packages/launcher/\var\folders\…\stitch-launcher-test-XXXX\ProgramData\GameMakerStudio2-Beta\Cache\runtimes`. Cause: "windows layout" tests compute paths with `path.win32` from a POSIX temp root, which gives a relative, backslash-named path under the cwd. This is a harness bug. **Fixed 2026-11-24** (see [Phase 1 results](#results-2026-11-24--done)).

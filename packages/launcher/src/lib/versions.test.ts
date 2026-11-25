@@ -10,7 +10,7 @@ import {
 import {
   fakeCachedIde,
   fixtureFeed,
-  nativeOs,
+  sandboxedOs,
   put,
   testOptions,
   tmpDir,
@@ -69,7 +69,7 @@ describe('Version details', function () {
 
   it("prefers an override, then the cached IDE's matching.runtime, then the feed", async function () {
     const root = await tmpDir();
-    const os = nativeOs();
+    const os = sandboxedOs();
     const options = { ...testOptions(root, await fixtureFeed()), os };
     await fakeCachedIde(options.ideCacheDir!, '2026.100.0.1199', {
       os,
@@ -90,7 +90,7 @@ describe('Version details', function () {
 
   it("handles cached IDEs that aren't in the feed", async function () {
     const root = await tmpDir();
-    const os = nativeOs();
+    const os = sandboxedOs();
     const options = { ...testOptions(root, await fixtureFeed()), os };
     await fakeCachedIde(options.ideCacheDir!, '2023.400.0.324', {
       os,
