@@ -86,6 +86,7 @@ The first version of the fix ran `runtimes.test.ts` in the native (mac) layout. 
   - Delete the fake dirs.
   - Reinstall runtime 1133. One way is to delete `runtime-2026.100.0.1133` and boot the Beta 1199 IDE, which installs its paired runtime on boot.
   - The IDE also rewrites `runtime.json` on boot.
+- **Repair status (2026-11-24):** the fake dirs and `runtime-2026.100.0.1133` were deleted. ⏳ To finish, open the Beta 1199 IDE once so it reinstalls runtime 1133 and rewrites `runtime.json`.
 - **Lesson:** the mac layout can't be sandboxed through `platformEnv`. Any test that writes files must use `sandboxedOs()`.
 
 ### Open: flaky Igor cache test
