@@ -151,7 +151,13 @@ export async function prepareIgorCommand(
 }
 
 export interface IgorResult {
+  /** `null` if Igor was killed by a signal (see `signal`) */
   exitCode: number | null;
+  /**
+   * The signal that killed Igor (e.g. `SIGABRT` when it crashes), or
+   * `null` if it exited on its own.
+   */
+  signal: NodeJS.Signals | null;
   /** Based on the exit code (for `Run`, it follows the game's exit code) */
   success: boolean;
   stdout: string;
@@ -210,16 +216,19 @@ export async function runIgor(
       log.end();
       reject(err);
     });
-    child.once('close', (exitCode) => {
-      log.end(() =>
-        resolve({
-          exitCode,
-          success: exitCode === 0,
-          stdout,
-          stderr,
-          logFile,
-          command,
-        }),
+    child.once('close', (exitCode, signal) => {
+      log.end(
+        `\n${signal ? `Igor was killed by ${signal}` : `Igor exited with code ${exitCode}`}\n`,
+        () =>
+          resolve({
+            exitCode,
+            signal,
+            success: exitCode === 0,
+            stdout,
+            stderr,
+            logFile,
+            command,
+          }),
       );
     });
   });

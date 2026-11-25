@@ -117,6 +117,28 @@ These run the opt-in suites in [`src/integration.test.ts`](./src/integration.tes
 - From the VS Code extension, the user can switch the IDE and runtime versions easily.
 - From the VS Code extension, the user can run a GameMaker project without opening the IDE.
 
+### Scenario 1 results: missing 7-Zip (2026-11-24)
+
+**Launcher library: ✅ passes.** The real launcher code was run on this Mac (no `7zz`, `7z` or `7za` anywhere), with temp state, cache and download dirs and `fetch` wrapped to log requests:
+
+- **`checkPrerequisites()`** returns a `SEVEN_ZIP_MISSING` error. It doesn't throw.
+- **`installIde('2026.100.0.1199')`** throws the same error after about 1 ms. It makes **no network requests** (no feed fetch, no download) and creates no files.
+- **The message** is: "Stitch needs 7-Zip to extract GameMaker installers, but could not find it. Install the full 7-Zip from https://www.7-zip.org/download.html (or run `brew install sevenzip`), or set Stitch's 7-Zip path setting." `data.requiredFormat` is `Xar`.
+- **A `sevenZipPath` pointing nowhere** gives `7-Zip was not found at "<path>".`, and the hint no longer mentions the path setting.
+- **A 7-Zip without Xar support** (a fake `7zz` reporting v16.02 with only 7z/zip) gives `SEVEN_ZIP_INCAPABLE`. The message names the binary and its version.
+- **Homebrew:** the `sevenzip` formula exists (26.06). Whether it installs `7zz` with Xar support is still unchecked.
+
+**VS Code extension: ⏳ needs a manual check.** The error only appears from **Open in GameMaker** (`openInIde`, in `packages/vscode/src/extension.project.mts`), and only when the project's IDE version isn't already in Stitch's IDE cache. To check it, run that command in VS Code on such a project. It should show the message with three buttons (handled by `showLauncherError` in `extension.launcher.mts`):
+
+- **Open 7-Zip download page** opens the download page.
+- **Copy install command** copies `brew install sevenzip`.
+- **Set 7-Zip path** opens the setting.
+
+**Gaps:**
+
+- The extension never calls `checkPrerequisites()`, so a missing 7-Zip is only reported when an install is attempted, not up front.
+- Projects whose IDE version is already cached work without 7-Zip, which is expected.
+
 ## Checklist
 
 For each item, mark one of: ✅ confirmed (remove the `TODO(verify)` marker and tag the fact in NOTES.md), ✏️ corrected (fix the code and NOTES.md), or ⏸ still open.
@@ -124,10 +146,10 @@ For each item, mark one of: ✅ confirmed (remove the `TODO(verify)` marker and 
 From `TODO(verify)` markers:
 
 - [ ] App names and channel mapping; LTS2026's `program_dir_name` is `GameMakerStudio2-LTS2026` (`mac.ts:27`)
-- [ ] `brew install sevenzip` provides `7zz` with Xar/Cpio support (`mac.ts:40`)
+- [x] ✅ `brew install sevenzip` provides `7zz` with Xar/Cpio support (`mac.ts:40`). Confirmed 2026-11-24: Homebrew installed 7-Zip 26.06 (arm64) at `/opt/homebrew/bin/7zz`. `7zz i` lists Xar, Cpio, Ar and Nsis, and `checkPrerequisites()` finds it.
 - [ ] System dir is `/Users/Shared/<pdn>` (`mac.ts:48`)
 - [ ] User dir is `~/Library/Application Support/<pdn>`; does `um.json` land there or in `~/.config`? (`mac.ts:50`)
-- [ ] Igor is at `<runtime>/bin/igor/osx/{arm64,x64}/Igor` (`mac.ts:65`)
+- [ ] Igor is at `<runtime>/bin/igor/osx/{arm64,x64}/Igor` (`mac.ts:65`). Partly confirmed 2026-11-24: the arm64 path exists and runs in IDE-installed runtimes. It has its exec bit set, no quarantine xattr, and a YoYo Games Developer ID signature (`C9E7J7HL3D`). The x64 path is unchecked.
 - [ ] Running the stub with a project path opens the project, or `open -a` is needed (`mac.ts:93`)
 - [ ] `matching.runtime` is at `Contents/MacOS/<arch>/` (`mac.ts:97`)
 - [ ] Help keywords location in the bundle (`mac.ts:99`)
@@ -149,3 +171,8 @@ From NOTES.md open questions:
 Dated findings, moved into NOTES.md once confirmed.
 
 - Running `pnpm test` on macOS creates dirs like `packages/launcher/\var\folders\…\stitch-launcher-test-XXXX\ProgramData\GameMakerStudio2-Beta\Cache\runtimes`. Cause: "windows layout" tests compute paths with `path.win32` from a POSIX temp root, which gives a relative, backslash-named path under the cwd. This is a harness bug. **Fixed 2026-11-24** (see [Phase 1 results](#results-2026-11-24--done)).
+- **2026-11-24, first Igor run on macOS** (`STITCH_LAUNCHER_IDE_VERSION=2026.100.0.1199`, runtime 1133, `mac PackageZip` of `samples/project`):
+  - **Igor runs.** The launcher picked `bin/igor/osx/arm64/Igor`, and Gatekeeper didn't block it. Igor read `local_settings.json` from `~/Library/Application Support/GameMakerStudio2-Beta/<user>/`, which supports `Application Support` (not `~/.config`) as the Mac user dir.
+  - **The sample project can't be built.** It's saved in the 2022.600 format, and Igor's asset compiler rejects every `.yy` file with `A type tag field is required…`. That's the same failure NOTES.md records on Windows. This test needs a sample project saved by a recent IDE.
+  - **Igor sometimes aborts instead of exiting.** In about 1 of 3 runs, Igor dies from `SIGABRT` (exit code `null`) instead of exiting with code 1. This happened with and without the test runner, so it's GameMaker's crash on the error path, not the launcher's. macOS crash report: an unhandled .NET exception → `abort()`.
+  - **Launcher gap:** `runIgor` drops the signal (`close` gives `(code, signal)`, and only `code` is kept). A crashed Igor then shows up only as `null !== 0`. `IgorResult` should include `signal`.
